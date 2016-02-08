@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.security;
@@ -21,6 +30,7 @@ import java.util.Set;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.operations.*;
+import com.gemstone.gemfire.cache.operations.internal.GetOperationContextImpl;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
@@ -95,7 +105,7 @@ public class AuthorizeRequest {
   public GetOperationContext getAuthorize(String regionName, Object key,
       Object callbackArg) throws NotAuthorizedException {
 
-    GetOperationContext getContext = new GetOperationContext(key, false);
+    GetOperationContext getContext = new GetOperationContextImpl(key, false);
     getContext.setCallbackArg(callbackArg);
     if (!this.authzCallback.authorizeOperation(regionName, getContext)) {
       String errStr = LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_GET_OPERATION_ON_REGION_0.toLocalizedString(regionName);

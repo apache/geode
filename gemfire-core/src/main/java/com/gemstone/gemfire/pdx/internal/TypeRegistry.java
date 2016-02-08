@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.pdx.internal;
 
@@ -122,6 +131,9 @@ public class TypeRegistry {
       if(pdxType != null) {
         this.idToType.put(typeId, pdxType);
         this.typeToId.put(pdxType, typeId);
+        if (logger.isInfoEnabled()) {
+          logger.info("Adding: {}", pdxType.toFormattedString());
+        }
         if (logger.isDebugEnabled()) {
           logger.debug("Adding entry into pdx type registry, typeId: {}  {}", typeId, pdxType);
         }
@@ -186,8 +198,8 @@ public class TypeRegistry {
     if(oldType == null) {
       this.idToType.put(id, newType);
       this.typeToId.put(newType, id);
-      if (logger.isDebugEnabled()) {
-        logger.debug("Defining: {}", newType.toFormattedString());
+      if (logger.isInfoEnabled()) {
+        logger.info("Defining: {}", newType.toFormattedString());
       }
     } else {
       //TODO - this might be overkill, but type definition should be rare enough.
@@ -205,8 +217,8 @@ public class TypeRegistry {
       this.distributedTypeRegistry.addRemoteType(typeId, newType);
       this.idToType.put(typeId, newType);
       this.typeToId.put(newType, typeId);
-      if (logger.isDebugEnabled()) {
-        logger.debug("Adding, from remote WAN: {}", newType.toFormattedString());
+      if (logger.isInfoEnabled()) {
+        logger.info("Adding, from remote WAN: {}", newType.toFormattedString());
       }
     } else {
     //TODO - this might be overkill, but type definition should be rare enough.
@@ -321,13 +333,13 @@ public class TypeRegistry {
     if (v == null) {
       PdxSerializer oldValue = pdxSerializer.getAndSet(null);
       if (oldValue instanceof ReflectionBasedAutoSerializer) {
-        asm.compareAndSet(AutoSerializableManager.getInstance((ReflectionBasedAutoSerializer) oldValue), null);
+        asm.compareAndSet((AutoSerializableManager) ((ReflectionBasedAutoSerializer) oldValue).getManager(), null);
       }
     } else {
       pdxSerializerWasSet = true;
       pdxSerializer.set(v);
       if (v instanceof ReflectionBasedAutoSerializer) {
-        asm.set(AutoSerializableManager.getInstance((ReflectionBasedAutoSerializer) v));
+        asm.set((AutoSerializableManager) ((ReflectionBasedAutoSerializer) v).getManager());
       }
     }
   }
@@ -483,8 +495,8 @@ public class TypeRegistry {
     this.distributedTypeRegistry.addImportedType(typeId, importedType);
     this.idToType.put(typeId, importedType);
     this.typeToId.put(importedType, typeId);
-    if (logger.isDebugEnabled()) {
-      logger.debug("Importing type: {}", importedType.toFormattedString());
+    if (logger.isInfoEnabled()) {
+      logger.info("Importing type: {}", importedType.toFormattedString());
     }
   }
 

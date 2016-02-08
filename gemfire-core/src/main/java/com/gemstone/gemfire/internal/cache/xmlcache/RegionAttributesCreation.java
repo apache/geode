@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
@@ -19,6 +28,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
+import com.gemstone.gemfire.cache.CustomEvictionAttributes;
 import com.gemstone.gemfire.cache.CustomExpiry;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
@@ -34,7 +44,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.util.BridgeClient;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -115,6 +124,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   * @since prPersistPrint2 
   * */
   private String diskStoreName;
+  private String hdfsStoreName;
+  private boolean hdfsWriteOnly = false;
   private boolean isDiskSynchronous = AttributesFactory.DEFAULT_DISK_SYNCHRONOUS;
   
   private boolean cloningEnabled = false;
@@ -175,6 +186,12 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
    */
   private Compressor compressor;
   
+  /**
+   * True if usage of off-heap memory is enabled for this region.
+   * @since 9.0
+   */
+  private boolean offHeap;
+
   private static RegionAttributes getDefaultAttributes(CacheCreation cc) {
     if (cc != null) {
       return cc.getDefaultAttributes();
@@ -255,7 +272,10 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     this.poolName = attrs.getPoolName();
     this.multicastEnabled = attrs.getMulticastEnabled();
     this.cloningEnabled = attrs.getCloningEnabled();
+	this.hdfsStoreName = attrs.getHDFSStoreName();
+    
     this.compressor = attrs.getCompressor();
+    this.offHeap = attrs.getOffHeap();
     if (attrs instanceof UserSpecifiedRegionAttributes) {
       UserSpecifiedRegionAttributes nonDefault = (UserSpecifiedRegionAttributes) attrs;
       this.requiresPoolName = nonDefault.requiresPoolName;
@@ -481,8 +501,15 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     if(this.cloningEnabled != other.getCloningEnabled()){
       throw new RuntimeException(LocalizedStrings.RegionAttributesCreation__CLONING_ENABLE_IS_NOT_THE_SAME_THIS_0_OTHER_1.toLocalizedString(new Object[] {Boolean.valueOf(this.cloningEnabled), Boolean.valueOf(other.getCloningEnabled())}));
     }
+ 	if (! equal(this.hdfsStoreName, other.getHDFSStoreName())) {
+      //TODO:HDFS write a new exception string
+      throw new RuntimeException(" HDFS Store name does not match");
+    }
     if(! equal(this.compressor, other.getCompressor())) {
       throw new RuntimeException("Compressors are not the same.");
+    }
+    if (this.offHeap != other.getOffHeap()) {
+      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_ENABLE_OFF_HEAP_MEMORY_IS_NOT_THE_SAME.toLocalizedString());
     }
     return true;
   }
@@ -495,10 +522,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     CacheLoader old = this.cacheLoader;
     this.cacheLoader = cacheLoader;
     setHasCacheLoader(true);
-    if (cacheLoader instanceof BridgeClient && !hasCacheWriter()) {
-      // fix for bug 36247
-      setCacheWriter((BridgeClient)cacheLoader);
-    }
     return old;
   }
 
@@ -510,10 +533,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     CacheWriter old = this.cacheWriter;
     this.cacheWriter = cacheWriter;
     setHasCacheWriter(true);
-    if (cacheWriter instanceof BridgeClient && !hasCacheLoader()) {
-      // fix for bug 36247
-      setCacheLoader((BridgeClient)cacheWriter);
-    }
     return old;
   }
 
@@ -1430,6 +1449,24 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         setDiskSynchronous(parent.isDiskSynchronous());
       }
     }
+    if (!hasHDFSStoreName()) {
+      if (parentIsUserSpecified) {
+        if (parentWithHas.hasHDFSStoreName()) {
+          setHDFSStoreName(parent.getHDFSStoreName());
+        }
+      } else {
+        setHDFSStoreName(parent.getHDFSStoreName());
+      }
+    }
+    if (!hasHDFSWriteOnly()) {
+      if (parentIsUserSpecified) {
+        if (parentWithHas.hasHDFSWriteOnly()) {
+          setHDFSWriteOnly(parent.getHDFSWriteOnly());
+        }
+      } else {
+        setHDFSWriteOnly(parent.getHDFSWriteOnly());
+      }
+    }
     
     if(!hasCompressor()) {
       if (parentIsUserSpecified) {
@@ -1513,8 +1550,16 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   {
     return this.evictionAttributes;
   }
-  
-  
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public CustomEvictionAttributes getCustomEvictionAttributes() {
+    // TODO: HDFS: no support for configuring this from XML yet
+    return null;
+  }
+
   public void setPoolName(String poolName) {
     if ("".equals(poolName)) {
       poolName = null;
@@ -1548,6 +1593,15 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   
   public Compressor getCompressor() {
     return this.compressor;
+  }
+  
+  public void setOffHeap(boolean offHeap) {
+    this.offHeap = offHeap;
+    setHasOffHeap(true);
+  }
+  
+  public boolean getOffHeap() {
+    return this.offHeap;
   }
   
   public void prepareForValidation() {
@@ -1597,5 +1651,21 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   
   public Set<String> getGatewaySenderIds() {
     return this.gatewaySenderIds;
+  }
+  public String getHDFSStoreName() {
+    return this.hdfsStoreName;
+  }
+  public void setHDFSStoreName(String hdfsStoreName) {
+    //TODO:HDFS : throw an exception if a disk store is already configured
+    // and vice versa
+    this.hdfsStoreName = hdfsStoreName;
+    setHasHDFSStoreName(true);
+  }
+  public void setHDFSWriteOnly(boolean writeOnly) {
+    this.hdfsWriteOnly= writeOnly;
+    setHasHDFSWriteOnly(true);
+  }
+  public boolean getHDFSWriteOnly() {
+    return hdfsWriteOnly;
   }
 }

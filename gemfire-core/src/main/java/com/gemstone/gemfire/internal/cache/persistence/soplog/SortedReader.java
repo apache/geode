@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.persistence.soplog;
 
@@ -11,6 +20,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Comparator;
+import org.apache.hadoop.io.RawComparator;
 
 /**
  * Defines a means to read sorted data including performing range scans.
@@ -62,20 +72,7 @@ public interface SortedReader<V> extends Closeable {
   /**
    * Allows comparisons between serialized objects.
    */
-  public interface SerializedComparator extends Comparator<byte[]> {
-    /**
-     * Compares two byte arrays, byte-by-byte according to the comparator contract.
-     * 
-     * @param bytes1 the first array
-     * @param start1 the first starting position
-     * @param length1 the first length
-     * @param bytes2 the second array
-     * @param start2 the second starting position
-     * @param length2 the second length
-     * @return -1, 0, 1 as bytes1 is <,=,> bytes2 
-     */
-    public int compare(byte[] bytes1, int start1, int length1, 
-        byte[] bytes2, int start2, int length2); 
+  public interface SerializedComparator extends RawComparator<byte[]> {
   }
   
   /**

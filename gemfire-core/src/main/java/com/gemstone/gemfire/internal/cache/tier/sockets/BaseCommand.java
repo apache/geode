@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /**
  *
@@ -38,25 +47,12 @@ import com.gemstone.gemfire.cache.CacheWriterException;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.TransactionDataNodeHasDepartedException;
-import com.gemstone.gemfire.cache.TransactionDataRebalancedException;
 import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.cache.operations.QueryOperationContext;
 import com.gemstone.gemfire.cache.persistence.PartitionOfflineException;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.internal.CqEntry;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.types.CollectionTypeImpl;
-import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
 import com.gemstone.gemfire.cache.query.types.CollectionType;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
@@ -82,11 +78,9 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * @author ashahid
@@ -262,8 +256,14 @@ public abstract class BaseCommand implements Command {
    * @param clientEvent
    */
   public boolean recoverVersionTagForRetriedOperation(EntryEventImpl clientEvent) {
-    LocalRegion r = clientEvent.getRegion();    
-    VersionTag tag = r.findVersionTagForClientEvent(clientEvent.getEventId());
+    LocalRegion r = clientEvent.getRegion();
+    VersionTag tag =  null;
+    if ((clientEvent.getVersionTag() != null) && (clientEvent.getVersionTag().isGatewayTag())) {
+      tag = r.findVersionTagForGatewayEvent(clientEvent.getEventId());
+    }
+    else {
+      tag = r.findVersionTagForClientEvent(clientEvent.getEventId());
+    }
     if (tag == null) {
       if (r instanceof DistributedRegion || r instanceof PartitionedRegion) {
         // TODO this could be optimized for partitioned regions by sending the key
@@ -362,6 +362,7 @@ public abstract class BaseCommand implements Command {
             new Object[] {servConn.getName(), servConn.getModRegion(), servConn.getModKey(), Integer.valueOf(transId)}));
         }
         else {
+          logger.debug("EOF exception", eof);
           logger.info(LocalizedMessage.create(
             LocalizedStrings.BaseCommand_0_CONNECTION_DISCONNECT_DETECTED_BY_EOF,
             servConn.getName()));
@@ -718,7 +719,7 @@ public abstract class BaseCommand implements Command {
     }
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(servConn);
-    origMsg.flush();
+    origMsg.clearParts();
   }
   
   protected static void writeResponseWithRefreshMetadata(Object data,
@@ -749,7 +750,7 @@ public abstract class BaseCommand implements Command {
     responseMsg.addBytesPart(new byte[]{pr.getMetadataVersion().byteValue(),nwHop});
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(servConn);
-    origMsg.flush();
+    origMsg.clearParts();
   }
 
   protected static void writeResponseWithFunctionAttribute(byte[] data,
@@ -761,7 +762,7 @@ public abstract class BaseCommand implements Command {
     responseMsg.addBytesPart(data);
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(servConn);
-    origMsg.flush();
+    origMsg.clearParts();
   }
   
   static protected void checkForInterrupt(ServerConnection servConn, Exception e) 
@@ -1145,7 +1146,7 @@ public abstract class BaseCommand implements Command {
    * Handles both RR and PR cases
    */
   @SuppressWarnings("rawtypes")
-  @SuppressFBWarnings(value="NP_NULL_PARAM_DEREF", justification="Null value handled in sendNewRegisterInterestResponseChunk()")
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="NP_NULL_PARAM_DEREF", justification="Null value handled in sendNewRegisterInterestResponseChunk()")
   private static void handleKVSingleton(LocalRegion region, Object entryKey,
       boolean serializeValues, ServerConnection servConn)
       throws IOException {
@@ -1158,7 +1159,7 @@ public abstract class BaseCommand implements Command {
         EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
         ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
         // From Get70.getValueAndIsObject()
-        Object data = region.get(entryKey, null, true, true, true, id, versionHolder, true);
+        Object data = region.get(entryKey, null, true, true, true, id, versionHolder, true, false);
         VersionTag vt = versionHolder.getVersionTag();
 
         updateValues(values, entryKey, data, vt);
@@ -1265,7 +1266,7 @@ public abstract class BaseCommand implements Command {
         }
 
         ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-        data = region.get(key, null, true, true, true, id, versionHolder, true);
+        data = region.get(key, null, true, true, true, id, versionHolder, true, false);
         versionTag = versionHolder.getVersionTag();
         updateValues(values, key, data, versionTag);
 
@@ -1358,7 +1359,7 @@ public abstract class BaseCommand implements Command {
       key = it.next();
       versionHolder = EntryEventImpl.createVersionTagHolder();
 
-      Object value = region.get(key, null, true, true, true, requestingClient, versionHolder, true);
+      Object value = region.get(key, null, true, true, true, requestingClient, versionHolder, true, false);
       
       updateValues(values, key, value, versionHolder.getVersionTag());
 
@@ -1393,13 +1394,21 @@ public abstract class BaseCommand implements Command {
           vt = ((EntrySnapshot) entry).getVersionTag();
           key = ((EntrySnapshot) entry).getRegionEntry().getKey();
           value = ((EntrySnapshot) entry).getRegionEntry().getValue(null);
+          updateValues(values, key, value, vt);
         } else {
           VersionStamp vs = ((NonTXEntry)entry).getRegionEntry().getVersionStamp();
           vt = vs == null ? null : vs.asVersionTag();
           key = entry.getKey();
-          value = ((NonTXEntry)entry).getRegionEntry()._getValue();
+          value = ((NonTXEntry)entry).getRegionEntry()._getValueRetain(region, true);
+          try {
+            updateValues(values, key, value, vt);
+          } finally {
+            // TODO OFFHEAP: in the future we might want to delay this release
+            // until the "values" VersionedObjectList is released.
+            // But for now "updateValues" copies the off-heap value to the heap.
+            OffHeapHelper.release(value);
+          }
         }
-        updateValues(values, key, value, vt);
       } else { // Map.Entry (remote entries)
         ArrayList list = (ArrayList)entry.getValue();
         Object value = list.get(0);
@@ -1557,7 +1566,7 @@ public abstract class BaseCommand implements Command {
           ClientProxyMembershipID id = servConn == null ? null : servConn
               .getProxyID();
           data = region.get(key, null, true, true, true, id, versionHolder,
-              true);
+              true, false);
           versionTag = versionHolder.getVersionTag();
           updateValues(values, key, data, versionTag);
 

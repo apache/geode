@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.distributed;
@@ -36,6 +45,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
+import com.gemstone.gemfire.redis.GemFireRedisServer;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 /**
@@ -54,10 +64,10 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *
  * When a program connects to the distributed system, a "distribution
  * manager" is started in this VM and the other members of the
- * distributed system are located.  This discovery can be performed
- * using either IP multicast (default) or by contacting "locators"
- * running on a given host and port.  All connections that are
- * configured to use the same multicast address/port and the same
+ * distributed system are located.  This discovery is performed
+ * by contacting "locators"
+ * running on a given host and port.  All DistributedSystems that are
+ * configured to use the same same
  * locators are part of the same distributed system.
  *
  * <P>
@@ -132,13 +142,10 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * <dl>
  *   <a name="mcast-port"><dt>mcast-port</dt></a>
  *   <dd><U>Description</U>: The port used for multicast networking.
- *   If zero, then multicast will be disabled and locators must be used to find the other members
- *   of the distributed system.
- *   If "mcast-port" is zero and "locators" is ""
- *   then this distributed system will be isolated from all other GemFire
- *   processes.
+ *   If zero, then multicast will be disabled and unicast messaging will
+ *   be used.
  *   </dd>
- *   <dd><U>Default</U>: "0" if locators is not ""; otherwise "10334"</dd>
+ *   <dd><U>Default</U>: "0"</dd>
  * </dl>
  *
  * <dl>
@@ -185,6 +192,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *    ratio should be before sending a recharge.  The rechargeBlockMs
  *    tells the sender how long to wait for a recharge before explicitly
  *    requesting one.</dd>
+ *   <dd><U>Deprecated</U>: as of 9.0 GemFire does not include a flow-of-control protocol for multicast messaging.</dd>
  *   <dd><U>Default</U>: "1048576,0.25,5000"</dd>
  *   <dd><U>Allowed values</U>: 100000-maxInt, 0.1-0.5, 500-60000</dd>
  *   <dd><U>Since</U>: 5.0</dd>
@@ -301,7 +309,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *   instead of a colon to separate the host name and bind address.
  *   For example, "server1@fdf0:76cf:a0ed:9449::5[12233]" specifies a locator
  *   running on "server1" and bound to fdf0:76cf:a0ed:9449::5 on port 12233.<p>
- *   If "mcast-port" is zero and "locators" is ""
+ *   If "locators" is empty
  *   then this distributed system will be isolated from all other GemFire
  *   processes.<p>
  *   </dd>
@@ -616,6 +624,18 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *   <dd><U>Default</U>: "false"</dd>
  * </dl>
  * 
+ * <dl>
+ *   <a name="max-wait-time-reconnect"><dt>max-wait-time-reconnect</dt></a>
+ *   <dd><U>Description</U>: Specifies the time in milliseconds to wait before each reconnect attempt when
+ *   a member of the distributed system is forced out of the system and auto-reconnect
+ *   is enabled (see <a href="#disable-auto-reconnect"><code>disable-auto-reconnect</code></a>) or if the deprecated required-roles
+ *   feature is being used and a role-loss has triggered a shutdown and reconnect.
+ *   </dd>
+ *   <dd><U>Default</U>: "60000"</dd>
+ *   <dd><U>Since</U>: 5.0</dd>
+ * </dl>
+ *
+ *
  * <b>Redundancy Management</b>
  * 
  * <dl>
@@ -765,10 +785,10 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *
  * <dl>
  *   <a name="max-wait-time-reconnect"><dt>max-wait-time-reconnect</dt></a>
- *   <dd><U>Description</U>: Specifies the maximum number of milliseconds
- *   to wait for the distributed system to reconnect in case of required role
- *   loss or forced disconnect. The system will attempt to <a href="#max-num-reconnect-tries">reconnect
- *   more than once</a>, and this timeout period applies to each reconnection attempt.
+ *   <dd><U>Description</U>: Specifies the time in milliseconds to wait before each reconnect attempt when
+ *   a member of the distributed system is forced out of the system and auto-reconnect
+ *   is enabled (see <a href="#disable-auto-reconnect"><code>disable-auto-reconnect</code></a>) or if the deprecated required-roles
+ *   feature is being used and a role-loss has triggered a shutdown and reconnect.
  *   </dd>
  *   <dd><U>Default</U>: "60000"</dd>
  *   <dd><U>Since</U>: 5.0</dd>
@@ -818,6 +838,27 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * <dl>
  *   <a name="memcached-bind-address"><dt>memcached-bind-address</dt></a>
  *   <dd><U>Description</U>: Specifies the bind address used by {@link GemFireMemcachedServer}</dd>
+ *   <dd><U>Default</U>: ""</dd>
+ * </dl>
+ * 
+ * <dl>
+ *   <a name="redis-port"><dt>redis-port</dt></a>
+ *   <dd><U>Description</U>: Specifies the port used by {@link GemFireRedisServer}
+ *   which enables redis clients to connect and store data in GemFire distributed system.
+ *   see {@link GemFireRedisServer} for other configuration options.</dd>
+ *   <dd><U>Default</U>: "0" disables GemFireMemcachedServer</dd>
+ *   <dd><U>Allowed values</U>: 0..65535</dd>
+ * </dl>
+ * 
+ * <dl>
+ *   <a name="redis-bind-address"><dt>redis-bind-address</dt></a>
+ *   <dd><U>Description</U>: Specifies the bind address used by {@link GemFireRedisServer}</dd>
+ *   <dd><U>Default</U>: ""</dd>
+ * </dl>
+ * 
+ * <dl>
+ *   <a name="redis-password"><dt>redis-password</dt></a>
+ *   <dd><U>Description</U>: Specifies the password to authenticate a client of {@link GemFireRedisServer}</dd>
  *   <dd><U>Default</U>: ""</dd>
  * </dl>
  * 
@@ -1060,7 +1101,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * 
  * <dl>
  *   <a name="http-service-port"><dt>http-service-port</dt></a>
- *   <dd><U>Description</U>: Specifies the port used by gemfire HTTP service. If
+ *   <dd><U>Description</U>: Specifies the port used by the GemFire HTTP service. If
  *   configured with non-zero value, then an HTTP service will listen on this port.
  *   A value of "0" disables Gemfire HTTP service.
  *   </dd>
@@ -1071,7 +1112,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *  
  * <dl>
  *   <a name="http-service-bind-address"><dt>http-service-bind-address</dt></a>
- *   <dd><U>Description</U>: The address where gemfire HTTP service will listen
+ *   <dd><U>Description</U>: The address where the GemFire HTTP service will listen
  *   for remote connections. One can use this property to configure what ip
  *   address or host name the HTTP service will listen on. When not set, by
  *   default the HTTP service will listen on the local host's address.
@@ -1173,6 +1214,21 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *   properties.</dd>
  *   <dd><U>Default</U>: "false"</dd>
  *   <dd><U>Since</U>: 8.0</dd>
+ * </dl>
+ * 
+ * <b>Off-Heap Memory</b>
+ * 
+ * <dl>
+ *   <a name="off-heap-memory-size"><dt>off-heap-memory-size</dt></a>
+ *   <dd><U>Description</U>: The total size of off-heap memory specified as
+ *   off-heap-memory-size=<n>[g|m]. <n> is the size. [g|m] indicates
+ *   whether the size should be interpreted as gigabytes or megabytes.
+ *   By default no off-heap memory is allocated.
+ *   A non-zero value will cause that much memory to be allocated from the operating
+ *   system and reserved for off-heap use.
+ *   </dd>
+ *   <dd><U>Default</U>: <code>""</code></dd>
+ *   <dd><U>Since</U>: 9.0</dd>
  * </dl>
  * 
  * <b>Cluster Configuration Service</b>
@@ -1389,6 +1445,17 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * <b>Miscellaneous</b> 
  *
  * <dl>
+ *   <a name="lock-memory"><dt>lock-memory</dt></a>
+ *   <dd><U>Description</U>: Include this option to lock GemFire heap and off-heap memory pages into RAM.
+ *   This prevents the operating system from swapping the pages out to disk, which can cause sever
+ *   performance degradation. When you use this command, also configure the operating system limits for
+ *   locked memory.
+ *   </dd>
+ *   <dd><U>Default</U>: <code>"false"</code></dd>
+ *   <dd><U>Since</U>: 9.0</dd>
+ * </dl>
+ * 
+ * <dl>
  *   <a name="deploy-working-dir"><dt>deploy-working-dir</dt></a>
  *   <dd><U>Description</U>: Specifies the working directory which this
  *   distributed member will use to persist deployed JAR files.  This directory
@@ -1536,32 +1603,34 @@ public abstract class DistributedSystem implements StatisticsFactory {
         }
 
       } else {
-        if (!existingSystems.isEmpty()) {
+        boolean existingSystemDisconnecting = true;
+        while (!existingSystems.isEmpty() && existingSystemDisconnecting) {
           Assert.assertTrue(existingSystems.size() == 1);
 
           InternalDistributedSystem existingSystem =
-            (InternalDistributedSystem) existingSystems.get(0);
-          if (existingSystem.isDisconnecting()) {
-            while (existingSystem.isConnected()) {
-              boolean interrupted = Thread.interrupted();
-              try {
-                existingSystemsLock.wait(500);
-              } 
-              catch (InterruptedException ex) {
-                interrupted = true;
-              }
-              finally {
-                if (interrupted) {
-                  Thread.currentThread().interrupt();
-                }
+              (InternalDistributedSystem) existingSystems.get(0);
+          existingSystemDisconnecting = existingSystem.isDisconnecting();
+          if (existingSystemDisconnecting) {
+            boolean interrupted = Thread.interrupted();
+            try {
+              // no notify for existingSystemsLock, just to release the sync
+              existingSystemsLock.wait(50);
+            } 
+            catch (InterruptedException ex) {
+              interrupted = true;
+            }
+            finally {
+              if (interrupted) {
+                Thread.currentThread().interrupt();
               }
             }
-          }
-
-          if (existingSystem.isConnected()) {
+          } else if (existingSystem.isConnected()) {
             existingSystem.validateSameProperties(config,
                 existingSystem.isConnected());
             return existingSystem;
+          } else {
+          // This should not happen: existingSystem.isConnected()==false && existingSystem.isDisconnecting()==false 
+            throw new AssertionError("system should not be disconnecting==false and isConnected==falsed");
           }
         }
       }
@@ -1875,26 +1944,59 @@ public abstract class DistributedSystem implements StatisticsFactory {
    */
   public abstract String getName();
 
-//   /**
-//    * Fires an "informational" <code>SystemMembershipEvent</code> that
-//    * is delivered to all {@link
-//    * com.gemstone.gemfire.admin.SystemMembershipListener}s.
-//    *
-//    * @param callback
-//    *        A user-specified object that is delivered with the {@link
-//    *        com.gemstone.gemfire.admin.SystemMembershipEvent}
-//    *        triggered by invoking this method.
-//    *
-//    * @see com.gemstone.gemfire.admin.SystemMembershipListener#memberInfo
-//    *
-//    * @since 4.0
-//    */
-//   public abstract void fireInfoEvent(Object callback);
+  /**
+   * The <code>PROPERTIES_FILE_PROPERTY</code> is the system property
+   * that can be used to specify the name of the properties file that the 
+   * connect method will check for when it looks for a properties file. Unless
+   * the value specifies the fully qualified path to the file, the file will 
+   * be searched for, in order, in the following directories:
+   * <ol>
+   * <li> the current directory
+   * <li> the home directory
+   * <li> the class path
+   * </ol>
+   * Only the first file found will be used.
+   * <p>
+   * The default value is {@link #PROPERTIES_FILE_DEFAULT}. However 
+   * if the <code>PROPERTIES_FILE_PROPERTY</code> is set then its value 
+   * will be used instead of the default. If this value is a relative file
+   * system path then the above search is done.  If it is an absolute
+   * file system path then that file must exist; no search for it is
+   * done.
+   * 
+   * @see #PROPERTIES_FILE_DEFAULT
+   * @see #getPropertiesFile()
+   * @since 9.0
+   */
+  public static final String PROPERTIES_FILE_PROPERTY = "gemfirePropertyFile";
+  
+  /** 
+   * The default value of <code>PROPERTIES_FILE_PROPERTY</code> is
+   * <code>"gemfire.properties"</code>. The location of the file will be 
+   * resolved during connect as described for {@link #PROPERTIES_FILE_PROPERTY}.
+   * 
+   * @see #PROPERTIES_FILE_PROPERTY
+   * @see #getPropertiesFile()
+   * @since 9.0
+   */
+  public static final String PROPERTIES_FILE_DEFAULT = "gemfire.properties";
 
   /**
+   * Returns the current value of {@link #PROPERTIES_FILE_PROPERTY} system 
+   * property if set or the default value {@link #PROPERTIES_FILE_DEFAULT}.
+   * 
+   * @see #PROPERTIES_FILE_PROPERTY
+   * @see #PROPERTIES_FILE_DEFAULT
+   * @since 9.0
+   */
+  public static String getPropertiesFile() {
+	return System.getProperty(PROPERTIES_FILE_PROPERTY, PROPERTIES_FILE_DEFAULT);
+  }
+  
+  /**
    * The <code>PROPERTY_FILE</code> is the name of the
-   * property file that the connect method will check for when
-   * it looks for a property file.
+   * properties file that the connect method will check for when
+   * it looks for a properties file.
    * The file will be searched for, in order, in the following directories:
    * <ol>
    * <li> the current directory
@@ -1910,60 +2012,139 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * system path then the above search is done.  If it is an absolute
    * file system path then that file must exist; no search for it is
    * done.
+   * 
+   * @see #getPropertiesFile()
    * @since 5.0
-   *  */
-  public static final String PROPERTY_FILE = System.getProperty("gemfirePropertyFile", "gemfire.properties");
+   * @deprecated As of 9.0, please use {@link #getPropertiesFile()} instead. 
+   */
+  public static String PROPERTY_FILE = getPropertiesFile();
 
   /**
-   * The <code>SECURITY_PROPERTY_FILE</code> is the name of the
-     * property file that the connect method will check for when
-     * it looks for a security property file.
-     * The file will be searched for, in order, in the following directories:
-     * <ol>
-     * <li> the current directory
-     * <li> the home directory
-     * <li> the class path
-     * </ol>
-     * Only the first file found will be used.
-     * <p>
-     * The default value of SECURITY_PROPERTY_FILE is
-     * <code>"gfsecurity.properties"</code>.  However if the
-     * "gemfireSecurityPropertyFile" system property is set then its value is
-     * the value of SECURITY_PROPERTY_FILE. If this value is a relative file
-     * system path then the above search is done.  If it is an absolute
-     * file system path then that file must exist; no search for it is
-     * done.
-     * @since 6.6.2
+   * The <code>SECURITY_PROPERTIES_FILE_PROPERTY</code> is the system property
+   * that can be used to specify the name of the property file that the 
+   * connect method will check for when it looks for a property file. Unless
+   * the value specifies the fully qualified path to the file, the file will 
+   * be searched for, in order, in the following directories:
+   * <ol>
+   * <li> the current directory
+   * <li> the home directory
+   * <li> the class path
+   * </ol>
+   * Only the first file found will be used.
+   * <p>
+   * The default value is {@link #SECURITY_PROPERTIES_FILE_DEFAULT}. However 
+   * if the <code>SECURITY_PROPERTIES_FILE_PROPERTY</code> is set then its value 
+   * will be used instead of the default. If this value is a relative file
+   * system path then the above search is done.  If it is an absolute
+   * file system path then that file must exist; no search for it is
+   * done.
+   * 
+   * @see #SECURITY_PROPERTIES_FILE_DEFAULT
+   * @see #getSecurityPropertiesFile()
+   * @since 9.0
    */
-  public static final String SECURITY_PROPERTY_FILE = System.getProperty("gemfireSecurityPropertyFile",
-    "gfsecurity.properties");
+  public static final String SECURITY_PROPERTIES_FILE_PROPERTY = "gemfireSecurityPropertyFile";
+  
+  /** 
+   * The default value of <code>SECURITY_PROPERTIES_FILE_PROPERTY</code> is
+   * <code>"gfsecurity.properties"</code>. The location of the file will be 
+   * resolved during connect as described for {@link #SECURITY_PROPERTIES_FILE_PROPERTY}.
+   * 
+   * @see #SECURITY_PROPERTIES_FILE_PROPERTY
+   * @see #getSecurityPropertiesFile()
+   * @since 9.0
+   */
+  public static final String SECURITY_PROPERTIES_FILE_DEFAULT = "gfsecurity.properties";
+
+  /**
+   * Returns the current value of {@link #SECURITY_PROPERTIES_FILE_PROPERTY} system 
+   * property if set or the default value {@link #SECURITY_PROPERTIES_FILE_DEFAULT}.
+   * 
+   * @see #SECURITY_PROPERTIES_FILE_PROPERTY
+   * @see #SECURITY_PROPERTIES_FILE_DEFAULT
+   * @since 9.0
+   */
+  public static String getSecurityPropertiesFile() {
+	return System.getProperty(SECURITY_PROPERTIES_FILE_PROPERTY, SECURITY_PROPERTIES_FILE_DEFAULT);
+  }
+  
+  /**
+   * The <code>SECURITY_PROPERTY_FILE</code> is the name of the
+   * property file that the connect method will check for when
+   * it looks for a security property file.
+   * The file will be searched for, in order, in the following directories:
+   * <ol>
+   * <li> the current directory
+   * <li> the home directory
+   * <li> the class path
+   * </ol>
+   * Only the first file found will be used.
+   * <p>
+   * The default value of SECURITY_PROPERTY_FILE is
+   * <code>"gfsecurity.properties"</code>.  However if the
+   * "gemfireSecurityPropertyFile" system property is set then its value is
+   * the value of SECURITY_PROPERTY_FILE. If this value is a relative file
+   * system path then the above search is done.  If it is an absolute
+   * file system path then that file must exist; no search for it is
+   * done.
+   * 
+   * @see #getSecurityPropertiesFile()
+   * @since 6.6.2
+   * @deprecated As of 9.0, please use {@link #getSecurityPropertiesFile()} instead. 
+   */
+  public static String SECURITY_PROPERTY_FILE = getSecurityPropertiesFile();
+
+  /**
+   * Gets an <code>URL</code> for the properties file, if one can be found,
+   * that the connect method will use as its properties file.
+   * <p>
+   * See {@link #PROPERTIES_FILE_PROPERTY} for information on the name of
+   * the properties file and what locations it will be looked for in.
+   * 
+   * @return a <code>URL</code> that names the GemFire property file.
+   *    Null is returned if no property file was found.
+   * @see #PROPERTIES_FILE_PROPERTY
+   * @see #PROPERTIES_FILE_DEFAULT
+   * @see #getPropertiesFile()
+   * @since 9.0
+   */
+  public static URL getPropertiesFileURL() {
+    return getFileURL(getPropertiesFile());
+  }
 
   /**
    * Gets an <code>URL</code> for the property file, if one can be found,
    * that the connect method will use as its property file.
    * <p>
-   * See {@link #PROPERTY_FILE} for information on the name of
+   * See {@link #PROPERTIES_FILE_PROPERTY} for information on the name of
    * the property file and what locations it will be looked for in.
+   * 
    * @return a <code>URL</code> that names the GemFire property file.
    *    Null is returned if no property file was found.
+   * @see #getPropertiesFileURL()
    * @since 5.0
+   * @deprecated As of 9.0, please use {@link #getPropertiesFileURL()}
    */
   public static URL getPropertyFileURL() {
-    return getFileURL(PROPERTY_FILE);
+    return getPropertiesFileURL();
   }
 
   /**
-   * Gets an <code>URL</code> for the security property file, if one can be found,
-   * that the connect method will use as its property file.
+   * Gets an <code>URL</code> for the security properties file, if one can be found,
+   * that the connect method will use as its properties file.
    * <p>
-   * See {@link #SECURITY_PROPERTY_FILE} for information on the name of
-   * the property file and what locations it will be looked for in.
-   * @return a <code>URL</code> that names the GemFire security property file.
-   *    Null is returned if no property file was found.
+   * See {@link #SECURITY_PROPERTIES_FILE_PROPERTY} for information on the name of
+   * the properties file and what locations it will be looked for in.
+   * 
+   * @return a <code>URL</code> that names the GemFire security properties file.
+   *    Null is returned if no properties file was found.
+   * @see #SECURITY_PROPERTIES_FILE_PROPERTY
+   * @see #SECURITY_PROPERTIES_FILE_DEFAULT
+   * @see #getSecurityPropertiesFile()
    * @since 6.6.2
    */
   public static URL getSecurityPropertiesFileURL() {
-    return getFileURL(SECURITY_PROPERTY_FILE);
+    return getFileURL(getSecurityPropertiesFile());
   }
 
   private static URL getFileURL(String fileName) {

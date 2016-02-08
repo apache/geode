@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed.internal;
 
@@ -12,27 +21,19 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.gemstone.gemfire.InternalGemFireException;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
@@ -48,26 +49,15 @@ import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.ServerLocationRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorDiscovery;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorHelper;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorJoinMessage;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListenerImpl;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinRequest;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinResponse;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingRequest;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingResponse;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorRequest;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorResponse;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.ConnectListener;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DisconnectListener;
+import com.gemstone.gemfire.distributed.internal.membership.MemberFactory;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.GFJGBasicAdapter;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMember;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.LocatorImpl;
+import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.locator.PeerLocatorRequest;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
@@ -94,11 +84,6 @@ import com.gemstone.gemfire.management.internal.configuration.handlers.SharedCon
 import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
-import com.gemstone.org.jgroups.Address;
-import com.gemstone.org.jgroups.JChannel;
-import com.gemstone.org.jgroups.stack.GossipData;
-import com.gemstone.org.jgroups.stack.GossipServer;
-import com.gemstone.org.jgroups.util.GemFireTracer;
 
 /**
  * Provides the implementation of a distribution <code>Locator</code>
@@ -140,6 +125,9 @@ public class InternalLocator extends Locator implements ConnectListener {
   
   /** system property name for inhibiting DM banner */
   public static final String INHIBIT_DM_BANNER = "Locator.inhibitDMBanner";
+  
+  /** system property name for forcing locators to be preferred as coordinators */
+  public static final String LOCATORS_PREFERRED_AS_COORDINATORS = "gemfire.disable-floating-coordinator";
 
   /////////////////////  Instance Fields  //////////////////////
 
@@ -178,8 +166,8 @@ public class InternalLocator extends Locator implements ConnectListener {
   //the system is started.
   private Properties env;
   
-  /** the gossip server used for peer location */
-  private LocatorImpl locatorImpl;
+  /** the TcpHandler used for peer location */
+  private NetLocator locatorImpl;
   
   private DistributionConfigImpl config;
   
@@ -188,15 +176,16 @@ public class InternalLocator extends Locator implements ConnectListener {
   /** whether the locator was stopped during forced-disconnect processing but a reconnect will occur */
   private volatile boolean stoppedForReconnect;
   
-  private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
+  /** whether the locator was stopped during forced-disconnect processing */
+  private volatile boolean forcedDisconnect;
   
-  private final ExecutorService _executor;
+  private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
   
   private SharedConfiguration sharedConfig;
   
   private volatile boolean isSharedConfigurationStarted = false; 
   
-  private Thread restartThread;
+  private volatile Thread restartThread;
   
   
   public boolean isSharedConfigurationEnabled() {
@@ -215,21 +204,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
   }
   
-  {
-    final LoggingThreadGroup loggingThreadGroup = LoggingThreadGroup.createThreadGroup(
-      "WAN Locator Discovery Logger Group", logger);
-
-    final ThreadFactory threadFactory = new ThreadFactory() {
-      public Thread newThread(final Runnable task) {
-        final Thread thread = new Thread(loggingThreadGroup, task, "WAN Locator Discovery Thread");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
-    this._executor = Executors.newCachedThreadPool(threadFactory);
-  }
-
   //////////////////////  Static Methods  /////////////////////
   
   /** the locator hosted by this JVM. As of 7.0 it is a singleton. */
@@ -352,15 +326,17 @@ public class InternalLocator extends Locator implements ConnectListener {
       String hostnameForClients, 
       boolean loadSharedConfigFromDir
       )
-      throws IOException
-    {
+      throws IOException {
     return startLocator(port, logFile, stateFile, logger, securityLogger, bindAddress, true, dsProperties, peerLocator, enableServerLocator, hostnameForClients, loadSharedConfigFromDir);
-    }
+  }
   
   
   /**
    * Creates a distribution locator that runs in this VM on the given
    * port and bind address.
+   * 
+   * This is for internal use only as it does not create a distributed
+   * system unless told to do so.
    * 
    * @param port
    *    the tcp/ip port to listen on
@@ -382,7 +358,6 @@ public class InternalLocator extends Locator implements ConnectListener {
    *    the name to give to clients for connecting to this locator
    * @param loadSharedConfigFromDir TODO:CONFIG
    * @throws IOException 
-   * @deprecated as of 7.0 use startLocator(int, File, File, InternalLogWriter, InternalLogWriter, InetAddress, java.util.Properties, boolean, boolean, String) instead.
    */
   public static InternalLocator startLocator(
     int port,
@@ -422,8 +397,13 @@ public class InternalLocator extends Locator implements ConnectListener {
       slocator.startPeerLocation(startDistributedSystem);
     }
     
-    if(startDistributedSystem) {
-      slocator.startDistributedSystem();
+    if (startDistributedSystem) {
+      try {
+        slocator.startDistributedSystem();
+      } catch (RuntimeException e) {
+        slocator.stop();
+        throw e;
+      }
       // fix bug #46324
       final InternalDistributedSystem ids = (InternalDistributedSystem)slocator.myDs;
       if (ids != null) {
@@ -438,7 +418,12 @@ public class InternalLocator extends Locator implements ConnectListener {
 //  }
     InternalDistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
     if (sys != null) {
-      slocator.startServerLocation(sys);
+      try {
+        slocator.startServerLocation(sys);
+      } catch (RuntimeException e) {
+        slocator.stop();
+        throw e;
+      }
     }
     
     slocator.endStartLocator(null);
@@ -548,7 +533,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     this.bindAddress = bindAddress;
     this.hostnameForClients = hostnameForClients;
     if (stateF == null) {
-      this.stateFile = new File("locator" + port + "state.dat");
+      this.stateFile = new File("locator" + port + "view.dat");
     }
     else {
       this.stateFile = stateF;
@@ -627,11 +612,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
     this.handler = new PrimaryHandler(this.port, this, locatorListener);
   
-    GemFireTracer tracer = GemFireTracer.getLog(InternalLocator.class);
-    tracer.setLogWriter(logWriter);
-    tracer.setSecurityLogWriter(securityLogWriter);
-    tracer.setLogger(LogService.getLogger(GemFireTracer.class));
-    
     ThreadGroup group = LoggingThreadGroup.createThreadGroup("Distribution locators", logger);
     stats = new LocatorStats();
     server = new TcpServer(this.port, this.bindAddress, null, this.config,
@@ -689,7 +669,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       String prop = this.config.getSecurityPeerAuthInit();
       locatorsAreCoordinators =  (prop != null && prop.length() > 0);
       if (!locatorsAreCoordinators) {
-        locatorsAreCoordinators = Boolean.getBoolean("gemfire.disable-floating-coordinator");
+        locatorsAreCoordinators = Boolean.getBoolean(LOCATORS_PREFERRED_AS_COORDINATORS);
       }
     }
     if (locatorsAreCoordinators) {
@@ -697,18 +677,9 @@ public class InternalLocator extends Locator implements ConnectListener {
       logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_FORCING_GROUP_COORDINATION_INTO_LOCATORS));
     }
     
-    // LOG: moved these into InternalDistributedSystem.initialize -- the only other code path constructs InternalLocator 1st which also sets these
-    //com.gemstone.org.jgroups.util.GemFireTracer.setLogWriter(this.logWriter);
-    //com.gemstone.org.jgroups.util.GemFireTracer
-    //    .setSecurityLogWriter(this.securityLogWriter);
-    
-    // install gemfire serialization and socket functions into jgroups
-    JChannel.setDefaultGFFunctions(new GFJGBasicAdapter());
-    this.locatorImpl = new LocatorImpl(port, EXPIRY_MS,
-        this.bindAddress, this.stateFile, locatorsProp, locatorsAreCoordinators,
-        networkPartitionDetectionEnabled, withDS
-        );
-    this.handler.addHandler(GossipData.class, this.locatorImpl);
+    this.locatorImpl = MemberFactory.newLocatorHandler(this.bindAddress, this.stateFile,
+        locatorsProp, locatorsAreCoordinators, networkPartitionDetectionEnabled, stats);
+    this.handler.addHandler(PeerLocatorRequest.class, this.locatorImpl);
     peerLocator = true;
     if(!server.isAlive()) {
       startTcpServer();
@@ -716,9 +687,9 @@ public class InternalLocator extends Locator implements ConnectListener {
   }
 
   /**
-   * @return the gossipServer
+   * @return the TcpHandler for peer to peer discovery
    */
-  public LocatorImpl getLocatorHandler() {
+  public NetLocator getLocatorHandler() {
     return this.locatorImpl;
   }
   
@@ -765,21 +736,9 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (existing != null) {
       // LOG: changed from config to info
       logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_USING_EXISTING_DISTRIBUTED_SYSTEM__0, existing));
-      if (getLocatorHandler() != null) {
-        // let the GossipServer know the system's address so they can start
-        // servicing requests
-        Address addr = ((JGroupMember)existing.getDistributedMember().getNetMember()).getAddress();
-        getLocatorHandler().setLocalAddress(addr);
-      }
-      // don't set the ds variable, so it won't be closed by the locator shutting down
-     
       startCache(existing);
     }
     else {
-      if (System.getProperty("p2p.joinTimeout", "").length() == 0) {
-          System.setProperty("p2p.joinTimeout", "5000");
-        }
-
       String thisLocator;
       {
         StringBuilder sb = new StringBuilder(100);
@@ -836,10 +795,14 @@ public class InternalLocator extends Locator implements ConnectListener {
 
         myDs = (InternalDistributedSystem)DistributedSystem.connect(connectEnv);
         
+        if (peerLocator) {
+          this.locatorImpl.setMembershipManager(myDs.getDM().getMembershipManager());
+        }
+        
         myDs.addDisconnectListener(new DisconnectListener() {
           @Override
           public void onDisconnect(InternalDistributedSystem sys) {
-            stop(false, false);
+            stop(false, false, false);
           }
         });
         
@@ -951,7 +914,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    */
   @Override
   public void stop() {
-    stop(false, true);
+    stop(false, false, true);
   }
   
   /**
@@ -967,7 +930,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param stopForReconnect - stopping for distributed system reconnect
    * @param waitForDisconnect - wait up to 60 seconds for the locator to completely stop
    */
-  public void stop(boolean stopForReconnect, boolean waitForDisconnect) {
+  public void stop(boolean forcedDisconnect, boolean stopForReconnect, boolean waitForDisconnect) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (this.server.isShuttingDown()) {
       // fix for bug 46156
@@ -996,6 +959,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       return;
     }
     this.stoppedForReconnect = stopForReconnect;
+    this.forcedDisconnect = forcedDisconnect;
     
     if (this.server.isAlive()) {
       logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STOPPING__0, this));
@@ -1006,7 +970,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       }
       boolean interrupted = Thread.interrupted();
       try {
-        this.server.join(60 * 1000);
+        this.server.join(TcpServer.SHUTDOWN_WAIT_TIME * 1000 + 10000);
   
       } catch (InterruptedException ex) {
         interrupted = true;
@@ -1052,7 +1016,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (myDs != null) {
       ((InternalDistributedSystem)myDs).setDependentLocator(null);
     }
-    if (this.myCache != null && !this.stoppedForReconnect) {
+    if (this.myCache != null && !this.stoppedForReconnect && !this.forcedDisconnect) {
       logger.info("Closing locator's cache");
       try {
         this.myCache.close();
@@ -1064,13 +1028,13 @@ public class InternalLocator extends Locator implements ConnectListener {
     if(stats != null) {
       stats.close();
     }
-
+    
     if(this.locatorListener != null){
       this.locatorListener.clearLocatorInfo();
     }
     
     this.isSharedConfigurationStarted = false;
-    if (myDs != null && !this.stoppedForReconnect) {
+    if (myDs != null && !this.forcedDisconnect) {
       if (myDs.isConnected()) {
         logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_DISCONNECTING_DISTRIBUTED_SYSTEM_FOR_0, this));
         myDs.disconnect();
@@ -1089,7 +1053,23 @@ public class InternalLocator extends Locator implements ConnectListener {
       restarted = false;
       this.server.join();
       if (this.stoppedForReconnect) {
+        logger.info("waiting for distributed system to disconnect...");
+        while (this.myDs.isConnected()) {
+          Thread.sleep(5000);
+        }
+        logger.info("waiting for distributed system to reconnect...");
         restarted = this.myDs.waitUntilReconnected(-1, TimeUnit.SECONDS);
+        if (restarted) {
+          logger.info("system restarted");
+        } else {
+          logger.info("system was not restarted");
+        }
+        Thread rs = this.restartThread;
+        if (rs != null) {
+          logger.info("waiting for services to restart...");
+          rs.join();
+          this.restartThread = null;
+        }
       }
     } while (restarted);
   }
@@ -1100,7 +1080,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     ThreadGroup group = LoggingThreadGroup.createThreadGroup("Locator restart thread group");
     this.restartThread = new Thread(group, "Location services restart thread") {
       public void run() {
-        boolean restarted;
+        boolean restarted = false;
         try {
           restarted = attemptReconnect();
           logger.info("attemptReconnect returned {}", restarted);
@@ -1108,6 +1088,10 @@ public class InternalLocator extends Locator implements ConnectListener {
           logger.info("attempt to restart location services was interrupted", e);
         } catch (IOException e) {
           logger.info("attempt to restart location services terminated", e);
+        } finally {
+          if (! restarted) {
+            stoppedForReconnect = false;
+          }
         }
         InternalLocator.this.restartThread = null;
       }
@@ -1174,6 +1158,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         restarted = true;
       }
     }
+    logger.info("restart thread exiting.  Service was "+(restarted? "" : "not ") + "restarted");
     return restarted;
   }
   
@@ -1340,13 +1325,20 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
 
     public Object processRequest(Object request) throws IOException {
-      TcpHandler handler = (TcpHandler)handlerMapping.get(request.getClass());
+      TcpHandler handler = null;
+      if (request instanceof PeerLocatorRequest) {
+        handler = (TcpHandler)handlerMapping.get(PeerLocatorRequest.class);
+      }
+      else {
+        handler = (TcpHandler)handlerMapping.get(request.getClass());
+      }
+      
       if (handler != null) {
         Object result;
         result = handler.processRequest(request);
         return result;
       }
-      else {
+      else {  
         Object response;
         if(locatorListener != null){
           response = locatorListener.handleRequest(request);

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -44,12 +53,12 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
           new DummyCancelCriterion(),
           new DummyDiskExceptionHandler(),
           null, drv.getFlags(), drv.getPartitionName(), drv.getStartingBucketId(),
-          drv.getCompressorClassName());
+          drv.getCompressorClassName(), drv.getOffHeap());
     setConfig(drv.getLruAlgorithm(), drv.getLruAction(), drv.getLruLimit(),
               drv.getConcurrencyLevel(), drv.getInitialCapacity(),
               drv.getLoadFactor(), drv.getStatisticsEnabled(),
               drv.isBucket(), drv.getFlags(), drv.getPartitionName(), drv.getStartingBucketId(),
-              drv.getCompressorClassName());
+              drv.getCompressorClassName(), drv.getOffHeap());
   }
   
   static ValidatingDiskRegion create(DiskStoreImpl dsi, DiskRegionView drv) {
@@ -144,7 +153,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     public Token getValueAsToken() {
       return null;
     }
-    public Object _getValueUse(RegionEntryContext context, boolean decompress) {
+    public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
       return null;
     }
     
@@ -156,9 +165,20 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
       throw new IllegalStateException("should never be called");
     }
     
+    @Override
     public void setValueWithContext(RegionEntryContext context,Object value) {
       throw new IllegalStateException("should never be called");
     }    
+    @Override
+    public void handleValueOverflow(RegionEntryContext context) {throw new IllegalStateException("should never be called");}
+    
+    @Override
+    public void afterValueOverflow(RegionEntryContext context) {throw new IllegalStateException();}
+    
+    @Override
+    public Object prepareValueForCache(RegionEntryContext r, Object val, boolean isEntryUpdate) {
+      throw new IllegalStateException("Should never be called");
+    }
 
     public void _removePhase1() {
       throw new IllegalStateException("should never be called");
@@ -297,6 +317,10 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
       return null;
     }
     @Override
+    public Object getValueRetain(RegionEntryContext context) {
+      return null;
+    }
+    @Override
     public void setValue(RegionEntryContext context, Object value)
         throws RegionClearedException {
       // TODO Auto-generated method stub
@@ -384,6 +408,19 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
       // TODO Auto-generated method stub
     }
     @Override
+    public boolean isMarkedForEviction() {
+      // TODO Auto-generated method stub
+      return false;
+    }
+    @Override
+    public void setMarkedForEviction() {
+      // TODO Auto-generated method stub
+    }
+    @Override
+    public void clearMarkedForEviction() {
+      // TODO Auto-generated method stub
+    }
+    @Override
     public boolean isInvalid() {
       // TODO Auto-generated method stub
       return false;
@@ -446,6 +483,11 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     }
     @Override
     public void resetRefCount(NewLRUClockHand lruList) {
+    }
+    @Override
+    public Object prepareValueForCache(RegionEntryContext r, Object val,
+        EntryEventImpl event, boolean isEntryUpdate) {
+      throw new IllegalStateException("Should never be called");
     }
   }
 

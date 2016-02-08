@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.cache.control;
@@ -16,7 +25,6 @@ import com.gemstone.gemfire.cache.LowMemoryException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.server.CacheServer;
 
 /**
  * Provides support for managing resources used by the local
@@ -42,7 +50,7 @@ public interface ResourceManager {
    * @see ResourceManager#setCriticalHeapPercentage(float)
    * @see ResourceManager#getCriticalHeapPercentage()
    */
-  public static final float DEFAULT_CRITICAL_HEAP_PERCENTAGE = 0.0f;
+  public static final float DEFAULT_CRITICAL_PERCENTAGE = 0.0f;
 
   /**
    * The default percent of heap memory at which the VM should begin evicting
@@ -55,8 +63,8 @@ public interface ResourceManager {
    * @see ResourceManager#setEvictionHeapPercentage(float)
    * @see ResourceManager#getEvictionHeapPercentage()
    */
-  public static final float DEFAULT_EVICTION_HEAP_PERCENTAGE = 0.0f;
-  
+  public static final float DEFAULT_EVICTION_PERCENTAGE = 0.0f;
+
   /**
    * Creates a factory for defining and starting {@link RebalanceOperation
    * RebalanceOperations}.
@@ -125,7 +133,7 @@ public interface ResourceManager {
    * @since 6.0
    */
   public void setCriticalHeapPercentage(float heapPercentage);
-
+  
   /**
    * Get the percentage of heap at or above which the cache is considered in
    * danger of becoming inoperable.
@@ -136,6 +144,48 @@ public interface ResourceManager {
    * @since 6.0
    */
   public float getCriticalHeapPercentage();
+  
+  /**
+   * Set the percentage of off-heap at or above which the cache is considered in
+   * danger of becoming inoperable due to out of memory exceptions.
+   *
+   * <p>
+   * Changing this value can cause {@link LowMemoryException} to be thrown from
+   * the following {@link Cache} operations:
+   * <ul>
+   * <li>{@link Region#put(Object, Object)}
+   * <li>{@link Region#put(Object, Object, Object)}
+   * <li>{@link Region#create(Object, Object)}
+   * <li>{@link Region#create(Object, Object, Object)}
+   * <li>{@link Region#putAll(java.util.Map)}
+   * <li>{@linkplain QueryService#createIndex(String, com.gemstone.gemfire.cache.query.IndexType, String, String) index creation}
+   * <li>Execution of {@link Function}s whose {@link Function#optimizeForWrite()} returns true.
+   * </ul>
+   *
+   * <p>
+   * Only one change to this attribute or the eviction off-heap percentage will be
+   * allowed at any given time and its effect will be fully realized before the
+   * next change is allowed.
+   *
+   * @param offHeapPercentage a percentage of the maximum off-heap memory available
+   * @throws IllegalStateException if the ofHeapPercentage value is not >= 0 or
+   * <= 100 or when less than the current eviction off-heap percentage
+   * @see #getCriticalOffHeapPercentage()
+   * @see #getEvictionOffHeapPercentage()
+   * @since 9.0
+   */
+  public void setCriticalOffHeapPercentage(float offHeapPercentage);
+  
+  /**
+   * Get the percentage of off-heap at or above which the cache is considered in
+   * danger of becoming inoperable.
+   *
+   * @return either the current or recently used percentage of the maximum
+   * off-heap memory
+   * @see #setCriticalOffHeapPercentage(float)
+   * @since 9.0
+   */
+  public float getCriticalOffHeapPercentage();
 
   /**
    * Set the percentage of heap at or above which the eviction should begin on
@@ -161,7 +211,7 @@ public interface ResourceManager {
    * @since 6.0
    */
   public void setEvictionHeapPercentage(float heapPercentage);
-
+  
   /**
    * Get the percentage of heap at or above which the eviction should begin on
    * Regions configured for {@linkplain 
@@ -173,4 +223,38 @@ public interface ResourceManager {
    * @since 6.0
    */
   public float getEvictionHeapPercentage();
+
+  /**
+   * Set the percentage of off-heap at or above which the eviction should begin on
+   * Regions configured for {@linkplain 
+   * EvictionAttributes#createLRUHeapAttributes() HeapLRU eviction}.
+   *
+   * <p>
+   * Changing this value may cause eviction to begin immediately.
+   *
+   * <p>
+   * Only one change to this attribute or critical off-heap percentage will be
+   * allowed at any given time and its effect will be fully realized before the
+   * next change is allowed.
+   * 
+   * @param offHeapPercentage a percentage of the maximum off-heap memory available
+   * @throws IllegalStateException if the offHeapPercentage value is not >= 0 or 
+   * <= 100 or when greater than the current critical off-heap percentage.
+   * @see #getEvictionOffHeapPercentage()
+   * @see #getCriticalOffHeapPercentage()
+   * @since 9.0
+   */
+  public void setEvictionOffHeapPercentage(float offHeapPercentage);
+  
+  /**
+   * Get the percentage of off-heap at or above which the eviction should begin on
+   * Regions configured for {@linkplain 
+   * EvictionAttributes#createLRUHeapAttributes() HeapLRU eviction}.
+   *
+   * @return either the current or recently used percentage of the maximum 
+   * off-heap memory
+   * @see #setEvictionOffHeapPercentage(float)
+   * @since 9.0
+   */
+  public float getEvictionOffHeapPercentage();
 }

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
@@ -21,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +61,6 @@ import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.query.CqAttributes;
@@ -72,7 +81,6 @@ import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.util.BridgeServer;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
@@ -83,9 +91,15 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSIntegrationUtil;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreCreation;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreFactoryImpl;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
+import com.gemstone.gemfire.internal.cache.CacheService;
 import com.gemstone.gemfire.internal.cache.DiskStoreFactoryImpl;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -119,7 +133,7 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
  *
  * @since 3.0
  */
-public class CacheCreation implements InternalCache, Extensible<Cache> {
+public class CacheCreation implements InternalCache {
 
   /** The amount of time to wait for a distributed lock */
   private int lockTimeout = GemFireCacheImpl.DEFAULT_LOCK_TIMEOUT;
@@ -185,6 +199,7 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
    * This is important for unit testing 44914.
    */
   protected final Map diskStores = new LinkedHashMap();
+  protected final Map hdfsStores = new LinkedHashMap();
   
   private final List<File> backups = new ArrayList<File>();
 
@@ -210,6 +225,11 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
    */
   public CacheCreation() {
     this(false);
+  }
+  
+  /** clear thread locals that may have been set by previous uses of CacheCreation */
+  public static void clearThreadLocals() {
+    createInProgress = new ThreadLocal<>();
   }
 
   /**
@@ -342,7 +362,7 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
    * Used from PoolManager to defer to CacheCreation as a manager of pools.
    * @since 5.7
    */
-  private static final ThreadLocal createInProgress = new ThreadLocal();
+  private static ThreadLocal createInProgress = new ThreadLocal();
 
   /**
    * Returns null if the current thread is not doing a CacheCreation create.
@@ -493,7 +513,14 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
                 receiver);
       }
     }
-    
+
+    for(Iterator iter = this.hdfsStores.entrySet().iterator(); iter.hasNext(); ) {
+      Entry entry = (Entry) iter.next();
+      HDFSStoreCreation hdfsStoreCreation = (HDFSStoreCreation) entry.getValue();
+      HDFSStoreFactory storefactory = cache.createHDFSStoreFactory(hdfsStoreCreation);
+      storefactory.create((String) entry.getKey());
+    }
+
     cache.initializePdxRegistry();
 
     
@@ -504,6 +531,19 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
         (RegionAttributesCreation) getRegionAttributes(id);
       creation.inheritAttributes(cache, false);
 
+      // TODO: HDFS: HDFS store/queue will be mapped against region path and not
+      // the attribute id; don't really understand what this is trying to do
+      if (creation.getHDFSStoreName() != null)
+      {
+        HDFSStoreImpl store = cache.findHDFSStore(creation.getHDFSStoreName());
+        if(store == null) {
+          HDFSIntegrationUtil.createDefaultAsyncQueueForHDFS((Cache)cache, creation.getHDFSWriteOnly(), id);
+        }
+      }
+      if (creation.getHDFSStoreName() != null && creation.getPartitionAttributes().getColocatedWith() == null) {
+        creation.addAsyncEventQueueId(HDFSStoreFactoryImpl.getEventQueueName(id));
+      }
+      
       RegionAttributes attrs;
       // Don't let the RegionAttributesCreation escape to the user
       AttributesFactory factory = new AttributesFactory(creation);
@@ -512,11 +552,7 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
       cache.setRegionAttributes(id, attrs);
     }
 
-    Iterator it = this.roots.values().iterator();
-    while (it.hasNext()) {
-      RegionCreation r = (RegionCreation)it.next();
-      r.createRoot(cache);
-    }
+    initializeRegions(this.roots, cache);
 
     cache.readyDynamicRegionFactory();
 
@@ -528,38 +564,76 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
     Integer serverPort = CacheServerLauncher.getServerPort();
     String serverBindAdd = CacheServerLauncher.getServerBindAddress();
     Boolean disableDefaultServer = CacheServerLauncher.disableDefaultServer.get();
+    startCacheServers(this.getCacheServers(), cache, serverPort, serverBindAdd, disableDefaultServer);
+    cache.setBackupFiles(this.backups);
+    cache.addDeclarableProperties(this.declarablePropertiesMap);
+    runInitializer();
+    cache.setInitializer(getInitializer(), getInitializerProps());
     
-    if (this.getCacheServers().size() > 1
+    // UnitTest CacheXml81Test.testCacheExtension
+    // Create all extensions
+    extensionPoint.fireCreate(cache);
+  }
+
+  protected void initializeRegions(Map declarativeRegions, Cache cache) {
+    Iterator it = declarativeRegions.values().iterator();
+    while (it.hasNext()) {
+      RegionCreation r = (RegionCreation)it.next();
+      r.createRoot(cache);
+    }
+  }
+
+  /**
+   * starts declarative cache servers if a server is not running on the port already.
+   * Also adds a default server to the param declarativeCacheServers if a serverPort is specified.
+   */
+  protected void startCacheServers(List declarativeCacheServers, Cache cache, Integer serverPort, String serverBindAdd, Boolean disableDefaultServer) {
+
+    if (declarativeCacheServers.size() > 1
         && (serverPort != null || serverBindAdd != null)) {
       throw new RuntimeException(
           LocalizedStrings.CacheServerLauncher_SERVER_PORT_MORE_THAN_ONE_CACHE_SERVER
               .toLocalizedString());
     }
-    
-    if (this.getCacheServers().isEmpty()
+
+    if (declarativeCacheServers.isEmpty()
         && (serverPort != null || serverBindAdd != null)
         && (disableDefaultServer == null || !disableDefaultServer)) {
       boolean existingCacheServer = false;
-      
+
       List<CacheServer> cacheServers = cache.getCacheServers();
       if (cacheServers != null) {
         for(CacheServer cacheServer : cacheServers) {
-          if (serverPort == cacheServer.getPort() && cacheServer.getBindAddress().equals(serverBindAdd)) {
+          if (serverPort == cacheServer.getPort()) {
             existingCacheServer = true;
           }
         }
       }
       
       if (!existingCacheServer) {
-        this.getCacheServers().add(new BridgeServerCreation(cache, false));
+        declarativeCacheServers.add(new CacheServerCreation((GemFireCacheImpl)cache, false));
       }
     }
     
-    for (Iterator iter = this.getCacheServers().iterator(); iter.hasNext();) {
-      BridgeServerCreation bridge = (BridgeServerCreation)iter.next();
-      
-      BridgeServerImpl impl = (BridgeServerImpl)cache.addCacheServer();
-      impl.configureFrom(bridge);
+    for (Iterator iter = declarativeCacheServers.iterator(); iter.hasNext();) {
+      CacheServerCreation declaredCacheServer = (CacheServerCreation)iter.next();
+
+      boolean startServer = true;
+      List<CacheServer> cacheServers = cache.getCacheServers();
+      if (cacheServers != null) {
+        for (CacheServer cacheServer : cacheServers) {
+          if (declaredCacheServer.getPort() == cacheServer.getPort()) {
+            startServer = false;
+          }
+        }
+      }
+
+      if (!startServer) {
+        continue;
+      }
+
+      CacheServerImpl impl = (CacheServerImpl)cache.addCacheServer();
+      impl.configureFrom(declaredCacheServer);
 
       if (serverPort != null && serverPort != CacheServer.DEFAULT_PORT) {
         impl.setPort(serverPort);
@@ -575,18 +649,10 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
       }
       catch (IOException ex) {
         throw new GemFireIOException(
-            LocalizedStrings.CacheCreation_WHILE_STARTING_BRIDGE_SERVER_0
+            LocalizedStrings.CacheCreation_WHILE_STARTING_CACHE_SERVER_0
                 .toLocalizedString(impl), ex);
       }
     }
-    cache.setBackupFiles(this.backups);
-    cache.addDeclarableProperties(this.declarablePropertiesMap);
-    runInitializer();
-    cache.setInitializer(getInitializer(), getInitializerProps());
-    
-    // UnitTest CacheXml81Test.testCacheExtension
-    // Create all extensions
-    extensionPoint.fireCreate(cache);
   }
 
   /**
@@ -651,10 +717,7 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
         if (drc2 == null) {
           return false;
         }
-        if (!RegionAttributesCreation.equal(drc1.getDiskDir(), drc2.getDiskDir())) {
-          return false;
-        }
-        if (!RegionAttributesCreation.equal(drc1.getBridgeWriter(), drc2.getBridgeWriter())) {
+        if (!drc1.equals(drc2)) {
           return false;
         }
       } else {
@@ -674,12 +737,12 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
       Collection myBridges = this.getCacheServers();
       Collection otherBridges = other.getCacheServers();
       if (myBridges.size() != otherBridges.size()) {
-        throw new RuntimeException(LocalizedStrings.CacheCreation_BRIDGESERVERS_SIZE.toLocalizedString());
+        throw new RuntimeException(LocalizedStrings.CacheCreation_CACHESERVERS_SIZE.toLocalizedString());
       }
 
       for (Iterator myIter = myBridges.iterator(); myIter.hasNext(); ) {
-        BridgeServerCreation myBridge =
-          (BridgeServerCreation) myIter.next();
+        CacheServerCreation myBridge =
+          (CacheServerCreation) myIter.next();
         boolean found = false;
         for (Iterator otherIter = otherBridges.iterator();
              otherIter.hasNext(); ) {
@@ -691,7 +754,7 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
         }
 
         if (!found) {
-          throw new RuntimeException(LocalizedStrings.CacheCreation_BRIDGE_0_NOT_FOUND.toLocalizedString(myBridge));
+          throw new RuntimeException(LocalizedStrings.CacheCreation_CACHE_SERVER_0_NOT_FOUND.toLocalizedString(myBridge));
         }
       }
 
@@ -702,22 +765,22 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
           : PoolManager.getAll();
         int m1Size = m1.size();
         {
-          // ignore any BridgePool instances
+          // ignore any gateway instances
           Iterator it1 = m1.values().iterator();
           while (it1.hasNext()) {
             Pool cp = (Pool)it1.next();
-            if (cp instanceof BridgePoolImpl || ((PoolImpl)cp).isUsedByGateway()) {
+            if (((PoolImpl)cp).isUsedByGateway()) {
               m1Size--;
             }
           }
         }
         int m2Size = m2.size();
         {
-          // ignore any BridgePool instances
+          // ignore any gateway instances
           Iterator it2 = m2.values().iterator();
           while (it2.hasNext()) {
             Pool cp = (Pool)it2.next();
-            if (cp instanceof BridgePoolImpl || ((PoolImpl)cp).isUsedByGateway()) {
+            if (((PoolImpl)cp).isUsedByGateway()) {
               m2Size--;
             }
           }
@@ -741,8 +804,8 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
           Iterator it1 = m1.values().iterator();
           while (it1.hasNext()) {
             PoolImpl cp = (PoolImpl)it1.next();
-            // ignore any BridgePool instances
-            if (!(cp instanceof BridgePoolImpl) && !(cp).isUsedByGateway()) {
+            // ignore any gateway instances
+            if (!(cp).isUsedByGateway()) {
               cp.sameAs(m2.get(cp.getName()));
             }
           }
@@ -956,17 +1019,12 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
     return (Region)this.roots.get(path);
   }
 
-  @SuppressWarnings("deprecation")
-  public BridgeServer addBridgeServer() {
-    return (BridgeServer)addCacheServer();
-  }
-  
   public CacheServer addCacheServer() {
     return addCacheServer(false);
   }
   
   public CacheServer addCacheServer(boolean isGatewayReceiver) {
-    CacheServer bridge = new BridgeServerCreation(this, false);
+    CacheServer bridge = new CacheServerCreation(this, false);
     this.bridgeServers.add(bridge);
     return bridge;
   }
@@ -975,9 +1033,6 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
     this.declarablePropertiesMap.put(declarable, properties);
   }
   
-  public List getBridgeServers() {
-    return getCacheServers();
-  }
   public List getCacheServers() {
     return this.bridgeServers;
   }
@@ -1361,6 +1416,15 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
     return extensionPoint;
   }
   
+  @Override
+  public Collection<HDFSStoreImpl> getHDFSStores() {
+    return this.hdfsStores.values();
+  }
+
+  public void addHDFSStore(String name, HDFSStoreCreation hs) {
+    this.hdfsStores.put(name, hs);
+  }
+
   
 
   @Override
@@ -1616,6 +1680,11 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
     public boolean clearDefinedIndexes() {
       throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
     }
-
+    
   };
+
+  @Override
+  public <T extends CacheService> T getService(Class<T> clazz) {
+    throw new UnsupportedOperationException();
+  }
 }

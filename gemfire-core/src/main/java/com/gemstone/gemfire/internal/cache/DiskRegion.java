@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -14,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.compression.Compressor;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl.AsyncDiskEntry;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIIStatus;
@@ -80,7 +90,7 @@ public class DiskRegion extends AbstractDiskRegion {
                        DiskExceptionHandler exceptionHandler,
                        RegionAttributes ra, EnumSet<DiskRegionFlag> flags,
                        String partitionName, int startingBucketId, 
-                       String compressorClassName) {
+                       String compressorClassName,  boolean offHeap) {
     super(ds, name);
     if(this.getPartitionName() != null){
       // I think this code is saying to prefer the recovered partitionName and startingBucketId.
@@ -174,7 +184,7 @@ public class DiskRegion extends AbstractDiskRegion {
                 ra.getLoadFactor(),
                 ra.getStatisticsEnabled(),
                 isBucket, flags, partitionName, startingBucketId,
-                compressorClassName);
+                compressorClassName, offHeap);
     }
     
     if(!isBucket) {
@@ -191,12 +201,12 @@ public class DiskRegion extends AbstractDiskRegion {
                            DiskExceptionHandler exceptionHandler,
                            RegionAttributes ra, EnumSet<DiskRegionFlag> flags,
                            String partitionName, int startingBucketId,
-                           Compressor compressor) {
+                           Compressor compressor, boolean offHeap) {
     return dsi.getDiskInitFile().createDiskRegion(dsi, name, isBucket, isPersistBackup,
                                                   overflowEnabled, isSynchronous,
                                                   stats, cancel, exceptionHandler, ra, flags,
                                                   partitionName, startingBucketId,
-                                                  compressor);
+                                                  compressor, offHeap);
   }
 
   public CancelCriterion getCancelCriterion() {
@@ -231,6 +241,12 @@ public class DiskRegion extends AbstractDiskRegion {
    */
   public DiskRegionStats getStats() {
     return this.stats;
+  }
+
+  @Override
+  public void incNumOverflowBytesOnDisk(long delta) {
+    getStats().incNumOverflowBytesOnDisk(delta);
+    super.incNumOverflowBytesOnDisk(delta);
   }
 
   @Override
@@ -352,9 +368,6 @@ public class DiskRegion extends AbstractDiskRegion {
    *
    * @param entry
    *          The entry which is going to be written to disk
-   * @param isSerializedObject
-   *                Do the bytes in <code>value</code> contain a serialized
-   *                object (or an actually <code>byte</code> array)?
    * @throws RegionClearedException
    *                 If a clear operation completed before the put operation
    *                 completed successfully, resulting in the put operation to
@@ -362,10 +375,10 @@ public class DiskRegion extends AbstractDiskRegion {
    * @throws IllegalArgumentException
    *         If <code>id</code> is less than zero
    */
-  final void put(DiskEntry entry, LocalRegion region, byte[] value, boolean isSerializedObject, boolean async)
+  final void put(DiskEntry entry, LocalRegion region, ValueWrapper value, boolean async)
       throws  RegionClearedException
   {
-    getDiskStore().put(region, entry, value, isSerializedObject, async);
+    getDiskStore().put(region, entry, value, async);
   }
     
   /**
@@ -516,10 +529,13 @@ public class DiskRegion extends AbstractDiskRegion {
       BucketRegion owner=(BucketRegion)region;
       long curInVM = owner.getNumEntriesInVM()*-1;
       long curOnDisk = owner.getNumOverflowOnDisk()*-1;
+      long curOnDiskBytes = owner.getNumOverflowBytesOnDisk()*-1;
       incNumEntriesInVM(curInVM);
       incNumOverflowOnDisk(curOnDisk);
+      incNumOverflowBytesOnDisk(curOnDiskBytes);
       owner.incNumEntriesInVM(curInVM);
       owner.incNumOverflowOnDisk(curOnDisk);
+      owner.incNumOverflowBytesOnDisk(curOnDiskBytes);
     } else {
       // set them both to zero
       incNumEntriesInVM(getNumEntriesInVM()*-1);
@@ -851,5 +867,10 @@ public class DiskRegion extends AbstractDiskRegion {
     } finally {
       releaseReadLock();
     }
+  }
+
+  @Override
+  public void close() {
+    // nothing needed
   }
 }

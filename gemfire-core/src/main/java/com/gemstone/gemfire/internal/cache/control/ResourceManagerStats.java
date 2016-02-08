@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.control;
 
@@ -14,7 +23,6 @@ import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
 import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
 import com.gemstone.gemfire.distributed.internal.QueueStatHelper;
-import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 
 /**
@@ -28,6 +36,7 @@ public class ResourceManagerStats {
   
   private static final int rebalancesInProgressId;
   private static final int rebalancesCompletedId;
+  private static final int autoRebalanceAttemptsId;
   private static final int rebalanceTimeId;
   private static final int rebalanceBucketCreatesInProgressId;
   private static final int rebalanceBucketCreatesCompletedId;
@@ -50,12 +59,17 @@ public class ResourceManagerStats {
   private static final int rebalancePrimaryTransferTimeId;
   private static final int rebalanceMembershipChanges;
   private static final int heapCriticalEventsId;
+  private static final int offHeapCriticalEventsId;
   private static final int heapSafeEventsId;
+  private static final int offHeapSafeEventsId;
   private static final int evictionStartEventsId;
-  private static final int evictMoreEventsId;
+  private static final int offHeapEvictionStartEventsId;
   private static final int evictionStopEventsId;
+  private static final int offHeapEvictionStopEventsId;
   private static final int criticalThresholdId;
+  private static final int offHeapCriticalThresholdId;
   private static final int evictionThresholdId;
+  private static final int offHeapEvictionThresholdId;
   private static final int tenuredHeapUsageId;
   private static final int resourceEventsDeliveredId;
   private static final int resourceEventQueueSizeId;
@@ -77,6 +91,10 @@ public class ResourceManagerStats {
               "rebalancesCompleted",
               "Total number of cache rebalance operations directed by this process.",
               "operations"),
+            f.createIntCounter(
+                "autoRebalanceAttempts",
+                "Total number of cache auto-rebalance attempts.",
+                "operations"),
             f.createLongCounter(
               "rebalanceTime",
               "Total time spent directing cache rebalance operations.",
@@ -172,29 +190,49 @@ public class ResourceManagerStats {
                 "Total number of times the heap usage went over critical threshold.",
                 "events"),
             f.createIntGauge(
+                "offHeapCriticalEvents",
+                "Total number of times off-heap usage went over critical threshold.",
+                "events"),
+            f.createIntGauge(
                 "heapSafeEvents", 
                 "Total number of times the heap usage fell below critical threshold.",
+                "events"),
+            f.createIntGauge(
+                "offHeapSafeEvents", 
+                "Total number of times off-heap usage fell below critical threshold.",
                 "events"),
             f.createIntGauge(
                 "evictionStartEvents",
                 "Total number of times heap usage went over eviction threshold.",
                 "events"),
-            f.createIntCounter(
-                "evictMoreEvents",
-                "Total number of times evict more event was delivered",
+            f.createIntGauge(
+                "offHeapEvictionStartEvents",
+                "Total number of times off-heap usage went over eviction threshold.",
                 "events"),
             f.createIntGauge(
                 "evictionStopEvents",
                 "Total number of times heap usage fell below eviction threshold.",
                 "events"),
+            f.createIntGauge(
+                "offHeapEvictionStopEvents",
+                "Total number of times off-heap usage fell below eviction threshold.",
+                "events"),
             f.createLongGauge(
                 "criticalThreshold",
-                "The currently set critical threshold value in bytes",
+                "The currently set heap critical threshold value in bytes",
+                "bytes"),
+            f.createLongGauge(
+                "offHeapCriticalThreshold",
+                "The currently set off-heap critical threshold value in bytes",
                 "bytes"),
             f.createLongGauge(
                 "evictionThreshold", 
-                "The currently set eviction threshold value in bytes",
+                "The currently set heap eviction threshold value in bytes",
                 "bytes"),
+            f.createLongGauge(
+                "offHeapEvictionThreshold", 
+                "The currently set off-heap eviction threshold value in bytes",
+                "bytes"),            
             f.createLongGauge(
                 "tenuredHeapUsed",
                 "Total memory used in the tenured/old space",
@@ -215,6 +253,7 @@ public class ResourceManagerStats {
     
     rebalancesInProgressId = type.nameToId("rebalancesInProgress");
     rebalancesCompletedId = type.nameToId("rebalancesCompleted");
+    autoRebalanceAttemptsId = type.nameToId("autoRebalanceAttempts");
     rebalanceTimeId = type.nameToId("rebalanceTime");
     rebalanceBucketCreatesInProgressId = type.nameToId("rebalanceBucketCreatesInProgress");
     rebalanceBucketCreatesCompletedId = type.nameToId("rebalanceBucketCreatesCompleted");
@@ -237,12 +276,17 @@ public class ResourceManagerStats {
     rebalancePrimaryTransferTimeId = type.nameToId("rebalancePrimaryTransferTime");
     rebalanceMembershipChanges = type.nameToId("rebalanceMembershipChanges");
     heapCriticalEventsId = type.nameToId("heapCriticalEvents");
+    offHeapCriticalEventsId = type.nameToId("offHeapCriticalEvents");
     heapSafeEventsId = type.nameToId("heapSafeEvents");
+    offHeapSafeEventsId = type.nameToId("offHeapSafeEvents");
     evictionStartEventsId = type.nameToId("evictionStartEvents");
-    evictMoreEventsId = type.nameToId("evictMoreEvents");
+    offHeapEvictionStartEventsId = type.nameToId("offHeapEvictionStartEvents");
     evictionStopEventsId = type.nameToId("evictionStopEvents");
+    offHeapEvictionStopEventsId = type.nameToId("offHeapEvictionStopEvents");
     criticalThresholdId = type.nameToId("criticalThreshold");
+    offHeapCriticalThresholdId = type.nameToId("offHeapCriticalThreshold");
     evictionThresholdId = type.nameToId("evictionThreshold");
+    offHeapEvictionThresholdId = type.nameToId("offHeapEvictionThreshold");
     tenuredHeapUsageId = type.nameToId("tenuredHeapUsed");
     resourceEventsDeliveredId = type.nameToId("resourceEventsDelivered");
     resourceEventQueueSizeId = type.nameToId("resourceEventQueueSize");
@@ -262,6 +306,10 @@ public class ResourceManagerStats {
   public long startRebalance() {
     this.stats.incInt(rebalancesInProgressId, 1);
     return System.nanoTime();
+  }
+  
+  public void incAutoRebalanceAttempts() {
+    this.stats.incInt(autoRebalanceAttemptsId, 1);
   }
   
   public void endRebalance(long start) {
@@ -344,6 +392,9 @@ public class ResourceManagerStats {
   public int getRebalancesCompleted() {
     return this.stats.getInt(rebalancesCompletedId);
   }
+  public int getAutoRebalanceAttempts() {
+    return this.stats.getInt(autoRebalanceAttemptsId);
+  }
   public long getRebalanceTime() {
     return this.stats.getLong(rebalanceTimeId);
   }
@@ -401,9 +452,17 @@ public class ResourceManagerStats {
   public void incHeapCriticalEvents() {
     this.stats.incInt(heapCriticalEventsId, 1);
   }
-
+  
   public int getHeapCriticalEvents() {
     return this.stats.getInt(heapCriticalEventsId);
+  }
+  
+  public void incOffHeapCriticalEvents() {
+    this.stats.incInt(offHeapCriticalEventsId, 1);
+  }
+  
+  public int getOffHeapCriticalEvents() {
+    return this.stats.getInt(offHeapCriticalEventsId);
   }
   
   public void incHeapSafeEvents() {
@@ -414,6 +473,14 @@ public class ResourceManagerStats {
     return this.stats.getInt(heapSafeEventsId);
   }
   
+  public void incOffHeapSafeEvents() {
+    this.stats.incInt(offHeapSafeEventsId, 1);
+  }
+  
+  public int getOffHeapSafeEvents() {
+    return this.stats.getInt(offHeapSafeEventsId);
+  }
+  
   public void incEvictionStartEvents() {
     this.stats.incInt(evictionStartEventsId, 1);
   }
@@ -421,21 +488,29 @@ public class ResourceManagerStats {
   public int getEvictionStartEvents() {
     return this.stats.getInt(evictionStartEventsId);
   }
-
-  public void incEvictMoreEvents() {
-    this.stats.incInt(evictMoreEventsId, 1);
+  
+  public void incOffHeapEvictionStartEvents() {
+    this.stats.incInt(offHeapEvictionStartEventsId, 1);
   }
-
-  public int getEvictMoreEvents() {
-    return this.stats.getInt(evictMoreEventsId);
+  
+  public int getOffHeapEvictionStartEvents() {
+    return this.stats.getInt(offHeapEvictionStartEventsId);
   }
-
+  
   public void incEvictionStopEvents() {
     this.stats.incInt(evictionStopEventsId, 1);
   }
   
   public int getEvictionStopEvents() {
     return this.stats.getInt(evictionStopEventsId);
+  }
+  
+  public void incOffHeapEvictionStopEvents() {
+    this.stats.incInt(offHeapEvictionStopEventsId, 1);
+  }
+  
+  public int getOffHeapEvictionStopEvents() {
+    return this.stats.getInt(offHeapEvictionStopEventsId);
   }
   
   public void changeCriticalThreshold(long newValue) {
@@ -446,12 +521,28 @@ public class ResourceManagerStats {
     return this.stats.getLong(criticalThresholdId);    
   }
   
+  public void changeOffHeapCriticalThreshold(long newValue) {
+    this.stats.setLong(offHeapCriticalThresholdId, newValue);
+  }
+  
+  public long getOffHeapCriticalThreshold() {
+    return this.stats.getLong(offHeapCriticalThresholdId);    
+  }
+  
   public void changeEvictionThreshold(long newValue) {
     this.stats.setLong(evictionThresholdId, newValue);
   }
   
   public long getEvictionThreshold() {
     return this.stats.getLong(evictionThresholdId);
+  }
+  
+  public void changeOffHeapEvictionThreshold(long newValue) {
+    this.stats.setLong(offHeapEvictionThresholdId, newValue);
+  }
+  
+  public long getOffHeapEvictionThreshold() {
+    return this.stats.getLong(offHeapEvictionThresholdId);
   }
   
   public void changeTenuredHeapUsed(long newValue) {
@@ -484,14 +575,17 @@ public class ResourceManagerStats {
    */
   public QueueStatHelper getResourceEventQueueStatHelper() {
     return new QueueStatHelper() {
+      @Override
       public void add() {
         incResourceEventQueueSize(1);
       }
 
+      @Override
       public void remove() {
         incResourceEventQueueSize(-1);
       }
 
+      @Override
       public void remove(int count) {
         incResourceEventQueueSize(-1 * count);
       }
@@ -500,9 +594,11 @@ public class ResourceManagerStats {
   
   public PoolStatHelper getResourceEventPoolStatHelper() {
     return new PoolStatHelper() {
+      @Override
       public void endJob() {
         incThresholdEventProcessorThreadJobs(-1);
       }
+      @Override
       public void startJob() {
         incThresholdEventProcessorThreadJobs(1);
       }

@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.shell;
 
@@ -28,9 +36,9 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import jline.ConsoleReader;
 import jline.Terminal;
 
+import jline.console.ConsoleReader;
 import org.springframework.shell.core.AbstractShell;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Converter;
@@ -163,6 +171,8 @@ public class Gfsh extends JLineShell {
   private final ANSIHandler       ansiHandler;
   private       Terminal          terminal;
   private final boolean           isHeadlessMode;
+  private       boolean           supressScriptCmdOutput;
+  private       boolean           isScriptRunning;
 
   private AbstractSignalNotificationHandler signalHandler;
   //This flag is used to restrict column trimming to table only types
@@ -305,6 +315,7 @@ public class Gfsh extends JLineShell {
       synchronized (INSTANCE_LOCK) {
         if (instance == null) {
           instance = new Gfsh(launchShell, args, gfshConfig);
+          instance.executeInitFileIfPresent();
         }
       }
     }
@@ -344,12 +355,31 @@ public class Gfsh extends JLineShell {
     runner.join();
   }
 
+  /* If an init file is provided, as a system property or in the default
+   * location, run it as a command script.
+   */
+  private void executeInitFileIfPresent() {
+
+    String initFileName = this.gfshConfig.getInitFileName();
+    if (initFileName != null) {
+      this.gfshFileLogger.info("Using " + initFileName);
+      try {
+        File gfshInitFile = new File(initFileName);
+        boolean continueOnError = false;
+        this.executeScript(gfshInitFile, isQuietMode(), continueOnError);
+      } catch (Exception exception) {
+        this.gfshFileLogger.severe(initFileName, exception);
+        setLastExecutionStatus(-1);
+      }
+    }
+
+  }
+
   //////////////////// JLineShell Class Methods Start //////////////////////////
   //////////////////////// Implemented Methods ////////////////////////////////
   /**
    * See findResources in {@link AbstractShell}
    */
-  @Override
   protected Collection<URL> findResources(String resourceName) {
 //    return Collections.singleton(ClassPathLoader.getLatest().getResource(resourceName));
     return null;
@@ -389,7 +419,7 @@ public class Gfsh extends JLineShell {
    * @return true if execution is successful; false otherwise
    */
   @Override
-  public boolean executeCommand(final String line) {
+  public boolean executeScriptLine(final String line) {
     boolean success = false;
     String withPropsExpanded = line;
 
@@ -409,7 +439,7 @@ public class Gfsh extends JLineShell {
       if (gfshFileLogger.fineEnabled()) {
         gfshFileLogger.fine(logMessage + withPropsExpanded);
       }
-      success = super.executeCommand(withPropsExpanded);
+      success = super.executeScriptLine(withPropsExpanded);
     } catch (Exception e) {
       //TODO: should there be a way to differentiate error in shell & error on
       //server. May be by exception type.
@@ -500,10 +530,18 @@ public class Gfsh extends JLineShell {
           // results
           CliUtil.runLessCommandAsExternalViewer(commandResult, isError);
         } else {
-          while (commandResult.hasNextLine()) {
-            write(commandResult.nextLine(), isError);
+          if (!isScriptRunning) {
+            // Normal Command
+            while (commandResult.hasNextLine()) {
+              write(commandResult.nextLine(), isError);
+            }
+          } else if (!supressScriptCmdOutput) {
+            // Command is part of script. Show output only when quite=false
+            while (commandResult.hasNextLine()) {
+              write(commandResult.nextLine(), isError);
+            }
           }
-        } 
+        }
         
         resultTypeTL.set(null);
 
@@ -594,12 +632,12 @@ public class Gfsh extends JLineShell {
   ///////////////////// JLineShell Class Methods End  //////////////////////////
 
   public int getTerminalHeight() {
-    return terminal != null ? terminal.getTerminalHeight() : DEFAULT_HEIGHT;
+    return terminal != null ? terminal.getHeight() : DEFAULT_HEIGHT;
   }
 
   public int getTerminalWidth() {
     if (terminal != null) {
-      return terminal.getTerminalWidth();
+      return terminal.getWidth();
     }
 
     Map<String, String> env = System.getenv();
@@ -719,8 +757,11 @@ public class Gfsh extends JLineShell {
     Result result = null;
     String initialIsQuiet = getEnvProperty(ENV_APP_QUIET_EXECUTION);
     try {
+      this.isScriptRunning = true;  
       if (scriptFile == null) {
         throw new IllegalArgumentException("Given script file is null.");
+      } else if (!scriptFile.exists()) {
+        throw new IllegalArgumentException("Given script file does not exist.");
       } else if (scriptFile.exists() && scriptFile.isDirectory()) {
         throw new IllegalArgumentException(scriptFile.getPath() + " is a directory.");
       }
@@ -728,6 +769,7 @@ public class Gfsh extends JLineShell {
       ScriptExecutionDetails scriptInfo = new ScriptExecutionDetails(scriptFile.getPath());
       if (scriptFile.exists()) {
         setEnvProperty(ENV_APP_QUIET_EXECUTION, String.valueOf(quiet));
+        this.supressScriptCmdOutput = quiet;
         BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
         String lineRead = "";
         StringBuilder linesBuffer = new StringBuilder();
@@ -762,7 +804,7 @@ public class Gfsh extends JLineShell {
                 ++commandSrNum;
                 Gfsh.println(commandSrNum+". Executing - " + cmdLet);                
                 Gfsh.println();
-                boolean executeSuccess = executeCommand(cmdLet);
+                boolean executeSuccess = executeScriptLine(cmdLet);
                 if (!executeSuccess) {
                   setLastExecutionStatus(-1);
                 }
@@ -795,6 +837,7 @@ public class Gfsh extends JLineShell {
     } finally {
       // reset to original Quiet Execution value
       setEnvProperty(ENV_APP_QUIET_EXECUTION, initialIsQuiet);
+      this.isScriptRunning = false;
     }
 
     return result;
@@ -878,7 +921,7 @@ public class Gfsh extends JLineShell {
       readLine = reader.readLine(prompt);
     } catch (IndexOutOfBoundsException e) {
       if (earlierLine.length() == 0) {
-        reader.printNewline();
+        reader.println();
         readLine = LINE_SEPARATOR;
         reader.getCursorBuffer().cursor = 0;
       } else {
@@ -1184,6 +1227,9 @@ class ScriptExecutionDetails {
       CommandAndStatus commandAndStatus = commandAndStatusList.get(i);
       section.addData("Command-"+String.valueOf(commandSrNo), commandAndStatus.command);
       section.addData("Status", commandAndStatus.status);
+      if (commandAndStatus.status.equals("FAILED")) {
+        compositeResultData.setStatus(com.gemstone.gemfire.management.cli.Result.Status.ERROR);
+      }
       if (i != this.commandAndStatusList.size()) {
         section.setFooter(Gfsh.LINE_SEPARATOR);
       }

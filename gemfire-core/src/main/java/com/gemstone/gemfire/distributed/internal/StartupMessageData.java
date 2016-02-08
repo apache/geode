@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed.internal;
 
@@ -33,14 +42,13 @@ import com.gemstone.gemfire.internal.GemFireVersion;
  */
 class StartupMessageData {
 
-  static final String SUPPORTED_VERSION = "6.6.3";
   static final String HOSTED_LOCATORS = "HL";
   static final String COMMA_DELIMITER = ",";
   static final String MCAST_PORT = "MP";
   static final String MCAST_HOST_ADDRESS = "MHA";
   static final String IS_SHARED_CONFIG_ENABLED = "ISCE";
   
-  private final Properties optionalFields;
+  private Properties optionalFields;
   
   /**
    * Constructs a new instance with empty Properties. After construction
@@ -53,23 +61,8 @@ class StartupMessageData {
     this.optionalFields = new Properties();
   }
   
-  /**
-   * Constructs a new instance which deserializes any optional fields it
-   * finds in the DataInput (from the wire) if the specified version is
-   * greater than or equal to the minimum {@link #SUPPORTED_VERSION}.
-   * 
-   * @throws ClassNotFoundException
-   * @throws IOException
-   */
-  StartupMessageData(DataInput in, String version) throws ClassNotFoundException, IOException {
-    // [bruce] commenting this out for the GemFireXD Cheetah 1.0 release.  It should be removed
-    // from the GemFire Cedar branch as well.  Future versioning work should use the
-    // version ordinal found in the DataInput passed to fromData methods.
-//    if (GemFireVersion.compareVersions(version, StartupMessageData.SUPPORTED_VERSION) >= 0) {
-      this.optionalFields = (Properties) DataSerializer.readObject(in);
-//    } else {
-//      this.optionalFields = null;
-//    }
+  public void readFrom(DataInput in) throws ClassNotFoundException, IOException {
+    this.optionalFields = DataSerializer.readObject(in);
   }
 
   /**
@@ -206,7 +199,7 @@ class StartupMessageData {
    * 
    * @throws IOException
    */
-  void toData(DataOutput out) throws IOException {
+  void writeTo(DataOutput out) throws IOException {
     if (this.optionalFields.isEmpty()) {
       DataSerializer.writeObject(null, out);
     } else {

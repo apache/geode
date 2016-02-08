@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
@@ -15,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,6 +60,7 @@ import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.lang.ClassUtils;
+import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.PersistentMemberDetails;
@@ -98,7 +108,7 @@ import com.gemstone.gemfire.management.internal.messages.CompactRequest;
  */
 @SuppressWarnings("unused")
 public class DiskStoreCommands extends AbstractCommandsSupport {
-
+  
   @Override
   protected Set<DistributedMember> getMembers(final Cache cache) {
     // TODO determine what this does (as it is untested and unmockable!)
@@ -580,6 +590,9 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
       List<String> commandList = new ArrayList<String>();
       commandList.add(System.getProperty("java.home") + File.separatorChar + "bin"+ File.separatorChar + "java");
+      
+      configureLogging(commandList);
+          
       if (jvmProps != null && jvmProps.length != 0) {
         for (int i = 0; i < jvmProps.length; i++) {
           commandList.add(jvmProps[i]);
@@ -722,6 +735,9 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
       List<String> commandList = new ArrayList<String>();
       commandList.add(System.getProperty("java.home") + File.separatorChar + "bin"+ File.separatorChar + "java");
+
+      configureLogging(commandList);
+
       if (jvmProps != null && jvmProps.length != 0) {
         for (int i = 0; i < jvmProps.length; i++) {
           commandList.add(jvmProps[i]);
@@ -1127,6 +1143,11 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
     }
   }
   
+  private void configureLogging(final List<String> commandList) {
+    URL configUrl = LogService.class.getResource(LogService.CLI_CONFIG);
+    String configFilePropertyValue = configUrl.toString();
+    commandList.add("-Dlog4j.configurationFile=" + configFilePropertyValue);
+  }
 
   @CliCommand(value=CliStrings.VALIDATE_DISK_STORE, help=CliStrings.VALIDATE_DISK_STORE__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_DISKSTORE}) //offline command
@@ -1135,11 +1156,16 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
                   help=CliStrings.VALIDATE_DISK_STORE__NAME__HELP)
                   String diskStoreName,
       @CliOption(key=CliStrings.VALIDATE_DISK_STORE__DISKDIRS,
-                 mandatory=true,
-                 unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,                 
-                 help=CliStrings.VALIDATE_DISK_STORE__DISKDIRS__HELP)
+                  mandatory=true,
+                  unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,                 
+                  help=CliStrings.VALIDATE_DISK_STORE__DISKDIRS__HELP)
       @CliMetaData (valueSeparator = ",")
-                  String[] diskDirs) {   
+                  String[] diskDirs,
+      @CliOption(key=CliStrings.VALIDATE_DISK_STORE__J,
+                  unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
+                  help=CliStrings.VALIDATE_DISK_STORE__J__HELP)
+      @CliMetaData (valueSeparator = ",")
+      String[] jvmProps) {   
     try {
       String resultString = new String();
       
@@ -1153,6 +1179,20 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       List<String> commandList = new ArrayList<String>();
       commandList.add(System.getProperty("java.home") + File.separatorChar
           + "bin" + File.separatorChar + "java");
+
+      configureLogging(commandList);
+      
+      if (jvmProps != null && jvmProps.length != 0) {
+        for (int i = 0; i < jvmProps.length; i++) {
+          commandList.add(jvmProps[i]);
+        }
+      }
+      
+      //Pass any java options on to the command
+      String opts = System.getenv("JAVA_OPTS");
+      if (opts != null) {
+        commandList.add(opts);
+      }
       commandList.add("-classpath");
       commandList.add(System.getProperty("java.class.path", "."));
       commandList.add(DiskStoreValidater.class.getName());
@@ -1182,6 +1222,8 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       return ResultBuilder
           .createGemFireErrorResult(CliStrings.format(CliStrings.VALIDATE_DISK_STORE__MSG__IO_ERROR,diskStoreName, ex.getMessage() ));
     } catch (Exception ex) {
+//      StringPrintWriter s = new StringPrintWriter();
+//      ex.printStackTrace(s);
       return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.VALIDATE_DISK_STORE__MSG__ERROR,diskStoreName, ex.getMessage()));
     }
 
@@ -1206,20 +1248,19 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       mandatory=true)
       @CliMetaData (valueSeparator = ",")
       String[] diskDirs,
-      @CliOption  (key=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM,
-      help=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM__HELP)
-      String lruEvictionAlgo,
-      @CliOption  (key=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ACTION,
-      help=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ACTION__HELP)
-      String lruEvictionAction,
-      @CliOption  (key=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__LIMIT,
+      @CliOption  (key=CliStrings.ALTER_DISK_STORE__COMPRESSOR,
       unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
-      help=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__LIMIT__HELP)
-      Integer lruEvictionLimit,
+      specifiedDefaultValue="none",
+      help=CliStrings.ALTER_DISK_STORE__COMPRESSOR__HELP)
+      String compressorClassName,
       @CliOption  (key=CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL,
       unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
       help=CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL__HELP)
       Integer concurrencyLevel,
+      @CliOption  (key=CliStrings.ALTER_DISK_STORE__STATISTICS__ENABLED,
+      unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
+      help=CliStrings.ALTER_DISK_STORE__STATISTICS__ENABLED__HELP)
+      Boolean statisticsEnabled, 
       @CliOption  (key=CliStrings.ALTER_DISK_STORE__INITIAL__CAPACITY,
       unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
       help=CliStrings.ALTER_DISK_STORE__INITIAL__CAPACITY__HELP)
@@ -1228,15 +1269,20 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
       help=CliStrings.ALTER_DISK_STORE__LOAD__FACTOR__HELP)
       Float loadFactor,
-      @CliOption  (key=CliStrings.ALTER_DISK_STORE__COMPRESSOR,
+      @CliOption  (key=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ACTION,
+      help=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ACTION__HELP)
+      String lruEvictionAction,
+      @CliOption  (key=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM,
+      help=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM__HELP)
+      String lruEvictionAlgo,
+      @CliOption  (key=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__LIMIT,
       unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
-      specifiedDefaultValue="none",
-      help=CliStrings.ALTER_DISK_STORE__COMPRESSOR__HELP)
-      String compressorClassName,
-      @CliOption  (key=CliStrings.ALTER_DISK_STORE__STATISTICS__ENABLED,
+      help=CliStrings.ALTER_DISK_STORE__LRU__EVICTION__LIMIT__HELP)
+      Integer lruEvictionLimit,
+      @CliOption  (key=CliStrings.ALTER_DISK_STORE__OFF_HEAP,
       unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
-      help=CliStrings.ALTER_DISK_STORE__STATISTICS__ENABLED__HELP)
-      Boolean statisticsEnabled, 
+      help=CliStrings.ALTER_DISK_STORE__OFF_HEAP__HELP)
+      Boolean offHeap, 
       @CliOption  (key=CliStrings.ALTER_DISK_STORE__REMOVE,
       help=CliStrings.ALTER_DISK_STORE__REMOVE__HELP,
       mandatory = false,
@@ -1267,6 +1313,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           (initialCapacity != null) ||
           (loadFactor != null) ||
           (compressorClassName != null) ||
+          (offHeap != null) ||
           (statisticsEnabled != null)
           ) {
         if (!remove) {
@@ -1275,6 +1322,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           String initialCapacityString = initialCapacity == null ? null : initialCapacity.toString();
           String loadFactorString = loadFactor == null ? null : loadFactor.toString();
           String statisticsEnabledString = statisticsEnabled == null ? null : statisticsEnabled.toString();
+          String offHeapString = offHeap == null ? null : offHeap.toString();
           
           if ("none".equals(compressorClassName)) {
             compressorClassName = "";
@@ -1283,7 +1331,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           String resultMessage = DiskStoreImpl.modifyRegion(diskStoreName, dirs, "/"+regionName,
               lruEvictionAlgo, lruEvictionAction, lruEvictionLimitString,
               concurrencyLevelString, initialCapacityString, loadFactorString,
-              compressorClassName, statisticsEnabledString, false);
+              compressorClassName, statisticsEnabledString, offHeapString, false);
 
           result = ResultBuilder.createInfoResult(resultMessage);
         } else {

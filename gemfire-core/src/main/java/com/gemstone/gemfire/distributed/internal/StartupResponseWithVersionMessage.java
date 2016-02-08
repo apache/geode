@@ -1,10 +1,19 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
- */   
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.gemstone.gemfire.distributed.internal;
 
 import java.io.DataInput;
@@ -17,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.logging.LogService;
 
@@ -71,51 +81,27 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
     return super.toString() + " version="+this.version;
   }
 
-  // versions where serialization changed
-  private static Version[] serializationVersions = new Version[] {
-    Version.GFE_80};
-  
   @Override
   public Version[] getSerializationVersions() {
-    return serializationVersions;
+    return null;
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
-    super.toDataPre_GFE_8_0_0_0(out);
-    cmnToData(out);
-  }
-  
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    cmnToData(out);
-  }
-
-  public void cmnToData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.version, out);
-    
     StartupMessageData data = new StartupMessageData();
     data.writeHostedLocators(this.hostedLocators);
     data.writeIsSharedConfigurationEnabled(this.isSharedConfigurationEnabled);
-    data.toData(out);
+    data.writeTo(out);
   }
 
-  @Override
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromDataPre_GFE_8_0_0_0(in);
-    cmnFromData(in);
-  }
-  
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    cmnFromData(in);
-  }
-
-  public void cmnFromData(DataInput in) throws IOException, ClassNotFoundException {
     this.version = DataSerializer.readString(in);
-    
-    StartupMessageData data = new StartupMessageData(in, this.version);
+    StartupMessageData data = new StartupMessageData();
+    data.readFrom(in);
     this.hostedLocators = data.readHostedLocators();
     this.isSharedConfigurationEnabled = data.readIsSharedConfigurationEnabled();
   }

@@ -1,10 +1,20 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 /******
  * THIS FILE IS ENCODED IN UTF-8 IN ORDER TO TEST UNICODE IN FIELD NAMES.
  * THE ENCODING MUST BE SPECIFIED AS UTF-8 WHEN COMPILED
@@ -13,7 +23,9 @@
 package com.gemstone.gemfire.cache.query.data;
 
 import java.io.*;
+
 import com.gemstone.gemfire.*; // for DataSerializable
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -21,6 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.pdx.PdxReader;
@@ -29,12 +42,14 @@ import com.gemstone.gemfire.pdx.PdxWriter;
 
 
 public class PortfolioPdx implements Serializable, PdxSerializable  {
+  public static boolean DEBUG = false;
 
   public enum Day {
     Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
   }
   
   public Day aDay;
+  public short shortID;
   static transient List dayList;
   private int ID;
   public String pkid;
@@ -125,11 +140,13 @@ public class PortfolioPdx implements Serializable, PdxSerializable  {
   /* public no-arg constructor required for Deserializable */
   public PortfolioPdx() {
     this.numInstance++;
+    if (DEBUG) Thread.dumpStack();
 //    GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG"));
   }
 
   public PortfolioPdx(int i) {
     aDay = (Day)(dayList.get((i % dayList.size())));
+    if (DEBUG) Thread.dumpStack();
     this.numInstance++;
     ID = i;
     if(i % 2 == 0) {
@@ -251,6 +268,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable  {
   }
   public void fromData(PdxReader in) {
     this.ID = in.readInt("ID");
+    this.shortID = in.readShort("shortID");
     this.pkid = in.readString("pkid");
     this.position1 = (PositionPdx)in.readObject("position1");
     this.position2 = (PositionPdx)in.readObject("position2");   
@@ -267,7 +285,8 @@ public class PortfolioPdx implements Serializable, PdxSerializable  {
   }
   
   public void toData(PdxWriter out) {
-    out.writeInt("ID", this.ID);
+    out.writeInt("ID", this.ID);    
+    out.writeShort("shortID", this.shortID);    
     out.writeString("pkid", this.pkid);
     out.writeObject("position1", this.position1);
     out.writeObject("position2", this.position2);

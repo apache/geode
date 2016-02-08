@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
@@ -73,13 +82,16 @@ import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.DummyStatisticsFactory;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
+import com.gemstone.gemfire.internal.SocketCloser;
 import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
-import com.gemstone.gemfire.internal.cache.BridgeRegionEventImpl;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.VersionedDataInputStream;
+import com.gemstone.gemfire.internal.VersionedDataOutputStream;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientRegionEventImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheClientStatus;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
@@ -89,6 +101,7 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.FilterProfile;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl.SerializedCacheValueImpl;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalCacheEvent;
@@ -325,7 +338,11 @@ public class CacheClientNotifier {
     dis.readByte(); // replyCode
 
     if (Version.GFE_57.compareTo(clientVersion) <= 0) {
-        registerGFEClient(dis, dos, socket, isPrimary, startTime, clientVersion,
+      if (Version.CURRENT.compareTo(clientVersion) > 0) {
+        dis = new VersionedDataInputStream(dis, clientVersion);
+        dos = new VersionedDataOutputStream(dos, clientVersion);
+      }
+      registerGFEClient(dis, dos, socket, isPrimary, startTime, clientVersion,
             acceptorId, notifyBySubscription);
     } else {
         Exception e = new UnsupportedVersionException(clientVersionOrdinal);
@@ -997,14 +1014,10 @@ public class CacheClientNotifier {
   /*
    * this is for server side registration of client queue
    */
-  public static void routeSingleClientMessage(ClientUpdateMessage clientMessage, ClientProxyMembershipID clientProxyMembershiptId) {
+  public static void routeSingleClientMessage(ClientUpdateMessage clientMessage, ClientProxyMembershipID clientProxyMembershipId) {
     CacheClientNotifier instance = ccnSingleton;
     if (instance != null) {
-      HAEventWrapper haEW = new HAEventWrapper(clientMessage);
-      haEW.setPutInProgress(true);
-      HashSet<ClientProxyMembershipID > singleClient = new HashSet<ClientProxyMembershipID >();
-      singleClient.add(clientProxyMembershiptId);
-      instance.singletonRouteClientMessage(clientMessage, singleClient);
+      instance.singletonRouteClientMessage(clientMessage, Collections.singleton(clientProxyMembershipId));
     }
   } 
   
@@ -1105,7 +1118,7 @@ public class CacheClientNotifier {
           removeClientProxy(proxy);
 
           if (PoolImpl.AFTER_QUEUE_DESTROY_MESSAGE_FLAG) {
-            BridgeObserver bo = BridgeObserverHolder.getInstance();
+            ClientServerObserver bo = ClientServerObserverHolder.getInstance();
             bo.afterQueueDestroyMessage();
           }
 
@@ -1138,8 +1151,6 @@ public class CacheClientNotifier {
     }
 //    String regionName = event.getRegion().getFullPath();
     Object keyOfInterest = null;
-    Object value = null;
-    byte valueIsObject = 0x01;
     final EventID eventIdentifier;
     ClientProxyMembershipID membershipID = null;
     boolean isNetLoad = false;
@@ -1158,55 +1169,27 @@ public class CacheClientNotifier {
       keyOfInterest = entryEvent.getKey();
       eventIdentifier = entryEvent.getEventId();
       isNetLoad = entryEvent.isNetLoad();
-
-      // only need a value if notifyBySubscription is true
-      CachedDeserializable serializedNewValue = (CachedDeserializable) entryEvent.getSerializedNewValue();
-      final boolean isTraceEnabled = logger.isTraceEnabled();
-      if (serializedNewValue == null) {
-        if (entryEvent.getCachedSerializedNewValue() != null) {
-          value = entryEvent.getCachedSerializedNewValue();
-          if (isTraceEnabled) {
-            logger.trace("CacheClientNotifier: Using cached serialized new value for operation {}: byte[{}]", operation, entryEvent.getCachedSerializedNewValue().length);
-          }
-        } else {
-        Object newValue = entryEvent.getRawNewValue();
-        if (newValue instanceof byte[]) {
-          // The value is already a byte[]. Set _valueIsObject flag to 0x00
-          // (not an object)
-          value = newValue;
-          valueIsObject = 0x00;
-        }
-        else {
-          // The value is an object. Serialize it.
-          byte[] valueBytes = CacheServerHelper.serialize(newValue);
-          value = valueBytes;
-          entryEvent.setCachedSerializedNewValue(valueBytes);
-        }
-        if (isTraceEnabled)
-          logger.trace("CacheClientNotifier: Using deserialized new value for operation {}: {}", operation, newValue);
-        }
-      } else {
-        value = serializedNewValue.getSerializedValue();
-        // value is a byte[] at since getSerializedValue returns byte[]
-        if (isTraceEnabled) {
-          logger.trace("CacheClientNotifier: Using serialized new value for operation {}: {}", operation, serializedNewValue.getStringForm());
-        }
-      }
     }
     else {
       RegionEventImpl regionEvent = (RegionEventImpl)event;
       callbackArgument = regionEvent.getRawCallbackArgument();
       eventIdentifier = regionEvent.getEventId();
-      if (event instanceof BridgeRegionEventImpl) {
-        BridgeRegionEventImpl bridgeEvent = (BridgeRegionEventImpl)event;
+      if (event instanceof ClientRegionEventImpl) {
+        ClientRegionEventImpl bridgeEvent = (ClientRegionEventImpl)event;
         membershipID = bridgeEvent.getContext();
       }
     }
 
     // NOTE: If delta is non-null, value MUST be in Object form of type Delta.
     ClientUpdateMessageImpl clientUpdateMsg = new ClientUpdateMessageImpl(operation,
-        (LocalRegion)event.getRegion(), keyOfInterest, value, delta, valueIsObject,
+        (LocalRegion)event.getRegion(), keyOfInterest, null, delta, (byte) 0x01,
         callbackArgument, membershipID, eventIdentifier, versionTag);
+    
+    if (event.getOperation().isEntry()) {
+      EntryEventImpl entryEvent = (EntryEventImpl)event;
+      // only need a value if notifyBySubscription is true
+      entryEvent.exportNewValue(clientUpdateMsg);
+    }
 
     if (isNetLoad) {
       clientUpdateMsg.setIsNetLoad(isNetLoad);
@@ -1701,6 +1684,8 @@ public class CacheClientNotifier {
 
       // Close the statistics
       this._statistics.close();
+      
+      this.socketCloser.close();
     } 
   }
 
@@ -2153,6 +2138,7 @@ public class CacheClientNotifier {
     // Set the Cache
     this.setCache((GemFireCacheImpl)cache);
     this.acceptorStats = acceptorStats;
+    this.socketCloser = new SocketCloser(1, 50); // we only need one thread per client and wait 50ms for close
 
     // Set the LogWriter
     this.logWriter = (InternalLogWriter)cache.getLogger();
@@ -2167,7 +2153,7 @@ public class CacheClientNotifier {
         && !HARegionQueue.HA_EVICTION_POLICY_NONE.equals(overflowAttributesList
             .get(0))) {
       haContainer = new HAContainerRegion(cache.getRegion(Region.SEPARATOR
-          + BridgeServerImpl.clientMessagesRegion((GemFireCacheImpl)cache,
+          + CacheServerImpl.clientMessagesRegion((GemFireCacheImpl)cache,
               (String)overflowAttributesList.get(0),
               ((Integer)overflowAttributesList.get(1)).intValue(),
               ((Integer)overflowAttributesList.get(2)).intValue(),
@@ -2416,6 +2402,10 @@ public class CacheClientNotifier {
  
   public CacheServerStats getAcceptorStats() {
     return this.acceptorStats;
+  }
+  
+  public SocketCloser getSocketCloser() {
+    return this.socketCloser;
   }
   
   public void addCompiledQuery(DefaultQuery query){
@@ -2683,6 +2673,8 @@ public class CacheClientNotifier {
   private final Object lockIsCompiledQueryCleanupThreadStarted = new Object();
 
   private SystemTimer.SystemTimerTask clientPingTask;
+  
+  private final SocketCloser socketCloser;
   
   private static final long CLIENT_PING_TASK_PERIOD =
     Long.getLong("gemfire.serverToClientPingPeriod", 60000);

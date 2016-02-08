@@ -1,10 +1,18 @@
 /*
- *  =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *  ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.beans;
 
@@ -14,7 +22,6 @@ import java.util.Map;
 import javax.management.NotificationBroadcasterSupport;
 
 import com.gemstone.gemfire.internal.util.ArrayUtils;
-import com.gemstone.gemfire.management.DiskBackupResult;
 import com.gemstone.gemfire.management.GemFireProperties;
 import com.gemstone.gemfire.management.JVMMetrics;
 import com.gemstone.gemfire.management.MemberMXBean;
@@ -449,6 +456,11 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   }
 
   @Override
+  public String[] getHDFSStores() {
+    return bridge.getHDFSStores();
+  }
+  
+  @Override
   public long getGetsAvgLatency() {
     return bridge.getGetsAvgLatency();
   }
@@ -592,21 +604,6 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   }
 
   @Override
-  public long getMaxMemory() {
-    return bridge.getMaxMemory();
-  }
-  
-  @Override
-  public long getFreeMemory() {
-    return bridge.getFreeMemory();
-  }
-  
-  @Override
-  public long getUsedMemory() {
-    return bridge.getUsedMemory();
-  }
-
-  @Override
   public int getHostCpuUsage() {
     return bridge.getHostCpuUsage();
   }
@@ -641,5 +638,48 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
     return bridge.getVisibleNodes();
   }    
 
+  @Override
+  public int getOffHeapObjects() {
+    return bridge.getOffHeapObjects();
+  }
+
+  @Override
+  public long getOffHeapMaxMemory() {
+    return bridge.getOffHeapMaxMemory();
+  }
+
+  @Override
+  public long getOffHeapFreeMemory() {
+    return bridge.getOffHeapFreeMemory();
+  }
+
+  @Override
+  public long getOffHeapUsedMemory() {
+    return bridge.getOffHeapUsedMemory();
+  }
+
+  @Override
+  public int getOffHeapFragmentation() {
+    return bridge.getOffHeapFragmentation();
+  }
+
+  @Override
+  public long getOffHeapCompactionTime() {
+    return bridge.getOffHeapCompactionTime();
+  }    
+
+  @Override
+  public long getMaxMemory() {
+    return bridge.getMaxMemory();
+ }
   
+  @Override
+  public long getFreeMemory() {
+    return bridge.getFreeMemory();
+  }
+  
+  @Override
+  public long getUsedMemory() {
+    return bridge.getUsedMemory();
+  }
 }

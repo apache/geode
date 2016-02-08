@@ -1,13 +1,21 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
@@ -71,10 +79,8 @@ public class ExpirationScheduler
       if(logger.isTraceEnabled()) {
         logger.trace(LocalizedMessage.create(LocalizedStrings.ExpirationScheduler_SCHEDULING__0__TO_FIRE_IN__1__MS, new Object[] {task, Long.valueOf(task.getExpiryMillis())}));
       }
-      // By using getExpirationTime and passing a Date to schedule
-      // we get rid of two calls of System.currentTimeMillis().
-      // The Date object creation is very simple and has a very short life.
-      timer.schedule(task, new Date(task.getExpirationTime()));
+      // To fix bug 52267 do not create a Date here; instead calculate the relative duration.
+      timer.schedule(task, task.getExpiryMillis());
     }
     catch (EntryNotFoundException e) {
       // ignore - there are unsynchronized paths that allow an entry to
@@ -87,33 +93,10 @@ public class ExpirationScheduler
     }
     return task;
   }
-
-  /** schedules the given entry expiration task */
+  
+  /** schedules the given entry expiration task and returns true; returns false if not scheduled */
   public boolean addEntryExpiryTask(EntryExpiryTask task) {
-    try {
-      if(logger.isTraceEnabled()) {
-        logger.trace(LocalizedMessage.create(LocalizedStrings.ExpirationScheduler_SCHEDULING__0__TO_FIRE_IN__1__MS, new Object[] {task, Long.valueOf(task.getExpiryMillis())}));
-      }
-      // By using getExpirationTime and passing a Date to schedule
-      // we get rid of two calls of System.currentTimeMillis().
-      // The Date object creation is very simple and has a very short life.
-      timer.schedule(task, new Date(task.getExpirationTime()));
-    }
-    catch (EntryNotFoundException e) {
-      // ignore - there are unsynchronized paths that allow an entry to
-      // be destroyed out from under us.
-      return false;
-    }
-    catch (IllegalStateException e) {
-      // task must have been cancelled by another thread so don't schedule it
-      return false;
-    }
-    return true;
-  }
-
-  /** schedule a java.util.TimerTask for execution */
-  public void schedule(SystemTimer.SystemTimerTask task, long when) {
-    timer.schedule(task, when);
+    return addExpiryTask(task) != null;
   }
 
   /** @see java.util.Timer#cancel() */

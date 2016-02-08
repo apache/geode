@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
@@ -90,10 +99,9 @@ public class CompactMapRangeIndex extends AbstractMapIndex
   void saveMapping(Object key, Object value, RegionEntry entry)
       throws IMQException
   {
-    if(key == QueryService.UNDEFINED) {
+    if(key == QueryService.UNDEFINED || !(key instanceof Map)) {
       return;
     }
-    assert key instanceof Map;
     if (this.isAllKeys) {
       Iterator<Map.Entry<?, ?>> entries = ((Map)key).entrySet().iterator();
       while (entries.hasNext()) {
@@ -107,6 +115,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex
       for (Object mapKey : mapKeys) {
         Object indexKey = ((Map)key).get(mapKey);
         if (indexKey != null) {
+          //Do not convert to IndexManager.NULL.  We are only interested in specific keys
           this.saveIndexAddition(mapKey, indexKey, value, entry);
         }
       }
@@ -156,6 +165,9 @@ public class CompactMapRangeIndex extends AbstractMapIndex
   protected void saveIndexAddition(Object mapKey, Object indexKey, Object value,
       RegionEntry entry) throws IMQException
   {
+    if (indexKey == null) {
+      indexKey = IndexManager.NULL;
+    }
     boolean isPr = this.region instanceof BucketRegion;
     // Get RangeIndex for it or create it if absent
     CompactRangeIndex rg = (CompactRangeIndex) this.mapKeyToValueIndex.get(mapKey);

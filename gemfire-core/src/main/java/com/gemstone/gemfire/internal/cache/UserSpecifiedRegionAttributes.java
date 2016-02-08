@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -59,6 +68,8 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   private boolean hasMembershipAttributes = false;
   private boolean hasSubscriptionAttributes = false;
   private boolean hasEvictionAttributes = false;
+  private boolean hasCustomEviction = false;
+
   /**
    * Whether this region has specified a disk store name
    *
@@ -104,12 +115,23 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
    */
   private boolean hasCloningEnabled = false;
   
-  /**
+  private boolean hasHDFSStoreName = false;
+  
+  private boolean hasHDFSWriteOnly = false;
+  
+/**
    * Whether this region has entry value compression.
    * 
    * @since 8.0
    */
   private boolean hasCompressor = false;
+  
+  /**
+   * Whether this region has enable off-heap memory set.
+   * 
+   * @since 9.0
+   */
+  private boolean hasOffHeap = false;
   
   public boolean hasCacheLoader()
   {
@@ -251,8 +273,11 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   {
     return this.hasEvictionAttributes;
   }
-  
-  
+  public boolean hasCustomEviction()
+  {
+    return this.hasCustomEviction;
+  }
+
   public boolean hasPoolName()
   {
     return this.hasPoolName;
@@ -260,6 +285,10 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   
   public boolean hasCompressor() {
     return this.hasCompressor;
+  }
+  
+  public boolean hasOffHeap() {
+    return this.hasOffHeap;
   }
   
   public boolean hasCloningEnabled()
@@ -343,6 +372,10 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   public void setHasEvictionAttributes(boolean hasEvictionAttributes)
   {
     this.hasEvictionAttributes = hasEvictionAttributes;
+  }
+  public void setHasCustomEviction(boolean hasCustomEviction)
+  {
+    this.hasCustomEviction = hasCustomEviction;
   }
   public void setHasIgnoreJTA(boolean hasIgnoreJTA)
   {
@@ -432,6 +465,10 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
     this.hasCompressor = hasCompressor;
   }
   
+  public void setHasOffHeap(boolean hasOffHeap) {
+    this.hasOffHeap = hasOffHeap;
+  }
+  
   public void setAllHasFields(boolean b) {
     int hasCounter = 0;
     Field thisFields[] = UserSpecifiedRegionAttributes.class.getDeclaredFields();
@@ -490,7 +527,7 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   {
     this.hasDiskSynchronous = val;
   }
-  private static final int HAS_COUNT = 39;
+  private static final int HAS_COUNT = 43;
   
   public void initHasFields(UserSpecifiedRegionAttributes<K,V> other)
   {
@@ -565,5 +602,23 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   }
   public List getIndexes() {
     return this.indexes;
+  }
+
+  public boolean hasHDFSStoreName()
+  {
+    return this.hasHDFSStoreName;
+  }
+  public void setHasHDFSStoreName(boolean val)
+  {
+    this.hasHDFSStoreName = val;
+  }
+  
+  public void setHasHDFSWriteOnly(boolean val)
+  {
+    this.hasHDFSWriteOnly = val;
+  }
+  public boolean hasHDFSWriteOnly()
+  {
+    return this.hasHDFSWriteOnly;
   }
 }

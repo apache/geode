@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.beans;
 
@@ -41,6 +49,7 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
@@ -88,6 +97,8 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
+import com.gemstone.gemfire.internal.offheap.OffHeapMemoryStats;
 import com.gemstone.gemfire.internal.process.PidUnavailableException;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.internal.stats50.VMStats50;
@@ -351,20 +362,20 @@ public class MemberMBeanBridge {
     } catch (CacheClosedException e) {
       commandServiceInitError = e.getMessage();
       // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage(), e);
+      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
     } catch (CommandServiceException e) {
       commandServiceInitError = e.getMessage();
       // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage(), e);
+      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
     } catch (DependenciesNotFoundException e) {
       commandServiceInitError = e.getMessage();
       if (CacheServerLauncher.isDedicatedCacheServer) {
         // log as error for dedicated cache server - launched through script
         // LOG:CONFIG:
-        logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage(), e);
+        logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
       } else {
         // LOG:CONFIG:
-        logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage(), e);
+        logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
       }
     }
 
@@ -480,13 +491,26 @@ public class MemberMBeanBridge {
       }
     }
     
+    MemoryAllocator allocator = ((GemFireCacheImpl) cache).getOffHeapStore();
+    if((null != allocator) ) {
+      OffHeapMemoryStats offHeapStats = allocator.getStats();
+      
+      if(null != offHeapStats) {
+        addOffHeapStats(offHeapStats);
+      }
+    }
+
     addSystemStats();
     addVMStats();
     initializeStats();
+    
     return this;
-
   }
 
+  public void addOffHeapStats(OffHeapMemoryStats offHeapStats) {
+    Statistics offHeapMemoryStatistics = offHeapStats.getStats();
+    monitor.addStatisticsToMonitor(offHeapMemoryStatistics);
+  }
   
   public void addCacheStats(CachePerfStats cachePerfStats) {
     Statistics cachePerfStatistics = cachePerfStats.getStats();
@@ -987,6 +1011,32 @@ public class MemberMBeanBridge {
     return listDiskStores(true);
   }
 
+  
+
+  
+  /**
+   * @return list all the HDFSStore's name at cache level
+   */
+  
+  public String[] getHDFSStores() {
+    GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
+    String[] retStr = null;
+    Collection<HDFSStoreImpl> hdfsStoreCollection = null;
+    hdfsStoreCollection = cacheImpl.getHDFSStores();
+      
+    if (hdfsStoreCollection != null && hdfsStoreCollection.size() > 0) {
+      retStr = new String[hdfsStoreCollection.size()];
+      Iterator<HDFSStoreImpl> it = hdfsStoreCollection.iterator();
+      int i = 0;
+      while (it.hasNext()) {
+        retStr[i] = it.next().getName();
+        i++;
+
+      }
+    }
+    return retStr;
+  }
+      
   /**
    * 
    * @return log of the member.
@@ -1064,6 +1114,7 @@ public class MemberMBeanBridge {
           }
         }
       });
+      t.setDaemon(false);
       t.start();
     }
 
@@ -1283,13 +1334,14 @@ public class MemberMBeanBridge {
     if (threadInfos == null || threadInfos.length < 1) {
       return ManagementConstants.NO_DATA_STRING;
     }
-    String[] thrdStr = new String[threadInfos.length];
-    int j = 0;
+    ArrayList<String> thrdStr = new ArrayList<String>(threadInfos.length);
     for (ThreadInfo thInfo : threadInfos) {
-      thrdStr[j] = thInfo.getThreadName();
-      j++;
+      if (thInfo != null) {
+        thrdStr.add(thInfo.getThreadName());
+      }
     }
-    return thrdStr;
+    String[] result = new String[thrdStr.size()];
+    return thrdStr.toArray(result);
   }
 
   /**
@@ -1764,15 +1816,6 @@ public class MemberMBeanBridge {
 
   /**
    * 
-   * @return maximum heap size in MB
-   */
-  public long getMaximumHeapSize() {
-    Runtime rt = Runtime.getRuntime();
-    return rt.maxMemory() / MBFactor;
-  }
-
-  /**
-   * 
    * @return max limit of FD ..Ulimit
    */
   public long getFileDescriptorLimit() {
@@ -1800,36 +1843,95 @@ public class MemberMBeanBridge {
     return getVMStatistic(StatsKey.VM_STATS_OPEN_FDS).longValue();
   }
 
-  /**
-   * 
-   * @return get free heap size
-   */
-  public long getFreeHeapSize() {
-    Runtime rt = Runtime.getRuntime();
-    return rt.freeMemory() / MBFactor;
+  public int getOffHeapObjects() {
+    int objects = 0;
+    OffHeapMemoryStats stats = getOffHeapStats();
+    
+    if(null != stats) {
+      objects = stats.getObjects();
+    }
+    
+    return objects;
   }
 
+  @Deprecated
+  public long getOffHeapFreeSize() {
+    return getOffHeapFreeMemory();
+  }
+  
+  @Deprecated
+  public long getOffHeapUsedSize() {
+    return getOffHeapUsedMemory();
+  }
+  
+  public long getOffHeapMaxMemory() {
+    long usedSize = 0;
+    OffHeapMemoryStats stats = getOffHeapStats();
+    
+    if(null != stats) {
+      usedSize = stats.getMaxMemory();
+    }
+    
+    return usedSize;
+  }
+  
+  public long getOffHeapFreeMemory() {
+    long freeSize = 0;
+    OffHeapMemoryStats stats = getOffHeapStats();
+    
+    if(null != stats) {
+      freeSize = stats.getFreeMemory();
+    }
+    
+    return freeSize;
+  }
+  
+  public long getOffHeapUsedMemory() {
+    long usedSize = 0;
+    OffHeapMemoryStats stats = getOffHeapStats();
+    
+    if(null != stats) {
+      usedSize = stats.getUsedMemory();
+    }
+    
+    return usedSize;
+  }
+  
+  public int getOffHeapFragmentation() {
+    int fragmentation = 0;
+    OffHeapMemoryStats stats = getOffHeapStats();
+    
+    if(null != stats) {
+      fragmentation = stats.getFragmentation();
+    }
+    
+    return fragmentation;        
+  }
+  
+  public long getOffHeapCompactionTime() {
+    long compactionTime = 0;
+    OffHeapMemoryStats stats = getOffHeapStats();
+    
+    if(null != stats) {
+      compactionTime = stats.getCompactionTime();
+    }
+    
+    return compactionTime;            
+  }
+  
   /**
-   * 
-   * @return current heap size
+   * Returns the OffHeapMemoryStats for this VM.
    */
-  public long getCurrentHeapSize() {
-    return getVMStatistic(StatsKey.VM_USED_MEMORY).longValue()
-    / MBFactor;
-  }
+  private OffHeapMemoryStats getOffHeapStats() {
+    OffHeapMemoryStats stats = null;
+    
+    MemoryAllocator offHeap = this.cache.getOffHeapStore();
+    
+    if(null != offHeap) {
+      stats = offHeap.getStats();
+    }
 
-  public long getMaxMemory() {
-    Runtime rt = Runtime.getRuntime();
-    return rt.maxMemory() / MBFactor;
-  }
-  
-  public long getFreeMemory() {
-    Runtime rt = Runtime.getRuntime();
-    return rt.freeMemory() / MBFactor;
-  }
-  
-  public long getUsedMemory() {
-    return getVMStatistic(StatsKey.VM_USED_MEMORY).longValue() / MBFactor;
+    return stats;    
   }
 
   public int getHostCpuUsage() {
@@ -1875,4 +1977,17 @@ public class MemberMBeanBridge {
   }    
 
   
+  public long getMaxMemory() {
+    Runtime rt = Runtime.getRuntime();
+    return rt.maxMemory() / MBFactor;
+  }
+  
+  public long getFreeMemory() {
+    Runtime rt = Runtime.getRuntime();
+    return rt.freeMemory() / MBFactor;
+  }
+  
+  public long getUsedMemory() {
+    return getVMStatistic(StatsKey.VM_USED_MEMORY).longValue() / MBFactor;
+  }
 }

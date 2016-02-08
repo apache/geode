@@ -1,0 +1,33 @@
+
+{
+ "type": "rss",
+ "version": "rss10",
+ "nvFeed": 1, 
+ "htmlUrl": "http://blog.netvibes.com/", 
+ "title": "Netvibes Blog",
+ "content": "Netvibes.com development blog",
+ "items":
+  [
+   {
+    "id": "httpblognetvibescom20060628netvibesnewfeaturespreview", 
+    "title": "Netvibes new features review", 
+    "link": "http://blog.netvibes.com/?2006/06/28/netvibes-new-features-preview",
+    "content": "<p>A post with an enclosure</p>", 
+    "date": "Jun 28, 2006 11:18:31 GMT", 
+    "enclosures": 
+     [ 
+      { 
+      "type": "image/png", 
+      "url": "http://blog.netvibes.com/images/20060531-launch/account-change.png"
+      } 
+     ] 
+   },
+   {
+    "id": "httpblognetvibescom20060624netvibesintroduces", 
+    "title": "Netvibes introduce Keyboard control",
+    "link": "http://blog.netvibes.com/?2006/06/24/netvibes-introduces",
+    "content": "<p>This is our HTML content</p>", 
+    "date": "Jun 24, 2006 11:18:31 GMT"
+   }
+  ]
+}

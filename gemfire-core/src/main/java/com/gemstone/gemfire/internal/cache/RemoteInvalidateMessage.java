@@ -1,10 +1,18 @@
 /*
- * ========================================================================= 
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -43,6 +51,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
+import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
 
 public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
@@ -149,6 +159,7 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
     InvalidateResponse p = new InvalidateResponse(r.getSystem(), recipients, event.getKey());
     RemoteInvalidateMessage m = new RemoteInvalidateMessage(recipients,
         r.getFullPath(), p, event, useOriginRemote, possibleDuplicate);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures =r.getDistributionManager().putOutgoing(m); 
     if (failures != null && failures.size() > 0 ) {
       throw new RemoteOperationException(LocalizedStrings.InvalidateMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -179,7 +190,7 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)key).setRegionContext(r);
     }
-    final EntryEventImpl event = new EntryEventImpl(
+    final EntryEventImpl event = EntryEventImpl.create(
         r,
         getOperation(),
         key,
@@ -189,6 +200,7 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
         eventSender,
         true/*generateCallbacks*/,
         false/*initializeId*/);
+    try {
     if (this.bridgeContext != null) {
       event.setContext(this.bridgeContext);
     }
@@ -240,6 +252,9 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
       }
 
     return sendReply;
+    } finally {
+      event.release();
+    }
   }
 
 

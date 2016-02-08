@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -23,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.Logger;
@@ -36,6 +46,7 @@ import com.gemstone.gemfire.cache.CacheLoaderException;
 import com.gemstone.gemfire.cache.CacheStatistics;
 import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.CacheWriterException;
+import com.gemstone.gemfire.cache.CustomEvictionAttributes;
 import com.gemstone.gemfire.cache.CustomExpiry;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskWriteAttributes;
@@ -43,6 +54,7 @@ import com.gemstone.gemfire.cache.EntryExistsException;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.EvictionAttributesMutator;
+import com.gemstone.gemfire.cache.EvictionCriteria;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.MembershipAttributes;
@@ -71,9 +83,6 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.cache.util.BridgeClient;
-import com.gemstone.gemfire.cache.util.BridgeLoader;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -91,6 +100,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
+import com.google.common.util.concurrent.Service.State;
 
 /**
  * Takes care of RegionAttributes, AttributesMutator, and some no-brainer method
@@ -195,6 +205,12 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
 
   protected boolean enableAsyncConflation;
 
+  /**
+   * True if this region uses off-heap memory; otherwise false (default)
+   * @since 9.0
+   */
+  protected boolean offHeap;
+
   protected boolean cloningEnable = false;
 
   protected DiskWriteAttributes diskWriteAttributes;
@@ -221,6 +237,8 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
 
   protected EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
 
+  protected CustomEvictionAttributes customEvictionAttributes;
+
   /** The membership attributes defining required roles functionality */
   protected MembershipAttributes membershipAttributes;
 
@@ -242,6 +260,10 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   private final AtomicLong missCount = new AtomicLong();
   
   protected String poolName;
+  
+  protected String hdfsStoreName;
+  
+  protected boolean hdfsWriteOnly;
   
   protected Compressor compressor;
   
@@ -470,9 +492,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    */
   public CacheLoader basicGetLoader() {
     CacheLoader result = this.cacheLoader;
-    if (isBridgeLoader(result)) {
-      result = null;
-    }
     return result;
   }
   /**
@@ -482,9 +501,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    */
   public CacheWriter basicGetWriter() {
     CacheWriter result = this.cacheWriter;
-    if (isBridgeWriter(result)) {
-      result = null;
-    }
     return result;
   }
   
@@ -883,6 +899,16 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return this.subscriptionAttributes;
   }
   
+  @Override
+  public final String getHDFSStoreName() {
+    return this.hdfsStoreName;
+  }
+  
+  @Override
+  public final boolean getHDFSWriteOnly() {
+    return this.hdfsWriteOnly;
+  }
+  
   /**
    * Get IndexManger for region
    */
@@ -1174,11 +1200,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   // synchronized so not reentrant
   public synchronized CacheLoader setCacheLoader(CacheLoader cl) {
     checkReadiness();
-    if (cl != null && isBridgeLoader(cl)) {
-      if (getPoolName() != null) {
-        throw new IllegalStateException("A region with a connection pool can not have a BridgeLoader.");
-      }
-    }
     CacheLoader oldLoader = this.cacheLoader;
     assignCacheLoader(cl);
     cacheLoaderChanged(oldLoader);
@@ -1187,24 +1208,12 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
 
   private synchronized void assignCacheLoader(CacheLoader cl) {
     this.cacheLoader = cl;
-    if (cl instanceof BridgeLoader) {
-      BridgeLoader bl = (BridgeLoader) cl;
-      bl.attach(this);
-    } else if (cl instanceof BridgeClient) {
-      BridgeClient bc = (BridgeClient)cl;
-      bc.attach(this);
-    }
   }
 
   // synchronized so not reentrant
   public synchronized CacheWriter setCacheWriter(CacheWriter cacheWriter)
   {
     checkReadiness();
-    if (cacheWriter != null && isBridgeWriter(cacheWriter)) {
-      if (getPoolName() != null) {
-        throw new IllegalStateException("A region with a connection pool can not have a BridgeWriter.");
-      }
-    }
     CacheWriter oldWriter = this.cacheWriter;
     assignCacheWriter(cacheWriter);
     cacheWriterChanged(oldWriter);
@@ -1214,10 +1223,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   private synchronized void assignCacheWriter(CacheWriter cacheWriter)
   {
     this.cacheWriter = cacheWriter;
-    if (cacheWriter instanceof BridgeWriter) {
-      BridgeWriter bw = (BridgeWriter)cacheWriter;
-      bw.attach(this);
-    }
   }
 
   void checkEntryTimeoutAction(String mode, ExpirationAction ea) {
@@ -1295,12 +1300,24 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return old;
   }
 
-  public ExpirationAttributes setRegionIdleTimeout(
-      ExpirationAttributes idleTimeout)
-  {
+  public static void validatePRRegionExpirationAttributes(ExpirationAttributes expAtts) {
+    if (expAtts.getTimeout() > 0) {
+      ExpirationAction expAction = expAtts.getAction();
+      if (expAction.isInvalidate() || expAction.isLocalInvalidate()) {
+        throw new IllegalStateException(LocalizedStrings.AttributesFactory_INVALIDATE_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
+      } else if (expAction.isDestroy() || expAction.isLocalDestroy()) {
+        throw new IllegalStateException(LocalizedStrings.AttributesFactory_DESTROY_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
+      }
+    }
+  }
+
+  public ExpirationAttributes setRegionIdleTimeout(ExpirationAttributes idleTimeout) {
     checkReadiness();
     if (idleTimeout == null) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_IDLETIMEOUT_MUST_NOT_BE_NULL.toLocalizedString());
+    }
+    if (this.getAttributes().getDataPolicy().withPartitioning()) {
+      validatePRRegionExpirationAttributes(idleTimeout);
     }
     if (idleTimeout.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.dataPolicy.withReplication()) {
@@ -1317,12 +1334,13 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return oldAttrs;
   }
 
-  public ExpirationAttributes setRegionTimeToLive(
-      ExpirationAttributes timeToLive)
-  {
+  public ExpirationAttributes setRegionTimeToLive(ExpirationAttributes timeToLive) {
     checkReadiness();
     if (timeToLive == null) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_TIMETOLIVE_MUST_NOT_BE_NULL.toLocalizedString());
+    }
+    if (this.getAttributes().getDataPolicy().withPartitioning()) {
+      validatePRRegionExpirationAttributes(timeToLive);
     }
     if (timeToLive.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.dataPolicy.withReplication()) {
@@ -1546,15 +1564,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   protected void closeCacheCallback(CacheCallback cb)
   {
     if (cb != null) {
-      if (cb instanceof BridgeWriter) {
-        BridgeWriter bw = (BridgeWriter)cb;
-        bw.detach(this);
-      }
-      else if (cb instanceof BridgeLoader) {
-        BridgeLoader bl = (BridgeLoader)cb;
-        bl.detach(this);
-      }
-
       try {
         cb.close();
       }
@@ -1582,19 +1591,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   protected void cacheListenersChanged(boolean nowHasListener)
   {
     // nothing needed by default
-  }
-
-  /**
-   * @since 5.7
-   */
-  public static boolean isBridgeLoader(CacheLoader cl) {
-    return cl instanceof BridgeLoader || cl instanceof BridgeClient;
-  }
-  /**
-   * @since 5.7
-   */
-  public static boolean isBridgeWriter(CacheWriter cw) {
-    return cw instanceof BridgeWriter;
   }
 
   protected void cacheWriterChanged(CacheWriter oldWriter)
@@ -1700,6 +1696,16 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     this.dataPolicy = attrs.getDataPolicy(); // do this one first
     this.scope = attrs.getScope();
     
+    this.offHeap = attrs.getOffHeap();
+
+    // fix bug #52033 by invoking setOffHeap now (localMaxMemory may now be the temporary placeholder for off-heap until DistributedSystem is created
+    // found non-null PartitionAttributes and offHeap is true so let's setOffHeap on PA now
+    PartitionAttributes<?, ?> pa = attrs.getPartitionAttributes();
+    if (this.offHeap && pa != null) {
+      PartitionAttributesImpl impl = (PartitionAttributesImpl)pa;
+      impl.setOffHeap(this.offHeap);
+    }
+
     this.evictionAttributes = new EvictionAttributesImpl((EvictionAttributesImpl)attrs
         .getEvictionAttributes());
     if (attrs.getPartitionAttributes() != null
@@ -1721,8 +1727,9 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     if (this.evictionAttributes != null
         && !this.evictionAttributes.getAlgorithm().isNone()) {
       this.setEvictionController(this.evictionAttributes
-          .createEvictionController(this));
+          .createEvictionController(this, attrs.getOffHeap()));
     }
+    this.customEvictionAttributes = attrs.getCustomEvictionAttributes();
     storeCacheListenersField(attrs.getCacheListeners());
     assignCacheLoader(attrs.getCacheLoader());
     assignCacheWriter(attrs.getCacheWriter());
@@ -1781,6 +1788,9 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
             + "when multiuser-authentication is true.");
       }
     }
+    this.hdfsStoreName = attrs.getHDFSStoreName();
+    this.hdfsWriteOnly = attrs.getHDFSWriteOnly();
+
     this.diskStoreName = attrs.getDiskStoreName();
     this.isDiskSynchronous = attrs.isDiskSynchronous();
     if (this.diskStoreName == null) {
@@ -1845,11 +1855,52 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return this.evictionAttributes;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public CustomEvictionAttributes getCustomEvictionAttributes() {
+    return this.customEvictionAttributes;
+  }
+
   public EvictionAttributesMutator getEvictionAttributesMutator()
   {
     return this.evictionAttributes;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public CustomEvictionAttributes setCustomEvictionAttributes(long newStart,
+      long newInterval) {
+    checkReadiness();
+
+    if (this.customEvictionAttributes == null) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.AbstractRegion_NO_CUSTOM_EVICTION_SET
+              .toLocalizedString(getFullPath()));
+    }
+
+    if (newStart == 0) {
+      newStart = this.customEvictionAttributes.getEvictorStartTime();
+    }
+    this.customEvictionAttributes = new CustomEvictionAttributesImpl(
+        this.customEvictionAttributes.getCriteria(), newStart, newInterval,
+        newStart == 0 && newInterval == 0);
+
+//    if (this.evService == null) {
+//      initilializeCustomEvictor();
+//    } else {// we are changing the earlier one which is already started.
+//      EvictorService service = getEvictorTask();
+//      service.changeEvictionInterval(newInterval);
+//      if (newStart != 0)
+//        service.changeStartTime(newStart);
+//    }
+
+    return this.customEvictionAttributes;
+  }
+  
   public void setEvictionController(LRUAlgorithm evictionController)
   {
     this.evictionController = evictionController;
@@ -1923,7 +1974,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return this.cache;
   }
 
-  protected final long cacheTimeMillis() {
+  public final long cacheTimeMillis() {
     return this.cache.getDistributedSystem().getClock().cacheTimeMillis();
   }
 
@@ -1987,10 +2038,98 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   }
   
   /**
-   * @since 8.1
-   */
+  * @since 8.1
+  * property used to find region operations that reach out to HDFS multiple times
+  */
   @Override
   public ExtensionPoint<Region<?, ?>> getExtensionPoint() {
     return extensionPoint;
+  }
+
+  public boolean getOffHeap() {
+    return this.offHeap;
+  }
+  /**
+   * property used to find region operations that reach out to HDFS multiple times
+   */
+  private static final boolean DEBUG_HDFS_CALLS = Boolean.getBoolean("DebugHDFSCalls");
+
+  /**
+   * throws exception if region operation goes out to HDFS multiple times
+   */
+  private static final boolean THROW_ON_MULTIPLE_HDFS_CALLS = Boolean.getBoolean("throwOnMultipleHDFSCalls");
+
+  private ThreadLocal<CallLog> logHDFSCalls = DEBUG_HDFS_CALLS ? new ThreadLocal<CallLog>() : null;
+
+  public void hdfsCalled(Object key) {
+    if (!DEBUG_HDFS_CALLS) {
+      return;
+    }
+    logHDFSCalls.get().addStack(new Throwable());
+    logHDFSCalls.get().setKey(key);
+  }
+  public final void operationStart() {
+    if (!DEBUG_HDFS_CALLS) {
+      return;
+    }
+    if (logHDFSCalls.get() == null) {
+      logHDFSCalls.set(new CallLog());
+      //InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG, "SWAP:operationStart", new Throwable());
+    } else {
+      logHDFSCalls.get().incNestedCall();
+      //InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG, "SWAP:incNestedCall:", new Throwable());
+    }
+  }
+  public final void operationCompleted() {
+    if (!DEBUG_HDFS_CALLS) {
+      return;
+    }
+    //InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG, "SWAP:operationCompleted", new Throwable());
+    if (logHDFSCalls.get() != null && logHDFSCalls.get().decNestedCall() < 0) {
+      logHDFSCalls.get().assertCalls();
+      logHDFSCalls.set(null);
+    }
+  }
+
+  public static class CallLog {
+    private List<Throwable> stackTraces = new ArrayList<Throwable>();
+    private Object key;
+    private int nestedCall = 0;
+    public void incNestedCall() {
+      nestedCall++;
+    }
+    public int decNestedCall() {
+      return --nestedCall;
+    }
+    public void addStack(Throwable stack) {
+      this.stackTraces.add(stack);
+    }
+    public void setKey(Object key) {
+      this.key = key;
+    }
+    public void assertCalls() {
+      if (stackTraces.size() > 1) {
+        Throwable firstTrace = new Throwable();
+        Throwable lastTrace = firstTrace;
+        for (Throwable t : this.stackTraces) {
+          lastTrace.initCause(t);
+          lastTrace = t;
+        }
+        if (THROW_ON_MULTIPLE_HDFS_CALLS) {
+          throw new RuntimeException("SWAP:For key:"+key+" HDFS get called more than once: ", firstTrace);
+        } else {
+          InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG, "SWAP:For key:"+key+" HDFS get called more than once: ", firstTrace);
+        }
+      }
+    }
+  }
+
+  public EvictionCriteria getEvictionCriteria() {
+    EvictionCriteria criteria = null;
+    if (this.customEvictionAttributes != null
+        && !this.customEvictionAttributes.isEvictIncoming()) {
+      criteria = this.customEvictionAttributes.getCriteria();
+    }
+    return criteria;
   }
 }

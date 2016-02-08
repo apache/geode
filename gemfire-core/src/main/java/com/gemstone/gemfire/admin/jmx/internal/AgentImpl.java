@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
@@ -36,6 +44,8 @@ import javax.management.remote.JMXServiceURL;
 import javax.management.remote.rmi.RMIConnectorServer;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
+import mx4j.tools.adaptor.http.HttpAdaptor;
+
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.GemFireException;
@@ -48,6 +58,7 @@ import com.gemstone.gemfire.admin.jmx.Agent;
 import com.gemstone.gemfire.admin.jmx.AgentConfig;
 import com.gemstone.gemfire.admin.jmx.AgentFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Banner;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.admin.remote.TailLogResponse;
@@ -62,10 +73,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
-import com.gemstone.org.jgroups.util.StringId;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import mx4j.tools.adaptor.http.HttpAdaptor;
 
 /**
  * The GemFire JMX Agent provides the ability to administrate one GemFire
@@ -398,7 +405,7 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
    *
    * @return the object name of the system that the Agent is now connected to
    */
-  @SuppressFBWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="This is only a style warning.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="This is only a style warning.") 
   public ObjectName connectToSystem()
   throws AdminException, MalformedObjectNameException {
     synchronized(CONN_SYNC) {
@@ -446,7 +453,7 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
   /**
    * Disconnects from the current DistributedSystem (if connected to one).
    */
-  @SuppressFBWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="This is only a style warning.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="This is only a style warning.") 
   public void disconnectFromSystem() {
     synchronized(CONN_SYNC) {
       try {
@@ -870,7 +877,7 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
   /**
    * Creates a LogWriterI18n for this Agent to use in logging.
    */
-  @SuppressFBWarnings(value="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification="Return value for file delete is not important here.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification="Return value for file delete is not important here.") 
   private void initLogWriter() throws com.gemstone.gemfire.admin.AdminException {
     final LogConfig logConfig = this.agentConfig.createLogConfig();
     
@@ -1562,7 +1569,7 @@ class ConnectionNotificationAdapter implements NotificationListener {
    *          the listener. The MBean object should not use or modify the
    *          object. (NOTE: copied from javax.management.NotificationListener)
    */
-  @SuppressFBWarnings(value="BC_UNCONFIRMED_CAST", justification="Only JMXConnectionNotification instances are used.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="BC_UNCONFIRMED_CAST", justification="Only JMXConnectionNotification instances are used.") 
   public void handleNotification(Notification notification, Object handback) {
     if (handback instanceof AgentImpl) {
       AgentImpl agent = (AgentImpl) handback;

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
@@ -210,6 +219,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
                                           p,
                                           event,
                                           expectedOldValue);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures =r.getDistributionManager().putOutgoing(m); 
     if (failures != null && failures.size() > 0 ) {
       throw new ForceReattemptException(LocalizedStrings.DestroyMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -242,17 +252,18 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
        eventSender = getSender();
     }
     EntryEventImpl event = null;
+    try {
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)this.key).setRegionContext(r);
     }
     if (this.bridgeContext != null) {
-      event = new EntryEventImpl(r, getOperation(), this.key, null/*newValue*/,
+      event = EntryEventImpl.create(r, getOperation(), this.key, null/*newValue*/,
           getCallbackArg(), false/*originRemote*/, eventSender, 
           true/*generateCallbacks*/);
       event.setContext(this.bridgeContext);
     } // bridgeContext != null
     else {
-      event = new EntryEventImpl(
+      event = EntryEventImpl.create(
         r,
         getOperation(),
         this.key,
@@ -315,10 +326,22 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
     else {
       EntryEventImpl e2 = createListenerEvent(event, r, dm.getDistributionManagerId());
+      try {
       r.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, e2, r.isInitialized(), true);
+      } finally {
+        // if e2 == ev then no need to free it here. The outer finally block will get it.
+        if (e2 != event) {
+          e2.release();
+        }
+      }
     }
 
     return sendReply;
+    } finally {
+      if (event != null) {
+        event.release();
+      }
+    }
   }
 
   @Override
@@ -468,6 +491,11 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     if (filterInfo != null){
       this.filterInfo = filterInfo;
     }
+  }
+  
+  @Override
+  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+    return _mayAddToMultipleSerialGateways(dm);
   }
 
   public static class DestroyReplyMessage extends ReplyMessage {

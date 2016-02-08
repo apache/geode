@@ -1,23 +1,31 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal;
-
-import com.gemstone.gemfire.cache.UnsupportedVersionException;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CommandInitializer;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.org.jgroups.JGroupsVersion;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+
+import com.gemstone.gemfire.cache.UnsupportedVersionException;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CommandInitializer;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * Enumerated type for client / server and p2p version.
@@ -55,7 +63,7 @@ public final class Version implements Comparable<Version> {
   /** byte used as ordinal to represent this <code>Version</code> */
   private final short ordinal;
 
-  public static final int HIGHEST_VERSION = 38;
+  public static final int HIGHEST_VERSION = 45;
 
   private static final Version[] VALUES = new Version[HIGHEST_VERSION+1];
 
@@ -166,20 +174,35 @@ public final class Version implements Comparable<Version> {
   
   // 31-34 available for 8.0.x variants
   
+  private static final byte GFE_8009_ORDINAL = 31;
+
+  public static final Version GFE_8009 = new Version("GFE", "8.0.0.9", (byte)8,
+      (byte)0, (byte)0, (byte)9, GFE_8009_ORDINAL);
+
   private static final byte GFE_81_ORDINAL = 35;
 
   public static final Version GFE_81 = new Version("GFE", "8.1", (byte)8,
       (byte)1, (byte)0, (byte)0, GFE_81_ORDINAL);
   
-  private static final byte GFE_82_ORDINAL = 38;
+  // 36-39 available for 8.1.x variants
+
+  private static final byte GFE_82_ORDINAL = 40;
 
   public static final Version GFE_82 = new Version("GFE", "8.2", (byte)8,
       (byte)2, (byte)0, (byte)0, GFE_82_ORDINAL);
 
+  // 41-44 available for 8.2.x variants
+
+  private static final byte GFE_90_ORDINAL = 45;
+
+  public static final Version GFE_90 = new Version("GFE", "9.0", (byte)9,
+      (byte)0, (byte)0, (byte)0, GFE_90_ORDINAL);
+
   /**
    * This constant must be set to the most current version of GFE/SQLF.
+   * !!! NOTE: update HIGHEST_VERSION when changing CURRENT !!!
    */
-  public static final Version CURRENT = GFE_82;
+  public static final Version CURRENT = GFE_90;
 
   /**
    * A lot of versioning code needs access to the current version's ordinal
@@ -196,10 +219,6 @@ public final class Version implements Comparable<Version> {
   public static final Version TEST_VERSION = new Version("TEST", "VERSION",
       (byte)0, (byte)0, (byte)0, (byte)0, validOrdinalForTesting);
   
-  static {
-    JGroupsVersion.CURRENT_ORDINAL = CURRENT_ORDINAL;
-  }
-
   /** Creates a new instance of <code>Version</code> */
   private Version(String product, String name, byte major, byte minor, byte release,
       byte patch, byte ordinal) {
@@ -606,4 +625,12 @@ public final class Version implements Comparable<Version> {
     result = mult * result + this.ordinal;
     return result;
   }
+  
+  public byte[] toBytes() {
+    byte[] bytes = new byte[2];
+    bytes[0] = (byte)(ordinal >> 8);
+    bytes[1] = (byte)ordinal;
+    return bytes;
+  }
+
 }

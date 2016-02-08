@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.functions;
 
@@ -67,7 +76,7 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
       final int dispatcherThreads =(Integer) args[9]; 
       final String orderPolicy= (String) args[10];
       final String[] gatewayEventFilters =(String[]) args[11];
-      final String gatewaySubstitutionListener = (String) args[12];
+      final String gatewaySubstitutionFilter = (String) args[12];
       final String listenerClassName = (String) args[13];
       final Properties listenerProperties = (Properties) args[14];
 
@@ -98,9 +107,9 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
           asyncEventQueueFactory.addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilterKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER));
         }
       }
-      if (gatewaySubstitutionListener != null) {
-        Class<?> gatewayEventSubstitutionListenerKlass = forName(gatewaySubstitutionListener, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER);
-        asyncEventQueueFactory.setGatewayEventSubstitutionListener((GatewayEventSubstitutionFilter<?,?>) newInstance(gatewayEventSubstitutionListenerKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER));
+      if (gatewaySubstitutionFilter != null) {
+        Class<?> gatewayEventSubstitutionFilterKlass = forName(gatewaySubstitutionFilter, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER);
+        asyncEventQueueFactory.setGatewayEventSubstitutionListener((GatewayEventSubstitutionFilter<?,?>) newInstance(gatewayEventSubstitutionFilterKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER));
       }
       
       Object listenerInstance;

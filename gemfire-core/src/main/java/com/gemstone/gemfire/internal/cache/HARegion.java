@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -221,8 +230,9 @@ public final class HARegion extends DistributedRegion
       throws TimeoutException, CacheWriterException {
     checkReadiness();
 
-    EntryEventImpl event = new EntryEventImpl(this, Operation.UPDATE, key,
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE, key,
         value, aCallbackArgument, false, getMyId());
+    try {
 
     Object oldValue = null;
 
@@ -234,6 +244,9 @@ public final class HARegion extends DistributedRegion
       oldValue = event.getOldValue();
     }
     return handleNotAvailable(oldValue);
+    } finally {
+      event.release();
+    }
   }
 
   /**
@@ -360,13 +373,13 @@ public final class HARegion extends DistributedRegion
   
   /**
    * @return the deserialized value
-   * @see DistributedRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
+   * @see DistributedRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean, boolean)
    *      
    */
   @Override
   protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate,
       TXStateInterface txState, boolean generateCallbacks, Object localValue, boolean disableCopyOnRead,
-      boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones)
+      boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS)
     throws CacheLoaderException, TimeoutException  {
 
     Object value = null;
@@ -397,10 +410,14 @@ public final class HARegion extends DistributedRegion
             op = Operation.LOCAL_LOAD_UPDATE;
           }
 
-          EntryEventImpl event = new EntryEventImpl(
+          EntryEventImpl event = EntryEventImpl.create(
               this, op, key, value,
               aCallbackArgument, false, getMyId(), generateCallbacks);
+          try {
           re = basicPutEntry(event, 0L);
+          } finally {
+            event.release();
+          }
           if (txState == null) {
           }
         }

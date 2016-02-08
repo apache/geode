@@ -1,10 +1,18 @@
 /*
- * ========================================================================= 
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.client.internal;
 
@@ -65,6 +73,8 @@ public final class ClientMetadataService {
   
   /** random number generator used in pruning */
   private final Random rand = new Random();
+  
+  private volatile boolean isMetadataStable = true; 
   
   public ClientMetadataService(Cache cache) {
     this.cache = cache;
@@ -264,13 +274,14 @@ public final class ClientMetadataService {
       ClientPartitionAdvisor prAdvisor, Set<Integer> bucketSet,
       boolean primaryOnly) {
     if (primaryOnly) {
-      Set<Integer> bucketsWithoutServer = new HashSet<Integer>();
       HashMap<ServerLocation, HashSet<Integer>> serverToBucketsMap = new HashMap<ServerLocation, HashSet<Integer>>();
       for (Integer bucketId : bucketSet) {
         ServerLocation server = prAdvisor.advisePrimaryServerLocation(bucketId);
         if (server == null) {
-          bucketsWithoutServer.add(bucketId);          
-          continue;
+          //If we don't have the metadata for some buckets, return
+          //null, indicating that we don't have any metadata. This
+          //will cause us to use the non-single hop path.
+          return null;
         }
         HashSet<Integer> buckets = serverToBucketsMap.get(server);
         if (buckets == null) {
@@ -280,11 +291,6 @@ public final class ClientMetadataService {
         buckets.add(bucketId);
       }
 
-      if (!serverToBucketsMap.isEmpty() ) {
-        serverToBucketsMap.entrySet().iterator().next().getValue().addAll(
-            bucketsWithoutServer);
-      }
-      
       if (logger.isDebugEnabled()) {
         logger.debug("ClientMetadataService: The server to bucket map is : {}", serverToBucketsMap);
       }
@@ -304,7 +310,6 @@ public final class ClientMetadataService {
     if (isDebugEnabled) {
       logger.debug("ClientMetadataService: The buckets to be pruned are: {}", buckets);
     }
-    Set<Integer> bucketSetWithoutServer =  new HashSet<Integer>();
     HashMap<ServerLocation, HashSet<Integer>> serverToBucketsMap = new HashMap<ServerLocation, HashSet<Integer>>();
     HashMap<ServerLocation, HashSet<Integer>> prunedServerToBucketsMap = new HashMap<ServerLocation, HashSet<Integer>>();
 
@@ -314,9 +319,11 @@ public final class ClientMetadataService {
       if (isDebugEnabled) {
         logger.debug("ClientMetadataService: For bucketId {} the server list is {}", bucketId, serversList);
       }
-      if ((serversList == null || serversList.size() == 0) ) {       
-        bucketSetWithoutServer.add(bucketId);        
-        continue;
+      if (serversList == null || serversList.size() == 0) {
+        //If we don't have the metadata for some buckets, return
+        //null, indicating that we don't have any metadata. This
+        //will cause us to use the non-single hop path.
+        return null;
       }
       
       if (isDebugEnabled) {
@@ -385,9 +392,6 @@ public final class ClientMetadataService {
       }
       serverToBucketsMap.remove(server);
     }
-    prunedServerToBucketsMap.entrySet().iterator().next().getValue().addAll(
-        bucketSetWithoutServer);
-    
     
     if (isDebugEnabled) {
       logger.debug("ClientMetadataService: The final prunedServerToBucket calculated is : {}", prunedServerToBucketsMap);
@@ -508,6 +512,7 @@ public final class ClientMetadataService {
     if(this.nonPRs.contains(region.getFullPath())){
       return;
     }
+    this.setMetadataStable(false);
     region.getCachePerfStats().incNonSingleHopsCount();
     if (isRecursive) {
       try {
@@ -830,6 +835,14 @@ public final class ClientMetadataService {
     return HONOUR_SERVER_GROUP_IN_PR_SINGLE_HOP;
   }
   
+  public boolean isMetadataStable() {
+    return isMetadataStable;
+  }
+
+  public void setMetadataStable(boolean isMetadataStable) {
+    this.isMetadataStable = isMetadataStable;
+  }
+
   private boolean isMetadataRefreshed_TEST_ONLY = false;
 
 }

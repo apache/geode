@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -123,6 +132,8 @@ public class DestroyOperation extends DistributedCacheOperation
         ((KeyWithRegionContext)this.key).setRegionContext(rgn);
       }
       EntryEventImpl ev = createEntryEvent(rgn);
+      boolean evReturned = false;
+      try {
       ev.setEventId(this.eventId);
       ev.setOldValueFromRegion();
       ev.setVersionTag(this.versionTag);
@@ -132,12 +143,18 @@ public class DestroyOperation extends DistributedCacheOperation
       }
       ev.setTailKey(tailKey);
       ev.setInhibitAllNotifications(this.inhibitAllNotifications);
+      evReturned = true;
       return ev;
+      } finally {
+        if (!evReturned) {
+          ev.release();
+        }
+      }
     }
 
     EntryEventImpl createEntryEvent(DistributedRegion rgn)
     {
-      EntryEventImpl event = new EntryEventImpl(rgn,
+      EntryEventImpl event = EntryEventImpl.create(rgn,
           getOperation(), this.key, null, this.callbackArg, true, getSender());
 //      event.setNewEventId(); Don't set the event here...
       setOldValueInEvent(event);
@@ -224,6 +241,10 @@ public class DestroyOperation extends DistributedCacheOperation
         return new ConflationKey(this.key, super.regionPath, false);
       }
     }
+    @Override
+    protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+      return _mayAddToMultipleSerialGateways(dm);
+    }
   }
 
   public static final class DestroyWithContextMessage extends DestroyMessage
@@ -240,7 +261,7 @@ public class DestroyOperation extends DistributedCacheOperation
     @Override
     EntryEventImpl createEntryEvent(DistributedRegion rgn)
     {
-      EntryEventImpl event = new EntryEventImpl(rgn, getOperation(), 
+      EntryEventImpl event = EntryEventImpl.create(rgn, getOperation(), 
           this.key, null, /* newvalue */
           this.callbackArg, true /* originRemote */, getSender(),
           true/* generateCallbacks */

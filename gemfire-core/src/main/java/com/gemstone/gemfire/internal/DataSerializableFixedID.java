@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal;
 
@@ -73,6 +82,30 @@ public interface DataSerializableFixedID extends SerializationVersions {
     case FOO:
       return new FOO(in);
   */
+  
+  public static final short NETWORK_PARTITION_MESSAGE = -157;
+  public static final short SUSPECT_MEMBERS_MESSAGE = -156;
+  
+  public static final short HEARTBEAT_RESPONSE = -155;
+  public static final short HEARTBEAT_REQUEST = -154;
+  public static final short REMOVE_MEMBER_REQUEST = -153;
+  
+  public static final short LEAVE_REQUEST_MESSAGE = -152;
+  
+  public static final short VIEW_ACK_MESSAGE = -151;
+  public static final short INSTALL_VIEW_MESSAGE = -150;
+  public static final short GMSMEMBER = -149;
+  public static final short NETVIEW = -148;
+  public static final short GET_VIEW_REQ = -147;
+  public static final short GET_VIEW_RESP = -146;
+
+  public static final short FIND_COORDINATOR_REQ = -145;
+  public static final short FIND_COORDINATOR_RESP = -144;
+
+  public static final short JOIN_RESPONSE = -143;
+  public static final short JOIN_REQUEST = -142;
+
+  public static final short HDFS_GATEWAY_EVENT_IMPL = -141;
   public static final short SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE = -140;
   
   public static final short GATEWAY_EVENT_IMPL = -136;
@@ -134,7 +167,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PR_FUNCTION_REPLY_MESSAGE = -93;
 
   public static final byte PROFILES_REPLY_MESSAGE = -92;
-  public static final byte BRIDGE_SERVER_PROFILE = -91;
+  public static final byte CACHE_SERVER_PROFILE = -91;
   public static final byte CONTROLLER_PROFILE = -90;
 
   public static final byte CREATE_REGION_MESSAGE = -89;
@@ -284,13 +317,18 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PR_REMOVE_ALL_REPLY_MESSAGE = -7;
   public static final byte REMOTE_REMOVE_ALL_MESSAGE = -6;
   public static final byte REMOTE_REMOVE_ALL_REPLY_MESSAGE = -5;
-  // -4..-1 unused
+  public static final byte DISTTX_COMMIT_MESSAGE = -4;
+  public static final byte DISTTX_PRE_COMMIT_MESSAGE = -3;
+  public static final byte DISTTX_COMMIT_REPLY_MESSAGE = -2;
+  public static final byte DISTTX_PRE_COMMIT_REPLY_MESSAGE = -1;
   
   public static final byte ILLEGAL = 0;
 
-  public static final byte JGROUPS_VIEW = 1;
+  // 1 available for reuse.  Retired in Geode v1.0
+  //public static final byte JGROUPS_VIEW = 1;
   
-  public static final byte JGROUPS_JOIN_RESP = 2;
+  // 2 available for reuse.  Retired in Geode v1.0
+//  public static final byte JGROUPS_JOIN_RESP = 2;
   
   public static final byte PUTALL_VERSIONS_LIST = 3;
 
@@ -337,12 +375,12 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PARTITION_PROFILE = 18;
 
   public static final byte ROLE_EVENT = 19;
-  public static final byte BRIDGE_REGION_EVENT = 20;
+  public static final byte CLIENT_REGION_EVENT = 20;
 
   public static final byte CONCURRENT_HASH_MAP = 21;
   public static final byte FIND_DURABLE_QUEUE = 22;
   public static final byte FIND_DURABLE_QUEUE_REPLY = 23;
-  public static final byte BRIDGE_SERVER_LOAD_MESSAGE = 24;
+  public static final byte CACHE_SERVER_LOAD_MESSAGE = 24;
 
   /** A header byte meaning that the next element in the stream is a
    * <code>ObjectPartList</code>.
@@ -409,9 +447,8 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PR_INDEX_CREATION_REPLY_MSG = 68;
   public static final byte PR_MANAGE_BUCKET_REPLY_MESSAGE = 69;
   
-  /** A header byte meaning that the next element in the stream is a
-   * <code>IpAddress</code>. */
-  public static final byte IP_ADDRESS = 70;
+  // 70 available for reuse - retired in Geode v1.0
+  //public static final byte IP_ADDRESS = 70;
 
   /** A header byte meaning that the next element in the stream is a
    * <code>UpdateOperation.UpdateMessage</code>. */
@@ -579,7 +616,8 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short TOKEN_REMOVED2 = 145;
 
   public static final short STARTUP_RESPONSE_WITHVERSION_MESSAGE = 146;
-  //147-148 unused
+  public static final short SHUTDOWN_ALL_GATEWAYHUBS_REQUEST = 147;
+  
   public static final short TOKEN_TOMBSTONE = 149;
   public static final short PR_DESTROY_REPLY_MESSAGE = 150;
   public static final short R_DESTROY_REPLY_MESSAGE = 151;
@@ -606,7 +644,11 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short TX_COMMIT_MESSAGE_701 = 164;
   public static final short PR_FETCH_BULK_ENTRIES_MESSAGE = 165;
   public static final short PR_FETCH_BULK_ENTRIES_REPLY_MESSAGE = 166;
-  // 167..999 unused
+  public static final short NWAY_MERGE_RESULTS = 167;
+  public static final short CUMULATIVE_RESULTS = 168;
+  public static final short DISTTX_ROLLBACK_MESSAGE = 169;
+  public static final short DISTTX_ROLLBACK_REPLY_MESSAGE = 170;
+  // 171..999 unused
 
   public static final short ADD_HEALTH_LISTENER_REQUEST = 1000;
   public static final short ADD_HEALTH_LISTENER_RESPONSE = 1001;
@@ -704,8 +746,9 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short SERIAL_ACKED_MESSAGE = 2001;
   public static final short CLIENT_DATASERIALIZER_MESSAGE=2002;
   
-  //2003..2099 unused
+  //2003..2098 unused
   
+  public static final short BUCKET_COUNT_LOAD_PROBE = 2099;
   public static final short PERSISTENT_MEMBERSHIP_VIEW_REQUEST =2100;
   public static final short PERSISTENT_MEMBERSHIP_VIEW_REPLY = 2101;
   public static final short PERSISTENT_STATE_QUERY_REQUEST = 2102;
@@ -792,7 +835,22 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short PR_QUERY_TRACE_INFO = 2162;
 
   public static final short INDEX_CREATION_DATA = 2163;
+    
+  public static final short SERVER_PING_MESSAGE = 2164;
+  public static final short PR_DESTROY_ON_DATA_STORE_MESSAGE = 2165;
   
+  public static final short DIST_TX_OP = 2166;
+  public static final short DIST_TX_PRE_COMMIT_RESPONSE = 2167;
+  public static final short DIST_TX_THIN_ENTRY_STATE = 2168;
+  
+  public static final short LUCENE_CHUNK_KEY = 2169;
+  public static final short LUCENE_FILE = 2170;
+  public static final short LUCENE_FUNCTION_CONTEXT = 2171;
+  public static final short LUCENE_STRING_QUERY_PROVIDER = 2172;
+  public static final short LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER = 2173;
+  public static final short LUCENE_ENTRY_SCORE = 2174;
+  public static final short LUCENE_TOP_ENTRIES = 2175;
+  public static final short LUCENE_TOP_ENTRIES_COLLECTOR = 2176;
   
   // NOTE, codes > 65535 will take 4 bytes to serialize
   

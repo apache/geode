@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.pdx.internal;
 
@@ -133,8 +142,6 @@ public class AutoSerializableManager {
       new CopyOnWriteHashSet<String>();
 
 
-  private static final Map<ReflectionBasedAutoSerializer, AutoSerializableManager> instances = new CopyOnWriteWeakHashMap<ReflectionBasedAutoSerializer, AutoSerializableManager>();
-
   private final ReflectionBasedAutoSerializer owner;
   
   public ReflectionBasedAutoSerializer getOwner() {
@@ -144,17 +151,11 @@ public class AutoSerializableManager {
   public static AutoSerializableManager create(ReflectionBasedAutoSerializer owner, boolean checkPortability, String... patterns) {
     AutoSerializableManager result = new AutoSerializableManager(owner);
     result.reconfigure(checkPortability, patterns);
-    instances.put(owner, result);
     return result;
   }
   private AutoSerializableManager(ReflectionBasedAutoSerializer owner) {
     this.owner = owner;
   }
-
-  public static AutoSerializableManager getInstance(ReflectionBasedAutoSerializer owner) {
-    return instances.get(owner);
-  }
-
 
   public Map<Class<?>, AutoClassInfo> getClassMap() {
     return classMap;
@@ -2158,8 +2159,9 @@ public class AutoSerializableManager {
     }
 
     StringBuilder sb = new StringBuilder();
-    // This is so that we can exclude duplicate
-    Set<String> tmp = new HashSet<String>();
+    // This is so that we can exclude duplicates
+    // LinkedHashSet is used to preserve the order of classPatterns. See bug 52286.
+    Set<String> tmp = new LinkedHashSet<String>();
     for (Pattern p : classPatterns) {
       tmp.add(p.pattern());
     }

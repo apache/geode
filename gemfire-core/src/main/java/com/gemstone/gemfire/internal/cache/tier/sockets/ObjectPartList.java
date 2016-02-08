@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
@@ -13,6 +22,8 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.Releasable;
 import com.gemstone.gemfire.DataSerializer;
 
 import java.io.DataInput;
@@ -32,7 +43,7 @@ import org.apache.logging.log4j.Logger;
  * @since 5.7
  * @author swale
  */
-public class ObjectPartList implements DataSerializableFixedID {
+public class ObjectPartList implements DataSerializableFixedID, Releasable {
   private static final Logger logger = LogService.getLogger();
 
   protected static final byte BYTES = 0;
@@ -176,6 +187,7 @@ public class ObjectPartList implements DataSerializableFixedID {
   }
 
   public void clear() {
+    release();
     this.objects.clear();
     if (this.keys != null) {
       this.keys.clear();
@@ -249,6 +261,13 @@ public class ObjectPartList implements DataSerializableFixedID {
   @Override
   public Version[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public void release() {
+    for (Object v: this.objects) {
+      OffHeapHelper.release(v);
+    }
   }
 
 }

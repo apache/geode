@@ -1,10 +1,18 @@
 /*
- * ========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /**
@@ -62,13 +70,16 @@ public class RegionFunctionArgs implements Serializable {
   private final boolean isSetConcurrencyChecksEnabled;
   private Boolean cloningEnabled;
   private final boolean isSetCloningEnabled;
+  private Boolean mcastEnabled;
+  private final boolean isSetMcastEnabled;
   private Integer concurrencyLevel;
   private final boolean isSetConcurrencyLevel;
   private final PartitionArgs partitionArgs;
   private final Integer evictionMax;
   private String compressor;
   private final boolean isSetCompressor;
-
+  private Boolean offHeap;
+  private final boolean isSetOffHeap;
   private RegionAttributes<?, ?> regionAttributes;
 
   public RegionFunctionArgs(String regionPath,
@@ -87,8 +98,7 @@ public class RegionFunctionArgs implements Serializable {
       Integer prLocalMaxMemory, Long prRecoveryDelay,
       Integer prRedundantCopies, Long prStartupRecoveryDelay,
       Long prTotalMaxMemory, Integer prTotalNumBuckets, Integer evictionMax,
-      String compressor) {
-
+      String compressor, Boolean offHeap, Boolean mcastEnabled) {
     this.regionPath = regionPath;
     this.regionShortcut = regionShortcut;
     this.useAttributesFrom = useAttributesFrom;
@@ -145,6 +155,10 @@ public class RegionFunctionArgs implements Serializable {
     if (this.isSetCloningEnabled) {
       this.cloningEnabled = cloningEnabled;
     }
+    this.isSetMcastEnabled = mcastEnabled != null;
+    if (isSetMcastEnabled) {
+      this.mcastEnabled = mcastEnabled;
+    }
     this.isSetConcurrencyLevel = concurrencyLevel != null;
     if (this.isSetConcurrencyLevel) {
       this.concurrencyLevel = concurrencyLevel;
@@ -156,6 +170,10 @@ public class RegionFunctionArgs implements Serializable {
     this.isSetCompressor = (compressor != null);
     if(this.isSetCompressor) {
       this.compressor = compressor;
+    }
+    this.isSetOffHeap = (offHeap != null);
+    if (this.isSetOffHeap) {
+      this.offHeap = offHeap;
     }
   }
 
@@ -176,8 +194,8 @@ public class RegionFunctionArgs implements Serializable {
       Integer prLocalMaxMemory, Long prRecoveryDelay,
       Integer prRedundantCopies, Long prStartupRecoveryDelay,
       Long prTotalMaxMemory, Integer prTotalNumBuckets, 
-      RegionAttributes<?, ?> regionAttributes) {
-
+      Boolean offHeap,
+      Boolean mcastEnabled, RegionAttributes<?, ?> regionAttributes) {   
     this(regionPath, null, useAttributesFrom, skipIfExists, keyConstraint,
         valueConstraint, statisticsEnabled, entryExpirationIdleTime,
         entryExpirationTTL, regionExpirationIdleTime, regionExpirationTTL,
@@ -187,8 +205,7 @@ public class RegionFunctionArgs implements Serializable {
         concurrencyChecksEnabled, cloningEnabled, concurrencyLevel, 
         prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
         prRedundantCopies, prStartupRecoveryDelay,
-        prTotalMaxMemory, prTotalNumBuckets, null, null);
-
+        prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap , mcastEnabled);
     this.regionAttributes = regionAttributes;
   }
 
@@ -232,7 +249,7 @@ public class RegionFunctionArgs implements Serializable {
    */
   public String getKeyConstraint() {
     return this.keyConstraint;
-  }
+  }  
 
   /**
    * @return the valueConstraint
@@ -302,6 +319,14 @@ public class RegionFunctionArgs implements Serializable {
    */
   public Boolean isSetDiskSynchronous() {
     return this.isSetDiskSynchronous;
+  }
+  
+  public Boolean isOffHeap() {
+    return this.offHeap;
+  }
+
+  public Boolean isSetOffHeap() {
+    return this.isSetOffHeap;
   }
 
   /**
@@ -402,6 +427,20 @@ public class RegionFunctionArgs implements Serializable {
    */
   public Boolean isSetCloningEnabled() {
     return this.isSetCloningEnabled;
+  }
+
+  /**
+   * @return the mcastEnabled setting
+   */
+  public Boolean isMcastEnabled() {
+    return this.mcastEnabled;
+  }
+
+  /**
+   * @return the isSetCloningEnabled
+   */
+  public Boolean isSetMcastEnabled() {
+    return this.isSetMcastEnabled;
   }
 
   /**

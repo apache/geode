@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.util;
 
@@ -27,7 +36,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.util.AbortableTaskService.AbortableTask;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class AbortableTaskServiceJUnitTest {
@@ -35,14 +44,14 @@ public class AbortableTaskServiceJUnitTest {
   private static final long TIMEOUT_SECONDS = 10;
   
   private volatile CountDownLatch delay;
-  private ExecutorService executor;
+  private ExecutorService futures;
   private AbortableTaskService tasks;
   
   @Before
   public void setUp() {
     this.delay = new CountDownLatch(1);
     this.tasks = new AbortableTaskService(Executors.newSingleThreadExecutor());
-    this.executor = Executors.newSingleThreadExecutor();
+    this.futures = Executors.newSingleThreadExecutor();
   }
   
   @After
@@ -50,11 +59,8 @@ public class AbortableTaskServiceJUnitTest {
     if (this.delay != null && this.delay.getCount() > 0) {
       this.delay.countDown();
     }
-    try {
-      assertTrue(this.executor.shutdownNow().isEmpty());
-    } finally {
-      this.tasks.abortAll();
-    }
+    this.tasks.abortAll();
+    assertTrue(this.futures.shutdownNow().isEmpty());
   }
   
   @Test
@@ -62,7 +68,7 @@ public class AbortableTaskServiceJUnitTest {
     DelayedTask dt = new DelayedTask();
     this.tasks.execute(dt);
     
-    Future<Boolean> future = this.executor.submit(new Callable<Boolean>() {
+    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() {
         tasks.waitForCompletion();
@@ -83,7 +89,7 @@ public class AbortableTaskServiceJUnitTest {
     DelayedTask dt = new DelayedTask();
     this.tasks.execute(dt);
     
-    Future<Boolean> future = this.executor.submit(new Callable<Boolean>() {
+    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() {
         tasks.waitForCompletion();
@@ -112,7 +118,7 @@ public class AbortableTaskServiceJUnitTest {
     this.tasks.execute(dt);
     this.tasks.execute(dt2);
     
-    Future<Boolean> future = this.executor.submit(new Callable<Boolean>() {
+    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() {
         tasks.waitForCompletion();

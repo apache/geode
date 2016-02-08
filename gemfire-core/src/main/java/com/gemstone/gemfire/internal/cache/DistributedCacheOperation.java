@@ -1,10 +1,18 @@
 /*
- * ========================================================================= 
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -51,6 +59,8 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.PutAllMessage;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl.OldValueImporter;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
 import com.gemstone.gemfire.internal.cache.UpdateOperation.UpdateMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage;
@@ -63,6 +73,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 
 /**
@@ -102,6 +114,50 @@ public abstract class DistributedCacheOperation {
    * @since 5.7
    */
   public static final byte DESERIALIZATION_POLICY_LAZY = (byte)2;
+  
+  /**
+   * @param deserializationPolicy must be one of the following: DESERIALIZATION_POLICY_NONE, DESERIALIZATION_POLICY_EAGER, DESERIALIZATION_POLICY_LAZY.
+   */
+  public static void writeValue(final byte deserializationPolicy, final Object vObj, final byte[] vBytes, final DataOutput out) throws IOException {
+    if (vObj != null) {
+      if (deserializationPolicy == DESERIALIZATION_POLICY_EAGER) {
+        // for DESERIALIZATION_POLICY_EAGER avoid extra byte array serialization
+        DataSerializer.writeObject(vObj, out);
+      } else if (deserializationPolicy == DESERIALIZATION_POLICY_NONE) {
+        // We only have NONE with a vObj when vObj is off-heap and not serialized.
+        StoredObject so = (StoredObject) vObj;
+        assert !so.isSerialized();
+        so.sendAsByteArray(out);
+      } else { // LAZY
+        // TODO OFFHEAP MERGE: cache the oldValue that is serialized here
+        // into the event
+        DataSerializer.writeObjectAsByteArray(vObj, out);
+      }
+    } else {
+      if (deserializationPolicy == DESERIALIZATION_POLICY_EAGER) {
+        // object is already in serialized form in the byte array.
+        // So just write the bytes to the stream.
+        // fromData will call readObject which will deserialize to object form.
+        out.write(vBytes);
+      } else {
+        DataSerializer.writeByteArray(vBytes, out);
+      }
+    }    
+  }
+  // static values for oldValueIsObject
+  public static final byte VALUE_IS_BYTES = 0;
+  public static final byte VALUE_IS_SERIALIZED_OBJECT = 1;
+  public static final byte VALUE_IS_OBJECT = 2;
+
+  /**
+   * Given a VALUE_IS_* constant convert and return the corresponding DESERIALIZATION_POLICY_*.
+   */
+  public static byte valueIsToDeserializationPolicy(boolean oldValueIsSerialized) {
+    if (!oldValueIsSerialized) return DESERIALIZATION_POLICY_NONE;
+    if (CachedDeserializableFactory.preferObject()) return DESERIALIZATION_POLICY_EAGER;
+    return DESERIALIZATION_POLICY_LAZY;
+  }
+
 
   public final static byte DESERIALIZATION_POLICY_NUMBITS =
           DistributionMessage.getNumBits(DESERIALIZATION_POLICY_LAZY);
@@ -368,8 +424,8 @@ public abstract class DistributedCacheOperation {
           RemoteOperationMessage rmsg = entryEvent.getRemoteOperationMessage();
           if (rmsg != null) {
             recipients.remove(rmsg.getSender());
+            useMulticast = false; // bug #45106: can't mcast or the sender of the one-hop op will get it
           }
-          useMulticast = false; // bug #45106: can't mcast or the sender of the one-hop op will get it
         }
         
         if (logger.isDebugEnabled()) {
@@ -792,7 +848,7 @@ public abstract class DistributedCacheOperation {
 
   public static abstract class CacheOperationMessage extends
       SerialDistributionMessage implements MessageWithReply,
-      DirectReplyMessage, ReliableDistributionData {
+      DirectReplyMessage, ReliableDistributionData, OldValueImporter {
 
     protected final static short POSSIBLE_DUPLICATE_MASK = POS_DUP;
     protected final static short OLD_VALUE_MASK =
@@ -809,6 +865,10 @@ public abstract class DistributedCacheOperation {
 
 
     private final static int INHIBIT_NOTIFICATIONS_MASK = 0x400;
+
+	protected final static short FETCH_FROM_HDFS = 0x200;
+    
+    protected final static short IS_PUT_DML = 0x100;
 
     public boolean needsRouting;
 
@@ -906,20 +966,18 @@ public abstract class DistributedCacheOperation {
      * @param event the entry event that contains the old value
      */
     public void appendOldValueToMessage(EntryEventImpl event) {
-      Object val = event.getRawOldValue();
-      if (val == Token.NOT_AVAILABLE ||
-          val == Token.REMOVED_PHASE1 ||
-          val == Token.REMOVED_PHASE2 ||
-          val == Token.DESTROYED ||
-          val == Token.TOMBSTONE) {
-        return;
+      {
+        @Unretained Object val = event.getRawOldValue();
+        if (val == null ||
+            val == Token.NOT_AVAILABLE ||
+            val == Token.REMOVED_PHASE1 ||
+            val == Token.REMOVED_PHASE2 ||
+            val == Token.DESTROYED ||
+            val == Token.TOMBSTONE) {
+          return;
+        }
       }
-      if (val instanceof CachedDeserializable) {
-        val = ((CachedDeserializable)val).getValue();
-      }
-      this.oldValue = val;
-      this.hasOldValue = true;
-      this.oldValueIsSerialized = (val instanceof byte[]);
+      event.exportOldValue(this);
     }
     
     /**
@@ -977,6 +1035,12 @@ public abstract class DistributedCacheOperation {
     public boolean containsRegionContentChange() {
       return true;
     }
+    
+    protected LocalRegion getLocalRegionForProcessing(DistributionManager dm) {
+      Assert.assertTrue(this.regionPath != null, "regionPath was null");
+      GemFireCacheImpl gfc = (GemFireCacheImpl)CacheFactory.getInstance(dm.getSystem());
+      return gfc.getRegionByPathForProcessing(this.regionPath);
+    }
 
     @Override
     protected final void process(final DistributionManager dm) {
@@ -998,12 +1062,7 @@ public abstract class DistributedCacheOperation {
           return;
         }
 
-        Assert.assertTrue(this.regionPath != null, "regionPath was null");
-
-        GemFireCacheImpl gfc = (GemFireCacheImpl)CacheFactory.getInstance(dm
-            .getSystem());
-        final LocalRegion lclRgn = gfc
-            .getRegionByPathForProcessing(this.regionPath);
+        final LocalRegion lclRgn = getLocalRegionForProcessing(dm);
         sendReply = false;
         basicProcess(dm, lclRgn);
       } catch (CancelException e) {
@@ -1049,8 +1108,8 @@ public abstract class DistributedCacheOperation {
       boolean sendReply = true;
       InternalCacheEvent event = null;
 
-      if (logger.isDebugEnabled()) {
-        logger.debug("DistributedCacheOperation.basicProcess: {}", this);
+      if (logger.isTraceEnabled()) {
+        logger.trace("DistributedCacheOperation.basicProcess: {}", this);
       }
       try {
         // LocalRegion lclRgn = getRegionFromPath(dm.getSystem(),
@@ -1084,6 +1143,7 @@ public abstract class DistributedCacheOperation {
         }
 
         event = createEvent(rgn);
+        try {
         boolean isEntry = event.getOperation().isEntry();
 
         if (isEntry && this.possibleDuplicate) {
@@ -1105,6 +1165,11 @@ public abstract class DistributedCacheOperation {
         }
         
         sendReply = operateOnRegion(event, dm) && sendReply;
+        } finally {
+          if (event instanceof EntryEventImpl) {
+            ((EntryEventImpl) event).release();
+          }
+        }
       } catch (RegionDestroyedException e) {
         this.closed = true;
         if (logger.isDebugEnabled()) {
@@ -1287,12 +1352,15 @@ public abstract class DistributedCacheOperation {
       this.hasDelta = (bits & DELTA_MASK) != 0;
       this.hasOldValue = (bits & OLD_VALUE_MASK) != 0;
       if (this.hasOldValue) {
-        // below boolean is not strictly required, but this is for compatibility
-        // with SQLFire code which writes as byte here to indicate whether
-        // oldValue is an object, serialized object or byte[]
-        in.readByte();
+        byte b = in.readByte();
+        if (b == 0) {
+          this.oldValueIsSerialized = false;
+        } else if (b == 1) {
+          this.oldValueIsSerialized = true;
+        } else {
+          throw new IllegalStateException("expected 0 or 1");
+        }
         this.oldValue = DataSerializer.readByteArray(in);
-        this.oldValueIsSerialized = true;
       }
       boolean hasFilterInfo = (bits & FILTER_INFO_MASK) != 0;
       this.needsRouting = (bits & NEEDS_ROUTING_MASK) != 0;
@@ -1306,6 +1374,10 @@ public abstract class DistributedCacheOperation {
       }
       if ((extBits & INHIBIT_NOTIFICATIONS_MASK) != 0) {
         this.inhibitAllNotifications = true;
+	  if (this instanceof PutAllMessage) {
+        ((PutAllMessage) this).setFetchFromHDFS((extBits & FETCH_FROM_HDFS) != 0);
+        ((PutAllMessage) this).setPutDML((extBits & IS_PUT_DML) != 0);
+      }
       }
     }
 
@@ -1332,18 +1404,20 @@ public abstract class DistributedCacheOperation {
         DataSerializer.writeObject(this.callbackArg, out);
       }
       if (this.hasOldValue) {
-        // below boolean is not strictly required, but this is for compatibility
-        // with SQLFire code which writes as byte here to indicate whether
-        // oldValue is an object, serialized object or byte[]
         out.writeByte(this.oldValueIsSerialized ? 1 : 0);
         // the receiving side expects that the old value will have been serialized
         // as a byte array
-        if (this.oldValueIsSerialized) {
-          DataSerializer.writeByteArray((byte[])this.oldValue, out);
+        final byte policy = valueIsToDeserializationPolicy(this.oldValueIsSerialized);
+        final Object vObj;
+        final byte[] vBytes;
+        if (!this.oldValueIsSerialized && this.oldValue instanceof byte[]) {
+          vObj = null;
+          vBytes = (byte[])this.oldValue;
+        } else {
+          vObj = this.oldValue;
+          vBytes = null;
         }
-        else {
-          DataSerializer.writeObjectAsByteArray(this.oldValue, out);
-        }
+        writeValue(policy, vObj, vBytes, out);
       }
       if (this.filterRouting != null) {
         InternalDataSerializer.invokeToData(this.filterRouting, out);
@@ -1426,6 +1500,50 @@ public abstract class DistributedCacheOperation {
 
     public void setSendDelta(boolean sendDelta) {
       this.sendDelta = sendDelta;
+    }
+
+    @Override
+    public boolean prefersOldSerialized() {
+      return true;
+    }
+
+    @Override
+    public boolean isUnretainedOldReferenceOk() {
+      return true;
+    }
+
+    @Override
+    public boolean isCachedDeserializableValueOk() {
+      return false;
+    }
+
+    @Override
+    public void importOldObject(Object ov, boolean isSerialized) {
+      this.oldValueIsSerialized = isSerialized;
+      this.oldValue = ov;
+      this.hasOldValue = true;
+    }
+
+    @Override
+    public void importOldBytes(byte[] ov, boolean isSerialized) {
+      this.oldValueIsSerialized = isSerialized;
+      this.oldValue = ov;
+      this.hasOldValue = true;
+    }
+
+    protected final boolean _mayAddToMultipleSerialGateways(DistributionManager dm) {
+      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT); 
+      try {
+        LocalRegion lr = getLocalRegionForProcessing(dm);
+        if (lr == null) {
+          return false;
+        }
+        return lr.notifiesMultipleSerialGateways();
+      } catch (RuntimeException ignore) {
+        return false;
+      } finally {
+        LocalRegion.setThreadInitLevelRequirement(oldLevel);
+      }
     }
   }
 

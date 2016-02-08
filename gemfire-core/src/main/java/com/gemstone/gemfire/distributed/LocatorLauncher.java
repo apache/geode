@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.distributed;
@@ -873,7 +881,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
   private LocatorState statusWithWorkingDirectory() {
     int parsedPid = 0;
     try {
-      final ProcessController controller = new ProcessControllerFactory().createProcessController(this.controllerParameters, new File(getWorkingDirectory()), ProcessType.LOCATOR.getPidFileName());
+      final ProcessController controller = new ProcessControllerFactory().createProcessController(this.controllerParameters, new File(getWorkingDirectory()), ProcessType.LOCATOR.getPidFileName(), READ_PID_FILE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
       parsedPid = controller.getProcessId();
       
       // note: in-process request will go infinite loop unless we do the following
@@ -1031,7 +1039,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
   private LocatorState stopWithWorkingDirectory() {
     int parsedPid = 0;
     try {
-      final ProcessController controller = new ProcessControllerFactory().createProcessController(this.controllerParameters, new File(getWorkingDirectory()), ProcessType.LOCATOR.getPidFileName());
+      final ProcessController controller = new ProcessControllerFactory().createProcessController(this.controllerParameters, new File(getWorkingDirectory()), ProcessType.LOCATOR.getPidFileName(), READ_PID_FILE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
       parsedPid = controller.getProcessId();
       
       // NOTE in-process request will go infinite loop unless we do the following
@@ -1057,6 +1065,10 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
       // failed to open or read file or dir
       return createNoResponseState(e, "Failed to communicate with locator with process id " + parsedPid);
     } 
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return createNoResponseState(e, "Interrupted while trying to communicate with locator with process id " + parsedPid);
+    } 
     catch (MBeanInvocationFailedException e) {
       // MBean either doesn't exist or method or attribute don't exist
       return createNoResponseState(e, "Failed to communicate with locator with process id " + parsedPid);
@@ -1064,6 +1076,9 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
     catch (PidUnavailableException e) {
       // couldn't determine pid from within locator JVM
       return createNoResponseState(e, "Failed to find usable process id within file " + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
+    } 
+    catch (TimeoutException e) {
+      return createNoResponseState(e, "Timed out trying to find usable process id within file " + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
     } 
     catch (UnableToControlProcessException e) {
       return createNoResponseState(e, "Failed to communicate with locator with process id " + parsedPid);
@@ -1073,7 +1088,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
   private LocatorState createNoResponseState(final Exception cause, final String errorMessage) {
     debug(cause);
     //info(errorMessage);
-    return new LocatorState(this, Status.NOT_RESPONDING); // TODO: use errorMessage
+    return new LocatorState(this, Status.NOT_RESPONDING, errorMessage);
   }
   
   private Properties getOverriddenDefaults() {
@@ -1891,11 +1906,12 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
             gfJsonObject.getString(JSON_MEMBERNAME));
       }
       catch (GfJsonException e) {
-        throw new IllegalArgumentException("Unable to create LocatorStatus from JSON: ".concat(json));
+        throw new IllegalArgumentException("Unable to create LocatorStatus from JSON: ".concat(json), e);
       }
     }
 
     public LocatorState(final LocatorLauncher launcher, final Status status) {
+      // if status is NOT_RESPONDING then this is executing inside the JVM asking for he status; pid etc will be set according to the caller's JVM instead
       this(status,
         launcher.statusMessage,
         System.currentTimeMillis(),
@@ -1911,6 +1927,24 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
         launcher.getBindAddressAsString(),
         launcher.getPortAsString(),
         launcher.getMemberName());
+    }
+    
+    public LocatorState(final LocatorLauncher launcher, final Status status, final String errorMessage) {
+      this(status, // status
+          errorMessage, // statusMessage
+          System.currentTimeMillis(), // timestamp
+          null, // locatorLocation
+          null, // pid
+          0L, // uptime
+          launcher.getWorkingDirectory(), // workingDirectory
+          Collections.<String>emptyList(), // jvmArguments
+          null, // classpath
+          GemFireVersion.getGemFireVersion(), // gemfireVersion
+          null, // javaVersion
+          null, // logFile
+          null, // host
+          null, // port
+          null);// memberName
     }
     
     private static String getBindAddressAsString(LocatorLauncher launcher) {

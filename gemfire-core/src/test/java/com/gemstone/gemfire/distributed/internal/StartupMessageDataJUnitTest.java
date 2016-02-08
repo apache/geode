@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed.internal;
 
@@ -18,10 +27,11 @@ import java.util.StringTokenizer;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.ByteArrayData;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import junit.framework.TestCase;
 
@@ -38,30 +48,6 @@ public class StartupMessageDataJUnitTest extends TestCase {
     super(name);
   }
   
-  public void testSupportedVersion() throws Exception {
-    try {
-      @SuppressWarnings("unused")
-      StartupMessageData data = new StartupMessageData(
-          null, StartupMessageData.SUPPORTED_VERSION);
-      fail("Supported version should have thrown NPE for null DataInput.");
-    } catch (NullPointerException expected) {
-      // passed
-    }
-  }
-
-  // compatibility with 6.6.2 is no longer needed.  If this is needed
-  // in the future we need to change to using the new versioned data
-  // streams
-//  public void testUnsupportedVersion() throws Exception {
-//    try {
-//      @SuppressWarnings("unused")
-//      StartupMessageData data = new StartupMessageData(
-//          null, "6.6.2");
-//      // passed
-//    } catch (NullPointerException e) {
-//      fail("Unsupported version should simply ignore null DataInput.");
-//    }
-//  }
 
   public void testWriteHostedLocatorsWithEmpty() throws Exception {
     Collection<String> hostedLocators = new ArrayList<String>();
@@ -141,7 +127,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(testStream.isEmpty());
 
     DataOutputStream out = testStream.getDataOutput();
-    data.toData(out);
+    data.writeTo(out);
     assertTrue(testStream.size() > 0);
     
     DataInput in = testStream.getDataInput();
@@ -158,7 +144,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(testStream.isEmpty());
 
     DataOutputStream out = testStream.getDataOutput();
-    data.toData(out);
+    data.writeTo(out);
     assertTrue(testStream.size() > 0);
     
     DataInput in = testStream.getDataInput();
@@ -179,7 +165,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(testStream.isEmpty());
 
     DataOutputStream out = testStream.getDataOutput();
-    data.toData(out);
+    data.writeTo(out);
     assertTrue(testStream.size() > 0);
     
     DataInput in = testStream.getDataInput();
@@ -205,7 +191,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(testStream.isEmpty());
 
     DataOutputStream out = testStream.getDataOutput();
-    data.toData(out);
+    data.writeTo(out);
     assertTrue(testStream.size() > 0);
     
     DataInput in = testStream.getDataInput();
@@ -233,8 +219,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
   public void testNullHostedLocator() throws Exception {
     String locatorString = null;
     DataInput in = getDataInputWithOneHostedLocator(locatorString);
-    StartupMessageData dataToRead = new StartupMessageData(
-        in, StartupMessageData.SUPPORTED_VERSION);
+    StartupMessageData dataToRead = new StartupMessageData();
+    dataToRead.readFrom(in);
     Collection<String> readHostedLocators = dataToRead.readHostedLocators();
     assertNull(readHostedLocators);
   }
@@ -242,8 +228,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
   public void testEmptyHostedLocator() throws Exception {
     String locatorString = "";
     DataInput in = getDataInputWithOneHostedLocator(locatorString);
-    StartupMessageData dataToRead = new StartupMessageData(
-        in, StartupMessageData.SUPPORTED_VERSION);
+    StartupMessageData dataToRead = new StartupMessageData();
+    dataToRead.readFrom(in);
     Collection<String> readHostedLocators = dataToRead.readHostedLocators();
     assertNull(readHostedLocators);
   }
@@ -251,8 +237,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
   public void testOneHostedLocator() throws Exception {
     String locatorString = createOneLocatorString();
     DataInput in = getDataInputWithOneHostedLocator(locatorString);
-    StartupMessageData dataToRead = new StartupMessageData(
-        in, StartupMessageData.SUPPORTED_VERSION);
+    StartupMessageData dataToRead = new StartupMessageData();
+    dataToRead.readFrom(in);
     Collection<String> readHostedLocators = dataToRead.readHostedLocators();
     assertNotNull(readHostedLocators);
     assertEquals(1, readHostedLocators.size());
@@ -300,7 +286,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(testStream.isEmpty());
 
     DataOutputStream out = testStream.getDataOutput();
-    dataToWrite.toData(out);
+    dataToWrite.writeTo(out);
     assertTrue(testStream.size() > 0);
     
     DataInput in = testStream.getDataInput();

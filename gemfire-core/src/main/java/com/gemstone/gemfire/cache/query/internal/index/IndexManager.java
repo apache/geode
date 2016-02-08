@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /*
  * IndexManager.java
@@ -84,8 +93,9 @@ public class IndexManager  {
   public static final int RECREATE_INDEX = 4;
   protected final Region region;
 
-  private boolean isOverFlowToDisk;
-  private boolean indexMaintenanceSynchronous = true;
+  private final boolean isOverFlowToDisk;
+  private final boolean offHeap;
+  private final boolean indexMaintenanceSynchronous;
   private int numCreators = 0;
   private int numUpdatersInProgress = 0;
   private int numUpdatersInWaiting = 0;
@@ -133,6 +143,7 @@ public class IndexManager  {
   public static final int INDEX_ELEMARRAY_THRESHOLD = Integer.parseInt(System.getProperty(INDEX_ELEMARRAY_THRESHOLD_PROP,"100"));
   public static final int INDEX_ELEMARRAY_SIZE = Integer.parseInt(System.getProperty(INDEX_ELEMARRAY_SIZE_PROP,"5"));
   public final static AtomicLong SAFE_QUERY_TIME = new AtomicLong(0);
+  public static boolean ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION = true;
   /** The NULL constant */
   public static final Object NULL = new NullToken();
 
@@ -152,6 +163,7 @@ public class IndexManager  {
         .getIndexMaintenanceSynchronous();
     isOverFlowToDisk = region.getAttributes().getEvictionAttributes()
         .getAction().isOverflowToDisk();
+    this.offHeap = region.getAttributes().getOffHeap();
     if (!indexMaintenanceSynchronous) {
       final LoggingThreadGroup group =
         LoggingThreadGroup.createThreadGroup("QueryMonitor Thread Group", logger);
@@ -203,7 +215,7 @@ public class IndexManager  {
    * @param lastModifiedTime
    */
   public static boolean needsRecalculation(long queryStartTime, long lastModifiedTime) {
-    return queryStartTime <= SAFE_QUERY_TIME.get() - queryStartTime + lastModifiedTime;
+    return ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION && queryStartTime <= SAFE_QUERY_TIME.get() - queryStartTime + lastModifiedTime;
   }
   
   /**
@@ -303,14 +315,21 @@ public class IndexManager  {
       if (!isCompactOrHash && indexType != IndexType.PRIMARY_KEY) {
         
         if (indexType == IndexType.HASH ) {
-          if (!getRegion().getAttributes().getIndexMaintenanceSynchronous()) {
+          if (!isIndexMaintenanceTypeSynchronous()) {
             throw new UnsupportedOperationException(LocalizedStrings.DefaultQueryService_HASH_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_ASYNC_MAINTENANCE.toLocalizedString());
           } 
           throw new UnsupportedOperationException(LocalizedStrings.DefaultQueryService_HASH_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_MULTIPLE_ITERATORS.toLocalizedString());
         }
         // Overflow is not supported with range index.
-        if(isOverFlowToDisk) {
+        if(isOverFlowRegion()) {
           throw new UnsupportedOperationException(LocalizedStrings.DefaultQueryService_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_REGIONS_WHICH_OVERFLOW_TO_DISK_THE_REGION_INVOLVED_IS_0.toLocalizedString(region.getFullPath()));
+        }
+        // OffHeap is not supported with range index.
+        if(isOffHeap()) {
+          if (!isIndexMaintenanceTypeSynchronous()) {
+            throw new UnsupportedOperationException(LocalizedStrings.DefaultQueryService_OFF_HEAP_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_ASYNC_MAINTENANCE_THE_REGION_IS_0.toLocalizedString(region.getFullPath()));
+          } 
+          throw new UnsupportedOperationException(LocalizedStrings.DefaultQueryService_OFF_HEAP_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_MULTIPLE_ITERATORS_THE_REGION_IS_0.toLocalizedString(region.getFullPath()));
         }
       }
 
@@ -875,7 +894,7 @@ public class IndexManager  {
         logger.debug("IndexMananger::rerunIndexCreationQuery: Exception in callback beforeRerunningIndexcreationQuery", e);
       }
     }
-    if (indexMaintenanceSynchronous) {
+    if (isIndexMaintenanceTypeSynchronous()) {
       recreateAllIndexesForRegion();
     }
     else {
@@ -904,6 +923,14 @@ public class IndexManager  {
         // Fault in the value once before index update so that every index
         // update does not have
         // to read the value from disk every time.
+        // TODO OFFHEAP: this optimization (calling getValue to make sure it is faulted in to disk) has a performance problem.
+        // It also decompresses and deserializes the value and then throws that away. In the case of a heap region the deserialized
+        // value would be cached in a VMCachedDeserializable. But for compression and/or off-heap the decompression and/or deserialization
+        // this call does is lost and has to be done again. We could just add a method to RegionEntry that faults the value in without returning it.
+        // Even better (but more work): could we create a wrapper around RegionEntry that we create here to wrap "entry" and pass the wrapper to addIndexMapping?
+        // Any indexes that store a reference to the RegionEntry would need to ask the wrapper for the real one but any of them
+        // that want the value could get it from the wrapper. The first time the wrapper is asked for the value it could get it from
+        // the real RegionEntry it wraps and cache a reference to that value. I think that gives us the best of both worlds.
         entry.getValue((LocalRegion)this.region);
         Iterator<Index> indexSetIterator = indexSet.iterator();
         while(indexSetIterator.hasNext()) {
@@ -974,7 +1001,7 @@ public class IndexManager  {
       logger.debug("IndexManager.updateIndexes {} + action: {}", entry.getKey(), action);
     }
     if (entry == null) return;
-    if (indexMaintenanceSynchronous) {
+    if (isIndexMaintenanceTypeSynchronous()) {
       //System.out.println("Synchronous update");
       processAction(entry, action, opCode);
     }
@@ -1273,7 +1300,7 @@ public class IndexManager  {
    */
   public void destroy() throws QueryException {
     this.indexes.clear();
-    if (!indexMaintenanceSynchronous) updater.shutdown();
+    if (!isIndexMaintenanceTypeSynchronous()) updater.shutdown();
   }
   
   /**
@@ -1318,6 +1345,9 @@ public class IndexManager  {
 
   public boolean isOverFlowRegion() {
     return this.isOverFlowToDisk;
+  }
+  public boolean isOffHeap() {
+    return this.offHeap;
   }
 
   public static boolean isObjectModificationInplace() {
@@ -1583,7 +1613,7 @@ public class IndexManager  {
       }
       //Hash index not supported for overflow but we "thought" we were so let's maintain backwards compatibility
       //and create a regular compact range index instead
-      if (indexType == IndexType.HASH && isOverFlowToDisk) {
+      if (indexType == IndexType.HASH && isOverFlowRegion()) {
         indexType = IndexType.FUNCTIONAL;
       }
       if (indexType == IndexType.PRIMARY_KEY) {

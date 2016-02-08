@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
@@ -36,8 +45,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private final boolean allServers;
   
-  private boolean onBehalfOfTXFunctionService;
-
   private String[] groups;
 
   public ServerFunctionExecutor(Pool p, boolean allServers, String... groups) {
@@ -59,7 +66,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
       this.pool = sfe.pool;
     }
     this.allServers = sfe.allServers;
-    this.onBehalfOfTXFunctionService = sfe.onBehalfOfTXFunctionService;
     this.groups = sfe.groups;
   }
   
@@ -105,9 +111,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
     }
     } finally {
       UserAttributes.userAttributes.set(null);
-      if (isOnBehalfOfTXFunctionService()) {
-        pool.releaseServerAffinity();
-      }
     }
   }
 
@@ -139,9 +142,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
     }
     finally {
       UserAttributes.userAttributes.set(null);
-      if (isOnBehalfOfTXFunctionService()) {
-        pool.releaseServerAffinity();
-      }
     }
 
   }
@@ -425,13 +425,4 @@ public class ServerFunctionExecutor extends AbstractExecution {
       return executeFunction(functionObject);      
     }
   }
-
-  public void setOnBehalfOfTXFunctionService(boolean onBehalfOfTXFunctionService) {
-    this.onBehalfOfTXFunctionService = onBehalfOfTXFunctionService;
-  }
-
-  public boolean isOnBehalfOfTXFunctionService() {
-    return onBehalfOfTXFunctionService;
-  }
-  
 }

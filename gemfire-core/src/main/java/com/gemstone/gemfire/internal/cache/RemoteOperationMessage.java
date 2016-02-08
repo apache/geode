@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -36,6 +45,8 @@ import com.gemstone.gemfire.distributed.internal.ReplyMessage;
 import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.partitioned.PutMessage;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -70,6 +81,9 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
   private InternalDistributedMember txMemberId = null;
 
   protected transient short flags;
+  
+  /*TODO [DISTTX] Convert into flag*/
+  protected boolean isTransactionDistributed = false;
 
   public RemoteOperationMessage() {
   }
@@ -89,6 +103,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
     if(txState!=null && txState.isMemberIdForwardingRequired()) {
       this.txMemberId = txState.getOriginatingMember();
     }
+    setIfTransactionDistributed();
   }
 
   public RemoteOperationMessage(Set recipients, String regionPath, ReplyProcessor21 processor) {
@@ -103,6 +118,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
     if(txState!=null && txState.isMemberIdForwardingRequired()) {
       this.txMemberId = txState.getOriginatingMember();
     }
+    setIfTransactionDistributed();
   }
 
   /**
@@ -114,6 +130,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
     this.processorId = other.processorId;
     this.txUniqId = other.getTXUniqId();
     this.txMemberId = other.getTXMemberId();
+    this.isTransactionDistributed = other.isTransactionDistributed;
   }
 
   /**
@@ -332,19 +349,23 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
   protected abstract boolean operateOnRegion(DistributionManager dm,
       LocalRegion r,long startTime) throws RemoteOperationException;
 
-
   /**
    * Fill out this instance of the message using the <code>DataInput</code>
    * Required to be a {@link com.gemstone.gemfire.DataSerializable}Note: must
    * be symmetric with {@link #toData(DataOutput)}in what it reads
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException
-  {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.flags = in.readShort();
     setFlags(this.flags, in);
     this.regionPath = DataSerializer.readString(in);
+
+    // extra field post 9.0
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(
+        Version.GFE_90) >= 0) {
+      this.isTransactionDistributed = in.readBoolean();
+    }
   }
 
   public InternalDistributedMember getTXOriginatorClient() {
@@ -357,8 +378,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
    * {@link #fromData(DataInput)}in what it writes
    */
   @Override
-  public void toData(DataOutput out) throws IOException
-  {
+  public void toData(DataOutput out) throws IOException {
     super.toData(out);
     short flags = computeCompressedShort();
     out.writeShort(flags);
@@ -375,6 +395,12 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
       DataSerializer.writeObject(this.getTXMemberId(),out);
     }
     DataSerializer.writeString(this.regionPath,out);
+
+    // extra field post 9.0
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(
+        Version.GFE_90) >= 0) {
+      out.writeBoolean(this.isTransactionDistributed);
+    }
   }
 
   protected short computeCompressedShort() {
@@ -418,6 +444,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
     buff.append("(regionPath="); // make sure this is the first one
     buff.append(this.regionPath);
     appendFields(buff);
+    buff.append(" ,distTx=");
+    buff.append(this.isTransactionDistributed);
     buff.append(")");
     return buff.toString();
   }
@@ -611,6 +639,30 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
     public void process(DistributionMessage msg) {
       this.responseReceived = true;
       super.process(msg);
+    }
+  }
+  
+  @Override
+  public boolean isTransactionDistributed() {
+    return this.isTransactionDistributed;
+  }
+  
+  /*
+   * For Distributed Tx
+   */
+  public void setTransactionDistributed(boolean isDistTx) {
+   this.isTransactionDistributed = isDistTx;
+  }
+  
+  /*
+   * For Distributed Tx
+   */
+  private void setIfTransactionDistributed() {
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    if (cache != null) {
+      if (cache.getTxManager() != null) {
+        this.isTransactionDistributed = cache.getTxManager().isDistributed();
+      }
     }
   }
 }

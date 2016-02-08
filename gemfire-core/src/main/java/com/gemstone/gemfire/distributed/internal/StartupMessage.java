@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed.internal;
 
@@ -17,16 +26,17 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.gemstone.gemfire.internal.*;
+
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.Instantiator;
 import com.gemstone.gemfire.SystemConnectException;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalDataSerializer.SerializerAttributesHolder;
 import com.gemstone.gemfire.internal.InternalInstantiator.InstantiatorAttributesHolder;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.tcp.Stub;
 
 /**
  * A message that is sent to all other distribution manager when
@@ -35,11 +45,8 @@ import com.gemstone.gemfire.internal.tcp.Stub;
 public final class StartupMessage extends HighPriorityDistributionMessage implements AdminMessageType {
   private static final Logger logger = LogService.getLogger();
 
-  /** A stub for the direct channel for this manager */
-  private Stub directChannel;
   private String version = GemFireVersion.getGemFireVersion(); // added for bug 29005
   private int replyProcessorId;
-  private boolean isMcastDiscovery;
   private boolean isMcastEnabled;
   private boolean isTcpDisabled;
   private Set interfaces;
@@ -92,13 +99,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   ///////////////////////  Instance Methods  ///////////////////////
   
   /**
-   * Sets the id of the distribution manager that is starting up
-   */
-  void setDirectChannel(Stub directChannel) {
-    this.directChannel = directChannel;
-  }
-
-  /**
    * Sets the reply processor for this message
    */
   void setReplyProcessorId(int proc) {
@@ -132,21 +132,13 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
   
 //  void setHostedLocatorsWithSharedConfiguration(Collection<String> hostedLocatorsWithSharedConfiguration) {
 //    this.hostedLocatorsWithSharedConfiguration = hostedLocatorsWithSharedConfiguration;
 //  }
-  
-  /**
-   * Sets the mcastDiscovery flag for this message
-   * @since 5.0
-   */
-  void setMcastDiscovery(boolean flag) {
-    isMcastDiscovery = flag;
-  }
   
   /**
    * Sets the tcpDisabled flag for this message
@@ -247,7 +239,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
 
     if (rejectionMessage == null) { // change state only if there's no rejectionMessage yet
       if (this.interfaces == null || this.interfaces.size() == 0) {
-        final com.gemstone.org.jgroups.util.StringId msg = 
+        final com.gemstone.gemfire.i18n.StringId msg = 
           LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_PEER_HAS_NO_NETWORK_INTERFACES;
         rejectionMessage = msg.toLocalizedString(getSender());
       }
@@ -309,37 +301,24 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     return STARTUP_MESSAGE;
   }
 
-  private static final Version[] dsfidVersions = new Version[] {
-          Version.GFE_82
-  };
-
   @Override
   public Version[] getSerializationVersions() {
-    return dsfidVersions;
-  }
-
-  public void toDataPre_GFE_8_2_0_0(DataOutput out) throws IOException {
-    toDataContent(out, true);
+    return null;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    toDataContent(out, false);
-  }
-
-  private void toDataContent(DataOutput out, boolean pre8_2_0_0) throws IOException {
     super.toData(out);
-    out.writeBoolean(this.directChannel != null);
-    if (this.directChannel != null) {
-      InternalDataSerializer.invokeToData(this.directChannel, out);
-    }
-    if (pre8_2_0_0) {
+
+    boolean pre9_0_0_0 = InternalDataSerializer.
+        getVersionForDataStream(out).compareTo(Version.GFE_90) < 0;
+    if (pre9_0_0_0) {
       DataSerializer.writeObject(new Properties(), out);
     }
+
     DataSerializer.writeString(this.version, out);
     out.writeInt(this.replyProcessorId);
     out.writeBoolean(this.isMcastEnabled);
-    out.writeBoolean(this.isMcastDiscovery);
     out.writeBoolean(this.isTcpDisabled);
 
     // Send a description of all of the DataSerializers and
@@ -379,7 +358,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     data.writeIsSharedConfigurationEnabled(this.isSharedConfigurationEnabled);
     data.writeMcastPort(this.mcastPort);
     data.writeMcastHostAddress(this.mcastHostAddress);
-    data.toData(out);
+    data.writeTo(out);
   }
 
   /**
@@ -394,32 +373,20 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     this.fromDataProblems.append("\n\n");
   }
 
-  public void fromDataPre_GFE_8_2_0_0(DataInput in)
-          throws IOException, ClassNotFoundException {
-    fromDataContent(in, true);
-  }
-
   @Override
   public void fromData(DataInput in)
     throws IOException, ClassNotFoundException {
-    fromDataContent(in, false);
-  }
-
-  private void fromDataContent(DataInput in, boolean pre8_2_0_0) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    boolean hasDirectChannel = in.readBoolean();
-    if (hasDirectChannel) {
-      this.directChannel = Stub.createFromData(in);
-    } else {
-      this.directChannel = null;
-    }
-    if (pre8_2_0_0) {
+
+    boolean pre9_0_0_0 = InternalDataSerializer.
+        getVersionForDataStream(in).compareTo(Version.GFE_90) < 0;
+    if (pre9_0_0_0) {
       DataSerializer.readObject(in);
     }
+    
     this.version = DataSerializer.readString(in);
     this.replyProcessorId = in.readInt();
     this.isMcastEnabled = in.readBoolean();
-    this.isMcastDiscovery = in.readBoolean();
     this.isTcpDisabled = in.readBoolean();
 
     int serializerCount = in.readInt();
@@ -461,7 +428,8 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     this.redundancyZone = DataSerializer.readString(in);
     this.enforceUniqueZone = in.readBoolean();
 
-    StartupMessageData data = new StartupMessageData(in, this.version);
+    StartupMessageData data = new StartupMessageData();
+    data.readFrom(in);
     this.hostedLocatorsAll = data.readHostedLocators();
     this.isSharedConfigurationEnabled = data.readIsSharedConfigurationEnabled();
     this.mcastPort = data.readMcastPort();

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -29,6 +38,8 @@ import com.gemstone.gemfire.cache.InterestPolicy;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreFactoryImpl;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -90,6 +101,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
   private static final int GATEWAY_SENDER_IDS_MASK = 0x200000;
 
   private static final int ASYNC_EVENT_QUEUE_IDS_MASK = 0x400000;
+  private static final int IS_OFF_HEAP_MASK =           0x800000;
   
   // moved initializ* to DistributionAdvisor
 
@@ -503,6 +515,8 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
     public boolean isGatewayEnabled = false;
     public boolean isPersistent = false;
     
+    public boolean isOffHeap = false;
+
     // moved initialMembershipVersion to DistributionAdvisor.Profile
     // moved serialNumber to DistributionAdvisor.Profile
     
@@ -607,6 +621,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       if (this.persistenceInitialized) s|= PERSISTENCE_INITIALIZED_MASK;
       if (!this.gatewaySenderIds.isEmpty()) s |= GATEWAY_SENDER_IDS_MASK;
       if (!this.asyncEventQueueIds.isEmpty()) s |= ASYNC_EVENT_QUEUE_IDS_MASK;
+      if (this.isOffHeap) s |= IS_OFF_HEAP_MASK;
       Assert.assertTrue(!this.scope.isLocal());
       return s;
     }
@@ -680,6 +695,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       this.hasCacheServer = ( (s & HAS_CACHE_SERVER_MASK) != 0 );
       this.requiresOldValueInEvents = ((s & REQUIRES_OLD_VALUE_MASK) != 0);
       this.persistenceInitialized = (s & PERSISTENCE_INITIALIZED_MASK) != 0;
+      this.isOffHeap = (s & IS_OFF_HEAP_MASK) != 0;
     }
 
     /**
@@ -871,6 +887,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       }
       sb.append("; gatewaySenderIds =" + this.gatewaySenderIds);
       sb.append("; asyncEventQueueIds =" + this.asyncEventQueueIds);
+      sb.append("; IsOffHeap=" + this.isOffHeap);
     }
   }
 
@@ -1212,15 +1229,29 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       public boolean include(final Profile profile) {
         if (profile instanceof CacheProfile) {
           final CacheProfile cp = (CacheProfile)profile;
-          if (allAsyncEventIds.equals(cp.asyncEventQueueIds)) {
+          /*Since HDFS queues are created only when a region is created, this check is 
+           * unnecessary. Also this check is creating problem because hdfs queue is not 
+           * created on an accessor. Hence removing this check for hdfs queues. */
+          Set<String> allAsyncEventIdsNoHDFS = removeHDFSQueues(allAsyncEventIds);
+          Set<String> profileQueueIdsNoHDFS = removeHDFSQueues(cp.asyncEventQueueIds);
+          if (allAsyncEventIdsNoHDFS.equals(profileQueueIdsNoHDFS)) {
             return true;
           }else{
-            differAsycnQueueIds.add(allAsyncEventIds);
-            differAsycnQueueIds.add(cp.asyncEventQueueIds);
+            differAsycnQueueIds.add(allAsyncEventIdsNoHDFS);
+            differAsycnQueueIds.add(profileQueueIdsNoHDFS);
             return false;
           }
         }
         return false;
+      }
+      private Set<String> removeHDFSQueues(Set<String> queueIds){
+        Set<String> queueIdsWithoutHDFSQueues = new HashSet<String>();
+        for (String queueId: queueIds){
+          if (!queueId.startsWith(HDFSStoreFactoryImpl.DEFAULT_ASYNC_QUEUE_ID_FOR_HDFS)){
+            queueIdsWithoutHDFSQueues.add(queueId);
+          }
+        }
+        return queueIdsWithoutHDFSQueues;
       }
     });
     return differAsycnQueueIds;

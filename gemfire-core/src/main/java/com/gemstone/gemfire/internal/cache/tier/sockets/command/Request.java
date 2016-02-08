@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /**
  * 
@@ -29,10 +38,11 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 public class Request extends BaseCommand {
 
@@ -234,7 +244,7 @@ public class Request extends BaseCommand {
     boolean isObject = true;
     ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
     // TODO OFFHEAP: optimize
-    Object data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, null, false);
+    Object data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, null, false, true/*allowReadFromHDFS*/);
     
     // If the value in the VM is a CachedDeserializable,
     // get its value. If it is Token.REMOVED, Token.DESTROYED,
@@ -243,7 +253,11 @@ public class Request extends BaseCommand {
     // disk. If it is already a byte[], set isObject to false.
     // TODO OFFHEAP: optimize
     if (data instanceof CachedDeserializable) {
-      {
+      if (data instanceof StoredObject && !((StoredObject) data).isSerialized()) {
+        // it is a byte[]
+        isObject = false;
+        data = ((StoredObject) data).getDeserializedForReading();
+      } else {
         data = ((CachedDeserializable)data).getValue();
       }
     }

@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
@@ -24,6 +32,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -379,18 +388,24 @@ public class MiscellaneousCommands implements CommandMarker {
         }
 
         if(object != null){
-          Map<String, String> resultMap = (Map<String, String>) object;
-          toTabularResultData(resultTable, (String) resultMap.get("MemberId"),
-              (String) resultMap.get("HeapSizeBeforeGC"),
-              (String) resultMap.get("HeapSizeAfterGC"),
-              (String) resultMap.get("TimeSpentInGC"));
-        }else{
+          if (object instanceof String) {
+            // unexpected exception string - cache may be closed or something
+            return ResultBuilder.createUserErrorResult((String)object);
+          } else {
+            Map<String, String> resultMap = (Map<String, String>) object;
+            toTabularResultData(resultTable, (String) resultMap.get("MemberId"),
+                (String) resultMap.get("HeapSizeBeforeGC"),
+                (String) resultMap.get("HeapSizeAfterGC"),
+                (String) resultMap.get("TimeSpentInGC"));
+          }
+        } else {
           LogWrapper.getInstance().fine("ResultMap was null ");
         }
       }
     } catch (Exception e) {
-      LogWrapper.getInstance().info("GC exception is " + CliUtil.stackTraceAsString((Throwable)e));
-      return ResultBuilder.createGemFireErrorResult(e.getMessage());
+      String stack = CliUtil.stackTraceAsString(e);
+      LogWrapper.getInstance().info("GC exception is " + stack);
+      return ResultBuilder.createGemFireErrorResult(e.getMessage() + ": " + stack);
     }
     return ResultBuilder.buildResult(resultTable);
   }
@@ -574,13 +589,24 @@ public class MiscellaneousCommands implements CommandMarker {
       Set<DistributedMember> allMembers = CliUtil.getAllMembers(cache);
       GemFireDeadlockDetector gfeDeadLockDetector = new GemFireDeadlockDetector(allMembers);
       DependencyGraph dependencyGraph = gfeDeadLockDetector.find();
-      LinkedList<Dependency> deadlock = dependencyGraph.findCycle();
+      Collection<Dependency> deadlock = dependencyGraph.findCycle();
+      DependencyGraph deepest = null;
+      if (deadlock == null) {
+        deepest = dependencyGraph.findLongestCallChain();
+        if (deepest != null) {
+          deadlock = deepest.getEdges();
+        }
+      }
       Set<Dependency> dependencies = (Set<Dependency>) dependencyGraph.getEdges();
 
       InfoResultData resultData = ResultBuilder.createInfoResultData();
 
       if (deadlock != null) {
-        resultData.addLine(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED);
+        if (deepest != null) {
+          resultData.addLine(CliStrings.SHOW_DEADLOCK__DEEPEST_FOUND);
+        } else {
+          resultData.addLine(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED);
+        }
         resultData.addLine(DeadlockDetector.prettyFormat(deadlock));
       } else {
         resultData.addLine(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK);
@@ -1464,6 +1490,18 @@ public class MiscellaneousCommands implements CommandMarker {
       }
 
       /***
+       * OffHeap
+       */
+      if (categoriesMap.get("offheap").booleanValue()) {
+        writeToTableAndCsv(metricsTable, "offheap", "maxMemory", memberMxBean.getOffHeapMaxMemory(), csvBuilder);
+        writeToTableAndCsv(metricsTable, "", "freeMemory", memberMxBean.getOffHeapFreeMemory(), csvBuilder);
+        writeToTableAndCsv(metricsTable, "", "usedMemory", memberMxBean.getOffHeapUsedMemory(), csvBuilder);
+        writeToTableAndCsv(metricsTable, "", "objects", memberMxBean.getOffHeapObjects(), csvBuilder);
+        writeToTableAndCsv(metricsTable, "", "fragmentation", memberMxBean.getOffHeapFragmentation(), csvBuilder);
+        writeToTableAndCsv(metricsTable, "", "compactionTime", memberMxBean.getOffHeapCompactionTime(), csvBuilder);
+      }
+
+      /***
        * CacheServer stats
        */
       if (csMxBean != null) {
@@ -1892,6 +1930,7 @@ public class MiscellaneousCommands implements CommandMarker {
     categories.put("lock", true);
     categories.put("eviction", true);
     categories.put("distribution", true);
+    categories.put("offheap", true);
     return categories;
   }
 

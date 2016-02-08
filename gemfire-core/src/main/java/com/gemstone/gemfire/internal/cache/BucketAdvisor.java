@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -882,7 +891,24 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
    */
   private final InternalDistributedMember getExistingPrimary() {
     return basicGetPrimaryMember();
-  } 
+  }
+  
+  /**
+   * If the current member is primary for this bucket return true, otherwise, 
+   * give some time for the current member to become primary and
+   * then return whether it is a primary (true/false).
+   */
+  public final boolean isPrimaryWithWait() {
+    if (this.isPrimary()) {
+      return true;
+    }
+    // wait for the current member to become primary holder
+    InternalDistributedMember primary = waitForNewPrimary(); 
+    if(primary != null) {
+        return true;
+    }
+    return false;
+  }
 
   /** 
    * This method was split out from getPrimary() due to bug #40639
@@ -976,6 +1002,11 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
       }
     } finally {
       if (lostPrimary) {
+        Bucket br = this.regionAdvisor.getBucket(getBucket().getId());
+        if( br != null && br instanceof BucketRegion) {
+          ((BucketRegion)br).beforeReleasingPrimaryLockDuringDemotion();
+        }
+
         releasePrimaryLock();
         // this was a deposePrimary call so we need to depose children as well
         deposePrimaryForColocatedChildren();
@@ -1582,7 +1613,39 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
       return false;
     }
   }
+
+  private final static long BUCKET_STORAGE_WAIT = Long.getLong("gemfire.BUCKET_STORAGE_WAIT", 15000).longValue(); // 15 seconds
   
+  public boolean waitForStorage() {
+    synchronized (this) {
+      // let's park this thread and wait for storage!
+      StopWatch timer = new StopWatch(true);
+      try {
+        for (;;) {
+          if (this.regionAdvisor.isBucketLocal(getBucket().getId())) {
+            return true;
+          }
+          getProxyBucketRegion().getPartitionedRegion().checkReadiness();
+          if (isClosed()) {
+            return false;
+          }
+          long timeLeft = BUCKET_STORAGE_WAIT - timer.elapsedTimeMillis();
+          if (timeLeft <= 0) {
+            return false;
+          }
+          if (logger.isDebugEnabled()) {
+            logger.debug("Waiting for bucket storage" + this);
+          }
+          this.wait(timeLeft); // spurious wakeup ok
+        }
+      }
+      catch (InterruptedException e) {
+        // abort and return null
+        Thread.currentThread().interrupt();
+      }
+      return false;
+    }
+  }
   public void clearPrimaryElector() {
     synchronized(this) {
       primaryElector = null;
@@ -1735,7 +1798,7 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
 
       HashSet<BucketServerLocation66> serverLocations = new HashSet<BucketServerLocation66>();
       for (Object object : servers) {
-        BridgeServerImpl server = (BridgeServerImpl)object;
+        CacheServerImpl server = (CacheServerImpl)object;
         if (server.isRunning() && (server.getExternalAddress() != null)) {
           BucketServerLocation66 location = new BucketServerLocation66(
               getBucket().getId(), server.getPort(), server

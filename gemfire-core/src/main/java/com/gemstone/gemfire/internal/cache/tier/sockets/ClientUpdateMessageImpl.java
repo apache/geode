@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
@@ -23,15 +32,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalDataSerializer.Sendable;
+import com.gemstone.gemfire.internal.Sendable;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl;
+import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl.NewValueImporter;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl.SerializedCacheValueImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -41,6 +56,7 @@ import com.gemstone.gemfire.internal.cache.lru.Sizeable;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
 
 /**
  * Class <code>ClientUpdateMessageImpl</code> is a message representing a cache
@@ -50,7 +66,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  *
  * @since 4.2
  */
-public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable
+public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, NewValueImporter
 {
   private static final long serialVersionUID = 7037106666445312400L;
   private static final Logger logger = LogService.getLogger();
@@ -1670,6 +1686,40 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable
     public boolean isFull() {
       return false;
     }
+  }
+
+  // NewValueImporter methods
+  
+  @Override
+  public boolean prefersNewSerialized() {
+    return true;
+  }
+
+  @Override
+  public boolean isUnretainedNewReferenceOk() {
+    return false;
+  }
+
+  @Override
+  public void importNewObject(Object nv, boolean isSerialized) {
+    if (!isSerialized) {
+      throw new IllegalStateException("Expected importNewBytes to be called.");
+    }
+    try {
+      this._value = CacheServerHelper.serialize(nv);
+    } catch (IOException e) {
+      throw new GemFireIOException("Exception serializing entry value", e);
+    }
+  }
+
+  @Override
+  public void importNewBytes(byte[] nv, boolean isSerialized) {
+    if (!isSerialized) {
+      // The value is already a byte[]. Set _valueIsObject flag to 0x00
+      // (not an object)
+      this._valueIsObject = 0x00;
+    }
+    this._value = nv;
   }
 
 }

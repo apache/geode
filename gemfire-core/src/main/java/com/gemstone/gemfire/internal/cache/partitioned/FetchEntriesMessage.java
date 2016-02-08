@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.partitioned;
@@ -56,6 +65,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.util.ObjectIntProcedure;
 
 public final class FetchEntriesMessage extends PartitionMessage
@@ -303,7 +313,8 @@ public final class FetchEntriesMessage extends PartitionMessage
           RegionEntry re = entry.getRegionEntry();
           synchronized(re) {
             // TODO:KIRK:OK Object value = re.getValueInVM(map);
-            Object value = re._getValueUse(map, true);
+            Object value = re._getValueRetain(map, true);
+            try {
             if (value == null) {
               // only possible for disk entry
               value = re.getSerializedValueOnDisk((LocalRegion)entry.getRegion());
@@ -328,6 +339,9 @@ public final class FetchEntriesMessage extends PartitionMessage
               // the ByteBuffer that the chunk is stored in resulting in a copy
               // of the data.
               avgItemSize = mos.size() / itemCount;
+            }
+            } finally {
+              OffHeapHelper.release(value);
             }
           }
         }
@@ -554,10 +568,13 @@ public final class FetchEntriesMessage extends PartitionMessage
               VersionTag versionTag = DataSerializer.readObject(in);
               
               //Fix for 47260 - canonicalize the mebmer ids to avoid an OOME
-              if(canonicalMembers.containsKey(versionTag.getMemberID())) {
-                versionTag.setMemberID(canonicalMembers.get(versionTag.getMemberID()));
-              } else {
-                canonicalMembers.put(versionTag.getMemberID(), versionTag.getMemberID());
+              VersionSource id = versionTag.getMemberID();
+              if (id != null) {
+                if(canonicalMembers.containsKey(id)) {
+                  versionTag.setMemberID(canonicalMembers.get(id));
+                } else {
+                  canonicalMembers.put(id, id);
+                }
               }
               
               synchronized(returnValue) {

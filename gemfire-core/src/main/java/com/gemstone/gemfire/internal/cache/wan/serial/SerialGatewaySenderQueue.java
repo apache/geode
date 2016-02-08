@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
@@ -18,6 +27,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
@@ -27,6 +37,7 @@ import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.AttributesMutator;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.CacheWriterException;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.EvictionAction;
@@ -34,7 +45,9 @@ import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -45,14 +58,19 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.RegionEventImpl;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
+import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderStats;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 
 /**
@@ -197,6 +215,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     this.maximumQueueMemory = abstractSender.getMaximumMemeoryPerDispatcherQueue();
     this.stats = abstractSender.getStatistics();
     initializeRegion(abstractSender, listener);
+    // Increment queue size. Fix for bug 51988.
+    this.stats.incQueueSize(this.region.size());
     this.removalThread = new BatchRemovalThread((GemFireCacheImpl)abstractSender.getCache());
     this.removalThread.start();
     this.sender = abstractSender;
@@ -355,43 +375,51 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   }
   
   public synchronized AsyncEvent take() throws CacheException {
-    resetLastPeeked();
-    AsyncEvent object = peekAhead();
-    // If it is not null, destroy it and increment the head key
-    if (object != null) {
-      Long key = this.peekedIds.remove();
-      if (logger.isTraceEnabled()) {
-        logger.trace("{}: Retrieved {} -> {}",this, key, object);
-      }
-      // Remove the entry at that key with a callback arg signifying it is
-      // a WAN queue so that AbstractRegionEntry.destroy can get the value
-      // even if it has been evicted to disk. In the normal case, the
-      // AbstractRegionEntry.destroy only gets the value in the VM.
-      this.region.destroy(key, RegionQueue.WAN_QUEUE_TOKEN);
-      updateHeadKey(key.longValue());
+    // Unsupported since we have no callers.
+    // If we do want to support it then each caller needs
+    // to call freeOffHeapResources and the returned GatewaySenderEventImpl
+    throw new UnsupportedOperationException();
+//     resetLastPeeked();
+//     AsyncEvent object = peekAhead();
+//     // If it is not null, destroy it and increment the head key
+//     if (object != null) {
+//       Long key = this.peekedIds.remove();
+//       if (logger.isTraceEnabled()) {
+//         logger.trace("{}: Retrieved {} -> {}",this, key, object);
+//       }
+//       // Remove the entry at that key with a callback arg signifying it is
+//       // a WAN queue so that AbstractRegionEntry.destroy can get the value
+//       // even if it has been evicted to disk. In the normal case, the
+//       // AbstractRegionEntry.destroy only gets the value in the VM.
+//       this.region.destroy(key, RegionQueue.WAN_QUEUE_TOKEN);
+//       updateHeadKey(key.longValue());
 
-      if (logger.isTraceEnabled()) {
-        logger.trace("{}: Destroyed {} -> {}", this, key, object);
-      }
-    }
-    return object;
+//       if (logger.isTraceEnabled()) {
+//         logger.trace("{}: Destroyed {} -> {}", this, key, object);
+//       }
+//     }
+//     return object;
   }
 
   public List<AsyncEvent> take(int batchSize) throws CacheException {
-    List<AsyncEvent> batch = new ArrayList<AsyncEvent>(
-        batchSize * 2);
-    for (int i = 0; i < batchSize; i++) {
-      AsyncEvent obj = take();
-      if (obj != null) {
-        batch.add(obj);
-      } else {
-        break;
-      }
-    }
-    if (logger.isTraceEnabled()) {
-      logger.trace("{}: Took a batch of {} entries", this, batch.size());
-    }
-    return batch;
+    // This method has no callers.
+    // If we do want to support it then the callers
+    // need to call freeOffHeapResources on each returned GatewaySenderEventImpl
+    throw new UnsupportedOperationException();
+//     List<AsyncEvent> batch = new ArrayList<AsyncEvent>(
+//         batchSize * 2);
+//     for (int i = 0; i < batchSize; i++) {
+//       AsyncEvent obj = take();
+//       if (obj != null) {
+//         batch.add(obj);
+//       } else {
+//         break;
+//       }
+//     }
+//     if (logger.isTraceEnabled()) {
+//       logger.trace("{}: Took a batch of {} entries", this, batch.size());
+//     }
+//     return batch;
   }
 
   /**
@@ -464,6 +492,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
 
     return object;
+    // OFFHEAP returned object only used to see if queue is empty
+    // so no need to worry about off-heap refCount.
   }
 
   public List<AsyncEvent> peek(int size) throws CacheException {
@@ -484,6 +514,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     //resetLastPeeked();
     while (batch.size() < size) {
       AsyncEvent object = peekAhead();
+      if (object != null && object instanceof GatewaySenderEventImpl) {
+        GatewaySenderEventImpl copy = ((GatewaySenderEventImpl)object).makeHeapCopyIfOffHeap();
+        if (copy == null) {
+          continue;
+        }
+        object = copy;
+      }
       // Conflate here
       if (object != null) {
         batch.add(object);
@@ -517,6 +554,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       logger.trace("{}: Peeked a batch of {} entries", this, batch.size());
     }
     return batch;
+    // OFFHEAP: all returned AsyncEvent end up being removed from queue after the batch is sent
+    // so no need to worry about off-heap refCount.
   }
   
   @Override
@@ -619,7 +658,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
               this, tailKey, this.headKey, tailKey, object);
           if (previous != null) {
             logger.debug("{}: Removed {} and added {} for key={} head={} tail={} in queue for region={} old event={}",
-                this, deserialize(previous.getValueToConflate()), deserialize(object.getValueToConflate()),
+                this, previous.getValueToConflate(), object.getValueToConflate(),
                 key, this.headKey, tailKey, rName, previous);
           }
         }
@@ -686,20 +725,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         }
       }
     }
-  }
-
-  private Object deserialize(Object serializedBytes) {
-    Object deserializedObject = serializedBytes;
-    if (serializedBytes instanceof byte[]) {
-      byte[] serializedBytesCast = (byte[])serializedBytes;
-      // This is a debugging method so ignore all exceptions like
-      // ClassNotFoundException
-      try {
-        deserializedObject = EntryEventImpl.deserialize(serializedBytesCast);
-      } catch (Exception e) {
-      }
-    }
-    return deserializedObject;
   }
 
   /**
@@ -1011,17 +1036,24 @@ public class SerialGatewaySenderQueue implements RegionQueue {
                 new Object[] { this, this.regionName }), e);
       }
     } else {
-      if (logger.isDebugEnabled()) {
-        logger.debug("{}: Retrieved queue region: {}. Since the region already exists, the sender must have been restarted after being stopped. Clearing the region.",
-            this.region);
-        this.region.clear();
-      }
+      throw new IllegalStateException("Queue region " + this.region.getFullPath() + " already exists.");
     }
   }
 
   public void cleanUp() {
     if (this.removalThread != null) {
       this.removalThread.shutdown();
+    }
+  }
+  
+  @Override
+  public void close() {
+    Region r = getRegion();
+    if (r != null && !r.isDestroyed()) {
+      try {
+        r.close();
+      } catch (RegionDestroyedException e) {
+      }
     }
   }
   
@@ -1098,9 +1130,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
               if (wasEmpty) continue;
             }
             
-            EntryEventImpl event = new EntryEventImpl((LocalRegion)region,
+            EntryEventImpl event = EntryEventImpl.create((LocalRegion)region,
                 Operation.DESTROY, (lastDestroyedKey + 1) , null/* newValue */, null, false,
                 cache.getMyId());
+            event.disallowOffHeapValues();
             event.setTailKey(temp);
             
             BatchDestroyOperation op =  new BatchDestroyOperation(event);
@@ -1168,7 +1201,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
   }
   
-  static private class SerialGatewaySenderQueueMetaRegion extends
+  public static class SerialGatewaySenderQueueMetaRegion extends
       DistributedRegion {
     AbstractGatewaySender sender = null;
     protected SerialGatewaySenderQueueMetaRegion(String regionName,
@@ -1221,6 +1254,47 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     @Override
     final public AbstractGatewaySender getSerialGatewaySender() {
       return sender;
+    }
+    @Override
+    public void closeEntries() {
+      OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+        @Override
+        public void run() {
+          SerialGatewaySenderQueueMetaRegion.super.closeEntries();
+        }
+      });
+    }
+    @Override
+    public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
+      final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
+      OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+        @Override
+        public void run() {
+          result.set(SerialGatewaySenderQueueMetaRegion.super.clearEntries(rvv));
+        }
+      });
+      return result.get();
+    }
+    @Override
+    protected void basicDestroy(final EntryEventImpl event,
+        final boolean cacheWrite, Object expectedOldValue)
+        throws EntryNotFoundException, CacheWriterException, TimeoutException {
+
+      super.basicDestroy(event, cacheWrite, expectedOldValue);
+      GatewaySenderEventImpl.release(event.getRawOldValue());
+    }
+    @Override
+    protected boolean virtualPut(EntryEventImpl event, boolean ifNew,
+        boolean ifOld, Object expectedOldValue, boolean requireOldValue,
+        long lastModified, boolean overwriteDestroyed) throws TimeoutException,
+        CacheWriterException {
+      boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue,
+          requireOldValue, lastModified, overwriteDestroyed);
+
+      if (success) {
+        GatewaySenderEventImpl.release(event.getRawOldValue());
+      }
+      return success;
     }
   }
 }

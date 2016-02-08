@@ -1,14 +1,24 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataOutput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -480,7 +490,11 @@ public class HandShake implements ClientHandShake
       else {
         hdos.writeInt(readTimeout);
       }
-      DataSerializer.writeObject(this.id, hdos);
+      // we do not know the receiver's version at this point, but the on-wire
+      // form of InternalDistributedMember changed in 9.0, so we must serialize
+      // it using the previous version
+      DataOutput idOut = new VersionedDataOutputStream(hdos, Version.GFE_82);
+      DataSerializer.writeObject(this.id, idOut);
   
       if (currentClientVersion.compareTo(Version.GFE_603) >= 0) {
         for (int bytes = 0; bytes < this.overrides.length; bytes++) {
@@ -1300,9 +1314,14 @@ public class HandShake implements ClientHandShake
       //Successful handshake for GATEWAY_TO_GATEWAY mode sets the peer version in connection
       if(communicationMode == Acceptor.GATEWAY_TO_GATEWAY  && !
           (acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_REQUIRED ||
-              acceptanceCode ==  REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
-          conn.setWanSiteVersion(Version.readOrdinal(dis));
-        } 
+          acceptanceCode ==  REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
+        short wanSiteVersion = Version.readOrdinal(dis);
+        conn.setWanSiteVersion(wanSiteVersion);
+        // establish a versioned stream for the other site, if necessary         
+        if (wanSiteVersion < Version.CURRENT_ORDINAL) {
+          dis = new VersionedDataInputStream(dis, Version.fromOrdinalOrCurrent(wanSiteVersion));
+        }
+      } 
 
       // No need to check for return value since DataInputStream already throws
       // EOFException in case of EOF
@@ -1434,8 +1453,15 @@ public class HandShake implements ClientHandShake
     byte[] memberBytes = DataSerializer.readByteArray(p_dis);
     ByteArrayInputStream bais = new ByteArrayInputStream(memberBytes);
     DataInputStream dis = new DataInputStream(bais);
+    Version v = InternalDataSerializer.getVersionForDataStreamOrNull(p_dis);
+    if (v != null) {
+      dis = new VersionedDataInputStream(dis, v);
+    }
     try {
       return (DistributedMember)DataSerializer.readObject(dis);
+    }
+    catch (EOFException e) {
+      throw e;
     }
     catch (Exception e) {
       throw new InternalGemFireException(LocalizedStrings.HandShake_UNABLE_TO_DESERIALIZE_MEMBER.toLocalizedString(), e);

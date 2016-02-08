@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /**
  * File comment
@@ -59,10 +68,10 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
   @Override
   public Object findObject(KeyInfo key, LocalRegion r, boolean isCreate,
       boolean generateCallbacks, Object value, boolean disableCopyOnRead,
-      boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones) {
+      boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) {
     TXStateProxy tx = r.cache.getTXMgr().internalSuspend();
     try {
-      return r.findObjectInSystem(key, isCreate, tx, generateCallbacks, value, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
+      return r.findObjectInSystem(key, isCreate, tx, generateCallbacks, value, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
     } finally {
       r.cache.getTXMgr().resume(tx);
     }
@@ -75,9 +84,9 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
   }
   @Override
   public Object getSerializedValue(LocalRegion localRegion, KeyInfo keyInfo, boolean doNotLockEntry, ClientProxyMembershipID requestingClient,
-  EntryEventImpl clientEvent, boolean returnTombstones) throws DataLocationException {
+  EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws DataLocationException {
     PartitionedRegion pr = (PartitionedRegion)localRegion;
-    return pr.getDataStore().getSerializedLocally(keyInfo, doNotLockEntry, clientEvent, returnTombstones);
+    return pr.getDataStore().getSerializedLocally(keyInfo, doNotLockEntry, clientEvent, returnTombstones, allowReadFromHDFS);
   }
   @Override
   public boolean putEntryOnRemote(EntryEventImpl event, boolean ifNew,
@@ -110,7 +119,7 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
       boolean allowTombstones) throws DataLocationException {
     PartitionedRegion pr = (PartitionedRegion)localRegion;
     return pr.getDataStore().getEntryLocally(keyInfo.getBucketId(),
-        keyInfo.getKey(), false, allowTombstones);
+        keyInfo.getKey(), false, allowTombstones, true);
   }
 
   @Override

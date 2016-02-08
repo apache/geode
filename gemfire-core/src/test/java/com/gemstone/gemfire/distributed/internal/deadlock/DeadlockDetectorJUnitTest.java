@@ -1,11 +1,22 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed.internal.deadlock;
+
+import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -20,21 +31,23 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.junit.After;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.junit.UnitTest;
-
-import junit.framework.TestCase;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * @author dsmith
  *
  */
 @Category(UnitTest.class)
-public class DeadlockDetectorJUnitTest extends TestCase {
+public class DeadlockDetectorJUnitTest {
   
   private final Set<Thread> stuckThreads = Collections.synchronizedSet(new HashSet<Thread>());
   
+  @After
   public void tearDown() {
     for(Thread thread: stuckThreads) {
       thread.interrupt();
@@ -50,6 +63,7 @@ public class DeadlockDetectorJUnitTest extends TestCase {
     stuckThreads.clear();
   }
   
+  @Test
   public void testNoDeadlocks() {
     DeadlockDetector detector = new DeadlockDetector();
     detector.addDependencies(DeadlockDetector.collectAllDependencies("here"));
@@ -58,7 +72,9 @@ public class DeadlockDetectorJUnitTest extends TestCase {
   
   //this is commented out, because we can't
   //clean up the threads deadlocked on monitors.
-  public void z_testMonitorDeadlock() throws InterruptedException {
+  @Ignore
+  @Test
+  public void testMonitorDeadlock() throws InterruptedException {
     final Object lock1 = new Object();
     final Object lock2 = new Object();
     Thread thread1 =  new Thread() {
@@ -103,6 +119,7 @@ public class DeadlockDetectorJUnitTest extends TestCase {
    * that are trying to acquire a two different syncs in the different orders.
    * @throws InterruptedException
    */
+  @Test
   public void testSyncDeadlock() throws InterruptedException {
 
     final Lock lock1 = new ReentrantLock();
@@ -144,7 +161,9 @@ public class DeadlockDetectorJUnitTest extends TestCase {
   }
   
   //Semaphore are also not supported by the JDK
-  public void z_testSemaphoreDeadlock() throws InterruptedException {
+  @Ignore
+  @Test
+  public void testSemaphoreDeadlock() throws InterruptedException {
 
     final Semaphore lock1 = new Semaphore(1);
     final Semaphore lock2 = new Semaphore(1);
@@ -192,7 +211,9 @@ public class DeadlockDetectorJUnitTest extends TestCase {
    * This type of deadlock is currently not detected
    * @throws InterruptedException
    */
-  public void z_testReadLockDeadlock() throws InterruptedException {
+  @Ignore
+  @Test
+  public void testReadLockDeadlock() throws InterruptedException {
 
     final ReadWriteLock lock1 = new ReentrantReadWriteLock();
     final ReadWriteLock lock2 = new ReentrantReadWriteLock();
@@ -237,6 +258,7 @@ public class DeadlockDetectorJUnitTest extends TestCase {
    * Test that the deadlock detector will find deadlocks
    * that are reported by the {@link DependencyMonitorManager}
    */
+  @Test
   public void testProgramaticDependencies() {
     final CountDownLatch cdl = new CountDownLatch(1);
     MockDependencyMonitor mock = new MockDependencyMonitor();

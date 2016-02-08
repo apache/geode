@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
@@ -20,6 +29,7 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
 // lru: LRU
 // stats: STATS
 // versioned: VERSIONED
+// offheap: OFFHEAP
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
 // key int: KEY_INT
@@ -34,7 +44,8 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
  * that contains your build.xml.
  */
 public class VMStatsDiskLRURegionEntryHeapStringKey2 extends VMStatsDiskLRURegionEntryHeap {
-  public VMStatsDiskLRURegionEntryHeapStringKey2 (RegionEntryContext context, String key, Object value
+  public VMStatsDiskLRURegionEntryHeapStringKey2 (RegionEntryContext context, String key,
+      Object value
       , boolean byteEncode
       ) {
     super(context,
@@ -81,10 +92,12 @@ public class VMStatsDiskLRURegionEntryHeapStringKey2 extends VMStatsDiskLRURegio
   private static final AtomicLongFieldUpdater<VMStatsDiskLRURegionEntryHeapStringKey2> lastModifiedUpdater
     = AtomicLongFieldUpdater.newUpdater(VMStatsDiskLRURegionEntryHeapStringKey2.class, "lastModified");
   private volatile Object value;
-  protected final Object areGetValue() {
+  @Override
+  protected final Object getValueField() {
     return this.value;
   }
-  protected void areSetValue(Object v) {
+  @Override
+  protected void setValueField(Object v) {
     this.value = v;
   }
   protected long getlastModifiedField() {
@@ -215,8 +228,6 @@ public class VMStatsDiskLRURegionEntryHeapStringKey2 extends VMStatsDiskLRURegio
                                                 Object value) {
     int oldSize = getEntrySize();
     int newSize = capacityController.entrySize( getKeyForSizing(), value);
-  //   GemFireCacheImpl.getInstance().getLoggerI18n().info("DEBUG updateEntrySize: oldSize=" + oldSize
-  //                                               + " newSize=" + newSize);
     setEntrySize(newSize);
     int delta = newSize - oldSize;
   //   if ( debug ) log( "updateEntrySize key=" + getKey()

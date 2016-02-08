@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -22,6 +31,7 @@ import java.io.*;
  * <li><code>PERSISTENT_PARTITION</code> in addition to <code>PARTITION</code> also causes data to be stored to disk. The region initialization uses the data stored on disk.
  * <li><code>REPLICATE</code> causes data that this region is interested in to be stored in local memory. A distributed region will be initialized with the data from other caches. On distributed region operations that would cause the contents to differ with other caches are not allowed. This policy is allowed on local scope region but it behaves the same as <code>NORMAL</code>.
  * <li><code>PERSISTENT_REPLICATE</code> in addition to <code>REPLICATE</code> also causes data to be stored to disk. The region initialization uses the data stored on disk. Note that the persistence applies to both local scope and distributed scope.
+ * <li><code>HDFS_PARTITION</code> in addition to <code>PARTITION</code> also causes data to be stored to HDFS. The region initialization may use the data stored on HDFS. 
  * </ol>
  *
  * @author Darrel Schneider
@@ -35,7 +45,7 @@ import java.io.*;
 public class DataPolicy implements java.io.Serializable {
   private static final long serialVersionUID = 2095573273889467233L;
 
-  private static final DataPolicy[] VALUES = new DataPolicy[10];
+  private static final DataPolicy[] VALUES = new DataPolicy[11];
 
   /**
    * Data is never stored in local memory.
@@ -235,6 +245,17 @@ public class DataPolicy implements java.io.Serializable {
   public boolean isPartition() {
     return this == PARTITION;
   }
+  
+  /** Return whether this policy does persistence on HDFS.
+   * @return true if this policy does persistence on HDFS.
+   * @see #HDFS_PARTITION
+   */
+  public boolean withHDFS() {
+//    return this == HDFS_PARTITION || this == HDFS_PERSISTENT_PARTITION;
+	  return false;
+  }
+  
+  
   
   /** Returns a string representation for this data policy.
      * @return the name of this data policy.

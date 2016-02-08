@@ -1,10 +1,18 @@
 /*
- *  =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *  ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management;
 
@@ -21,25 +29,25 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  */
 public class PartitionAttributesData {
 
-  private int redundantCopies;
-  private long totalMaxMemory;
+  private final int redundantCopies;
+  private final long totalMaxMemory;
   // Total number of buckets for whole region
-  private int totalNumBuckets;
-  private int localMaxMemory;
-  private String colocatedWith;
-  private String partitionResolver;
-  private long recoveryDelay;
-  private long startupRecoveryDelay;
-  private String[] partitionListeners;
+  private final int totalNumBuckets;
+  private final int localMaxMemory;
+  private final String colocatedWith;
+  private final String partitionResolver;
+  private final long recoveryDelay;
+  private final long startupRecoveryDelay;
+  private final String[] partitionListeners;
 
-  @ConstructorProperties( { "redundantCopies", "totalMaxMemory",
-      "totalNumBuckets", "localMaxMemory", "colocatedWith",
-      "partitionResolver", "recoveryDelay", "startupRecoveryDelay",
-      "partitionListeners" })
-  public PartitionAttributesData(int redundantCopies, long totalMaxMemory,
-      int totalNumBuckets, int localMaxMemory, String colocatedWith,
-      String partitionResolver, long recoveryDelay, long startupRecoveryDelay,
-      String[] partitionListeners) {
+  /**
+   * This constructor is to be used by internal JMX framework only. User should
+   * not try to create an instance of this class.
+   */
+  @ConstructorProperties({ "redundantCopies", "totalMaxMemory", "totalNumBuckets", "localMaxMemory", "colocatedWith", "partitionResolver",
+      "recoveryDelay", "startupRecoveryDelay", "partitionListeners" })
+  public PartitionAttributesData(int redundantCopies, long totalMaxMemory, int totalNumBuckets, int localMaxMemory, String colocatedWith,
+      String partitionResolver, long recoveryDelay, long startupRecoveryDelay, String[] partitionListeners) {
 
     this.redundantCopies = redundantCopies;
     this.totalMaxMemory = totalMaxMemory;
@@ -50,7 +58,7 @@ public class PartitionAttributesData {
     this.recoveryDelay = recoveryDelay;
     this.startupRecoveryDelay = startupRecoveryDelay;
     this.partitionListeners = partitionListeners;
-   }
+  }
 
   /**
    * Returns the number of redundant copies for this PartitionedRegion.
@@ -118,14 +126,21 @@ public class PartitionAttributesData {
     return partitionListeners;
   }
 
+  /**
+   * String representation of PartitionAttributesData
+   */
   @Override
   public String toString() {
-    return "PartitionAttributesData [colocatedWith=" + colocatedWith
-        + ", localMaxMemory=" + localMaxMemory + ", partitionListeners="
-        + Arrays.toString(partitionListeners) + ", partitionResolver="
-        + partitionResolver + ", recoveryDelay=" + recoveryDelay
-        + ", redundantCopies=" + redundantCopies + ", startupRecoveryDelay="
-        + startupRecoveryDelay + ", totalMaxMemory=" + totalMaxMemory
-        + ", totalNumBuckets=" + totalNumBuckets + "]";
+    StringBuilder sb = new StringBuilder();
+    sb.append("PartitionAttributesData [colocatedWith=").append(colocatedWith);
+    sb.append(", localMaxMemory=").append(localMaxMemory);
+    sb.append(", partitionListeners=").append(Arrays.toString(partitionListeners));
+    sb.append(", partitionResolver=").append(partitionResolver);
+    sb.append(", recoveryDelay=").append(recoveryDelay);
+    sb.append(", redundantCopies=").append(redundantCopies);
+    sb.append(", startupRecoveryDelay=").append(startupRecoveryDelay);
+    sb.append(", totalMaxMemory=").append(totalMaxMemory);
+    sb.append(", totalNumBuckets=").append(totalNumBuckets + "]");
+    return sb.toString();
   }
 }

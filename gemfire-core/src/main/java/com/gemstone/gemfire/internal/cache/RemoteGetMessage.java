@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -38,6 +47,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
 /**
@@ -106,13 +116,26 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
     }
 
     RawValue valueBytes;
+    Object val = null;
       try {
         if (r.keyRequiresRegionContext()) {
           ((KeyWithRegionContext)this.key).setRegionContext(r);
         }
         KeyInfo keyInfo = r.getKeyInfo(key, cbArg);
-        Object val = r.getDataView().getSerializedValue(r, keyInfo, false, this.context, null, false);
+        val = r.getDataView().getSerializedValue(r, keyInfo, false, this.context, null, false, false/*for replicate regions*/);
         valueBytes = val instanceof RawValue ? (RawValue)val : new RawValue(val);
+
+        if (logger.isTraceEnabled(LogMarker.DM)) {
+          logger.trace(LogMarker.DM, "GetMessage sending serialized value {} back via GetReplyMessage using processorId: {}",
+                       valueBytes, getProcessorId());
+        }
+      
+        //      r.getPrStats().endPartitionMessagesProcessing(startTime); 
+        GetReplyMessage.send(getSender(), getProcessorId(), valueBytes, getReplySender(dm));
+
+        // Unless there was an exception thrown, this message handles sending the
+        // response
+        return false;
       } 
       catch(DistributedSystemDisconnectedException sde) {
         sendReply(getSender(), this.processorId, dm, new ReplyException(new RemoteOperationException(LocalizedStrings.GetMessage_OPERATION_GOT_INTERRUPTED_DUE_TO_SHUTDOWN_IN_PROGRESS_ON_REMOTE_VM.toLocalizedString(), sde)), r, startTime);
@@ -125,19 +148,10 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
       catch (DataLocationException e) {
         sendReply(getSender(), getProcessorId(), dm, new ReplyException(e), r, startTime);
         return false;
+      }finally {
+        OffHeapHelper.release(val);
       }
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "GetMessage sending serialized value {} back via GetReplyMessage using processorId: {}",
-            valueBytes, getProcessorId());
-      }
-      
-//      r.getPrStats().endPartitionMessagesProcessing(startTime); 
-      GetReplyMessage.send(getSender(), getProcessorId(), valueBytes, getReplySender(dm));
-
-    // Unless there was an exception thrown, this message handles sending the
-    // response
-    return false;
   }
 
   @Override

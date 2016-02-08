@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal;
 
@@ -25,7 +34,7 @@ import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.query.types.StructType;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 // TODO:Asif: Test for null behaviour in various functions
 
@@ -86,9 +95,9 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     bag.add(wrap("two", bag.getCollectionType().getElementType()));
     bag.add(wrap("three", bag.getCollectionType().getElementType()));
     bag.add(wrap("three", bag.getCollectionType().getElementType()));
-    assertTrue(bag.iterator() instanceof ResultsBag.ResultsBagIterator);
+    assertTrue(bag.iterator() instanceof Bag.BagIterator);
     bag.applyLimit(6);
-    assertTrue(bag.iterator() instanceof ResultsBag.ResultsBagIterator);
+    assertTrue(bag.iterator() instanceof Bag.BagIterator);
     bag = getBagObject(String.class);
     bag.add(wrap("one", bag.getCollectionType().getElementType()));
     bag.add(wrap("two", bag.getCollectionType().getElementType()));
@@ -102,7 +111,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     bag.add(wrap("four", bag.getCollectionType().getElementType()));
     bag.applyLimit(6);
     if (!(bag instanceof StructBag)) {
-      assertTrue(bag.iterator() instanceof ResultsBag.LimitResultsBagIterator);
+      assertTrue(bag.iterator() instanceof Bag.LimitBagIterator);
     }
   }
 
@@ -344,7 +353,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     bag.applyLimit(8);
     Iterator itr = bag.iterator();
     if (!(bag instanceof StructBag)) {
-      assertTrue(bag.iterator() instanceof ResultsBag.LimitResultsBagIterator);
+      assertTrue(bag.iterator() instanceof Bag.LimitBagIterator);
     }
     List asList = bag.asList();
 
@@ -380,7 +389,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     bag.applyLimit(8);
     Iterator itr = bag.iterator();
     if (!(bag instanceof StructBag)) {
-      assertTrue(bag.iterator() instanceof ResultsBag.LimitResultsBagIterator);
+      assertTrue(bag.iterator() instanceof Bag.LimitBagIterator);
     }
     List asList = bag.asList();
 
@@ -403,7 +412,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     i = 0;
     itr = bag.iterator();
     if (!(bag instanceof StructBag)) {
-      assertTrue(bag.iterator() instanceof ResultsBag.LimitResultsBagIterator);
+      assertTrue(bag.iterator() instanceof Bag.LimitBagIterator);
     }
     while (itr.hasNext()) {
       assertEquals(asList.get(i + 5), itr.next());

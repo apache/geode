@@ -1,18 +1,33 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.admin.remote;
 
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
-import java.util.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.admin.SSLConfig;
+import com.gemstone.gemfire.internal.admin.TransportConfig;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * Tranport config for RemoteGfManagerAgent.
@@ -26,7 +41,6 @@ import java.util.*;
 public class RemoteTransportConfig implements TransportConfig {
   
   private final boolean mcastEnabled;
-  private final boolean mcastDiscovery;
   private final boolean tcpDisabled;
   private final boolean disableAutoReconnect;
   private final DistributionLocatorId mcastId;
@@ -37,36 +51,11 @@ public class RemoteTransportConfig implements TransportConfig {
   private int tcpPort;
   private boolean isReconnectingDS;
   private Object oldDSMembershipInfo;
+  private int vmKind = -1;
 
   // -------------------------------------------------------------------------
   //   Constructor(s)
   // -------------------------------------------------------------------------
-  
-  public RemoteTransportConfig(int port) {
-    this(port, null);
-  }
-  
-  /**
-   * Constructs a simple transport config that specifies just a port.
-   * The port must be the one a DistributionLocator is listening
-   * to on the local host. 
-   */
-  public RemoteTransportConfig(int port, String bindAddress) {
-    if (bindAddress == null) {
-      this.bindAddress = DistributionConfig.DEFAULT_BIND_ADDRESS;
-    } else {
-      this.bindAddress = bindAddress;
-    }
-    this.sslConfig = new SSLConfig();
-    this.mcastEnabled = false;
-    this.mcastDiscovery = false;
-    this.tcpDisabled = false;
-    this.disableAutoReconnect = false;
-    this.mcastId = null;
-    this.ids = Collections.singleton(new DistributionLocatorId(port, bindAddress));
-    this.membershipPortRange = 
-       getMembershipPortRangeString(DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE);
-  }
 
   /**
    * Creates a new <code>RemoteTransportConfig</code> from the
@@ -76,12 +65,13 @@ public class RemoteTransportConfig implements TransportConfig {
    *
    * @since 3.0
    */
-  public RemoteTransportConfig(DistributionConfig config) {
+  public RemoteTransportConfig(DistributionConfig config, int vmKind) {
     if (config.getBindAddress() == null) {
       this.bindAddress = DistributionConfig.DEFAULT_BIND_ADDRESS;
     } else {
       this.bindAddress = config.getBindAddress();
     }
+    this.vmKind = vmKind;
     this.tcpPort = config.getTcpPort();
     this.membershipPortRange = 
             getMembershipPortRangeString(config.getMembershipPortRange());
@@ -109,22 +99,11 @@ public class RemoteTransportConfig implements TransportConfig {
 
     // See what type of discovery is being used
     if (initialHosts.length() == 0) {
-      if (!this.mcastEnabled) {
-        // loner system
-        this.mcastDiscovery = false;
-        this.ids = Collections.EMPTY_SET;
-      }
-      else {
-        // multicast discovery
-        this.mcastDiscovery = true;
-        this.ids = Collections.singleton(this.mcastId);
-      }
+      // loner system
+      this.ids = Collections.EMPTY_SET;
       return;
     }
     else {
-      // locator-based discovery
-      this.mcastDiscovery = false;
-
       HashSet locators = new HashSet();
       int startIdx = 0;
       int endIdx = -1;
@@ -157,13 +136,12 @@ public class RemoteTransportConfig implements TransportConfig {
    */
   public RemoteTransportConfig(
     boolean isMcastEnabled,
-    boolean isMcastDiscovery, 
     boolean isTcpDisabled,
     boolean isAutoReconnectDisabled,
     String bindAddress, 
     SSLConfig sslConfig,
     Collection ids, String membershipPortRange,
-    int tcpPort)
+    int tcpPort, int vmKind)
   {
     DistributionLocatorId mid = null;
     
@@ -176,7 +154,6 @@ public class RemoteTransportConfig implements TransportConfig {
     this.sslConfig = sslConfig;
     
     this.mcastEnabled = isMcastEnabled;
-    this.mcastDiscovery = isMcastDiscovery;
     this.tcpDisabled = isTcpDisabled;
     this.disableAutoReconnect = isAutoReconnectDisabled;
     if (isMcastEnabled) {
@@ -202,6 +179,7 @@ public class RemoteTransportConfig implements TransportConfig {
     }
     this.membershipPortRange = membershipPortRange;
     this.tcpPort = tcpPort;
+    this.vmKind = vmKind;
  }
   
   
@@ -227,13 +205,6 @@ public class RemoteTransportConfig implements TransportConfig {
   public Set getIds() {
     return this.ids;
   }
-  /**
-   * Returns true if config picked multicast.
-   * Returns false if config picked locators.
-   */
-  public boolean isMcastDiscovery() {
-    return this.mcastDiscovery;
-  }
   
   /**
    * Returns true iff multicast is enabled in this transport.
@@ -245,6 +216,10 @@ public class RemoteTransportConfig implements TransportConfig {
   
   public DistributionLocatorId getMcastId() {
     return this.mcastId;
+  }
+  
+  public int getVmKind() {
+    return this.vmKind;
   }
   
   public boolean isTcpDisabled() {
@@ -301,9 +276,6 @@ public class RemoteTransportConfig implements TransportConfig {
     if (this.tcpPort != 0) {
       props.setProperty(DistributionConfig.TCP_PORT_NAME, String.valueOf(this.tcpPort));
     }
-//System.out.println("RemoteTransportConfig.mcastEnabled=" + this.mcastEnabled);
-//System.out.println("RemoteTransportConfig.mcastDiscovery=" + this.mcastDiscovery);
-//Thread.currentThread().dumpStack();
     if (this.mcastEnabled) {
        // Fix bug 32849
        props.setProperty(DistributionConfig.MCAST_ADDRESS_NAME,
@@ -316,33 +288,32 @@ public class RemoteTransportConfig implements TransportConfig {
       props.setProperty(DistributionConfig.MCAST_PORT_NAME, 
                         String.valueOf(0));
     }
-    if (!this.mcastDiscovery) {
-      // Create locator string
-      StringBuffer locators = new StringBuffer();
-      for (Iterator iter = this.ids.iterator(); iter.hasNext(); ) {
-        DistributionLocatorId locator =
+    // Create locator string
+    StringBuffer locators = new StringBuffer();
+    for (Iterator iter = this.ids.iterator(); iter.hasNext(); ) {
+      DistributionLocatorId locator =
           (DistributionLocatorId) iter.next();
-        if (!locator.isMcastId()) {
-          String baddr = locator.getBindAddress();
-          if (baddr != null && baddr.trim().length() > 0) {
-            locators.append(baddr);
-          }
-          else {
-            locators.append(locator.getHost().getCanonicalHostName());
-          }
-          locators.append("[");
-          locators.append(locator.getPort());
-          locators.append("]");
+      if (!locator.isMcastId()) {
+        String baddr = locator.getBindAddress();
+        if (baddr != null && baddr.trim().length() > 0) {
+          locators.append(baddr);
+        }
+        else {
+          locators.append(locator.getHost().getCanonicalHostName());
+        }
+        locators.append("[");
+        locators.append(locator.getPort());
+        locators.append("]");
 
-          if (iter.hasNext()) {
-            locators.append(",");
-          }
+        if (iter.hasNext()) {
+          locators.append(",");
         }
       }
-
-      props.setProperty(DistributionConfig.LOCATORS_NAME,
-                        locators.toString());
     }
+
+    props.setProperty(DistributionConfig.LOCATORS_NAME,
+        locators.toString());
+
     this.sslConfig.toDSProperties(props);
     
     props.setProperty(DistributionConfig.DISABLE_TCP_NAME,
@@ -392,7 +363,6 @@ public class RemoteTransportConfig implements TransportConfig {
     if (o != null && o instanceof RemoteTransportConfig) {
       RemoteTransportConfig other = (RemoteTransportConfig)o;
       return (this.mcastEnabled == other.mcastEnabled)
-        && (this.mcastDiscovery == other.mcastDiscovery)
         && this.ids.equals(other.ids);
     }
     return false;
@@ -400,7 +370,7 @@ public class RemoteTransportConfig implements TransportConfig {
   
   @Override
   public int hashCode() {
-    return this.ids.hashCode() + (isMcastDiscovery() ? 1 : 0);
+    return this.ids.hashCode();
   }
   
 }

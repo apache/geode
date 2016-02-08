@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /**
  * 
@@ -11,7 +20,6 @@
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 
@@ -26,7 +34,9 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
+import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.cache.execute.FunctionContextImpl;
 import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
 import com.gemstone.gemfire.internal.cache.execute.InternalFunctionInvocationTargetException;
@@ -156,9 +166,10 @@ public class ExecuteFunction extends BaseCommand {
             logger.debug("Executing Function on Server: " + servConn.toString() + "with context :" + context.toString());
           }
           GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+          HeapMemoryMonitor hmm = ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
           if (functionObject.optimizeForWrite() && cache != null &&
-              cache.getResourceManager().isHeapCritical() &&
-              !InternalResourceManager.isLowMemoryExceptionDisabled()) {
+              hmm.getState().isCritical() &&
+              !MemoryThresholds.isLowMemoryExceptionDisabled()) {
             Set<DistributedMember> sm = Collections
                 .<DistributedMember> singleton(cache.getMyId());
             throw new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1

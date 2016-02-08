@@ -4,10 +4,12 @@
 #
 # see git help gitignore for more details
 build/
+.idea/
 .gradle/
 .classpath
 .project
 .settings/
+.idea/
 build-eclipse/
 /tags
 
@@ -15,5 +17,8 @@ build-eclipse/
 *.ipr
 *.iws
 *.swp
-# bruce: my synch settings for windows->linux transfers
-transferhost.txt
+*.log
+*.patch
+*.diff
+*.dat
+

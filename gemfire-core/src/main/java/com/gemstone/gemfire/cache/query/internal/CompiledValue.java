@@ -1,10 +1,18 @@
-/*=========================================================================
- * Copyright Copyright (c) 2000-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * $Id: CompiledValue.java,v 1.1 2005/01/27 06:26:33 vaibhav Exp $
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal;
 
@@ -37,6 +45,8 @@ public interface CompiledValue {
   public final static int SINGLECONDNEVALUATOR= -13;
   public final static int DOUBLECONDNRANGEJUNCTIONEVALUATOR = -14;
   public final static int LIKE = -15;
+  public final static int FIELD = -16;
+  public final static int GROUP_BY_SELECT = -17;
   public static  final int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
   public static final String INDX_THRESHOLD_PROP_STR = "gemfire.Query.INDEX_THRESHOLD_SIZE";
   public static final String INDEX_INFO = "index_info";
@@ -49,7 +59,7 @@ public interface CompiledValue {
   public static final String CAN_APPLY_LIMIT_AT_INDEX = "can_apply_limit_at_index";
   public static final String CAN_APPLY_ORDER_BY_AT_INDEX = "can_apply_orderby_at_index";
   public static final String PREF_INDEX_COND = "preferred_index_condition"; 
-  public static final String QUERY_INDEX_HINTS = "query_index_hints";
+  public static final String QUERY_INDEX_HINTS = "query_index_hints";  
   public static final CompiledValue MAP_INDEX_ALL_KEYS = new AbstractCompiledValue() {
     
     @Override

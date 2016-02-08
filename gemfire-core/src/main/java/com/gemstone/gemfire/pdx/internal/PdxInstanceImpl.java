@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.pdx.internal;
 
@@ -28,8 +37,10 @@ import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalDataSerializer.Sendable;
+import com.gemstone.gemfire.internal.Sendable;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import com.gemstone.gemfire.pdx.JSONFormatter;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxSerializationException;
@@ -259,8 +270,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
       case DOUBLE_ARRAY:
       case STRING_ARRAY:
       case ARRAY_OF_BYTE_ARRAYS: {
-        ByteBuffer buffer = ur.getRaw(ft);
-        if (!buffer.equals(ft.getFieldType().getDefaultBytes())) {
+        ByteSource buffer = ur.getRaw(ft);
+        if (!buffer.equals(ByteSourceFactory.create(ft.getFieldType().getDefaultBytes()))) {
           hashCode = hashCode *31  + buffer.hashCode();
         }
         break;
@@ -281,7 +292,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
         } else if (objectValue.getClass().isArray()) {
           Class<?> myComponentType = objectValue.getClass().getComponentType();
           if (myComponentType.isPrimitive()) {
-            ByteBuffer buffer = getRaw(ft);
+            ByteSource buffer = getRaw(ft);
             hashCode = hashCode *31  + buffer.hashCode();
           } else {
             hashCode = hashCode *31  + Arrays.deepHashCode((Object[])objectValue);
@@ -361,8 +372,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
         case DOUBLE_ARRAY:
         case STRING_ARRAY:
         case ARRAY_OF_BYTE_ARRAYS: {
-          ByteBuffer myBuffer = ur1.getRaw(myType);
-          ByteBuffer otherBuffer = ur2.getRaw(otherType);
+          ByteSource myBuffer = ur1.getRaw(myType);
+          ByteSource otherBuffer = ur2.getRaw(otherType);
           if(!myBuffer.equals(otherBuffer)) {
             //GemFireCacheImpl.getInstance().getLogger().info("DEBUG equals#4 o1=<" + this + "> o2=<" + obj + ">");
             return false;
@@ -398,8 +409,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
                 return false;
               }
               if (myComponentType.isPrimitive()) {
-                ByteBuffer myBuffer = getRaw(myType);
-                ByteBuffer otherBuffer = other.getRaw(otherType);
+                ByteSource myBuffer = getRaw(myType);
+                ByteSource otherBuffer = other.getRaw(otherType);
                 if(!myBuffer.equals(otherBuffer)) {
                   //GemFireCacheImpl.getInstance().getLogger().info("DEBUG equals#9 o1=<" + this + "> o2=<" + obj + ">");
                   return false;
@@ -592,7 +603,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
 
   // override getRaw to fix bug 43569
   @Override
-  protected synchronized ByteBuffer getRaw(PdxField ft) {
+  protected synchronized ByteSource getRaw(PdxField ft) {
     return super.getRaw(ft);
   }
 

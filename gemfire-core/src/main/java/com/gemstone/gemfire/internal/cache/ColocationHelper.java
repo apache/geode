@@ -1,10 +1,18 @@
 /*
- * ========================================================================= 
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -34,7 +42,9 @@ import com.gemstone.gemfire.internal.cache.execute.InternalRegionFunctionContext
 import com.gemstone.gemfire.internal.cache.partitioned.PRLocallyDestroyedException;
 import com.gemstone.gemfire.internal.cache.persistence.PRPersistentConfig;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * An utility class to retrieve colocated regions in a colocation hierarchy in
@@ -46,8 +56,67 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * @since 6.0
  */
 public class ColocationHelper {
+
+  /** Logging mechanism for debugging */
   private static final Logger logger = LogService.getLogger();
-  
+   /**
+    * An utility method to retrieve colocated region name of a given partitioned
+    * region without waiting on initialize
+    *
+    * @param partitionedRegion
+    * @return colocated PartitionedRegion
+    * @since cheetah
+    */
+  public static PartitionedRegion getColocatedRegionName(
+      final PartitionedRegion partitionedRegion) {
+    Assert.assertTrue(partitionedRegion != null); // precondition1
+    String colocatedWith = partitionedRegion.getPartitionAttributes().getColocatedWith();
+    if (colocatedWith == null) {
+      // the region is not colocated with any region
+      return null;
+    }
+    PartitionedRegion colocatedPR = partitionedRegion.getColocatedWithRegion();
+    if (colocatedPR != null && !colocatedPR.isLocallyDestroyed
+        && !colocatedPR.isDestroyed()) {
+      return colocatedPR;
+    }
+    Region prRoot = PartitionedRegionHelper.getPRRoot(partitionedRegion
+        .getCache());
+    PartitionRegionConfig prConf = (PartitionRegionConfig)prRoot
+        .get(getRegionIdentifier(colocatedWith));
+    int prID = -1; 
+    try {
+      if (prConf == null) {
+        colocatedPR = getColocatedPR(partitionedRegion, colocatedWith);
+      }
+      else {
+        prID = prConf.getPRId();
+        colocatedPR = PartitionedRegion.getPRFromId(prID);
+        if (colocatedPR == null && prID > 0) {
+          // colocatedPR might have not called registerPartitionedRegion() yet, but since prID is valid,
+          // we are able to get colocatedPR and do colocatedPR.waitOnBucketMetadataInitialization()
+          colocatedPR = getColocatedPR(partitionedRegion, colocatedWith);
+        }
+      }
+    }
+    catch (PRLocallyDestroyedException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("PRLocallyDestroyedException : Region with prId=" + prID
+            + " is locally destroyed on this node", e);
+      } 
+    } 
+    return colocatedPR;
+  }
+    private static PartitionedRegion getColocatedPR(
+      final PartitionedRegion partitionedRegion, final String colocatedWith) {
+    logger.info(LocalizedMessage.create(
+        LocalizedStrings.HOPLOG_0_COLOCATE_WITH_REGION_1_NOT_INITIALIZED_YET,
+        new Object[] { partitionedRegion.getFullPath(), colocatedWith }));
+    PartitionedRegion colocatedPR = (PartitionedRegion) partitionedRegion
+        .getCache().getPartitionedRegion(colocatedWith, false);
+    assert colocatedPR != null;
+    return colocatedPR;
+  }
   /** Whether to ignore missing parallel queues on restart
    * if they are not attached to the region. See bug 50120. Mutable
    * for tests.
@@ -464,6 +533,17 @@ public class ColocationHelper {
     return prRegion;
   }
   
+  // Gemfirexd will skip initialization for PR, so just get region name without waitOnInitialize
+  public static PartitionedRegion getLeaderRegionName(PartitionedRegion prRegion) {
+    PartitionedRegion parentRegion;
+    
+    while((parentRegion = getColocatedRegionName(prRegion)) != null) {
+      prRegion = parentRegion;
+    } 
+      
+    return prRegion;
+  }
+
   private static String getRegionIdentifier(String regionName) {
     if (regionName.startsWith("/")) {
       return regionName.replace("/", "#");

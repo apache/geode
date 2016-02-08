@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2005-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal;
 
@@ -18,7 +27,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.gemstone.gemfire.cache.query.Struct;
+import com.gemstone.gemfire.cache.query.internal.types.CollectionTypeImpl;
 import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
+import com.gemstone.gemfire.cache.query.types.CollectionType;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.query.types.StructType;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
@@ -35,7 +46,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @author Eric Zoerner
  * @since 5.1
  */
-public final class StructBag extends ResultsBag {
+public final class StructBag extends ResultsBag implements StructFields {
   /**
    * Holds value of property modifiable.
    */
@@ -163,7 +174,8 @@ public final class StructBag extends ResultsBag {
     }
     StructImpl s = (StructImpl) obj;
     if (!this.elementType.equals(s.getStructType())) {
-      throw new IllegalArgumentException(LocalizedStrings.StructBag_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE.toLocalizedString());
+      throw new IllegalArgumentException(LocalizedStrings.StructBag_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE.
+          toLocalizedString(this.elementType, s.getStructType()));
     }
     return addFieldValues(s.getFieldValues());
   }
@@ -269,28 +281,32 @@ public final class StructBag extends ResultsBag {
     }
   }
 
+  public CollectionType getCollectionType() {
+    return new CollectionTypeImpl(StructBag.class, this.elementType);
+  }
+  
   // downcast StructBags to call more efficient methods
   @Override
   public boolean addAll(Collection c) {
-    if (c instanceof StructBag) { return addAll((StructBag) c); }
+    if (c instanceof StructFields) { return addAll((StructFields) c); }
     return super.addAll(c);
   }
 
   @Override
   public boolean removeAll(Collection c) {
-    if (c instanceof StructBag) { return removeAll((StructBag) c); }
+    if (c instanceof StructFields) { return removeAll((StructFields) c); }
     return super.removeAll(c);
   }
 
   @Override
   public boolean retainAll(Collection c) {
-    if (c instanceof StructBag) { return retainAll((StructBag) c); }
+    if (c instanceof StructFields) { return retainAll((StructFields) c); }
     return super.retainAll(c);
   }
 
-  public boolean addAll(StructBag sb) {
+  public boolean addAll(StructFields sb) {
     boolean modified = false;
-    if (!this.elementType.equals(sb.elementType)) {
+    if (!this.elementType.equals(sb.getCollectionType().getElementType())) {
       throw new IllegalArgumentException(LocalizedStrings.StructBag_TYPES_DONT_MATCH.toLocalizedString());
     }
     
@@ -306,9 +322,9 @@ public final class StructBag extends ResultsBag {
     return modified;
   }
 
-  public boolean removeAll(StructBag ss) {
+  public boolean removeAll(StructFields ss) {
     boolean modified = false;
-    if (!this.elementType.equals(ss.elementType)) {
+    if (!this.elementType.equals(ss.getCollectionType().getElementType())) {
       return false; // nothing // modified
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
@@ -320,8 +336,8 @@ public final class StructBag extends ResultsBag {
     return modified;
   }
 
-  public boolean retainAll(StructBag ss) {
-    if (!this.elementType.equals(ss.elementType)) {
+  public boolean retainAll(StructFields ss) {
+    if (!this.elementType.equals(ss.getCollectionType().getElementType())) {
       if (isEmpty()) {
         return false; // nothing modified
       }
@@ -428,7 +444,7 @@ public final class StructBag extends ResultsBag {
   /**
    * Iterator wrapper to construct Structs on demand.
    */
-  private class StructBagIterator extends ResultsBagIterator {
+  private class StructBagIterator extends BagIterator {
 
     private final Iterator itr;
 

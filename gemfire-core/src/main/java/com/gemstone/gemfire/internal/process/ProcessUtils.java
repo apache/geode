@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.process;
 
@@ -70,6 +79,22 @@ public final class ProcessUtils {
   }
   
   /**
+   * Returns true if a process identified by the specified Process is
+   * currently running on this host machine.
+   * 
+   * @param process the Process to check
+   * @return true if the Process is a currently running process
+   */
+  public static boolean isProcessAlive(final Process process) {
+    try {
+      process.exitValue();
+      return false;
+    } catch (IllegalThreadStateException e) {
+      return true;
+    }
+  }
+  
+  /**
    * Returns true if a process identified by the process id was
    * running on this host machine and has been terminated by this operation.
    * 
@@ -89,6 +114,14 @@ public final class ProcessUtils {
     finally {
       IOUtils.close(reader);
     }
+  }
+  
+  /**
+   * Returns true if a fully functional implementation is available. If the
+   * Attach API or JNA NativeCalls are available then this returns true.
+   */
+  public static boolean isAvailable() {
+    return internal.isAvailable();
   }
   
   private static InternalProcessUtils initializeInternalProcessUtils() {
@@ -132,6 +165,10 @@ public final class ProcessUtils {
       public boolean killProcess(int pid) {
         return false;
       }
+      @Override
+      public boolean isAvailable() {
+        return false;
+      }
     };
   }
   
@@ -141,5 +178,6 @@ public final class ProcessUtils {
   interface InternalProcessUtils {
     public boolean isProcessAlive(int pid);
     public boolean killProcess(int pid);
+    public boolean isAvailable();
   }
 }

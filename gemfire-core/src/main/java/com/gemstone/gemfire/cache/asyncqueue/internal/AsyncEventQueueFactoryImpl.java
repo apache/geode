@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.asyncqueue.internal;
 
@@ -184,8 +193,9 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
           //  AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId(asyncQueueId));
       addAsyncEventListener(listener);
       GatewaySender sender = create(AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId(asyncQueueId));
-      asyncEventQueue = new AsyncEventQueueImpl(sender, listener);
-      ((GemFireCacheImpl) cache).addAsyncEventQueue(asyncEventQueue);
+      AsyncEventQueueImpl queue = new AsyncEventQueueImpl(sender, listener);
+      asyncEventQueue = queue;
+      ((GemFireCacheImpl) cache).addAsyncEventQueue(queue);
     } else if (this.cache instanceof CacheCreation) {
       asyncEventQueue = new AsyncEventQueueCreation(asyncQueueId, attrs, listener);
       ((CacheCreation) cache).addAsyncEventQueue(asyncEventQueue);
@@ -262,10 +272,12 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
     this.attrs.maximumQueueMemory = asyncQueueCreation.getMaximumQueueMemory();
     this.attrs.isParallel = asyncQueueCreation.isParallel();
     this.attrs.isBucketSorted = ((AsyncEventQueueCreation)asyncQueueCreation).isBucketSorted();
+	this.attrs.isHDFSQueue = ((AsyncEventQueueCreation)asyncQueueCreation).isHDFSQueue();
     this.attrs.dispatcherThreads = asyncQueueCreation.getDispatcherThreads();
     this.attrs.policy = asyncQueueCreation.getOrderPolicy();
     this.attrs.eventFilters = asyncQueueCreation.getGatewayEventFilters();
     this.attrs.eventSubstitutionFilter = asyncQueueCreation.getGatewayEventSubstitutionFilter();
+
   }
 
   public AsyncEventQueueFactory setParallel(boolean isParallel) {
@@ -274,6 +286,14 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   }
   public AsyncEventQueueFactory setBucketSorted(boolean isbucketSorted) {
     this.attrs.isBucketSorted = isbucketSorted;
+    return this;
+  }
+  public AsyncEventQueueFactory setIsHDFSQueue(boolean isHDFSQueue) {
+    this.attrs.isHDFSQueue = isHDFSQueue;
+    return this;
+  }
+  public AsyncEventQueueFactory setIsMetaQueue(boolean isMetaQueue) {
+    this.attrs.isMetaQueue = isMetaQueue;
     return this;
   }
 }

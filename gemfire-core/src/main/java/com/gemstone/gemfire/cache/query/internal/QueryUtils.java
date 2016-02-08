@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2005-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal;
 
@@ -95,6 +104,30 @@ public class QueryUtils {
     Assert.assertTrue(sr1.getCollectionType().getElementType().equals(
         sr2.getCollectionType().getElementType()));
   }
+  
+
+  public static SelectResults createResultCollection(ExecutionContext context, ObjectType elementType) {
+    return context.isDistinct() ? new ResultsSet(elementType) :
+      new ResultsBag(elementType, context.getCachePerfStats());
+  }
+  
+  public static SelectResults createStructCollection(ExecutionContext context, StructType elementType) {
+    return context.isDistinct() ? new StructSet(elementType) :
+      new StructBag(elementType, context.getCachePerfStats()) ;
+  }
+  
+  public static SelectResults createResultCollection(boolean distinct, ObjectType elementType,
+      ExecutionContext context) {
+    return distinct ? new ResultsSet(elementType) :
+      new ResultsBag(elementType, context.getCachePerfStats());
+  }
+  
+  public static SelectResults createStructCollection(boolean distinct, StructType elementType, 
+      ExecutionContext context) {
+    return distinct ? new StructSet(elementType) :
+      new StructBag(elementType, context.getCachePerfStats()) ;
+  }
+  
 
   /**
    * Returns an appropriate, empty <code>SelectResults</code>
@@ -186,9 +219,15 @@ public class QueryUtils {
         // didn't succeed because large is actually unmodifiable
       }
     }
-    ResultsBag rs = new ResultsBag(small,
-                                   contextOrNull == null ?
-                                   null : contextOrNull.getCachePerfStats());
+    
+    SelectResults rs ;
+    if(contextOrNull != null) {
+        rs =  contextOrNull.isDistinct() ? new ResultsSet(small) :new ResultsBag(small,
+            contextOrNull.getCachePerfStats());
+    }else {
+      rs =new ResultsBag(small,null);
+    }
+    
     for (Iterator itr = rs.iterator(); itr.hasNext(); ) {
       Object element = itr.next();
       int count = large.occurrences(element);
@@ -242,9 +281,15 @@ public class QueryUtils {
         // didn't succeed because small is actually unmodifiable
       }
     }
-    ResultsBag rs = new ResultsBag(large, contextOrNull == null ?
-                                   null : contextOrNull.getCachePerfStats());
-    for (Iterator itr = small.iterator(); itr.hasNext(); ) {
+    SelectResults rs;
+    if(contextOrNull != null) {
+      rs =  contextOrNull.isDistinct() ? new ResultsSet(large) :new ResultsBag(large,
+          contextOrNull.getCachePerfStats());
+    }else {
+      rs =new ResultsBag(large, null);
+    }
+    
+   for (Iterator itr = small.iterator(); itr.hasNext(); ) {
       Object element = itr.next();
       rs.add(element);
     }
@@ -324,16 +369,15 @@ public class QueryUtils {
       ObjectType type = ((RuntimeIterator) finalList.iterator().next())
           .getElementType();
       if (type instanceof StructType) {
-        returnSet = new StructBag((StructTypeImpl) type, context.getCachePerfStats());
+        returnSet = QueryUtils.createStructCollection(context,(StructTypeImpl) type) ;
       }
       else {
-        return new ResultsBag(type, context.getCachePerfStats());
+        return QueryUtils.createResultCollection(context, type);
       }
     }
     else {
-      returnSet = new StructBag(
-          (StructTypeImpl) createStructTypeForRuntimeIterators(finalList),
-                                context.getCachePerfStats());
+      StructType structType = createStructTypeForRuntimeIterators(finalList);
+      returnSet = QueryUtils.createStructCollection(context, structType);
     }
     ListIterator expnItr = expansionList.listIterator();
     // RuntimeIterator levelExpnItr =
@@ -365,7 +409,11 @@ public class QueryUtils {
         while (itr.hasNext()) {
           values[j++] = ((RuntimeIterator) itr.next()).evaluate(context);
         }
-        if (select) ((StructBag) returnSet).addFieldValues(values);
+        if (select) {
+          
+            ((StructFields) returnSet).addFieldValues(values);
+          
+        }
       }
       else {
         if (select)
@@ -589,15 +637,33 @@ public class QueryUtils {
       TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     SelectResults returnSet = null;
+    boolean useLinkedDataStructure = false; 
+    boolean nullValuesAtStart = true;
+    Boolean orderByClause = (Boolean)context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
+    if(orderByClause != null && orderByClause.booleanValue()) {
+      List orderByAttrs = (List)context.cacheGet(CompiledValue.ORDERBY_ATTRIB);        
+      useLinkedDataStructure = orderByAttrs.size()==1; 
+      nullValuesAtStart = !((CompiledSortCriterion)orderByAttrs.get(0)).getCriterion();
+    }
     if (finalItrs.size() == 1) {
-      returnSet = new ResultsBag(
-          ((RuntimeIterator) finalItrs.iterator().next()).getElementType(),
-                                 context.getCachePerfStats());
+      ObjectType resultType = ((RuntimeIterator) finalItrs.iterator().next()).getElementType();
+      if (useLinkedDataStructure) {
+        returnSet = context.isDistinct() ? new LinkedResultSet(resultType): 
+          new SortedResultsBag(resultType, nullValuesAtStart); 
+      } else {
+        returnSet =QueryUtils.createResultCollection(context, resultType);
+      }
+    
     }
     else {
-      returnSet = new StructBag(
-          (StructTypeImpl) createStructTypeForRuntimeIterators(finalItrs),
-                                context.getCachePerfStats());
+      StructTypeImpl resultType =  (StructTypeImpl) createStructTypeForRuntimeIterators(finalItrs);
+      if(useLinkedDataStructure) {
+        returnSet = context.isDistinct() ? new LinkedStructSet(resultType)
+        : new SortedResultsBag<Struct>((StructTypeImpl)resultType, nullValuesAtStart);
+      }else {
+        returnSet = QueryUtils.createStructCollection(context, resultType);
+      }
+      
     }
     cutDownAndExpandIndexResults(returnSet, result, indexFieldToItrsMapping,
         expansionList, finalItrs, context, checkList, iterOps);
@@ -669,6 +735,11 @@ public class QueryUtils {
         select = applyCondition(iterOps, context);
       }
       if (len > 1) {
+        boolean isOrdered = resultSet.getCollectionType().isOrdered();
+        StructTypeImpl elementType = (StructTypeImpl)resultSet.getCollectionType().getElementType();
+        //TODO:Asif Optimize the LinkedStructSet implementation so that
+        // Object[] can be added rather than Struct
+        
         Object values[] = new Object[len];
         int j = 0;
         //creates tuple
@@ -679,7 +750,15 @@ public class QueryUtils {
           values[j++] = ((RuntimeIterator) itr.next()).evaluate(context);
         }
         if (select) {
-          ((StructBag) resultSet).addFieldValues(values);
+          if(isOrdered) {
+            //((LinkedStructSet) resultSet).add(new StructImpl(elementType, values));
+            // Can be LinkedStructSet or SortedResultsBag ( containing underlying LinkedHashMap)
+            resultSet.add(new StructImpl(elementType, values));
+          }else {
+            
+              ((StructFields) resultSet).addFieldValues(values);
+            
+          }
         }
       }
       else {
@@ -1250,9 +1329,8 @@ public class QueryUtils {
         }
       }
       List[] checkList = new List[] { ich1.checkList, ich2.checkList};
-      SelectResults returnSet = new StructBag(
-          (StructTypeImpl) createStructTypeForRuntimeIterators(finalList),
-                                              context.getCachePerfStats());
+      StructType stype = createStructTypeForRuntimeIterators(finalList);
+      SelectResults returnSet = QueryUtils.createStructCollection(context, stype) ;
       RuntimeIterator[][] mappings = new RuntimeIterator[2][];
       mappings[0] = ich1.indexFieldToItrsMapping;
       mappings[1] = ich2.indexFieldToItrsMapping;
@@ -1357,9 +1435,8 @@ public class QueryUtils {
         }
       }
 //      List[] checkList = new List[] { ich1.checkList, ich2.checkList};
-      SelectResults returnSet = new StructBag(
-          (StructTypeImpl) createStructTypeForRuntimeIterators(finalList),
-                                              context.getCachePerfStats());
+      StructType stype = createStructTypeForRuntimeIterators(finalList);
+      SelectResults returnSet = QueryUtils.createStructCollection(context, stype) ;
       //Asif :Obtain the empty resultset for the single usable index
       IndexProtocol singleUsblIndex = singleUsableICH.indxInfo._index;
       CompiledValue nonUsblIndxPath = nonUsableICH.indxInfo._path;
@@ -1367,15 +1444,12 @@ public class QueryUtils {
 //      int singleUsblIndexFieldsSize = -1;
       SelectResults singlUsblIndxRes = null;
       if (singlUsblIndxResType instanceof StructType) {
-        singlUsblIndxRes = new StructBag(
-            (StructTypeImpl) singlUsblIndxResType,
-                                         context.getCachePerfStats());
+        singlUsblIndxRes = QueryUtils.createStructCollection(context,(StructTypeImpl) singlUsblIndxResType);
 //        singleUsblIndexFieldsSize = ((StructTypeImpl) singlUsblIndxResType)
 //            .getFieldNames().length;
       }
       else {
-        singlUsblIndxRes = new ResultsBag(singlUsblIndxResType,
-                                          context.getCachePerfStats());
+        singlUsblIndxRes = QueryUtils.createResultCollection(context, singlUsblIndxResType);
 //        singleUsblIndexFieldsSize = 1;
       }
       //Asif iterate over the intermediate structset
@@ -1566,9 +1640,8 @@ public class QueryUtils {
         .Assert(
             totalFinalList.size() > 1,
             " Since we are in relationship index this itself means that we have atleast two RuntimeIterators");
-    SelectResults returnSet = new StructBag(
-        (StructTypeImpl) createStructTypeForRuntimeIterators(totalFinalList),
-                                            context.getCachePerfStats());
+    StructType stype = createStructTypeForRuntimeIterators(totalFinalList);
+    SelectResults returnSet = QueryUtils.createStructCollection(context, stype) ; 
     RuntimeIterator[][] mappings = new RuntimeIterator[2][];
     mappings[0] = ich1.indexFieldToItrsMapping;
     mappings[1] = ich2.indexFieldToItrsMapping;
@@ -1941,28 +2014,30 @@ class IndexCutDownExpansionHelper {
     cutDownNeeded = checkList != null && (checkSize = checkList.size()) > 0;
     if (cutDownNeeded) {
       Boolean orderByClause = (Boolean)context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
-      boolean useLinkedSet = false;      
+      boolean useLinkedDataStructure = false;
+      boolean nullValuesAtStart = true;
       if(orderByClause != null && orderByClause.booleanValue()) {
         List orderByAttrs = (List)context.cacheGet(CompiledValue.ORDERBY_ATTRIB);        
-        useLinkedSet =orderByAttrs.size()==1; 
+        useLinkedDataStructure =orderByAttrs.size()==1;
+        nullValuesAtStart = !((CompiledSortCriterion)orderByAttrs.get(0)).getCriterion();
       }
       if (checkSize > 1) {
         
         checkType = QueryUtils.createStructTypeForRuntimeIterators(checkList);
-        if (useLinkedSet) {
-          checkSet = new LinkedStructSet((StructTypeImpl) checkType);
+        if (useLinkedDataStructure) {
+          checkSet = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) checkType) 
+          : new SortedResultsBag<Struct>((StructTypeImpl)checkType, nullValuesAtStart);
         } else {
-          checkSet = new StructBag((StructTypeImpl) checkType,
-                                 context.getCachePerfStats());
+          checkSet = QueryUtils.createStructCollection(context, (StructTypeImpl)checkType) ;
         }
       }
       else {
         checkType = ((RuntimeIterator) checkList.get(0)).getElementType();
-        if (useLinkedSet) {
-          checkSet = new LinkedResultSet(checkType); 
+        if (useLinkedDataStructure) {
+          checkSet = context.isDistinct() ? new LinkedResultSet(checkType) :
+            new SortedResultsBag(checkType, nullValuesAtStart); 
         } else {
-          checkSet = new ResultsBag(checkType,
-                                  context.getCachePerfStats());
+          checkSet = QueryUtils.createResultCollection(context, checkType) ;
         }
       }
     }

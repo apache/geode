@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /*
  * Created on Nov 18, 2005
@@ -227,13 +236,11 @@ public class CompositeGroupJunction extends AbstractCompiledValue implements
             .filterEvaluate(context, intermediateResults, false,
                 null/* iterOpn = null */, null/* send independent itrs null */, false,true, false);
         if (intermediateResults.isEmpty()) {
-          return new StructBag(
-            QueryUtils
-                .createStructTypeForRuntimeIterators(this.completeExpansion ? context
-                    .getCurrentIterators()
-                    : QueryUtils.getDependentItrChainForIndpndntItrs(
-                        this.indpndnts, context)),
-                               context.getCachePerfStats()); }
+          StructType structType = QueryUtils .createStructTypeForRuntimeIterators(
+              this.completeExpansion ? context.getCurrentIterators() : QueryUtils.
+                  getDependentItrChainForIndpndntItrs( this.indpndnts, context));
+          return QueryUtils.createStructCollection(context, structType) ;
+        }
       }
     }
     CompiledValue cc = (CompiledValue) itr.next();
@@ -299,17 +306,15 @@ public class CompositeGroupJunction extends AbstractCompiledValue implements
               ObjectType type = ((RuntimeIterator) finalList.iterator().next())
                   .getElementType();
               if (type instanceof StructType) {
-                empty = new StructBag((StructTypeImpl) type,
-                                      context.getCachePerfStats());
+                empty = QueryUtils.createStructCollection(context, (StructTypeImpl) type) ;
               }
               else {
-                empty = new ResultsBag(type, context.getCachePerfStats());
+                empty = QueryUtils.createResultCollection(context, type);
               }
             }
             else {
-              empty = new StructBag(QueryUtils
-                  .createStructTypeForRuntimeIterators(finalList),
-                                    context.getCachePerfStats());
+              StructType strucType =QueryUtils.createStructTypeForRuntimeIterators(finalList);
+              empty = QueryUtils.createStructCollection(context, strucType) ;
             }
             return empty;
           }

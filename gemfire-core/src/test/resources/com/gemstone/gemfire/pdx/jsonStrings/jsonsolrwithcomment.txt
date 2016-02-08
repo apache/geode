@@ -1,0 +1,29 @@
+
+{ 
+"add": {
+  "doc": {
+    "id": "DOC1",
+    "my_boosted_field": {        
+      "boost": 2.3,
+      "value": "test"
+    },
+    "my_multivalued_field": [ "aaa", "bbb" ]  
+  }
+},
+"add2": {
+  "commitWithin": 5000,          
+  "overwrite": false,            
+  "boost": 3.45,                 
+  "doc": {
+    "f1": "v1",
+    "f2": "v2"
+  }
+},
+
+"commit": {},
+"optimize": { "waitFlush":false, "waitSearcher":false },
+
+"delete": { "id":"ID" },                              
+"delete2": { "query":"QUERY" },                          
+"delete3": { "query":"QUERY", "commitWithin":500 }     
+}

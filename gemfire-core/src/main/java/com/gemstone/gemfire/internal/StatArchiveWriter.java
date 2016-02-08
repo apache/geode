@@ -1,24 +1,20 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal;
-
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.statistics.ResourceInstance;
-import com.gemstone.gemfire.internal.statistics.ResourceType;
-import com.gemstone.gemfire.internal.statistics.SampleHandler;
-import com.gemstone.gemfire.internal.statistics.StatArchiveDescriptor;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
@@ -39,6 +35,17 @@ import java.util.TimeZone;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.GemFireIOException;
+import com.gemstone.gemfire.InternalGemFireException;
+import com.gemstone.gemfire.StatisticDescriptor;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.statistics.ResourceInstance;
+import com.gemstone.gemfire.internal.statistics.ResourceType;
+import com.gemstone.gemfire.internal.statistics.SampleHandler;
+import com.gemstone.gemfire.internal.statistics.StatArchiveDescriptor;
 
 /**
  * StatArchiveWriter provides APIs to write statistic snapshots to an archive
@@ -159,7 +166,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
   }
   
-  @SuppressFBWarnings(value="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification="Best effort attempt to delete a GFS file without any samples.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification="Best effort attempt to delete a GFS file without any samples.") 
   private static void deleteFileIfPossible(File file) {
     file.delete();
   }
@@ -279,7 +286,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
   }
   
-  @SuppressFBWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="This is only for debugging and there is never more than one instance being traced because there is only one stat sampler.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="This is only for debugging and there is never more than one instance being traced because there is only one stat sampler.") 
   public void allocatedResourceInstance(ResourceInstance statResource) {
     if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
       logger.trace(LogMarker.STATISTICS, "StatArchiveWriter#allocatedResourceInstance statResource={}", statResource);

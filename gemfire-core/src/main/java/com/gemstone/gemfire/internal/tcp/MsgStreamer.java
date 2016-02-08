@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.tcp;
 
@@ -25,6 +34,7 @@ import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.ByteBufferWriter;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.ObjToByteArraySerializer;
@@ -42,7 +52,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
     */
 
 public class MsgStreamer extends OutputStream implements
-    ObjToByteArraySerializer, BaseMsgStreamer {
+    ObjToByteArraySerializer, BaseMsgStreamer, ByteBufferWriter {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -55,6 +65,12 @@ public class MsgStreamer extends OutputStream implements
    * Any exceptions that happen during sends
    */
   private ConnectExceptions ce;
+  // TODO OFFHEAP: instead of MsgStreamer extending OutputStream
+  // we could have it extends HeapDataOutputStream.
+  // HDOS can now be given a direct ByteBuffer and told
+  // to not copy large byte sequences it is given.
+  // Also be it being a HDOS we can take advantage of code
+  // that is already optimized to pass Chunk direct ByteBuffers.
   /**
    * The byte buffer we used for preparing a chunk of the message.
    * Currently this buffer is obtained from the connection.
@@ -378,6 +394,42 @@ public class MsgStreamer extends OutputStream implements
         }
         this.buffer.put(source, offset, chunkSize);
         offset += chunkSize;
+        len -= chunkSize;
+      }
+    }
+  }
+
+  @Override
+  public final void write(ByteBuffer bb) {
+//    if (logger.isTraceEnabled()) {
+//      logger.trace(" bytes={} offset={} len={}", source, offset, len);
+//    }
+    if (this.overflowBuf != null) {
+      this.overflowBuf.write(bb);
+      return;
+    }
+    int len = bb.remaining();
+    // TODO OFFHEAP: if len > remainingSpace and isOverflowMode() then
+    // (and the overflow HDOS has doNotCopy set?) it is probably better to not copy part of
+    // bb to this.buffer and then add the remainder of it to the HDOS. Instead
+    // we can just add the whole bb to the HDOS.
+    while (len > 0) {
+      int remainingSpace = this.buffer.capacity() - this.buffer.position();
+      if (remainingSpace == 0) {
+        realFlush(false);
+        if (this.overflowBuf != null) {
+          this.overflowBuf.write(bb);
+          return;
+        }
+      } else {
+        int chunkSize = remainingSpace;
+        if (len < chunkSize) {
+          chunkSize = len;
+        }
+        int oldLimit = bb.limit();
+        bb.limit(bb.position()+chunkSize);
+        this.buffer.put(bb);
+        bb.limit(oldLimit);
         len -= chunkSize;
       }
     }
@@ -887,10 +939,11 @@ public class MsgStreamer extends OutputStream implements
    * will all fit into our current buffer.
    */
   public final void writeAsSerializedByteArray(Object v) throws IOException {
+    // TODO OFFHEAP: update this class to take into account the "noCopy" mode added to HDOS and that we might be adding direct ByteBuffers to this.
     if (v instanceof HeapDataOutputStream) {
       HeapDataOutputStream other = (HeapDataOutputStream)v;
       InternalDataSerializer.writeArrayLength(other.size(), this);
-      other.sendTo((OutputStream)this);
+      other.sendTo((ByteBufferWriter)this);
       other.rewind();
       return;
     }
@@ -936,7 +989,7 @@ public class MsgStreamer extends OutputStream implements
       disableOverflowMode();
       finished = true;
       if (overBuf != null && !isOverflowMode()) {
-        overBuf.sendTo((OutputStream)this);
+        overBuf.sendTo((ByteBufferWriter)this);
       }
     } finally {
       if (!finished) {

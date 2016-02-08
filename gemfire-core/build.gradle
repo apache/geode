@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 sourceSets {
   jca {
     compileClasspath += configurations.compile
@@ -11,84 +28,139 @@ configurations {
 }
 
 dependencies {
+   // Source Dependencies
+  // External 
   provided files("${System.getProperty('java.home')}/../lib/tools.jar")
-  compile 'antlr:antlr:2.7.7'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:2.2.0'
-  compile 'com.fasterxml.jackson.core:jackson-core:2.2.0'
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.2.0'
-  compile 'com.google.code.findbugs:annotations:3.0.0'
-  compile 'commons-io:commons-io:2.3'
-  compile 'commons-logging:commons-logging:1.1.1'
-  compile 'commons-modeler:commons-modeler:2.0'
-  compile 'it.unimi.dsi:fastutil:6.6.2'
-  compile 'javax.activation:activation:1.1.1'
-  compile 'javax.mail:javax.mail-api:1.4.5'
-  compile 'javax.resource:javax.resource-api:1.7'
-  compile 'javax.servlet:javax.servlet-api:3.1.0'
-  compile 'javax.transaction:javax.transaction-api:1.2'
-  compile 'mx4j:mx4j:3.0.1'
-  compile 'mx4j:mx4j-remote:3.0.1'
-  compile 'mx4j:mx4j-tools:3.0.1'
-  compile 'net.java.dev.jna:jna:4.0.0'
-  compile 'net.sourceforge.jline:jline:1.0.S2-B'
-  compile 'org.eclipse.jetty:jetty-http:9.2.3.v20140905'
-  compile 'org.eclipse.jetty:jetty-io:9.2.3.v20140905'
-  compile 'org.eclipse.jetty:jetty-security:9.2.3.v20140905'
-  compile 'org.eclipse.jetty:jetty-server:9.2.3.v20140905'
-  compile 'org.eclipse.jetty:jetty-servlet:9.2.3.v20140905'
-  compile 'org.eclipse.jetty:jetty-util:9.2.3.v20140905'
-  compile 'org.eclipse.jetty:jetty-webapp:9.2.3.v20140905'
-  compile 'org.eclipse.jetty:jetty-xml:9.2.3.v20140905'
-  compile 'org.fusesource.jansi:jansi:1.8'
-  compile 'org.apache.logging.log4j:log4j-api:2.1'
-  compile 'org.apache.logging.log4j:log4j-core:2.1'
-  compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.1'
-  compile 'org.apache.logging.log4j:log4j-jcl:2.1'
-  compile 'org.slf4j:slf4j-api:1.7.7'
-  compile 'org.springframework.data:spring-data-commons:1.9.1.RELEASE'
-  compile 'org.springframework.data:spring-data-gemfire:1.5.1.RELEASE'
-  compile 'org.springframework:spring-tx:3.2.12.RELEASE'
-  compile 'org.springframework.shell:spring-shell:1.0.0.RELEASE'
-  compile 'org.xerial.snappy:snappy-java:1.1.1.6'
-
-  compile project(':gemfire-jgroups')
+  compile 'org.jgroups:jgroups:3.6.6.Final'
+  compile 'antlr:antlr:' + project.'antlr.version'
+  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
+  compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
+  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
+  provided 'com.google.guava:guava:' + project.'guava.version'
+  compile 'commons-io:commons-io:' + project.'commons-io.version'
+  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  compile 'commons-logging:commons-logging:' + project.'commons-logging.version'
+  compile 'commons-modeler:commons-modeler:' + project.'commons-modeler.version'
+  compile 'io.netty:netty-all:' + project.'netty-all.version'
+  compile 'it.unimi.dsi:fastutil:' + project.'fastutil.version'
+  compile 'javax.activation:activation:' + project.'activation.version'
+  compile 'javax.mail:javax.mail-api:' + project.'javax.mail-api.version'
+  compile 'javax.resource:javax.resource-api:' + project.'javax.resource-api.version'
+  compile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  compile 'javax.transaction:javax.transaction-api:' + project.'javax.transaction-api.version'
+  compile 'mx4j:mx4j:' + project.'mx4j.version'
+  compile 'mx4j:mx4j-remote:' + project.'mx4j.version'
+  compile 'mx4j:mx4j-tools:' + project.'mx4j.version'
+  compile 'net.java.dev.jna:jna:' + project.'jna.version'
+  compile 'jline:jline:' + project.'jline.version'
+  provided 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
+  provided 'org.apache.hadoop:hadoop-annotations:' + project.'hadoop.version'
+  provided 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
+  provided 'org.apache.hadoop:hadoop-mapreduce-client-core:' + project.'hadoop.version'
+  compile 'org.apache.hbase:hbase:' + project.'hbase.version'
+  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  runtime 'org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version'
+  runtime 'org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version'
+  runtime 'org.apache.logging.log4j:log4j-jul:' + project.'log4j.version'
+  compile 'org.eclipse.jetty:jetty-http:' + project.'jetty.version'
+  compile 'org.eclipse.jetty:jetty-io:' + project.'jetty.version'
+  compile 'org.eclipse.jetty:jetty-security:' + project.'jetty.version'
+  compile 'org.eclipse.jetty:jetty-server:' + project.'jetty.version'
+  compile 'org.eclipse.jetty:jetty-servlet:' + project.'jetty.version'
+  compile 'org.eclipse.jetty:jetty-util:' + project.'jetty.version'
+  compile 'org.eclipse.jetty:jetty-webapp:' + project.'jetty.version'
+  compile 'org.eclipse.jetty:jetty-xml:' + project.'jetty.version'
+  compile 'org.fusesource.jansi:jansi:' + project.'jansi.version'
+  compile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  compile 'org.springframework.data:spring-data-commons:' + project.'spring-data-commons.version'
+  provided 'org.springframework.data:spring-data-gemfire:' + project.'spring-data-gemfire.version'
+  compile 'org.springframework:spring-tx:' + project.'springframework.version'
+  compile 'org.springframework.shell:spring-shell:' + project.'spring-shell.version'
+  compile 'org.xerial.snappy:snappy-java:' + project.'snappy-java.version'
+  compile 'org.apache.hbase:hbase:' + project.'hbase.version'
+ 
+  compile project(':gemfire-common')
   compile project(':gemfire-joptsimple')
   compile project(':gemfire-json')
   
-  testCompile 'org.apache.bcel:bcel:5.2'
-
   jcaCompile sourceSets.main.output
 
   provided project(path: ':gemfire-junit', configuration: 'testOutput')
+
+  // Test Dependencies
+  // External
+  testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
+  testRuntime 'org.apache.derby:derby:' + project.'derby.version'
+  testRuntime 'org.apache.hadoop:hadoop-auth:' + project.'hadoop.version'
+  testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+  testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
+  testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
+  testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
+  testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
+  testCompile 'redis.clients:jedis:' + project.'jedis.version'
+
+  testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-module-junit4-common:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-api-support:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
+  testRuntime 'org.powermock:powermock-reflect:' + project.'powermock.version'
+  testRuntime 'org.javassist:javassist:' + project.'javassist.version'
 }
 
+def generatedResources = "$buildDir/generated-resources/main"
+
+sourceSets {
+  main {
+    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
+  }
+}
+ 
 // Creates the version properties file and writes it to the classes dir
-task createVersionPropertiesFile << {
-  ext.gitBranch = 'master'
-  ext.commitId = '1366ff2d4fcbf54bfad684e9ba9822db2a2b0ff5'
-  ext.sourceDate = '2015-04-06 14:54:51 -0700'
-  
-  ext.osArch = System.getProperty('os.arch')
-  ext.osName = System.getProperty('os.name')
-  ext.osVersion = System.getProperty('os.version')
-  ext.buildDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
-  ext.buildNumber = new Date().format('MMddyy')
-  ext.jdkVersion = System.getProperty('java.version')
+task createVersionPropertiesFile {
+  def propertiesFile = file(generatedResources + "/com/gemstone/gemfire/internal/GemFireVersion.properties");
+  outputs.file propertiesFile
+  inputs.dir compileJava.destinationDir
 
-  def props = [
-    "Product-Name"      : "Pivotal GemFire",
-    "Product-Version"   : version,
-    "Build-Id"          : System.env.USER + ' ' + ext.buildNumber,
-    "Build-Date"        : ext.buildDate,
-    "Build-Platform"    : ext.osName + ' ' + ext.osVersion + ' ' + ext.osArch,
-    "Build-Java-Version": ext.jdkVersion,
-    "Source-Date"       : ext.sourceDate,
-    "Source-Revision"   : ext.commitId,
-    "Source-Repository" : ext.gitBranch
-  ] as Properties
+  doLast {
 
-  new FileOutputStream(file("$buildDir/classes/main/com/gemstone/gemfire/internal/GemFireVersion.properties")).withStream { fos ->
-    props.store(fos, '')
+    try {
+      def grgit = org.ajoberstar.grgit.Grgit.open()
+      ext.branch = grgit.branch.getCurrent().name
+      ext.commitId = grgit.head().id
+      ext.sourceDate = grgit.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
+      grgit.close()
+    } catch (Exception e) {
+      logger.warn( '***** Unable to find Git workspace. Using default version information *****' )
+      ext.branch = 'UNKNOWN'
+      ext.commitId = 'UNKNOWN'
+      ext.sourceDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
+    }
+
+    ext.osArch = System.getProperty('os.arch')
+    ext.osName = System.getProperty('os.name')
+    ext.osVersion = System.getProperty('os.version')
+    ext.buildDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
+    ext.buildNumber = new Date().format('MMddyy')
+    ext.jdkVersion = System.getProperty('java.version')
+
+    def props = [
+      "Product-Name"      : "Apache Geode (incubating)",
+      "Product-Version"   : version,
+      "Build-Id"          : System.env.USER + ' ' + ext.buildNumber,
+      "Build-Date"        : ext.buildDate,
+      "Build-Platform"    : ext.osName + ' ' + ext.osVersion + ' ' + ext.osArch,
+      "Build-Java-Version": ext.jdkVersion,
+      "Source-Date"       : ext.sourceDate,
+      "Source-Revision"   : ext.commitId,
+      "Source-Repository" : ext.branch
+    ] as Properties
+
+    propertiesFile.getParentFile().mkdirs();
+    new FileOutputStream(propertiesFile).withStream { fos ->
+      props.store(fos, '')
+    }
   }
 }
 
@@ -124,10 +196,13 @@ task jcaJar (type: Jar, dependsOn: raJar) {
   from raJar.archivePath
 }
 
-artifacts {
-  archives webJar, raJar, jcaJar
+configurations {
+  classesOutput {
+    extendsFrom compile
+    description  'a dependency that exposes the compiled classes'
+  }
 }
 
-compileJava.doLast {
-    tasks.createVersionPropertiesFile.execute()
+dependencies {
+  classesOutput sourceSets.main.output
 }

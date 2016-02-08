@@ -1,10 +1,20 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protectfranded by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 /******
  * THIS FILE IS ENCODED IN UTF-8 IN ORDER TO TEST UNICODE IN FIELD NAMES.
  * THE ENCODING MUST BE SPECIFIED AS UTF-8 WHEN COMPILED
@@ -233,7 +243,12 @@ public class Portfolio implements Serializable, DataSerializable {
   }
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.ID = in.readInt();
+    boolean isNull = DataSerializer.readPrimitiveBoolean(in);
+    if(!isNull) {
+      this.shortID = DataSerializer.readShort(in);
+    }
     this.pkid = DataSerializer.readString(in);
+    
     this.position1 = (Position)DataSerializer.readObject(in);
     this.position2 = (Position)DataSerializer.readObject(in);
     this.positions = (HashMap)DataSerializer.readObject(in);
@@ -258,6 +273,13 @@ public class Portfolio implements Serializable, DataSerializable {
   
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.ID);
+    if(this.shortID == null) {
+      DataSerializer.writePrimitiveBoolean(true, out);  
+    }else {
+      DataSerializer.writePrimitiveBoolean(false, out);
+      DataSerializer.writeShort(this.shortID, out);
+    }
+    
     DataSerializer.writeString(this.pkid, out);
     DataSerializer.writeObject(this.position1, out);
     DataSerializer.writeObject(this.position2, out);

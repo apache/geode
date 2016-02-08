@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
@@ -168,7 +176,7 @@ public class ShellCommands implements CommandMarker {
   {
     Result result;
     
-    String passwordToUse           = password;
+    String passwordToUse           = decrypt(password);
     String keystoreToUse           = keystore;
     String keystorePasswordToUse   = keystorePassword;
     String truststoreToUse         = truststore;
@@ -198,10 +206,13 @@ public class ShellCommands implements CommandMarker {
             url = url.replace("http:", "https:");
           }
         }
-        
+
+        // This is so that SSL termination results in https URLs being returned
+        String query = (url.startsWith("https")) ? "?scheme=https" : "";
+
         LogWrapper.getInstance().warning(String.format("Sending HTTP request for Link Index at (%1$s)...", url.concat("/index")));
 
-        LinkIndex linkIndex = new SimpleHttpRequester(CONNECT_LOCATOR_TIMEOUT_MS).get(url.concat("/index"), LinkIndex.class);
+        LinkIndex linkIndex = new SimpleHttpRequester(CONNECT_LOCATOR_TIMEOUT_MS).get(url.concat("/index").concat(query), LinkIndex.class);
 
         LogWrapper.getInstance().warning(String.format("Received Link Index (%1$s)", linkIndex.toString()));
 
@@ -358,7 +369,14 @@ public class ShellCommands implements CommandMarker {
     return result;
   }
 
-  private void configureHttpsURLConnection(Map<String, String> sslConfigProps) throws Exception {
+  private String decrypt(String password) {
+    if (password != null) {
+      return PasswordUtil.decrypt(password);
+    }
+    return null;
+  }
+
+private void configureHttpsURLConnection(Map<String, String> sslConfigProps) throws Exception {
     String keystoreToUse = sslConfigProps.get(Gfsh.SSL_KEYSTORE);
     String keystorePasswordToUse = sslConfigProps.get(Gfsh.SSL_KEYSTORE_PASSWORD);
     String truststoreToUse = sslConfigProps.get(Gfsh.SSL_TRUSTSTORE);
@@ -835,8 +853,8 @@ public class ShellCommands implements CommandMarker {
       int historySizeWordLength = historySizeString.length();
 
       GfshHistory gfshHistory = gfsh.getGfshHistory();
-      List<?> gfshHistoryList = gfshHistory.getHistoryList();
-      Iterator<?> it = gfshHistoryList.iterator();
+      //List<?> gfshHistoryList = gfshHistory.getHistoryList();
+      Iterator<?> it = gfshHistory.entries();
       boolean flagForLineNumbers = (saveHistoryTo != null && saveHistoryTo
           .length() > 0) ? false : true;
       long lineNumber = 0;

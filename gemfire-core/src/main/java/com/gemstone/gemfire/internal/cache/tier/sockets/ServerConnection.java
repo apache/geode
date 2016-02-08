@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
@@ -23,6 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.logging.log4j.Logger;
 
@@ -46,7 +56,7 @@ import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.ClientHandShake;
 import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.command.Default;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -88,9 +98,48 @@ public class ServerConnection implements Runnable {
   // private static boolean useDataStream =
   // System.getProperty("hct.useDataStream", "false").equals("true");
 
- 
-  public static ByteBuffer allocateCommBuffer(int size) {
-    return ByteBuffer.allocate(size);
+  // The key is the size of each ByteBuffer. The value is a queue of byte buffers all of that size.
+  private static final ConcurrentHashMap<Integer, LinkedBlockingQueue<ByteBuffer>> commBufferMap = new ConcurrentHashMap<>(4, 0.75f, 1);
+
+  public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
+    // I expect that size will almost always be the same value
+    if (sock.getChannel() == null) {
+      // The socket this commBuffer will be used for is old IO (it has no channel).
+      // So the commBuffer should be heap based.
+      return ByteBuffer.allocate(size);
+    }
+    LinkedBlockingQueue<ByteBuffer> q = commBufferMap.get(size);
+    ByteBuffer result = null;
+    if (q != null) {
+      result = q.poll();
+    }
+    if (result == null) {
+      result = ByteBuffer.allocateDirect(size);
+    } else {
+      result.position(0);
+      result.limit(result.capacity());
+    }
+    return result;
+  }
+  
+  public static void releaseCommBuffer(ByteBuffer bb) {
+    if (bb != null && bb.isDirect()) {
+      LinkedBlockingQueue<ByteBuffer> q = commBufferMap.get(bb.capacity());
+      if (q == null) {
+        q = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<ByteBuffer> oldQ = commBufferMap.putIfAbsent(bb.capacity(), q);
+        if (oldQ != null) {
+          q = oldQ;
+        }
+      }
+      q.offer(bb);
+    }
+  }
+  
+  public static void emptyCommBufferPool() {
+    for (LinkedBlockingQueue<ByteBuffer> q: commBufferMap.values()) {
+      q.clear();
+    }
   }
 
   private Socket theSocket;
@@ -348,12 +397,15 @@ public class ServerConnection implements Runnable {
   public void setHandshake(ClientHandShake handshake) {
     this.handshake = handshake;
     Version v = handshake.getVersion();
+    
     this.replyMsg.setVersion(v);
     this.requestMsg.setVersion(v);
     this.responseMsg.setVersion(v);
     this.errorMsg.setVersion(v);
+    
     this.queryResponseMsg.setVersion(v);
     this.chunkedResponseMsg.setVersion(v);
+    this.executeFunctionResponseMsg.setVersion(v);
     this.registerInterestResponseMsg.setVersion(v);
     this.keySetResponseMsg.setVersion(v);
   }
@@ -523,12 +575,12 @@ public class ServerConnection implements Runnable {
       }
 
       if (isDebugEnabled) {
-        logger.debug("{} registering client {}", (registerClient? "" : "not "), proxyId);
+        logger.debug("{}registering client {}", (registerClient? "" : "not "), proxyId);
       }
       this.crHelper.checkCancelInProgress(null);
       if (clientJoined && isFiringMembershipEvents()) {
         // This is a new client. Notify bridge membership and heartbeat monitor.
-        InternalBridgeMembership.notifyJoined(this.proxyId.getDistributedMember(),
+        InternalClientMembership.notifyJoined(this.proxyId.getDistributedMember(),
             true);
         }
 
@@ -828,9 +880,9 @@ public class ServerConnection implements Runnable {
         // the heartbeat monitor; other wise just remove the connection.
         if (clientDeparted && isFiringMembershipEvents()) {
           if (this.clientDisconnectedCleanly && !forceClientCrashEvent) {
-            InternalBridgeMembership.notifyLeft(proxyId.getDistributedMember(), true);
+            InternalClientMembership.notifyLeft(proxyId.getDistributedMember(), true);
           } else {
-            InternalBridgeMembership.notifyCrashed(this.proxyId.getDistributedMember(), true);
+            InternalClientMembership.notifyCrashed(this.proxyId.getDistributedMember(), true);
           }
           // The client has departed. Remove this last connection and unregister it.
         }
@@ -1528,16 +1580,18 @@ public class ServerConnection implements Runnable {
           // one per connection.
           commBuffer = null;
         } else {
-          commBuffer = allocateCommBuffer(socketBufferSize);
+          commBuffer = allocateCommBuffer(socketBufferSize, s);
         }
-        requestMsg.setComms(theSocket, commBuffer, msgStats);
-        replyMsg.setComms(theSocket, commBuffer, msgStats);
-        responseMsg.setComms(theSocket, commBuffer, msgStats);
-        chunkedResponseMsg.setComms(theSocket, commBuffer, msgStats);
-        queryResponseMsg.setComms(theSocket, commBuffer, msgStats);
-        executeFunctionResponseMsg.setComms(theSocket, commBuffer, msgStats);
-        registerInterestResponseMsg.setComms(theSocket, commBuffer, msgStats);        
-        errorMsg.setComms(theSocket, commBuffer, msgStats);
+        requestMsg.setComms(this, theSocket, commBuffer, msgStats);
+        replyMsg.setComms(this, theSocket, commBuffer, msgStats);
+        responseMsg.setComms(this, theSocket, commBuffer, msgStats);
+        errorMsg.setComms(this, theSocket, commBuffer, msgStats);
+
+        chunkedResponseMsg.setComms(this, theSocket, commBuffer, msgStats);
+        queryResponseMsg.setComms(this, theSocket, commBuffer, msgStats);
+        executeFunctionResponseMsg.setComms(this, theSocket, commBuffer, msgStats);
+        registerInterestResponseMsg.setComms(this, theSocket, commBuffer, msgStats);
+        keySetResponseMsg.setComms(this, theSocket, commBuffer, msgStats);
       }
       catch(RuntimeException re) {
         throw re;
@@ -1616,7 +1670,16 @@ public class ServerConnection implements Runnable {
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Closed connection", this.name);
     }
+    releaseCommBuffer();
     return true;
+  }
+  
+  private void releaseCommBuffer() {
+    ByteBuffer bb = this.commBuffer;
+    if (bb != null) {
+      this.commBuffer = null;
+      ServerConnection.releaseCommBuffer(bb);
+    }
   }
   
   /**

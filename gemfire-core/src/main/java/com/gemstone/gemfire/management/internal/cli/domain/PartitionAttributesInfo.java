@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.domain;
 
@@ -17,6 +26,7 @@ import java.util.Map;
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionResolver;
+import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
 import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesDefault;
 import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
 
@@ -67,6 +77,38 @@ public class PartitionAttributesInfo implements Serializable {
       }
     }
     
+    nonDefaultAttributes = new HashMap<String, String>();
+    if (this.totalNumBuckets != RegionAttributesDefault.TOTAL_NUM_BUCKETS) {
+      nonDefaultAttributes.put(RegionAttributesNames.TOTAL_NUM_BUCKETS, Integer.toString(this.totalNumBuckets));
+    }
+
+    if (this.localMaxMemory != ((PartitionAttributesImpl) partitionAttributes).getLocalMaxMemoryDefault()) {
+      nonDefaultAttributes.put(RegionAttributesNames.LOCAL_MAX_MEMORY, Integer.toString(this.localMaxMemory));
+    }
+
+
+    if (this.redundantCopies != RegionAttributesDefault.REDUNDANT_COPIES) {
+      nonDefaultAttributes.put(RegionAttributesNames.REDUNDANT_COPIES, Integer.toString(this.redundantCopies));
+    }
+
+
+    if (this.colocatedWith != null && !this.colocatedWith.equals(RegionAttributesDefault.COLOCATED_WITH)) {
+      nonDefaultAttributes.put(RegionAttributesNames.COLOCATED_WITH, this.colocatedWith);
+    }
+
+
+    if (this.recoveryDelay != RegionAttributesDefault.RECOVERY_DELAY) {
+      nonDefaultAttributes.put(RegionAttributesNames.RECOVERY_DELAY, Long.toString(this.recoveryDelay));
+    }
+
+
+    if (this.startupRecoveryDelay != RegionAttributesDefault.STARTUP_RECOVERY_DELAY) {
+      nonDefaultAttributes.put(RegionAttributesNames.STARTUP_RECOVERY_DELAY, Long.toString(this.startupRecoveryDelay));
+    }
+
+    if (this.partitionResolverName != null && !this.partitionResolverName.equals(RegionAttributesDefault.PARTITION_RESOLVER)) {
+      nonDefaultAttributes.put(RegionAttributesNames.PARTITION_RESOLVER, this.partitionResolverName);
+    }
   }
 
   public int getTotalNumBuckets() {
@@ -124,44 +166,6 @@ public class PartitionAttributesInfo implements Serializable {
   }
 
   public Map<String, String> getNonDefaultAttributes() {
- 
-    if (nonDefaultAttributes == null) {
-      nonDefaultAttributes = new HashMap<String, String>();
-      if (this.totalNumBuckets != RegionAttributesDefault.TOTAL_NUM_BUCKETS) {
-        nonDefaultAttributes.put(RegionAttributesNames.TOTAL_NUM_BUCKETS, Integer.toString(this.totalNumBuckets));
-      }
-
-      if (this.localMaxMemory != RegionAttributesDefault.LOCAL_MAX_MEMORY) {
-        nonDefaultAttributes.put(RegionAttributesNames.LOCAL_MAX_MEMORY, Integer.toString(this.localMaxMemory));
-      }
-
-
-      if (this.redundantCopies != RegionAttributesDefault.REDUNDANT_COPIES) {
-        nonDefaultAttributes.put(RegionAttributesNames.REDUNDANT_COPIES, Integer.toString(this.redundantCopies));
-      }
-
-
-      if (this.colocatedWith != null && !this.colocatedWith.equals(RegionAttributesDefault.COLOCATED_WITH)) {
-        nonDefaultAttributes.put(RegionAttributesNames.COLOCATED_WITH, this.colocatedWith);
-      }
-
-
-      if (this.recoveryDelay != RegionAttributesDefault.RECOVERY_DELAY) {
-        nonDefaultAttributes.put(RegionAttributesNames.RECOVERY_DELAY, Long.toString(this.recoveryDelay));
-      }
-
-
-      if (this.startupRecoveryDelay != RegionAttributesDefault.STARTUP_RECOVERY_DELAY) {
-        nonDefaultAttributes.put(RegionAttributesNames.STARTUP_RECOVERY_DELAY, Long.toString(this.startupRecoveryDelay));
-      }
-
-      if (this.partitionResolverName != null && !this.partitionResolverName.equals(RegionAttributesDefault.PARTITION_RESOLVER)) {
-        nonDefaultAttributes.put(RegionAttributesNames.PARTITION_RESOLVER, this.partitionResolverName);
-      }
-    }
-
     return nonDefaultAttributes;
   }
-
-
 }

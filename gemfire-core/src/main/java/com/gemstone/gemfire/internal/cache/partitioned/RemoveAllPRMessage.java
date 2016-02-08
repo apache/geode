@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
@@ -180,6 +189,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
     Set recipients = Collections.singleton(recipient);
     RemoveAllResponse p = new RemoveAllResponse(r.getSystem(), recipients);
     initMessage(r, recipients, false, p);
+    setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     if (logger.isDebugEnabled()) {
       logger.debug("RemoveAllPRMessage.send: recipient is {}, msg is {}", recipient, this);
     }
@@ -335,7 +345,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
       return null;
     }
     
-    EntryEventImpl ev = new EntryEventImpl(r, 
+    EntryEventImpl ev = EntryEventImpl.create(r, 
         removeAllPRData[0].getOp(),
         removeAllPRData[0].getKey(), 
         null /*value*/, 
@@ -383,6 +393,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
     BucketRegion bucketRegion = null;
     PartitionedRegionDataStore ds = r.getDataStore();
     InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
+    try {
     
     if (!notificationOnly) {
       // bucketRegion is not null only when !notificationOnly
@@ -391,7 +402,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
       this.versions = new VersionedObjectList(this.removeAllPRDataSize, true, bucketRegion.getAttributes().getConcurrencyChecksEnabled());
 
       // create a base event and a DPAO for RemoveAllMessage distributed btw redundant buckets
-      baseEvent = new EntryEventImpl(
+      baseEvent = EntryEventImpl.create(
           bucketRegion, Operation.REMOVEALL_DESTROY,
           null, null, this.callbackArg, true, eventSender, !skipCallbacks, true);
       // set baseEventId to the first entry's event id. We need the thread id for DACE
@@ -457,6 +468,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
            */
           for (int i=0; i<removeAllPRDataSize; i++) {
             EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,removeAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks);
+            try {
             key = ev.getKey();
 
             ev.setRemoveAllOperation(op);
@@ -493,6 +505,9 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
             } else {
               succeeded.add(removeAllPRData[i].getKey());
               this.versions.addKeyAndVersion(removeAllPRData[i].getKey(), ev.getVersionTag());
+            }
+            } finally {
+              ev.release();
             }
           } // for
 
@@ -532,13 +547,21 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
     } else {
       for (int i=0; i<removeAllPRDataSize; i++) {
         EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,removeAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks);
+        try {
         ev.setOriginRemote(true);
         if (this.callbackArg != null) {
           ev.setCallbackArgument(this.callbackArg);
         }
         r.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, ev, r.isInitialized(), true);
+        } finally {
+          ev.release();
+        }
       }
     }
+  } finally {
+    if (baseEvent != null) baseEvent.release();
+    if (op != null) op.freeOffHeapResources();
+  }
 
     return true;
   }
@@ -559,7 +582,9 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
       boolean notificationOnly, ClientProxyMembershipID bridgeContext,
       boolean posDup, boolean skipCallbacks) {
     RemoveAllEntryData dataItem = data[idx];
-    EntryEventImpl ev = new EntryEventImpl(r, dataItem.getOp(), dataItem.getKey(), null, null, false, eventSender, !skipCallbacks, dataItem.getEventID());
+    EntryEventImpl ev = EntryEventImpl.create(r, dataItem.getOp(), dataItem.getKey(), null, null, false, eventSender, !skipCallbacks, dataItem.getEventID());
+    boolean evReturned = false;
+    try {
 
     ev.setOldValue(dataItem.getOldValue());
     if (bridgeContext != null) {
@@ -579,7 +604,13 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
     } else {
       ev.setTailKey(dataItem.getTailKey());
     }
+    evReturned = true;
     return ev;
+    } finally {
+      if (!evReturned) {
+        ev.release();
+      }
+    }
   }
   
   // override reply processor type from PartitionMessage
@@ -634,6 +665,11 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
   public final void setDirectAck(boolean directAck)
   {
     this.directAck = directAck;
+  }
+
+  @Override
+  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+    return _mayAddToMultipleSerialGateways(dm);
   }
 
   public static final class RemoveAllReplyMessage extends ReplyMessage {

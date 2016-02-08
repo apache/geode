@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.persistence;
 
@@ -279,7 +288,7 @@ public class DiskInitFileParser {
             concurrencyLevel, initialCapacity, loadFactor,
             statisticsEnabled, isBucket, flags,
             ProxyBucketRegion.NO_FIXED_PARTITION_NAME, // fixes bug 43910
-            -1, null);
+            -1, null, false);
       }
         break;
       case DiskInitFile.IFREC_REGION_CONFIG_ID_66: {
@@ -301,7 +310,7 @@ public class DiskInitFileParser {
         }
         interpreter.cmnRegionConfig(drId, lruAlgorithm, lruAction, lruLimit,
                                     concurrencyLevel, initialCapacity, loadFactor,
-                                    statisticsEnabled, isBucket, flags, partitionName, startingBucketId, null);
+                                    statisticsEnabled, isBucket, flags, partitionName, startingBucketId, null, false);
       }
         break;
       case DiskInitFile.IFREC_REGION_CONFIG_ID_80: {
@@ -332,7 +341,40 @@ public class DiskInitFileParser {
         interpreter.cmnRegionConfig(drId, lruAlgorithm, lruAction, lruLimit,
                                     concurrencyLevel, initialCapacity, loadFactor,
                                     statisticsEnabled, isBucket, flags, partitionName, 
-                                    startingBucketId, compressorClassName);
+                                    startingBucketId, compressorClassName, false);
+      }
+        break;
+      case DiskInitFile.IFREC_REGION_CONFIG_ID_90: {
+        long drId = readDiskRegionID(dis);
+        byte lruAlgorithm = dis.readByte();
+        byte lruAction = dis.readByte();
+        int lruLimit = dis.readInt();
+        int concurrencyLevel = dis.readInt();
+        int initialCapacity = dis.readInt();
+        float loadFactor = dis.readFloat();
+        boolean statisticsEnabled = dis.readBoolean();
+        boolean isBucket = dis.readBoolean();
+        EnumSet<DiskRegionFlag> flags = EnumSet.noneOf(DiskRegionFlag.class);
+        String partitionName = dis.readUTF(); 
+        int startingBucketId = dis.readInt();
+        
+        String compressorClassName = dis.readUTF();
+        if ("".equals(compressorClassName)) {
+          compressorClassName = null;
+        }
+        if(dis.readBoolean()) {
+          flags.add(DiskRegionFlag.IS_WITH_VERSIONING);
+        }
+        boolean offHeap = dis.readBoolean();
+        
+        readEndOfRecord(dis);
+        if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
+          logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_REGION_CONFIG_ID drId={}", drId);
+        }
+        interpreter.cmnRegionConfig(drId, lruAlgorithm, lruAction, lruLimit,
+                                    concurrencyLevel, initialCapacity, loadFactor,
+                                    statisticsEnabled, isBucket, flags, partitionName, 
+                                    startingBucketId, compressorClassName, offHeap);
       }
         break;
       case DiskInitFile.IFREC_OFFLINE_AND_EQUAL_MEMBER_ID: {

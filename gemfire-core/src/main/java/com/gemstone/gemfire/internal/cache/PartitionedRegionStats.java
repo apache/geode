@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2004-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -164,6 +173,8 @@ public class PartitionedRegionStats {
   private static final int rebalancePrimaryTransferTimeId;
   
   private static final int prMetaDataSentCountId;
+  
+  private static final int localMaxMemoryId;
   
   static {
     final boolean largerIsBetter = true;
@@ -549,6 +560,10 @@ public class PartitionedRegionStats {
                 "prMetaDataSentCount",
                 "total number of times meta data refreshed sent on client's request.",
                 "operation", false),    
+                
+        f.createLongGauge("localMaxMemory", 
+            "local max memory in bytes for this region on this member", 
+            "bytes")
             
       });
     
@@ -651,6 +666,8 @@ public class PartitionedRegionStats {
     putLocalTimeId = type.nameToId("putLocalTime");
     
     prMetaDataSentCountId = type.nameToId("prMetaDataSentCount");
+    
+    localMaxMemoryId = type.nameToId("localMaxMemory");
   }
   
   private final Statistics stats;
@@ -999,7 +1016,9 @@ type, name /* fixes bug 42343 */);
   public void setConfiguredRedundantCopies(int val) {
     this.stats.setInt(configuredRedundantCopiesId, val);
   }
-  
+  public void setLocalMaxMemory(long l) {
+    this.stats.setLong(localMaxMemoryId, l);
+  }
   public int getActualRedundantCopies() {
     return this.stats.getInt(actualRedundantCopiesId);
   }

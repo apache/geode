@@ -1,12 +1,24 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
+
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE;
 
 import com.gemstone.gemfire.cache.CacheWriterException;
 import com.gemstone.gemfire.cache.EntryEvent;
@@ -19,6 +31,11 @@ import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.offheap.MemoryChunkWithRefCount;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import com.gemstone.gemfire.cache.EvictionCriteria;
 
 /**
  * Internal interface for a region entry.
@@ -187,7 +204,8 @@ public interface RegionEntry {
    * @return false if map entry not found
    * @since 3.2.1
    */
-  public boolean fillInValue(LocalRegion r, InitialImageOperation.Entry entry,
+  public boolean fillInValue(LocalRegion r,
+      @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) InitialImageOperation.Entry entry,
       ByteArrayDataInput in, DM mgr);
 
   /**
@@ -203,8 +221,14 @@ public interface RegionEntry {
      *  and returns it
      */
   public Object getValue(RegionEntryContext context);
+  /**
+   * Just like getValue but the result may be a retained off-heap reference.
+   */
+  @Retained
+  public Object getValueRetain(RegionEntryContext context);
 
-  public void setValue(RegionEntryContext context, Object value) throws RegionClearedException;
+  @Released
+  public void setValue(RegionEntryContext context, @Unretained Object value) throws RegionClearedException;
   
   /**
    * This flavor of setValue was added so that the event could be passed down to Helper.writeToDisk.
@@ -214,9 +238,21 @@ public interface RegionEntry {
   public void setValue(RegionEntryContext context, Object value, EntryEventImpl event) throws RegionClearedException;
   /**
    * Obtain and return the value of this entry using {@link #_getValue()}.
+   * If the value is a MemoryChunkWithRefCount then increment its refcount.
+   * WARNING: if a MemoryChunkWithRefCount is returned then the caller MUST
+   * call {@link MemoryChunkWithRefCount#release()}.
+   * 
+   * This is only retained in off-heap subclasses.  However, it's marked as
+   * Retained here so that callers are aware that the value may be retained.
+   * 
    * @param decompress if true returned value will be decompressed if it is compressed
+   * @return possible OFF_HEAP_OBJECT (caller must release)
    */
-  public Object _getValueUse(RegionEntryContext context, boolean decompress);
+  @Retained 
+  public Object _getValueRetain(RegionEntryContext context, boolean decompress);
+  /** Gets the value field of this entry. */
+  
+  @Unretained
   public Object _getValue();
   /**
    * Returns a tokenized form of the value.
@@ -232,7 +268,7 @@ public interface RegionEntry {
    * @param event the cache event that caused this change
    * @throws RegionClearedException thrown if the region is concurrently cleared
    */
-  public void setValueWithTombstoneCheck(Object value, EntryEvent event) throws RegionClearedException;
+  public void setValueWithTombstoneCheck(@Unretained Object value, EntryEvent event) throws RegionClearedException;
   
   /**
    * Returns the value as stored by the RegionEntry implementation.  For instance, if compressed this
@@ -240,6 +276,7 @@ public interface RegionEntry {
    *  
    * @since 8.0
    */
+  @Retained
   public Object getTransformedValue();
   
   /**
@@ -249,6 +286,7 @@ public interface RegionEntry {
    *
    * @see LocalRegion#getValueInVM
    */
+  @Retained
   public Object getValueInVM(RegionEntryContext context);
   /**
    * Returns the value of an entry as it resides on disk.  For
@@ -311,11 +349,12 @@ public interface RegionEntry {
    *   mark the destroy
    * @return true if destroy was done; false if not
    */
+  @Released
   public boolean destroy(LocalRegion region,
                          EntryEventImpl event,
                          boolean inTokenMode,
                          boolean cacheWrite,
-                         Object expectedOldValue,
+                         @Unretained Object expectedOldValue,
                          boolean forceDestroy,
                          boolean removeRecoveredEntry)
     throws CacheWriterException, EntryNotFoundException, TimeoutException, RegionClearedException;
@@ -347,6 +386,7 @@ public interface RegionEntry {
    * return a temporary copy. For SQLFabric this is used during table scans in
    * queries when faulting in every value will be only an unnecessary overhead.
    */
+  @Retained
   public Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner);
 
   /**
@@ -356,6 +396,7 @@ public interface RegionEntry {
    * queries when faulting in every value will be only an unnecessary overhead.
    * The value returned will be kept off heap (and compressed) if possible.
    */
+  @Retained
   public Object getValueOffHeapOrDiskWithoutFaultIn(LocalRegion owner);
 
   /**
@@ -374,7 +415,26 @@ public interface RegionEntry {
    * @param underUpdate
    */
   public void setUpdateInProgress(final boolean underUpdate);
-  
+
+  /**
+   * Returns true if this entry has been marked for eviction for custom eviction
+   * via {@link EvictionCriteria}.
+   */
+  public boolean isMarkedForEviction();
+
+  /**
+   * Marks this entry for eviction by custom eviction via
+   * {@link EvictionCriteria}.
+   */
+  public void setMarkedForEviction();
+
+  /**
+   * Clears this entry as for eviction by custom eviction via
+   * {@link EvictionCriteria} or when an update is done after it was marked for
+   * eviction.
+   */
+  public void clearMarkedForEviction();
+
   /**
    * Event containing this RegionEntry is being passed through
    * dispatchListenerEvent for CacheListeners under RegionEntry lock. This is
@@ -451,4 +511,9 @@ public interface RegionEntry {
    */
   public void resetRefCount(NewLRUClockHand lruList);
 
+  @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
+  public Object prepareValueForCache(RegionEntryContext r, Object val, boolean isEntryUpdate);
+
+  @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
+  public Object prepareValueForCache(RegionEntryContext r, Object val, EntryEventImpl event, boolean isEntryUpdate);
 }

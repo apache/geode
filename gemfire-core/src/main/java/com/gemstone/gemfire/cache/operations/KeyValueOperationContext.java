@@ -1,12 +1,25 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.cache.operations;
+
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.SerializationException;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 
 
 /**
@@ -22,13 +35,8 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    * The value of the create/update operation.
    * @since 6.5
    */
-  protected Object value;
+  private Object value;
   
-  /**
-   * The serialized value of the create/update operation.
-   */
-  private byte[] serializedValue;
-
   /**
    * True when the serialized object is a normal object; false when it is a raw
    * byte array.
@@ -80,26 +88,51 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
   /**
    * Get the serialized value for this operation.
    * 
-   * @return the serialized value for this operation.
+   * @return the serialized value for this operation or null if the value is not serialized
    */
   public byte[] getSerializedValue() {
-    return this.serializedValue;
+    if (isObject()) {
+      Object tmp = this.value;
+      if (tmp instanceof byte[]) {
+        return (byte[])tmp;
+      }
+    }
+    return null;
+  }
+  
+  /**
+   * Get the deserialized value for this operation.
+   * Note that if the value is serialized this method will attempt to deserialize it.
+   * If PDX read-serialized is set to true and the value was serialized with PDX
+   * then this method will return a PdxInstance.
+   * 
+   * @return the deserialized value for this operation
+   * @throws SerializationException if deserialization of the value fails
+   * @since Geode 1.0
+   */
+  public Object getDeserializedValue() throws SerializationException {
+    byte[] blob = getSerializedValue();
+    if (blob != null) {
+      return EntryEventImpl.deserialize(blob);
+    }
+    return this.value;
   }
 
   /**
    * Get the value for this operation.
+   * Note that if the value is serialized then a byte array
+   * will be returned that contains the serialized bytes.
+   * To figure out if the returned byte array contains serialized bytes
+   * or is the deserialized value call {@link #isObject()}.
+   * If you need to deserialize the serialized bytes use 
+   * {@link DataSerializer#readObject(java.io.DataInput)}
+   * or you can just call {@link #getDeserializedValue()}.
    * 
-   * @return the value for this operation.
+   * @return the value for this operation
    * @since 6.5
    */
   public Object getValue() {
-    
-    if (serializedValue != null) {
-      return serializedValue;
-    }
-    else {
-      return value;
-    }
+    return this.value;
   }
   
   /**
@@ -121,9 +154,7 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    *                byte array
    */
   public void setSerializedValue(byte[] serializedValue, boolean isObject) {
-    this.serializedValue = serializedValue;
-    this.value = null;
-    this.isObject = isObject;
+    setValue(serializedValue, isObject);
   }
   
 
@@ -139,14 +170,8 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    * @since 6.5
    */
   public void setValue(Object value, boolean isObject) {
-    if (value instanceof byte[]) {
-      setSerializedValue((byte[])value, isObject);
-    }
-    else {
-      this.serializedValue = null;
-      this.value = value;
-      this.isObject = isObject;
-    }
+    this.value = value;
+    this.isObject = isObject;
   }
   
 }

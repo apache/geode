@@ -1,10 +1,18 @@
 /*
- * ========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.beans.stats;
 
@@ -52,18 +60,23 @@ public class MemberClusterStatsMonitor {
 
   private static final String JVM_PAUSES = "JVMPauses";
   
+  private static final String OFF_HEAP_MAX_MEMORY = "OffHeapMaxMemory";
+  
+  private static final String OFF_HEAP_USED_MEMORY = "OffHeapUsedMemory";
+  
+  private static final String OFF_HEAP_FREE_MEMORY = "OffHeapFreeMemory";
+  
   private static final String TXN_COMMITTED_TOTAL_COUNT = "TransactionCommittedTotalCount";
   
   private static final String TXN_ROLLEDBACK_TOTAL_COUNT = "TransactionRolledBackTotalCount";
-
-  private AtomicInteger systemDiskStoreCount = new AtomicInteger(0);  
-  
 
   private static final String MAX_MEMORY = "MaxMemory";
   
   private static final String USED_MEMORY = "UsedMemory";
   
   private static final String FREE_MEMORY = "FreeMemory";
+  
+  private AtomicInteger systemDiskStoreCount = new AtomicInteger(0);  
   
   private StatsAggregator aggregator;
   
@@ -107,7 +120,9 @@ public class MemberClusterStatsMonitor {
     typeMap.put(MAX_MEMORY, Long.TYPE);
     typeMap.put(USED_MEMORY, Long.TYPE);
     typeMap.put(FREE_MEMORY, Long.TYPE);
-
+    typeMap.put(OFF_HEAP_MAX_MEMORY, Long.TYPE);
+    typeMap.put(OFF_HEAP_USED_MEMORY, Long.TYPE);
+    typeMap.put(OFF_HEAP_FREE_MEMORY, Long.TYPE);
   }
 
   public float getDiskReadsRate() {
@@ -210,18 +225,14 @@ public class MemberClusterStatsMonitor {
     return aggregator.getLongValue(JVM_PAUSES);
   }
   
-  public long getMaxMemory() {
-    return aggregator.getLongValue(MAX_MEMORY);
+  public long getOffHeapFreeMemory() {
+    return aggregator.getLongValue(OFF_HEAP_FREE_MEMORY);
   }
 
-  public long getFreeMemory() {
-    return aggregator.getLongValue(FREE_MEMORY);
+  public long getOffHeapUsedMemory() {
+    return aggregator.getLongValue(OFF_HEAP_USED_MEMORY);
   }
   
-  public long getUsedMemory() {
-    return aggregator.getLongValue(USED_MEMORY);
-  }
-
   public int getTransactionCommitted() {
     return deltas.getDelta(TXN_COMMITTED_TOTAL_COUNT);
   }
@@ -230,4 +241,15 @@ public class MemberClusterStatsMonitor {
     return deltas.getDelta(TXN_ROLLEDBACK_TOTAL_COUNT);
   }
 
+  public long getMaxMemory() {
+    return aggregator.getLongValue(MAX_MEMORY);
+  }
+  
+  public long getFreeMemory() {
+    return aggregator.getLongValue(FREE_MEMORY);
+  }
+  
+  public long getUsedMemory() {
+    return aggregator.getLongValue(USED_MEMORY);
+  }
 }

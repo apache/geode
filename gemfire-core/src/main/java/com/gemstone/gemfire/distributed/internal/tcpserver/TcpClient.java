@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.gemstone.gemfire.distributed.internal.tcpserver;
 
 import java.io.DataInputStream;
@@ -5,9 +21,12 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.UnsupportedVersionException;
@@ -15,8 +34,7 @@ import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
-import com.gemstone.org.jgroups.stack.IpAddress;
-import com.gemstone.org.jgroups.util.GemFireTracer;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Client for the TcpServer. These methods were refactored out of GossipClient,
@@ -30,10 +48,11 @@ import com.gemstone.org.jgroups.util.GemFireTracer;
  *
  */
 public class TcpClient {
-  private static final GemFireTracer LOG=GemFireTracer.getLog(TcpClient.class);
+  private static final Logger logger = LogService.getLogger();
+  
   private static final int REQUEST_TIMEOUT = 60 * 2 * 1000;
 
-  private static Map<IpAddress, Short> serverVersions = new HashMap<IpAddress, Short>();
+  private static Map<InetSocketAddress, Short> serverVersions = new HashMap<InetSocketAddress, Short>();
   
 
   /**
@@ -50,7 +69,7 @@ public class TcpClient {
       throw ce;
     }
     catch(Exception ex) {
-      LOG.error("TcpClient.stop(): exception connecting to locator " + addr + ":" + port + ": " + ex);
+      logger.error("TcpClient.stop(): exception connecting to locator " + addr + ":" + port + ": " + ex);
     }
   }
 
@@ -68,7 +87,7 @@ public class TcpClient {
     } catch (java.net.ConnectException ignore) {
       return null;
     } catch(Exception ex) {
-      LOG.error("TcpClient.getInfo(): exception connecting to locator " + addr + ":" + port + ": " + ex);
+      logger.error("TcpClient.getInfo(): exception connecting to locator " + addr + ":" + port + ": " + ex);
       return null;
     }
   
@@ -79,15 +98,19 @@ public class TcpClient {
   }
   
   public static Object requestToServer(InetAddress addr, int port, Object request, int timeout, boolean replyExpected) throws IOException, ClassNotFoundException {
-    IpAddress ipAddr;
+    InetSocketAddress ipAddr;
     if (addr == null) {
-      ipAddr = new IpAddress(port);
+      ipAddr = new InetSocketAddress(port);
     } else {
-      ipAddr = new IpAddress(addr, port); // fix for bug 30810
+      ipAddr = new InetSocketAddress(addr, port); // fix for bug 30810
     }
+    
+    logger.debug("TcpClient sending {} to {}", request, ipAddr);
 
+    long giveupTime = System.currentTimeMillis() + timeout;
+    
     // Get the GemFire version of the TcpServer first, before sending any other request.
-    short serverVersion = getServerVersion(ipAddr, REQUEST_TIMEOUT).shortValue();
+    short serverVersion = getServerVersion(ipAddr, timeout).shortValue();
 
     if (serverVersion > Version.CURRENT_ORDINAL) {
       serverVersion = Version.CURRENT_ORDINAL;
@@ -100,10 +123,17 @@ public class TcpClient {
       gossipVersion = TcpServer.getOldGossipVersion();
     }
 
-    Socket sock=SocketCreator.getDefaultInstance().connect(ipAddr.getIpAddress(), ipAddr.getPort(), timeout, null, false);
-    sock.setSoTimeout(timeout);
+    long newTimeout = giveupTime - System.currentTimeMillis();
+    if (newTimeout <= 0) {
+      return null;
+    }
+    
+    Socket sock=SocketCreator.getDefaultInstance().connect(ipAddr.getAddress(), ipAddr.getPort(), (int)newTimeout, null, false);
+    sock.setSoTimeout((int)newTimeout);
+    DataOutputStream out = null;
     try {
-      DataOutputStream out=new DataOutputStream(sock.getOutputStream());
+      out=new DataOutputStream(sock.getOutputStream());
+      
       if (serverVersion < Version.CURRENT_ORDINAL) {
         out = new VersionedDataOutputStream(out, Version.fromOrdinalNoThrow(serverVersion, false));
       }
@@ -120,6 +150,7 @@ public class TcpClient {
         in = new VersionedDataInputStream(in, Version.fromOrdinal(serverVersion, false)); 
         try {
           Object response = DataSerializer.readObject(in);
+          logger.debug("received response: {}", response);
           return response;
         } catch (EOFException ex) {
           throw new EOFException("Locator at " + ipAddr + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
@@ -129,22 +160,25 @@ public class TcpClient {
         return null;
       }
     } catch (UnsupportedVersionException ex) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Remote TcpServer version: " + serverVersion
+      if (logger.isDebugEnabled()) {
+        logger.debug("Remote TcpServer version: " + serverVersion
                 + " is higher than local version: " + Version.CURRENT_ORDINAL
                 + ". This is never expected as remoteVersion");
       }
       return null;
     } finally {
+      if (out != null) {
+        out.close();
+      }
       try {
         sock.close();
       } catch(Exception e) {
-        LOG.error("Error closing socket ", e);
+        logger.error("Error closing socket ", e);
       }
     }
   }
 
-  public static Short getServerVersion(IpAddress ipAddr, int timeout) throws IOException, ClassNotFoundException {
+  public static Short getServerVersion(InetSocketAddress ipAddr, int timeout) throws IOException, ClassNotFoundException {
 
     int gossipVersion = TcpServer.getCurrentGossipVersion();
     Short serverVersion = null;
@@ -160,7 +194,7 @@ public class TcpClient {
     
     gossipVersion = TcpServer.getOldGossipVersion();
     
-    Socket sock=SocketCreator.getDefaultInstance().connect(ipAddr.getIpAddress(), ipAddr.getPort(), timeout, null, false);
+    Socket sock=SocketCreator.getDefaultInstance().connect(ipAddr.getAddress(), ipAddr.getPort(), timeout, null, false);
     sock.setSoTimeout(timeout);
     
     try {
@@ -191,11 +225,11 @@ public class TcpClient {
       try {
         sock.close();
       } catch(Exception e) {
-        LOG.error("Error closing socket ", e);
+        logger.error("Error closing socket ", e);
       }
     }
-    if (LOG.getLogWriter().fineEnabled()) {
-      LOG.getLogWriter().fine("Locator " + ipAddr + " did not respond to a request for its version.  I will assume it is using v5.7 for safety.");
+    if (logger.isDebugEnabled()) {
+      logger.debug("Locator " + ipAddr + " did not respond to a request for its version.  I will assume it is using v5.7 for safety.");
     }
     synchronized(serverVersions) {
       serverVersions.put(ipAddr, Version.GFE_57.ordinal());

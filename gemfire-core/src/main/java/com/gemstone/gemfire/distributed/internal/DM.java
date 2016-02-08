@@ -1,20 +1,28 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed.internal;
 
 import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 import com.gemstone.gemfire.CancelCriterion;
@@ -23,9 +31,7 @@ import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.locks.ElderState;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 
 /**
  * This interface defines the services provided  by any class that
@@ -36,8 +42,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
  *
  */
 public interface DM extends ReplySender {
-  
-  public void restartCommunications();
   
   public boolean shutdownInProgress();
   
@@ -285,7 +289,7 @@ public interface DM extends ReplySender {
    * Returns the ordered list of current DistributionManagers in
    * oldest-to-youngest order.  Added for DLockGrantor
    */
-  public Vector getViewMembers();
+  public List<InternalDistributedMember> getViewMembers();
   /**
    * Returns the oldest member in the given set of distribution managers.  The
    * current implementation may use n*n/2 comparisons, so use this judiciously

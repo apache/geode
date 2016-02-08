@@ -1,19 +1,28 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.admin.internal.*;
+import javax.management.ObjectName;
+import javax.management.modelmbean.ModelMBean;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.management.*;
-import javax.management.modelmbean.*;
+import com.gemstone.gemfire.admin.AdminException;
+import com.gemstone.gemfire.admin.GemFireHealth;
+import com.gemstone.gemfire.admin.GemFireHealthConfig;
+import com.gemstone.gemfire.admin.internal.GemFireHealthConfigImpl;
 
 /**
  * The JMX "managed resource" that represents the configuration for
@@ -37,7 +46,7 @@ import javax.management.modelmbean.*;
  *
  * @since 3.5
  */
-@SuppressFBWarnings(justification="This class is deprecated. Also, any further changes so close to the release is inadvisable.") 
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(justification="This class is deprecated. Also, any further changes so close to the release is inadvisable.") 
 public class GemFireHealthConfigJmxImpl
   implements GemFireHealthConfig, ManagedResource, java.io.Serializable {
 

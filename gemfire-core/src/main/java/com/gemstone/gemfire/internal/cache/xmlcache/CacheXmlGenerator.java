@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
@@ -85,9 +94,7 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
@@ -96,9 +103,6 @@ import com.gemstone.gemfire.cache.query.internal.index.HashIndex;
 import com.gemstone.gemfire.cache.query.internal.index.PrimaryKeyIndex;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.util.BridgeClient;
-import com.gemstone.gemfire.cache.util.BridgeLoader;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
@@ -113,7 +117,9 @@ import com.gemstone.gemfire.internal.cache.ColocationHelper;
 import com.gemstone.gemfire.internal.cache.DiskWriteAttributesImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.cache.extension.Extensible;
 import com.gemstone.gemfire.internal.cache.extension.Extension;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -810,7 +816,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       boolean generateIt = false;
       if (this.creation.getResourceManager().hasCriticalHeap()) {
         float chp = this.creation.getResourceManager().getCriticalHeapPercentage();
-        if (generateDefaults() || chp != ResourceManager.DEFAULT_CRITICAL_HEAP_PERCENTAGE) {
+        if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE) {
         atts.addAttribute("", "", CRITICAL_HEAP_PERCENTAGE, "",
             String.valueOf(chp));
         generateIt = true;
@@ -818,10 +824,27 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
       if (this.creation.getResourceManager().hasEvictionHeap()) {
         float ehp = this.creation.getResourceManager().getEvictionHeapPercentage();
-        if (generateDefaults() || ehp != ResourceManager.DEFAULT_EVICTION_HEAP_PERCENTAGE) {
+        if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE) {
         atts.addAttribute("", "", EVICTION_HEAP_PERCENTAGE, "",
             String.valueOf(ehp));
         generateIt = true;
+        }
+      }
+      
+      if (this.version.compareTo(CacheXmlVersion.VERSION_9_0) >= 0) {
+        if (this.creation.getResourceManager().hasCriticalOffHeap()) {
+          float chp = this.creation.getResourceManager().getCriticalOffHeapPercentage();
+          if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE) {
+            atts.addAttribute("", "", CRITICAL_OFF_HEAP_PERCENTAGE, "", String.valueOf(chp));
+            generateIt = true;
+          }
+        }
+        if (this.creation.getResourceManager().hasEvictionOffHeap()) {
+          float ehp = this.creation.getResourceManager().getEvictionOffHeapPercentage();
+          if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE) {
+            atts.addAttribute("", "", EVICTION_OFF_HEAP_PERCENTAGE, "", String.valueOf(ehp));
+            generateIt = true;
+          }
         }
       }
       if (generateIt) {
@@ -830,15 +853,32 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     } else if (this.cache instanceof GemFireCacheImpl) {
       {
         int chp = (int)this.cache.getResourceManager().getCriticalHeapPercentage();
-        if (generateDefaults() || chp != ResourceManager.DEFAULT_CRITICAL_HEAP_PERCENTAGE)
+        if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE)
+
         atts.addAttribute("", "", CRITICAL_HEAP_PERCENTAGE, "",
             String.valueOf(chp));
       }
       {
         int ehp = (int)this.cache.getResourceManager().getEvictionHeapPercentage();
-        if (generateDefaults() || ehp != ResourceManager.DEFAULT_EVICTION_HEAP_PERCENTAGE)
+        if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE)
         atts.addAttribute("", "", EVICTION_HEAP_PERCENTAGE, "",
             String.valueOf(ehp));
+      }
+      
+      if (this.version.compareTo(CacheXmlVersion.VERSION_9_0) >= 0) {
+        {
+          int chp = (int)this.cache.getResourceManager().getCriticalOffHeapPercentage();
+          if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE)
+  
+          atts.addAttribute("", "", CRITICAL_OFF_HEAP_PERCENTAGE, "",
+              String.valueOf(chp));
+        }
+        {
+          int ehp = (int)this.cache.getResourceManager().getEvictionOffHeapPercentage();
+          if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE)
+          atts.addAttribute("", "", EVICTION_OFF_HEAP_PERCENTAGE, "",
+              String.valueOf(ehp));
+        }
       }
       if (generateDefaults() || atts.getLength() > 0)
       generateResourceManagerElement(atts);
@@ -1188,8 +1228,8 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     if (this.version.compareTo(CacheXmlVersion.VERSION_5_7) < 0) {
       return;
     }
-    if (cp instanceof BridgePoolImpl || ((PoolImpl)cp).isUsedByGateway()) {
-      // no need to generate xml for bridge pools
+    if (((PoolImpl)cp).isUsedByGateway()) {
+      // no need to generate xml for gateway pools
       return;
     }
     AttributesImpl atts = new AttributesImpl();
@@ -1352,12 +1392,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         String name = generateDefaults() ? dir.getAbsolutePath() : dir.getPath();
         handler.characters(name.toCharArray(), 0, name.length());
         handler.endElement("", DISK_DIR, DISK_DIR);
-      }
-    }
-    {
-      BridgeWriter bw = cfg.getBridgeWriter();
-      if (bw != null) {
-        generate(CACHE_WRITER, bw);
       }
     }
     handler.endElement("", DYNAMIC_REGION_FACTORY, DYNAMIC_REGION_FACTORY);
@@ -2049,6 +2083,15 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
+    if (this.version.compareTo(CacheXmlVersion.VERSION_9_0) >= 0) {
+      if ((!(attrs instanceof RegionAttributesCreation) ||
+          ((RegionAttributesCreation) attrs).hasOffHeap())) {
+        if (generateDefaults() || attrs.getOffHeap()) {
+          atts.addAttribute("", "", OFF_HEAP, "", String.valueOf(attrs.getOffHeap()));
+        }
+      }
+    }
+
     handler.startElement("", REGION_ATTRIBUTES, REGION_ATTRIBUTES, atts);
 
     if ((!(attrs instanceof RegionAttributesCreation) ||
@@ -2146,22 +2189,13 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
-    if (attrs.getCacheWriter() == attrs.getCacheLoader()
-        && attrs.getCacheWriter() instanceof BridgeClient) {
-      // just do the writer; the single instance will be made both loader and writer
-      if ((!(attrs instanceof RegionAttributesCreation) ||
-           ((RegionAttributesCreation) attrs).hasCacheWriter())) {
-        generate(CACHE_WRITER, attrs.getCacheWriter());
-      }
-    } else {
-      if ((!(attrs instanceof RegionAttributesCreation)
-           || ((RegionAttributesCreation) attrs).hasCacheLoader())) {
-        generate(CACHE_LOADER, attrs.getCacheLoader());
-      }
-      if ((!(attrs instanceof RegionAttributesCreation) ||
-           ((RegionAttributesCreation) attrs).hasCacheWriter())) {
-        generate(CACHE_WRITER, attrs.getCacheWriter());
-      }
+    if ((!(attrs instanceof RegionAttributesCreation)
+        || ((RegionAttributesCreation) attrs).hasCacheLoader())) {
+      generate(CACHE_LOADER, attrs.getCacheLoader());
+    }
+    if ((!(attrs instanceof RegionAttributesCreation) ||
+        ((RegionAttributesCreation) attrs).hasCacheWriter())) {
+      generate(CACHE_WRITER, attrs.getCacheWriter());
     }
     if ((!(attrs instanceof RegionAttributesCreation) ||
          ((RegionAttributesCreation) attrs).hasCacheListeners())) {
@@ -2206,10 +2240,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     Properties props = null;
     if (callback instanceof Declarable2) {
       props = ((Declarable2) callback).getConfig();
-    } else if (callback instanceof BridgeWriter) {
-      props = ((BridgeWriter) callback).getProperties();
-    } else if (callback instanceof BridgeLoader) {
-      props = ((BridgeLoader) callback).getProperties();
     } else if (callback instanceof ReflectionBasedAutoSerializer) {
       props = ((ReflectionBasedAutoSerializer) callback).getConfig();
     } else if (callback instanceof Declarable  && cache instanceof GemFireCacheImpl) {
@@ -2378,7 +2408,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         String.valueOf(pa.getRedundantCopies()));
     
     if (this.version.compareTo(CacheXmlVersion.VERSION_5_1) >= 0) {
-      if (generateDefaults() || pa.getLocalMaxMemory() != PartitionAttributesFactory.LOCAL_MAX_MEMORY_DEFAULT)
+      if (generateDefaults() || pa.getLocalMaxMemory() != ((PartitionAttributesImpl) pa).getLocalMaxMemoryDefault())
       atts.addAttribute("", "", LOCAL_MAX_MEMORY, "",
           String.valueOf(pa.getLocalMaxMemory()));
       if (generateDefaults() || pa.getTotalMaxMemory() != PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT)

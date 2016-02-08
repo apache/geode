@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
@@ -494,7 +503,7 @@ public class MemoryIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) this.region).new NonTXEntry(entry);
+    return new CachedEntryWrapper(((LocalRegion) this.region).new NonTXEntry(entry));
   }
 
   public Object getTargetObjectInVM(RegionEntry entry) {
@@ -579,6 +588,7 @@ public class MemoryIndexStore implements IndexStore {
     protected Iterator<Map.Entry> mapIterator;
     protected Iterator valuesIterator;
     protected Object currKey;
+    protected Object currValue; //RegionEntry
     final long iteratorStartTime = GemFireCacheImpl.getInstance().cacheTimeMillis();
     protected MemoryIndexStoreEntry currentEntry = new MemoryIndexStoreEntry(iteratorStartTime);
     
@@ -631,8 +641,8 @@ public class MemoryIndexStore implements IndexStore {
         if (values instanceof Collection) {
           this.valuesIterator = ((Collection) values).iterator();
         } else {
-          currentEntry.setMemoryIndexStoreEntry(currKey, (RegionEntry) values);
           this.valuesIterator = null;
+          currValue = values;
         }
         return values != null &&
                 (values instanceof RegionEntry
@@ -650,6 +660,7 @@ public class MemoryIndexStore implements IndexStore {
      */
     public MemoryIndexStoreEntry next() {
       if (valuesIterator == null) {
+        currentEntry.setMemoryIndexStoreEntry(currKey, (RegionEntry) currValue);
         return currentEntry;
       }
 
@@ -719,7 +730,7 @@ public class MemoryIndexStore implements IndexStore {
     private RegionEntry regionEntry;
     private boolean updateInProgress;
     private Object value;
-    private long iteratorStartTime;
+    private long iteratorStartTime;    
 
     private MemoryIndexStoreEntry(long iteratorStartTime) {
     	this.iteratorStartTime = iteratorStartTime;
@@ -761,5 +772,30 @@ public class MemoryIndexStore implements IndexStore {
           ||  IndexManager.needsRecalculation(iteratorStartTime, regionEntry.getLastModified());
     }
   }
+  
+  class CachedEntryWrapper {
+
+    private Object key, value;
+
+    public CachedEntryWrapper(LocalRegion.NonTXEntry entry) {
+      this.key = entry.getKey();
+      this.value = entry.getValue();
+    }
+
+    public Object getKey() {
+      return this.key;
+    }
+
+    public Object getValue() {
+      return this.value;
+    }
+
+    public String toString() {
+      return new StringBuilder("CachedEntryWrapper@").append(
+          Integer.toHexString(System.identityHashCode(this))).append(' ')
+          .append(this.key).append(' ').append(this.value).toString();
+    }
+  }
+
 }
 

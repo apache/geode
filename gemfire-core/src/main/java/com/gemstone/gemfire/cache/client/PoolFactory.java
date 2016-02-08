@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.client;
 
@@ -17,7 +26,7 @@ import com.gemstone.gemfire.cache.query.*; // for javadocs
  * {@link Pool}.
  * <p>Every pool needs to have at least one {@link #addLocator locator} or {@link #addServer server} added
  * to it. Locators should be added unless direct connections to
- * bridge servers are desired.
+ * cache servers are desired.
  * <p>The setter methods are used to specify
  * non-default values for the other pool properties.
  * <p>Once it is configured {@link #create}
@@ -290,7 +299,7 @@ public interface PoolFactory {
    * 
    * These pings are used by the server to monitor the health of
    * the client. Make sure that the pingInterval is less than the 
-   * maximum time between pings allowed by the bridge server.
+   * maximum time between pings allowed by the cache server.
    * @param pingInterval The amount of time in milliseconds between
    * pings.
    * @return a reference to <code>this</code>
@@ -325,27 +334,33 @@ public interface PoolFactory {
   /**
    * Add a locator, given its host and port, to this factory.
    * The locator must be a server locator and will be used to discover other running
-   * bridge servers and locators.
+   * cache servers and locators.
+   * Note that if the host is unknown at the time of this call
+   * the locator will still be added. When the pool is used for
+   * an operation if the host is still unknown an exception will
+   * be thrown.
    * @param host the host name or ip address that the locator is listening on.
    * @param port the port that the locator is listening on
    * @return a reference to <code>this</code>
-   * @throws IllegalArgumentException if <code>host</code> is an unknown host
-   * according to {@link java.net.InetAddress#getByName(String)} or if port is outside
-   * the valid range of [1..65535] inclusive.
+   * @throws IllegalArgumentException if port is outside
+   * the valid range of [0..65535] inclusive.
    * @throws IllegalStateException if a server has already been {@link #addServer added} to this factory.
    */
   public PoolFactory addLocator(String host, int port);
 
   /**
    * Add a server, given its host and port, to this factory.
-   * The server must be a bridge server and this client will
+   * The server must be a cache server and this client will
    * directly connect to without consulting a server locator.
+   * Note that if the host is unknown at the time of this call
+   * the server will still be added. When the pool is used for
+   * an operation if the host is still unknown an exception will
+   * be thrown.
    * @param host the host name or ip address that the server is listening on.
    * @param port the port that the server is listening on
    * @return a reference to <code>this</code>
-   * @throws IllegalArgumentException if <code>host</code> is an unknown host
-   * according to {@link java.net.InetAddress#getByName(String)} or if port is outside
-   * the valid range of [1..65535] inclusive.
+   * @throws IllegalArgumentException if port is outside
+   * the valid range of [0..65535] inclusive.
    * @throws IllegalStateException if a locator has already been {@link #addLocator added} to this factory.
    */
   public PoolFactory addServer(String host, int port);
@@ -386,7 +401,7 @@ public interface PoolFactory {
   
   /**
    * Sets the interval in milliseconds
-   * to wait before sending acknowledgements to the bridge server for
+   * to wait before sending acknowledgements to the cache server for
    * events received from the server subscriptions.
    * 
    * @param ackInterval number of milliseconds to wait before sending event

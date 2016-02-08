@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache;
 
@@ -389,6 +398,30 @@ public class RegionFactory<K,V>
   public RegionFactory<K,V> setRegionTimeToLive(ExpirationAttributes timeToLive)
   {
     this.attrsFactory.setRegionTimeToLive(timeToLive);
+    return this;
+  }
+
+  /**
+   * Set custom {@link EvictionCriteria} for the region with start time and
+   * interval of evictor task to be run in milliseconds, or evict incoming rows
+   * in case both start and frequency are specified as zero.
+   * 
+   * @param criteria
+   *          an {@link EvictionCriteria} to be used for eviction for HDFS
+   *          persistent regions
+   * @param start
+   *          the start time at which periodic evictor task should be first
+   *          fired to apply the provided {@link EvictionCriteria}; if this is
+   *          zero then current time is used for the first invocation of evictor
+   * @param interval
+   *          the periodic frequency at which to run the evictor task after the
+   *          initial start; if this is if both start and frequency are zero
+   *          then {@link EvictionCriteria} is applied on incoming insert/update
+   *          to determine whether it is to be retained
+   */
+  public RegionFactory<K, V> setCustomEvictionAttributes(
+      EvictionCriteria<K, V> criteria, long start, long interval) {
+    this.attrsFactory.setCustomEvictionAttributes(criteria, start, interval);
     return this;
   }
 
@@ -888,6 +921,16 @@ public class RegionFactory<K,V>
    */
   public RegionFactory<K,V> setCompressor(Compressor compressor) {
     this.attrsFactory.setCompressor(compressor);
+    return this;
+  }
+  
+  /**
+   * Enables this region's usage of off-heap memory if true.
+   * @param offHeap boolean flag to enable off-heap memory
+   * @since 9.0
+   */
+  public RegionFactory<K,V> setOffHeap(boolean offHeap) {
+    this.attrsFactory.setOffHeap(offHeap);
     return this;
   }
 }

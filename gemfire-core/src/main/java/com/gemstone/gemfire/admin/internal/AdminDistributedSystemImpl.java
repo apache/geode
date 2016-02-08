@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.admin.internal;
 
@@ -452,11 +461,6 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
     return false;
   }
   
-  /** Returns true if this system is using multicast instead of locators */
-  public boolean isMcastDiscovery() {
-    return this.isMcastEnabled() && (this.getLocators().length() == 0);
-  }
-  
   /** Returns true if this system can use multicast for communications */
   public boolean isMcastEnabled() {
     return this.getMcastPort() > 0 ;
@@ -761,7 +765,11 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
       // build the list of applications...
         ApplicationVM[] apps = this.gfManagerAgent.listApplications();
         for (int i = 0; i < apps.length; i++) {
-          nodeJoined(null, apps[i]);
+          try {
+            nodeJoined(null, apps[i]);
+          } catch (RuntimeAdminException e) {
+            this.logWriter.warning("encountered a problem processing member " + apps[i]);
+          }
         }
       }
 
@@ -1332,11 +1340,9 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
           this.getMcastPort()).append("]").toString();
       locatorIds.add(new DistributionLocatorId(mcastId));
     }
-    if (!isMcastDiscovery()) {
-      StringTokenizer st = new StringTokenizer(this.getLocators(), ",");
-      while (st.hasMoreTokens()) {
-        locatorIds.add(new DistributionLocatorId(st.nextToken()));
-      }
+    StringTokenizer st = new StringTokenizer(this.getLocators(), ",");
+    while (st.hasMoreTokens()) {
+      locatorIds.add(new DistributionLocatorId(st.nextToken()));
     }
 
     if (logger.isDebugEnabled()) {
@@ -1735,10 +1741,10 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
   // LOG: saves LogWriterLogger from AdminDistributedSystemImpl for RemoteGfManagerAgentConfig
   private GfManagerAgentConfig buildAgentConfig(InternalLogWriter logWriter) {
     RemoteTransportConfig conf = new RemoteTransportConfig(
-        isMcastEnabled(), isMcastDiscovery(), getDisableTcp(),
+        isMcastEnabled(), getDisableTcp(),
         getDisableAutoReconnect(),
         getBindAddress(), buildSSLConfig(), parseLocators(), 
-        getMembershipPortRange(), getTcpPort());
+        getMembershipPortRange(), getTcpPort(), DistributionManager.ADMIN_ONLY_DM_TYPE);
     return new GfManagerAgentConfig(
         getSystemName(), conf, logWriter, this.alertLevel.getSeverity(), this, this);
   }
@@ -1761,13 +1767,6 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    */
   private String getBindAddress() {
     return this.config.getBindAddress();
-
-//     String bindAddress = 
-//         System.getProperty("gemfire.jg-bind-address");
-//     if (bindAddress == null || bindAddress.length() == 0) {
-//       return DistributionConfig.DEFAULT_BIND_ADDRESS;
-//     }
-//     return bindAddress;
   }
 
   /** Returns whether or not the given member is running */

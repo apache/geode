@@ -1,18 +1,29 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.util.concurrent;
 
+import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * A copy on write hash map.
@@ -23,7 +34,7 @@ import java.util.Set;
  * @author dsmith
  *
  */
-public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> {
+public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> , Serializable {
   private volatile Map<K,V> map = Collections.<K,V>emptyMap();
 
   public CopyOnWriteHashMap() {
@@ -154,7 +165,45 @@ public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> {
     clone.map = map;
     return clone;
   }
-  
-  
 
+  @Override
+  public synchronized V putIfAbsent(K key, V value) {
+    V oldValue = map.get(key);
+    if(oldValue == null) {
+      put(key, value);
+      return null;
+    } else {
+      return oldValue;
+    }
+  }
+
+  @Override
+  public synchronized boolean remove(Object key, Object value) {
+    V oldValue = map.get(key);
+    if(oldValue != null && oldValue.equals(value)) {
+      remove(key);
+      return true;
+    }
+    
+    return false;
+  }
+
+  @Override
+  public synchronized boolean replace(K key, V oldValue, V newValue) {
+    V existingValue = map.get(key);
+    if(existingValue != null && existingValue.equals(oldValue)) {
+      put(key, newValue);
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public synchronized V replace(K key, V value) {
+    if (map.containsKey(key)) {
+      return put(key, value);
+    } else {
+      return null;
+    }
+  }
 }

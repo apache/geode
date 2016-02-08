@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -28,7 +37,7 @@ import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.util.BridgeWriterException;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.PooledExecutorWithDMStats;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -91,7 +100,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * region expires, due to either time-to-live or idle-timeout (whichever
    * will occur first), or 0 if neither are used.
    */
-  long getExpirationTime() throws EntryNotFoundException {
+  public long getExpirationTime() throws EntryNotFoundException {
     long ttl = getTTLExpirationTime();
     long idle = getIdleExpirationTime();
     if (ttl == 0) {
@@ -103,7 +112,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   /** Return the absolute time when TTL expiration occurs, or 0 if not used */
-  protected final long getTTLExpirationTime() throws EntryNotFoundException {
+  public final long getTTLExpirationTime() throws EntryNotFoundException {
     long ttl = getTTLAttributes().getTimeout();
     long tilt = 0;
     if (ttl > 0) {
@@ -116,7 +125,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   /** Return the absolute time when idle expiration occurs, or 0 if not used */
-  protected final long getIdleExpirationTime() throws EntryNotFoundException {
+  public final long getIdleExpirationTime() throws EntryNotFoundException {
     long idle = getIdleAttributes().getTimeout();
     long tilt = 0;
     if (idle > 0) {
@@ -221,10 +230,13 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   
   protected final boolean expire(boolean isPending) throws CacheException 
   {
-    waitOnExpirationSuspension();
     ExpirationAction action = getAction();
     if (action == null) return false;
-    return expire(action, isPending);
+    boolean result = expire(action, isPending);
+    if (result && expiryTaskListener != null) {
+      expiryTaskListener.afterExpire(this);
+    }
+    return result;
   }
   
   /** Why did this expire?
@@ -350,6 +362,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
           getLocalRegion().isDestroyed()) {
         return;
       }
+      waitOnExpirationSuspension();
       if (logger.isTraceEnabled()) {
         logger.trace("{} is fired", this);
       }
@@ -363,23 +376,6 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     } 
     catch (CancelException ex) {
       // ignore
-
-      // @todo grid: do we need to deal with pool exceptions here?
-     } catch (BridgeWriterException ex) {
-       // Some exceptions from the bridge writer should not be logged.
-       Throwable cause = ex.getCause();
-       // BridgeWriterExceptions from the server are wrapped in CacheWriterExceptions
-       if (cause != null && cause instanceof CacheWriterException)
-           cause = cause.getCause();
-       if (cause instanceof RegionDestroyedException ||
-           cause instanceof EntryNotFoundException ||
-           cause instanceof CancelException) {
-         if (logger.isDebugEnabled()) {
-           logger.debug("Exception in expiration task", ex);
-         }
-       } else {
-         logger.fatal(LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
-       }
     } 
      catch (VirtualMachineError err) {
        SystemFailure.initiateFailure(err);
@@ -395,6 +391,10 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
        // is still usable:
        SystemFailure.checkFailure();
        logger.fatal(LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
+    } finally {
+      if (expiryTaskListener != null) {
+        expiryTaskListener.afterTaskRan(this);
+      }
     }
   }
 
@@ -436,7 +436,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     return super.toString() + " for " + getLocalRegion()
       + ", ttl expiration time: " + expTtl
       + ", idle expiration time: " + expIdle +
-      ("[now:" + System.currentTimeMillis() + "]");
+      ("[now:" + calculateNow() + "]");
   }
 
   ////// Abstract methods ///////
@@ -467,12 +467,19 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * {@link #clearNow()} in a finally block after calling this method.
    */
   public static void setNow() {
+    now.set(calculateNow());
+  }
+  
+  private static long calculateNow() {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
-      // Do not use cache.cacheTimeMillis here.
-      // Since expiration uses the System timer we need to use its clock.
-      now.set(System.currentTimeMillis());
+      // Use cache.cacheTimeMillis here. See bug 52267.
+      InternalDistributedSystem ids = cache.getDistributedSystem();
+      if (ids != null) {
+        return ids.getClock().cacheTimeMillis();
+      }
     }
+    return 0L;
   }
 
   /**
@@ -495,11 +502,39 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     if (tl != null) {
       result = tl.longValue();
     } else {
-      // Do not use cache.cacheTimeMillis here.
-      // Since expiration uses the System timer we need to use its clock.
-      result = System.currentTimeMillis();
+      result = calculateNow();
     }
     return result;
   }
 
+  // Should only be set by unit tests
+  public static ExpiryTaskListener expiryTaskListener;
+  
+  /**
+   * Used by tests to determine if events related
+   * to an ExpiryTask have happened.
+   */
+  public interface ExpiryTaskListener {
+    /**
+     * Called after the given expiry task has run.
+     * This means that the time it was originally
+     * scheduled to run has elapsed and the scheduler
+     * has run the task. While running the task it
+     * may decide to expire it or reschedule it.
+     */
+    public void afterTaskRan(ExpiryTask et);
+    /**
+     * Called after the given expiry task has been
+     * rescheduled. afterTaskRan can still be called
+     * on the same task.
+     * In some cases a task is rescheduled without expiring it.
+     * In others it is expired and rescheduled.
+     */
+    public void afterReschedule(ExpiryTask et);
+    /**
+     * Called after the given expiry task has expired.
+     */
+    public void afterExpire(ExpiryTask et);
+    
+  }
 }

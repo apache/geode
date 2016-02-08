@@ -1,13 +1,21 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.  
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.cache.query.internal.index;
-import  com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,6 +27,7 @@ import java.util.Set;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.EntryDestroyedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.AmbiguousNameException;
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
@@ -741,8 +750,13 @@ public class CompactRangeIndex extends AbstractIndex {
       NameResolutionException, QueryInvocationTargetException {
 
     QueryObserver observer = QueryObserverHolder.getInstance();
-   
-      if (entriesIter == null || verifyLimit(result, limit, context)) {
+      boolean limitApplied = false;
+      if (entriesIter == null || (limitApplied =verifyLimit(result, limit, context))) {
+        if(limitApplied) {          
+          if(observer != null) {
+            observer.limitAppliedAtIndexLevel(this, limit, result);
+          }
+        }
         return;
       }
     
@@ -894,6 +908,9 @@ public class CompactRangeIndex extends AbstractIndex {
                 result.add(new CqEntry(indexEntry.getDeserializedRegionKey(),
                     value));
               } else {
+                if (IndexManager.testHook != null) {
+                  IndexManager.testHook.hook(200);
+                }
                 applyProjection(projAttrib, context, result, value,
                     intermediateResults, isIntersection);
               }
@@ -906,6 +923,9 @@ public class CompactRangeIndex extends AbstractIndex {
         }
       } catch (ClassCastException e) {
         
+      }
+      catch(EntryDestroyedException e) {
+        //ignore it
       }
     }
   }

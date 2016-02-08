@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache;
 
@@ -12,6 +21,14 @@ package com.gemstone.gemfire.cache;
 /** Contains information about an event affecting an entry, including
  * its identity and the the circumstances of the event.
  * It is passed in to <code>CacheListener</code>, <code>CapacityController</code>, and <code>CacheWriter</code>.
+ * <p>
+ * If this event originated from a region stored off heap then this event can
+ * only be used as long as the notification method that obtained it has not returned.
+ * For example in your implementation of {@link CacheListener#afterUpdate(EntryEvent)} the event parameter
+ * is only valid until your afterUpdate method returns. It is not safe to store instances of this
+ * class and use them later when using off heap storage.
+ * Attempts to access off-heap data from this event after it has expired will result in an
+ * IllegalStateException.
  *
  * @author Eric Zoerner
  *
@@ -41,6 +58,7 @@ public interface EntryEvent<K,V> extends CacheEvent<K,V> {
    * @return the old value in the cache prior to this event.
    * If the entry did not exist, was invalid, or was not available,
    * then null is returned.
+   * @throws IllegalStateException if off-heap and called after the method that was passed this EntryEvent returns.
    */
   public V getOldValue();
   
@@ -48,6 +66,7 @@ public interface EntryEvent<K,V> extends CacheEvent<K,V> {
    * Returns the serialized form of the value in the cache before this event.
    *
    * @return the serialized form of the value in the cache before this event
+   * @throws IllegalStateException if off-heap and called after the method that was passed this EntryEvent returns.
    * 
    * @since 5.5
    */
@@ -57,6 +76,7 @@ public interface EntryEvent<K,V> extends CacheEvent<K,V> {
    * Returns the value in the cache after this event.
    *
    * @return the value in the cache after this event
+   * @throws IllegalStateException if off-heap and called after the method that was passed this EntryEvent returns.
    */
   public V getNewValue();
   
@@ -64,6 +84,7 @@ public interface EntryEvent<K,V> extends CacheEvent<K,V> {
    * Returns the serialized form of the value in the cache after this event.
    *
    * @return the serialized form of the value in the cache after this event
+   * @throws IllegalStateException if off-heap and called after the method that was passed this EntryEvent returns.
    * 
    * @since 5.5
    */

@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.distributed;
@@ -22,9 +30,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
@@ -33,11 +43,12 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.cache.AbstractBridgeServer;
+import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -68,6 +79,7 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 import com.gemstone.gemfire.pdx.PdxSerializer;
+
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -111,6 +123,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
     helpMap.put("rebalance", LocalizedStrings.ServerLauncher_SERVER_REBALANCE_HELP.toLocalizedString());
     helpMap.put("redirect-output", LocalizedStrings.ServerLauncher_SERVER_REDIRECT_OUTPUT_HELP.toLocalizedString());
     helpMap.put("server-bind-address", LocalizedStrings.ServerLauncher_SERVER_BIND_ADDRESS_HELP.toLocalizedString());
+    helpMap.put("hostname-for-clients", LocalizedStrings.ServerLauncher_SERVER_HOSTNAME_FOR_CLIENT_HELP.toLocalizedString());
     helpMap.put("server-port", LocalizedStrings.ServerLauncher_SERVER_PORT_HELP.toLocalizedString(String.valueOf(getDefaultServerPort())));
   }
 
@@ -170,6 +183,9 @@ public final class ServerLauncher extends AbstractLauncher<String> {
   private final Float criticalHeapPercentage;
   private final Float evictionHeapPercentage;
   
+  private final Float criticalOffHeapPercentage;
+  private final Float evictionOffHeapPercentage;
+  
   private final String hostNameForClients; 
   private final Integer maxConnections;
   private final Integer maxMessageCount;
@@ -197,7 +213,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
   }
 
   private static Integer getDefaultServerPort() {
-    return Integer.getInteger(AbstractBridgeServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, CacheServer.DEFAULT_PORT);
+    return Integer.getInteger(AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, CacheServer.DEFAULT_PORT);
   }
 
   /**
@@ -258,6 +274,8 @@ public final class ServerLauncher extends AbstractLauncher<String> {
     this.workingDirectory = builder.getWorkingDirectory();
     this.criticalHeapPercentage = builder.getCriticalHeapPercentage();
     this.evictionHeapPercentage = builder.getEvictionHeapPercentage();
+    this.criticalOffHeapPercentage = builder.getCriticalOffHeapPercentage();
+    this.evictionOffHeapPercentage = builder.getEvictionOffHeapPercentage();
     this.maxConnections = builder.getMaxConnections();
     this.maxMessageCount = builder.getMaxMessageCount();
     this.maxThreads = builder.getMaxThreads();
@@ -543,6 +561,14 @@ public final class ServerLauncher extends AbstractLauncher<String> {
     return this.evictionHeapPercentage;
   }
   
+  public Float getCriticalOffHeapPercentage() {
+    return this.criticalOffHeapPercentage;
+  }
+  
+  public Float getEvictionOffHeapPercentage() {
+    return this.evictionOffHeapPercentage;
+  }
+  
   public String getHostNameForClients() {
     return this.hostNameForClients;
   }
@@ -697,6 +723,12 @@ public final class ServerLauncher extends AbstractLauncher<String> {
           } 
           if (this.evictionHeapPercentage != null) {
             this.cache.getResourceManager().setEvictionHeapPercentage(getEvictionHeapPercentage());
+          }
+          if (this.criticalOffHeapPercentage != null) {
+            this.cache.getResourceManager().setCriticalOffHeapPercentage(getCriticalOffHeapPercentage());
+          } 
+          if (this.evictionOffHeapPercentage != null) {
+            this.cache.getResourceManager().setEvictionOffHeapPercentage(getEvictionOffHeapPercentage());
           }
           
           this.cache.setIsServer(true);
@@ -912,7 +944,11 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       if (getSocketBufferSize() != null) {
         cacheServer.setSocketBufferSize(getSocketBufferSize());
       }
-      
+
+      if (getHostNameForClients() != null) {
+        cacheServer.setHostnameForClients(getHostNameForClients());
+      }
+
       cacheServer.start();
     }
   }
@@ -1054,7 +1090,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
   private ServerState statusWithWorkingDirectory() {
     int parsedPid = 0;
     try {
-      final ProcessController controller = new ProcessControllerFactory().createProcessController(this.controllerParameters, new File(getWorkingDirectory()), ProcessType.SERVER.getPidFileName());
+      final ProcessController controller = new ProcessControllerFactory().createProcessController(this.controllerParameters, new File(getWorkingDirectory()), ProcessType.SERVER.getPidFileName(), READ_PID_FILE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
       parsedPid = controller.getProcessId();
       
       // note: in-process request will go infinite loop unless we do the following
@@ -1068,14 +1104,6 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       final String statusJson = controller.status();
       return ServerState.fromJson(statusJson);
     }
-//    catch (NoClassDefFoundError error) {
-//      if (isAttachAPINotFound(error)) {
-//        throw new AttachAPINotFoundException(LocalizedStrings.Launcher_ATTACH_API_NOT_FOUND_ERROR_MESSAGE
-//          .toLocalizedString(), error);
-//      }
-//
-//      throw error;
-//    }
     catch (ConnectionFailedException e) {
       // failed to attach to server JVM
       return createNoResponseState(e, "Failed to connect to server with process id " + parsedPid);
@@ -1088,10 +1116,10 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       // failed to open or read file or dir
       return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
     } 
-//    catch (MalformedObjectNameException e) {
-//      // JMX object name is bad
-//      return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
-//    } 
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return createNoResponseState(e, "Interrupted while trying to communicate with server with process id " + parsedPid);
+    } 
     catch (MBeanInvocationFailedException e) {
       // MBean either doesn't exist or method or attribute don't exist
       return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
@@ -1101,15 +1129,9 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       return createNoResponseState(e, "Failed to find usable process id within file " + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
     } 
     catch (UnableToControlProcessException e) {
-      // TODO comment me
-      return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
-    } 
-    catch (InterruptedException e) {
-      // TODO comment me
       return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
     } 
     catch (TimeoutException e) {
-      // TODO comment me
       return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
     }
   }
@@ -1209,7 +1231,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
   private ServerState stopWithWorkingDirectory() {
     int parsedPid = 0;
     try {
-      final ProcessController controller = new ProcessControllerFactory().createProcessController(this.controllerParameters, new File(getWorkingDirectory()), ProcessType.SERVER.getPidFileName());
+      final ProcessController controller = new ProcessControllerFactory().createProcessController(this.controllerParameters, new File(getWorkingDirectory()), ProcessType.SERVER.getPidFileName(), READ_PID_FILE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
       parsedPid = controller.getProcessId();
       
       // NOTE in-process request will go infinite loop unless we do the following
@@ -1223,14 +1245,6 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       controller.stop();
       return new ServerState(this, Status.STOPPED);
     }
-//    catch (NoClassDefFoundError error) {
-//      if (isAttachAPINotFound(error)) {
-//        throw new AttachAPINotFoundException(LocalizedStrings.Launcher_ATTACH_API_NOT_FOUND_ERROR_MESSAGE
-//          .toLocalizedString(), error);
-//      }
-//
-//      throw error;
-//    }
     catch (ConnectionFailedException e) {
       // failed to attach to server JVM
       return createNoResponseState(e, "Failed to connect to server with process id " + parsedPid);
@@ -1243,10 +1257,10 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       // failed to open or read file or dir
       return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
     } 
-//    catch (MalformedObjectNameException e) {
-//      // JMX object name is bad
-//      return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
-//    } 
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return createNoResponseState(e, "Interrupted while trying to communicate with server with process id " + parsedPid);
+    } 
     catch (MBeanInvocationFailedException e) {
       // MBean either doesn't exist or method or attribute don't exist
       return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
@@ -1255,16 +1269,17 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       // couldn't determine pid from within server JVM
       return createNoResponseState(e, "Failed to find usable process id within file " + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
     } 
+    catch (TimeoutException e) {
+      return createNoResponseState(e, "Timed out trying to find usable process id within file " + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
+    } 
     catch (UnableToControlProcessException e) {
-      // TODO comment me
       return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
     }
   }
 
   private ServerState createNoResponseState(final Exception cause, final String errorMessage) {
     debug(cause);
-    //info(errorMessage);
-    return new ServerState(this, Status.NOT_RESPONDING); // TODO: use errorMessage
+    return new ServerState(this, Status.NOT_RESPONDING, errorMessage);
   }
 
   private Properties getOverriddenDefaults() {
@@ -1380,6 +1395,9 @@ public final class ServerLauncher extends AbstractLauncher<String> {
     private Float criticalHeapPercentage;
     private Float evictionHeapPercentage;
     
+    private Float criticalOffHeapPercentage;
+    private Float evictionOffHeapPercentage;
+    
     private String hostNameForClients; 
     private Integer loadPollInterval;
     private Integer maxConnections;
@@ -1429,11 +1447,14 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       parser.accepts("version");
       parser.accepts(CliStrings.START_SERVER__CRITICAL__HEAP__PERCENTAGE).withRequiredArg().ofType(Float.class);
       parser.accepts(CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE).withRequiredArg().ofType(Float.class);
+      parser.accepts(CliStrings.START_SERVER__CRITICAL_OFF_HEAP_PERCENTAGE).withRequiredArg().ofType(Float.class);
+      parser.accepts(CliStrings.START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE).withRequiredArg().ofType(Float.class);
       parser.accepts(CliStrings.START_SERVER__MAX__CONNECTIONS).withRequiredArg().ofType(Integer.class);
       parser.accepts(CliStrings.START_SERVER__MAX__MESSAGE__COUNT).withRequiredArg().ofType(Integer.class);
       parser.accepts(CliStrings.START_SERVER__MAX__THREADS).withRequiredArg().ofType(Integer.class);
       parser.accepts(CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE).withRequiredArg().ofType(Integer.class);
       parser.accepts(CliStrings.START_SERVER__SOCKET__BUFFER__SIZE).withRequiredArg().ofType(Integer.class);
+      parser.accepts(CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS).withRequiredArg().ofType(String.class);
 
       return parser;
     }
@@ -1458,7 +1479,43 @@ public final class ServerLauncher extends AbstractLauncher<String> {
         setHelp(options.has("help"));
         setRebalance(options.has("rebalance"));
         setRedirectOutput(options.has("redirect-output"));
-
+        
+        if (options.hasArgument(CliStrings.START_SERVER__CRITICAL__HEAP__PERCENTAGE)) {
+          setCriticalHeapPercentage(Float.parseFloat(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__CRITICAL__HEAP__PERCENTAGE))));
+        }
+        
+        if (options.hasArgument(CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE)) {
+          setEvictionHeapPercentage(Float.parseFloat(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE))));
+        }
+        
+        if (options.hasArgument(CliStrings.START_SERVER__CRITICAL_OFF_HEAP_PERCENTAGE)) {
+          setCriticalOffHeapPercentage(Float.parseFloat(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__CRITICAL_OFF_HEAP_PERCENTAGE))));
+        }
+        
+        if (options.hasArgument(CliStrings.START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE)) {
+          setEvictionOffHeapPercentage(Float.parseFloat(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE))));
+        }
+        
+        if (options.hasArgument(CliStrings.START_SERVER__MAX__CONNECTIONS)) {
+          setMaxConnections(Integer.parseInt(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__MAX__CONNECTIONS))));
+        }
+        
+        if (options.hasArgument(CliStrings.START_SERVER__MAX__MESSAGE__COUNT)) {
+          setMaxConnections(Integer.parseInt(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__MAX__MESSAGE__COUNT))));
+        }
+        
+        if (options.hasArgument(CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE)) {
+          setMaxConnections(Integer.parseInt(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE))));
+        }
+        
+        if (options.hasArgument(CliStrings.START_SERVER__SOCKET__BUFFER__SIZE)) {
+          setMaxConnections(Integer.parseInt(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__SOCKET__BUFFER__SIZE))));
+        } 
+        
+        if (options.hasArgument(CliStrings.START_SERVER__MAX__THREADS)) {
+          setMaxThreads(Integer.parseInt(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__MAX__THREADS))));
+        }
+        
         if (!isHelping()) {
           if (options.has("dir")) {
             setWorkingDirectory(ObjectUtils.toString(options.valueOf("dir")));
@@ -1518,7 +1575,12 @@ public final class ServerLauncher extends AbstractLauncher<String> {
         if (options.hasArgument(CliStrings.START_SERVER__SOCKET__BUFFER__SIZE)) {
           setSocketBufferSize(Integer.parseInt(ObjectUtils.toString(options.valueOf(
             CliStrings.START_SERVER__SOCKET__BUFFER__SIZE))));
-        } 
+        }
+
+        if (options.hasArgument(CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS)) {
+          setHostNameForClients(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS)));
+        }
+
       }
       catch (OptionException e) {
         throw new IllegalArgumentException(LocalizedStrings.Launcher_Builder_PARSE_COMMAND_LINE_ARGUMENT_ERROR_MESSAGE
@@ -2010,6 +2072,20 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       this.criticalHeapPercentage = criticalHeapPercentage;
       return this;
     }
+
+    public Float getCriticalOffHeapPercentage() {
+      return this.criticalOffHeapPercentage;
+    }
+    
+    public Builder setCriticalOffHeapPercentage(final Float criticalOffHeapPercentage) {
+      if (criticalOffHeapPercentage != null) {
+        if (criticalOffHeapPercentage < 0 || criticalOffHeapPercentage > 100.0f) {
+          throw new IllegalArgumentException(String.format("Critical off-heap percentage (%1$s) must be between 0 and 100!", criticalOffHeapPercentage));
+        }
+      }
+     this.criticalOffHeapPercentage = criticalOffHeapPercentage;
+     return this;
+    }
     
     public Float getEvictionHeapPercentage() {
       return this.evictionHeapPercentage;
@@ -2025,7 +2101,21 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       this.evictionHeapPercentage = evictionHeapPercentage;
       return this;
     }
-
+    
+    public Float getEvictionOffHeapPercentage() {
+      return this.evictionOffHeapPercentage;
+    }
+    
+    public Builder setEvictionOffHeapPercentage(final Float evictionOffHeapPercentage) {
+      if (evictionOffHeapPercentage != null) {
+        if (evictionOffHeapPercentage < 0 || evictionOffHeapPercentage > 100.0f) {
+          throw new IllegalArgumentException(String.format("Eviction off-heap percentage (%1$s) must be between 0 and 100", evictionOffHeapPercentage));
+        }
+      }
+      this.evictionOffHeapPercentage = evictionOffHeapPercentage;
+      return this;
+    }
+    
     public String getHostNameForClients() {
       return this.hostNameForClients;
     }
@@ -2394,7 +2484,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       }
       catch (GfJsonException e) {
         // TODO: or should we return OFFLINE?
-        throw new IllegalArgumentException("Unable to create ServerStatus from JSON: " + json);
+        throw new IllegalArgumentException("Unable to create ServerStatus from JSON: " + json, e);
       }
     }
 
@@ -2416,6 +2506,24 @@ public final class ServerLauncher extends AbstractLauncher<String> {
         launcher.getMemberName());
     }
 
+    public ServerState(final ServerLauncher launcher, final Status status, final String errorMessage) {
+      this(status, // status
+          errorMessage, // statusMessage
+          System.currentTimeMillis(), // timestamp
+          null, // serverLocation
+          null, // pid
+          0L, // uptime
+          launcher.getWorkingDirectory(), // workingDirectory
+          Collections.<String>emptyList(), // jvmArguments
+          null, // classpath
+          GemFireVersion.getGemFireVersion(), // gemfireVersion
+          null, // javaVersion
+          null, // logFile
+          null, // host
+          null, // port
+          null);// memberName
+    }
+    
     protected ServerState(final Status status,
                           final String statusMessage,
                           final long timestamp,

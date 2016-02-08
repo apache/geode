@@ -1,12 +1,27 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -29,9 +44,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
+import org.junit.After;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.Function;
@@ -41,10 +56,38 @@ import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.cache.execute.FunctionContextImpl;
-import com.gemstone.junit.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
+/**
+ * TODO: Need to fix this testDeclarableFunctionsWithParms and testClassOnClasspath on Windows:
+ * 
+ * java.io.IOException: The process cannot access the file because another process has locked a portion of the file
+        at java.io.FileOutputStream.writeBytes(Native Method)
+        at java.io.FileOutputStream.write(FileOutputStream.java:325)
+        at com.gemstone.gemfire.internal.JarClassLoaderJUnitTest.writeJarBytesToFile(JarClassLoaderJUnitTest.java:704)
+        at com.gemstone.gemfire.internal.JarClassLoaderJUnitTest.testDeclarableFunctionsWithParms(JarClassLoaderJUnitTest.java:412)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        at java.lang.reflect.Method.invoke(Method.java:606)
+        at junit.framework.TestCase.runTest(TestCase.java:176)
+        at junit.framework.TestCase.runBare(TestCase.java:141)
+        at junit.framework.TestResult$1.protect(TestResult.java:122)
+        at junit.framework.TestResult.runProtected(TestResult.java:142)
+        at junit.framework.TestResult.run(TestResult.java:125)
+        at junit.framework.TestCase.run(TestCase.java:129)
+        at junit.framework.TestSuite.runTest(TestSuite.java:255)
+        at junit.framework.TestSuite.run(TestSuite.java:250)
+        at org.junit.internal.runners.JUnit38ClassRunner.run(JUnit38ClassRunner.java:84)
+        at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
+        at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+        at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:459)
+        at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:675)
+        at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:382)
+        at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:192)
+ */
 @Category(IntegrationTest.class)
-public class JarClassLoaderJUnitTest extends TestCase {
+public class JarClassLoaderJUnitTest {
   private static final String JAR_PREFIX = "vf.gf#";
   
   private final ClassBuilder classBuilder = new ClassBuilder();
@@ -52,7 +95,7 @@ public class JarClassLoaderJUnitTest extends TestCase {
 
   private InternalCache cache;
 
-  @Override
+  @After
   public void tearDown() throws Exception {
     for (ClassLoader classLoader : ClassPathLoader.getLatest().getClassLoaders()) {
       if (classLoader instanceof JarClassLoader) {
@@ -75,14 +118,17 @@ public class JarClassLoaderJUnitTest extends TestCase {
     deleteSavedJarFiles();
   }
   
+  @Test
   public void testValidJarContent() throws IOException {
     assertTrue(JarClassLoader.isValidJarContent(this.classBuilder.createJarFromName("JarClassLoaderJUnitA")));
   }
   
+  @Test
   public void testInvalidJarContent() {
     assertFalse(JarClassLoader.isValidJarContent("INVALID JAR CONTENT".getBytes()));
   }
   
+  @Test
   public void testClassOnClasspath() throws IOException {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#1");
     final File jarFile2 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#2");
@@ -124,6 +170,7 @@ public class JarClassLoaderJUnitTest extends TestCase {
     classPathLoader.remove(classLoader);
   }
 
+  @Test
   public void testFunctions() throws IOException, ClassNotFoundException {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#1");
     final File jarFile2 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#2");
@@ -189,6 +236,7 @@ public class JarClassLoaderJUnitTest extends TestCase {
   /**
    * Ensure that abstract functions aren't added to the Function Service.
    */
+  @Test
   public void testAbstractFunction() throws IOException, ClassNotFoundException  {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#1");
 
@@ -220,6 +268,7 @@ public class JarClassLoaderJUnitTest extends TestCase {
     assertNull(function);
   }
   
+  @Test
   public void testDeclarableFunctionsWithNoCacheXml() throws IOException, ClassNotFoundException  {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnitNoXml.jar#1");
 
@@ -258,6 +307,7 @@ public class JarClassLoaderJUnitTest extends TestCase {
     assertEquals("NOPARMSv1", (String) resultSender.getResults());
   }
   
+  @Test
   public void testDeclarableFunctionsWithoutParms() throws IOException, ClassNotFoundException  {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#1");
     final File jarFile2 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#2");
@@ -333,6 +383,7 @@ public class JarClassLoaderJUnitTest extends TestCase {
     assertEquals("NOPARMSv2", (String) resultSender.getResults());
   }
 
+  @Test
   public void testDeclarableFunctionsWithParms() throws IOException, ClassNotFoundException  {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#1");
     final File jarFile2 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#2");
@@ -454,6 +505,7 @@ public class JarClassLoaderJUnitTest extends TestCase {
     assertEquals("BIRDv3", (String) resultSender.getResults());
   }
 
+  @Test
   public void testDependencyBetweenJars() throws IOException, ClassNotFoundException  {
     final File parentJarFile = new File(JAR_PREFIX + "JarClassLoaderJUnitParent.jar#1");
     final File usesJarFile = new File(JAR_PREFIX + "JarClassLoaderJUnitUses.jar#1");
@@ -516,6 +568,7 @@ public class JarClassLoaderJUnitTest extends TestCase {
     assertEquals("PARENT:USES", (String) resultSender.getResults());
   }
 
+  @Test
   public void testFindResource() throws IOException, ClassNotFoundException  {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnitResource.jar#1");
     ClassPathLoader classPathLoader = ClassPathLoader.createWithDefaults(false);
@@ -537,6 +590,7 @@ public class JarClassLoaderJUnitTest extends TestCase {
     assertTrue(fileContent.equals(new String(fileBytes)));
   }
   
+  @Test
   public void testUpdateClassInJar() throws IOException, ClassNotFoundException  {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#1");
     final File jarFile2 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#2");
@@ -598,6 +652,7 @@ public class JarClassLoaderJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testMultiThread() throws IOException {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnitA.jar#1");
     final File jarFile2 = new File(JAR_PREFIX + "JarClassLoaderJUnitB.jar#1");

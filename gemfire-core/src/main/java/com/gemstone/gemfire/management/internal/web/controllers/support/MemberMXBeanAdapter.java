@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.web.controllers.support;
 
@@ -75,7 +84,7 @@ public class MemberMXBeanAdapter implements MemberMXBean {
   public String[] listDiskStores(final boolean includeRegionOwned) {
     throw new UnsupportedOperationException("Not Implemented!");
   }
-
+  
   @Override
   public GemFireProperties listGemFireProperties() {
     throw new UnsupportedOperationException("Not Implemented!");
@@ -234,6 +243,11 @@ public class MemberMXBeanAdapter implements MemberMXBean {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
+  @Override
+  public String[] getHDFSStores() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }  
+  
   @Override
   public String[] getRootRegionNames() {
     throw new UnsupportedOperationException("Not Implemented!");
@@ -564,21 +578,6 @@ public class MemberMXBeanAdapter implements MemberMXBean {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
-  @Override
-  public long getMaxMemory() {
-    throw new UnsupportedOperationException("Not Implemented!");
-  }
-  
-  @Override
-  public long getFreeMemory() {
-    throw new UnsupportedOperationException("Not Implemented!");
-  }
-  
-  @Override
-  public long getUsedMemory() {
-    throw new UnsupportedOperationException("Not Implemented!");
-  }
-  
   @Override 
     public int getHostCpuUsage() { 
        throw new UnsupportedOperationException("Not Implemented!"); 
@@ -611,6 +610,51 @@ public class MemberMXBeanAdapter implements MemberMXBean {
 
   @Override
   public int getVisibleNodes() {
-    throw new UnsupportedOperationException("Not Implemented!"); 
-  }   
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public int getOffHeapObjects() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public long getOffHeapMaxMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public long getOffHeapFreeMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public long getOffHeapUsedMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public int getOffHeapFragmentation() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public long getOffHeapCompactionTime() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }    
+
+  @Override
+  public long getMaxMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+  
+  @Override
+  public long getFreeMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+  
+  @Override
+  public long getUsedMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
 }

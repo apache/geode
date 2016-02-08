@@ -1,0 +1,72 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<config xmlns="urn:org:jgroups"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd">
+<com.gemstone.gemfire.distributed.internal.membership.gms.messenger.Transport
+  BIND_ADDR_SETTING
+  bind_port="MEMBERSHIP_PORT_RANGE_START"
+  port_range="MEMBERSHIP_PORT_RANGE_END"
+  mcast_port="0"
+  tos="16"
+  ip_mcast="false"
+  ignore_dont_bundle="false"
+  ucast_recv_buf_size="UDP_RECV_BUFFER_SIZE"
+  ucast_send_buf_size="UDP_SEND_BUFFER_SIZE"
+  thread_naming_pattern="UDP Message Handler"
+  enable_batching="false"
+  enable_diagnostics="false"
+  disable_loopback="false"
+  
+  timer_type="new3"
+  timer.min_threads="1"
+  timer.max_threads="4"
+  timer.keep_alive_time="3000"
+  timer.queue_max_size="500"
+
+  thread_pool.enabled="false"
+  thread_pool.min_threads="1"
+  thread_pool.max_threads="4"
+  thread_pool.keep_alive_time="5000"
+  thread_pool.queue_enabled="true"
+  thread_pool.queue_max_size="10000"
+  thread_pool.rejection_policy="discard"
+
+  oob_thread_pool.enabled="false"
+  oob_thread_pool.min_threads="1"
+  oob_thread_pool.max_threads="4"
+  oob_thread_pool.keep_alive_time="5000"
+  oob_thread_pool.queue_enabled="false"
+  oob_thread_pool.queue_max_size="100"
+  oob_thread_pool.rejection_policy="discard"
+  />
+<com.gemstone.gemfire.distributed.internal.membership.gms.messenger.AddressManager/>
+<com.gemstone.gemfire.distributed.internal.membership.gms.messenger.StatRecorder/>
+<UNICAST3
+  xmit_interval="500"
+  xmit_table_num_rows="100"
+  xmit_table_msgs_per_row="2000"
+  xmit_table_max_compaction_time="60000"
+  conn_expiry_timeout="0"
+  max_msg_batch_size="500"/>
+<UFC
+  max_credits="FC_MAX_CREDITS"
+  min_threshold="FC_THRESHOLD"
+  max_block_time="FC_MAX_BLOCK"/>
+<FRAG2
+  frag_size="UDP_FRAGMENT_SIZE"/>
+</config>

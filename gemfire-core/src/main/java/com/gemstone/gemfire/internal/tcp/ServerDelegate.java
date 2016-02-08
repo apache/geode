@@ -1,12 +1,22 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.tcp;
 
+import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.*;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
@@ -25,7 +35,7 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 public interface ServerDelegate {
 
   public void receive( DistributionMessage message, int bytesRead,
-                       Stub connId );
+                       DistributedMember connId );
 
   public LogWriterI18n getLogger();
 
@@ -33,5 +43,5 @@ public interface ServerDelegate {
    * Called when a possibly new member is detected by receiving a direct channel
    * message from him.
    */
-  public void newMemberConnected(InternalDistributedMember member, Stub id);
+  public void newMemberConnected(InternalDistributedMember member);
 }

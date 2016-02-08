@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -193,6 +202,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
     RemoveAllResponse p = new RemoveAllResponse(event.getRegion().getSystem(), recipients);
     RemoteRemoveAllMessage msg = new RemoteRemoveAllMessage(event, recipients, p,
         removeAllData, removeAllDataCount, useOriginRemote, processorType, possibleDuplicate);
+    msg.setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());
     Set failures = event.getRegion().getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(LocalizedStrings.RemotePutMessage_FAILED_SENDING_0.toLocalizedString(msg));
@@ -330,9 +340,10 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
     final DistributedRegion dr = (DistributedRegion)r;
     
     // create a base event and a op for RemoveAllMessage distributed btw redundant buckets
-    EntryEventImpl baseEvent = new EntryEventImpl(
+    EntryEventImpl baseEvent = EntryEventImpl.create(
         r, Operation.REMOVEALL_DESTROY,
         null, null, this.callbackArg, false, eventSender, true);
+    try {
 
     baseEvent.setCausedByMessage(this);
     
@@ -347,6 +358,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
           eventSender, baseEvent, this);
     }
     final DistributedRemoveAllOperation op = new DistributedRemoveAllOperation(baseEvent, removeAllDataCount, false);
+    try {
     final VersionedObjectList versions = new VersionedObjectList(removeAllDataCount, true, dr.concurrencyChecksEnabled);
     dr.syncBulkOp(new Runnable() {
       @SuppressWarnings("synthetic-access")
@@ -354,6 +366,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
         InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
         for (int i = 0; i < removeAllDataCount; ++i) {
           EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(r, myId, eventSender, i, removeAllData, false, bridgeContext, posDup, false);
+          try {
           ev.setRemoveAllOperation(op);
           if (logger.isDebugEnabled()) {
             logger.debug("invoking basicDestroy with {}", ev);
@@ -364,6 +377,9 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
           }
           removeAllData[i].versionTag = ev.getVersionTag();
           versions.addKeyAndVersion(removeAllData[i].key, ev.getVersionTag());
+          } finally {
+            ev.release();
+          }
         }
       }
     }, baseEvent.getEventId());
@@ -373,6 +389,12 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
     RemoveAllReplyMessage.send(getSender(), this.processorId, 
         getReplySender(r.getDistributionManager()), versions, this.removeAllData, this.removeAllDataCount);
     return false;
+    } finally {
+      op.freeOffHeapResources();
+    }
+    } finally {
+      baseEvent.release();
+    }
   }
 
   

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
@@ -121,6 +130,9 @@ public class PartitionedIndex extends AbstractIndex
       List<Index> indexes = this.bucketIndexes.get(r);
       if(indexes != null) {
         indexes.remove(index);
+        if (indexes.isEmpty()) {
+          this.bucketIndexes.remove(r);
+        }
       }
     }
   }
@@ -187,6 +199,17 @@ public class PartitionedIndex extends AbstractIndex
     return index;
   }
   
+  protected Map.Entry<Region,List<Index>> getFirstBucketIndex()
+  {
+    Map.Entry<Region,List<Index>> firstIndexEntry = null;
+    synchronized(this.bucketIndexes) {
+      if (this.bucketIndexes.size() > 0) {
+        firstIndexEntry = this.bucketIndexes.entrySet().iterator().next();
+      }
+    }
+    return firstIndexEntry;
+  }
+
   /**
    * Returns the type of index this partitioned index represents.
    * @return  indexType type of partitioned index.
@@ -242,7 +265,7 @@ public class PartitionedIndex extends AbstractIndex
         throw new QueryInvocationTargetException("Bucket not found for the id :" + bId);
       }
       IndexManager im = IndexUtils.getIndexManager(bukRegion, true); 
-      if (im.getIndex(indexName) == null) { 
+      if (im != null && im.getIndex(indexName) == null) { 
         try {
           if (pr.getCache().getLogger().fineEnabled()) {
             pr.getCache().getLogger().fine("Verifying index presence on bucket region. " +

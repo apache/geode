@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.gopivotal.com/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.distributed.internal;
@@ -101,7 +110,7 @@ public interface DistributionConfig extends Config, LogConfig {
   public static final String MCAST_PORT_NAME = "mcast-port";
 
   /** The default value of the "mcastPort" property */
-  public static final int DEFAULT_MCAST_PORT = 10334;
+  public static final int DEFAULT_MCAST_PORT = 0;
   /**
    * The minimum mcastPort.
    * <p> Actual value of this constant is <code>0</code>.
@@ -317,7 +326,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   public String getStartLocator();
   /**
-   * Sets the start-locators property.  This is a string in the form
+   * Sets the start-locator property.  This is a string in the form
    * bindAddress[port] and, if set, tells the distributed system to start
    * a locator prior to connecting
    * @param value must be of the form <code>hostName[portNum]</code>
@@ -329,11 +338,11 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   public boolean isStartLocatorModifiable();
   /**
-   * The name of the "start-locators" property
+   * The name of the "start-locator" property
    */
   public static final String START_LOCATOR_NAME = "start-locator";
   /**
-   * The default value of the "start-locators" property
+   * The default value of the "start-locator" property
    */
   public static final String DEFAULT_START_LOCATOR = "";
   
@@ -1870,6 +1879,16 @@ public interface DistributionConfig extends Config, LogConfig {
   public static final String CLIENT_CONFLATION_PROP_VALUE_ON = "true";
   /** @since 5.7 */
   public static final String CLIENT_CONFLATION_PROP_VALUE_OFF = "false";
+  
+     
+  /** @since 9.0 */
+  public static final String DISTRIBUTED_TRANSACTIONS_NAME = "distributed-transactions";
+  public static final boolean DEFAULT_DISTRIBUTED_TRANSACTIONS = false;
+
+  public boolean getDistributedTransactions();
+
+  public void setDistributedTransactions(boolean value);
+  
   /**
    * Returns the value of the <a
    * href="../DistributedSystem.html#conflate-events">"conflate-events"</a>
@@ -2511,6 +2530,42 @@ public interface DistributionConfig extends Config, LogConfig {
    public String getJmxManagerSSLProtocols( );
 
   /**
+   * Returns the value of the <a 
+   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a> 
+   * property.
+   * @since 9.0
+   */
+  public String getOffHeapMemorySize();
+  /**
+   * Sets the value of the <a 
+   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a> 
+   * property.
+   * @since 9.0
+   */
+  public void setOffHeapMemorySize(String value);
+  /**
+   * Returns true if the value of the <a 
+   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a> 
+   * property can be modified. Some attributes can not be modified while the 
+   * system is running.
+   * @since 9.0
+   */
+  public boolean isOffHeapMemorySizeModifiable();
+  /** 
+   * The name of the "off-heap-memory-size" property 
+   * @since 9.0
+   */
+  public static final String OFF_HEAP_MEMORY_SIZE_NAME = "off-heap-memory-size";
+  /** 
+   * The default <a 
+   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a>
+   * value of <code>""</code>. 
+   * @since 9.0
+   */
+  public static final String DEFAULT_OFF_HEAP_MEMORY_SIZE = "";
+
+  
+  /**
    * Sets the value of the <a
    * href="../DistributedSystem.html#jmx-manager-ssl-protocols">"jmx-manager-ssl-protocols"</a>
    * property.
@@ -2791,6 +2846,43 @@ public interface DistributionConfig extends Config, LogConfig {
   public boolean isMemcachedBindAddressModifiable();
   public static String MEMCACHED_BIND_ADDRESS_NAME = "memcached-bind-address";
   public static String DEFAULT_MEMCACHED_BIND_ADDRESS = "";
+  
+  /**
+   * Returns the value of the <a
+   * href="../DistributedSystem.html#redis-port">"redis-port"</a> property
+   * @return the port on which GemFireRedisServer should be started
+   * @since 8.0
+   */
+  public int getRedisPort();
+  public void setRedisPort(int value);
+  public boolean isRedisPortModifiable();
+  public static String REDIS_PORT_NAME = "redis-port";
+  public static int DEFAULT_REDIS_PORT = 0;
+
+  /**
+   * Returns the value of the <a
+   * href="../DistributedSystem.html#redis-bind-address">"redis-bind-address"</a> property
+   * @return the bind address for GemFireRedisServer
+   * @since 8.0
+   */
+  public String getRedisBindAddress();
+  public void setRedisBindAddress(String bindAddress);
+  public boolean isRedisBindAddressModifiable();
+  public static String REDIS_BIND_ADDRESS_NAME = "redis-bind-address";
+  public static String DEFAULT_REDIS_BIND_ADDRESS = "";
+  
+  /**
+   * Returns the value of the <a
+   * href="../DistributedSystem.html#redis-password">"redis-password"</a> property
+   * @return the authentication password for GemFireRedisServer
+   * @since 8.0
+   */
+  public String getRedisPassword();
+  public void setRedisPassword(String password);
+  public boolean isRedisPasswordModifiable();
+  public static String REDIS_PASSWORD_NAME = "redis-password";
+  public static String DEFAULT_REDIS_PASSWORD = "";
+
 
   //Added for the HTTP service
   
@@ -3545,4 +3637,25 @@ public interface DistributionConfig extends Config, LogConfig {
   public Properties getGatewaySSLProperties();
 
   public ConfigSource getConfigSource(String attName);
+
+ 
+  /**
+   * The name of the "lock-memory" property.  Used to cause pages to be locked
+   * into memory, thereby preventing them from being swapped to disk.
+   * @since 9.0
+   */
+  public static String LOCK_MEMORY_NAME = "lock-memory";
+  public static final boolean DEFAULT_LOCK_MEMORY = false;
+  /**
+   * Gets the value of <a href="../DistributedSystem.html#lock-memory">"lock-memory"</a>
+   * @since 9.0
+   */
+  public boolean getLockMemory();
+  /**
+   * Set the value of <a href="../DistributedSystem.html#lock-memory">"lock-memory"</a>
+   * @param value the new setting
+   * @since 9.0
+   */
+  public void setLockMemory(boolean value);
+  public boolean isLockMemoryModifiable();
 }

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Cache 7.0//EN" "http://www.gemstone.com/dtd/cache7_0.dtd">
+  <cache>
+  <region name="PartionedPortfolios">
+    <region-attributes>
+      <partition-attributes redundant-copies="1" total-num-buckets="50"/>
+      <subscription-attributes interest-policy="cache-content"/>
+    </region-attributes>
+    <index name="statusIndex">
+      <functional from-clause="/PartionedPortfolios p" expression="p.status"/>
+    </index>
+    <index name="idIndex">
+      <functional from-clause="/PartionedPortfolios p" expression="p.ID"/>
+    </index>
+    <index name="secIndex">
+      <functional from-clause="/PartionedPortfolios p, p.positions.values pos" expression="pos.secId"/>
+    </index>
+  </region>
+  <region name="Portfolios">
+    <region-attributes scope="distributed-ack" data-policy="replicate">
+    </region-attributes>
+    <index name="statusIndex">
+      <functional from-clause="/Portfolios p" expression="p.status"/>
+    </index>
+    <index name="idIndex">
+      <functional from-clause="/Portfolios p" expression="p.ID"/>
+    </index>
+    <index name="secIndex">
+      <functional from-clause="/Portfolios p, p.positions.values pos" expression="pos.secId"/>
+    </index>
+  </region>
+  <region name="PersistentPrPortfolios">
+    <region-attributes  data-policy="persistent-partition">
+      <partition-attributes redundant-copies="1" total-num-buckets="50"/>
+    </region-attributes>
+    <index name="statusIndex">
+      <functional from-clause="/PersistentPrPortfolios p" expression="p.status"/>
+    </index>
+    <index name="idIndex">
+      <functional from-clause="/PersistentPrPortfolios p" expression="p.ID"/>
+    </index>
+    <index name="secIndex">
+      <functional from-clause="/PersistentPrPortfolios p, p.positions.values pos" expression="pos.secId"/>
+    </index>
+  </region>
+  <region name="PartitionedPortfoliosWithRange">
+    <region-attributes>
+      <partition-attributes redundant-copies="1" total-num-buckets="50"/>
+      <subscription-attributes interest-policy="cache-content"/>
+    </region-attributes>
+    <index name="statusIndex" type="range" from-clause="/PartitionedPortfoliosWithRange p" expression="p.status"/>
+    <index name="idIndex" type="range" from-clause="/PartitionedPortfoliosWithRange p" expression="p.ID"/>
+    <index name="secIndex" from-clause="/PartitionedPortfoliosWithRange p, p.positions.values pos" expression="pos.secId"/>
+  </region>
+   <region name="PortfoliosWithRange">
+    <region-attributes scope="distributed-ack" data-policy="replicate">
+    </region-attributes>
+    <index name="statusIndex" type="range" from-clause="/PortfoliosWithRange p" expression="p.status"/>
+    <index name="idIndex" type="range" from-clause="/PortfoliosWithRange p" expression="p.ID"/>
+    <index name="secIndex" from-clause="/PortfoliosWithRange p, p.positions.values pos" expression="pos.secId"/>
+  </region>
+  <region name="PersistentPrPortfoliosWithRange">
+    <region-attributes  data-policy="persistent-partition">
+      <partition-attributes redundant-copies="1" total-num-buckets="50"/>
+    </region-attributes>
+    <index name="statusIndex" type="range" from-clause="/PersistentPrPortfoliosWithRange p" expression="p.status"/>
+    <index name="idIndex" type="range" from-clause="/PersistentPrPortfoliosWithRange p" expression="p.ID"/>
+    <index name="secIndex" from-clause="/PersistentPrPortfoliosWithRange p, p.positions.values pos" expression="pos.secId"/>
+  </region>
+  <region name="PartionedPortfoliosWithHash">
+    <region-attributes>
+      <partition-attributes redundant-copies="1" total-num-buckets="50"/>
+      <subscription-attributes interest-policy="cache-content"/>
+    </region-attributes>
+    <index name="statusIndex" type="hash" from-clause="/PartionedPortfoliosWithHash p" expression="p.status"/>
+    <index name="idIndex" type="hash" from-clause="/PartionedPortfoliosWithHash p" expression="p.ID"/>
+    <index name="secIndex" from-clause="/PartionedPortfoliosWithHash p, p.positions.values pos" expression="pos.secId"/>
+  </region>
+  <region name="PortfoliosWithHash">
+    <region-attributes scope="distributed-ack" data-policy="replicate">
+    </region-attributes>
+    <index name="statusIndex" type="hash" from-clause="/PortfoliosWithHash p" expression="p.status"/>
+    <index name="idIndex" type="hash" from-clause="/PortfoliosWithHash p" expression="p.ID"/>
+    <index name="secIndex" from-clause="/PortfoliosWithHash p, p.positions.values pos" expression="pos.secId"/>
+  </region>
+  <region name="PersistentPrPortfoliosWithHash">
+    <region-attributes  data-policy="persistent-partition">
+      <partition-attributes redundant-copies="1" total-num-buckets="50"/>
+    </region-attributes>
+    <index name="statusIndex" type="hash" from-clause="/PersistentPrPortfoliosWithHash p" expression="p.status"/>
+    <index name="idIndex" type="hash" from-clause="/PersistentPrPortfoliosWithHash p" expression="p.ID"/>
+    <index name="secIndex" from-clause="/PersistentPrPortfoliosWithHash p, p.positions.values pos" expression="pos.secId"/>
+  </region>
+   <region name="SetBothKeyAndHashButOnlyKeyShouldBeTakenRegion">
+    <region-attributes  data-policy="persistent-partition">
+      <partition-attributes redundant-copies="1" total-num-buckets="50"/>
+    </region-attributes>
+    <index name="statusIndex" key-index="true" type="hash" from-clause="/PersistentPrPortfoliosWithHash p" expression="p.status"/>
+    <index name="idIndex" key-index="true" type="hash" from-clause="/PersistentPrPortfoliosWithHash p" expression="p.ID"/>
+    <index name="secIndex" key-index="true" from-clause="/PersistentPrPortfoliosWithHash p, p.positions.values pos" expression="pos.secId"/>
+  </region>
+  <region name="PortfoliosNoIndex">
+    <region-attributes scope="distributed-ack" data-policy="replicate">
+    </region-attributes>
+  </region>
+   <region name="PersistentOverflowPortfolios">
+    <region-attributes refid="REPLICATE_PERSISTENT_OVERFLOW" >
+    </region-attributes>
+    <index name="statusIndex">
+      <functional from-clause="/PersistentOverflowPortfolios p" expression="p.status"/>
+    </index>
+  </region>
+</cache>

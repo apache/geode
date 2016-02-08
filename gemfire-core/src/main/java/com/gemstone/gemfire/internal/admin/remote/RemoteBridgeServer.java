@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.admin.remote;
 
@@ -27,8 +36,8 @@ import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.AdminBridgeServer;
-import com.gemstone.gemfire.internal.cache.AbstractBridgeServer;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
@@ -40,7 +49,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @since 4.0
  */
 public class RemoteBridgeServer
-  extends AbstractBridgeServer
+  extends AbstractCacheServer
   implements AdminBridgeServer, DataSerializable {
 
   private static final long serialVersionUID = 8417391824652384959L;
@@ -64,12 +73,12 @@ public class RemoteBridgeServer
    * <code>RemoteBridgeServer</code> from the contents of the given
    * <code>BridgeServerImpl</code>.
    */
-  RemoteBridgeServer(BridgeServerImpl impl) {
+  RemoteBridgeServer(CacheServerImpl impl) {
     super(null);
     this.port = impl.getPort();
     this.bindAddress = impl.getBindAddress();
     this.hostnameForClients = impl.getHostnameForClients();
-    if (BridgeServerImpl.ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE) {
+    if (CacheServerImpl.ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE) {
       this.notifyBySubscription = impl.getNotifyBySubscription();
     }
     this.socketBufferSize = impl.getSocketBufferSize();

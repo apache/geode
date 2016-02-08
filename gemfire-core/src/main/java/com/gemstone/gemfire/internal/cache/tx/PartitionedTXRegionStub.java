@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.tx;
 
@@ -267,13 +276,13 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   public Object findObject(KeyInfo keyInfo, boolean isCreate,
       boolean generateCallbacks, Object value, boolean peferCD,
       ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent) {
+      EntryEventImpl clientEvent, boolean allowReadFromHDFS) {
     Object retVal = null;
     final Object key = keyInfo.getKey();
     final Object callbackArgument = keyInfo.getCallbackArg();
     PartitionedRegion pr = (PartitionedRegion)region;
     try {
-      retVal = pr.getRemotely((InternalDistributedMember)state.getTarget(), keyInfo.getBucketId(), key, callbackArgument, peferCD, requestingClient, clientEvent, false);
+      retVal = pr.getRemotely((InternalDistributedMember)state.getTarget(), keyInfo.getBucketId(), key, callbackArgument, peferCD, requestingClient, clientEvent, false, allowReadFromHDFS);
     } catch (TransactionException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
       re.initCause(e.getCause());
@@ -378,7 +387,11 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       } catch (Exception ex) {
         // If failed at other exception
         EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
+        try {
           partialKeys.saveFailedKey(firstEvent.getKey(), ex);
+        } finally {
+          firstEvent.release();
+        }
       }
     }
     pr.prStats.endPutAll(startTime);
@@ -465,7 +478,11 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     InternalDistributedMember currentTarget = pr.getOrCreateNodeForBucketWrite(bucketId.intValue(), null);
     if(!currentTarget.equals(this.state.getTarget())) {
       EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
+      try {
         throw new TransactionDataNotColocatedException(LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION.toLocalizedString(firstEvent.getKey()));
+      } finally {
+        firstEvent.release();
+      }
     }
     try {
       return pr.tryToSendOnePutAllMessage(prMsg,currentTarget);

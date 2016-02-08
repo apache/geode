@@ -1,12 +1,24 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
+import java.util.List;
+
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheServerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
@@ -34,6 +46,11 @@ public class CacheConfig {
    */
   private String cacheXMLDescription = null;
 
+  /**
+   * list of cache servers to create after auto-reconnect if cluster configuration is being used
+   */
+  private List<CacheServerCreation> cacheServerCreation;
+  
   /**
    * This indicates if the pdxReadSerialized value is set by user. This is used 
    * during cache xml parsing. The value set by user api overrides the 
@@ -128,7 +145,15 @@ public class CacheConfig {
     this.cacheXMLDescription = cacheXMLDescription;
   }
 
-
+  
+  public List<CacheServerCreation> getCacheServerCreation() {
+    return this.cacheServerCreation;
+  }
+  
+  
+  public void setCacheServerCreation(List<CacheServerCreation> servers) {
+    this.cacheServerCreation = servers;
+  }
 
   public void validateCacheConfig(GemFireCacheImpl cacheInstance) {
     // To fix bug 44961 only validate our attributes against the existing cache
@@ -159,8 +184,8 @@ public class CacheConfig {
     Object o2 = s2;
     if (s1 instanceof ReflectionBasedAutoSerializer && s2 instanceof ReflectionBasedAutoSerializer) {
       // Fix for bug 44907.
-      o1 = AutoSerializableManager.getInstance((ReflectionBasedAutoSerializer) s1);
-      o2 = AutoSerializableManager.getInstance((ReflectionBasedAutoSerializer) s2);
+      o1 = ((ReflectionBasedAutoSerializer) s1).getManager();
+      o2 = ((ReflectionBasedAutoSerializer) s2).getManager();
     }
     return equals(o1, o2);
   }

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -17,6 +26,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.logging.log4j.Logger;
@@ -25,6 +35,7 @@ import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.CopyHelper;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.DeltaSerializationException;
+import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.InvalidDeltaException;
 import com.gemstone.gemfire.SystemFailure;
@@ -32,16 +43,20 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.CacheWriterException;
+import com.gemstone.gemfire.cache.CustomEvictionAttributes;
 import com.gemstone.gemfire.cache.DiskAccessException;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.EvictionCriteria;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.cache.hdfs.HDFSIOException;
+import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogOrganizer;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -74,11 +89,16 @@ import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
+import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import com.gemstone.gemfire.internal.concurrent.Atomics;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import com.gemstone.gemfire.internal.concurrent.AtomicLong5;
+
 
 /**
  * The storage used for a Partitioned Region.
@@ -205,12 +225,14 @@ implements Bucket
     Boolean.getBoolean("gemfire.BucketRegion.alwaysFireLocalListeners");
   // gemfire.BucktRegion.alwaysFireLocalListeners=true
   
-  private volatile AtomicLong eventSeqNum = null;
+  private volatile AtomicLong5 eventSeqNum = null;
   
-  public AtomicLong getEventSeqNum() {
+  public AtomicLong5 getEventSeqNum() {
     return eventSeqNum;
   }
 
+  protected final AtomicReference<HoplogOrganizer> hoplog = new AtomicReference<HoplogOrganizer>();
+  
   public BucketRegion(String regionName, RegionAttributes attrs,
       LocalRegion parentRegion, GemFireCacheImpl cache,
       InternalRegionArguments internalRegionArgs) {
@@ -251,11 +273,11 @@ implements Bucket
             getId());
         // needs to be set only once.
         if (parentBucket.eventSeqNum == null) {
-          parentBucket.eventSeqNum = new AtomicLong(getId());
+          parentBucket.eventSeqNum = new AtomicLong5(getId());
         }
       }
       if (this.partitionedRegion.getColocatedWith() == null) {
-        this.eventSeqNum = new AtomicLong(getId());
+        this.eventSeqNum = new AtomicLong5(getId());
       } else {
         PartitionedRegion parentPR = ColocationHelper
             .getLeaderRegion(this.partitionedRegion);
@@ -492,9 +514,7 @@ implements Bucket
         handleWANEvent(event);
       }
       if (!hasSeenEvent(event)) {
-        if (!(this instanceof BucketRegionQueue)) {
-          forceSerialized(event);
-        }
+        forceSerialized(event);
         RegionEntry oldEntry = this.entries
             .basicPut(event, lastModified, ifNew, ifOld, expectedOldValue,
                 requireOldValue, overwriteDestroyed);
@@ -522,6 +542,25 @@ implements Bucket
     }
   }
 
+  
+  public long generateTailKey() {
+    long key = this.eventSeqNum.addAndGet(this.partitionedRegion
+        .getTotalNumberOfBuckets());
+    if (key < 0
+        || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId()) {
+      logger
+          .error(LocalizedMessage
+              .create(
+                  LocalizedStrings.GatewaySender_SEQUENCENUMBER_GENERATED_FOR_EVENT_IS_INVALID,
+                  new Object[] { key, getId() }));
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("WAN: On primary bucket {}, setting the seq number as {}",
+          getId(), this.eventSeqNum.get());
+    }
+    return eventSeqNum.get();
+  }
+  
   public void handleWANEvent(EntryEventImpl event) {
     if (this.eventSeqNum == null) {
       if (logger.isDebugEnabled()) {
@@ -529,7 +568,7 @@ implements Bucket
       }
     }
     
-    if (!(this instanceof BucketRegionQueue)) {
+    if (!(this instanceof AbstractBucketRegionQueue)) {
       if (getBucketAdvisor().isPrimary()) {
         long key = this.eventSeqNum.addAndGet(this.partitionedRegion.getTotalNumberOfBuckets());
         if (key < 0
@@ -672,9 +711,9 @@ implements Bucket
    * to endLocalWrite().
    * @param event
    */
-  private void beginLocalWrite(EntryEventImpl event) {
+  private boolean beginLocalWrite(EntryEventImpl event) {
     if(!needWriteLock(event)) {
-      return;
+      return false;
     }
 
     if (cache.isCacheAtShutdownAll()) {
@@ -688,7 +727,7 @@ implements Bucket
     boolean lockedForPrimary = false;
     try {
       doLockForPrimary(false);
-      lockedForPrimary = true;
+      return lockedForPrimary = true;
     } finally {
       if (!lockedForPrimary) {
         removeAndNotifyKeys(keys);
@@ -849,6 +888,12 @@ implements Bucket
 
     beginLocalWrite(event);
     try {
+      // increment the tailKey so that invalidate operations are written to HDFS
+      if (this.partitionedRegion.hdfsStoreName != null) {
+        /* MergeGemXDHDFSToGFE Disabled this while porting. Is this required? */
+        //assert this.partitionedRegion.isLocalParallelWanEnabled();
+        handleWANEvent(event);
+      }
       // which performs the local op.
       // The ARM then calls basicInvalidatePart2 with the entry synchronized.
       if ( !hasSeenEvent(event) ) {
@@ -1095,6 +1140,20 @@ implements Bucket
       if (this.partitionedRegion.isParallelWanEnabled()) {
         handleWANEvent(event);
       }
+      // In GemFire EVICT_DESTROY is not distributed, so in order to remove the entry
+      // from memory, allow the destroy to proceed. fixes #49784
+      if (event.isLoadedFromHDFS() && !getBucketAdvisor().isPrimary()) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Put the destory event in HDFS queue on secondary "
+              + "and return as event is HDFS loaded " + event);
+        }
+        notifyGatewaySender(EnumListenerEvent.AFTER_DESTROY, event);
+        return;
+      }else{
+        if (logger.isDebugEnabled()) {
+          logger.debug("Going ahead with the destroy on GemFire system");
+        }
+      }
       // This call should invoke AbstractRegionMap (aka ARM) destroy method
       // which calls the CacheWriter, then performs the local op.
       // The ARM then calls basicDestroyPart2 with the entry synchronized.
@@ -1283,7 +1342,44 @@ implements Bucket
   public boolean isBucketDestroyed() {
     return super.isDestroyed();
   }
-  
+
+  @Override
+  public boolean isHDFSRegion() {
+    return this.partitionedRegion.isHDFSRegion();
+  }
+
+  @Override
+  public boolean isHDFSReadWriteRegion() {
+    return this.partitionedRegion.isHDFSReadWriteRegion();
+  }
+
+  @Override
+  protected boolean isHDFSWriteOnly() {
+    return this.partitionedRegion.isHDFSWriteOnly();
+  }
+
+  @Override
+  public int sizeEstimate() {
+    if (isHDFSReadWriteRegion()) {
+      try {
+        checkForPrimary();
+        ConcurrentParallelGatewaySenderQueue q = getHDFSQueue();
+        if (q == null) return 0;
+        int hdfsBucketRegionSize = q.getBucketRegionQueue(
+            partitionedRegion, getId()).size();
+        int hoplogEstimate = (int) getHoplogOrganizer().sizeEstimate();
+        if (logger.isDebugEnabled()) {
+          logger.debug("for bucket " + getName() + " estimateSize returning "
+                  + (hdfsBucketRegionSize + hoplogEstimate));
+        }
+        return hdfsBucketRegionSize + hoplogEstimate;
+      } catch (ForceReattemptException e) {
+        throw new PrimaryBucketException(e.getLocalizedMessage(), e);
+      }
+    }
+    return size();
+  }
+
   @Override
   public void checkReadiness()
   {
@@ -1335,11 +1431,16 @@ implements Bucket
    *         or INVALID or LOCAL_INVALID re is a miss (invalid)
    * @throws IOException
    *                 if there is a serialization problem
-   * @see LocalRegion#getDeserializedValue(KeyInfo, boolean, boolean, boolean, EntryEventImpl, boolean)
+   * see LocalRegion#getDeserializedValue(RegionEntry, KeyInfo, boolean, boolean,  boolean, EntryEventImpl, boolean, boolean, boolean)
    */
-  private RawValue getSerialized(Object key, boolean updateStats, boolean doNotLockEntry, EntryEventImpl clientEvent, boolean returnTombstones) 
+  private RawValue getSerialized(Object key, boolean updateStats, boolean doNotLockEntry, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) 
       throws EntryNotFoundException, IOException {
-    RegionEntry re = this.entries.getEntry(key);
+    RegionEntry re = null;
+    if (allowReadFromHDFS) {
+      re = this.entries.getEntry(key);
+    } else {
+      re = this.entries.getOperationalEntryInVM(key);
+    }
     if (re == null) {
       return NULLVALUE;
     }
@@ -1389,7 +1490,7 @@ implements Bucket
    * @throws IOException if the result is not serializable
    * @see LocalRegion#get(Object, Object, boolean, EntryEventImpl)
    */
-  public RawValue getSerialized(KeyInfo keyInfo, boolean generateCallbacks, boolean doNotLockEntry, EntryEventImpl clientEvent, boolean returnTombstones) throws IOException {
+  public RawValue getSerialized(KeyInfo keyInfo, boolean generateCallbacks, boolean doNotLockEntry, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws IOException {
     checkReadiness();
     checkForNoAccess();
     CachePerfStats stats = getCachePerfStats();
@@ -1399,7 +1500,7 @@ implements Bucket
     try {
       RawValue valueBytes = NULLVALUE;
       boolean isCreate = false;
-      RawValue result = getSerialized(keyInfo.getKey(), true, doNotLockEntry, clientEvent, returnTombstones);
+      RawValue result = getSerialized(keyInfo.getKey(), true, doNotLockEntry, clientEvent, returnTombstones, allowReadFromHDFS);
       isCreate = result == NULLVALUE || (result.getRawValue() == Token.TOMBSTONE && !returnTombstones);
       miss = (result == NULLVALUE || Token.isInvalid(result.getRawValue()));
       if (miss) {
@@ -1412,7 +1513,7 @@ implements Bucket
           }
           // TODO OFFHEAP: optimze
           Object value = nonTxnFindObject(keyInfo, isCreate,
-              generateCallbacks, result.getRawValue(), true, true, clientEvent, false);
+              generateCallbacks, result.getRawValue(), true, true, clientEvent, false, allowReadFromHDFS);
           if (value != null) {
             result = new RawValue(value);
           }
@@ -1504,6 +1605,8 @@ implements Bucket
   
   EntryEventImpl createEventForPR(EntryEventImpl sourceEvent) {
     EntryEventImpl e2 = new EntryEventImpl(sourceEvent);
+    boolean returned = false;
+    try {
     e2.setRegion(this.partitionedRegion);
     if (FORCE_LOCAL_LISTENERS_INVOCATION) {
       e2.setInvokePRCallbacks(true);
@@ -1513,7 +1616,13 @@ implements Bucket
     }
     DistributedMember dm = this.getDistributionManager().getDistributionManagerId();
     e2.setOriginRemote(!e2.getDistributedMember().equals(dm));
+    returned = true;
     return e2;
+    } finally {
+      if (!returned) {
+        e2.release();
+      }
+    }
   }
 
   
@@ -1538,7 +1647,11 @@ implements Bucket
       super.invokeTXCallbacks(eventType, event, callThem);
     }
     final EntryEventImpl prevent = createEventForPR(event);
+    try {
       this.partitionedRegion.invokeTXCallbacks(eventType, prevent, this.partitionedRegion.isInitialized() ? callDispatchListenerEvent : false);
+    } finally {
+      prevent.release();
+    }
   }
   
   
@@ -1562,7 +1675,11 @@ implements Bucket
       super.invokeDestroyCallbacks(eventType, event, callThem, notifyGateways);
     }
     final EntryEventImpl prevent = createEventForPR(event);
+    try {
       this.partitionedRegion.invokeDestroyCallbacks(eventType, prevent, this.partitionedRegion.isInitialized() ? callDispatchListenerEvent : false, false);
+    } finally {
+      prevent.release();
+    }
   }
 
   /* (non-Javadoc)
@@ -1585,7 +1702,11 @@ implements Bucket
       super.invokeInvalidateCallbacks(eventType, event, callThem);
     }
     final EntryEventImpl prevent = createEventForPR(event);
+    try {
       this.partitionedRegion.invokeInvalidateCallbacks(eventType, prevent, this.partitionedRegion.isInitialized() ? callDispatchListenerEvent : false);
+    } finally {
+      prevent.release();
+    }
   }
 
   /* (non-Javadoc)
@@ -1612,8 +1733,12 @@ implements Bucket
     }
 
     final EntryEventImpl prevent = createEventForPR(event);
+    try {
       this.partitionedRegion.invokePutCallbacks(eventType, prevent,
               this.partitionedRegion.isInitialized() ? callDispatchListenerEvent : false, false);
+    } finally {
+      prevent.release();
+    }
   }
   
   /**
@@ -1682,8 +1807,12 @@ implements Bucket
   private void setDeltaIfNeeded(EntryEventImpl event) {
     if (this.partitionedRegion.getSystem().getConfig().getDeltaPropagation()
         && event.getOperation().isUpdate() && event.getDeltaBytes() == null) {
-      Object rawNewValue = event.getRawNewValue();
+      @Unretained Object rawNewValue = event.getRawNewValue();
       if (!(rawNewValue instanceof CachedDeserializable)) {
+        return;
+      }
+      if (rawNewValue instanceof StoredObject && !((StoredObject) rawNewValue).isSerialized()) {
+        // it is a byte[]; not a Delta
         return;
       }
       Object instance = ((CachedDeserializable)rawNewValue).getValue();
@@ -1872,7 +2001,7 @@ implements Bucket
     }
   }
 
-  public final int getId() {
+  public int getId() {
     return getBucketAdvisor().getProxyBucketRegion().getId();
   }
 
@@ -1994,7 +2123,7 @@ implements Bucket
 
   static int calcMemSize(Object value) {
     if (value != null && (value instanceof GatewaySenderEventImpl)) {
-      value = ((GatewaySenderEventImpl)value).getValue();
+      return ((GatewaySenderEventImpl)value).getSerializedValueSize();
     } 
     if (value == null || value instanceof Token) {
       return 0;
@@ -2036,6 +2165,10 @@ implements Bucket
       //In the case of bucket regions, we know that there will be no concurrent operations
       //if GII has failed, because there is not primary. So it's safe to set these
       //counters to 0.
+      oldMemValue = this.bytesInMemory.getAndSet(0);
+    }
+    // Gemfire PRs don't support clear. allowing it via a hack for tests
+    else if (LocalRegion.simulateClearForTests) {
       oldMemValue = this.bytesInMemory.getAndSet(0);
     }
     else {
@@ -2096,7 +2229,7 @@ implements Bucket
   }
 
   @Override
-  protected void setHeapThresholdFlag(MemoryEvent event) {
+  protected void setMemoryThresholdFlag(MemoryEvent event) {
     Assert.assertTrue(false);
     //Bucket regions are not registered with ResourceListener,
     //and should not get this event
@@ -2123,12 +2256,28 @@ implements Bucket
     result += getNumOverflowBytesOnDisk();
     return result;
   }
+  
+  public long getBytesInMemory() {
+    long result = this.bytesInMemory.get();
+    if(result == BUCKET_DESTROYED) {
+      return 0;
+    }
+    
+    return result;
+  }
+  
 
   public void preDestroyBucket(int bucketId) {
     final IndexUpdater indexUpdater = getIndexUpdater();
     if (indexUpdater != null) {
       indexUpdater.clearIndexes(this, bucketId);
     }
+  }
+  @Override
+  public void cleanupFailedInitialization()
+  {
+    this.preDestroyBucket(this.getId());
+    super.cleanupFailedInitialization();
   }
 
   protected void invokePartitionListenerAfterBucketRemoved() {
@@ -2270,7 +2419,7 @@ implements Bucket
   }
 
   @Override
-  protected boolean isHeapThresholdReachedForLoad() {
+  protected boolean isMemoryThresholdReachedForLoad() {
     return getBucketAdvisor().getProxyBucketRegion().isBucketSick();
   }
     public int getSizeForEviction() {
@@ -2303,17 +2452,162 @@ implements Bucket
   }
 
   public void beforeAcquiringPrimaryState() {
-    // dummy method. Can be used in future to execute code before
-    // this bucket becomes primary. Currently used only in BucketRegionQueue
+    try {
+      createHoplogOrganizer();
+    } catch (IOException e) {
+      // 48990: when HDFS was down, gemfirexd should still start normally
+      logger.warn(LocalizedStrings.HOPLOG_NOT_STARTED_YET, e);
+    } catch(Throwable e) {
+      /*MergeGemXDHDFSToGFE changed this code to checkReadiness*/
+      // SystemFailure.checkThrowable(e);
+      this.checkReadiness();
+      //49333 - no matter what, we should elect a primary.
+      logger.error(LocalizedStrings.LocalRegion_UNEXPECTED_EXCEPTION, e);
+    }
+  }
+
+  public HoplogOrganizer<?> createHoplogOrganizer() throws IOException {
+    if (getPartitionedRegion().isHDFSRegion()) {
+      HoplogOrganizer<?> organizer = hoplog.get();
+      if (organizer != null) {
+        //  hoplog is recreated by anther thread
+        return organizer;
+      }
+
+      HoplogOrganizer hdfs = hoplog.getAndSet(getPartitionedRegion().hdfsManager.create(getId()));
+      assert hdfs == null;
+      return hoplog.get();
+    } else {
+      return null;
+    }
   }
   
   public void afterAcquiringPrimaryState() {
     
+  }
+  /**
+   * Invoked when a primary bucket is demoted.
+   */
+  public void beforeReleasingPrimaryLockDuringDemotion() {
+    releaseHoplogOrganizer();
+  }
+
+  protected void releaseHoplogOrganizer() {
+    // release resources during a clean transition
+    HoplogOrganizer hdfs = hoplog.getAndSet(null);
+    if (hdfs != null) {
+      getPartitionedRegion().hdfsManager.close(getId());
+    }
+  }
+  
+  public HoplogOrganizer<?> getHoplogOrganizer() throws HDFSIOException {
+    HoplogOrganizer<?> organizer = hoplog.get();
+    if (organizer == null) {
+      synchronized (getBucketAdvisor()) {
+        checkForPrimary();
+        try {
+          organizer = createHoplogOrganizer();
+        } catch (IOException e) {
+          throw new HDFSIOException("Failed to create Hoplog organizer due to ", e);
+        }
+        if (organizer == null) {
+          throw new HDFSIOException("Hoplog organizer is not available for " + this);
+        }
+      }
+    }
+    return organizer;
   }
   
   @Override
   public RegionAttributes getAttributes() {
     return this;
   }
+
+  @Override
+  public void hdfsCalled(Object key) {
+    this.partitionedRegion.hdfsCalled(key);
+  }
+
+  @Override
+  protected void clearHDFSData() {
+    //clear the HDFS data if present
+    if (getPartitionedRegion().isHDFSReadWriteRegion()) {
+      // Clear the queue
+      ConcurrentParallelGatewaySenderQueue q = getHDFSQueue();
+      if (q == null) return;
+      q.clear(getPartitionedRegion(), this.getId());
+      HoplogOrganizer organizer = hoplog.get();
+      if (organizer != null) {
+        try {
+          organizer.clear();
+        } catch (IOException e) {
+          throw new GemFireIOException(LocalizedStrings.HOPLOG_UNABLE_TO_DELETE_HDFS_DATA.toLocalizedString(), e);
+        }
+      }
+    }
+  }
+  
+  public EvictionCriteria getEvictionCriteria() {
+    return this.partitionedRegion.getEvictionCriteria();
+  }
+  
+  public CustomEvictionAttributes getCustomEvictionAttributes() {
+    return this.partitionedRegion.getCustomEvictionAttributes();
+  }
+  
+  /**
+   * @return true if the evict destroy was done; false if it was not needed
+   */
+  public boolean customEvictDestroy(Object key)
+  {
+    checkReadiness();
+    final EntryEventImpl event = 
+          generateCustomEvictDestroyEvent(key);
+    event.setCustomEviction(true);
+    boolean locked = false;
+    try {
+      locked = beginLocalWrite(event);
+      return mapDestroy(event,
+                        false, // cacheWrite
+                        true,  // isEviction
+                        null); // expectedOldValue
+    }
+    catch (CacheWriterException error) {
+      throw new Error(LocalizedStrings.LocalRegion_CACHE_WRITER_SHOULD_NOT_HAVE_BEEN_CALLED_FOR_EVICTDESTROY.toLocalizedString(), error);
+    }
+    catch (TimeoutException anotherError) {
+      throw new Error(LocalizedStrings.LocalRegion_NO_DISTRIBUTED_LOCK_SHOULD_HAVE_BEEN_ATTEMPTED_FOR_EVICTDESTROY.toLocalizedString(), anotherError);
+    }
+    catch (EntryNotFoundException yetAnotherError) {
+      throw new Error(LocalizedStrings.LocalRegion_ENTRYNOTFOUNDEXCEPTION_SHOULD_BE_MASKED_FOR_EVICTDESTROY.toLocalizedString(), yetAnotherError);
+    } finally {
+      if (locked) {
+        endLocalWrite(event);
+      }
+      event.release();
+    }
+  }
+
+  public boolean areSecondariesPingable() {
+    
+    Set<InternalDistributedMember> hostingservers = this.partitionedRegion.getRegionAdvisor()
+        .getBucketOwners(this.getId());
+    hostingservers.remove(cache.getDistributedSystem().getDistributedMember());
+    
+    if (cache.getLoggerI18n().fineEnabled())
+      cache.getLoggerI18n().fine("Pinging secondaries of bucket " + this.getId() + " on servers "  + hostingservers);
+   
+    if (hostingservers.size() == 0)
+      return true;
+    
+     return ServerPingMessage.send(cache, hostingservers);
+    
+  }
+  
+  @Override
+  public boolean notifiesMultipleSerialGateways() {
+    return getPartitionedRegion().notifiesMultipleSerialGateways();
+  }
+  
 }
 

@@ -1,13 +1,24 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.lang;
+
+import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.cache.Token;
 
 /**
  * The StringUtils is an abstract utility class for working with and invoking operations on String literals.
@@ -329,6 +340,8 @@ public abstract class StringUtils {
     return buffer.toString();
   }
 
+  private static final int MAX_ARRAY_ELEMENTS_TO_CONVERT = Integer.getInteger("StringUtils.MAX_ARRAY_ELEMENTS_TO_CONVERT", 16);
+  
   /**
    * Used to convert the given object to a String. If anything goes wrong in this conversion
    * put some info about what went wrong on the result string but do not throw an exception.
@@ -337,10 +350,367 @@ public abstract class StringUtils {
    */
   public static String forceToString(Object o) {
     try {
-      return o.toString();
+      return objectToString(o, true, MAX_ARRAY_ELEMENTS_TO_CONVERT);
     } catch (RuntimeException ex) {
       return "Conversion to a string failed because " + ex;
     }
   }
+  
+  /**
+   * Convert an object to a string and return it.
+   * Handled CacheDeserializables without having them change the form they store.
+   * If deserialization is needed and fails then the string contains a message saying so instead of throwing an exception.
+   * @param o the object to convert to a string
+   * @param convertArrayContents if true then the contents of the array will be in the string; otherwise just the array identity
+   * @param maxArrayElements if convertArrayContents is true then this parameter limits how many array elements are converted to the string.
+   *                         After the last converted element "and NNN more" is used to indicate the number of elements not converted.
+   */
+  public static String objectToString(Object o, boolean convertArrayContents, int maxArrayElements) {
+    if (o == null || o == Token.NOT_AVAILABLE) {
+      return "null";
+    } else if (o instanceof CachedDeserializable) {
+      CachedDeserializable cd = (CachedDeserializable)o;
+      return cd.getStringForm();
+    } else if (convertArrayContents && o.getClass().isArray()) {
+      Class<?> eClass = o.getClass();
+      if (eClass == byte[].class) {
+        return arrayToString((byte[])o, maxArrayElements);
+      } else if (eClass == boolean[].class) {
+        return arrayToString((boolean[])o, maxArrayElements);
+      } else if (eClass == char[].class) {
+        return arrayToString((char[])o, maxArrayElements);
+      } else if (eClass == short[].class) {
+        return arrayToString((short[])o, maxArrayElements);
+      } else if (eClass == int[].class) {
+        return arrayToString((int[])o, maxArrayElements);
+      } else if (eClass == long[].class) {
+        return arrayToString((long[])o, maxArrayElements);
+      } else if (eClass == float[].class) {
+        return arrayToString((float[])o, maxArrayElements);
+      } else if (eClass == double[].class) {
+        return arrayToString((double[])o, maxArrayElements);
+      } else {
+        return arrayToString((Object[]) o, maxArrayElements);
+      }
+    } else {
+      return o.toString();
+    }
+  }
+  
+  private static String arrayToString(Object[] a, int maxArrayElements) {
+    if (maxArrayElements < 0) {
+      maxArrayElements = 0;
+    }
+    if (a == null) {
+      return "null";
+    }
+    int iMax = a.length;
+    if (iMax > maxArrayElements) {
+      iMax = maxArrayElements;
+    }
+    iMax--;
+    Class componentType = a.getClass().getComponentType();
+    if (iMax == -1) {
+      return componentType.getSimpleName() + "[]";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append(componentType.getSimpleName());
+    b.append('[');
+    for (int i = 0; ; i++) {
+      b.append(String.valueOf(a[i]));
+      if (i == iMax) {
+        int skipCount = a.length - maxArrayElements;
+        if (skipCount > 0) {
+          if (i > 0) {
+            b.append(", ");
+          }
+          b.append("and ");
+          b.append(skipCount);
+          b.append(" more");
+        }
+        return b.append(']').toString();
+      }
+      b.append(", ");
+    }
+  }
 
+  private static String arrayToString(boolean[] a, int maxArrayElements) {
+    if (maxArrayElements < 0) {
+      maxArrayElements = 0;
+    }
+    if (a == null) {
+      return "null";
+    }
+    int iMax = a.length;
+    if (iMax > maxArrayElements) {
+      iMax = maxArrayElements;
+    }
+    iMax--;
+    if (iMax == -1) {
+      return "boolean[]";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append("boolean[");
+    for (int i = 0; ; i++) {
+      b.append(a[i]);
+      if (i == iMax) {
+        int skipCount = a.length - maxArrayElements;
+        if (skipCount > 0) {
+          if (i > 0) {
+            b.append(", ");
+          }
+          b.append("and ");
+          b.append(skipCount);
+          b.append(" more");
+        }
+        return b.append(']').toString();
+      }
+      b.append(", ");
+    }
+  }
+
+  private static String arrayToString(byte[] a, int maxArrayElements) {
+    if (maxArrayElements < 0) {
+      maxArrayElements = 0;
+    }
+    if (a == null) {
+      return "null";
+    }
+    int iMax = a.length;
+    if (iMax > maxArrayElements) {
+      iMax = maxArrayElements;
+    }
+    iMax--;
+    if (iMax == -1) {
+      return "byte[]";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append("byte[");
+    for (int i = 0; ; i++) {
+      b.append(a[i]);
+      if (i == iMax) {
+        int skipCount = a.length - maxArrayElements;
+        if (skipCount > 0) {
+          if (i > 0) {
+            b.append(", ");
+          }
+          b.append("and ");
+          b.append(skipCount);
+          b.append(" more");
+        }
+        return b.append(']').toString();
+      }
+      b.append(", ");
+    }
+  }
+
+  private static String arrayToString(char[] a, int maxArrayElements) {
+    if (maxArrayElements < 0) {
+      maxArrayElements = 0;
+    }
+    if (a == null) {
+      return "null";
+    }
+    int iMax = a.length;
+    if (iMax > maxArrayElements) {
+      iMax = maxArrayElements;
+    }
+    iMax--;
+    if (iMax == -1) {
+      return "char[]";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append("char[");
+    for (int i = 0; ; i++) {
+      b.append(a[i]);
+      if (i == iMax) {
+        int skipCount = a.length - maxArrayElements;
+        if (skipCount > 0) {
+          if (i > 0) {
+            b.append(", ");
+          }
+          b.append("and ");
+          b.append(skipCount);
+          b.append(" more");
+        }
+        return b.append(']').toString();
+      }
+      b.append(", ");
+    }
+  }
+
+  private static String arrayToString(short[] a, int maxArrayElements) {
+    if (maxArrayElements < 0) {
+      maxArrayElements = 0;
+    }
+    if (a == null) {
+      return "null";
+    }
+    int iMax = a.length;
+    if (iMax > maxArrayElements) {
+      iMax = maxArrayElements;
+    }
+    iMax--;
+    if (iMax == -1) {
+      return "short[]";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append("short[");
+    for (int i = 0; ; i++) {
+      b.append(a[i]);
+      if (i == iMax) {
+        int skipCount = a.length - maxArrayElements;
+        if (skipCount > 0) {
+          if (i > 0) {
+            b.append(", ");
+          }
+          b.append("and ");
+          b.append(skipCount);
+          b.append(" more");
+        }
+        return b.append(']').toString();
+      }
+      b.append(", ");
+    }
+  }
+
+  private static String arrayToString(int[] a, int maxArrayElements) {
+    if (maxArrayElements < 0) {
+      maxArrayElements = 0;
+    }
+    if (a == null) {
+      return "null";
+    }
+    int iMax = a.length;
+    if (iMax > maxArrayElements) {
+      iMax = maxArrayElements;
+    }
+    iMax--;
+    if (iMax == -1) {
+      return "int[]";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append("int[");
+    for (int i = 0; ; i++) {
+      b.append(a[i]);
+      if (i == iMax) {
+        int skipCount = a.length - maxArrayElements;
+        if (skipCount > 0) {
+          if (i > 0) {
+            b.append(", ");
+          }
+          b.append("and ");
+          b.append(skipCount);
+          b.append(" more");
+        }
+        return b.append(']').toString();
+      }
+      b.append(", ");
+    }
+  }
+
+  private static String arrayToString(long[] a, int maxArrayElements) {
+    if (maxArrayElements < 0) {
+      maxArrayElements = 0;
+    }
+    if (a == null) {
+      return "null";
+    }
+    int iMax = a.length;
+    if (iMax > maxArrayElements) {
+      iMax = maxArrayElements;
+    }
+    iMax--;
+    if (iMax == -1) {
+      return "long[]";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append("long[");
+    for (int i = 0; ; i++) {
+      b.append(a[i]);
+      if (i == iMax) {
+        int skipCount = a.length - maxArrayElements;
+        if (skipCount > 0) {
+          if (i > 0) {
+            b.append(", ");
+          }
+          b.append("and ");
+          b.append(skipCount);
+          b.append(" more");
+        }
+        return b.append(']').toString();
+      }
+      b.append(", ");
+    }
+  }
+
+  private static String arrayToString(float[] a, int maxArrayElements) {
+    if (maxArrayElements < 0) {
+      maxArrayElements = 0;
+    }
+    if (a == null) {
+      return "null";
+    }
+    int iMax = a.length;
+    if (iMax > maxArrayElements) {
+      iMax = maxArrayElements;
+    }
+    iMax--;
+    if (iMax == -1) {
+      return "float[]";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append("float[");
+    for (int i = 0; ; i++) {
+      b.append(a[i]);
+      if (i == iMax) {
+        int skipCount = a.length - maxArrayElements;
+        if (skipCount > 0) {
+          if (i > 0) {
+            b.append(", ");
+          }
+          b.append("and ");
+          b.append(skipCount);
+          b.append(" more");
+        }
+        return b.append(']').toString();
+      }
+      b.append(", ");
+    }
+  }
+
+  private static String arrayToString(double[] a, int maxArrayElements) {
+    if (maxArrayElements < 0) {
+      maxArrayElements = 0;
+    }
+    if (a == null) {
+      return "null";
+    }
+    int iMax = a.length;
+    if (iMax > maxArrayElements) {
+      iMax = maxArrayElements;
+    }
+    iMax--;
+    if (iMax == -1) {
+      return "double[]";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append("double[");
+    for (int i = 0; ; i++) {
+      b.append(a[i]);
+      if (i == iMax) {
+        int skipCount = a.length - maxArrayElements;
+        if (skipCount > 0) {
+          if (i > 0) {
+            b.append(", ");
+          }
+          b.append("and ");
+          b.append(skipCount);
+          b.append(" more");
+        }
+        return b.append(']').toString();
+      }
+      b.append(", ");
+    }
+  }
 }

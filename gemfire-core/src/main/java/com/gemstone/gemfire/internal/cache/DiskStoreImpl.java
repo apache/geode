@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -71,6 +80,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskEntry.RecoveredEntry;
 import com.gemstone.gemfire.internal.cache.ExportDiskRegion.ExportWriter;
 import com.gemstone.gemfire.internal.cache.lru.LRUAlgorithm;
@@ -100,12 +110,16 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.MemoryChunkWithRefCount;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxField;
 import com.gemstone.gemfire.pdx.internal.PdxType;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Represents a (disk-based) persistent store for region data. Used for both
@@ -681,17 +695,14 @@ public class DiskStoreImpl implements DiskStore {
    * 
    * @param entry
    *          The entry which is going to be written to disk
-   * @param isSerializedObject
-   *          Do the bytes in <code>value</code> contain a serialized object (or
-   *          an actually <code>byte</code> array)?
    * @throws RegionClearedException
    *           If a clear operation completed before the put operation completed
    *           successfully, resulting in the put operation to abort.
    * @throws IllegalArgumentException
    *           If <code>id</code> is less than zero
    */
-  final void put(LocalRegion region, DiskEntry entry, byte[] value,
-      boolean isSerializedObject, boolean async) throws RegionClearedException {
+  final void put(LocalRegion region, DiskEntry entry, ValueWrapper value,
+      boolean async) throws RegionClearedException {
     DiskRegion dr = region.getDiskRegion();
     DiskId id = entry.getDiskId();
     if (dr.isBackup() && id.getKeyId() < 0) {
@@ -737,9 +748,9 @@ public class DiskStoreImpl implements DiskStore {
           // modify and not create
           OplogSet oplogSet = getOplogSet(dr);
           if (doingCreate) {
-            oplogSet.create(region, entry, value, isSerializedObject, async);
+            oplogSet.create(region, entry, value, async);
           } else {
-            oplogSet.modify(region, entry, value, isSerializedObject, async);
+            oplogSet.modify(region, entry, value, async);
           }
         } else {
           throw new RegionClearedException(
@@ -2244,7 +2255,7 @@ public class DiskStoreImpl implements DiskStore {
             if (rvv == null && region != null) {
               // If we have no RVV, clear the region under lock
               region.txClearRegion();
-              region.entries.clear(null);
+              region.clearEntries(null);
               dr.incClearCount();
             }
           } finally {
@@ -2264,7 +2275,7 @@ public class DiskStoreImpl implements DiskStore {
       // If we have an RVV, we need to clear the region
       // without holding a lock.
       region.txClearRegion();
-      region.entries.clear(rvv);
+      region.clearEntries(rvv);
       // Note, do not increment the clear count in this case.
     }
   }
@@ -2296,7 +2307,7 @@ public class DiskStoreImpl implements DiskStore {
     return this.closed;
   }
   
-  void close() {
+  public void close() {
     close(false);
   }
 
@@ -2383,9 +2394,13 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
+  final DiskAccessException getDiskAccessException() {
+    return diskException.get();
+  }
+
   boolean allowKrfCreation() {
     // Compactor might be stopped by cache-close. In that case, we should not create krf
-    return this.oplogCompactor == null || this.oplogCompactor.keepCompactorRunning();
+    return diskException.get() == null && (this.oplogCompactor == null || this.oplogCompactor.keepCompactorRunning());
   }
   
   void closeCompactor(boolean isPrepare) {
@@ -2429,7 +2444,7 @@ public class DiskStoreImpl implements DiskStore {
   private void basicClose(LocalRegion region, DiskRegion dr, boolean closeDataOnly) {
     if (dr.isBackup()) {
       if (region != null) {
-        region.entries.clear(null);
+        region.closeEntries();
       }
       if(!closeDataOnly) {
         getDiskInitFile().closeRegion(dr);
@@ -2443,7 +2458,7 @@ public class DiskStoreImpl implements DiskStore {
         clearAsyncQueue(region, true, null); // no need to try to write these to
                                              // disk any longer
         dr.freeAllEntriesOnDisk(region);
-        region.entries.clear(null);
+        region.closeEntries();
         this.overflowMap.remove(dr);
       }
     }
@@ -2652,14 +2667,14 @@ public class DiskStoreImpl implements DiskStore {
   private void basicDestroy(LocalRegion region, DiskRegion dr) {
     if (dr.isBackup()) {
       if (region != null) {
-        region.entries.clear(null);
+        region.closeEntries();
       }
       PersistentOplogSet oplogSet = getPersistentOplogSet(dr);
       oplogSet.basicDestroy(dr);
     } else {
       dr.freeAllEntriesOnDisk(region);
       if (region != null) {
-        region.entries.clear(null);
+        region.closeEntries();
       }
     }
   }
@@ -3308,7 +3323,7 @@ public class DiskStoreImpl implements DiskStore {
     
     //NOTE - do NOT use DM.cacheTimeMillis here. See bug #49920
     long timestamp = System.currentTimeMillis();
-    PersistentMemberID id = new PersistentMemberID(getDiskStoreID(), memberId.getIpAddress(),
+    PersistentMemberID id = new PersistentMemberID(getDiskStoreID(), memberId.getInetAddress(),
         firstDir.getAbsolutePath(), memberId.getName(),
         timestamp, (short) 0);
     return id;
@@ -3316,7 +3331,7 @@ public class DiskStoreImpl implements DiskStore {
 
   public PersistentID getPersistentID() {
     InetAddress host = cache.getDistributedSystem().getDistributedMember()
-        .getIpAddress();
+        .getInetAddress();
     String dir = getDiskDirs()[0].getAbsolutePath();
     return new PersistentMemberPattern(host, dir, this.diskStoreID.toUUID(), 0);
   }
@@ -3739,7 +3754,7 @@ public class DiskStoreImpl implements DiskStore {
       String lruActionOption, String lruLimitOption,
       String concurrencyLevelOption, String initialCapacityOption,
       String loadFactorOption, String compressorClassNameOption,
-      String statisticsEnabledOption, boolean printToConsole) {
+      String statisticsEnabledOption, String offHeapOption, boolean printToConsole) {
     assert isOffline();
     DiskRegionView drv = getDiskInitFile().getDiskRegionByName(regName);
     if (drv == null) {
@@ -3751,13 +3766,13 @@ public class DiskStoreImpl implements DiskStore {
         return getDiskInitFile().modifyPRRegion(regName, lruOption,
             lruActionOption, lruLimitOption, concurrencyLevelOption,
             initialCapacityOption, loadFactorOption, compressorClassNameOption,
-            statisticsEnabledOption, printToConsole);
+            statisticsEnabledOption, offHeapOption, printToConsole);
       }
     } else {
       return getDiskInitFile().modifyRegion(drv, lruOption, lruActionOption,
           lruLimitOption, concurrencyLevelOption, initialCapacityOption,
           loadFactorOption, compressorClassNameOption,
-          statisticsEnabledOption, printToConsole);
+          statisticsEnabledOption, offHeapOption, printToConsole);
     }
   }
 
@@ -3828,7 +3843,7 @@ public class DiskStoreImpl implements DiskStore {
     ArrayList<Object> result = new ArrayList<>();
     Pattern pattern = createPdxRenamePattern(oldBase);
     for (RegionEntry re: foundPdx.getRecoveredEntryMap().regionEntries()) {
-      Object value = re._getValueUse(foundPdx, true);
+      Object value = re._getValueRetain(foundPdx, true);
       if (Token.isRemoved(value)) {
         continue;
       }
@@ -3902,7 +3917,7 @@ public class DiskStoreImpl implements DiskStore {
     PersistentOplogSet oplogSet = (PersistentOplogSet) getOplogSet(foundPdx);
     ArrayList<PdxType> result = new ArrayList<PdxType>();
     for (RegionEntry re: foundPdx.getRecoveredEntryMap().regionEntries()) {
-      Object value = re._getValueUse(foundPdx, true);
+      Object value = re._getValueRetain(foundPdx, true);
       if (Token.isRemoved(value)) {
         continue;
       }
@@ -3949,7 +3964,7 @@ public class DiskStoreImpl implements DiskStore {
     recoverRegionsThatAreReady();
     ArrayList<PdxType> result = new ArrayList<PdxType>();
     for (RegionEntry re: foundPdx.getRecoveredEntryMap().regionEntries()) {
-      Object value = re._getValueUse(foundPdx, true);
+      Object value = re._getValueRetain(foundPdx, true);
       if (Token.isRemoved(value)) {
         continue;
       }
@@ -3991,7 +4006,7 @@ public class DiskStoreImpl implements DiskStore {
     recoverRegionsThatAreReady();
     ArrayList<Object> result = new ArrayList<Object>();
     for (RegionEntry re: foundPdx.getRecoveredEntryMap().regionEntries()) {
-      Object value = re._getValueUse(foundPdx, true);
+      Object value = re._getValueRetain(foundPdx, true);
       if (Token.isRemoved(value)) {
         continue;
       }
@@ -4139,7 +4154,7 @@ public class DiskStoreImpl implements DiskStore {
       result = this.prlruStatMap.get(prName);
       if (result == null) {
         EvictionAttributesImpl ea = dr.getEvictionAttributes();
-        LRUAlgorithm ec = ea.createEvictionController(null);
+        LRUAlgorithm ec = ea.createEvictionController(null, dr.getOffHeap());
         StatisticsFactory sf = cache.getDistributedSystem();
         result = ec.getLRUHelper().initStats(dr, sf);
         this.prlruStatMap.put(prName, result);
@@ -4341,7 +4356,7 @@ public class DiskStoreImpl implements DiskStore {
     return diskStoreBackup;
   }
 
-  private Collection<DiskRegionView> getKnown() {
+  public Collection<DiskRegionView> getKnown() {
     return this.initFile.getKnown();
   }
 
@@ -4438,13 +4453,14 @@ public class DiskStoreImpl implements DiskStore {
       String lruLimitOption, String concurrencyLevelOption,
       String initialCapacityOption, String loadFactorOption,
       String compressorClassNameOption, String statisticsEnabledOption,
+      String offHeapOption,
       boolean printToConsole) throws Exception {
     try {
       DiskStoreImpl dsi = createForOffline(dsName, dsDirs);
       return dsi.modifyRegion(regName, lruOption, lruActionOption,
           lruLimitOption, concurrencyLevelOption, initialCapacityOption,
           loadFactorOption, compressorClassNameOption,
-          statisticsEnabledOption, printToConsole);
+          statisticsEnabledOption, offHeapOption, printToConsole);
     } finally {
       cleanupOffline();
     }

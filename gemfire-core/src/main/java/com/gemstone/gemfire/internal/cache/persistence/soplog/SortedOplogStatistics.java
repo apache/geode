@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.persistence.soplog;
 
@@ -36,6 +45,9 @@ public class SortedOplogStatistics {
   
   private final int activeFilesId;
   private final int inactiveFilesId;
+  private final int activeReadersId;
+  
+  private final int storeUsageBytesId;
 
   public SortedOplogStatistics(String typeName, String name) {
     this(new DummyStatisticsFactory(), typeName, name);
@@ -118,6 +130,9 @@ public class SortedOplogStatistics {
 
     StatisticDescriptor activeFileCount = tf.createLongGauge("activeFileCount", "The total number of active files", "files");
     StatisticDescriptor inactiveFileCount = tf.createLongGauge("inactiveFileCount", "The total number of inactive files", "files");
+    StatisticDescriptor activeReaderCount = tf.createLongGauge("activeReaderCount", "The total number of active file readers", "files");
+    
+    StatisticDescriptor storeUsageBytes = tf.createLongGauge("storeUsageBytes", "The total volume occupied on persistent store", "bytes");
     
     StatisticsType type = tf.createType(typeName, 
         "Statistics about structured I/O operations for a region", new StatisticDescriptor[] {
@@ -133,7 +148,7 @@ public class SortedOplogStatistics {
         destroyCount, destroyInProgress, destroyTime, destroyErrors,
         brCount, brInProgress, brTime, brBytes, brErrors,
         bcMisses, bcHits, bcCached, bcBytesCached, bcBytesEvicted,
-        activeFileCount, inactiveFileCount
+        activeFileCount, inactiveFileCount, activeReaderCount, storeUsageBytes
     });
 
     read = new IOOperation(readCount.getId(), readInProgress.getId(), readTime.getId(), readBytes.getId(), readErrors.getId());
@@ -152,6 +167,8 @@ public class SortedOplogStatistics {
 
     activeFilesId = activeFileCount.getId();
     inactiveFilesId = inactiveFileCount.getId();
+    activeReadersId = activeReaderCount.getId();
+    storeUsageBytesId = storeUsageBytes.getId();
 
     stats = factory.createAtomicStatistics(type, name);
   }
@@ -220,6 +237,10 @@ public class SortedOplogStatistics {
     return stats.getLong(inactiveFilesId);
   }
   
+  public long getActiveReaderCount() {
+    return stats.getLong(activeReadersId);
+  }
+  
   public void incActiveFiles(int amt) {
     stats.incLong(activeFilesId, amt);
     assert stats.getLong(activeFilesId) >= 0;
@@ -228,6 +249,20 @@ public class SortedOplogStatistics {
   public void incInactiveFiles(int amt) {
     stats.incLong(inactiveFilesId, amt);
     assert stats.getLong(inactiveFilesId) >= 0;
+  }
+  
+  public void incActiveReaders(int amt) {
+    stats.incLong(activeReadersId, amt);
+    assert stats.getLong(activeReadersId) >= 0;
+  }
+  
+  public long getStoreUsageBytes() {
+    return stats.getLong(storeUsageBytesId);
+  }
+  
+  public void incStoreUsageBytes(long amt) {
+    stats.incLong(storeUsageBytesId, amt);
+    assert stats.getLong(storeUsageBytesId) >= 0;
   }
   
   @Override
@@ -247,6 +282,8 @@ public class SortedOplogStatistics {
     sb.append("blockCache = {").append(blockCache).append("}\n");
     sb.append("activeFiles = ").append(stats.getLong(activeFilesId)).append("\n");
     sb.append("inactiveFiles = ").append(stats.getLong(inactiveFilesId)).append("\n");
+    sb.append("activeReaders = ").append(stats.getLong(activeReadersId)).append("\n");
+    sb.append("storeUsageBytes = ").append(stats.getLong(storeUsageBytesId)).append("\n");
     
     return sb.toString();
   }

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -21,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.DiskAccessException;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -49,20 +59,20 @@ public class OverflowOplogSet implements OplogSet {
   }
   
   @Override
-  public final void modify(LocalRegion lr, DiskEntry entry, byte[] value,
-      boolean isSerializedObject, boolean async) {
+  public final void modify(LocalRegion lr, DiskEntry entry, ValueWrapper value,
+      boolean async) {
     DiskRegion dr = lr.getDiskRegion();
     synchronized (this.overflowMap) {
       if (this.lastOverflowWrite != null) {
-        if (this.lastOverflowWrite.modify(dr, entry, value, isSerializedObject, async)) {
+        if (this.lastOverflowWrite.modify(dr, entry, value, async)) {
           return;
         }
       }
       // Create a new one and put it on the front of the list.
-      OverflowOplog oo = createOverflowOplog(value.length);
+      OverflowOplog oo = createOverflowOplog(value.getLength());
       addOverflow(oo);
       this.lastOverflowWrite = oo;
-      boolean didIt = oo.modify(dr, entry, value, isSerializedObject, async);
+      boolean didIt = oo.modify(dr, entry, value, async);
       assert didIt;
     }
   }
@@ -226,9 +236,9 @@ public class OverflowOplogSet implements OplogSet {
   
   
   @Override
-  public void create(LocalRegion region, DiskEntry entry, byte[] value,
-      boolean isSerializedObject, boolean async) {
-    modify(region, entry, value, isSerializedObject, async);
+  public void create(LocalRegion region, DiskEntry entry, ValueWrapper value,
+      boolean async) {
+    modify(region, entry, value, async);
   }
 
 

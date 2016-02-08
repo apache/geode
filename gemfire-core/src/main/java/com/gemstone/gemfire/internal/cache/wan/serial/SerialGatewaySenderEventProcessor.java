@@ -1,10 +1,18 @@
 /*
- * ========================================================================= 
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
@@ -37,6 +45,7 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
+import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventCallbackArgument;
@@ -72,7 +81,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * map will need to be sent to other <code>GatewayReceiver</code>s. Note:
    * unprocessedEventsLock MUST be synchronized before using this map.
    */
-  private Map unprocessedEvents;
+  private Map<EventID, EventWrapper> unprocessedEvents;
 
   /**
    * A <code>Map</code> of tokens (i.e. longs) of entries that we have heard of
@@ -81,7 +90,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * MUST be synchronized before using this map. This is not a cut and paste
    * error. sync unprocessedEventsLock when using unprocessedTokens.
    */
-  private Map unprocessedTokens;
+  private Map<EventID, Long> unprocessedTokens;
 
   private ExecutorService executor;
   
@@ -110,8 +119,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         logger), "Event Processor for GatewaySender_"
         + id, sender);
     
-    this.unprocessedEvents = new LinkedHashMap();
-    this.unprocessedTokens = new LinkedHashMap();
+    this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
+    this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
 
     initializeMessageQueue(id);
     setDaemon(true);
@@ -284,7 +293,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
             Object o = it.next();
             if (o != null && o instanceof GatewaySenderEventImpl) {
               GatewaySenderEventImpl ge = (GatewaySenderEventImpl)o;
-              if (this.unprocessedEvents.remove(ge.getEventId()) != null) {
+              EventWrapper unprocessedEvent = this.unprocessedEvents.remove(ge.getEventId());
+              if (unprocessedEvent != null) {
+                unprocessedEvent.event.release();
                 if (this.unprocessedEvents.isEmpty()) {
                   break;
                 }
@@ -294,19 +305,17 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         }
         // now for every unprocessed event add it to the end of the queue
         {
-          Iterator it = this.unprocessedEvents.values().iterator();
-          while (it.hasNext() && !stopped()) {
-            EventWrapper ew = (EventWrapper)it.next();
+          Iterator<Map.Entry<EventID, EventWrapper>> it = this.unprocessedEvents.entrySet().iterator();
+          while (it.hasNext()) {
+            if (stopped()) break;
+            Map.Entry<EventID, EventWrapper> me = it.next();
+            EventWrapper ew = me.getValue();
             GatewaySenderEventImpl gatewayEvent = ew.event;
-            try {
               // Initialize each gateway event. This initializes the key,
               // value
               // and callback arg based on the EntryEvent.
               // TODO:wan70, remove dependencies from old code
               gatewayEvent.initialize();
-            } catch (IOException e) {
-              logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayImpl_EVENT_FAILED_TO_BE_INITIALIZED_0, gatewayEvent), e);
-            }
             // Verify that they GatewayEventCallbackArgument is initialized.
             // If not, initialize it. It won't be initialized if a client to
             // this GatewayHub VM was the creator of this event. This Gateway
@@ -320,8 +329,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
               seca.initializeReceipientDSIds(Collections.singletonList(sender
                   .getRemoteDSId()));
             }
+            it.remove();
+            boolean queuedEvent = false;
             try {
               queuePrimaryEvent(gatewayEvent);
+              queuedEvent = true;
             } catch (IOException ex) {
               if (!stopped()) {
                 logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayImpl_EVENT_DROPPED_DURING_FAILOVER_0, gatewayEvent), ex);
@@ -329,6 +341,10 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
             } catch (CacheException ex) {
               if (!stopped()) {
                 logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayImpl_EVENT_DROPPED_DURING_FAILOVER_0, gatewayEvent), ex);
+              }
+            } finally {
+              if (!queuedEvent) {
+                gatewayEvent.release();
               }
             }
           }
@@ -350,8 +366,30 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         }
       }
 
-      this.unprocessedEvents = null;
+      releaseUnprocessedEvents();
     } // synchronized
+  }
+  
+  private void releaseUnprocessedEvents() {
+    synchronized (this.unprocessedEventsLock) {
+      Map<EventID, EventWrapper> m = this.unprocessedEvents;
+      if (m != null) {
+        for (EventWrapper ew: m.values()) {
+          GatewaySenderEventImpl gatewayEvent = ew.event;
+          gatewayEvent.release();
+        }
+        this.unprocessedEvents = null;
+      }
+    }
+  }
+  
+  @Override
+  public void closeProcessor() {
+    try {
+      super.closeProcessor();
+    } finally {
+      releaseUnprocessedEvents();
+    }
   }
 
   /**
@@ -382,7 +420,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         } else {
           // If it is not, create an uninitialized GatewayEventImpl and
           // put it into the map of unprocessed events.
-          senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue, false);
+          senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue, false); // OFFHEAP ok
           handleSecondaryEvent(senderEvent);
         }
       }
@@ -394,7 +432,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         waitForFailoverCompletion();
       }
       // If it is, create and enqueue an initialized GatewayEventImpl
-      senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue);
+      senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue); // OFFHEAP ok
       queuePrimaryEvent(senderEvent);
     }
   }
@@ -406,7 +444,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Queueing event ({}): {}", sender.getId(), (statistics.getEventsQueued() + 1), gatewayEvent);
     }
-    if (!sender.beforeEnque(gatewayEvent)) {
+    if (!sender.beforeEnqueue(gatewayEvent)) {
       if (logger.isDebugEnabled()) {
         logger.debug("Event {} is not added to queue.", gatewayEvent);
       }
@@ -576,8 +614,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       if (this.unprocessedEvents == null)
         return;
       // now we can safely use the unprocessedEvents field
-      Object v = this.unprocessedEvents.remove(gatewayEvent.getEventId());
-      if (v != null) {
+      EventWrapper ew = this.unprocessedEvents.remove(gatewayEvent.getEventId());
+      if (ew != null) {
+        ew.event.release();
         statistics.incUnprocessedEventsRemovedByPrimary();
       }
     }
@@ -595,23 +634,18 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       if (this.unprocessedEvents == null)
         return;
       // now we can safely use the unprocessedEvents field
-      Object v = this.unprocessedEvents.remove(gatewayEvent.getEventId());
+      EventWrapper ew = this.unprocessedEvents.remove(gatewayEvent.getEventId());
 
-      if (v == null) {
+      if (ew == null) {
         // first time for the event
         if (logger.isTraceEnabled()) {
-          try {
-            gatewayEvent.initialize();
-          } catch (Exception e) {
-          }
           logger.trace("{}: fromPrimary event {} : {}->{} added to unprocessed token map",
-              sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(), deserialize(gatewayEvent.getValue()));
+              sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(), gatewayEvent.getValueAsString(true));
         }
         {
-          Object mapValue = Long.valueOf(System.currentTimeMillis()
+          Long mapValue = Long.valueOf(System.currentTimeMillis()
               + AbstractGatewaySender.TOKEN_TIMEOUT);
-          Object oldv = this.unprocessedTokens.put(gatewayEvent.getEventId(),
-              mapValue);
+          Long oldv = this.unprocessedTokens.put(gatewayEvent.getEventId(), mapValue);
           if (oldv == null) {
             statistics.incUnprocessedTokensAddedByPrimary();
           } else {
@@ -625,13 +659,10 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         // gateway has already seen this event, and it can be safely
         // removed (it already was above)
         if (logger.isTraceEnabled()) {
-          try {
-            gatewayEvent.initialize();
-          } catch (Exception e) {
-          }
           logger.trace("{}: Primary create/update event {}:{}->{} remove from unprocessed events map",
-              sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(), deserialize(gatewayEvent.getValue()));
+              sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(), gatewayEvent.getValueAsString(true));
         }
+        ew.event.release();
         statistics.incUnprocessedEventsRemovedByPrimary();
       }
       reapOld(statistics, false);
@@ -640,7 +671,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
   private void basicHandleSecondaryEvent(
       final GatewaySenderEventImpl gatewayEvent) {
-     GatewaySenderStats statistics = this.sender.getStatistics();
+    boolean freeGatewayEvent = true;
+    try {
+    GatewaySenderStats statistics = this.sender.getStatistics();
     // Get the event from the map
 
      if (!getSender().getGatewayEventFilters().isEmpty()) {
@@ -650,7 +683,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       catch (Exception e) {
         logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayImpl_EVENT_FAILED_TO_BE_INITIALIZED_0, gatewayEvent), e);
       }
-      if (!sender.beforeEnque(gatewayEvent)) {
+      if (!sender.beforeEnqueue(gatewayEvent)) {
         statistics.incEventsFiltered();
         return;
       }
@@ -659,18 +692,19 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     Assert.assertTrue(unprocessedEvents != null);
     // @todo add an assertion that !getPrimary()
     // now we can safely use the unprocessedEvents field
-    Object v = this.unprocessedTokens.remove(gatewayEvent.getEventId());
+    Long v = this.unprocessedTokens.remove(gatewayEvent.getEventId());
 
     if (v == null) {
       // first time for the event
       if (logger.isTraceEnabled()) {
         logger.trace("{}: fromSecondary event {}:{}->{} added from unprocessed events map",
-            sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(), deserialize(gatewayEvent.getValue()));
+            sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(), gatewayEvent.getValueAsString(true));
       }
       {
-        Object mapValue = new EventWrapper(gatewayEvent);
-        Object oldv = this.unprocessedEvents.put(gatewayEvent.getEventId(), mapValue);
+        EventWrapper mapValue = new EventWrapper(gatewayEvent);
+        EventWrapper oldv = this.unprocessedEvents.put(gatewayEvent.getEventId(), mapValue);
         if (oldv == null) {
+          freeGatewayEvent = false;
           statistics.incUnprocessedEventsAddedBySecondary();
         } else {
           // put old one back in
@@ -685,11 +719,16 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       // token already added by primary already removed
       if (logger.isTraceEnabled()) {
         logger.trace("{}: Secondary created event {}:{}->{} removed from unprocessed events map",
-            sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(), deserialize(gatewayEvent.getValue()));
+            sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(), gatewayEvent.getValueAsString(true));
       }
       statistics.incUnprocessedTokensRemovedBySecondary();
     }
     reapOld(statistics, false);
+    } finally {
+      if (freeGatewayEvent) {
+        gatewayEvent.release();
+      }
+    }
   }
 
   /**
@@ -701,11 +740,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         uncheckedCount = 0;
         long now = System.currentTimeMillis();
         if (!forceEventReap && this.unprocessedTokens.size() > REAP_THRESHOLD) {
-          Iterator it = this.unprocessedTokens.entrySet().iterator();
+          Iterator<Map.Entry<EventID, Long>> it = this.unprocessedTokens.entrySet().iterator();
           int count = 0;
           while (it.hasNext()) {
-            Map.Entry me = (Map.Entry)it.next();
-            long meValue = ((Long)me.getValue()).longValue();
+            Map.Entry<EventID, Long> me = it.next();
+            long meValue = me.getValue().longValue();
             if (meValue <= now) {
               // @todo log fine level message here
               // it has expired so remove it
@@ -721,15 +760,16 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
           }
         }
         if (forceEventReap || this.unprocessedEvents.size() > REAP_THRESHOLD) {
-          Iterator it = this.unprocessedEvents.entrySet().iterator();
+          Iterator<Map.Entry<EventID, EventWrapper>> it = this.unprocessedEvents.entrySet().iterator();
           int count = 0;
           while (it.hasNext()) {
-            Map.Entry me = (Map.Entry)it.next();
-            AbstractGatewaySender.EventWrapper ew = (AbstractGatewaySender.EventWrapper)me.getValue();
+            Map.Entry<EventID, EventWrapper> me = it.next();
+            EventWrapper ew = me.getValue();
             if (ew.timeout <= now) {
               // @todo log fine level message here
               // it has expired so remove it
               it.remove();
+              ew.event.release();
               count++;
             } else {
               // all done try again
@@ -744,17 +784,6 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         uncheckedCount++;
       }
     }
-  }
-
-  protected Object deserialize(byte[] serializedBytes) {
-    Object deserializedObject = serializedBytes;
-    // This is a debugging method so ignore all exceptions like
-    // ClassNotFoundException
-    try {
-      deserializedObject = EntryEventImpl.deserialize(serializedBytes);
-    } catch (Exception e) {
-    }
-    return deserializedObject;
   }
 
   @Override

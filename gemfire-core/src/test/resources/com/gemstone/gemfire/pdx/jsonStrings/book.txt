@@ -1,0 +1,17 @@
+{"BOOKLIST":{"_children":
+ [{"BOOKS":{"_children":
+  [{"ITEM":{"_attributes":{"CAT":"MMP"},"_children":
+   [{"TITLE":{"_children":
+    ["Pride and Prejudice"]}},
+    {"AUTHOR":{"_children":["Jane Austen"]}},
+    {"PUBLISHER":{"_children":["Modern Library"]}},
+    {"PUB-DATE":{"_children":["2002-12-31"]}},
+    {"LANGUAGE":{"_children":["English"]}},
+    {"PRICE":{"_children":["4.95"]}},
+    {"QUANTITY":{"_children":["187"]}},
+    {"ISBN":{"_children":["0679601686"]}},
+    {"PAGES":{"_children":["352"]}},
+    {"DIMENSIONS":{"_attributes":{"UNIT":"in"}, "_children":
+       ["8.3 5.7 1.1"]}},
+    {"WEIGHT":{"_attributes":{"UNIT":"oz"}, "_children":["6.1"]}
+}]}}]}}]}}

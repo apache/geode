@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.util;
 
@@ -61,7 +70,6 @@ public final class RegionAttributesDefault {
 	
 	//PA
 //Partition attributes
-	public static final int LOCAL_MAX_MEMORY = PartitionAttributesFactory.LOCAL_MAX_MEMORY_DEFAULT;
 	public static final int REDUNDANT_COPIES = 0;
 	public static final long TOTAL_MAX_MEMORY = PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT;
 	public static final int TOTAL_NUM_BUCKETS = PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
@@ -76,5 +84,7 @@ public final class RegionAttributesDefault {
 	public static final String EVICTION_ACTION = EvictionAction.NONE.toString();
 	public static final String EVICTION_ALGORITHM = EvictionAction.NONE.toString();
 	public static final long EVICTION_MAX_VALUE = 0;
+	
+  public static final boolean OFF_HEAP = false;
 	
 }

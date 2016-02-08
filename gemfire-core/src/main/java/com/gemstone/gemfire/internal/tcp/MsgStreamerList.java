@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2009-2014 Pivotal Software, Inc. All Rights Reserved. This product
- * is protected by U.S. and international copyright and intellectual
- * property laws. Pivotal products are covered by one or more patents listed
- * at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.tcp;
@@ -59,6 +68,16 @@ public final class MsgStreamerList implements BaseMsgStreamer {
     for (MsgStreamer streamer : this.streamers) {
       if (ex != null) {
         streamer.release();
+        // TODO: shouldn't we call continue here?
+        // It seems wrong to call writeMessage on a streamer we have just released.
+        // But why do we call release on a streamer when we had an exception on one
+        // of the previous streamer?
+        // release clears the direct bb and returns it to the pool but leaves
+        // it has the "buffer". THen we call writeMessage and it will use "buffer"
+        // that has also been returned to the pool.
+        // I think we only have a MsgStreamerList when a DS has a mix of versions
+        // which usually is just during a rolling upgrade so that might be why we
+        // haven't noticed this causing a bug.
       }
       try {
         result += streamer.writeMessage();

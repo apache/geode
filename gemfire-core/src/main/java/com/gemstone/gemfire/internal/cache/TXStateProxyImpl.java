@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /**
  * File comment
@@ -41,8 +50,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * @author mthomas
  *
@@ -51,12 +58,12 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   private static final Logger logger = LogService.getLogger();
   
-  private static final AtomicBoolean txDistributedClientWarningIssued = new AtomicBoolean();
+  protected static final AtomicBoolean txDistributedClientWarningIssued = new AtomicBoolean();
   
   private boolean isJTA;
   private TXId txId;
-  final private TXManagerImpl txMgr;
-  private DistributedMember target;
+  final protected TXManagerImpl txMgr;
+  protected DistributedMember target;
   private boolean commitRequestedByOwner;
   private boolean isJCATransaction;
   /**
@@ -64,7 +71,7 @@ public class TXStateProxyImpl implements TXStateProxy {
    * both beforeCompletion and afterCompletion so that beforeC can obtain
    * locks for the afterC step.  This is that thread
    */
-  private volatile TXSynchronizationRunnable synchRunnable;
+  protected volatile TXSynchronizationRunnable synchRunnable;
 
   private final ReentrantLock lock = new ReentrantLock();
 
@@ -115,9 +122,9 @@ public class TXStateProxyImpl implements TXStateProxy {
     return txMgr;
   }
 
-  private volatile TXStateInterface realDeal;
-  private boolean inProgress = true;
-  private InternalDistributedMember onBehalfOfClientMember = null;
+  protected volatile TXStateInterface realDeal;
+  protected boolean inProgress = true;
+  protected InternalDistributedMember onBehalfOfClientMember = null;
 
   /**
    * This returns either the TXState for the current transaction or
@@ -225,6 +232,14 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
+  public void precommit() throws CommitConflictException,
+      UnsupportedOperationInTransactionException {
+    throw new UnsupportedOperationInTransactionException(
+        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
+            .toLocalizedString("precommit"));
+  }
+  
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.TXStateInterface#commit()
    */
@@ -328,8 +343,8 @@ public class TXStateProxyImpl implements TXStateProxy {
    * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getDeserializedValue(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion, boolean)
    */
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion,
-      boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones) {
-    Object val = getRealDeal(keyInfo, localRegion).getDeserializedValue(keyInfo, localRegion, updateStats, disableCopyOnRead, preferCD, null, false);
+      boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS, boolean retainResult) {
+    Object val = getRealDeal(keyInfo, localRegion).getDeserializedValue(keyInfo, localRegion, updateStats, disableCopyOnRead, preferCD, null, false, allowReadFromHDFS, retainResult);
     if (val != null) {
       // fixes bug 51057: TXStateStub  on client always returns null, so do not increment
       // the operation count it will be incremented in findObject()
@@ -553,7 +568,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.InternalDataView#entryCount(com.gemstone.gemfire.internal.cache.LocalRegion)
    */
-  @SuppressFBWarnings(value="UL_UNRELEASED_LOCK", justification="This method unlocks and then conditionally undoes the unlock in the finally-block. Review again at later time.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UL_UNRELEASED_LOCK", justification="This method unlocks and then conditionally undoes the unlock in the finally-block. Review again at later time.") 
   public int entryCount(LocalRegion localRegion) {
     // if size is the first operation in the transaction, then reset the txState
     boolean resetTXState = this.realDeal == null;
@@ -587,11 +602,11 @@ public class TXStateProxyImpl implements TXStateProxy {
   public Object findObject(KeyInfo key, LocalRegion r, boolean isCreate,
       boolean generateCallbacks, Object value, boolean disableCopyOnRead,
       boolean preferCD, ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent, boolean returnTombstones) {
+      EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) {
     try {
       this.operationCount++;
       Object retVal = getRealDeal(key, r).findObject(key, r, isCreate, generateCallbacks,
-          value, disableCopyOnRead, preferCD, requestingClient, clientEvent, false);
+          value, disableCopyOnRead, preferCD, requestingClient, clientEvent, false, allowReadFromHDFS);
       trackBucketForTx(key);
       return retVal;
     } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
@@ -706,9 +721,9 @@ public class TXStateProxyImpl implements TXStateProxy {
    * (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.InternalDataView#getSerializedValue(com.gemstone.gemfire.internal.cache.LocalRegion, java.lang.Object, java.lang.Object)
    */
-  public Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones) throws DataLocationException {
+  public Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws DataLocationException {
     this.operationCount++;
-    return getRealDeal(key, localRegion).getSerializedValue(localRegion, key, doNotLockEntry, requestingClient, clientEvent, returnTombstones);
+    return getRealDeal(key, localRegion).getSerializedValue(localRegion, key, doNotLockEntry, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
   }
 
   /* (non-Javadoc)
@@ -720,7 +735,7 @@ public class TXStateProxyImpl implements TXStateProxy {
       throws DataLocationException {
     this.operationCount++;
     TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getLocalRegion());
-    assert (tx instanceof TXState);
+    assert (tx instanceof TXState) : tx.getClass().getSimpleName();
     return tx.putEntryOnRemote(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified, overwriteDestroyed);
   }
   
@@ -985,5 +1000,37 @@ public class TXStateProxyImpl implements TXStateProxy {
   public void updateEntryVersion(EntryEventImpl event)
       throws EntryNotFoundException {
     // Do nothing. Not applicable for transactions.    
+  }
+
+  
+  public void close() {
+    if (this.realDeal != null) {
+      this.realDeal.close();
+    }
+  }
+  
+  @Override
+  public boolean isTxState() {
+    return false;
+  }
+  
+  @Override
+  public boolean isTxStateStub() {
+    return false;
+  }
+  
+  @Override
+  public boolean isTxStateProxy() {
+    return true;
+  }
+  
+  @Override
+  public boolean isDistTx() {
+    return false;
+  }
+  
+  @Override
+  public boolean isCreatedOnDistTxCoordinator() {
+    return false;
   }
 }

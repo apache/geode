@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.distributed.internal;
@@ -301,6 +310,22 @@ public class DistributionConfigImpl
    * Bind address for GemFireMemcachedServer
    */
   private String memcachedBindAddress = DEFAULT_MEMCACHED_BIND_ADDRESS;
+  
+  /** Are distributed transactions enabled or not */
+  private boolean distributedTransactions = DEFAULT_DISTRIBUTED_TRANSACTIONS;
+
+  
+  /**
+   * port on which {@link GemFireRedisServer} is started
+   */
+  private int redisPort = DEFAULT_REDIS_PORT;
+  
+  /**
+   * Bind address for GemFireRedisServer
+   */
+  private String redisBindAddress = DEFAULT_REDIS_BIND_ADDRESS;
+  
+  private String redisPassword = DEFAULT_REDIS_PASSWORD;
 
   private boolean jmxManager = Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE) ? true : DEFAULT_JMX_MANAGER;
   private boolean jmxManagerStart = DEFAULT_JMX_MANAGER_START;
@@ -366,6 +391,12 @@ public class DistributionConfigImpl
   private Map<String, ConfigSource> sourceMap = Collections.synchronizedMap(new HashMap<String, ConfigSource>());
   
   protected String userCommandPackages = DEFAULT_USER_COMMAND_PACKAGES;
+  
+  /** "off-heap-memory-size" with value of "" or "<size>[g|m]" */
+  protected String offHeapMemorySize = DEFAULT_OFF_HEAP_MEMORY_SIZE;
+  
+  /** Whether pages should be locked into memory or allowed to swap to disk */
+  private boolean lockMemory = DEFAULT_LOCK_MEMORY;
   
   //////////////////////  Constructors  //////////////////////
 
@@ -487,6 +518,9 @@ public class DistributionConfigImpl
     this.memcachedPort = other.getMemcachedPort();
     this.memcachedProtocol = other.getMemcachedProtocol();
     this.memcachedBindAddress = other.getMemcachedBindAddress();
+    this.redisPort = other.getRedisPort();
+    this.redisBindAddress = other.getRedisBindAddress();
+    this.redisPassword = other.getRedisPassword();
     this.userCommandPackages = other.getUserCommandPackages();
     
     // following added for 8.0
@@ -531,11 +565,17 @@ public class DistributionConfigImpl
     this.httpServiceSSLProperties = other.getHttpServiceSSLProperties();
     
     this.startDevRestApi = other.getStartDevRestApi();
+
+    // following added for 9.0
+    this.offHeapMemorySize = other.getOffHeapMemorySize();
     
     Map<String, ConfigSource> otherSources = ((DistributionConfigImpl)other).sourceMap;
     if (otherSources != null) {
       this.sourceMap = new HashMap<String, ConfigSource>(otherSources);
     }
+    
+    this.lockMemory = other.getLockMemory();
+    this.distributedTransactions = other.getDistributedTransactions();
   }
 
   /**
@@ -1105,14 +1145,16 @@ public class DistributionConfigImpl
   
   
   private void computeMcastPortDefault() {
-    ConfigSource cs = getAttSourceMap().get(MCAST_PORT_NAME);
-    if (cs == null) {
-      String locators = getLocators();
-      if (locators != null && !locators.isEmpty()) {
-        this.mcastPort = 0; // fixes 46308
-      }
-    }
+    // a no-op since multicast discovery has been removed
+    // and the default mcast port is now zero
     
+//    ConfigSource cs = getAttSourceMap().get(MCAST_PORT_NAME);
+//    if (cs == null) {
+//      String locators = getLocators();
+//      if (locators != null && !locators.isEmpty()) {
+//        this.mcastPort = 0; // fixes 46308
+//      }
+//    }
   }
   
   /**
@@ -2300,6 +2342,16 @@ public class DistributionConfigImpl
     this.jmxManagerUpdateRate = value;
   }
 
+  @Override
+  public boolean getLockMemory() {
+    return this.lockMemory;
+  }
+
+  @Override
+  public void setLockMemory(final boolean value) {
+    this.lockMemory = value;
+  }
+
   ///////////////////////  Utility Methods  ///////////////////////
   /**
    * Two instances of <code>DistributedConfigImpl</code> are equal if all of 
@@ -3168,6 +3220,53 @@ public class DistributionConfigImpl
     checkMemcachedProtocol(protocol);
     this.memcachedProtocol = protocol;
   }
+  
+  @Override
+  public int getRedisPort() {
+    return this.redisPort;
+  }
+  
+  @Override
+  public void setRedisPort(int value) {
+    checkRedisPort(value);
+    this.redisPort = value;
+  }
+
+  @Override
+  public String getRedisBindAddress() {
+    return this.redisBindAddress;
+  }
+  
+  @Override
+  public void setRedisBindAddress(String bindAddress) {
+    checkRedisBindAddress(bindAddress);
+    this.redisBindAddress = bindAddress;
+  }
+  
+  @Override
+  public String getRedisPassword() {
+    return this.redisPassword;
+  }
+  
+  @Override
+  public void setRedisPassword(String password) {
+    this.redisPassword = password;
+  }
+  
+  @Override
+  public String getOffHeapMemorySize() {
+    return this.offHeapMemorySize;
+  }
+  
+  @Override 
+  public void setOffHeapMemorySize(String value) {
+    checkOffHeapMemorySize(value);
+    this.offHeapMemorySize = value;
+  }
+  
+  protected void checkOffHeapMemorySize(String value) {
+    super.checkOffHeapMemorySize(value);
+  }
 
   @Override
   public String getMemcachedBindAddress() {
@@ -3523,4 +3622,13 @@ public class DistributionConfigImpl
   public ConfigSource getConfigSource(String attName) {
     return this.sourceMap.get(attName);
   }
+  
+  public boolean getDistributedTransactions() {
+    return this.distributedTransactions;
+  }
+
+  public void setDistributedTransactions(boolean value) {
+    this.distributedTransactions = value;
+  }
+
 }

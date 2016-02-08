@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%= render 'header', {:docs => @docs, :community => @community} %>
+
+<% if @docs %>
+<div class="container bf-docs-container">
+    <div class="row">
+
+        <div class="col-md-9 main-article" role="main">
+            <div class="page-article">
+                <div class="page-header">
+                    <h1><%= @item[:title] %></h1>
+                    <!-- TODO: reenable this when we sync SVN to GitHub
+                  <small><a target="_blank" href="https://github.com/geode/website/blob/master/content<%= @item.path[0..-2] %>.md">contribute to this article on github</a></small>
+                    -->
+                </div>
+                <%= @content %>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-9">
+            <div class="github-callout">
+                <strong>Questions?</strong> Please do <a href="/community">ask on the mailing-lists</a>!<br/>
+                <!--
+                <strong>Found an error?</strong> We’d greatly appreciate a pull request about <a target="_blank" href="https://github.com/geode/website/blob/master/content<%= @item.path[0..-2] %>.md">this article on github</a>.</div>
+                -->
+            </div>
+        </div>
+    </div>
+</div>
+<% else %>
+
+<%= @content %>
+
+<% end %>
+
+<%= render 'footer' %>
+
+
+</body>
+</html>

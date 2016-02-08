@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
@@ -59,6 +67,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.DistributionLocator;
 import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -67,13 +76,17 @@ import com.gemstone.gemfire.internal.lang.ObjectUtils;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.lang.SystemUtils;
 import com.gemstone.gemfire.internal.process.ClusterConfigurationNotAvailableException;
+import com.gemstone.gemfire.internal.process.NonBlockingProcessStreamReader;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.internal.process.ProcessStreamReader;
 import com.gemstone.gemfire.internal.process.ProcessStreamReader.InputListener;
+import com.gemstone.gemfire.internal.process.ProcessStreamReader.ReadingMode;
 import com.gemstone.gemfire.internal.process.ProcessType;
+import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.internal.process.signal.SignalEvent;
 import com.gemstone.gemfire.internal.process.signal.SignalListener;
 import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.lang.AttachAPINotFoundException;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.MemberMXBean;
@@ -122,7 +135,12 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   private static final String LOCATOR_TERM_NAME = "Locator";
   private static final String SERVER_TERM_NAME  = "Server";
-
+  
+  private static final long PROCESS_STREAM_READER_JOIN_TIMEOUT_MILLIS = 30*1000;
+  private static final long PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS = 5*1000;
+  private static final long WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS = 30*1000;
+  private static final long WAITING_FOR_PID_FILE_TO_CONTAIN_PID_TIMEOUT_MILLIS = 2*1000;
+  
   protected static final int CMS_INITIAL_OCCUPANCY_FRACTION = 60;
   protected static final int DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLISECONDS = 5000;
   protected static final int INVALID_PID = -1;
@@ -328,13 +346,15 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       gemfireProperties.setProperty(DistributionConfig.LOAD_CLUSTER_CONFIG_FROM_DIR_NAME, StringUtils.valueOf(loadSharedConfigurationFromDirectory, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(DistributionConfig.CLUSTER_CONFIGURATION_DIR, StringUtils.valueOf(clusterConfigDir, StringUtils.EMPTY_STRING));
       
+      // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH argument
+      final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
       LocatorLauncher locatorLauncher = new LocatorLauncher.Builder()
         .setBindAddress(bindAddress)
         .setForce(force)
         .setHostnameForClients(hostnameForClients)
         .setMemberName(memberName)
         .setPort(port)
-        .setRedirectOutput(true)
+        .setRedirectOutput(redirectOutput)
         .setWorkingDirectory(workingDirectory)
         .build();
 
@@ -343,22 +363,34 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
       //getGfsh().logInfo(StringUtils.concat(locatorCommandLine, " "), null);
 
-      Process locatorProcess = new ProcessBuilder(locatorCommandLine)
+      final Process locatorProcess = new ProcessBuilder(locatorCommandLine)
         .directory(new File(locatorLauncher.getWorkingDirectory()))
         .start();
 
       locatorProcess.getInputStream().close();
       locatorProcess.getOutputStream().close();
 
-      final StringBuffer message = new StringBuffer(); // need thread-safe StringBuffer
+      // fix TRAC bug #51967 by using NON_BLOCKING on Windows
+      final ReadingMode readingMode = SystemUtils.isWindows() ? ReadingMode.NON_BLOCKING : ReadingMode.BLOCKING;
 
-      ProcessStreamReader stderrReader = new ProcessStreamReader(locatorProcess.getErrorStream(),
-        new InputListener() {
-          @Override
-          public void notifyInputLine(String line) {
-            message.append(line).append(StringUtils.LINE_SEPARATOR);
+      final StringBuffer message = new StringBuffer(); // need thread-safe StringBuffer
+      InputListener inputListener = new InputListener() {
+        @Override
+        public void notifyInputLine(String line) {
+          message.append(line);
+          if (readingMode == ReadingMode.BLOCKING) {
+            message.append(StringUtils.LINE_SEPARATOR);
           }
-        }).start();
+        }
+      };
+
+      ProcessStreamReader stderrReader = new ProcessStreamReader.Builder(locatorProcess)
+          .inputStream(locatorProcess.getErrorStream())
+          .inputListener(inputListener)
+          .readingMode(readingMode)
+          .continueReadingMillis(2*1000)
+          .build()
+          .start();
 
       LocatorState locatorState;
 
@@ -376,7 +408,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           try {
             final int exitValue = locatorProcess.exitValue();
 
-            stderrReader.join(Long.MAX_VALUE);
+            stderrReader.join(PROCESS_STREAM_READER_JOIN_TIMEOUT_MILLIS); // was Long.MAX_VALUE
 
             //Gfsh.println(message);
 
@@ -393,8 +425,8 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               TimeUnit.MILLISECONDS.timedWait(this, 500);
             }
 
-            locatorState = (isAttachApiAvailable() ? locatorStatus(locatorPidFile, oldPid, memberName)
-              : locatorStatus(workingDirectory, memberName));
+            locatorState = (ProcessUtils.isAvailable() ? locatorStatus(locatorPidFile, oldPid, memberName)
+                : locatorStatus(workingDirectory, memberName));
 
             String currentLocatorStatusMessage = locatorState.getStatusMessage();
 
@@ -412,8 +444,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           && isStartingOrNotResponding(locatorState.getStatus()));
       }
       finally {
-        stderrReader.stop();
-        locatorProcess.getErrorStream().close();
+        stderrReader.stopAsync(PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS); // stop will close ErrorStream
         getGfsh().getSignalHandler().unregisterListener(locatorSignalListener);
       }
 
@@ -888,12 +919,14 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           locatorState.getWorkingDirectory(), locatorState.getServiceLocation(), locatorState.getMemberName(),
             locatorState.getPid(), locatorState.getLogFile()), null);
 
-        if (isAttachApiAvailable()) {
-          while (isVmWithProcessIdRunning(locatorState.getPid())) {
-            Gfsh.print(".");
-            synchronized (this) {
-              TimeUnit.MILLISECONDS.timedWait(this, 500);
-            }
+        StopWatch stopWatch = new StopWatch(true);
+        while (isVmWithProcessIdRunning(locatorState.getPid())) {
+          Gfsh.print(".");
+          if (stopWatch.elapsedTimeMillis() > WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS) {
+            break;
+          }
+          synchronized (this) {
+            TimeUnit.MILLISECONDS.timedWait(this, 500);
           }
         }
 
@@ -1060,6 +1093,8 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
         return Integer.parseInt(fileReader.readLine());
       }
       catch (IOException ignore) {
+      }
+      catch (NumberFormatException  ignore) {
       }
       finally {
         IOUtils.close(fileReader);
@@ -1332,13 +1367,8 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   protected boolean isVmWithProcessIdRunning(final Integer pid) {
-    for (VirtualMachineDescriptor vm : VirtualMachine.list()) {
-      if (String.valueOf(pid).equals(vm.id())) {
-        return true;
-      }
-    }
-
-    return false;
+    // note: this will use JNA if available or Attach if available or return false if neither is available
+    return ProcessUtils.isProcessAlive(pid);
   }
 
   @CliCommand(value = CliStrings.START_SERVER, help = CliStrings.START_SERVER__HELP)
@@ -1362,6 +1392,19 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                       help = CliStrings.START_SERVER__CLASSPATH__HELP)
                             final String classpath,
+                            @CliOption(key = CliStrings.START_SERVER__CRITICAL__HEAP__PERCENTAGE,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__CRITICAL__HEAP__HELP)
+                            final Float criticalHeapPercentage,
+                            @CliOption(key = CliStrings.START_SERVER__CRITICAL_OFF_HEAP_PERCENTAGE,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__CRITICAL_OFF_HEAP__HELP)
+                            final Float criticalOffHeapPercentage,
+                            @CliOption(key = CliStrings.START_SERVER__DIR,
+                                       optionContext = ConverterHint.DIR_PATHSTRING,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__DIR__HELP)
+                            String workingDirectory,
                             @CliOption(key = CliStrings.START_SERVER__DISABLE_DEFAULT_SERVER,
                                       unspecifiedDefaultValue = "false",
                                       specifiedDefaultValue = "true",
@@ -1377,31 +1420,43 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                                       specifiedDefaultValue = "true",
                                       help = CliStrings.START_SERVER__ENABLE_TIME_STATISTICS__HELP)
                             final Boolean enableTimeStatistics,
+                            @CliOption(key = CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE__HELP)
+                            final Float evictionHeapPercentage,
+                            @CliOption(key = CliStrings.START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE__HELP)
+                            final Float evictionOffHeapPercentage,
                             @CliOption(key = CliStrings.START_SERVER__FORCE,
                                       unspecifiedDefaultValue = "false",
                                       specifiedDefaultValue = "true",
                                       help = CliStrings.START_SERVER__FORCE__HELP)
                             final Boolean force,
+                            @CliOption(key = CliStrings.START_SERVER__GROUP,
+                                       optionContext = ConverterHint.MEMBERGROUP,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__GROUP__HELP)
+                            final String group,
+                            @CliOption(key = CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS__HELP)
+                            final String hostNameForClients,
                             @CliOption(key = CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH,
                                       specifiedDefaultValue = "true",
                                       unspecifiedDefaultValue = "false",
                                       help = CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH__HELP)
                             final Boolean includeSystemClasspath,
-                            @CliOption(key = CliStrings.START_SERVER__PROPERTIES,
-                                      optionContext = ConverterHint.FILE_PATHSTRING,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__PROPERTIES__HELP)
-                            String gemfirePropertiesPathname,
-                            @CliOption(key = CliStrings.START_SERVER__SECURITY_PROPERTIES,
-                                       optionContext = ConverterHint.FILE_PATHSTRING,
+                            @CliOption(key = CliStrings.START_SERVER__INITIAL_HEAP,
                                        unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                       help = CliStrings.START_SERVER__SECURITY_PROPERTIES__HELP)
-                            String gemfireSecurityPropertiesPathname,
-                            @CliOption(key = CliStrings.START_SERVER__GROUP,
-                                      optionContext = ConverterHint.MEMBERGROUP,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__GROUP__HELP)
-                            final String group,
+                                       help = CliStrings.START_SERVER__INITIAL_HEAP__HELP)
+                            final String initialHeap,
+                            @CliOption(key = CliStrings.START_SERVER__J,
+                                       optionContext = ConverterHint.STRING_LIST,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__J__HELP)
+                            @CliMetaData(valueSeparator = ",")
+                            final String[] jvmArgsOpts, 
                             @CliOption(key = CliStrings.START_SERVER__LOCATORS,
                                       optionContext = ConverterHint.LOCATOR_DISCOVERY_CONFIG,
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -1411,11 +1466,32 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                                        unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                        help = CliStrings.START_SERVER__LOCATOR_WAIT_TIME_HELP)
                             final Integer locatorWaitTime,
+                            @CliOption(key = CliStrings.START_SERVER__LOCK_MEMORY,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       specifiedDefaultValue = "true",
+                                       help = CliStrings.START_SERVER__LOCK_MEMORY__HELP)
+                            final Boolean lockMemory,
                             @CliOption(key = CliStrings.START_SERVER__LOG_LEVEL,
                                       optionContext = ConverterHint.LOG_LEVEL,
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                       help = CliStrings.START_SERVER__LOG_LEVEL__HELP)
                             final String logLevel,
+                            @CliOption(key = CliStrings.START_SERVER__MAX__CONNECTIONS,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__MAX__CONNECTIONS__HELP)
+                            final Integer maxConnections,
+                            @CliOption(key = CliStrings.START_SERVER__MAXHEAP,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__MAXHEAP__HELP)
+                            final String maxHeap,
+                            @CliOption(key = CliStrings.START_SERVER__MAX__MESSAGE__COUNT,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__MAX__MESSAGE__COUNT__HELP)
+                            final Integer maxMessageCount,
+                            @CliOption(key = CliStrings.START_SERVER__MAX__THREADS,
+                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                      help = CliStrings.START_SERVER__MAX__THREADS__HELP)
+                            final Integer maxThreads,
                             @CliOption(key = CliStrings.START_SERVER__MCAST_ADDRESS,
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                       help = CliStrings.START_SERVER__MCAST_ADDRESS__HELP)
@@ -1424,11 +1500,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                       help = CliStrings.START_SERVER__MCAST_PORT__HELP)
                             final Integer mcastPort,
-                            @CliOption(key = CliStrings.START_SERVER__MEMBER_NAME,
-                                      mandatory = true,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__MEMBER_NAME__HELP)
-                            final String memberName,
                             @CliOption(key = CliStrings.START_SERVER__MEMCACHED_PORT,
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                       help = CliStrings.START_SERVER__MEMCACHED_PORT__HELP)
@@ -1441,11 +1512,46 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                       help = CliStrings.START_SERVER__MEMCACHED_BIND_ADDRESS__HELP)
                             final String memcachedBindAddress,
+                            @CliOption(key = CliStrings.START_SERVER__REDIS_PORT,
+                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                      help = CliStrings.START_SERVER__REDIS_PORT__HELP)
+                            final Integer redisPort,
+                            @CliOption(key = CliStrings.START_SERVER__REDIS_BIND_ADDRESS,
+                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                      help = CliStrings.START_SERVER__REDIS_BIND_ADDRESS__HELP)
+                            final String redisBindAddress,
+                            @CliOption(key = CliStrings.START_SERVER__REDIS_PASSWORD,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__REDIS_PASSWORD__HELP)
+                            final String redisPassword,
+                            @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP)
+                            final Integer messageTimeToLive,
+                            @CliOption(key = CliStrings.START_SERVER__NAME,
+                                       mandatory = true,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__NAME__HELP)
+                            final String memberName,
+                            @CliOption(key = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE__HELP)
+                            final String offHeapMemorySize,
+                            @CliOption(key = CliStrings.START_SERVER__PROPERTIES,
+                                       optionContext = ConverterHint.FILE_PATHSTRING,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__PROPERTIES__HELP)
+                            String gemfirePropertiesPathname,
                             @CliOption(key = CliStrings.START_SERVER__REBALANCE,
                                       unspecifiedDefaultValue = "false",
                                       specifiedDefaultValue = "true",
                                       help = CliStrings.START_SERVER__REBALANCE__HELP)
                             final Boolean rebalance,
+                            @CliOption(key = CliStrings.START_SERVER__SECURITY_PROPERTIES,
+                                       optionContext = ConverterHint.FILE_PATHSTRING,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__SECURITY_PROPERTIES__HELP)
+                            String gemfireSecurityPropertiesPathname,
                             @CliOption(key = CliStrings.START_SERVER__SERVER_BIND_ADDRESS,
                                       unspecifiedDefaultValue = CacheServer.DEFAULT_BIND_ADDRESS,
                                       help = CliStrings.START_SERVER__SERVER_BIND_ADDRESS__HELP)
@@ -1454,6 +1560,10 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                                       unspecifiedDefaultValue = ("" + CacheServer.DEFAULT_PORT),
                                       help = CliStrings.START_SERVER__SERVER_PORT__HELP)
                             final Integer serverPort,
+                            @CliOption(key = CliStrings.START_SERVER__SOCKET__BUFFER__SIZE,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__SOCKET__BUFFER__SIZE__HELP)
+                            final Integer socketBufferSize,
                             @CliOption(key = CliStrings.START_SERVER__SPRING_XML_LOCATION,
                                        unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                        help = CliStrings.START_SERVER__SPRING_XML_LOCATION_HELP)
@@ -1462,63 +1572,14 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                       help = CliStrings.START_SERVER__STATISTIC_ARCHIVE_FILE__HELP)
                             final String statisticsArchivePathname,
-                            @CliOption(key = CliStrings.START_SERVER__DIR,
-                                      optionContext = ConverterHint.DIR_PATHSTRING,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__DIR__HELP)
-                            String workingDirectory,
-                            @CliOption(key = CliStrings.START_SERVER__INITIAL_HEAP,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__INITIAL_HEAP__HELP)
-                            final String initialHeap,
-                            @CliOption(key = CliStrings.START_SERVER__MAXHEAP,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__MAXHEAP__HELP)
-                            final String maxHeap,
-                            @CliOption(key = CliStrings.START_SERVER__REQUEST_SHARED_CONFIGURATION,
+                            @CliOption(key = CliStrings.START_SERVER__USE_CLUSTER_CONFIGURATION,
                                       unspecifiedDefaultValue = "true",
                                       specifiedDefaultValue = "true",
-                                      help = CliStrings.START_SERVER__REQUEST_SHARED_CONFIGURATION__HELP)
-                            final Boolean requestSharedConfiguration,
-                            @CliOption(key = CliStrings.START_SERVER__J,
-                                      optionContext = ConverterHint.STRING_LIST,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__J__HELP)
-                            @CliMetaData(valueSeparator = ",")
-                            final String[] jvmArgsOpts, 
-                            @CliOption(key = CliStrings.START_SERVER__CRITICAL__HEAP__PERCENTAGE,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__CRITICAL__HEAP__HELP)
-                            final Float criticalHeapPercentage,
-                            @CliOption(key = CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE__HELP)
-                            final Float evictionHeapPercentage,
-                            @CliOption(key = CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS__HELP)
-                            final String hostNameForClients,
-                            @CliOption(key = CliStrings.START_SERVER__MAX__CONNECTIONS,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__MAX__CONNECTIONS__HELP)
-                            final Integer maxConnections,
-                            @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP)
-                            final Integer messageTimeToLive,
-                            @CliOption(key = CliStrings.START_SERVER__MAX__MESSAGE__COUNT,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__MAX__MESSAGE__COUNT__HELP)
-                            final Integer maxMessageCount,
-                            @CliOption(key = CliStrings.START_SERVER__MAX__THREADS,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__MAX__THREADS__HELP)
-                            final Integer maxThreads,
-                            @CliOption(key = CliStrings.START_SERVER__SOCKET__BUFFER__SIZE,
-                                      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                                      help = CliStrings.START_SERVER__SOCKET__BUFFER__SIZE__HELP)
-                            final Integer socketBufferSize)
+                                      help = CliStrings.START_SERVER__USE_CLUSTER_CONFIGURATION__HELP)
+                            final Boolean requestSharedConfiguration)
+                            // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_* text
   {
+
     try {
       if (workingDirectory == null) {
         // attempt to use or make sub-directory using memberName...
@@ -1570,27 +1631,38 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       gemfireProperties.setProperty(DistributionConfig.MEMCACHED_PORT_NAME, StringUtils.valueOf(memcachedPort, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(DistributionConfig.MEMCACHED_PROTOCOL_NAME, StringUtils.valueOf(memcachedProtocol, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(DistributionConfig.MEMCACHED_BIND_ADDRESS_NAME, StringUtils.valueOf(memcachedBindAddress, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(DistributionConfig.REDIS_PORT_NAME, StringUtils.valueOf(redisPort, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(DistributionConfig.REDIS_BIND_ADDRESS_NAME, StringUtils.valueOf(redisBindAddress, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(DistributionConfig.REDIS_PASSWORD_NAME, StringUtils.valueOf(redisPassword, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, StringUtils.valueOf(statisticsArchivePathname, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, StringUtils.valueOf(requestSharedConfiguration, Boolean.TRUE.toString()));
+      gemfireProperties.setProperty(DistributionConfig.LOCK_MEMORY_NAME, StringUtils.valueOf(lockMemory, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, StringUtils.valueOf(offHeapMemorySize, StringUtils.EMPTY_STRING));
 
+      // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH argument
+      final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
+      
       ServerLauncher serverLauncher = new ServerLauncher.Builder()
         .setAssignBuckets(assignBuckets)
         .setDisableDefaultServer(disableDefaultServer)
         .setForce(force)
         .setMemberName(memberName)
         .setRebalance(rebalance)
-        .setRedirectOutput(true)
+        .setRedirectOutput(redirectOutput)
         .setServerBindAddress(serverBindAddress)
         .setServerPort(serverPort)
         .setSpringXmlLocation(springXmlLocation)
         .setWorkingDirectory(workingDirectory)
         .setCriticalHeapPercentage(criticalHeapPercentage)
         .setEvictionHeapPercentage(evictionHeapPercentage)
+        .setCriticalOffHeapPercentage(criticalOffHeapPercentage)
+        .setEvictionOffHeapPercentage(evictionOffHeapPercentage)
         .setMaxConnections(maxConnections)
         .setMaxMessageCount(maxMessageCount)
         .setMaxThreads(maxThreads)
         .setMessageTimeToLive(messageTimeToLive)
         .setSocketBufferSize(socketBufferSize)
+        .setHostNameForClients(hostNameForClients)
         .build();
 
       String[] serverCommandLine = createStartServerCommandLine(serverLauncher, gemfirePropertiesPathname,
@@ -1608,16 +1680,28 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       serverProcess.getInputStream().close();
       serverProcess.getOutputStream().close();
 
+      // fix TRAC bug #51967 by using NON_BLOCKING on Windows
+      final ReadingMode readingMode = SystemUtils.isWindows() ? ReadingMode.NON_BLOCKING : ReadingMode.BLOCKING;
+
       final StringBuffer message = new StringBuffer(); // need thread-safe StringBuffer
-
-      ProcessStreamReader stderrReader = new ProcessStreamReader(serverProcess.getErrorStream(),
-        new InputListener() {
-          @Override
-          public void notifyInputLine(String line) {
-            message.append(line).append(StringUtils.LINE_SEPARATOR);
+      InputListener inputListener = new InputListener() {
+        @Override
+        public void notifyInputLine(String line) {
+          message.append(line);
+          if (readingMode == ReadingMode.BLOCKING) {
+            message.append(StringUtils.LINE_SEPARATOR);
           }
-        }).start();
-
+        }
+      };
+      
+      ProcessStreamReader stderrReader = new ProcessStreamReader.Builder(serverProcess)
+          .inputStream(serverProcess.getErrorStream())
+          .inputListener(inputListener)
+          .readingMode(readingMode)
+          .continueReadingMillis(2*1000)
+          .build()
+          .start();
+      
       ServerState serverState;
 
       String previousServerStatusMessage = null;
@@ -1634,7 +1718,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           try {
             final int exitValue = serverProcess.exitValue();
 
-            stderrReader.join(Long.MAX_VALUE);
+            stderrReader.join(PROCESS_STREAM_READER_JOIN_TIMEOUT_MILLIS); // was Long.MAX_VALUE
 
             //Gfsh.println(message);
 
@@ -1651,7 +1735,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               TimeUnit.MILLISECONDS.timedWait(this, 500);
             }
 
-            serverState = (isAttachApiAvailable() ? serverStatus(serverPidFile, oldPid, memberName)
+            serverState = (ProcessUtils.isAvailable() ? serverStatus(serverPidFile, oldPid, memberName)
               : serverStatus(workingDirectory, memberName));
 
             String currentServerStatusMessage = serverState.getStatusMessage();
@@ -1670,8 +1754,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           && isStartingOrNotResponding(serverState.getStatus()));
       }
       finally {
-        stderrReader.stop();
-        serverProcess.getErrorStream().close();
+        stderrReader.stopAsync(PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS); // stop will close ErrorStream
         getGfsh().getSignalHandler().unregisterListener(serverSignalListener);
       }
 
@@ -1800,6 +1883,14 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     if (launcher.getEvictionHeapPercentage() != null) {
       commandLine.add("--" + CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE + "=" + launcher.getEvictionHeapPercentage());
     }
+    
+    if (launcher.getCriticalOffHeapPercentage() != null) {
+      commandLine.add("--" + CliStrings.START_SERVER__CRITICAL_OFF_HEAP_PERCENTAGE + "=" + launcher.getCriticalOffHeapPercentage());
+    }
+    
+    if (launcher.getEvictionOffHeapPercentage() != null) {
+      commandLine.add("--" + CliStrings.START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE + "=" + launcher.getEvictionOffHeapPercentage());
+    }
 
     if (launcher.getMaxConnections() != null) {
       commandLine.add("--" + CliStrings.START_SERVER__MAX__CONNECTIONS + "=" + launcher.getMaxConnections());
@@ -1811,6 +1902,10 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
     if (launcher.getMaxThreads() != null) {
       commandLine.add("--" + CliStrings.START_SERVER__MAX__THREADS + "=" + launcher.getMaxThreads());
+    }
+
+    if (launcher.getHostNameForClients() != null) {
+      commandLine.add("--" + CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS + "=" + launcher.getHostNameForClients());
     }
 
     return commandLine.toArray(new String[commandLine.size()]);
@@ -1972,8 +2067,12 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           serverState.getWorkingDirectory(), serverState.getServiceLocation(), serverState.getMemberName(),
             serverState.getPid(), serverState.getLogFile()), null);
 
+        StopWatch stopWatch = new StopWatch(true);
         while (isVmWithProcessIdRunning(serverState.getPid())) {
           Gfsh.print(".");
+          if (stopWatch.elapsedTimeMillis() > WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS) {
+            break;
+          }
           synchronized (this) {
             TimeUnit.MILLISECONDS.timedWait(this, 500);
           }
@@ -2615,7 +2714,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   protected String waitAndCaptureProcessStandardOutputStream(final Process process, final long waitTimeMilliseconds) {
-    return waitAndCaptureProcessStream(process.getInputStream(), waitTimeMilliseconds);
+    return waitAndCaptureProcessStream(process, process.getInputStream(), waitTimeMilliseconds);
   }
 
   protected String waitAndCaptureProcessStandardErrorStream(final Process process) {
@@ -2623,19 +2722,24 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   protected String waitAndCaptureProcessStandardErrorStream(final Process process, final long waitTimeMilliseconds) {
-    return waitAndCaptureProcessStream(process.getErrorStream(), waitTimeMilliseconds);
+    return waitAndCaptureProcessStream(process, process.getErrorStream(), waitTimeMilliseconds);
   }
 
-  private String waitAndCaptureProcessStream(final InputStream processInputStream, long waitTimeMilliseconds) {
+  private String waitAndCaptureProcessStream(final Process process, final InputStream processInputStream, long waitTimeMilliseconds) {
     final StringBuffer buffer = new StringBuffer();
-
-    ProcessStreamReader reader = new ProcessStreamReader(processInputStream, new InputListener() {
+    
+    InputListener inputListener = new InputListener() {
       @Override
       public void notifyInputLine(final String line) {
         buffer.append(line);
         buffer.append(StringUtils.LINE_SEPARATOR);
       }
-    });
+    };
+    
+    ProcessStreamReader reader = new ProcessStreamReader.Builder(process)
+        .inputStream(processInputStream)
+        .inputListener(inputListener)
+        .build();
 
     try {
       reader.start();

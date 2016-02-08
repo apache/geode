@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
@@ -65,8 +74,8 @@ import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -135,6 +144,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
    * The buffer upon which we receive messages
    */
   private final ByteBuffer commBuffer;
+  private boolean commBufferReleased;
 
   private final CCUStats stats;
   
@@ -277,7 +287,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       String name, ServerLocation location,
       boolean primary, DistributedSystem ids,
       HandShake handshake, QueueManager qManager, EndpointManager eManager,
-      Endpoint endpoint, int handshakeTimeout) throws AuthenticationRequiredException,
+      Endpoint endpoint, int handshakeTimeout,
+      SocketCreator socketCreator) throws AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
     super(LoggingThreadGroup.createThreadGroup("Client update thread"), name);
     this.setDaemon(true);
@@ -307,12 +318,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       int socketBufferSize = Integer.getInteger(
           "BridgeServer.SOCKET_BUFFER_SIZE", 32768).intValue();
 
-      if (!SocketCreator.getDefaultInstance()
-          .isHostReachable(InetAddress.getByName(location.getHostName()))) {
-        throw new NoRouteToHostException("Server is not reachable: " + location.getHostName());
-      }
-
-      mySock = SocketCreator.getDefaultInstance().connectForClient(
+      mySock = socketCreator.connectForClient(
           location.getHostName(), location.getPort(), handshakeTimeout, socketBufferSize);
       mySock.setTcpNoDelay(true);
       mySock.setSendBufferSize(socketBufferSize);
@@ -352,7 +358,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
         } 
         catch (SocketException ignore) {
         }
-        cb = ServerConnection.allocateCommBuffer(bufSize);
+        cb = ServerConnection.allocateCommBuffer(bufSize, mySock);
       }
       {
         // create a "server" memberId we currently don't know much about the
@@ -436,6 +442,19 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
           } 
           catch (IOException ioe) {
             logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientUpdater_CLOSING_SOCKET_IN_0_FAILED, this), ioe);
+          }
+        }
+      }
+    }
+  }
+  
+  private void releaseCommBuffer() {
+    if (!this.commBufferReleased) {
+      if (this.commBuffer != null) {
+        synchronized (this.commBuffer) {
+          if (!this.commBufferReleased) {
+            this.commBufferReleased = true;
+            ServerConnection.releaseCommBuffer(this.commBuffer);
           }
         }
       }
@@ -582,7 +601,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
             logger.debug(t.getMessage(), t);
           }
         }
-      } // !isSelfDestroying
+     } // !isSelfDestroying
     } // isAlive
   }
 
@@ -616,6 +635,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
     } catch (Exception e) {
       // ignore
     }
+    releaseCommBuffer();
   }
 
   /**
@@ -756,7 +776,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
         EntryEventImpl newEvent = null;
         try {
           // Create an event and put the entry
-          newEvent = new EntryEventImpl(
+          newEvent = EntryEventImpl.create(
               region,
               ((m.getMessageType() == MessageType.LOCAL_CREATE) ? Operation.CREATE
                   : Operation.UPDATE), key, null /* newValue */,
@@ -789,6 +809,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
                   .getState().getProcessedMarker()
                   || !this.isDurableClient, newEvent, eventId);
           this.isOpCompleted = true;
+        } finally {
+          if (newEvent != null) newEvent.release();
         }
 
         if (isDebugEnabled) {
@@ -1256,7 +1278,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       
       // // CALLBACK TESTING PURPOSE ONLY ////
       if (PoolImpl.IS_INSTANTIATOR_CALLBACK) {
-        BridgeObserver bo = BridgeObserverHolder.getInstance();
+        ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.afterReceivingFromServer(eventId);
       }
       // /////////////////////////////////////
@@ -1306,7 +1328,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       
       // // CALLBACK TESTING PURPOSE ONLY ////
       if (PoolImpl.IS_INSTANTIATOR_CALLBACK) {
-        BridgeObserver bo = BridgeObserverHolder.getInstance();
+        ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.afterReceivingFromServer(eventId);
       }
      ///////////////////////////////////////
@@ -1777,7 +1799,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
             if (errMessage == null) {
               errMessage = "";
             }
-            BridgeObserver bo = BridgeObserverHolder.getInstance();
+            ClientServerObserver bo = ClientServerObserverHolder.getInstance();
             bo.beforeFailoverByCacheClientUpdater(this.location);
             eManager.serverCrashed(this.endpoint);
             if (isDebugEnabled) {
@@ -1794,7 +1816,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
         catch (Exception e) {
           if (!quitting()) {
             this.endPointDied = true;
-            BridgeObserver bo = BridgeObserverHolder.getInstance();
+            ClientServerObserver bo = ClientServerObserverHolder.getInstance();
             bo.beforeFailoverByCacheClientUpdater(this.location);
             eManager.serverCrashed(this.endpoint);
             String message = ": Caught the following exception and will exit: ";

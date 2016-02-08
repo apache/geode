@@ -1,20 +1,25 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.i18n;
 
 import java.text.MessageFormat;
 
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
@@ -78,7 +83,7 @@ public class CliStrings {
   public static final String TOPIC_GEMFIRE_DISKSTORE = "Disk Store";
   public static final String TOPIC_GEMFIRE_DISKSTORE__DESC = "Disk stores are used to persist data to disk as a backup to your in-memory copy or as overflow storage when memory use is too high.";
   public static final String TOPIC_GEMFIRE_LOCATOR = "Locator";
-  public static final String TOPIC_GEMFIRE_LOCATOR__DESC = "JVMs running GemFire discover each other through multicast messaging or through a TCP service named the locator.";
+  public static final String TOPIC_GEMFIRE_LOCATOR__DESC = "JVMs running GemFire discover each other through a TCP service named the locator.";
   public static final String TOPIC_GEMFIRE_SERVER = "Server";
   public static final String TOPIC_GEMFIRE_SERVER__DESC = "A server is GemFire cluster member which holds a GemFire cache. Depending on the topology used it can refer to either a system that responds to client requests or a system that is only a peer to other members.";
   public static final String TOPIC_GEMFIRE_MANAGER = "Manager";
@@ -173,9 +178,7 @@ public class CliStrings {
   public static final String LAUNCHERLIFECYCLECOMMANDS__MSG__FAILED_TO_START_0_REASON_1 = "Failed to start {0}. Reason: {1}";
 
   public static final String GFSH__PLEASE_CHECK_LOGS_AT_0 = "Please check logs {0}";
-  
-  //TODO:Sourabh remove this once the controller is 
-  public static final String STATUS_SYSTEM = "status-system";
+
   /*-**************************************************************************
    * *********** COMMAND NAME, OPTION, ARGUMENT, HELP, MESSAGES ****************
    * **************************************************************************/
@@ -195,7 +198,7 @@ public class CliStrings {
   public static final String ALTER_DISK_STORE__LRU__EVICTION__LIMIT = "lru-limit";
   public static final String ALTER_DISK_STORE__LRU__EVICTION__LIMIT__HELP = "Number of entries allowed in the region before eviction will occur.";
   public static final String ALTER_DISK_STORE__CONCURRENCY__LEVEL = "concurrency-level";
-  public static final String ALTER_DISK_STORE__CONCURRENCY__LEVEL__HELP = "An estimate of the maximum number of application threads that will concurrently access a region entry at one time. This attribute does not apply to partitioned regions.";
+  public static final String ALTER_DISK_STORE__CONCURRENCY__LEVEL__HELP = "An estimate of the maximum number of application threads that will concurrently modify a region at one time. This attribute does not apply to partitioned regions.";
   public static final String ALTER_DISK_STORE__INITIAL__CAPACITY = "initial-capacity";
   public static final String ALTER_DISK_STORE__INITIAL__CAPACITY__HELP = "Together with --load-factor, sets the parameters on the underlying java.util.ConcurrentHashMap used for storing region entries.";
   public static final String ALTER_DISK_STORE__LOAD__FACTOR = "load-factor";
@@ -204,6 +207,8 @@ public class CliStrings {
   public static final String ALTER_DISK_STORE__COMPRESSOR__HELP = "The fully-qualifed class name of the Compressor to use when compressing region entry values. A value of 'none' will remove the Compressor.";
   public static final String ALTER_DISK_STORE__STATISTICS__ENABLED = "enable-statistics";
   public static final String ALTER_DISK_STORE__STATISTICS__ENABLED__HELP = "Whether to enable statistics. Valid values are: true and false.";
+  public static final String ALTER_DISK_STORE__OFF_HEAP = "off-heap";
+  public static final String ALTER_DISK_STORE__OFF_HEAP__HELP = "Whether to use off-heap memory for the region. Valid values are: true and false.";
   public static final String ALTER_DISK_STORE__REMOVE = "remove";
   public static final String ALTER_DISK_STORE__REMOVE__HELP = "Whether to remove the region from the disk store.";
 
@@ -426,8 +431,8 @@ public class CliStrings {
   public static final String CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY__HELP = "Policy for dispatching events when --dispatcher-threads is > 1. Possible values are 'THREAD', 'KEY', 'PARTITION'.";
   public static final String CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS = "dispatcher-threads";
   public static final String CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS__HELP = "Number of threads to use for sending events.";
-  public static final String CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER = "gateway-event-substitution-listener";
-  public static final String CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER__HELP = "Fully qualified class name of the GatewayEventSubstitutionListener for this queue.";
+  public static final String CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER = "gateway-event-substitution-filter";
+  public static final String CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER__HELP = "Fully qualified class name of the GatewayEventSubstitutionFilter for this queue.";
   public static final String CREATE_ASYNC_EVENT_QUEUE__LISTENER = "listener";
   public static final String CREATE_ASYNC_EVENT_QUEUE__LISTENER__HELP = "Fully qualified class name of the AsyncEventListener for this queue.";
   public static final String CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE = "listener-param";
@@ -545,7 +550,7 @@ public class CliStrings {
   public static final String CREATE_REGION__REGION = "name";
   public static final String CREATE_REGION__REGION__HELP = "Name/Path of the region to be created.";
   public static final String CREATE_REGION__REGIONSHORTCUT = "type";
-  public static final String CREATE_REGION__REGIONSHORTCUT__HELP = "Type of region to create. Examples include: PARTITION, PARTITION_REDUNDANT, REPLICATE, LOCAL, etc.";
+  public static final String CREATE_REGION__REGIONSHORTCUT__HELP = "Type of region to create. The following types are pre-defined by the product (see RegionShortcut javadocs for more information): PARTITION, PARTITION_REDUNDANT, PARTITION_PERSISTENT, PARTITION_REDUNDANT_PERSISTENT, PARTITION_OVERFLOW, PARTITION_REDUNDANT_OVERFLOW, PARTITION_PERSISTENT_OVERFLOW, PARTITION_REDUNDANT_PERSISTENT_OVERFLOW, PARTITION_HEAP_LRU, PARTITION_REDUNDANT_HEAP_LRU, REPLICATE, REPLICATE_PERSISTENT, REPLICATE_OVERFLOW, REPLICATE_PERSISTENT_OVERFLOW, REPLICATE_HEAP_LRU, LOCAL, LOCAL_PERSISTENT, LOCAL_HEAP_LRU, LOCAL_OVERFLOW, LOCAL_PERSISTENT_OVERFLOW, PARTITION_PROXY, PARTITION_PROXY_REDUNDANT, and REPLICATE_PROXY.";
   public static final String CREATE_REGION__GROUP = "group";
   public static final String CREATE_REGION__GROUP__HELP = "Group(s) of members on which the region will be created.";
   public static final String CREATE_REGION__USEATTRIBUTESFROM = "template-region";
@@ -564,7 +569,7 @@ public class CliStrings {
   public static final String CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP = "Action to be taken on an entry that has exceeded the idle expiration.";
   public static final String CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE = "entry-time-to-live-expiration";
   public static final String CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP = "How long the region's entries can remain in the cache without being accessed or updated. The default is no expiration of this type.";
-  public static final String CREATE_REGION__ENTRYEXPIRATIONTTLACTION = "entry-time-to-live-expiriation-action";
+  public static final String CREATE_REGION__ENTRYEXPIRATIONTTLACTION = "entry-time-to-live-expiration-action";
   public static final String CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP = "Action to be taken on an entry that has exceeded the TTL expiration.";
   public static final String CREATE_REGION__REGIONEXPIRATIONIDLETIME = "region-idle-time-expiration";
   public static final String CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP = "How long the region can remain in the cache without being accessed. The default is no expiration of this type.";
@@ -593,7 +598,7 @@ public class CliStrings {
   public static final String CREATE_REGION__GATEWAYSENDERID = "gateway-sender-id";
   public static final String CREATE_REGION__GATEWAYSENDERID__HELP = "IDs of the Gateway Senders to which data will be routed.";
   public static final String CREATE_REGION__CONCURRENCYCHECKSENABLED = "enable-concurrency-checks";
-  public static final String CREATE_REGION__CONCURRENCYCHECKSENABLED__HELP = "Whether Region Version Vectors are implemented. Region Version Vectors are an extension to the versioning scheme that aid in synchronization of replicated regions."; // TODO - Abhishek Is this correct?
+  public static final String CREATE_REGION__CONCURRENCYCHECKSENABLED__HELP = "Enables a versioning system that detects concurrent modifications and ensures that region contents are consistent across the distributed system.";
   public static final String CREATE_REGION__CLONINGENABLED = "enable-cloning";
   public static final String CREATE_REGION__CLONINGENABLED__HELP = "Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied to a clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.";
   public static final String CREATE_REGION__CONCURRENCYLEVEL = "concurrency-level";
@@ -602,6 +607,8 @@ public class CliStrings {
   public static final String CREATE_REGION__COLOCATEDWITH__HELP = "Central Region with which this region should be colocated.";
   public static final String CREATE_REGION__LOCALMAXMEMORY = "local-max-memory";
   public static final String CREATE_REGION__LOCALMAXMEMORY__HELP = "Sets the maximum amount of memory, in megabytes, to be used by the region in this process. (Default: 90% of available heap)";
+  public static final String CREATE_REGION__MULTICASTENABLED = "enable-multicast";
+  public static final String CREATE_REGION__MULTICASTENABLED__HELP = "Enables multicast messaging on the region.  Multicast must also be enabled in the cache distributed system properties.  This is primarily useful for replicated regions that are in all servers.";
   public static final String CREATE_REGION__RECOVERYDELAY = "recovery-delay";
   public static final String CREATE_REGION__RECOVERYDELAY__HELP = "Sets the delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes. -1 (the default) indicates that redundancy will not be recovered after a failure.";
   public static final String CREATE_REGION__REDUNDANTCOPIES = "redundant-copies";
@@ -611,7 +618,7 @@ public class CliStrings {
   public static final String CREATE_REGION__TOTALMAXMEMORY = "total-max-memory";
   public static final String CREATE_REGION__TOTALMAXMEMORY__HELP = "Sets the maximum amount of memory, in megabytes, to be used by the region in all processes.";
   public static final String CREATE_REGION__TOTALNUMBUCKETS = "total-num-buckets";
-  public static final String CREATE_REGION__TOTALNUMBUCKETS__HELP = "Sets the total number of hash buckets to be used by the region in all processes. (Default: "
+  public static final String CREATE_REGION__TOTALNUMBUCKETS__HELP = "Sets the total number of hash buckets to be used by the region in all processes. (Default: "		  
       + PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT + ").";
   public static final String CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH = "Specify a valid " + CliStrings.CREATE_REGION__REGION;
   public static final String CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOESNOT_EXIST = "Parent region for \"{0}\" doesn't exist. ";
@@ -675,6 +682,9 @@ public class CliStrings {
   public static final String CREATE_REGION__COMPRESSOR = "compressor";
   public static final String CREATE_REGION__COMPRESSOR__HELP = "The fully-qualifed class name of the Compressor to use when compressing region entry values.  The default is no compression.";
   public static final String CREATE_REGION__MSG__INVALID_COMPRESSOR = "{0} is an invalid Compressor."; // leave space in the end
+
+  public static final String CREATE_REGION__OFF_HEAP = "off-heap";
+  public static final String CREATE_REGION__OFF_HEAP__HELP = "Causes the values of the region to be stored in off-heap memory. The default is on heap.";
 
   /* debug command */
   public static final String DEBUG = "debug";
@@ -1073,27 +1083,27 @@ public class CliStrings {
   public static final String DESCRIBE_CLIENT__ID__HELP = "ID of a client for which details are needed";
   public static final String DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST = "No cache-servers were observed.";
   public static final String DESCRIBE_CLIENT__CLIENT__ID__NOT__FOUND__0 = "Specified Client ID {0} not present";
-  public static final String DECRIBE_CLIENT_COULD_NOT_RETRIEVE_CLIENT_0 = "Could not retrieve client. Reason : {0}";
-  public static final String DECRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0 = "Could not retrieve stats for client : {0}";
-  public static final String DECRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1 = "Could not retrieve stats for client : {0}. Reason : {1}";
-  public static final String DECRIBE_CLIENT_ERROR_FETCHING_STATS_0 = "Error occured while fetching stats. Reason : {0}";
-  public static final String DECRIBE_CLIENT_NO_MEMBERS = "DS has no members";
-  public static final String DECRIBE_CLIENT_COLUMN_PRIMARY_SERVERS = "Primary Servers";
-  public static final String DECRIBE_CLIENT_COLUMN_SECONDARY_SERVERS = "Secondary Servers";
-  public static final String DECRIBE_CLIENT_COLUMN_CPU = "CPU";
-  public static final String DECRIBE_CLIENT_COLUMN_LISTNER_CALLS = "Number of Cache Listner Calls";
-  public static final String DECRIBE_CLIENT_COLUMN_GETS = "Number of Gets";
-  public static final String DECRIBE_CLIENT_COLUMN_MISSES = "Number of Misses";
-  public static final String DECRIBE_CLIENT_COLUMN_PUTS = "Number of Puts";
-  public static final String DECRIBE_CLIENT_COLUMN_THREADS = "Number of Threads";
-  public static final String DECRIBE_CLIENT_COLUMN_PROCESS_CPU_TIME = "Process CPU Time (nanoseconds)";
-  public static final String DECRIBE_CLIENT_COLUMN_QUEUE_SIZE = "Queue size";
-  public static final String DECRIBE_CLIENT_COLUMN_UP_TIME = "UP Time (seconds)";
-  public static final String DECRIBE_CLIENT_COLUMN_DURABLE = "Is Durable";
-  public static final String DECRIBE_CLIENT_MIN_CONN = "Minimum Connections";
-  public static final String DECRIBE_CLIENT_MAX_CONN = "Maximum Connections";
-  public static final String DECRIBE_CLIENT_REDUDANCY = "Redudancy";
-  public static final String DECRIBE_CLIENT_CQs = "Num of CQs";
+  public static final String DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_CLIENT_0 = "Could not retrieve client. Reason : {0}";
+  public static final String DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0 = "Could not retrieve stats for client : {0}";
+  public static final String DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1 = "Could not retrieve stats for client : {0}. Reason : {1}";
+  public static final String DESCRIBE_CLIENT_ERROR_FETCHING_STATS_0 = "Error occured while fetching stats. Reason : {0}";
+  public static final String DESCRIBE_CLIENT_NO_MEMBERS = "DS has no members";
+  public static final String DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS = "Primary Servers";
+  public static final String DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS = "Secondary Servers";
+  public static final String DESCRIBE_CLIENT_COLUMN_CPU = "CPU";
+  public static final String DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS = "Number of Cache Listner Calls";
+  public static final String DESCRIBE_CLIENT_COLUMN_GETS = "Number of Gets";
+  public static final String DESCRIBE_CLIENT_COLUMN_MISSES = "Number of Misses";
+  public static final String DESCRIBE_CLIENT_COLUMN_PUTS = "Number of Puts";
+  public static final String DESCRIBE_CLIENT_COLUMN_THREADS = "Number of Threads";
+  public static final String DESCRIBE_CLIENT_COLUMN_PROCESS_CPU_TIME = "Process CPU Time (nanoseconds)";
+  public static final String DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE = "Queue size";
+  public static final String DESCRIBE_CLIENT_COLUMN_UP_TIME = "UP Time (seconds)";
+  public static final String DESCRIBE_CLIENT_COLUMN_DURABLE = "Is Durable";
+  public static final String DESCRIBE_CLIENT_MIN_CONN = "Minimum Connections";
+  public static final String DESCRIBE_CLIENT_MAX_CONN = "Maximum Connections";
+  public static final String DESCRIBE_CLIENT_REDUDANCY = "Redudancy";
+  public static final String DESCRIBE_CLIENT_CQs = "Num of CQs";
   
   
   
@@ -1375,8 +1385,9 @@ public class CliStrings {
   public static final String SHOW_DEADLOCK__HELP = "Display any deadlocks in the GemFire distributed system.";
   public static final String SHOW_DEADLOCK__DEPENDENCIES__FILE = "file";
   public static final String SHOW_DEADLOCK__DEPENDENCIES__FILE__HELP = "Name of the file to which dependencies between members will be written.";
-  public static final String SHOW_DEADLOCK__NO__DEADLOCK = "No dead lock detected.";
-  public static final String SHOW_DEADLOCK__DEADLOCK__DETECTED = "Dead lock detected.";
+  public static final String SHOW_DEADLOCK__NO__DEADLOCK = "No deadlock was detected.";
+  public static final String SHOW_DEADLOCK__DEADLOCK__DETECTED = "Deadlock detected.";
+  public static final String SHOW_DEADLOCK__DEEPEST_FOUND = "No deadlock was detected.  Here is the deepest call chain that could be found";
   public static final String SHOW_DEADLOCK__DEPENDENCIES__REVIEW = "Please view the dependencies between the members in file : {0}";
   public static final String SHOW_DEADLOCK__ERROR = "Error";
 
@@ -1403,7 +1414,7 @@ public class CliStrings {
   public static final String SHOW_METRICS__CATEGORY__HELP = "Categories available based upon the parameters specified are:\n"
       + "- no parameters specified: cluster, cache, diskstore, query\n"
       + "- region specified: cluster, region, partition, diskstore, callback, eviction\n"
-      + "- member specified: member, jvm, region, serialization, communication, function, transaction, diskstore, lock, eviction, distribution\n"
+      + "- member specified: member, jvm, region, serialization, communication, function, transaction, diskstore, lock, eviction, distribution, offheap\n"
       + "- member and region specified: region, partition, diskstore, callback, eviction";
   public static final String SHOW_METRICS__FILE = "file";
   public static final String SHOW_METRICS__FILE__HELP = "Name of the file to which metrics will be written.";
@@ -1613,9 +1624,9 @@ public class CliStrings {
   public static final String START_LOCATOR__LOG_LEVEL = "log-level";
   public static final String START_LOCATOR__LOG_LEVEL__HELP = "Sets the level of output logged to the Locator log file.  Possible values for log-level include: finest, finer, fine, config, info, warning, severe, none.";
   public static final String START_LOCATOR__MCAST_ADDRESS = "mcast-address";
-  public static final String START_LOCATOR__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Locator can locate other members in the GemFire cluster.  If mcast-port is zero, then mcast-address is ignored.";
+  public static final String START_LOCATOR__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Locator can communicate other members in the GemFire cluster using a common multicast address and port.  If mcast-port is zero, then mcast-address is ignored.";
   public static final String START_LOCATOR__MCAST_PORT = "mcast-port";
-  public static final String START_LOCATOR__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Locator can locate other members of the GemFire cluster.  A zero value disables mcast.";
+  public static final String START_LOCATOR__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Locator can communicate with other members of the GemFire cluster.  A zero value disables mcast.";
   public static final String START_LOCATOR__MEMBER_NAME = "name";
   public static final String START_LOCATOR__MEMBER_NAME__HELP = "The member name to give this Locator in the GemFire cluster.";
   public static final String START_LOCATOR__PORT = "port";
@@ -1696,9 +1707,11 @@ public class CliStrings {
   public static final String START_SERVER__INITIAL_HEAP = "initial-heap";
   public static final String START_SERVER__INITIAL_HEAP__HELP = "Initial size of the heap in the same format as the JVM -Xms parameter.";
   public static final String START_SERVER__J = "J";
-  public static final String START_SERVER__J__HELP = "Argument passed to the JVM on which the Locator will run. For example, --J=-Dfoo.bar=true will set the property \"foo.bar\" to \"true\".";
+  public static final String START_SERVER__J__HELP = "Argument passed to the JVM on which the server will run. For example, --J=-Dfoo.bar=true will set the system property \"foo.bar\" to \"true\".";
   public static final String START_SERVER__LOCATORS = "locators";
   public static final String START_SERVER__LOCATORS__HELP = "Sets the list of Locators used by the Cache Server to join the appropriate GemFire cluster.";
+  public static final String START_SERVER__LOCK_MEMORY = "lock-memory";
+  public static final String START_SERVER__LOCK_MEMORY__HELP = "Causes GemFire to lock heap and off-heap memory pages into RAM. This prevents the operating system from swapping the pages out to disk, which can cause severe performance degradation. When you use this option, also configure the operating system limits for locked memory.";
   public static final String START_SERVER__LOCATOR_WAIT_TIME = "locator-wait-time";
   public static final String START_SERVER__LOCATOR_WAIT_TIME_HELP = "Sets the number of seconds the server will wait for a locator to become available during startup before giving up.";
   public static final String START_SERVER__LOG_LEVEL = "log-level";
@@ -1706,19 +1719,27 @@ public class CliStrings {
   public static final String START_SERVER__MAXHEAP = "max-heap";
   public static final String START_SERVER__MAXHEAP__HELP = "Maximum size of the heap in the same format as the JVM -Xmx parameter.";
   public static final String START_SERVER__MCAST_ADDRESS = "mcast-address";
-  public static final String START_SERVER__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Cache Server can locate other members in the GemFire cluster.  If mcast-port is zero, then mcast-address is ignored.";
+  public static final String START_SERVER__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Cache Server can communicate with other members in the GemFire cluster.  If mcast-port is zero, then mcast-address is ignored.";
   public static final String START_SERVER__MCAST_PORT = "mcast-port";
-  public static final String START_SERVER__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Cache Server can locate other members of the GemFire cluster.  A zero value disables mcast.";
-  public static final String START_SERVER__MEMBER_NAME = "name";
-  public static final String START_SERVER__MEMBER_NAME__HELP = "The member name to give this Cache Server in the GemFire cluster.";
+  public static final String START_SERVER__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Cache Server can communicate with other members of the GemFire cluster.  A zero value disables mcast.";
+  public static final String START_SERVER__NAME = "name";
+  public static final String START_SERVER__NAME__HELP = "The member name to give this Cache Server in the GemFire cluster.";
   public static final String START_SERVER__MEMCACHED_PORT = "memcached-port";
   public static final String START_SERVER__MEMCACHED_PORT__HELP = "Sets the port that the GemFire memcached service listens on for memcached clients.";
   public static final String START_SERVER__MEMCACHED_PROTOCOL = "memcached-protocol";
   public static final String START_SERVER__MEMCACHED_PROTOCOL__HELP = "Sets the protocol that the GemFire memcached service uses (ASCII or BINARY).";
   public static final String START_SERVER__MEMCACHED_BIND_ADDRESS = "memcached-bind-address";
   public static final String START_SERVER__MEMCACHED_BIND_ADDRESS__HELP = "Sets the IP address the GemFire memcached service listens on for memcached clients. The default is to bind to the first non-loopback address for this machine.";
+  public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE = "off-heap-memory-size";
+  public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE__HELP = "The total size of off-heap memory specified as off-heap-memory-size=<n>[g|m]. <n> is the size. [g|m] indicates whether the size should be interpreted as gigabytes or megabytes. A non-zero size causes that much memory to be allocated from the operating system and reserved for off-heap use.";
   public static final String START_SERVER__PROPERTIES = "properties-file";
   public static final String START_SERVER__PROPERTIES__HELP = "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.";
+  public static final String START_SERVER__REDIS_PORT = "redis-port";
+  public static final String START_SERVER__REDIS_PORT__HELP = "Sets the port that the GemFire Redis service listens on for Redis clients.";
+  public static final String START_SERVER__REDIS_BIND_ADDRESS = "redis-bind-address";
+  public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP = "Sets the IP address the GemFire Redis service listens on for Redis clients. The default is to bind to the first non-loopback address for this machine.";
+  public static final String START_SERVER__REDIS_PASSWORD = "redis-password";
+  public static final String START_SERVER__REDIS_PASSWORD__HELP = "Sets the authentication password for GemFireRedisServer";
   public static final String START_SERVER__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_SERVER__SECURITY_PROPERTIES__HELP = "The gfsecurity.properties file for configuring the Server's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory.";
   public static final String START_SERVER__REBALANCE = "rebalance";
@@ -1735,8 +1756,8 @@ public class CliStrings {
   // public static final String START_SERVER__START_LOCATOR = "start-locator";
   // public static final String START_SERVER__START_LOCATOR__HELP =
   // "To start embedded Locator with given endpoints in the format: host[port]. If no endpoints are given defaults (localhost[10334]) are assumed.";
-  public static final String START_SERVER__REQUEST_SHARED_CONFIGURATION = "use-cluster-configuration";
-  public static final String START_SERVER__REQUEST_SHARED_CONFIGURATION__HELP = "When set to true, the server requests the configuration from locator's cluster configuration service.";
+  public static final String START_SERVER__USE_CLUSTER_CONFIGURATION = "use-cluster-configuration";
+  public static final String START_SERVER__USE_CLUSTER_CONFIGURATION__HELP = "When set to true, the server requests the configuration from locator's cluster configuration service.";
   public static final String START_SERVER__GENERAL_ERROR_MESSAGE = "An error occurred while attempting to start a GemFire Cache Server: %1$s";
   public static final String START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE = "The Cache Server process terminated unexpectedly with exit status %1$d. Please refer to the log file in %2$s for full details.%n%n%3$s";
   public static final String START_SERVER__RUN_MESSAGE = "Starting a GemFire Server in %1$s...";
@@ -1746,9 +1767,15 @@ public class CliStrings {
   public static final String START_SERVER__CRITICAL__HEAP__HELP = "Set the percentage of heap at or above which the cache is considered in danger of becoming inoperable due to garbage collection pauses or out of memory exceptions"; 
   
   public static final String START_SERVER__EVICTION__HEAP__PERCENTAGE = "eviction-heap-percentage";
-  public static final String START_SERVER__EVICTION__HEAP__PERCENTAGE__HELP = "Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction.Changing this value may cause eviction to begin immediately." +
+  public static final String START_SERVER__EVICTION__HEAP__PERCENTAGE__HELP = "Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction. Changing this value may cause eviction to begin immediately." +
   "Only one change to this attribute or critical heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed. This feature requires additional VM flags to perform properly. ";
 
+  public static final String START_SERVER__CRITICAL_OFF_HEAP_PERCENTAGE = "critical-off-heap-percentage";
+  public static final String START_SERVER__CRITICAL_OFF_HEAP__HELP = "Set the percentage of off-heap memory at or above which the cache is considered in danger of becoming inoperable due to out of memory exceptions"; 
+  
+  public static final String START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE = "eviction-off-heap-percentage";
+  public static final String START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE__HELP = "Set the percentage of off-heap memory at or above which the eviction should begin on Regions configured for off-heap and HeapLRU eviction. Changing this value may cause eviction to begin immediately." +
+  " Only one change to this attribute or critical off-heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed.";
 //cacheServer.setLoadPollInterval(loadPollInterval)
 //cacheServer.setLoadProbe(loadProbe);
 //cacheServer.setMaxConnections(maxCons);
@@ -1935,6 +1962,8 @@ public class CliStrings {
   public static final String VALIDATE_DISK_STORE__NAME__HELP = "Name of the disk store to be validated.";
   public static final String VALIDATE_DISK_STORE__DISKDIRS = "disk-dirs";
   public static final String VALIDATE_DISK_STORE__DISKDIRS__HELP = "Directories where data for the disk store was previously written.";
+  public static final String VALIDATE_DISK_STORE__J = "J";
+  public static final String VALIDATE_DISK_STORE__J__HELP = "Arguments passed to the Java Virtual Machine performing the compact operation on the disk store.";
   public static final String VALIDATE_DISK_STORE__MSG__NO_DIRS = VALIDATE_DISK_STORE__DISKDIRS + " is mandatory";
   public static final String VALIDATE_DISK_STORE__MSG__IO_ERROR = "Input/Output error in validating disk store {0} is : {1}";
   public static final String VALIDATE_DISK_STORE__MSG__ERROR = "Error in validating disk store {0} is : {1}";

@@ -1,4 +1,21 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
 **  oql.g
 **
 ** Built with Antlr 2.7.4
@@ -320,6 +337,12 @@ tokens {
     SORT_CRITERION;
     LIMIT;
     HINT;
+    AGG_FUNC;
+    SUM;
+    AVG;
+    COUNT;
+    MAX;
+    MIN;
 }
 
 queryProgram :
@@ -456,14 +479,13 @@ selectExpr :
                 warnWhenFollowAmbig = false;
             } :
 
-            "distinct"
-            | "all"
+            "distinct" <AST=com.gemstone.gemfire.cache.query.internal.parse.ASTDummy>
+            | "all" <AST=com.gemstone.gemfire.cache.query.internal.parse.ASTDummy>
         )?
 
         
-		(
-			aggregateExpr
-        | 	projectionAttributes
+		(			
+          projectionAttributes
 		)
         fromClause
         ( whereClause )?
@@ -527,30 +549,32 @@ projectionAttributes :
                 "com.gemstone.gemfire.cache.query.internal.parse.ASTCombination"],
                 #projectionAttributes); }
 
-        |   TOK_STAR
+        |   TOK_STAR <AST=com.gemstone.gemfire.cache.query.internal.parse.ASTDummy>
         )
     ;
 
-projection! :
+projection!{ AST node  = null;}:
         
-            lb1:identifier TOK_COLON! ex1:expr
+            lb1:identifier TOK_COLON!  ( tok1:aggregateExpr{node = #tok1;} | tok2:expr{node = #tok2;})
             { #projection = #([PROJECTION, "projection",
-            "com.gemstone.gemfire.cache.query.internal.parse.ASTProjection"],  #ex1, #lb1); } 
+            "com.gemstone.gemfire.cache.query.internal.parse.ASTProjection"],  node, #lb1); } 
         |
-            ex2: expr
+            (tok3:aggregateExpr{node = #tok3;} | tok4:expr{node = #tok4;})
             (
                 "as"
                 lb2: identifier
             )?
             { #projection = #([PROJECTION, "projection",
-            "com.gemstone.gemfire.cache.query.internal.parse.ASTProjection"], #ex2, #lb2); }
+            "com.gemstone.gemfire.cache.query.internal.parse.ASTProjection"], node, #lb2); }
     ;
 
 
+            
+
 groupClause :
 
-        "group"^
-        "by"!  fieldList
+        "group"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTGroupBy>
+        "by"!  groupByList
 
         (
             "having"!
@@ -911,25 +935,36 @@ collectionExpr :
 
     ;
 
-aggregateExpr :
 
-        (
-            (
-                "sum"^
-            |   "min"^
-            |   "max"^
-            |   "avg"^
-            )
-            TOK_LPAREN! query TOK_RPAREN!
 
-        |   "count"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTCount>
-            TOK_LPAREN!
-            (
-                query
-            |   TOK_STAR
-            )
-            TOK_RPAREN!
-        )
+            
+aggregateExpr  { int aggFunc = -1; boolean distinctOnly = false; }:
+
+             !("sum" {aggFunc = SUM;} | "avg" {aggFunc = AVG;} )
+              TOK_LPAREN ("distinct"! {distinctOnly = true;} ) ? tokExpr1:expr TOK_RPAREN 
+              { #aggregateExpr = #([AGG_FUNC, "aggregate", "com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc"],
+              #tokExpr1); 
+                ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(aggFunc);
+                ((ASTAggregateFunc)#aggregateExpr).setDistinctOnly(distinctOnly);
+               }
+             
+             |
+             !("min" {aggFunc = MIN;} | "max" {aggFunc = MAX;} )
+              TOK_LPAREN  tokExpr2:expr TOK_RPAREN 
+              { #aggregateExpr = #([AGG_FUNC, "aggregate", "com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc"],
+              #tokExpr2); 
+                ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(aggFunc);               
+               }
+             
+             |
+              "count"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc>
+              TOK_LPAREN!  ( TOK_STAR <AST=com.gemstone.gemfire.cache.query.internal.parse.ASTDummy>
+              | ("distinct"! {distinctOnly = true;} ) ? expr ) TOK_RPAREN! 
+              {  
+                 ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(COUNT);
+                 #aggregateExpr.setText("aggregate");
+                 ((ASTAggregateFunc)#aggregateExpr).setDistinctOnly(distinctOnly);
+              }
     ;
 
 undefinedExpr :
@@ -960,6 +995,20 @@ structConstruction :
         TOK_RPAREN!
     ;
 
+
+groupByList :
+
+        expr
+        (
+            TOK_COMMA!
+            expr
+        )*
+        /*{ #groupByList = #([COMBO, "groupByList",
+            "com.gemstone.gemfire.cache.query.internal.parse.ASTCombination"],
+                #groupByList); }*/
+  ;
+
+    
 fieldList :
 
         identifier TOK_COLON! expr

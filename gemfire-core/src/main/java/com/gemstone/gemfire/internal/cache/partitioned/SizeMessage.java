@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
@@ -57,6 +66,12 @@ public final class SizeMessage extends PartitionMessage
    */
   public SizeMessage() {}
 
+  // reuse the NOTIFICATION_ONLY flag since it is not used for SizeMessage 
+  /** flag to indicate that only an estimated size is required */
+  public static final short ESTIMATE = NOTIFICATION_ONLY;
+
+  private transient boolean estimate;
+
   /**
    * The message sent to a set of {@link InternalDistributedMember}s to caculate the
    * number of Entries in each of their buckets
@@ -69,13 +84,14 @@ public final class SizeMessage extends PartitionMessage
    * @param bucketIds the list of bucketIds to get the size for or null for all buckets
    */
   private SizeMessage(Set recipients, int regionId, ReplyProcessor21 processor,
-      ArrayList<Integer> bucketIds) {
+      ArrayList<Integer> bucketIds, boolean estimate) {
     super(recipients, regionId, processor);
     if (bucketIds != null && bucketIds.isEmpty()) {
       this.bucketIds = null;
     } else {
       this.bucketIds = bucketIds;
     }
+    this.estimate = estimate;
   }
 
   /**
@@ -87,11 +103,11 @@ public final class SizeMessage extends PartitionMessage
    * @param bucketIds the buckets to look for, or null for all buckets
    */
   public static SizeResponse send(Set recipients, PartitionedRegion r,
-      ArrayList<Integer> bucketIds) {
+      ArrayList<Integer> bucketIds, boolean estimate) {
     Assert.assertTrue(recipients != null, "SizeMessage NULL recipients set");
     SizeResponse p = new SizeResponse(r.getSystem(), recipients);
     SizeMessage m = new SizeMessage(recipients, r.getPRId(),
-        p, bucketIds);
+        p, bucketIds, estimate);
     r.getDistributionManager().putOutgoing(m);
     return p;
   }
@@ -114,6 +130,19 @@ public final class SizeMessage extends PartitionMessage
   }
 
   @Override
+  protected void setBooleans(short s, DataInput in) throws ClassNotFoundException, IOException {
+    super.setBooleans(s, in);
+    this.estimate = ((s & ESTIMATE) != 0);
+  }
+
+  @Override
+  protected short computeCompressedShort(short s) {
+    s = super.computeCompressedShort(s);
+    if (this.estimate) s |= ESTIMATE;
+    return s;
+  }
+
+  @Override
   protected boolean operateOnPartitionedRegion(DistributionManager dm, 
       PartitionedRegion r, long startTime) throws CacheException, ForceReattemptException {
     Map<Integer, SizeEntry> sizes;
@@ -121,10 +150,18 @@ public final class SizeMessage extends PartitionMessage
       PartitionedRegionDataStore ds = r.getDataStore();
       if (ds != null) { // datastore exists
         if (this.bucketIds != null) {
-          sizes = ds.getSizeLocallyForBuckets(this.bucketIds);
+          if (estimate) {
+            sizes = ds.getSizeEstimateLocallyForBuckets(this.bucketIds);
+          } else {
+            sizes = ds.getSizeLocallyForBuckets(this.bucketIds);
+          }
         }
         else {
-          sizes = ds.getSizeForLocalBuckets();
+          if (estimate) {
+            sizes = ds.getSizeEstimateForLocalPrimaryBuckets();
+          } else {
+            sizes = ds.getSizeForLocalBuckets();
+          }
         }
 //        if (logger.isTraceEnabled(LogMarker.DM)) {
 //          l.fine(getClass().getName() + " send sizes back using processorId: "

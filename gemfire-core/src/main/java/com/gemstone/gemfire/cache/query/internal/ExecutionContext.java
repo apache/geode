@@ -1,10 +1,18 @@
-/*=========================================================================
- * Copyright Copyright (c) 2000-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * $Id$
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal;
 
@@ -81,7 +89,8 @@ public class ExecutionContext {
   private BucketRegion bukRgn = null;
   private PartitionedRegion pr = null;
   private boolean distinct = false;
-  
+  private Object currentProjectionField = null;
+  private boolean isPRQueryNode = false;
   /**
    * Param specialIteratorVar name of special variable to use to denote the
    * current iteration element. Used to implement the "this" var in the query
@@ -254,11 +263,7 @@ public class ExecutionContext {
   public QScope currentScope() {
     return (QScope) scopes.peek();
   }
-
-  //  public RuntimeIterator getCurrentIterator() {
-  //    //return currentScope().getIterator();
-  //    throw new RuntimeException("Shud not be called");
-  //  }
+ 
   public List getCurrentIterators() {
     return currentScope().getIterators();
   }
@@ -316,11 +321,7 @@ public class ExecutionContext {
     scope._oneIndexLookup = b;
   }
 
-  // set the current iteration element
-  //  void setCurrent(Object obj) {
-  //    //currentScope().setCurrent(obj);
-  //    throw new RuntimeException("Shud not be called");
-  //  }
+  
   void setCurrent(RuntimeIterator iter, Object obj) {
     currentScope().setCurrent(iter, obj);
   }
@@ -680,10 +681,6 @@ public class ExecutionContext {
     throw new UnsupportedOperationException("Method should not have been called");
   }
 
-  public SelectResults getResults() {
-    throw new UnsupportedOperationException("Method should not have been called");
-  }
-
   public Query getQuery() {
     throw new UnsupportedOperationException("Method should not have been called");
   }
@@ -711,4 +708,25 @@ public class ExecutionContext {
   public void setDistinct(boolean distinct) {
     this.distinct = distinct;
   }
+  
+  public boolean isBindArgsSet() {
+    return this.bindArguments != null;
+  }
+  
+  public void setCurrentProjectionField(Object field) {
+    this.currentProjectionField = field;
+  }
+  
+  public Object getCurrentProjectionField() {
+    return this.currentProjectionField ;
+  }
+  
+  public void setIsPRQueryNode(boolean isPRQueryNode) {
+    this.isPRQueryNode = isPRQueryNode;
+  }
+  
+  public boolean getIsPRQueryNode() {
+    return this.isPRQueryNode;
+  }
+  
 }

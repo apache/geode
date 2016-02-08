@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -105,6 +114,23 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
 	  return putAllData;
   }
   
+  public void setPutAllEntryData(PutAllEntryData[] putAllEntryData) {
+    for (int i = 0; i < putAllEntryData.length; i++) {
+      putAllData[i] = putAllEntryData[i];
+    }
+    this.putAllDataSize = putAllEntryData.length;
+  }
+  
+  /**
+   * Add an entry that this putall operation should distribute.
+   */
+  public void addEntry(PutAllEntryData putAllEntry)
+  {
+    this.putAllData[this.putAllDataSize] = putAllEntry;
+    this.putAllDataSize += 1;
+    //cachedEvents.add(ev);
+  }
+  
   /**
    * Add an entry that this putall operation should distribute.
    */
@@ -179,6 +205,17 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     };
   }
   
+  public void freeOffHeapResources() {
+    // I do not use eventIterator here because it forces the lazy creation of EntryEventImpl by calling getEventForPosition.
+    for (int i=0; i < this.putAllDataSize; i++) {
+      PutAllEntryData entry = this.putAllData[i];
+      if (entry != null && entry.event != null) {
+        entry.event.release();
+      }
+    }
+  }
+  
+  
   public EntryEventImpl getEventForPosition(int position) {
     PutAllEntryData entry = this.putAllData[position];
     if (entry == null) {
@@ -188,7 +225,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
       return entry.event;
     }
     LocalRegion region = (LocalRegion)this.event.getRegion();
-    EntryEventImpl ev = new EntryEventImpl(
+    EntryEventImpl ev = EntryEventImpl.create(
         region,
         entry.getOp(),
         entry.getKey(), null/* value */, this.event.getCallbackArgument(),
@@ -196,6 +233,8 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
         this.event.getDistributedMember(),
         this.event.isGenerateCallbacks(),
         entry.getEventID());
+    boolean returnedEv = false;
+    try {
     ev.setPossibleDuplicate(entry.isPossibleDuplicate());
     if (entry.versionTag != null && region.concurrencyChecksEnabled) {
       VersionSource id = entry.versionTag.getMemberID();
@@ -207,6 +246,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     }
       
     entry.event = ev;
+    returnedEv = true;
     if (entry.getValue() == null && ev.getRegion().getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
       ev.setLocalInvalid(true);
     }
@@ -223,6 +263,11 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     ev.callbacksInvoked(entry.isCallbacksInvoked());
     ev.setTailKey(entry.getTailKey());
     return ev;
+    } finally {
+      if (!returnedEv) {
+        ev.release();
+      }
+    }
   }
 
   public final EntryEventImpl getBaseEvent() {
@@ -269,8 +314,8 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     public PutAllEntryData(EntryEventImpl event) {
 
       this.key = event.getKey();
-      this.value = event.getRawNewValue();
-      Object oldValue = event.getRawOldValue();
+      this.value = event.getRawNewValueAsHeapObject();
+      Object oldValue = event.getRawOldValueAsHeapObject();
 
       if (oldValue == Token.NOT_AVAILABLE || Token.isRemoved(oldValue)) {
         this.oldValue = null;
@@ -808,6 +853,8 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     PutAllMessage msg = new PutAllMessage();
     msg.eventId = event.getEventId();
     msg.context = event.getContext();
+	msg.setFetchFromHDFS(event.isFetchFromHDFS());
+    msg.setPutDML(event.isPutDML());
     return msg;
   }
 
@@ -821,7 +868,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
   public PutAllPRMessage createPRMessagesNotifyOnly(int bucketId) {
     final EntryEventImpl event = getBaseEvent();
     PutAllPRMessage prMsg = new PutAllPRMessage(bucketId, putAllDataSize, true,
-        event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument());
+        event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument(), false, false /*isPutDML*/);
     if (event.getContext() != null) {
       prMsg.setBridgeContext(event.getContext());
     }
@@ -850,7 +897,8 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
       PutAllPRMessage prMsg = (PutAllPRMessage)prMsgMap.get(bucketId);
       if (prMsg == null) {
         prMsg = new PutAllPRMessage(bucketId.intValue(), putAllDataSize, false,
-            event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument());
+            event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument(), event.isFetchFromHDFS(), event.isPutDML());
+        prMsg.setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());
 
         // set dpao's context(original sender) into each PutAllMsg
         // dpao's event's context could be null if it's P2P putAll in PR
@@ -1026,6 +1074,11 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
 
     protected EventID eventId = null;
     
+    // By default, fetchFromHDFS == true;
+    private transient boolean fetchFromHDFS = true;
+    
+    private transient boolean isPutDML = false;
+
     protected static final short HAS_BRIDGE_CONTEXT = UNRESERVED_FLAGS_START;
     protected static final short SKIP_CALLBACKS =
       (short)(HAS_BRIDGE_CONTEXT << 1);
@@ -1045,7 +1098,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     throws EntryNotFoundException
     {
       // Gester: We have to specify eventId for the message of MAP
-      EntryEventImpl event = new EntryEventImpl(
+      EntryEventImpl event = EntryEventImpl.create(
           rgn,
           Operation.PUTALL_UPDATE /* op */, null /* key */, null/* value */,
           this.callbackArg, true /* originRemote */, getSender());
@@ -1080,11 +1133,13 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
      *          the region the entry is put in
      */
     public void doEntryPut(PutAllEntryData entry, DistributedRegion rgn,
-        boolean requiresRegionContext) {
+        boolean requiresRegionContext, boolean fetchFromHDFS, boolean isPutDML) {
       EntryEventImpl ev = PutAllMessage.createEntryEvent(entry, getSender(), 
           this.context, rgn,
           requiresRegionContext, this.possibleDuplicate,
           this.needsRouting, this.callbackArg, true, skipCallbacks);
+	  ev.setFetchFromHDFS(fetchFromHDFS);
+      ev.setPutDML(isPutDML);
       // we don't need to set old value here, because the msg is from remote. local old value will get from next step
       try {
         super.basicOperateOnRegion(ev, rgn);
@@ -1094,6 +1149,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
             rgn.getVersionVector().recordVersion(getSender(), ev.getVersionTag());
           }
         }
+        ev.release();
       }
     }
     
@@ -1119,10 +1175,12 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
         ((KeyWithRegionContext)key).setRegionContext(rgn);
       }
       EventID evId = entry.getEventID();
-      EntryEventImpl ev = new EntryEventImpl(rgn, entry.getOp(),
+      EntryEventImpl ev = EntryEventImpl.create(rgn, entry.getOp(),
           key, null/* value */, callbackArg,
           originRemote, sender, !skipCallbacks,
           evId);
+      boolean returnedEv = false;
+      try {
       if (context != null) {
         ev.context = context;
       }
@@ -1147,7 +1205,13 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
        * Setting tailKey for the secondary bucket here. Tail key was update by the primary.
        */
       ev.setTailKey(entry.getTailKey());
+      returnedEv = true;
       return ev;
+      } finally {
+        if (!returnedEv) {
+          ev.release();
+        }
+      }
     }
 
     @Override
@@ -1168,7 +1232,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
               logger.debug("putAll processing {} with {} sender={}", putAllData[i], putAllData[i].versionTag, sender);
             }
             putAllData[i].setSender(sender);
-            doEntryPut(putAllData[i], rgn, requiresRegionContext);
+            doEntryPut(putAllData[i], rgn, requiresRegionContext,  fetchFromHDFS, isPutDML);
           }
         }
       }, ev.getEventId());
@@ -1212,7 +1276,6 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
 
     @Override
     public void toData(DataOutput out) throws IOException {
-
       super.toData(out);
       DataSerializer.writeObject(this.eventId, out);
       InternalDataSerializer.writeUnsignedVL(this.putAllDataSize, out);
@@ -1296,6 +1359,26 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
             valueObj, deserializationPolicy, this.callbackArg);
       }
       return Arrays.asList(ops);
+    }
+    
+    public void setFetchFromHDFS(boolean val) {
+      this.fetchFromHDFS = val;
+    }
+    
+    public void setPutDML(boolean val) {
+      this.isPutDML = val;
+    }
+    
+    @Override
+    protected short computeCompressedExtBits(short bits) {
+      bits = super.computeCompressedExtBits(bits);
+      if (fetchFromHDFS) {
+        bits |= FETCH_FROM_HDFS;
+      }
+      if (isPutDML) {
+        bits |= IS_PUT_DML;
+      }
+      return bits;
     }
   }
 }

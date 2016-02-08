@@ -1,10 +1,18 @@
 /*
- *  =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *  ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management;
 
@@ -50,7 +58,13 @@ public class RegionAttributesData {
   private String interestPolicy;
   private boolean diskSynchronous;
   private String compressorClassName;
+  private boolean offHeap;
 
+  /**
+   * 
+   * This constructor is to be used by internal JMX framework only. User should
+   * not try to create an instance of this class.
+   */
   @ConstructorProperties( { 
     "cacheLoaderClassName",
     "cacheWriterClassName",
@@ -80,7 +94,8 @@ public class RegionAttributesData {
     "interestPolicy",
     "diskSynchronous",
     "cacheListeners",
-    "compressorClassName"
+    "compressorClassName",
+    "offHeap"
       })
       
       
@@ -112,7 +127,8 @@ public class RegionAttributesData {
       String interestPolicy,
       boolean diskSynchronous,
       String[] cacheListeners,
-      String compressorClassName) {
+      String compressorClassName,
+      boolean offHeap) {
     
     
     
@@ -145,6 +161,7 @@ public class RegionAttributesData {
       this.diskSynchronous = diskSynchronous;
       this.cacheListeners = cacheListeners;
       this.compressorClassName = compressorClassName;
+      this.offHeap = offHeap;
   }
 
   /**
@@ -387,16 +404,29 @@ public class RegionAttributesData {
     return compressorClassName;
   }
 
+  /**
+   * Returns true if the region uses off-heap memory.
+   * @return false if the region does not use off-heap memory.
+   */
+  public boolean getOffHeap() {
+    return this.offHeap;
+  }
+  
+  /**
+   * String representation of RegionAttributesData
+   */
   @Override
   public String toString() {
     return "RegionAttributesData [asyncConflationEnabled=" + asyncConflationEnabled + ", cacheListeners=" + Arrays.toString(cacheListeners)
         + ", cacheLoaderClassName=" + cacheLoaderClassName + ", cacheWriterClassName=" + cacheWriterClassName + ", cloningEnabled=" + cloningEnabled
         + ", compressorClassName=" + compressorClassName + ", concurrencyLevel=" + concurrencyLevel + ", customEntryIdleTimeout=" + customEntryIdleTimeout
         + ", customEntryTimeToLive=" + customEntryTimeToLive + ", dataPolicy=" + dataPolicy + ", diskStoreName=" + diskStoreName
-        + ", diskSynchronous=" + diskSynchronous + ", entryIdleTimeout=" + entryIdleTimeout + ", entryTimeToLive=" + entryTimeToLive
+        + ", diskSynchronous=" + diskSynchronous
+        + ", entryIdleTimeout=" + entryIdleTimeout + ", entryTimeToLive=" + entryTimeToLive
         + ", ignoreJTA=" + ignoreJTA + ", indexMaintenanceSynchronous="
         + indexMaintenanceSynchronous + ", initialCapacity=" + initialCapacity + ", interestPolicy=" + interestPolicy + ", keyConstraintClassName="
         + keyConstraintClassName + ", loadFactor=" + loadFactor + ", lockGrantor=" + lockGrantor + ", multicastEnabled=" + multicastEnabled
+        + ", offHeap=" + offHeap
         + ", poolName=" + poolName + ", regionIdleTimeout=" + regionIdleTimeout + ", regionTimeToLive=" + regionTimeToLive + ", scope=" + scope
         + ", statisticsEnabled=" + statisticsEnabled + ", subscriptionConflationEnabled=" + subscriptionConflationEnabled
         + ", valueConstraintClassName=" + valueConstraintClassName + "]";

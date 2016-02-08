@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
@@ -78,14 +87,13 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreCreation;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
@@ -182,13 +190,37 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    *
    */
   public static CacheXmlParser parse(InputStream is) {
+	  
+    /**
+     * The API doc
+     * http://java.sun.com/javase/6/docs/api/org/xml/sax/InputSource.html for
+     * the SAX InputSource says: "... standard processing of both byte and
+     * character streams is to close them on as part of end-of-parse cleanup, so
+     * applications should not attempt to re-use such streams after they have
+     * been handed to a parser."
+     *
+     * In order to block the parser from closing the stream, we wrap the
+     * InputStream in a filter, i.e., UnclosableInputStream, whose close()
+     * function does nothing.
+     * 
+     */
+    class UnclosableInputStream extends BufferedInputStream {
+      public UnclosableInputStream(InputStream stream) {
+        super(stream);
+      }
+
+      @Override
+      public void close() {
+      }
+    }
+	 
     CacheXmlParser handler = new CacheXmlParser();
     try {
       SAXParserFactory factory = SAXParserFactory.newInstance();
       factory.setFeature(DISALLOW_DOCTYPE_DECL_FEATURE, true);
       factory.setValidating(true);
       factory.setNamespaceAware(true);     
-      BufferedInputStream bis = new BufferedInputStream(is);
+      UnclosableInputStream bis = new UnclosableInputStream(is);
       try {
         SAXParser parser = factory.newSAXParser();
         // Parser always reads one buffer plus a little extra worth before
@@ -198,9 +230,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         parser.setProperty(JAXP_SCHEMA_LANGUAGE, XMLConstants.W3C_XML_SCHEMA_NS_URI);
         parser.parse(bis, new DefaultHandlerDelegate(handler));
       } catch (CacheXmlException e) {
-        if (null != e.getCause() &&
-            (e.getCause().getMessage().startsWith("DOCTYPE is disallowed")
-                || e.getCause().getMessage().startsWith("DOCTYPE n'est pas autoris"))) {
+        if (null != e.getCause() && e.getCause().getMessage().contains(DISALLOW_DOCTYPE_DECL_FEATURE)) {
           // Not schema based document, try dtd.
           bis.reset();
           factory.setFeature(DISALLOW_DOCTYPE_DECL_FEATURE, false);
@@ -852,25 +882,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     String poolName = (String)stack.pop();
     String disableRegisterInterest = (String)stack.pop();
     String disablePersistBackup = (String)stack.pop();
-    CacheWriter cw = attrs.getCacheWriter();
-    if(poolName !=null && cw != null) {
-      throw new CacheXmlException("You cannot specify both a poolName and a cacheWriter for a dynamic-region-factory.");
-    }
-    if (cw != null && !(cw instanceof BridgeWriter)) {
-      throw new CacheXmlException(LocalizedStrings.CacheXmlParser_THE_DYNAMICREGIONFACTORY_CACHEWRITER_MUST_BE_AN_INSTANCE_OF_BRIDGEWRITER.toLocalizedString());
-    }
     DynamicRegionFactory.Config cfg;
-    if(poolName != null) {
-      cfg =
-        new DynamicRegionFactory.Config(dir, poolName,
+    cfg = new DynamicRegionFactory.Config(dir, poolName,
             !Boolean.valueOf(disablePersistBackup).booleanValue(),
             !Boolean.valueOf(disableRegisterInterest).booleanValue());
-    } else {
-      cfg =
-        new DynamicRegionFactory.Config(dir, (BridgeWriter)cw,
-          !Boolean.valueOf(disablePersistBackup).booleanValue(),
-          !Boolean.valueOf(disableRegisterInterest).booleanValue());
-    }
     CacheCreation cache = (CacheCreation)stack.peek();
     cache.setDynamicRegionFactoryConfig(cfg);
   }
@@ -1005,6 +1020,175 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
 
     stack.push(attrs);
+  }
+  /**
+   * When a <code>hdfs-store</code> element is first encountered, we
+   * create a {@link HDFSStoreCreation}, populate it accordingly, and
+   * push it on the stack.
+   * <pre>
+   * {@code
+   * <hdfs-store name="" gemfire-home-dir="" namenode-url="" hdfs-client-config-file="">
+   * ...
+   * </hdfs-store>
+   * }
+   * 
+   */
+  private void startHDFSStore(Attributes atts) {
+    // this is the only place to create DSAC objects
+    HDFSStoreCreation attrs = new HDFSStoreCreation();
+    String name = atts.getValue(NAME);
+    if (name == null) {
+      throw new InternalGemFireException(
+          LocalizedStrings.CacheXmlParser_NULL_DiskStoreName.toLocalizedString());
+    } else {
+      attrs.setName(name);
+    }
+
+    String namenode = atts.getValue(HDFS_NAMENODE_URL);
+    if (namenode == null) {
+      throw new InternalGemFireException(
+          LocalizedStrings.CacheXmlParser_NULL_DiskStoreName.toLocalizedString());
+    } else {
+      attrs.setNameNodeURL(namenode);
+    }
+
+    String clientConfig = atts.getValue(HDFS_CLIENT_CONFIG_FILE);
+    if (clientConfig != null) {
+      attrs.setHDFSClientConfigFile(clientConfig);
+    }
+    
+    String folderPath = atts.getValue(HDFS_HOME_DIR);
+    if (folderPath != null) {
+      attrs.setHomeDir(folderPath);
+    }
+   
+    String readCacheSize = atts.getValue(HDFS_READ_CACHE_SIZE);
+    if (readCacheSize != null) {
+      try {
+        attrs.setBlockCacheSize(Float.valueOf(readCacheSize));
+      } catch (NumberFormatException e) {
+        throw new CacheXmlException(
+            LocalizedStrings.DistributedSystemConfigImpl_0_IS_NOT_A_VALID_INTEGER_1
+            .toLocalizedString(new Object[] { readCacheSize, HDFS_READ_CACHE_SIZE }),
+            e);
+      }
+    }
+    
+    Integer maxMemory = getIntValue(atts, HDFS_MAX_MEMORY);
+    if (maxMemory != null) {
+      attrs.setMaxMemory(maxMemory);
+    }
+    
+    Integer batchSize = getIntValue(atts, HDFS_BATCH_SIZE);
+    if (batchSize != null) {
+      attrs.setBatchSize(batchSize);
+    }
+    
+    Integer batchInterval = getIntValue(atts, HDFS_BATCH_INTERVAL);
+    if (batchInterval != null) {
+      attrs.setBatchInterval(batchInterval);
+    }
+    
+    Integer dispatcherThreads = getIntValue(atts, HDFS_DISPATCHER_THREADS);
+    if (dispatcherThreads != null) {
+      attrs.setDispatcherThreads(dispatcherThreads);
+    }
+    
+    Boolean bufferPersistent = getBoolean(atts, HDFS_BUFFER_PERSISTENT);
+    if (bufferPersistent != null) {
+      attrs.setBufferPersistent(bufferPersistent);
+    }
+    
+    Boolean synchronousDiskWrite = getBoolean(atts, HDFS_SYNCHRONOUS_DISK_WRITE);
+    if (synchronousDiskWrite != null) {
+      attrs.setSynchronousDiskWrite(synchronousDiskWrite);
+    }
+    
+    String diskstoreName = atts.getValue(HDFS_DISK_STORE);
+    if (diskstoreName != null) {
+      attrs.setDiskStoreName(diskstoreName);
+    }
+    
+    Integer purgeInterval = getInteger(atts, HDFS_PURGE_INTERVAL);
+    if (purgeInterval != null) {
+      attrs.setPurgeInterval(purgeInterval);
+    }
+    Boolean majorCompaction = getBoolean(atts, HDFS_MAJOR_COMPACTION);
+    if (majorCompaction != null) {
+      attrs.setMajorCompaction(Boolean.valueOf(majorCompaction));
+    }
+    
+    // configure major compaction interval
+    Integer majorCompactionInterval = getIntValue(atts, HDFS_MAJOR_COMPACTION_INTERVAL);
+    if (majorCompactionInterval != null) {
+      attrs.setMajorCompactionInterval(majorCompactionInterval);
+    }
+    
+    // configure compaction concurrency
+    Integer value = getIntValue(atts, HDFS_MAJOR_COMPACTION_THREADS);
+    if (value != null)
+      attrs.setMajorCompactionThreads(value);
+    
+    Boolean minorCompaction = getBoolean(atts, HDFS_MINOR_COMPACTION);
+    if (minorCompaction != null) {
+      attrs.setMinorCompaction(Boolean.valueOf(minorCompaction));
+    }
+    
+    // configure compaction concurrency
+    value = getIntValue(atts, HDFS_MINOR_COMPACTION_THREADS);
+    if (value != null)
+      attrs.setMinorCompactionThreads(value);
+    
+    String maxFileSize = atts.getValue(HDFS_MAX_WRITE_ONLY_FILE_SIZE);
+    if (maxFileSize != null) {
+      attrs.setWriteOnlyFileRolloverSize(parseInt(maxFileSize));
+    }
+    
+    String fileRolloverInterval = atts.getValue(HDFS_WRITE_ONLY_FILE_ROLLOVER_INTERVAL);
+    if (fileRolloverInterval != null) {
+      attrs.setWriteOnlyFileRolloverInterval(parseInt(fileRolloverInterval));
+    }
+    stack.push(name);
+    stack.push(attrs);
+  }
+  
+  /**
+   * After popping the current <code>HDFSStoreCreation</code> off the
+   * stack, we add it to the <code>HDFSStoreCreation</code> that should be on the
+   * top of the stack.
+   */
+  private void endHDFSStore() {
+    HDFSStoreCreation hsc = (HDFSStoreCreation) stack.pop();
+    String name = (String) stack.pop();
+    CacheCreation cache;
+    Object top = stack.peek();
+    if (top instanceof CacheCreation) {
+      cache = (CacheCreation) top;
+    }
+    else {
+      String s = "Did not expect a " + top.getClass().getName()
+          + " on top of the stack.";
+      Assert.assertTrue(false, s);
+      cache = null; // Dead code
+    }
+    if (name != null) {
+      cache.addHDFSStore(name, hsc);
+    }
+  }
+	
+  private Integer getIntValue(Attributes atts, String param) {
+    String maxInputFileSizeMB = atts.getValue(param);
+    if (maxInputFileSizeMB != null) {
+      try {
+        return Integer.valueOf(maxInputFileSizeMB);
+      } catch (NumberFormatException e) {
+        throw new CacheXmlException(
+            LocalizedStrings.DistributedSystemConfigImpl_0_IS_NOT_A_VALID_INTEGER_1
+                .toLocalizedString(new Object[] { maxInputFileSizeMB, param }),
+            e);
+      }
+    }
+    return null;
   }
   
   /**
@@ -1202,6 +1386,19 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         attrs.addAsyncEventQueueId(st.nextToken());
       }
     }
+    String offHeapStr = atts.getValue(OFF_HEAP);
+    if(offHeapStr != null) {
+      attrs.setOffHeap(Boolean.valueOf(offHeapStr).booleanValue());
+    }
+    String hdfsStoreName = atts.getValue(HDFS_STORE_NAME);
+    if (hdfsStoreName != null) {
+      attrs.setHDFSStoreName(hdfsStoreName);
+    }
+    String hdfsWriteOnly= atts.getValue(HDFS_WRITE_ONLY);
+    if (hdfsWriteOnly != null) {
+      attrs.setHDFSWriteOnly(Boolean.valueOf(hdfsWriteOnly).booleanValue());
+    }
+
     
     stack.push(attrs);
   }
@@ -2408,6 +2605,24 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         rmc.setEvictionHeapPercentageToDefault();
       }
     }
+    
+    {
+      String chp = atts.getValue(CRITICAL_OFF_HEAP_PERCENTAGE);
+      if (chp != null) {
+        rmc.setCriticalOffHeapPercentage(parseFloat(chp));
+      } else {
+        rmc.setCriticalOffHeapPercentageToDefault();
+      }
+    }
+
+    {
+      String ehp = atts.getValue(EVICTION_OFF_HEAP_PERCENTAGE);
+      if (ehp != null) {
+        rmc.setEvictionOffHeapPercentage(parseFloat(ehp));
+      } else {
+        rmc.setEvictionOffHeapPercentageToDefault();
+      }
+    }
     this.stack.push(rmc);
   }
   
@@ -2785,6 +3000,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       startPdx(atts);
     } else if(qName.equals(PDX_SERIALIZER)) {
       //do nothing
+    }
+	else if (qName.equals(HDFS_STORE)) {
+        startHDFSStore(atts);
     }
     else if (qName.equals(COMPRESSOR)) {
     }
@@ -3193,6 +3411,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
       else if (qName.equals(PDX_SERIALIZER)) {
         endPdxSerializer();
+      }
+      else if (qName.equals(HDFS_STORE)) {
+          endHDFSStore();
       }
       else if (qName.equals(COMPRESSOR)) {
         endCompressor();

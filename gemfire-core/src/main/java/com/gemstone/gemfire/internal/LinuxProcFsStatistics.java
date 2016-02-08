@@ -1,27 +1,35 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.internal.LinuxProcessStats;
-import com.gemstone.gemfire.internal.LinuxSystemStats;
+import org.apache.logging.log4j.Logger;
 
-class LinuxProcFsStatistics {
+public class LinuxProcFsStatistics {
   private enum CPU { 
     USER, NICE, SYSTEM, IDLE, IOWAIT, IRQ, SOFTIRQ,
     /** stands for aggregation of all columns not present in the enum list*/
@@ -199,6 +207,38 @@ class LinuxProcFsStatistics {
     }
   }
 
+  /**
+   * Returns the available system memory (free + cached).
+   * @param logger the logger
+   * @return the available memory in bytes
+   */
+  public static long getAvailableMemory(Logger logger) {
+    try {
+      BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("/proc/meminfo")));
+      try {
+        long free = 0;
+        Pattern p = Pattern.compile("(.*)?:\\s+(\\d+)( kB)?");
+        
+        String line;
+        while ((line = br.readLine()) != null) {
+          Matcher m = p.matcher(line);
+          if (m.matches() && ("MemFree".equals(m.group(1)) || "Cached".equals(m.group(1)))) {
+            free += Long.parseLong(m.group(2));
+          }
+        }
+        
+        // convert to bytes
+        return 1024 * free;
+        
+      } finally {
+        br.close();
+      }
+    } catch (IOException e) {
+      logger.warn("Error determining free memory", e);
+      return Long.MAX_VALUE;
+    }
+  }
+  
   // Example of /proc/meminfo
   //          total:    used:    free:  shared: buffers:  cached:
   //Mem:  4118380544 3816050688 302329856        0 109404160 3060326400

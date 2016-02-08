@@ -1,13 +1,23 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal;
 
 import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.internal.lang.SystemUtils;
 import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
 
 import java.io.File;
@@ -55,7 +65,7 @@ public class SharedLibrary {
         is64Bit = false;
       } else {
         if (unsafe != null) {
-          is64Bit = (new UnsafeWrapper()).getAddressSize() == 8;
+          is64Bit = unsafe.getAddressSize() == 8;
         } else {
           is64Bit = false;
         }
@@ -68,9 +78,19 @@ public class SharedLibrary {
       int scaleIndex = 0;
       int tmpReferenceSize = 0;
       int tmpObjectHeaderSize = 0;
+      if (SystemUtils.isAzulJVM()) {
+        tmpObjectHeaderSize = 8;
+        tmpReferenceSize = 8;
+      } else {
       if (unsafe != null) {
         // Use unsafe to figure out the size of an object reference since we might
         // be using compressed oops.
+        // Note: as of java 8 compressed oops do not imply a compressed object header.
+        // The object header is determined by UseCompressedClassPointers.
+        // UseCompressedClassPointers requires UseCompressedOops
+        // but UseCompressedOops does not require UseCompressedClassPointers.
+        // But it seems unlikely that someone would compress their oops
+        // not their class pointers. 
         scaleIndex = unsafe.arrayScaleIndex(Object[].class);
         if (scaleIndex == 4) {
           // compressed oops
@@ -85,14 +105,19 @@ public class SharedLibrary {
         }
       }
       if (scaleIndex == 0) {
-        // If our heap is > 32G then assume large oops. Otherwise assume compressed oops.
-        if (Runtime.getRuntime().maxMemory() > (32L*1024*1024*1024)) {
+        // If our heap is > 32G (64G on java 8) then assume large oops. Otherwise assume compressed oops.
+        long SMALL_OOP_BOUNDARY = 32L;
+        if (SystemUtils.isJavaVersionAtLeast("1.8")) {
+          SMALL_OOP_BOUNDARY = 64L;
+        }
+        if (Runtime.getRuntime().maxMemory() > (SMALL_OOP_BOUNDARY*1024*1024*1024)) {
           tmpReferenceSize = 8;
           tmpObjectHeaderSize = 16;
         } else {
           tmpReferenceSize = 4;
           tmpObjectHeaderSize = 12;
         }
+      }
       }
       referenceSize = tmpReferenceSize;
       objectHeaderSize = tmpObjectHeaderSize;

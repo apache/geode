@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2005-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal;
 
@@ -35,7 +44,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @author Eric Zoerner
  * @since 4.0
  */
-public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set, SelectResults, DataSerializableFixedID {
+public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set, SelectResults, 
+DataSerializableFixedID, StructFields {
   private static final long serialVersionUID = -1228835506930611510L;
 
   protected StructType structType;
@@ -283,7 +293,7 @@ public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set,
   }
 
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(java.util.Set.class, this.structType);
+    return new CollectionTypeImpl(StructSet.class, this.structType);
   }
 
   // note: this method is dangerous in that it could result in undefined
@@ -300,7 +310,7 @@ public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set,
   }
 
   public Set asSet() {
-    return this.contents;
+    return this;
   }
 
   /**
@@ -409,21 +419,35 @@ public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set,
 
   @Override
   public Object[] toArray() {
-    return this.contents.toArray();
+    Struct[] structs = new Struct[this.contents.size()];
+    int i = 0;
+    for (Iterator iter = this.iterator(); iter.hasNext();) {      
+      structs[i++]  = (Struct)iter.next();
+    }
+    return structs;    
   }
 
   @Override
-  public Object[] toArray(Object[] a) {
-    return this.contents.toArray(a);
+  public Object[] toArray(Object[] a) {    
+    Object[] array = this.contents.toArray(a);
+    int i = 0;
+    for(Object o : array) {
+      array[i++] = new StructImpl((StructTypeImpl)this.structType, (Object[])o);
+    }
+    return array;
   }
 
   @Override
   public boolean remove(Object o) {
+    if(o instanceof Struct) {
+      o = ((Struct)o).getFieldValues();
+    }
     return this.contents.remove(o);
   }
 
   @Override
   public boolean containsAll(Collection c) {
+    //TODO: Asif : This is wrong ,we need to fix this.
     return this.contents.containsAll(c);
   }
 

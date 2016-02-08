@@ -1,6 +1,44 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+buildscript {
+  repositories {
+    maven { url "https://plugins.gradle.org/m2/" }
+  }
+
+  dependencies {
+    classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
+    classpath "org.ajoberstar:gradle-git:1.3.2"
+    classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+  }
+}
+
+apply from: 'gradle/rat.gradle'
 apply plugin: 'wrapper'
 
+// Load all properties in dependency-version.properties as project properties, so all projects can read them
+Properties dependencyVersions = new Properties()
+dependencyVersions.load(new FileInputStream("${project.projectDir}/gradle/dependency-versions.properties"))
+dependencyVersions.keys().each{ k -> project.ext[k] = dependencyVersions[k]}
+
 allprojects {
+  version = versionNumber + '.' + releaseType
+  ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
   // We want to see all test results.  This is equivalatent to setting --continue
   // on the command line.
   gradle.startParameter.continueOnFailure = true
@@ -34,6 +72,13 @@ allprojects {
   })
 }
 
+task clean (type: Delete) {
+  delete rootProject.buildDir
+  if (!buildRoot.isEmpty()) {
+    delete buildRoot
+  }  
+}
+
 def testResultsDir(def parent, def name) {
   new File(parent, name)
 }
@@ -50,6 +95,19 @@ def writeTestProperties(def parent, def name) {
 
 }
 
+task combineReports(type: TestReport) {
+  description 'Combines the test reports.'
+  destinationDir = file "${rootProject.buildDir}/reports/combined"
+
+  doLast {
+    println "All test reports at ${rootProject.buildDir}/reports/combined"
+  }
+}
+
+gradle.taskGraph.whenReady({ graph ->
+  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect{ it.tasks.withType(Test) }.flatten()
+})
+
 subprojects {
   apply plugin: 'java'
 
@@ -57,8 +115,8 @@ subprojects {
   gradle.taskGraph.whenReady( { graph ->
     tasks.withType(JavaCompile).each { javac ->
       javac.configure {
-        sourceCompatibility '1.7'
-        targetCompatibility '1.7'
+        sourceCompatibility '1.8'
+        targetCompatibility '1.8'
         options.encoding = 'UTF-8'
       }
     }
@@ -74,7 +132,7 @@ subprojects {
             "Created-By"        : System.getProperty("user.name"),
             "Title"             : rootProject.name,
             "Version"           : version,
-            "Vendor"            : "Pivotal Software, Inc."
+            "Organization"      : "Apache Software Foundation (ASF)"
           )
         }
       }
@@ -103,7 +161,107 @@ subprojects {
       }
     }
   }
-  
+ 
+  // Configuration for Checkstyle, FindBugs
+  if (project.hasProperty("staticAnalysis")) {
+    apply plugin: 'checkstyle'
+
+    //Checkstyle configuration
+    configurations.checkstyle {
+      dependencies.all { dep ->
+        dep.transitive = true
+      }
+    }
+    
+    //Findbugs configuration
+    apply plugin: 'findbugs'
+ 
+    configurations.findbugs {
+      dependencies.all { dep ->
+        dep.transitive = true
+      }
+    }
+
+    // Switch default Findbugs report to HTML for developers
+    def findbugsXmlEnabled = false
+    def findbugsHtmlEnabled = true
+
+    // Provide ability to change report type to XML for ingesting into other ap
+    if ( project.hasProperty("findbugsXmlReport") ) {
+      findbugsXmlEnabled = true
+      findbugsHtmlEnabled = false
+    }
+
+    configurations.findbugs {
+      dependencies.all { dep ->
+        dep.transitive = true
+      }
+      findbugs.effort = 'max'
+      findbugs.reportLevel = 'low'
+    }
+ 
+    tasks.withType(FindBugs) {
+      reports {
+        xml.enabled = findbugsXmlEnabled
+        html.enabled = findbugsHtmlEnabled
+      }
+    }
+  }
+
+  // JaCoCo configuration
+  if (project.hasProperty("codeCoverage")) {
+    apply plugin: 'jacoco'
+    
+    configurations.jacocoAnt {
+      dependencies.all { dep ->
+          dep.transitive = true
+      }
+    }
+
+    task mergeIntegrationTestCoverage (type: JacocoMerge) {
+      description 'Merges Distributed and Integration test coverage results'
+
+      destinationFile = file("${buildDir}/jacoco/mergedIntegrationTestCoverage.exec")
+      executionData = fileTree(dir: 'build/jacoco', include: ['**/distributedTest.exec','**/integrationTest.exec'])
+
+    }
+
+    jacocoTestReport {
+      reports { 
+        csv.enabled false
+        sourceSets project.sourceSets.main
+        html.destination "${buildDir}/jacocoTestHtml"
+      }
+    }
+    
+    task jacocoIntegrationTestReport (type: JacocoReport) {
+      reports { 
+        csv.enabled false
+        sourceSets project.sourceSets.main
+        html.destination "${buildDir}/jacocoIntegrationTestHtml"
+        executionData = fileTree(dir: 'build/jacoco', include: '**/integrationTest.exec')
+      }
+    }
+    
+    task jacocoDistributedTestReport (type: JacocoReport) {
+      reports { 
+        csv.enabled false
+        sourceSets project.sourceSets.main
+        html.destination "${buildDir}/jacocoDistributedTestHtml"
+        executionData = fileTree(dir: 'build/jacoco', include: '**/distributedTest.exec')
+      }
+    }
+    
+    task jacocoOverallTestReport (type: JacocoReport) {
+      reports { 
+        csv.enabled false
+        sourceSets project.sourceSets.main
+        html.destination "${buildDir}/jacocoOverallTestHtml"
+        executionData = fileTree(dir: 'build/jacoco', include: '**/*.exec')
+      }
+    }
+  }
+ 
   eclipse {
     classpath {
       defaultOutputDir = file('build-eclipse')
@@ -124,6 +282,8 @@ subprojects {
   cleanEclipse << {
     delete '.settings/org.eclipse.core.resources.prefs'
   }
+
+  tasks.eclipse.dependsOn(cleanEclipse)
 
   idea {
     module {
@@ -150,33 +310,47 @@ subprojects {
   }
 
   javadoc.classpath += configurations.provided
-  
+
+  javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet')
+  }
+
   dependencies {
-    compile 'org.springframework:spring-aop:3.2.12.RELEASE'
-    compile 'org.springframework:spring-beans:3.2.12.RELEASE'
-    compile 'org.springframework:spring-context:3.2.12.RELEASE'
-    compile 'org.springframework:spring-context-support:3.2.12.RELEASE'
-    compile 'org.springframework:spring-core:3.2.12.RELEASE'
-    compile 'org.springframework:spring-expression:3.2.12.RELEASE'
-    compile 'org.springframework:spring-web:3.2.12.RELEASE'
-    compile 'org.springframework:spring-webmvc:3.2.12.RELEASE'
+    compile 'org.springframework:spring-aop:' + project.'springframework.version'
+    compile 'org.springframework:spring-beans:' + project.'springframework.version'
+    compile 'org.springframework:spring-context:' + project.'springframework.version'
+    compile 'org.springframework:spring-context-support:' + project.'springframework.version'
+    compile 'org.springframework:spring-core:' + project.'springframework.version'
+    compile 'org.springframework:spring-expression:' + project.'springframework.version'
+    compile 'org.springframework:spring-web:' + project.'springframework.version'
+    compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
+    compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
+
+    testCompile 'com.github.stefanbirkner:system-rules:' + project.'system-rules.version'
+    testCompile 'com.jayway.awaitility:awaitility:' + project.'awaitility.version'
+    testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
+    testCompile 'eu.codearte.catch-exception:catch-exception:' + project.'catch-exception.version'
+    testCompile 'eu.codearte.catch-exception:catch-throwable:' + project.'catch-throwable.version'
+    testCompile 'junit:junit:' + project.'junit.version'
+    testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
+    testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+    testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
+    testCompile 'org.jmock:jmock:' + project.'jmock.version'
+    testCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
+    testCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
+    testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
     
-    testCompile 'junit:junit:4.11'
-    testCompile 'org.hamcrest:hamcrest-core:1.1'
-    testCompile 'org.hamcrest:hamcrest-library:1.1'
-    testCompile 'org.jmock:jmock:2.5.1'
-    testCompile 'org.jmock:jmock-legacy:2.5.1'
-    testCompile 'edu.umd.cs.mtc:multithreadedtc:1.01'
-    testRuntime 'cglib:cglib-nodep:2.1_3'
-    testRuntime 'org.objenesis:objenesis:1.0'
+    testRuntime 'cglib:cglib:' + project.'cglib.version'
+    testRuntime 'org.objenesis:objenesis:' + project.'objenesis.version'
+    testRuntime 'org.ow2.asm:asm:' + project.'asm.version'
   }
 
   test {
     include '**/*JUnitTest.class'
     useJUnit {
-      includeCategories 'com.gemstone.junit.UnitTest'
-      excludeCategories 'com.gemstone.junit.IntegrationTest'
-      excludeCategories 'com.gemstone.junit.DistributedTest'
+      includeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
     }    
     
     // run each test in its own vm to avoid interference issues if a test doesn't clean up
@@ -188,12 +362,27 @@ subprojects {
     }
   }
 
+  //This target does not run any tests. Rather, it validates that there are no
+  //tests that are missing a category annotation
+  task checkMissedTests(type: Test) {
+    include '**/*JUnitTest.class'
+    useJUnit {
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
+    }    
+
+    beforeTest { descriptor ->
+      throw new GradleException("The test " + descriptor.getClassName() + "." + descriptor.getName() + " does not include a junit category.");
+    }
+    
+  }
+
   task integrationTest(type:Test) {
     include '**/*JUnitTest.class'
     useJUnit {
-      excludeCategories 'com.gemstone.junit.UnitTest'
-      includeCategories 'com.gemstone.junit.IntegrationTest'
-      excludeCategories 'com.gemstone.junit.DistributedTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
+      includeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
     }    
 
     forkEvery 1
@@ -206,14 +395,33 @@ subprojects {
   task distributedTest(type:Test) {
     include '**/*DUnitTest.class'
     
+    // maxParallelForks = 2
+    // maxParallelForks = Runtime.runtime.availableProcessors()
+    
 // TODO add @Category(DistributedTest.class) to dunit tests
 //    useJUnit {
-//      excludeCategories 'com.gemstone.junit.UnitTest'
-//      excludeCategories 'com.gemstone.junit.IntegrationTest'
-//      includeCategories 'com.gemstone.junit.DistributedTest'
+//      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
+//      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
+//      includeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
 //    }    
     
     //I'm hoping this might deal with SOME OOMEs I've seen
+    forkEvery 30
+  }
+
+  // By proving a file with an arbitrary list of test classes, we can select only those
+  // tests to run. Activated using -Dcustom.tests=<file> customTest
+  def customTestList = []
+  def customTestFile = System.getProperty('custom.tests')
+  if (customTestFile != null) {
+    new File(customTestFile).eachLine { customTestList << it }
+  }
+
+  task customTest(type:Test) {
+    include { x ->
+      (x.isDirectory() || customTestList.any { y -> x.getName().contains(y) } ) ? true : false
+    }
+
     forkEvery 30
   }
 
@@ -223,6 +431,10 @@ subprojects {
       check.dependsOn test
       test.configure {
         onlyIf { ! Boolean.getBoolean('skip.tests') }
+
+        //force tests to be run every time by
+        //saying the results are never up to date
+        outputs.upToDateWhen { false }
     
         def resultsDir = testResultsDir(buildDir, test.name)
         workingDir resultsDir.absolutePath
@@ -233,7 +445,7 @@ subprojects {
         }
         
         maxHeapSize '768m'
-        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-XX:MaxPermSize=256M', '-ea']
+        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
 
         systemProperties = [
           'gemfire.DEFAULT_MAX_OPLOG_SIZE' : '10',
@@ -259,16 +471,86 @@ subprojects {
       }
     }
   })
+
+  // publishing configuration
+  apply plugin: 'com.bmuschko.nexus'
   
-  check.dependsOn integrationTest
-  check.dependsOn distributedTest
-}
+  extraArchive {
+    sources = true
+    javadoc = true
+    tests = false
+  }
 
-task combineReports(type: TestReport) {
-  description 'Combines the test reports.'
-  destinationDir = file "$buildDir/reports/combined"
-}
+  nexus {
+    sign = true
+    repositoryUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
+    snapshotRepositoryUrl = 'https://repository.apache.org/content/repositories/snapshots'
+  }
+  
+  modifyPom {
+    project {
+      name 'Apache Geode (incubating)'
+      description 'Apache Geode (incubating) provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
+      url 'http://geode.incubator.apache.org'
 
-gradle.taskGraph.whenReady({ graph ->
-  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect{ it.tasks.withType(Test) }.flatten()
-})
+      scm {
+        url 'https://git-wip-us.apache.org/repos/asf?p=incubator-geode.git;a=tree'
+        connection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
+        developerConnection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
+      }
+
+      licenses {
+        license {
+          name 'The Apache Software License, Version 2.0'
+          url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        }
+      }
+
+      repositories {
+        repository {
+          id 'libs-release'
+          name 'Spring Maven libs-release Repository'
+          url 'http://repo.spring.io/libs-release'
+        }
+      }
+    }
+  }
+
+  // The nexus plugin reads authentication from ~/.gradle/gradle.properties but the
+  // jenkins server stores publishing credentials in ~/.m2/settings.xml (maven).
+  // We match on the expected snapshot repository id.
+  afterEvaluate {
+    if (!isReleaseVersion && System.env.USER == 'jenkins') {
+      def settingsXml = new File(System.getProperty('user.home'), '.m2/settings.xml')
+      def snapshotCreds = new XmlSlurper().parse(settingsXml).servers.server.find { server ->
+        server.id.text() == 'apache.snapshots.https'
+      }
+
+      if (snapshotCreds != null) {
+        tasks.uploadArchives.doFirst {
+          repositories().withType(MavenDeployer).each { repo ->
+            repo.snapshotRepository.authentication.userName = snapshotCreds.username.text()
+            repo.snapshotRepository.authentication.password = snapshotCreds.password.text()
+          }
+        }
+      }
+    }
+  }
+
+  // Make precheckin task run all validation tests for checking in code.
+  task precheckin (dependsOn: [ build, integrationTest, distributedTest ]) {
+    description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, and distributedTest'
+  }
+
+  check.dependsOn checkMissedTests, rat
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, checkMissedTests
+  build.finalizedBy combineReports
+  check.finalizedBy combineReports
+  test.finalizedBy combineReports
+  integrationTest.finalizedBy combineReports
+  distributedTest.finalizedBy combineReports
+  checkMissedTests.finalizedBy combineReports
+
+  // Make sure clean task for rootProject runs last
+  clean.finalizedBy rootProject.clean
+}

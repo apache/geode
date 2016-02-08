@@ -1,10 +1,18 @@
 /*
- *  =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *  ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.beans;
 
@@ -35,14 +43,13 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ServerLoad;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 import com.gemstone.gemfire.cache.server.internal.ServerMetricsImpl;
-import com.gemstone.gemfire.cache.util.BridgeMembershipListener;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.ClientHealthMonitoringRegion;
 import com.gemstone.gemfire.internal.admin.remote.ClientHealthStats;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
@@ -60,6 +67,7 @@ import com.gemstone.gemfire.management.internal.beans.stats.StatsAverageLatency;
 import com.gemstone.gemfire.management.internal.beans.stats.StatsKey;
 import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
+import com.gemstone.gemfire.management.membership.ClientMembershipListener;
 
 /**
  * Represents the GemFire CacheServer . Provides data and notifications about
@@ -86,7 +94,7 @@ public class CacheServerBridge extends ServerBridge{
   
   private MemberMBeanBridge memberMBeanBridge;
 
-  private BridgeMembershipListener membershipListener;
+  private ClientMembershipListener membershipListener;
   
   public static ThreadLocal<Version> clientVersion = new ThreadLocal<Version>();
 
@@ -350,10 +358,12 @@ public class CacheServerBridge extends ServerBridge{
       }
       for (ServerConnection conn : serverConnections) {
         ClientProxyMembershipID clientId = conn.getProxyID();
+        if (clientId != null) { // Check added to fix bug 51987
         if (uniqueIds.get(clientId.getDSMembership()) == null) {
           ClientConnInfo clientConInfo = new ClientConnInfo(conn.getProxyID(), conn.getSocketHost(),
               conn.getSocketPort(), false);
           uniqueIds.put(clientId.getDSMembership(), clientConInfo);
+        }
         }
       }
     }
@@ -404,7 +414,7 @@ public class CacheServerBridge extends ServerBridge{
       return null;      
     }
        
-    BridgeServerImpl server = (BridgeServerImpl)cache.getCacheServers().iterator().next();
+    CacheServerImpl server = (CacheServerImpl)cache.getCacheServers().iterator().next();
     
     if(server == null){
       return null;
@@ -661,16 +671,16 @@ public class CacheServerBridge extends ServerBridge{
   }
 
   public int getNumSubscriptions() {
-    Map clientProxyMembershipIDMap = InternalBridgeMembership.getClientQueueSizes();
+    Map clientProxyMembershipIDMap = InternalClientMembership.getClientQueueSizes();
     return clientProxyMembershipIDMap.keySet().size();
   }
 
-  public void setBridgeMembershipListener(
-      BridgeMembershipListener membershipListener) {
+  public void setClientMembershipListener(
+      ClientMembershipListener membershipListener) {
     this.membershipListener = membershipListener;
   }
   
-  public BridgeMembershipListener getBridgeMembershipListener() {
+  public ClientMembershipListener getClientMembershipListener() {
     return this.membershipListener;
   }
   

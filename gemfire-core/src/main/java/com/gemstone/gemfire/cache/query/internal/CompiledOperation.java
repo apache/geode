@@ -1,10 +1,18 @@
-/*=========================================================================
- * Copyright Copyright (c) 2000-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * $Id: CompiledOperation.java,v 1.1 2005/01/27 06:26:33 vaibhav Exp $
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.cache.query.internal;
@@ -32,8 +40,6 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxSerializationException;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 import com.gemstone.gemfire.pdx.internal.PdxString;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Class Description
@@ -215,7 +221,7 @@ public class CompiledOperation extends AbstractCompiledValue {
     return context.addDependencies(this, rcvr.computeDependencies(context));
   }
  
-  @SuppressFBWarnings(value="RV_RETURN_VALUE_OF_PUTIFABSENT_IGNORED", justification="Does not matter if the methodDispatch that isn't stored in the map is used") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="RV_RETURN_VALUE_OF_PUTIFABSENT_IGNORED", justification="Does not matter if the methodDispatch that isn't stored in the map is used") 
   private Object eval0(Object receiver, Class resolutionType, ExecutionContext context)
   throws TypeMismatchException, FunctionDomainException, NameResolutionException,
           QueryInvocationTargetException {

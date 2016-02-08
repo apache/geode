@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -65,6 +74,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 
 
 /**
@@ -227,7 +237,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   }
 
   public void memberSuspect(InternalDistributedMember id,
-      InternalDistributedMember whoSuspected) {
+      InternalDistributedMember whoSuspected, String reason) {
   }
   
   public void quorumLost(Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
@@ -839,21 +849,22 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   private boolean doLocalWrite(CacheWriter writer,CacheEvent pevent,int paction)
   throws CacheWriterException {
-    CacheEvent event = getEventForListener(pevent);
     // Return if the inhibit all notifications flag is set
-    if (event instanceof EntryEventImpl) {
-      if (((EntryEventImpl)event).inhibitAllNotifications()){
+    if (pevent instanceof EntryEventImpl) {
+      if (((EntryEventImpl)pevent).inhibitAllNotifications()){
         if (logger.isDebugEnabled()) {
-          logger.debug("Notification inhibited for key {}", event);
+          logger.debug("Notification inhibited for key {}", pevent);
         }
         return false;
       }
     }
+    CacheEvent event = getEventForListener(pevent);
     
     int action = paction;
     if (event.getOperation().isCreate() && action == BEFOREUPDATE) {
       action = BEFORECREATE;
     }
+    try {
     switch(action) {
       case BEFORECREATE:
         writer.beforeCreate((EntryEvent)event);
@@ -873,6 +884,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       default:
         break;
 
+    }
+    } finally {
+      if (event != pevent) {
+        if (event instanceof EntryEventImpl) {
+          ((EntryEventImpl) event).release();
+        }
+      }
     }
     this.localWrite = true;
     return true;
@@ -1920,7 +1938,11 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                       long lastModified = entry.getLastModified();
                       lastModifiedCacheTime = lastModified;
                       if (eov instanceof CachedDeserializable) {
-                        {
+                        if (eov instanceof StoredObject && !((StoredObject) eov).isSerialized()) {
+                          isSer = false;
+                          ebv = (byte[]) ((StoredObject)eov).getDeserializedForReading();
+                          ebvLen = ebv.length;
+                        } else {
                           // don't serialize here if it is not already serialized
                           Object tmp = ((CachedDeserializable)eov).getValue();
                           if (tmp instanceof byte[]) {

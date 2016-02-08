@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -19,6 +28,7 @@ import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
 import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
 import com.gemstone.gemfire.internal.cache.lru.HeapLRUCapacityController;
@@ -34,6 +44,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.size.ReflectionSingleObjectSizer;
 
 /**
@@ -70,8 +81,9 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
       ea = ((LocalRegion)owner).getEvictionAttributes().getAlgorithm();
       ec = ((LocalRegion)owner).getEvictionController();
     } else if (owner instanceof PlaceHolderDiskRegion) {
-      ea = ((PlaceHolderDiskRegion)owner).getActualLruAlgorithm();
-      ec = ((PlaceHolderDiskRegion)owner).getEvictionAttributes().createEvictionController(null);
+      PlaceHolderDiskRegion phdr = (PlaceHolderDiskRegion)owner;
+      ea = phdr.getActualLruAlgorithm();
+      ec = phdr.getEvictionAttributes().createEvictionController(null, phdr.getOffHeap());
     } else {
       throw new IllegalStateException("expected LocalRegion or PlaceHolderDiskRegion");
     }
@@ -166,9 +178,15 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     // make sure this cached deserializable is still in the entry
     // @todo what if a clear is done and this entry is no longer in the region?
     {
-      Object curVal = le._getValue();
+      Object curVal = le._getValue(); // OFFHEAP: _getValue ok
       if (curVal != cd) {
+        if (cd instanceof StoredObject) {
+          if (!cd.equals(curVal)) {
+            return false;
+          }
+        } else {
           return false;
+        }
       }
     }
     // TODO:KIRK:OK if (le.getValueInVM((RegionEntryContext) _getOwnerObject()) != cd) return false;
@@ -536,6 +554,20 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     // reset the tx thread local
  } 
   
+  private boolean mustEvict() {
+    LocalRegion owner = _getOwner();
+    InternalResourceManager resourceManager = owner.getCache().getResourceManager();
+    
+    final boolean monitorStateIsEviction;
+    if (!owner.getAttributes().getOffHeap()) {
+      monitorStateIsEviction = resourceManager.getHeapMonitor().getState().isEviction();
+    } else {
+      monitorStateIsEviction = resourceManager.getOffHeapMonitor().getState().isEviction();
+    }
+    
+    return monitorStateIsEviction && this.sizeInVM() > 0;
+  }
+  
   public final int centralizedLruUpdateCallback() {
     final boolean isDebugEnabled_LRU = logger.isTraceEnabled(LogMarker.LRU);
     
@@ -550,8 +582,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     }
     LRUStatistics stats = _getLruList().stats();
     try {
-      while (_getOwner().getCache().getHeapEvictor().mustEvict()
-          && this.sizeInVM() > 0 && evictedBytes == 0) {
+      while (mustEvict() && evictedBytes == 0) {
         LRUEntry removalEntry = (LRUEntry)_getLruList().getLRUEntry();
         if (removalEntry != null) {
           evictedBytes = evictEntry(removalEntry, stats);

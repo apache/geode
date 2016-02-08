@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.cache;
@@ -16,11 +25,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.internal.cache.AbstractRegion;
+import com.gemstone.gemfire.internal.cache.CustomEvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.DiskStoreFactoryImpl;
 import com.gemstone.gemfire.internal.cache.DiskWriteAttributesImpl;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
@@ -438,6 +449,8 @@ public class AttributesFactory<K,V> {
         .getPartitionAttributes();
     this.regionAttributes.evictionAttributes = (EvictionAttributesImpl)regionAttributes
         .getEvictionAttributes();
+    this.regionAttributes.customEvictionAttributes = regionAttributes
+        .getCustomEvictionAttributes();
 
     this.regionAttributes.membershipAttributes = regionAttributes.getMembershipAttributes();
     this.regionAttributes.subscriptionAttributes = regionAttributes.getSubscriptionAttributes();
@@ -477,6 +490,7 @@ public class AttributesFactory<K,V> {
     }
     
     this.regionAttributes.compressor = regionAttributes.getCompressor();
+    this.regionAttributes.offHeap = regionAttributes.getOffHeap();
   }
 
   // CALLBACKS
@@ -490,11 +504,6 @@ public class AttributesFactory<K,V> {
    */
   public void setCacheLoader(CacheLoader<K,V> cacheLoader)
   {
-    if (cacheLoader != null) {
-      if (AbstractRegion.isBridgeLoader(cacheLoader) && this.regionAttributes.getPoolName() != null) {
-        throw new IllegalStateException("A region with a pool name can not have a BridgeLoader or BridgeClient. Please use pools OR BridgeClient.");
-      }
-    }
     this.regionAttributes.cacheLoader = cacheLoader;
     this.regionAttributes.setHasCacheLoader(true);
   }
@@ -508,11 +517,6 @@ public class AttributesFactory<K,V> {
    */
   public void setCacheWriter(CacheWriter<K,V> cacheWriter)
   {
-    if (cacheWriter != null) {
-      if (AbstractRegion.isBridgeWriter(cacheWriter) &&  this.regionAttributes.getPoolName() != null) {
-        throw new IllegalStateException("A region with a pool name can not have a BridgeWriter or BridgeClient. Please use pools OR BridgeClient.");
-      }
-    }
     this.regionAttributes.cacheWriter = cacheWriter;
     this.regionAttributes.setHasCacheWriter(true);
   }
@@ -720,7 +724,33 @@ public class AttributesFactory<K,V> {
      this.regionAttributes.setHasEvictionAttributes(true);
    }
 
-  /** Sets the mirror type for the next <code>RegionAttributes</code> created.
+  /**
+   * Set custom {@link EvictionCriteria} for the region with start time and
+   * frequency of evictor task to be run in milliseconds, or evict incoming rows
+   * in case both start and frequency are specified as zero.
+   * 
+   * @param criteria
+   *          an {@link EvictionCriteria} to be used for eviction for HDFS
+   *          persistent regions
+   * @param start
+   *          the start time at which periodic evictor task should be first
+   *          fired to apply the provided {@link EvictionCriteria}; if this is
+   *          zero then current time is used for the first invocation of evictor
+   * @param interval
+   *          the periodic frequency at which to run the evictor task after the
+   *          initial start; if this is if both start and frequency are zero
+   *          then {@link EvictionCriteria} is applied on incoming insert/update
+   *          to determine whether it is to be retained
+   */
+  public void setCustomEvictionAttributes(EvictionCriteria<K, V> criteria,
+      long start, long interval) {
+    this.regionAttributes.customEvictionAttributes =
+        new CustomEvictionAttributesImpl(criteria, start, interval,
+            start == 0 && interval == 0);
+    this.regionAttributes.setHasCustomEviction(true);
+  }
+
+   /** Sets the mirror type for the next <code>RegionAttributes</code> created.
    * @param mirrorType The type of mirroring to use for the region
    * @throws IllegalArgumentException if mirrorType is null
    * @deprecated use {@link #setDataPolicy} instead.
@@ -1008,7 +1038,7 @@ public class AttributesFactory<K,V> {
    * Sets the directories with
    * the default size of 10240 MB to which the region's data is written
    *
-   * @throws IllegalArgumentException if a directory does not exist
+   * @throws GemFireIOException if a directory does not exist
    *
    * @since 3.2
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setDiskDirs} instead
@@ -1134,6 +1164,8 @@ public class AttributesFactory<K,V> {
         this.regionAttributes.partitionAttributes = partition;
         this.regionAttributes.setHasPartitionAttributes(true);
       }
+      
+      ((PartitionAttributesImpl) this.regionAttributes.partitionAttributes).setOffHeap(this.regionAttributes.offHeap);
     }
     else {
       this.regionAttributes.partitionAttributes = null;
@@ -1246,25 +1278,12 @@ public class AttributesFactory<K,V> {
    * @param name the name of the connection pool to use; if <code>null</code>
    * or <code>""</code> then the connection pool is disabled for regions
    * using these attributes.
-   * @throws IllegalStateException if a cache loader or cache writer has already
-   * been set.
    * @since 5.7
    */
   public void setPoolName(String name) {
     String nm = name;
     if ("".equals(nm)) {
       nm = null;
-    }
-    if (nm != null) {
-      // make sure a cache listener or writer has not already been installed
-      if (this.regionAttributes.getCacheLoader() != null 
-          && AbstractRegion.isBridgeLoader(this.regionAttributes.getCacheLoader())) {
-        throw new IllegalStateException("A region with a bridge loader can not have a pool name.");
-      }
-      if (this.regionAttributes.getCacheWriter() != null 
-          && AbstractRegion.isBridgeWriter(this.regionAttributes.getCacheWriter())) {
-        throw new IllegalStateException("A region with a bridge writer can not have a pool name.");
-      }
     }
     this.regionAttributes.poolName = nm;
     this.regionAttributes.setHasPoolName(true);
@@ -1286,6 +1305,20 @@ public class AttributesFactory<K,V> {
     }
   }
 
+  /**
+   * Enables this region's usage of off-heap memory if true.
+   * @since 9.0
+   * @param offHeap boolean flag to enable off-heap memory
+   */
+  public void setOffHeap(boolean offHeap) {
+    this.regionAttributes.offHeap = offHeap;
+    this.regionAttributes.setHasOffHeap(true);
+    
+    if (this.regionAttributes.partitionAttributes != null) {
+      ((PartitionAttributesImpl) this.regionAttributes.partitionAttributes).setOffHeap(offHeap);
+    }
+  }
+  
   // FACTORY METHOD
 
   /** Creates a <code>RegionAttributes</code> with the current settings.
@@ -1310,6 +1343,8 @@ public class AttributesFactory<K,V> {
         this.regionAttributes.dataPolicy.withPartitioning() &&
         this.regionAttributes.partitionAttributes == null) {
       this.regionAttributes.partitionAttributes = (new PartitionAttributesFactory()).create();
+      // fix bug #52033 by invoking setOffHeap now (localMaxMemory may now be the temporary placeholder for off-heap until DistributedSystem is created
+      ((PartitionAttributesImpl)this.regionAttributes.partitionAttributes).setOffHeap(this.regionAttributes.getOffHeap());
     }
     // As of 6.5 we automatically enable stats if expiration is used.
     {
@@ -1430,6 +1465,12 @@ public class AttributesFactory<K,V> {
         throw new IllegalStateException(LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString());        
       }
     }
+    
+    if (attrs.getHDFSStoreName() != null) {
+      if (!attrs.getDataPolicy().withHDFS() && (attrs.getPartitionAttributes() == null || attrs.getPartitionAttributes().getLocalMaxMemory() != 0)) {
+        throw new IllegalStateException(LocalizedStrings.HDFSSTORE_IS_USED_IN_NONHDFS_REGION.toLocalizedString());        
+      }
+    }
 
     if (!attrs.getStatisticsEnabled() &&
           (attrs.getRegionTimeToLive().getTimeout() != 0 ||
@@ -1461,14 +1502,6 @@ public class AttributesFactory<K,V> {
         throw new IllegalStateException(LocalizedStrings.AttributesFactory_IF_THE_MEMBERSHIP_ATTRIBUTES_HAS_REQUIRED_ROLES_THEN_SCOPE_MUST_NOT_BE_LOCAL.toLocalizedString());
       }
     }
-    if (attrs.getPoolName() != null) {
-      if (attrs.getCacheLoader() != null && AbstractRegion.isBridgeLoader(attrs.getCacheLoader())) {
-        throw new IllegalStateException("A region with a pool name can not have a BridgeLoader or BridgeClient. Please use pools OR BridgeClient.");
-      }
-      if (attrs.getCacheWriter() != null && AbstractRegion.isBridgeWriter(attrs.getCacheWriter())) {
-        throw new IllegalStateException("A region with a pool name can not have a BridgeWriter or BridgeClient. Please use pools OR BridgeClient.");
-      }
-    }
     
     final PartitionAttributes pa = attrs.getPartitionAttributes();
     // Validations for PartitionRegion Attributes
@@ -1476,22 +1509,8 @@ public class AttributesFactory<K,V> {
       ((PartitionAttributesImpl)pa).validateWhenAllAttributesAreSet(attrs instanceof RegionAttributesCreation);
       ExpirationAttributes regionIdleTimeout = attrs.getRegionIdleTimeout();
       ExpirationAttributes regionTimeToLive = attrs.getRegionTimeToLive();
-      if ((regionIdleTimeout.getAction().isInvalidate() && regionIdleTimeout.getTimeout() > 0)
-          || (regionIdleTimeout.getAction().isLocalInvalidate() && regionIdleTimeout.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isInvalidate() && regionTimeToLive.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isLocalInvalidate()) && regionTimeToLive.getTimeout() > 0 ) {
-        throw new IllegalStateException(
-            LocalizedStrings.AttributesFactory_INVALIDATE_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
-      }
-      
-      if ((regionIdleTimeout.getAction().isDestroy() && regionIdleTimeout.getTimeout() > 0)
-          || (regionIdleTimeout.getAction().isLocalDestroy() && regionIdleTimeout.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isDestroy() && regionTimeToLive.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isLocalDestroy() && regionTimeToLive.getTimeout() > 0)) {
-        throw new IllegalStateException(
-            LocalizedStrings.AttributesFactory_DESTROY_REGION_NOT_SUPPORTED_FOR_PR
-                .toLocalizedString());
-      }
+      AbstractRegion.validatePRRegionExpirationAttributes(regionIdleTimeout);
+      AbstractRegion.validatePRRegionExpirationAttributes(regionTimeToLive);
       
       ExpirationAttributes entryIdleTimeout = attrs.getEntryIdleTimeout();
       ExpirationAttributes entryTimeToLive = attrs.getEntryTimeToLive();
@@ -1547,13 +1566,18 @@ public class AttributesFactory<K,V> {
 //            "A non-zero PartitionAttributes localMaxMemory setting is not compatible" +
 //            " with an empty DataPolicy.  Please use DataPolicy.NORMAL instead.");
 //      }
-      if (pa.getLocalMaxMemory() < 0) {
+      
+      // fix bug #52033 by invoking getLocalMaxMemoryForValidation here
+      if (((PartitionAttributesImpl)pa).getLocalMaxMemoryForValidation() < 0) {
         throw new IllegalStateException(LocalizedStrings.AttributesFactory_PARTITIONATTRIBUTES_LOCALMAXMEMORY_MUST_NOT_BE_NEGATIVE.toLocalizedString());
       }
+      
       if (attrs.isLockGrantor() == true) {
         throw new IllegalStateException(LocalizedStrings.AttributesFactory_SETLOCKGRANTERTRUE_IS_NOT_ALLOWED_IN_PARTITIONED_REGIONS.toLocalizedString());
       }
-      if (pa.getLocalMaxMemory() == 0 && attrs.getDataPolicy() == DataPolicy.PERSISTENT_PARTITION) {
+      
+      // fix bug #52033 by invoking getLocalMaxMemoryForValidation here
+      if (((PartitionAttributesImpl)pa).getLocalMaxMemoryForValidation() == 0 && attrs.getDataPolicy() == DataPolicy.PERSISTENT_PARTITION) {
         throw new IllegalStateException("Persistence is not allowed when local-max-memory is zero.");
       }
     }
@@ -1610,13 +1634,18 @@ public class AttributesFactory<K,V> {
     SubscriptionAttributes subscriptionAttributes = new SubscriptionAttributes();
     boolean multicastEnabled = false;
     EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();  // TODO need to determine the constructor
+    transient CustomEvictionAttributes customEvictionAttributes;
     String poolName = null;
     String diskStoreName = null;
+    String hdfsStoreName = null;
+    private boolean hdfsWriteOnly = false;
     boolean diskSynchronous = DEFAULT_DISK_SYNCHRONOUS;
     protected boolean isBucketRegion = false;
     private boolean isCloningEnabled = false;
     Compressor compressor = null;
     
+    boolean offHeap = false;
+
     /** Constructs an instance of <code>RegionAttributes</code> with default settings.
      * @see AttributesFactory
      */
@@ -1668,9 +1697,12 @@ public class AttributesFactory<K,V> {
       } else {
         buf.append("; diskStoreName=").append(diskStoreName);
       }
+      buf.append("; hdfsStoreName=").append(hdfsStoreName);
+      buf.append("; hdfsWriteOnly=").append(hdfsWriteOnly);
       buf.append("; GatewaySenderIds=").append(gatewaySenderIds);
       buf.append("; AsyncEventQueueIds=").append(asyncEventQueueIds);
       buf.append("; compressor=").append(compressor == null ? null : compressor.getClass().getName());
+      buf.append("; offHeap=").append(offHeap);
       return buf.toString();
     }
     public CacheLoader<K,V> getCacheLoader() {
@@ -1939,6 +1971,15 @@ public class AttributesFactory<K,V> {
     {
       return this.evictionAttributes;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CustomEvictionAttributes getCustomEvictionAttributes() {
+      return this.customEvictionAttributes;
+    }
+
     public MembershipAttributes getMembershipAttributes() {
       return this.membershipAttributes;
     }
@@ -1992,8 +2033,24 @@ public class AttributesFactory<K,V> {
       return this.asyncEventQueueIds;
     }
 
+    @Override
+    public String getHDFSStoreName() {
+      return hdfsStoreName;
+    }
+    
+    @Override
+    public boolean getHDFSWriteOnly() {
+      return hdfsWriteOnly;
+    }
+
+    @Override
     public Compressor getCompressor() {
       return this.compressor;
+    }
+    
+    @Override
+    public boolean getOffHeap() {
+      return this.offHeap;
     }
   }
 }

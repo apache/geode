@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.management.internal.cli.commands;
@@ -179,10 +187,10 @@ public class ClientCommands implements CommandMarker {
             try{
               clientHealthStatus = serverMbean.showClientStats(clientId);       
               if(clientHealthStatus == null){
-                return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.DECRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0, clientId));
+                return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0, clientId));
               }                      
             }catch(Exception eee){
-              return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.DECRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1, clientId, eee.getMessage()));               
+              return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1, clientId, eee.getMessage()));               
             }           
           }         
         }      
@@ -237,19 +245,19 @@ public class ClientCommands implements CommandMarker {
               
             }
           }catch(Exception e){
-            LogWrapper.getInstance().info(CliStrings.DECRIBE_CLIENT_ERROR_FETCHING_STATS_0 + " :: " + CliUtil.stackTraceAsString(e));
-            return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.DECRIBE_CLIENT_ERROR_FETCHING_STATS_0, e.getMessage()));            
+            LogWrapper.getInstance().info(CliStrings.DESCRIBE_CLIENT_ERROR_FETCHING_STATS_0 + " :: " + CliUtil.stackTraceAsString(e));
+            return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.DESCRIBE_CLIENT_ERROR_FETCHING_STATS_0, e.getMessage()));            
           }
         }
         
         buildTableResult(sectionResult, clientHealthStatus, isDurable, primaryServers, secondaryServers);       
         result = ResultBuilder.buildResult(compositeResultData);
       }else{
-        return ResultBuilder.createGemFireErrorResult(CliStrings.DECRIBE_CLIENT_NO_MEMBERS);
+        return ResultBuilder.createGemFireErrorResult(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
       }
     } catch (Exception e) {      
       LogWrapper.getInstance().info("Error in decribe clients. stack trace" + CliUtil.stackTraceAsString(e));      
-      result = ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.DECRIBE_CLIENT_COULD_NOT_RETRIEVE_CLIENT_0, e.getMessage()));
+      result = ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_CLIENT_0, e.getMessage()));
     }    
     LogWrapper.getInstance().info("decribe client result " + result);    
     return result;
@@ -269,18 +277,18 @@ public class ClientCommands implements CommandMarker {
     }   
     if(clientHealthStatus != null){
       sectionResult.addSeparator('-');
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_PRIMARY_SERVERS, primServers);
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_SECONDARY_SERVERS, secondServers);
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_CPU, clientHealthStatus.getCpus());
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_LISTNER_CALLS, clientHealthStatus.getNumOfCacheListenerCalls());
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_GETS, clientHealthStatus.getNumOfGets());
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_MISSES, clientHealthStatus.getNumOfMisses());
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_PUTS, clientHealthStatus.getNumOfPuts());
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_THREADS, clientHealthStatus.getNumOfThreads());
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_PROCESS_CPU_TIME, clientHealthStatus.getProcessCpuTime());
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_QUEUE_SIZE, clientHealthStatus.getQueueSize());
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_UP_TIME, clientHealthStatus.getUpTime());      
-      sectionResult.addData(CliStrings.DECRIBE_CLIENT_COLUMN_DURABLE, isDurable);      
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS, primServers);
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS, secondServers);
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_CPU, clientHealthStatus.getCpus());
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS, clientHealthStatus.getNumOfCacheListenerCalls());
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_GETS, clientHealthStatus.getNumOfGets());
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_MISSES, clientHealthStatus.getNumOfMisses());
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS, clientHealthStatus.getNumOfPuts());
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_THREADS, clientHealthStatus.getNumOfThreads());
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PROCESS_CPU_TIME, clientHealthStatus.getProcessCpuTime());
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE, clientHealthStatus.getQueueSize());
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_UP_TIME, clientHealthStatus.getUpTime());      
+      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_DURABLE, isDurable);      
       sectionResult.addSeparator('-');
       
       Map<String, String > poolStats = clientHealthStatus.getPoolStats();
@@ -299,10 +307,10 @@ public class ClientCommands implements CommandMarker {
           LogWrapper.getInstance().info("decribe client clientHealthStatus redundancy =" + str[2].substring(str[2].indexOf("=")+1 ));
           LogWrapper.getInstance().info("decribe client clientHealthStatus CQs =" +        str[3].substring(str[3].indexOf("=")+1 ));         
           
-          poolStatsResultTable.accumulate(CliStrings.DECRIBE_CLIENT_MIN_CONN, str[0].substring(str[0].indexOf("=")+1 ));
-          poolStatsResultTable.accumulate(CliStrings.DECRIBE_CLIENT_MAX_CONN, str[1].substring(str[1].indexOf("=")+1 ));
-          poolStatsResultTable.accumulate(CliStrings.DECRIBE_CLIENT_REDUDANCY,           str[2].substring(str[2].indexOf("=")+1 ));
-          poolStatsResultTable.accumulate(CliStrings.DECRIBE_CLIENT_CQs,       str[3].substring(str[3].indexOf("=")+1 ));          
+          poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_MIN_CONN, str[0].substring(str[0].indexOf("=")+1 ));
+          poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_MAX_CONN, str[1].substring(str[1].indexOf("=")+1 ));
+          poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_REDUDANCY,           str[2].substring(str[2].indexOf("=")+1 ));
+          poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_CQs,       str[3].substring(str[3].indexOf("=")+1 ));          
         }        
       }      
     }

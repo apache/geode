@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.wan;
 
@@ -228,7 +237,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   }
 
   protected Object eventQueueTake() throws CacheException, InterruptedException {
-    return this.queue.take();
+    throw new UnsupportedOperationException();
+    // No code currently calls this method.
+    // To implement it we need to make sure that the callers
+    // call freeOffHeapResources on the returned GatewaySenderEventImpl.
+    //return this.queue.take();
   }
 
   protected int eventQueueSize() {
@@ -495,6 +508,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
                 
                 itr.remove();
                 statistics.incEventsNotQueued();
+                continue;
               }
               
               boolean transmit = filter.beforeTransmit(event);
@@ -764,7 +778,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     if (pdxRegion != null && pdxRegion.size() != pdxEventsMap.size()) {
       for (Map.Entry<Object, Object> typeEntry : pdxRegion.entrySet()) {
         if(!pdxEventsMap.containsKey(typeEntry.getKey())){
-          EntryEventImpl event = new EntryEventImpl(
+          EntryEventImpl event = EntryEventImpl.create(
               (LocalRegion) pdxRegion, Operation.UPDATE,
               typeEntry.getKey(), typeEntry.getValue(), null, false,
               cache.getMyId());
@@ -778,7 +792,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
               allRemoteDSIds, true);
           event.setCallbackArgument(geCallbackArg);
           GatewaySenderEventImpl pdxSenderEvent = new GatewaySenderEventImpl(
-              EnumListenerEvent.AFTER_UPDATE, event, null);
+              EnumListenerEvent.AFTER_UPDATE, event, null); // OFFHEAP: event for pdx type meta data so it should never be off-heap
           pdxEventsMap.put(typeEntry.getKey(), pdxSenderEvent);
           pdxSenderEventsList.add(pdxSenderEvent);
         }
@@ -887,7 +901,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
           if (ge.getCreationTime() + this.sender.getAlertThreshold() < currentTime) {
             logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayImpl_EVENT_QUEUE_ALERT_OPERATION_0_REGION_1_KEY_2_VALUE_3_TIME_4,
                 new Object[] { ge.getOperation(), ge.getRegionPath(), ge.getKey(),
-                ge.getDeserializedValue(), currentTime - ge.getCreationTime() }));
+                ge.getValueAsString(true), currentTime - ge.getCreationTime() }));
             statistics.incEventsExceedingAlertThreshold();
           }
         }
@@ -1141,8 +1155,31 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
         logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayImpl_0_INTERRUPTEDEXCEPTION_IN_JOINING_WITH_DISPATCHER_THREAD, this));
       }
     }
+    
+    closeProcessor();
+    
     if (logger.isDebugEnabled()) {
       logger.debug("Stopped dispatching: {}", this);
+    }
+  }
+  
+  public void closeProcessor() {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Closing dispatcher");
+    }
+    try {
+      if (this.sender.isPrimary() && this.queue.size() > 0) {
+        logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayImpl_DESTROYING_GATEWAYEVENTDISPATCHER_WITH_ACTIVELY_QUEUED_DATA));
+      }
+    } catch (RegionDestroyedException ignore) {
+    } catch (CancelException ignore) {
+    } catch (CacheException ignore) {
+      // just checking in case we should log a warning
+    } finally {
+      this.queue.close();
+      if (logger.isDebugEnabled()) {
+        logger.debug("Closed dispatcher");
+      }
     }
   }
 
@@ -1192,7 +1229,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
         buffer.append("\tEvent ").append(ge.getEventId()).append(":");
         buffer.append(ge.getKey()).append("->");
         // TODO:wan70 remove old code
-        buffer.append(ge.deserialize(ge.getValue()));
+        buffer.append(ge.getValueAsString(true)).append(",");
         buffer.append(ge.getShadowKey());
         buffer.append("\n");
       }

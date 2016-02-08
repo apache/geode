@@ -1,15 +1,22 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,22 +34,23 @@ import com.gemstone.gemfire.distributed.ServerLauncher.Command;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.support.DistributedSystemAdapter;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
 /**
  * The ServerLauncherJUnitTest class is a test suite of unit tests testing the contract, functionality and invariants
@@ -58,43 +66,23 @@ import org.junit.experimental.categories.Category;
  * @see org.junit.Test
  * @since 7.0
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation", "unused"})
 @Category(UnitTest.class)
-public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
-
-  private static final String GEMFIRE_PROPERTIES_FILE_NAME = "gemfire.properties";
-  private static final String TEMPORARY_FILE_NAME = "beforeServerLauncherJUnitTest_" + GEMFIRE_PROPERTIES_FILE_NAME;
+public class ServerLauncherJUnitTest {
 
   private Mockery mockContext;
 
-  @BeforeClass
-  public static void testSuiteSetup() {
-    if (SystemUtils.isWindows()) {
-      return;
-    }
-    File file = new File(GEMFIRE_PROPERTIES_FILE_NAME);
-    if (file.exists()) {
-      File dest = new File(TEMPORARY_FILE_NAME);
-      assertTrue(file.renameTo(dest));
-    }
-  }
-
-  @AfterClass
-  public static void testSuiteTearDown() {
-    if (SystemUtils.isWindows()) {
-      return;
-    }
-    File file = new File(TEMPORARY_FILE_NAME);
-    if (file.exists()) {
-      File dest = new File(GEMFIRE_PROPERTIES_FILE_NAME);
-      assertTrue(file.renameTo(dest));
-    }
-  }
-
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  
+  @Rule
+  public final TestName testName = new TestName();
+  
   @Before
   public void setup() {
     mockContext = new Mockery() {{
       setImposteriser(ClassImposteriser.INSTANCE);
+      setThreadingPolicy(new Synchroniser());
     }};
   }
 
@@ -102,29 +90,6 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
   public void tearDown() {
     mockContext.assertIsSatisfied();
     mockContext = null;
-  }
-
-  @Test
-  public void testParseArguments() throws Exception {
-    Builder builder = new Builder();
-
-    builder.parseArguments("start", "serverOne", "--assign-buckets", "--disable-default-server", "--debug", "--force",
-      "--rebalance", "--redirect-output", "--dir=" + ServerLauncher.DEFAULT_WORKING_DIRECTORY, "--pid=1234",
-        "--server-bind-address=" + InetAddress.getLocalHost().getHostAddress(), "--server-port=11235");
-
-    assertEquals(Command.START, builder.getCommand());
-    assertEquals("serverOne", builder.getMemberName());
-    assertTrue(builder.getAssignBuckets());
-    assertTrue(builder.getDisableDefaultServer());
-    assertTrue(builder.getDebug());
-    assertTrue(builder.getForce());
-    assertFalse(Boolean.TRUE.equals(builder.getHelp()));
-    assertTrue(builder.getRebalance());
-    assertTrue(builder.getRedirectOutput());
-    assertEquals(ServerLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-    assertEquals(1234, builder.getPid().intValue());
-    assertEquals(InetAddress.getLocalHost(), builder.getServerBindAddress());
-    assertEquals(11235, builder.getServerPort().intValue());
   }
 
   @Test
@@ -288,6 +253,17 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test
+  public void testSetAndGetHostnameForClients() {
+    final Builder builder = new Builder();
+
+    assertNull(builder.getHostNameForClients());
+    assertSame(builder, builder.setHostNameForClients("Pegasus"));
+    assertEquals("Pegasus", builder.getHostNameForClients());
+    assertSame(builder, builder.setHostNameForClients(null));
+    assertNull(builder.getHostNameForClients());
+  }
+
+  @Test
   public void testSetAndGetServerPort() {
     Builder builder = new Builder();
 
@@ -326,57 +302,6 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
     catch (IllegalArgumentException expected) {
       assertEquals(LocalizedStrings.Launcher_Builder_INVALID_PORT_ERROR_MESSAGE.toLocalizedString("Server"),
         expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test
-  public void testSetAndGetWorkingDirectory() {
-    Builder builder = new Builder();
-
-    assertEquals(ServerLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory(System.getProperty("java.io.tmpdir")));
-    assertEquals(IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(System.getProperty("java.io.tmpdir"))),
-      builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory("  "));
-    assertEquals(ServerLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory(""));
-    assertEquals(ServerLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory(null));
-    assertEquals(ServerLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testSetWorkingDirectoryToNonExistingDirectory() {
-    try {
-      new Builder().setWorkingDirectory("/path/to/non_existing/directory");
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-        .toLocalizedString("Server"), expected.getMessage());
-      assertTrue(expected.getCause() instanceof FileNotFoundException);
-      assertEquals("/path/to/non_existing/directory", expected.getCause().getMessage());
-      throw expected;
-    }
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testSetWorkingDirectoryToFile() throws IOException {
-    File tmpFile = File.createTempFile("tmp", "file");
-
-    assertNotNull(tmpFile);
-    assertTrue(tmpFile.isFile());
-
-    tmpFile.deleteOnExit();
-
-    try {
-      new Builder().setWorkingDirectory(tmpFile.getAbsolutePath());
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-        .toLocalizedString("Server"), expected.getMessage());
-      assertTrue(expected.getCause() instanceof FileNotFoundException);
-      assertEquals(tmpFile.getAbsolutePath(), expected.getCause().getMessage());
       throw expected;
     }
   }
@@ -558,49 +483,6 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test
-  public void testBuild() throws Exception {
-    ServerLauncher launcher = new Builder()
-      .setCommand(Command.STOP)
-      .setAssignBuckets(true)
-      .setForce(true)
-      .setMemberName("serverOne")
-      .setRebalance(true)
-      .setServerBindAddress(InetAddress.getLocalHost().getHostAddress())
-      .setServerPort(11235)
-      .setWorkingDirectory(System.getProperty("java.io.tmpdir"))
-      .setCriticalHeapPercentage(90.0f)
-      .setEvictionHeapPercentage(75.0f)
-      .setMaxConnections(100)
-      .setMaxMessageCount(512)
-      .setMaxThreads(8)
-      .setMessageTimeToLive(120000)
-      .setSocketBufferSize(32768)
-      .build();
-
-    assertNotNull(launcher);
-    assertTrue(launcher.isAssignBuckets());
-    assertFalse(launcher.isDebugging());
-    assertFalse(launcher.isDisableDefaultServer());
-    assertTrue(launcher.isForcing());
-    assertFalse(launcher.isHelping());
-    assertTrue(launcher.isRebalancing());
-    assertFalse(launcher.isRunning());
-    assertEquals(Command.STOP, launcher.getCommand());
-    assertEquals("serverOne", launcher.getMemberName());
-    assertEquals(InetAddress.getLocalHost(), launcher.getServerBindAddress());
-    assertEquals(11235, launcher.getServerPort().intValue());
-    assertEquals(IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(System.getProperty("java.io.tmpdir"))),
-      launcher.getWorkingDirectory());
-    assertEquals(90.0f, launcher.getCriticalHeapPercentage().floatValue(), 0.0f);
-    assertEquals(75.0f, launcher.getEvictionHeapPercentage().floatValue(), 0.0f);
-    assertEquals(100, launcher.getMaxConnections().intValue());
-    assertEquals(512, launcher.getMaxMessageCount().intValue());
-    assertEquals(8, launcher.getMaxThreads().intValue());
-    assertEquals(120000, launcher.getMessageTimeToLive().intValue());
-    assertEquals(32768, launcher.getSocketBufferSize().intValue());
-  }
-
-  @Test
   public void testBuildWithMemberNameSetInApiPropertiesOnStart() {
     ServerLauncher launcher = new Builder()
       .setCommand(ServerLauncher.Command.START)
@@ -615,53 +497,17 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test
-  public void testBuildWithMemberNameSetInGemFirePropertiesOnStart() {
-    assumeFalse(SystemUtils.isWindows());
-
-    Properties gemfireProperties = new Properties();
-
-    gemfireProperties.setProperty(DistributionConfig.NAME_NAME, "server123");
-
-    File gemfirePropertiesFile = writeGemFirePropertiesToFile(gemfireProperties, "gemfire.properties",
-      String.format("Test gemfire.properties file for %1$s.%2$s.", getClass().getSimpleName(),
-        "testBuildWithMemberNameSetInGemFirePropertiesOnStart"));
-
-    assertNotNull(gemfirePropertiesFile);
-    assertTrue(gemfirePropertiesFile.isFile());
-
-    try {
-      ServerLauncher launcher = new Builder()
-        .setCommand(ServerLauncher.Command.START)
-        .setMemberName(null)
-        .build();
-
-      assertNotNull(launcher);
-      assertEquals(ServerLauncher.Command.START, launcher.getCommand());
-      assertNull(launcher.getMemberName());
-    }
-    finally {
-      assertTrue(gemfirePropertiesFile.delete());
-      assertFalse(gemfirePropertiesFile.isFile());
-    }
-  }
-
-  @Test
   public void testBuildWithMemberNameSetInSystemPropertiesOnStart() {
-    try {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME, "serverXYZ");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME, "serverXYZ");
 
-      ServerLauncher launcher = new Builder()
-        .setCommand(ServerLauncher.Command.START)
-        .setMemberName(null)
-        .build();
+    ServerLauncher launcher = new Builder()
+      .setCommand(ServerLauncher.Command.START)
+      .setMemberName(null)
+      .build();
 
-      assertNotNull(launcher);
-      assertEquals(ServerLauncher.Command.START, launcher.getCommand());
-      assertNull(launcher.getMemberName());
-    }
-    finally {
-      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME);
-    }
+    assertNotNull(launcher);
+    assertEquals(ServerLauncher.Command.START, launcher.getCommand());
+    assertNull(launcher.getMemberName());
   }
 
   @Test(expected = IllegalStateException.class)
@@ -672,21 +518,6 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
     catch (IllegalStateException expected) {
       assertEquals(LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE.toLocalizedString("Server"),
         expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void testBuildWithInvalidWorkingDirectoryOnStart() {
-    try {
-      new Builder().setCommand(Command.START)
-        .setMemberName("serverOne")
-        .setWorkingDirectory(System.getProperty("java.io.tmpdir"))
-        .build();
-    }
-    catch (IllegalStateException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
-        .toLocalizedString("Server"), expected.getMessage());
       throw expected;
     }
   }
@@ -976,5 +807,4 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
       assertFalse(this.serverLauncher.isRunning());
     }
   }
-
 }

@@ -1,10 +1,18 @@
-/*=========================================================================
- * Copyright Copyright (c) 2000-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * $Id: PathUtils.java,v 1.1 2005/01/27 06:26:33 vaibhav Exp $
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal;
 
@@ -19,6 +27,7 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.types.*;
+import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.cache.query.internal.types.*;
 
 
@@ -193,6 +202,68 @@ public class PathUtils {
     catch (TypeMismatchException e) {
     }
     return TypeUtils.OBJECT_TYPE;
+  }
+  
+  /**
+   * Collects all the compiled values in the path , starting from the self at
+   * position 0 in the returned List
+   * 
+   * @param expr
+   * @return List of CompiledValues ( includes the RuntimeIterator)
+   * @throws TypeMismatchException
+   * @throws AmbiguousNameException
+   */
+  public static List<CompiledValue> collectCompiledValuesInThePath(
+      CompiledValue expr, ExecutionContext context)
+      throws AmbiguousNameException, TypeMismatchException {
+    boolean toContinue = true;
+    List<CompiledValue> retList = new ArrayList<CompiledValue>();
+
+    int exprType = expr.getType();
+    while (toContinue) {
+      switch (exprType) {
+      case OQLLexerTokenTypes.RegionPath:
+        retList.add(expr);
+        toContinue = false;
+        break;
+      case OQLLexerTokenTypes.METHOD_INV:
+        retList.add(expr);
+        CompiledOperation operation = (CompiledOperation) expr;
+        expr = operation.getReceiver(null/*
+                                          * pass the ExecutionContext as null,
+                                          * thus never implicitly resolving to
+                                          * RuntimeIterator
+                                          */);
+        if (expr == null) {
+          expr = operation;
+          toContinue = false;
+        }
+        break;
+      case CompiledValue.PATH:
+        retList.add(expr);
+        expr = ((CompiledPath) expr).getReceiver();
+        break;
+      case OQLLexerTokenTypes.ITERATOR_DEF:
+        retList.add(expr);
+        toContinue = false;
+        break;
+      case OQLLexerTokenTypes.TOK_LBRACK:
+        retList.add(expr);
+        expr = ((CompiledIndexOperation) expr).getReceiver();
+        break;
+      case OQLLexerTokenTypes.Identifier:
+        CompiledID cid = (CompiledID) expr;
+        expr = context.resolve(cid.getId());
+        break;
+      default:
+        toContinue = false;
+        break;
+      }
+
+      if (toContinue)
+        exprType = expr.getType();
+    }
+    return retList;
   }
 
 }

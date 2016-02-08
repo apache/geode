@@ -1,10 +1,18 @@
-/*=========================================================================
- * Copyright Copyright (c) 2000-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * $Id: DefaultQuery.java,v 1.1 2005/01/27 06:26:33 vaibhav Exp $
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.cache.query.internal;
@@ -33,6 +41,8 @@ import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
 import com.gemstone.gemfire.cache.query.NameResolutionException;
 import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.cache.query.QueryException;
+import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.QueryStatistics;
@@ -259,10 +269,19 @@ public class DefaultQuery implements Query {
   /** Should be constructed from DefaultQueryService
    * @see QueryService#newQuery
    */
-  public DefaultQuery(String queryString, Cache cache) {
+  public DefaultQuery(String queryString, Cache cache, boolean isForRemote) {
     this.queryString = queryString;
     QCompiler compiler = new QCompiler();
     this.compiledQuery = compiler.compileQuery(queryString);
+    CompiledSelect cs = this.getSimpleSelect();
+    if(cs != null && !isForRemote && (cs.isGroupBy() || cs.isOrderBy())) {
+      QueryExecutionContext ctx = new QueryExecutionContext(null, cache);
+      try {
+        cs.computeDependencies(ctx);       
+      }catch(QueryException qe) {
+        throw new QueryInvalidException("",qe);
+      }
+    }
     this.traceOn = (compiler.isTraceRequested() || QUERY_VERBOSE);
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
@@ -344,7 +363,8 @@ public class DefaultQuery implements Query {
         result = qe.executeQuery(this, parameters, null);
         // For local queries returning pdx objects wrap the resultset with ResultsCollectionPdxDeserializerWrapper
         // which deserializes these pdx objects.
-        if(!isRemoteQuery() && !this.cache.getPdxReadSerialized() && result instanceof SelectResults) {
+        if(needsPDXDeserializationWrapper(true /* is query on PR*/) 
+            && result instanceof SelectResults ) {
           //we use copy on read false here because the copying has already taken effect earlier in the PartitionedRegionQueryEvaluator
           result = new ResultsCollectionPdxDeserializerWrapper((SelectResults) result, false);
         } 
@@ -377,7 +397,7 @@ public class DefaultQuery implements Query {
       boolean needsCopyOnReadWrapper = this.cache.getCopyOnRead() && !DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL || (((QueryExecutionContext)context).isIndexUsed() && DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL);
       // For local queries returning pdx objects wrap the resultset with ResultsCollectionPdxDeserializerWrapper
       // which deserializes these pdx objects.
-      if(!isRemoteQuery() && !this.cache.getPdxReadSerialized() && result instanceof SelectResults) {
+      if(needsPDXDeserializationWrapper(false /* is query on PR*/) && result instanceof SelectResults) {
         result = new ResultsCollectionPdxDeserializerWrapper((SelectResults) result, needsCopyOnReadWrapper);
       } 
       else if (!isRemoteQuery() && this.cache.getCopyOnRead() && result instanceof SelectResults) {
@@ -408,6 +428,28 @@ public class DefaultQuery implements Query {
 
   }
 
+  //For Order by queries ,since they are already ordered by the comparator 
+  //&& it takes care of conversion, we do not have to wrap it in a wrapper
+  public boolean needsPDXDeserializationWrapper(boolean isQueryOnPR) {
+      if( !isRemoteQuery() && !this.cache.getPdxReadSerialized() ) {
+        return true;
+        /*if(isQueryOnPR) {
+          // if the query is on PR we need a top level pdx deserialization wrapper only in case of 
+          //order by query or non distinct query
+          CompiledSelect cs = this.getSimpleSelect();
+          if(cs != null) {
+            return cs.getOrderByAttrs() != null ;
+          }else {
+           return true; 
+          }
+        }else {
+          return true;
+        }*/
+      }else {
+        return false;
+      }
+  }
+ 
   private Object executeOnServer(Object[] parameters) {
     long startTime = CachePerfStats.getStatTime();
     Object result = null;
@@ -594,7 +636,7 @@ public class DefaultQuery implements Query {
       }
 
       // If there are more than one  PRs they have to be co-located.
-      QueryExecutor root = null;
+      QueryExecutor other = null;
       for (QueryExecutor eachPR : prs) {
         boolean colocated = false;
         
@@ -602,7 +644,7 @@ public class DefaultQuery implements Query {
           if (eachPR == allPRs) {
             continue;
           }
-
+          other = allPRs;
           if ((((PartitionedRegion) eachPR).colocatedByList.contains(allPRs) || 
               ((PartitionedRegion) allPRs).colocatedByList.contains(eachPR)))  {
             colocated = true;
@@ -610,13 +652,12 @@ public class DefaultQuery implements Query {
           } 
         } // allPrs
 
-        if (!colocated && root != null) {
+        if (!colocated) { 
           throw new UnsupportedOperationException(
               LocalizedStrings.DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_NON_COLOCATED_PARTITIONED_REGION_1
               .toLocalizedString(new Object[] { eachPR.getName(),
-                  root.getName() }));
+                  other.getName() }));
         }
-        root = eachPR;
         
       } // eachPR
 
@@ -1072,7 +1113,9 @@ public class DefaultQuery implements Query {
       //for dependent iterators, deserialization is required
       if (cs.getIterators().size() == context.getAllIndependentIteratorsOfCurrentScope().size()
           && cs.getWhereClause() == null
-          && cs.getProjectionAttributes() == null && !cs.isDistinct()) {
+          && cs.getProjectionAttributes() == null && !cs.isDistinct()
+          && cs.getOrderByAttrs() == null
+          ) {
         setKeepSerialized(true);
       }
     }
@@ -1082,7 +1125,7 @@ public class DefaultQuery implements Query {
     return keepSerialized;
   }
 
-  public void setKeepSerialized(boolean keepSerialized) {
+  private void setKeepSerialized(boolean keepSerialized) {
     this.keepSerialized = keepSerialized;
   }
   

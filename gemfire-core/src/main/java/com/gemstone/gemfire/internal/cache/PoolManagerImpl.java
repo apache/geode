@@ -1,15 +1,23 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
 
 import java.util.Collections;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -23,7 +31,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.RegisterDataSerializersOp;
 import com.gemstone.gemfire.cache.client.internal.RegisterInstantiatorsOp;
@@ -32,6 +39,7 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalDataSerializer.SerializerAttributesHolder;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.InternalInstantiator.InstantiatorAttributesHolder;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -102,36 +110,24 @@ public class PoolManagerImpl {
   }
   
   /**
-   * Set the keep alive flag before closing. Only for use with the deprecated
-   * BridgeWriter/Loader code. A BridgeWriter is automatically
-   * closed then the last region is disconnected from it,
-   * so we need to mark the connections as keep alive
-   * before we close the regions that use the bridge writer/loader
-   * 
-   * @param keepAlive
-   */
-  public static void setKeepAlive(boolean keepAlive) {
-    for(Iterator<Pool> itr = PoolManager.getAll().values().iterator(); itr.hasNext(); ) {
-      Pool nextPool = itr.next();
-      if(nextPool instanceof BridgePoolImpl) {
-        BridgePoolImpl bridgePool = (BridgePoolImpl) nextPool;
-        bridgePool.setKeepAlive(keepAlive);
-      }
-    }
-  }
-  /**
    * Destroys all created pool in this manager.
    */
   public void close(boolean keepAlive) {
     // destroying connection pools
+    boolean foundClientPool = false;
     synchronized(poolLock) {
       for (Iterator<Map.Entry<String,Pool>> itr = pools.entrySet().iterator(); itr.hasNext(); ) {
         Map.Entry<String,Pool> entry = itr.next();
         PoolImpl pool = (PoolImpl)entry.getValue();
         pool.basicDestroy(keepAlive);
+        foundClientPool = true;
       }
       pools = Collections.emptyMap();
       itrForEmergencyClose = null;
+      if (foundClientPool) {
+        // Now that the client has all the pools destroyed free up the pooled comm buffers
+        ServerConnection.emptyCommBufferPool();
+      }
     }
   }
   

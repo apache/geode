@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.lru;
 
@@ -18,21 +27,24 @@ import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.cache.AbstractRegion;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * A <code>HeapLRUCapacityController</code> controls the contents of
- * {@link Region} based on the percentage of Java VM heap memory that is
- * currently being used. If the percentage of Java VM heap memory in use exceeds
+ * {@link Region} based on the percentage of memory that is
+ * currently being used. If the percentage of memory in use exceeds
  * the given percentage, then the least recently used entry of the region is
  * evicted.
  * 
  * <P>
  * 
+ * For heap regions:
  * GemStone has found that the <code>HeapLRUCapacityController</code> has the
  * most effect on a VM that is lauched with both the <code>-Xmx</code> and
  * <code>-Xms</code> switches used. Many virtual machine implementations have
@@ -77,7 +89,7 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
     // create the stats type for MemLRU.
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
-    final String entryBytesDesc = "The amount of VM heap currently used by regions configured for eviction.";
+    final String entryBytesDesc = "The amount of memory currently used by regions configured for eviction.";
     final String lruEvictionsDesc = "Number of total entry evictions triggered by LRU.";
     final String lruDestroysDesc = "Number of entries destroyed in the region through both destroy cache operations and eviction. Reset to zero each time it exceeds lruDestroysLimit.";
     final String lruDestroysLimitDesc = "Maximum number of entry destroys triggered by LRU before scan occurs.";
@@ -90,16 +102,11 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
             "Statistics about byte based Least Recently Used region entry disposal",
             new StatisticDescriptor[] {
                 f.createLongGauge("entryBytes", entryBytesDesc, "bytes"),
-                f
-                    .createLongCounter("lruEvictions", lruEvictionsDesc,
-                        "entries"),
+                f.createLongCounter("lruEvictions", lruEvictionsDesc, "entries"),
                 f.createLongCounter("lruDestroys", lruDestroysDesc, "entries"),
-                f.createLongGauge("lruDestroysLimit", lruDestroysLimitDesc,
-                    "entries"),
-                f.createLongCounter("lruEvaluations", lruEvaluationsDesc,
-                    "entries"),
-                f.createLongCounter("lruGreedyReturns", lruGreedyReturnsDesc,
-                    "entries"), });
+                f.createLongGauge("lruDestroysLimit", lruDestroysLimitDesc, "entries"),
+                f.createLongCounter("lruEvaluations", lruEvaluationsDesc, "entries"),
+                f.createLongCounter("lruGreedyReturns", lruGreedyReturnsDesc, "entries"), });
   }
 
   // //////////////////// Instance Fields /////////////////////
@@ -239,7 +246,7 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
       }
 
       public int getLimitStatId() {
-        return statType.nameToId("heapPercentage");
+        throw new UnsupportedOperationException("Limit not used with this LRU type");
       }
 
       public int getCountStatId() {
@@ -265,28 +272,41 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
       public int getGreedyReturnsStatId() {
         return statType.nameToId("lruGreedyReturns");
       }
-
+      
       /**
        * Okay, deep breath. Instead of basing the LRU calculation on the number
        * of entries in the region or on their "size" (which turned out to be
-       * incorrectly estimated in the general case), we use the amount of VM
-       * heap currently in use. If the amount of VM heap current in use
+       * incorrectly estimated in the general case), we use the amount of
+       * memory currently in use. If the amount of memory current in use
        * {@linkplain Runtime#maxMemory max memory} -
        * {@linkplain Runtime#freeMemory free memory} is greater than the
        * overflow threshold, then we evict the LRU entry.
        */
       public boolean mustEvict(LRUStatistics stats, Region region, int delta) {
-        if (region instanceof BucketRegion) {
-          BucketRegion br = (BucketRegion)region;
-          return ((GemFireCacheImpl)region.getCache()).getHeapEvictor().mustEvict()
-              && br.getSizeForEviction() > 0;
-        }
-        else if (region != null) {
-          return ((GemFireCacheImpl) region.getCache()).getHeapEvictor().mustEvict()
-              && ((LocalRegion) region).getRegionMap().sizeInVM() > 0;
+        final GemFireCacheImpl cache;
+        if (region != null) {
+          cache = (GemFireCacheImpl) region.getRegionService();
         } else {
-          return GemFireCacheImpl.getInstance().getHeapEvictor().mustEvict();
+          cache = GemFireCacheImpl.getInstance();
         }
+        InternalResourceManager resourceManager = cache.getResourceManager();
+        
+        if (region == null) {
+          return resourceManager.getHeapMonitor().getState().isEviction();
+        }
+        
+        final boolean monitorStateIsEviction;
+        if (!((AbstractRegion) region).getOffHeap()) {
+          monitorStateIsEviction = resourceManager.getHeapMonitor().getState().isEviction();
+        } else {
+          monitorStateIsEviction = resourceManager.getOffHeapMonitor().getState().isEviction();
+        }
+        
+        if (region instanceof BucketRegion) {
+          return monitorStateIsEviction && ((BucketRegion) region).getSizeForEviction() > 0;
+        }
+        
+        return monitorStateIsEviction && ((LocalRegion) region).getRegionMap().sizeInVM() > 0;
       }
     };
   }

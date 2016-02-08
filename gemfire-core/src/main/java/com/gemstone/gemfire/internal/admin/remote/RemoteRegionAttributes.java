@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.admin.remote;
 
@@ -24,6 +33,7 @@ import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheLoaderException;
 import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.CacheWriterException;
+import com.gemstone.gemfire.cache.CustomEvictionAttributes;
 import com.gemstone.gemfire.cache.CustomExpiry;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Declarable;
@@ -98,7 +108,10 @@ public class RemoteRegionAttributes implements RegionAttributes,
   private String[] gatewaySendersDescs;
   private boolean isGatewaySenderEnabled = false;
   private String[] asyncEventQueueDescs;
+  private String hdfsStoreName;
+  private boolean hdfsWriteOnly;
   private String compressorDesc;
+  private boolean offHeap;
 
   /**
    * constructs a new default RemoteRegionAttributes.
@@ -148,7 +161,10 @@ public class RemoteRegionAttributes implements RegionAttributes,
     this.isDiskSynchronous = attr.isDiskSynchronous();
     this.gatewaySendersDescs = getDescs(attr.getGatewaySenderIds().toArray());
     this.asyncEventQueueDescs = getDescs(attr.getAsyncEventQueueIds().toArray());
+  	this.hdfsStoreName = attr.getHDFSStoreName();
+    this.hdfsWriteOnly = attr.getHDFSWriteOnly();
     this.compressorDesc = getDesc(attr.getCompressor());
+    this.offHeap = attr.getOffHeap();
   }
 
   /**
@@ -355,6 +371,10 @@ public class RemoteRegionAttributes implements RegionAttributes,
         compressorDesc);
   }
   
+  public boolean getOffHeap() {
+    return this.offHeap;
+  }
+  
   public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
     DataSerializer.writeString(this.cacheLoaderDesc, out);
     DataSerializer.writeString(this.cacheWriterDesc, out);
@@ -400,7 +420,7 @@ public class RemoteRegionAttributes implements RegionAttributes,
     out.writeBoolean(this.concurrencyChecksEnabled);
   }
   
-  public void toData(DataOutput out) throws IOException {
+  public void toDataPre_GFE_9_0_0_0(DataOutput out) throws IOException {
 
     DataSerializer.writeString(this.cacheLoaderDesc, out);
     DataSerializer.writeString(this.cacheWriterDesc, out);
@@ -451,7 +471,13 @@ public class RemoteRegionAttributes implements RegionAttributes,
   
     DataSerializer.writeString(this.compressorDesc, out);
   }
-
+  
+  public void toData(DataOutput out) throws IOException {
+    toDataPre_GFE_9_0_0_0(out);
+    out.writeBoolean(this.offHeap);
+    DataSerializer.writeString(this.hdfsStoreName, out);
+  }
+  
   public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.cacheLoaderDesc = DataSerializer.readString(in);
     this.cacheWriterDesc = DataSerializer.readString(in);
@@ -499,7 +525,7 @@ public class RemoteRegionAttributes implements RegionAttributes,
     this.concurrencyChecksEnabled = in.readBoolean();
   }
   
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GFE_9_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.cacheLoaderDesc = DataSerializer.readString(in);
     this.cacheWriterDesc = DataSerializer.readString(in);
     this.cacheListenerDescs = DataSerializer.readStringArray(in);
@@ -550,7 +576,13 @@ public class RemoteRegionAttributes implements RegionAttributes,
   
     this.compressorDesc = DataSerializer.readString(in);
   }
-
+  
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromDataPre_GFE_9_0_0_0(in);
+    this.offHeap = in.readBoolean();
+    this.hdfsStoreName = DataSerializer.readString(in);
+  }
+  
   private String[] getDescs(Object[] l) {
     if (l == null) {
       return new String[0];
@@ -716,6 +748,15 @@ public class RemoteRegionAttributes implements RegionAttributes,
     return this.evictionAttributes;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public CustomEvictionAttributes getCustomEvictionAttributes() {
+    // TODO: HDFS: no support for custom eviction attributes from remote yet
+    return null;
+  }
+
   public boolean getCloningEnabled() {
     // TODO Auto-generated method stub
     return this.cloningEnable;
@@ -724,7 +765,12 @@ public class RemoteRegionAttributes implements RegionAttributes,
   public String getDiskStoreName() {
     return this.diskStoreName;
   }
-
+  public String getHDFSStoreName() {
+	    return this.hdfsStoreName;
+	  }
+  public boolean getHDFSWriteOnly() {
+    return this.hdfsWriteOnly;
+  }
   public boolean isDiskSynchronous() {
     return this.isDiskSynchronous;
   }

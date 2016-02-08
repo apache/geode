@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.wan;
@@ -65,9 +73,12 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.Releasable;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
- * Abstract implementation of both Serial and Parallel GatewaySener. It handles
+ * Abstract implementation of both Serial and Parallel GatewaySender. It handles
  * common functionality like initializing proxy.
  * 
  * @author Suranjan Kumar
@@ -147,6 +158,10 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   
   protected boolean isBucketSorted;
   
+  protected boolean isHDFSQueue;
+  
+  protected boolean isMetaQueue;
+  
   private int parallelismForReplicatedRegion;
   
   protected AbstractGatewaySenderEventProcessor eventProcessor;
@@ -159,7 +174,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   
   protected volatile boolean enqueuedAllTempQueueEvents = false; 
   
-  protected volatile ConcurrentLinkedQueue<GatewaySenderEventImpl> tmpQueuedEvents = new ConcurrentLinkedQueue<GatewaySenderEventImpl>();
+  protected volatile ConcurrentLinkedQueue<TmpQueueEvent> tmpQueuedEvents = new ConcurrentLinkedQueue<>();
   /**
    * The number of seconds to wait before stopping the GatewaySender.
    * Default is 0 seconds.
@@ -246,6 +261,8 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     this.maxMemoryPerDispatcherQueue = this.queueMemory / this.dispatcherThreads;
     this.myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager().getDistributedSystemId();
     this.serialNumber = DistributionAdvisor.createSerialNumber();
+    this.isHDFSQueue = attrs.isHDFSQueue();
+    this.isMetaQueue = attrs.isMetaQueue();
     if (!(this.cache instanceof CacheCreation)) {
       this.stopper = new Stopper(cache.getCancelCriterion());
       this.senderAdvisor = GatewaySenderAdvisor.createGatewaySenderAdvisor(this);
@@ -253,7 +270,8 @@ public abstract class AbstractGatewaySender implements GatewaySender,
         this.statistics = new GatewaySenderStats(cache.getDistributedSystem(),
             id);
       }
-      initializeEventIdIndex();
+      if (!attrs.isHDFSQueue())
+        initializeEventIdIndex();
     }
     this.isBucketSorted = attrs.isBucketSorted();
   }
@@ -301,9 +319,11 @@ public abstract class AbstractGatewaySender implements GatewaySender,
             cache.getDistributedSystem(), AsyncEventQueueImpl
                 .getAsyncEventQueueIdFromSenderId(id));
       }
-      initializeEventIdIndex();
+      if (!attrs.isHDFSQueue())
+        initializeEventIdIndex();
     }
     this.isBucketSorted = attrs.isBucketSorted();
+    this.isHDFSQueue = attrs.isHDFSQueue();
    
   }
   
@@ -463,6 +483,14 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     return this.isBucketSorted;
   }
 
+  public boolean getIsHDFSQueue() {
+    return this.isHDFSQueue;
+  }
+  
+  public boolean getIsMetaQueue() {
+    return this.isMetaQueue;
+  }
+  
   public InternalDistributedSystem getSystem() {
     return (InternalDistributedSystem)this.cache.getDistributedSystem();
   }
@@ -619,15 +647,15 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     logger.info(LocalizedMessage.create(LocalizedStrings.GatewayImpl_GATEWAY_0_HAS_BEEN_REBALANCED, this));
   }
 
-  public boolean beforeEnque(GatewayQueueEvent gatewayEvent) {
-    boolean enque = true;
+  public boolean beforeEnqueue(GatewayQueueEvent gatewayEvent) {
+    boolean enqueue = true;
     for (GatewayEventFilter filter : getGatewayEventFilters()) {
-      enque = filter.beforeEnqueue(gatewayEvent);
-      if (!enque) {
-        return enque;
+      enqueue = filter.beforeEnqueue(gatewayEvent);
+      if (!enqueue) {
+        return enqueue;
       }
     }
-    return enque;
+    return enqueue;
   }
   
   protected void stompProxyDead() {
@@ -716,7 +744,20 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       return result;
     }
   }
-  
+
+  final public RegionQueue getQueue() {
+    if (this.eventProcessor != null) {
+      if (!(this.eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor)) {
+        return this.eventProcessor.getQueue();
+      }
+      else {
+        throw new IllegalArgumentException(
+            "getQueue() for concurrent serial gateway sender");
+      }
+    }
+    return null;
+  }
+
   final public Set<RegionQueue> getQueues() {
     if (this.eventProcessor != null) {
       if (!(this.eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor)) {
@@ -775,7 +816,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
         
         logger.info(LocalizedMessage.create(LocalizedStrings.GatewaySender_PAUSED__0, this));
 
-        enqueTempEvents();
+        enqueueTempEvents();
       } finally {
         this.lifeCycleLock.writeLock().unlock();
       }
@@ -798,7 +839,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
         
         logger.info(LocalizedMessage.create(LocalizedStrings.GatewaySender_RESUMED__0, this));
         
-        enqueTempEvents();
+        enqueueTempEvents();
       } finally {
         this.lifeCycleLock.writeLock().unlock();
       }
@@ -837,6 +878,12 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       return;
     }
     
+    if (getIsHDFSQueue() && event.getOperation().isEviction()) {
+      if (logger.isDebugEnabled())
+        logger.debug("Eviction event not queued: " + event);
+      stats.incEventsNotQueued();
+      return;
+    }
     // this filter is defined by Asif which exist in old wan too. new wan has
     // other GatewaEventFilter. Do we need to get rid of this filter. Cheetah is
     // not cinsidering this filter
@@ -844,11 +891,12 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       getStatistics().incEventsFiltered();
       return;
     }
+    
+    EntryEventImpl clonedEvent = new EntryEventImpl(event, false);
+    boolean freeClonedEvent = true;
+    try {
 
-    EntryEventImpl clonedEvent = new EntryEventImpl(event/*, true*/); //this boolean is merged through 43643. looks like offheaprelated change.
-    //below try block is introduced in cheetah. This is offheap related change. 
-//    boolean freeClonedEvent = true;
-//    try {
+    Region region = event.getRegion();
 
     setModifiedEventId(clonedEvent);
     Object callbackArg = clonedEvent.getRawCallbackArgument();
@@ -879,7 +927,8 @@ public abstract class AbstractGatewaySender implements GatewaySender,
         } else {
           //if the dispatcher is GatewaySenderEventCallbackDispatcher (which is the case of WBCL), skip the below check of remoteDSId.
           //Fix for #46517
-        if (getEventProcessor() != null && !(getEventProcessor().getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
+          AbstractGatewaySenderEventProcessor ep = getEventProcessor();
+        if (ep != null && !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
           if (seca.getOriginatingDSId() == this.getRemoteDSId()) {
             if (isDebugEnabled) {
               logger.debug("{}: Event originated in {}. My DS id is {}. It is being dropped as remote is originator.",
@@ -903,28 +952,19 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     }
 
     if (!this.lifeCycleLock.readLock().tryLock()) {
-      try {
-        synchronized (this.queuedEventsSync) {
-          if (!this.enqueuedAllTempQueueEvents) {
-            if (!this.lifeCycleLock.readLock().tryLock()) {
-              // Get substitution value to enqueue if necessary
-              Object substituteValue = getSubstituteValue(clonedEvent, operation);
-              GatewaySenderEventImpl senderEvent = new GatewaySenderEventImpl(
-                  operation, clonedEvent, substituteValue, false);
-              if (isDebugEnabled) {
-                logger.debug("Event : {} is added to TempQueue", clonedEvent);
-              }
-              this.tmpQueuedEvents.add(senderEvent);
-              stats.incTempQueueSize();
-              return;
+      synchronized (this.queuedEventsSync) {
+        if (!this.enqueuedAllTempQueueEvents) {
+          if (!this.lifeCycleLock.readLock().tryLock()) {
+            Object substituteValue = getSubstituteValue(clonedEvent, operation);
+            this.tmpQueuedEvents.add(new TmpQueueEvent(operation, clonedEvent, substituteValue));
+            freeClonedEvent = false;
+            stats.incTempQueueSize();
+            if (isDebugEnabled) {
+              logger.debug("Event : {} is added to TempQueue", clonedEvent);
             }
+            return;
           }
         }
-      } catch (IOException e) {
-        logger.fatal(LocalizedMessage.create(
-                LocalizedStrings.GatewayImpl_0_AN_EXCEPTION_OCCURRED_WHILE_QUEUEING_1_TO_PERFORM_OPERATION_2_FOR_3,
-                new Object[] { this, getId(), operation, clonedEvent }), e);
-        return;
       }
       if(this.enqueuedAllTempQueueEvents) {
         this.lifeCycleLock.readLock().lock();
@@ -972,11 +1012,11 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     } finally {
       this.lifeCycleLock.readLock().unlock();
     }
-//    } finally {
-//      if (freeClonedEvent) {
-//        clonedEvent.release(); // fix for bug 48035
-//      }
-//    }
+    } finally {
+      if (freeClonedEvent) {
+        clonedEvent.release(); // fix for bug 48035
+      }
+    }
   }
   
   /**
@@ -988,39 +1028,25 @@ public abstract class AbstractGatewaySender implements GatewaySender,
    * The eventProcessor can be null when the method gets invoked through this flow: 
    * ParallelGatewaySenderImpl.start() -> ParallelGatewaySenderQueue.<init> -> ParallelGatewaySenderQueue.addPartitionedRegionForRegion 
    */
-  public void enqueTempEvents() {
+  public void enqueueTempEvents() {
     if (this.eventProcessor != null) {//Fix for defect #47308
-      GatewaySenderEventImpl nextEvent = null;
+      TmpQueueEvent nextEvent = null;
       final GatewaySenderStats stats = getStatistics();
       try {
         // Now finish emptying the queue with synchronization to make
         // sure we don't miss any events.
         synchronized (this.queuedEventsSync) {
           while ((nextEvent = tmpQueuedEvents.poll()) != null) {
+          try {
             if (logger.isDebugEnabled()) {
               logger.debug("Event :{} is enqueued to GatewaySenderQueue from TempQueue", nextEvent);
             }
             stats.decTempQueueSize();
-            this.eventProcessor.enqueueEvent(nextEvent.getEnumListenerEvent(),
-                nextEvent.getEntryEvent(), nextEvent.getSubstituteValue());
-            // below commented code is from cheetah. Offheap is considered here.
-            // Once we consider offheap in cedar, should we consider below code
-//=======
-//            try {
-//              if (!beforeEnqueue(nextEvent)) {
-//                // Yogesh: this should not be a warning message in SQLFire or
-//                // GemFire. In SQLFire it should be logged only TraceDBSynchronizer
-//                // is ON
-//                // logger.warning(LocalizedStrings
-//                // .GatewayEventProcessor_EVENT_0_IS_NOT_ADDED_TO_QUEUE, event);
-//                stats.incEventsFiltered();
-//                continue;
-//              }
-//              this.eventProcessor.enqueueEvent(nextEvent.getEventType(), nextEvent);
-//            } finally {
-//              nextEvent.freeOffHeapReferences();
-//            }
-//>>>>>>> .merge-right.r43020
+            this.eventProcessor.enqueueEvent(nextEvent.getOperation(),
+                nextEvent.getEvent(), nextEvent.getSubstituteValue());
+          } finally {
+            nextEvent.release();
+          }
           }
           this.enqueuedAllTempQueueEvents = true;
         }
@@ -1031,7 +1057,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       catch (IOException e) {
         logger.fatal(LocalizedMessage.create(
             LocalizedStrings.GatewayImpl_0_AN_EXCEPTION_OCCURRED_WHILE_QUEUEING_1_TO_PERFORM_OPERATION_2_FOR_3,
-                new Object[] { this, getId(), nextEvent.getEnumListenerEvent(), nextEvent }), e);
+                new Object[] { this, getId(), nextEvent.getOperation(), nextEvent }), e);
       }
     }
   }
@@ -1042,15 +1068,15 @@ public abstract class AbstractGatewaySender implements GatewaySender,
    * @param tailKey
    */
   public boolean removeFromTempQueueEvents(Object tailKey) {
-	synchronized (this.queuedEventsSync) {
-      Iterator<GatewaySenderEventImpl> itr = this.tmpQueuedEvents.iterator();
+    synchronized (this.queuedEventsSync) {
+      Iterator<TmpQueueEvent> itr = this.tmpQueuedEvents.iterator();
       while (itr.hasNext()) {
-        GatewaySenderEventImpl event = itr.next();
-        if (tailKey.equals(((EntryEventImpl) event.getEntryEvent()).getTailKey())) {
+        TmpQueueEvent event = itr.next();
+        if (tailKey.equals(event.getEvent().getTailKey())) {
           if (logger.isDebugEnabled()) {
             logger.debug("shadowKey {} is found in tmpQueueEvents at AbstractGatewaySender level. Removing from there..", tailKey);
           }
-          //event.release(); //related to off-heap. Merged from cheetah r45415
+          event.release();
           itr.remove();
           return true;
         }
@@ -1064,12 +1090,19 @@ public abstract class AbstractGatewaySender implements GatewaySender,
    * Once sender is started, these event from tmp queue will be cleared.
    */
   public void clearTempEventsAfterSenderStopped() {
-    tmpQueuedEvents.clear(); // ultimately it poll on queue which will take
-                             // time. hence below synchronization
+    TmpQueueEvent nextEvent = null;
+    while ((nextEvent = tmpQueuedEvents.poll()) != null) {
+      nextEvent.release();
+    }
     synchronized (this.queuedEventsSync) {
-      tmpQueuedEvents.clear();
+      while ((nextEvent = tmpQueuedEvents.poll()) != null) {
+        nextEvent.release();
+      }
       this.enqueuedAllTempQueueEvents = false;
     }
+    
+    statistics.setQueueSize(0);
+    statistics.setTempQueueSize(0);
   }
   
   public Object getSubstituteValue(EntryEventImpl clonedEvent, EnumListenerEvent operation) {
@@ -1241,6 +1274,49 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     public EventWrapper(GatewaySenderEventImpl e) {
       this.event = e;
       this.timeout = System.currentTimeMillis() + EVENT_TIMEOUT;
+    }
+  }
+  
+  /**
+   * Instances of this class allow us to delay queuing an incoming event.
+   * What used to happen was that the tmpQ would have a GatewaySenderEventImpl
+   * added to it. But then when we took it out we had to ask it for its EntryEventImpl.
+   * Then we created another GatewaySenderEventImpl.
+   * As part of the off-heap work, the GatewaySenderEventImpl no longer has a EntryEventImpl.
+   * So this class allows us to defer creation of the GatewaySenderEventImpl until we
+   * are ready to actually enqueue it.
+   * The caller is responsible for giving us an EntryEventImpl that we own and that
+   * we will release. This is done by making a copy/clone of the original event.
+   * This fixes bug 52029.
+   * 
+   * @author dschneider
+   *
+   */
+  public static class TmpQueueEvent implements Releasable {
+    private final EnumListenerEvent operation;
+    private final @Retained EntryEventImpl event;
+    private final Object substituteValue;
+    public TmpQueueEvent(EnumListenerEvent op, @Retained EntryEventImpl e, Object subValue) {
+      this.operation = op;
+      this.event = e;
+      this.substituteValue = subValue;
+    }
+    
+    public EnumListenerEvent getOperation() {
+      return this.operation;
+    }
+    
+    public @Unretained EntryEventImpl getEvent() {
+      return this.event;
+    }
+    
+    public Object getSubstituteValue() {
+      return this.substituteValue;
+    }
+
+    @Override
+    public void release() {
+      this.event.release();
     }
   }
 }

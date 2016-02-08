@@ -1,5 +1,18 @@
-/**
- * 
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
@@ -30,7 +43,8 @@ public enum CacheXmlVersion {
   VERSION_6_6(CacheXml.VERSION_6_6, null, CacheXml.PUBLIC_ID_6_6, CacheXml.SYSTEM_ID_6_6),
   VERSION_7_0(CacheXml.VERSION_7_0, null, CacheXml.PUBLIC_ID_7_0, CacheXml.SYSTEM_ID_7_0),
   VERSION_8_0(CacheXml.VERSION_8_0, null, CacheXml.PUBLIC_ID_8_0, CacheXml.SYSTEM_ID_8_0),
-  VERSION_8_1(CacheXml.VERSION_8_1, CacheXml.SCHEMA_8_1_LOCATION, null, null);
+  VERSION_8_1(CacheXml.VERSION_8_1, CacheXml.SCHEMA_8_1_LOCATION, null, null),
+  VERSION_9_0(CacheXml.VERSION_9_0, CacheXml.SCHEMA_9_0_LOCATION, null, null);
 
   private static final HashMap<String, CacheXmlVersion> valuesForVersion = new HashMap<>();
   static {

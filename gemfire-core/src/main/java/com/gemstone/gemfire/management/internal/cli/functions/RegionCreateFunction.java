@@ -1,10 +1,18 @@
 /*
- * ========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.functions;
 
@@ -69,7 +77,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     String memberNameOrId = CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
     RegionFunctionArgs regionCreateArgs = (RegionFunctionArgs) context.getArguments();
-
+    
     if (regionCreateArgs.isSkipIfExists()) {
       Region<Object, Object> region = cache.getRegion(regionCreateArgs.getRegionPath());
       if (region != null) {
@@ -191,9 +199,9 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       // We have to do this because AttributesFactory.setPartitionAttributes()
       // checks RegionAttributes.hasDataPolicy() which is set only when the data
       // policy is set explicitly
-      factory.setDataPolicy(originalDataPolicy);
+      factory.setDataPolicy(originalDataPolicy);      
     }
-
+       
     // Set Constraints
     final String keyConstraint = regionCreateArgs.getKeyConstraint();
     final String valueConstraint = regionCreateArgs.getValueConstraint();
@@ -232,6 +240,10 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     }
     if (regionCreateArgs.isSetDiskSynchronous()) {
       factory.setDiskSynchronous(regionCreateArgs.isDiskSynchronous());
+    }
+
+    if (regionCreateArgs.isSetOffHeap()) {
+      factory.setOffHeap(regionCreateArgs.isOffHeap());
     }
 
     // Set stats enabled
@@ -275,6 +287,11 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     if (regionCreateArgs.isSetCloningEnabled()) {
       factory.setCloningEnabled(regionCreateArgs.isCloningEnabled());
     }
+    
+    // multicast enabled for replication
+    if (regionCreateArgs.isSetMcastEnabled()) {
+      factory.setMulticastEnabled(regionCreateArgs.isMcastEnabled());
+    }
 
     // Set plugins
     final Set<String> cacheListeners = regionCreateArgs.getCacheListeners();
@@ -302,8 +319,9 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       Class<CacheWriter<K, V>> cacheWriterKlass = forName(cacheWriter, CliStrings.CREATE_REGION__CACHEWRITER);
       factory.setCacheWriter(newInstance(cacheWriterKlass, CliStrings.CREATE_REGION__CACHEWRITER));
     }
-
+    
     String regionName = regionPathData.getName();
+    
     if (parentRegion != null) {
       createdRegion = factory.createSubregion(parentRegion, regionName);
     } else {

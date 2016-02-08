@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.util;
@@ -18,6 +27,8 @@ import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.pdx.internal.PdxInputStream;
 
 /**
@@ -120,6 +131,24 @@ public class BlobHelper {
 //            
 //      }
 //    }
+    return result;
+  }
+
+  /**
+   * A blob is a serialized Object.  This method 
+   * returns the deserialized object.
+   * If a PdxInstance is returned then it will refer to Chunk's off-heap memory
+   * with an unretained reference.
+   */
+  public static @Unretained Object deserializeOffHeapBlob(Chunk blob) throws IOException, ClassNotFoundException {
+    Object result;
+    final long start = startDeserialization();
+    // For both top level and nested pdxs we just want a reference to this off-heap blob.
+    // No copies.
+    // For non-pdx we want a stream that will read directly from the chunk.
+    PdxInputStream is = new PdxInputStream(blob);
+    result = DataSerializer.readObject(is);
+    endDeserialization(start, blob.getDataSize());
     return result;
   }
 

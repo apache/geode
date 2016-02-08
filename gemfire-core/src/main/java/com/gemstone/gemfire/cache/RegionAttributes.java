@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache;
 
@@ -11,6 +20,7 @@ import java.io.File;
 import java.util.Set;
 
 import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.compression.Compressor;
 
 /** Defines attributes for configuring a region.
@@ -138,6 +148,11 @@ public interface RegionAttributes<K,V> {
    * @return the region's EvictionAttributes
    */
   public EvictionAttributes getEvictionAttributes();
+
+  /**
+   * Return the {@link CustomEvictionAttributes}, if any, set for the region.
+   */
+  public CustomEvictionAttributes getCustomEvictionAttributes();
 
   /** Returns the cache listener for the region.
    * @throws IllegalStateException if more than one cache listener exists on this attributes
@@ -439,11 +454,36 @@ public interface RegionAttributes<K,V> {
   public boolean getConcurrencyChecksEnabled();
   
   /**
+   * Returns the name of the {@link HDFSStore} that this region belongs
+   * to, if any.
+   * @return the name of the {@link HDFSStore} of this region; 
+   * <code>null</code> is returned if this region has no
+   * {@link HDFSStore}.
+   * @since 9.0
+   */
+  public String getHDFSStoreName();
+  
+  /**
+   * Returns true if this region is configured to
+   * be write-only to HDFS. 
+   * @since 9.0
+   */
+  public boolean getHDFSWriteOnly();
+  
+  /**
    * Returns the compressor used by this region's entry values.
    * @since 8.0
    * @return null if the region does not have compression enabled.
    */
   public Compressor getCompressor();
+
+  /**
+   * Returns whether or not this region uses off-heap memory.
+   * @return True if a usage of off-heap memory is enabled;
+   *         false if usage of off-heap memory is disabled (default).
+   * @since 9.0
+   */
+  public boolean getOffHeap();
 }
 
 

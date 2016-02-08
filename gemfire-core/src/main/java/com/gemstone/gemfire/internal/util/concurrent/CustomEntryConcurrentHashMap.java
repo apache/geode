@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /**
  * ConcurrentHashMap implementation adapted from JSR 166 backport
@@ -46,6 +55,7 @@ import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.IdentityHashMap;
@@ -54,13 +64,17 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
+import com.gemstone.gemfire.internal.cache.OffHeapRegionEntry;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
+import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
 import com.gemstone.gemfire.internal.size.SingleObjectSizer;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * A hash table supporting full concurrency of retrievals and adjustable
@@ -1057,14 +1071,52 @@ RETRYLOOP:
       }
     }
 
-    final void clear() {
+    /**
+     * GemStone added the clearedEntries param and the result
+     */
+    final ArrayList<HashEntry<?,?>> clear(ArrayList<HashEntry<?,?>> clearedEntries) {
       if (this.count != 0) {
         final ReentrantReadWriteLock.WriteLock writeLock = super.writeLock();
         writeLock.lock();
         try {
           final HashEntry<K, V>[] tab = this.table;
-          for (int i = 0; i < tab.length; i++) {
-            tab[i] = null;
+          // GemStone changes BEGIN
+          boolean collectEntries = clearedEntries != null;
+          if (!collectEntries) {
+            // see if we have a map with off-heap region entries
+            for (HashEntry<K, V> he : tab) {
+              if (he != null) {
+                collectEntries = he instanceof OffHeapRegionEntry;
+                if (collectEntries) {
+                  clearedEntries = new ArrayList<HashEntry<?, ?>>();
+                }
+                // after the first non-null entry we are done
+                break;
+              }
+            }
+          }
+          final boolean checkForGatewaySenderEvent = OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap();
+          final boolean skipProcessOffHeap = !collectEntries && !checkForGatewaySenderEvent;
+          if (skipProcessOffHeap) {
+            Arrays.fill(tab, null);
+          } else {
+            for (int i = 0; i < tab.length; i++) {
+              HashEntry<K, V> he = tab[i];
+              if (he == null) continue;
+              tab[i] = null;
+              if (collectEntries) {
+                clearedEntries.add(he);
+              } else {
+                for (HashEntry<K, V> p = he; p != null; p = p.getNextEntry()) {
+                  if (p instanceof RegionEntry) {
+                    // It is ok to call GatewaySenderEventImpl release without being synced
+                    // on the region entry. It will not create an orphan.
+                    GatewaySenderEventImpl.release(((RegionEntry) p)._getValue()); // OFFHEAP _getValue ok
+                  }
+                }
+              }
+            }
+            // GemStone changes END
           }
           ++this.modCount;
           this.count = 0; // write-volatile
@@ -1072,6 +1124,7 @@ RETRYLOOP:
           writeLock.unlock();
         }
       }
+      return clearedEntries; // GemStone change
     }
   }
 
@@ -1379,7 +1432,7 @@ RETRYLOOP:
    * @return the number of key-value mappings in this map
    */
   @Override
-  @SuppressFBWarnings(value="UL_UNRELEASED_LOCK", justification="The lock() calls are followed by unlock() calls without finally-block. Leaving this as is because it's lifted from JDK code and we want to minimize changes.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UL_UNRELEASED_LOCK", justification="The lock() calls are followed by unlock() calls without finally-block. Leaving this as is because it's lifted from JDK code and we want to minimize changes.") 
   public final int size() {
     final Segment<K, V>[] segments = this.segments;
     long sum = 0;
@@ -1479,7 +1532,7 @@ RETRYLOOP:
    *           if the specified value is null
    */
   @Override
-  @SuppressFBWarnings(value="UL_UNRELEASED_LOCK", justification="Leaving this as is because it's lifted from JDK code and we want to minimize changes.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UL_UNRELEASED_LOCK", justification="Leaving this as is because it's lifted from JDK code and we want to minimize changes.") 
   public final boolean containsValue(final Object value) {
     if (value == null) {
       throw new NullPointerException();
@@ -1917,8 +1970,46 @@ RETRYLOOP:
    */
   @Override
   public final void clear() {
-    for (int i = 0; i < this.segments.length; ++i) {
-      this.segments[i].clear();
+    ArrayList<HashEntry<?,?>> entries = null;
+    try {
+      for (int i = 0; i < this.segments.length; ++i) {
+        entries = this.segments[i].clear(entries);
+      }
+    } finally {
+      if (entries != null) {
+        final ArrayList<HashEntry<?,?>> clearedEntries = entries;
+        final Runnable runnable = new Runnable() {
+          public void run() {
+            for (HashEntry<?,?> he: clearedEntries) {
+              for (HashEntry<?, ?> p = he; p != null; p = p.getNextEntry()) {
+                synchronized (p) {
+                  ((OffHeapRegionEntry)p).release();
+                }
+              }
+            }
+          }
+        };
+        boolean submitted = false;
+        InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
+        if (ids != null) {
+          try {
+            ids.getDistributionManager().getWaitingThreadPool().submit(runnable);
+            submitted = true;
+          } catch (RejectedExecutionException e) {
+            // fall through with submitted false
+          } catch (CancelException e) {
+            // fall through with submitted false
+          } catch (NullPointerException e) {
+            // fall through with submitted false
+          }
+        }
+        if (!submitted) {
+          String name = this.getClass().getSimpleName()+"@"+this.hashCode()+" Clear Thread";
+          Thread thread = new Thread(runnable, name);
+          thread.setDaemon(true);
+          thread.start();
+        }
+      }
     }
   }
 

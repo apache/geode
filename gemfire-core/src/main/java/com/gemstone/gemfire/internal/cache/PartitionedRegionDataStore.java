@@ -1,10 +1,18 @@
 /*
- * ========================================================================= 
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -56,6 +64,7 @@ import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
+import com.gemstone.gemfire.cache.hdfs.HDFSIOException;
 import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.cache.query.internal.QCompiler;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
@@ -94,7 +103,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableReadLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Implementation of DataStore (DS) for a PartitionedRegion (PR). This will be
@@ -110,7 +119,7 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQue
  * @author tapshank
  * @author Mitch Thomas
  */
-public final class PartitionedRegionDataStore implements HasCachePerfStats
+public class PartitionedRegionDataStore implements HasCachePerfStats
 {
   private static final Logger logger = LogService.getLogger();
   
@@ -467,6 +476,12 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
                 if (getPartitionedRegion().getColocatedWith() == null) {
                   buk.getBucketAdvisor().setShadowBucketDestroyed(false);
                 }
+                if (getPartitionedRegion().isShadowPR()) {
+                  getPartitionedRegion().getColocatedWithRegion()
+                  .getRegionAdvisor()
+                  .getBucketAdvisor(possiblyFreeBucketId)
+                  .setShadowBucketDestroyed(false);
+                }
                 bukReg = createBucketRegion(possiblyFreeBucketId);
                 //Mark the bucket as hosting and distribute to peers
                 //before we release the dlock. This makes sure that our peers
@@ -585,6 +600,9 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
         		.getBucketTmpQueue(bucketId);
         if (tempQueue != null) {
           synchronized (tempQueue) {
+            for (GatewaySenderEventImpl event : tempQueue) {
+              event.release();
+            }
             tempQueue.clear();  
           }
         }
@@ -770,6 +788,7 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
     }
     
     factory.setCompressor(this.partitionedRegion.getCompressor());
+    factory.setOffHeap(this.partitionedRegion.getOffHeap());
     
     factory.setBucketRegion(true); // prevent validation problems
     RegionAttributes attributes = factory.create();
@@ -1265,18 +1284,17 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
                             final long lastModified)
   throws PrimaryBucketException, ForceReattemptException {
     final BucketRegion br = getInitializedBucketForId(event.getKey(), bucketId);
-    return putLocally(bucketId, event, ifNew, ifOld, expectedOldValue,
-        requireOldValue, lastModified, br);
+    return putLocally(br, event, ifNew, ifOld, expectedOldValue,
+        requireOldValue, lastModified);
   }
 
-  public boolean putLocally(final Integer bucketId,
+  public boolean putLocally(final BucketRegion bucketRegion,
                             final EntryEventImpl event,
                             boolean ifNew,
                             boolean ifOld,
                             Object expectedOldValue,
                             boolean requireOldValue,
-                            final long lastModified,
-                            final BucketRegion bucketRegion)
+                            final long lastModified)
   throws PrimaryBucketException, ForceReattemptException {
     boolean didPut=false; // false if entry put fails
     
@@ -2026,7 +2044,7 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
       ForceReattemptException, PRLocallyDestroyedException
   {
 	  return getLocally(bucketId, key,aCallbackArgument, disableCopyOnRead, preferCD, requestingClient, 
-			  clientEvent, returnTombstones, false);
+			  clientEvent, returnTombstones, false, false);
   }
   /**
    * Returns value corresponding to this key.
@@ -2045,19 +2063,19 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
    */
   public Object getLocally(int bucketId, final Object key,
       final Object aCallbackArgument, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, 
-      boolean returnTombstones, boolean opScopeIsLocal) throws PrimaryBucketException,
+      boolean returnTombstones, boolean opScopeIsLocal, boolean allowReadFromHDFS) throws PrimaryBucketException,
       ForceReattemptException, PRLocallyDestroyedException
   {
     final BucketRegion bucketRegion = getInitializedBucketForId(key, Integer.valueOf(bucketId));
     //  check for primary (when a loader is present) done deeper in the BucketRegion
     Object ret=null;
     if (logger.isDebugEnabled()) {
-      logger.debug("getLocally:  key {}) bucketId={}{}{} region {} returnTombstones {}", key,
-          this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId, bucketRegion.getName(), returnTombstones);
+      logger.debug("getLocally:  key {}) bucketId={}{}{} region {} returnTombstones {} allowReadFromHDFS {}", key,
+          this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId, bucketRegion.getName(), returnTombstones, allowReadFromHDFS);
     }
     invokeBucketReadHook();
     try {
-      ret = bucketRegion.get(key, aCallbackArgument, true, disableCopyOnRead , preferCD, requestingClient, clientEvent, returnTombstones, opScopeIsLocal);
+      ret = bucketRegion.get(key, aCallbackArgument, true, disableCopyOnRead , preferCD, requestingClient, clientEvent, returnTombstones, opScopeIsLocal, allowReadFromHDFS, false);
       checkIfBucketMoved(bucketRegion);
     }
     catch (RegionDestroyedException rde) {
@@ -2089,7 +2107,7 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
    * @throws PrimaryBucketException if the locally managed bucket is not primary
    * @see #getLocally(int, Object, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
    */
-  public RawValue getSerializedLocally(KeyInfo keyInfo, boolean doNotLockEntry, EntryEventImpl clientEvent, boolean returnTombstones) throws PrimaryBucketException,
+  public RawValue getSerializedLocally(KeyInfo keyInfo, boolean doNotLockEntry, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws PrimaryBucketException,
       ForceReattemptException {
     final BucketRegion bucketRegion = getInitializedBucketForId(keyInfo.getKey(), keyInfo.getBucketId());
     //  check for primary (when loader is present) done deeper in the BucketRegion
@@ -2100,7 +2118,7 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
     invokeBucketReadHook();
 
     try {
-      RawValue result = bucketRegion.getSerialized(keyInfo, true, doNotLockEntry, clientEvent, returnTombstones);
+      RawValue result = bucketRegion.getSerialized(keyInfo, true, doNotLockEntry, clientEvent, returnTombstones, allowReadFromHDFS);
       checkIfBucketMoved(bucketRegion);
       return result;
     } catch (RegionDestroyedException rde) {
@@ -2135,7 +2153,7 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
    *           if the PartitionRegion is locally destroyed
    */
   public EntrySnapshot getEntryLocally(int bucketId, final Object key,
-      boolean access, boolean allowTombstones)
+      boolean access, boolean allowTombstones, boolean allowReadFromHDFS)
       throws EntryNotFoundException, PrimaryBucketException,
       ForceReattemptException, PRLocallyDestroyedException
   {
@@ -2148,7 +2166,12 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
     EntrySnapshot res = null;
     RegionEntry ent = null;
     try {
-      ent = bucketRegion.entries.getEntry(key);
+      if (allowReadFromHDFS) {
+        ent = bucketRegion.entries.getEntry(key);
+      }
+      else {
+        ent = bucketRegion.entries.getOperationalEntryInVM(key);
+      }
 
       if (ent == null) {
         this.getPartitionedRegion().checkReadiness();
@@ -2257,8 +2280,15 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
     invokeBucketReadHook();
     try{
       if (r != null) {
+        Set keys = r.keySet(allowTombstones);
+        if (getPartitionedRegion().isHDFSReadWriteRegion()) {
+          // hdfs regions can't copy all keys into memory
+          ret = keys;
+
+        } else  { 
         // A copy is made so that the bucket is free to move
         ret = new HashSet(r.keySet(allowTombstones));
+		}
         checkIfBucketMoved(r);
       }
     }
@@ -2308,8 +2338,8 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
    * 5) updateBucket2Size if bucket is on more than 1 node or else bucket
    * listners would take care of size update. <br>
    * 
-   * @param bucketId
-   *          the bucket id of the key
+   * @param bucketRegion
+   *          the bucket to do the create in
    * @param event
    *          the particulars of the operation
    * @param ifNew
@@ -2323,7 +2353,7 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
    * @throws EntryExistsException
    *           if an entry with this key already exists
    */
-  public boolean createLocally(Integer bucketId,
+  public boolean createLocally(final BucketRegion bucketRegion,
                                final EntryEventImpl event,
                                boolean ifNew,
                                boolean ifOld,
@@ -2331,8 +2361,6 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
                                final long lastModified)
   throws ForceReattemptException {
     boolean result = false;
-    final BucketRegion bucketRegion = getInitializedBucketForId(event.getKey(), bucketId);
-
     try{
       event.setRegion(bucketRegion); // convert to the bucket region
       if (event.isOriginRemote()) {
@@ -2494,6 +2522,10 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
     return getSizeLocallyForBuckets(getAllLocalPrimaryBucketIds());
   }
 
+  public Map<Integer, SizeEntry> getSizeEstimateForLocalPrimaryBuckets() {
+    return getSizeEstimateLocallyForBuckets(getAllLocalPrimaryBucketIds());
+  }
+
   /**
    * This calculates size of all the primary bucket regions for the list of bucketIds.
    * 
@@ -2501,16 +2533,31 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
    * @return the size of all the primary bucket regions for the list of bucketIds.
    */
   public Map<Integer, SizeEntry> getSizeLocallyForBuckets(Collection<Integer> bucketIds) {
+    return getSizeLocallyForPrimary(bucketIds, false);
+  }
+
+  public Map<Integer, SizeEntry> getSizeEstimateLocallyForBuckets(Collection<Integer> bucketIds) {
+    return getSizeLocallyForPrimary(bucketIds, true);
+  }
+
+  private Map<Integer, SizeEntry> getSizeLocallyForPrimary(Collection<Integer> bucketIds, boolean estimate) {
     Map<Integer, SizeEntry> mySizeMap;
     if (this.localBucket2RegionMap.isEmpty()) {
       return Collections.emptyMap();
     }
     mySizeMap = new HashMap<Integer, SizeEntry>(this.localBucket2RegionMap.size());
-    BucketRegion r;
+    BucketRegion r = null;
     for(Integer bucketId : bucketIds) {
       try {
         r = getInitializedBucketForId(null, bucketId);
-        mySizeMap.put(bucketId, new SizeEntry(r.size(), r.getBucketAdvisor().isPrimary()));
+        mySizeMap.put(bucketId, new SizeEntry(estimate ? r.sizeEstimate() : r.size(), r.getBucketAdvisor().isPrimary()));
+//        if (getLogWriter().fineEnabled() && r.getBucketAdvisor().isPrimary()) {
+//          r.verifyTombstoneCount();
+//        }
+      } catch (PrimaryBucketException skip) {
+        // sizeEstimate() will throw this exception as it will not try to read from HDFS on a secondary bucket,
+        // this bucket will be retried in PartitionedRegion.getSizeForHDFS() fixes bug 49033
+        continue;
       } catch (ForceReattemptException skip) {
         continue;
       } catch(RegionDestroyedException skip) {
@@ -2842,6 +2889,29 @@ public final class PartitionedRegionDataStore implements HasCachePerfStats
       }
     }
     return bucketIds;
+  }
+
+  /** a fast estimate of total bucket size */
+  public long getEstimatedLocalBucketSize(boolean primaryOnly) {
+    long size = 0;
+    for (BucketRegion br : localBucket2RegionMap.values()) {
+      if (!primaryOnly || br.getBucketAdvisor().isPrimary()) {
+        size += br.getEstimatedLocalSize();
+      }
+    }
+    return size;
+  }
+
+  /** a fast estimate of total bucket size */
+  public long getEstimatedLocalBucketSize(Set<Integer> bucketIds) {
+    long size = 0;
+    for (Integer bid : bucketIds) {
+      BucketRegion br = localBucket2RegionMap.get(bid);
+      if (br != null) {
+        size += br.getEstimatedLocalSize();
+      }
+    }
+    return size;
   }
 
   public Object getLocalValueInVM(final Object key, int bucketId)

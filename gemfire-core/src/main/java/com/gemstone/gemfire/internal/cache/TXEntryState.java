@@ -1,18 +1,32 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.TX_ENTRY_STATE;
+
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.CacheRuntimeException;
@@ -27,14 +41,22 @@ import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.delta.Delta;
-import com.gemstone.gemfire.internal.cache.lru.LRUEntry;
+import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.Releasable;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.pdx.PdxSerializationException;
 
 /**
@@ -46,11 +68,14 @@ import com.gemstone.gemfire.pdx.PdxSerializationException;
  * @since 4.0
  *  
  */
-public class TXEntryState
+public class TXEntryState implements Releasable
   {
+  private static final Logger logger = LogService.getLogger();
+  
   /**
    * This field is final except for when it is nulled out during cleanup
    */
+  @Retained(TX_ENTRY_STATE)
   private Object originalVersionId;
   private final Object originalValue;
 
@@ -209,6 +234,22 @@ public class TXEntryState
   private VersionTag remoteVersionTag = null;
 
   /**
+   * Next region version generated on the primary
+   */
+  private long nextRegionVersion = -1;
+  
+  /*
+   * For Distributed Transaction.
+   * THis value is set when applying commit
+   */
+  private transient DistTxThinEntryState distTxThinEntryState;
+  
+  /**
+   * Use this system property if you need to display/log string values in conflict messages
+   */
+  private static final boolean VERBOSE_CONFLICT_STRING = Boolean.getBoolean("gemfire.verboseConflictString");
+
+  /**
    * This constructor is used to create a singleton used by LocalRegion to
    * signal that noop invalidate op has been performed. The instance returned by
    * this constructor is just a marker; it is not good for anything else.
@@ -226,7 +267,7 @@ public class TXEntryState
   /**
    * This constructor is used when creating an entry
    */
-  protected TXEntryState(RegionEntry re, Object pvId, Object pv, TXRegionState txRegionState) {
+  protected TXEntryState(RegionEntry re, Object pvId, Object pv, TXRegionState txRegionState, boolean isDistributed) {
     Object vId = pvId;
     if (vId == null) {
       vId = Token.REMOVED_PHASE1;
@@ -247,6 +288,9 @@ public class TXEntryState
       this.refCountEntry = null;
     }
     this.txRegionState = txRegionState;
+    if (isDistributed) {
+      this.distTxThinEntryState = new DistTxThinEntryState();
+    }
   }
   
   public TXRegionState getTXRegionState() {
@@ -288,6 +332,7 @@ public class TXEntryState
    * Gets the pending value for near side operations. Special cases local
    * destroy and local invalidate to fix bug 34387.
    */
+  @Unretained
   public Object getNearSidePendingValue()
   {
     if (isOpLocalDestroy()) {
@@ -412,6 +457,7 @@ public class TXEntryState
     }
   }
 
+  @Retained
   public Object getValueInVM(Object key) throws EntryNotFoundException
   {
     if (!existsLocally()) {
@@ -535,7 +581,7 @@ public class TXEntryState
 //            && this.op != OP_LOCAL_CREATE && this.op != OP_SEARCH_PUT);
 //  }
 
-  private String opToString()
+  String opToString()
   {
     return opToString(this.op);
   }
@@ -912,6 +958,9 @@ public class TXEntryState
       eventRegion = r.getPartitionedRegion();
     }
     EntryEventImpl result = new TxEntryEventImpl(eventRegion, key);
+    // OFFHEAP: freeOffHeapResources on this event is called from TXEvent.freeOffHeapResources.
+    boolean returnedResult = false;
+    try {
     if (this.destroy == DESTROY_NONE || isOpDestroy()) {
       result.setOldValue(getOriginalValue());
     }
@@ -921,7 +970,11 @@ public class TXEntryState
       result.setOriginRemote(false);
     }
     result.setTransactionId(txs.getTransactionId());
+    returnedResult = true;
     return result;
+    } finally {
+      if (!returnedResult) result.release();
+    }
   }
 
   /**
@@ -1070,6 +1123,20 @@ public class TXEntryState
       }
     }
   }
+  
+
+  /* TODO OFFHEAP MERGE: is this code needed?
+  @Retained
+  protected final Object getRetainedValueInTXOrRegion() {
+    @Unretained Object val = this.getValueInTXOrRegion();
+    if (val instanceof Chunk) {
+      if (!((Chunk) val).retain()) {
+        throw new IllegalStateException("Could not retain OffHeap value=" + val);
+      }
+    }
+    return val;
+  }
+  */
 
   /**
    * Perform operation algebra
@@ -1413,6 +1480,9 @@ public class TXEntryState
   
   private boolean areIdentical(Object o1, Object o2) {
     if (o1 == o2) return true;
+    if (o1 instanceof StoredObject) {
+      if (o1.equals(o2)) return true;
+    }
     return false;
   }
 
@@ -1433,6 +1503,7 @@ public class TXEntryState
       r.checkReadiness();
       RegionEntry re = r.basicGetEntry(key);
       Object curCmtVersionId = null;
+      try {
       if ((re == null) || re.isValueNull()) {
         curCmtVersionId = Token.REMOVED_PHASE1;
       }
@@ -1454,14 +1525,17 @@ public class TXEntryState
         //           curCmtVersionId =
         // ((CachedDeserializable)curCmtVersionId).getDeserializedValue();
         //         }
-        String fromString = calcConflictString(getOriginalVersionId());
-        String toString = calcConflictString(curCmtVersionId);
-        if (fromString.equals(toString)) {
-          throw new CommitConflictException(LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_A_STATE_CHANGE.toLocalizedString(new Object[] {key, r.getDisplayName()}));
+        if (VERBOSE_CONFLICT_STRING || logger.isDebugEnabled()) {
+          String fromString = calcConflictString(getOriginalVersionId());
+          String toString = calcConflictString(curCmtVersionId);
+          if (!fromString.equals(toString)) {
+            throw new CommitConflictException(LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_ALREADY_BEEN_CHANGED_FROM_2_TO_3.toLocalizedString(new Object[] {key, r.getDisplayName(), fromString, toString}));
+          }
         }
-        else {
-          throw new CommitConflictException(LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_ALREADY_BEEN_CHANGED_FROM_2_TO_3.toLocalizedString(new Object[] {key, r.getDisplayName(), fromString, toString}));
-        }
+        throw new CommitConflictException(LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_A_STATE_CHANGE.toLocalizedString(new Object[]{key, r.getDisplayName()}));
+      }
+      } finally {
+        OffHeapHelper.release(curCmtVersionId);
       }
     }
     catch (CacheRuntimeException ex) {
@@ -1474,6 +1548,10 @@ public class TXEntryState
   {
     Object o = obj;
     if (o instanceof CachedDeserializable) {
+      if (o instanceof StoredObject && ((StoredObject) o).isCompressed()) {
+        // fix for bug 52113
+        return "<compressed value of size " + ((StoredObject) o).getValueSizeInBytes() + ">";
+      }
       try {
         o = ((CachedDeserializable)o).getDeserializedForReading();
       } catch (PdxSerializationException e) {
@@ -1731,7 +1809,12 @@ public class TXEntryState
   
   void applyChanges(LocalRegion r, Object key, TXState txState)
   {
-    
+    if (LogService.getLogger().isDebugEnabled()) {
+      LogService.getLogger().debug(
+          "applyChanges txState=" + txState + " ,key=" + key + " ,r="
+              + r.getDisplayName() + " ,op=" + this.op + " ,isDirty="
+              + isDirty());
+    }
     if (!isDirty()) {
       // all we did was read so just return
       return;
@@ -1853,6 +1936,15 @@ public class TXEntryState
   private Operation getUpdateOperation() {
     return isBulkOp() ? Operation.PUTALL_UPDATE : Operation.UPDATE;
   }
+
+  @Override
+  @Released(TX_ENTRY_STATE)
+  public void release() {
+    Object tmp = this.originalVersionId;
+    if (OffHeapHelper.release(tmp)) {
+      this.originalVersionId = null; // fix for bug 47900
+    }
+  }
   
   private Operation getDestroyOperation() {
     if (isOpLocalDestroy()) {
@@ -1953,6 +2045,7 @@ public class TXEntryState
     if (this.refCountEntry != null) {
       r.txDecRefCount(refCountEntry);
     }
+    close();
   }
 
   /**
@@ -1977,7 +2070,8 @@ public class TXEntryState
       //TODO:ASIF :Check if the eventID should be created. Currently not
       // creating it
       super(r, getNearSideOperation(), key,
-          getNearSidePendingValue(),TXEntryState.this.getCallbackArgument(), false, r.getMyId());
+          getNearSidePendingValue(),TXEntryState.this.getCallbackArgument(), false, r.getMyId()
+          , true/* generateCallbacks */, true /*initializeId*/);
     }
 
     /**
@@ -2017,9 +2111,9 @@ public class TXEntryState
       return new TXEntryState();
     }
 
-    public TXEntryState createEntry(RegionEntry re, Object vId, Object pendingValue, Object entryKey,TXRegionState txrs)
+    public TXEntryState createEntry(RegionEntry re, Object vId, Object pendingValue, Object entryKey,TXRegionState txrs,boolean isDistributed)
     {
-      return new TXEntryState(re, vId, pendingValue, txrs);
+      return new TXEntryState(re, vId, pendingValue, txrs, isDistributed);
     }
 
   };
@@ -2063,5 +2157,114 @@ public class TXEntryState
 
   public void setTailKey(long tailKey) {
     this.tailKey = tailKey;
+  }
+
+  public void close() {
+    release();
+  }
+  
+  public void setNextRegionVersion(long v) {
+    this.nextRegionVersion = v;
+  }
+  
+  public long getNextRegionVersion() {
+    return this.nextRegionVersion;
+  }
+  
+  @Override
+  public String toString() {
+    StringBuilder str = new StringBuilder();
+    str.append("{").append(super.toString()).append(" ");
+    str.append(this.op);
+    str.append("}");
+    return str.toString();
+  }
+
+  public DistTxThinEntryState getDistTxEntryStates() {
+    return this.distTxThinEntryState;
+  }
+  
+  public void setDistTxEntryStates(DistTxThinEntryState thinEntryState) {
+    this.distTxThinEntryState = thinEntryState;
+  }
+
+  /**
+   * For Distributed Transaction Usage
+   * 
+   * This class is used to bring relevant information for DistTxEntryEvent from
+   * primary, after end of precommit. Same information are sent to all
+   * replicates during commit.
+   * 
+   * Whereas @see DistTxEntryEvent is used forstoring entry event information on
+   * TxCordinator and carry same to replicates.
+   * 
+   * @author vivekb
+   */
+  public static class DistTxThinEntryState implements DataSerializableFixedID {
+
+    private long regionVersion =1L;
+    private long tailKey = -1L;
+    private String memberID;
+
+    // For Serialization
+    public DistTxThinEntryState() {
+    }
+
+    @Override
+    public Version[] getSerializationVersions() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    public int getDSFID() {
+      return DIST_TX_THIN_ENTRY_STATE;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeLong(this.regionVersion, out);
+      DataSerializer.writeLong(this.tailKey, out);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      this.regionVersion = DataSerializer.readLong(in);
+      this.tailKey = DataSerializer.readLong(in);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buf = new StringBuilder();
+      buf.append("DistTxThinEntryState: ");
+      buf.append(" ,regionVersion=" + this.regionVersion);
+      buf.append(" ,tailKey=" + this.tailKey);
+      buf.append(" ,memberID=" + this.memberID);
+      return buf.toString();
+    }
+
+    public long getRegionVersion() {
+      return this.regionVersion;
+    }
+
+    public void setRegionVersion(long regionVersion) {
+      this.regionVersion = regionVersion;
+    }
+
+    public long getTailKey() {
+      return this.tailKey;
+    }
+
+    public void setTailKey(long tailKey) {
+      this.tailKey = tailKey;
+    }
+
+    public String getMemberID() {
+      return memberID;
+    }
+
+    public void setMemberID(String memberID) {
+      this.memberID = memberID;
+    }
   }
 }

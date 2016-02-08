@@ -1,10 +1,18 @@
 /*
- * ========================================================================= 
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
@@ -63,12 +71,11 @@ import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisee;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
 import com.gemstone.gemfire.internal.cache.Conflatable;
@@ -96,7 +103,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Class <code>CacheClientProxy</code> represents the server side of the
@@ -116,6 +123,8 @@ public class CacheClientProxy implements ClientSession {
    * The socket between the server and the client
    */
   protected Socket _socket;
+  
+  private final AtomicBoolean _socketClosed = new AtomicBoolean();
 
   /**
    * A communication buffer used by each message we send to the client
@@ -413,7 +422,7 @@ public class CacheClientProxy implements ClientSession {
         }
       } catch (SocketException ignore) {
       }
-      this._commBuffer = ServerConnection.allocateCommBuffer(bufSize);
+      this._commBuffer = ServerConnection.allocateCommBuffer(bufSize, socket);
     }
     this._remoteHostAddress = socket.getInetAddress().getHostAddress();
     this.isPrimary = ip;
@@ -960,10 +969,7 @@ public class CacheClientProxy implements ClientSession {
       // to fix bug 37684
       // 1. check to see if dispatcher is still alive
       if (this._messageDispatcher.isAlive()) {
-        if (this._socket != null && !this._socket.isClosed()) {
-          SocketCreator.asyncClose(this._socket, this._remoteHostAddress, null);
-          getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
-        }
+        closeSocket();
         destroyRQ();
         alreadyDestroyed = true;
         this._messageDispatcher.interrupt();
@@ -996,19 +1002,27 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
-  private void closeTransientFields() {
-    // Close the socket
-    if (this._socket != null && !this._socket.isClosed()) {
-      try {
-        this._socket.close();
-        getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
-      } catch (IOException e) {/*ignore*/}
+  private void closeSocket() {
+    if (this._socketClosed.compareAndSet(false, true)) {
+      // Close the socket
+      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, this._remoteHostAddress, null);
+      getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
     }
+  }
+  
+  private void closeTransientFields() {
+    closeSocket();
 
     // Null out comm buffer, host address, ports and proxy id. All will be
     // replaced when the client reconnects.
-    this._commBuffer = null;
-    this._remoteHostAddress = null;
+    releaseCommBuffer();
+    {
+      String remoteHostAddress = this._remoteHostAddress;
+      if (remoteHostAddress != null) {
+        this._cacheClientNotifier.getSocketCloser().releaseResourcesForAddress(remoteHostAddress);
+        this._remoteHostAddress = null;
+      }
+    }
     try {
       this.cils[RegisterInterestTracker.interestListIndex].clearClientInterestList();
     } catch (CacheClosedException e) {
@@ -1017,6 +1031,14 @@ public class CacheClientProxy implements ClientSession {
     // Commented to fix bug 40259
     //this.clientVersion = null;
     closeNonDurableCqs();    
+  }
+  
+  private void releaseCommBuffer() {
+    ByteBuffer bb = this._commBuffer;
+    if (bb != null) {
+      this._commBuffer = null;
+      ServerConnection.releaseCommBuffer(bb);
+    }
   }
 
   private void closeNonDurableCqs(){
@@ -2782,7 +2804,7 @@ public class CacheClientProxy implements ClientSession {
             latestValue);
         
         if (AFTER_MESSAGE_CREATION_FLAG) {
-          BridgeObserver bo = BridgeObserverHolder.getInstance();
+          ClientServerObserver bo = ClientServerObserverHolder.getInstance();
           bo.afterMessageCreation(message);
         }
      }

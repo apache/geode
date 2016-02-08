@@ -1,10 +1,18 @@
 /*
- *  =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *  ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management;
 
@@ -220,6 +228,13 @@ public interface MemberMXBean {
   public String[] listDiskStores(boolean includeRegionOwned);
 
   /**
+   * 
+   * @return  list of HDFSStore's present in the Cache
+   */
+  
+  public String[] getHDFSStores();
+
+  /**
    * Returns the GemFire specific properties for this member.
    */
   public GemFireProperties listGemFireProperties();
@@ -416,7 +431,7 @@ public interface MemberMXBean {
    * Returns a list of all disk stores, including those owned by a Region.
    */
   public String[] getDiskStores();
-
+  
   /**
    * Returns a list of all root Region names.
    */
@@ -807,4 +822,34 @@ public interface MemberMXBean {
    * The current number of nodes in this distributed system visible to this member. 
    */
   public int getVisibleNodes();
+
+  /**
+   * Returns the number of off heap objects.
+   */
+  public int getOffHeapObjects();
+  
+  /**
+   * Returns the size of the maximum configured off-heap memory in bytes.
+   */
+  public long getOffHeapMaxMemory();
+  
+  /**
+   * Returns the size of available (or unallocated) off-heap memory in bytes.
+   */
+  public long getOffHeapFreeMemory();
+  
+  /**
+   * Returns the size of utilized off-heap memory in bytes.
+   */
+  public long getOffHeapUsedMemory();
+
+  /**
+   * Returns the percentage of off-heap memory fragmentation.
+   */
+  public int getOffHeapFragmentation();
+  
+  /**
+   * Returns the total time spent compacting in millseconds.
+   */
+  public long getOffHeapCompactionTime();
 }

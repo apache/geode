@@ -1,10 +1,18 @@
 /*
- * ========================================================================= 
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
@@ -68,7 +76,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -90,7 +98,7 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableCondition;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * An implementation of Queue using Gemfire Region as the underlying
@@ -3013,9 +3021,9 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
                 && !queueRemovalMessageList.isEmpty()) { // messages exist
               QueueRemovalMessage qrm = new QueueRemovalMessage();
               qrm.resetRecipients();
-              List<BridgeServerImpl> servers = this.cache.getBridgeServers();
+              List<CacheServerImpl> servers = this.cache.getCacheServers();
               List<DistributedMember> recipients = new LinkedList();
-              for (BridgeServerImpl server: servers) {
+              for (CacheServerImpl server: servers) {
                 recipients.addAll(server.getCacheServerAdvisor().adviseBridgeServers());
               }
               qrm.setRecipients(recipients);
@@ -4102,6 +4110,17 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
   }
   public boolean isClientSlowReciever(){
     return isClientSlowReciever;
+  }
+
+  @Override
+  public void close() {
+    Region r = getRegion();
+    if (r != null && !r.isDestroyed()) {
+      try {
+        r.close();
+      } catch (RegionDestroyedException e) {
+      }
+    }
   }
   
     /**

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /*
  * DummyQRegion.java
@@ -13,24 +22,28 @@
 
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.QRegion;
-import com.gemstone.gemfire.cache.query.internal.ResultsSet;
-import com.gemstone.gemfire.cache.query.internal.ResultsBag;
-import com.gemstone.gemfire.cache.query.types.*;
-import com.gemstone.gemfire.cache.query.internal.types.*;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.RegionEntryContext;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.internal.QRegion;
+import com.gemstone.gemfire.cache.query.internal.ResultsBag;
+import com.gemstone.gemfire.cache.query.internal.ResultsSet;
+import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
+import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.RegionEntry;
+import com.gemstone.gemfire.internal.cache.RegionEntryContext;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  *
@@ -120,8 +133,16 @@ public class DummyQRegion extends QRegion {
       valueInList = new  ArrayList(1);      
     }
     valueInList.clear();
-    Object val = this.entry.getValueInVMOrDiskWithoutFaultIn((LocalRegion) getRegion());
-    if (val instanceof CachedDeserializable) {
+    Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
+    if (val instanceof Chunk) {
+      @Retained @Released Chunk ohval = (Chunk) val;
+      try {
+        // TODO OFFHEAP: val may be off-heap PdxInstance
+        val = ohval.getDeserializedValue(getRegion(), this.entry);
+      } finally {
+        ohval.release();
+      }
+    } else if (val instanceof CachedDeserializable) {
       val = ((CachedDeserializable)val).getDeserializedValue(getRegion(), this.entry);
     } 
     valueInList.add(val);
@@ -133,8 +154,16 @@ public class DummyQRegion extends QRegion {
     if(valueInArray == null){
       valueInArray = new  Object[1];      
     }   
-    Object val = this.entry.getValueInVMOrDiskWithoutFaultIn((LocalRegion) getRegion());
-    if (val instanceof CachedDeserializable) {
+    Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
+    if (val instanceof Chunk) {      
+      @Retained @Released Chunk ohval = (Chunk) val;
+      try {
+        // TODO OFFHEAP: val may be off-heap PdxInstance
+        val = ohval.getDeserializedValue(getRegion(), this.entry);
+      } finally {
+        ohval.release();
+      }
+    } else if (val instanceof CachedDeserializable) {
       val = ((CachedDeserializable)val).getDeserializedValue(getRegion(), this.entry);
     } 
     valueInArray[0] = val;
@@ -148,8 +177,16 @@ public class DummyQRegion extends QRegion {
       values.setElementType(valueType);
     }
     values.clear();
-    Object val = this.entry.getValueInVMOrDiskWithoutFaultIn((LocalRegion) getRegion());
-    if (val instanceof CachedDeserializable) {
+    Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
+    if (val instanceof Chunk) {
+      @Retained @Released Chunk ohval = (Chunk) val;
+      try {
+        // TODO OFFHEAP: val may be off-heap PdxInstance
+        val = ohval.getDeserializedValue(getRegion(), this.entry);
+      } finally {
+        ohval.release();
+      }
+    } else if (val instanceof CachedDeserializable) {
       val = ((CachedDeserializable)val).getDeserializedValue(getRegion(), this.entry);
     } 
     values.add(val);

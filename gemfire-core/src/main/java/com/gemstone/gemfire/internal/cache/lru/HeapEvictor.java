@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.lru;
 
@@ -25,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 
+import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.distributed.internal.OverflowQueueWithDMStats;
@@ -33,25 +43,30 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RegionEvictorTask;
+import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
+import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
 import com.gemstone.gemfire.internal.cache.control.ResourceListener;
+import com.gemstone.gemfire.internal.lang.ThreadUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 
 /**
- * Triggers centralized eviction(asynchornously) when ResourceManager sends
- * EVICTION_UP event. This is registered with Resource Manager.
+ * Triggers centralized eviction(asynchronously) when the ResourceManager sends
+ * an eviction event for on-heap regions. This is registered with the ResourceManager.
  * 
- * @author Yogesh, Suranjan, Amardeep
+ * @author Yogesh, Suranjan, Amardeep, rholmes
  * @since 6.0
  * 
  */
 public class HeapEvictor implements ResourceListener<MemoryEvent> {
   private static final Logger logger = LogService.getLogger();
   
+
+  // Add 1 for the management task that's putting more eviction tasks on the queue
   public static final int MAX_EVICTOR_THREADS = Integer.getInteger(
-      "gemfire.HeapLRUCapacityController.MAX_EVICTOR_THREADS", Runtime.getRuntime().availableProcessors()*4);
+      "gemfire.HeapLRUCapacityController.MAX_EVICTOR_THREADS", (Runtime.getRuntime().availableProcessors()*4)) + 1;
 
   public static final boolean DISABLE_HEAP_EVICTIOR_THREAD_POOL = Boolean
       .getBoolean("gemfire.HeapLRUCapacityController.DISABLE_HEAP_EVICTIOR_THREAD_POOL");
@@ -67,12 +82,17 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
   public static final long TOTAL_BYTES_TO_EVICT_FROM_HEAP; 
   
   public static final int BUCKET_SORTING_INTERVAL = Integer.getInteger(
-      "gemfire.HeapLRUCapacityController.higherEntryCountBucketCalculationInterval", 100).intValue();               
+      "gemfire.HeapLRUCapacityController.higherEntryCountBucketCalculationInterval",
+      100).intValue();
   
+  private static final String EVICTOR_THREAD_GROUP_NAME = "EvictorThreadGroup";
+  
+  private static final String EVICTOR_THREAD_NAME = "EvictorThread";
+
   static {
     float evictionBurstPercentage = Float.parseFloat(System.getProperty(
         "gemfire.HeapLRUCapacityController.evictionBurstPercentage", "0.4"));
-    long maxTenuredBytes = InternalResourceManager.getTenuredPoolMaxMemory();
+    long maxTenuredBytes = HeapMemoryMonitor.getTenuredPoolMaxMemory();
     TOTAL_BYTES_TO_EVICT_FROM_HEAP = (long)(maxTenuredBytes * 0.01 * evictionBurstPercentage);
   }
   
@@ -80,9 +100,10 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   private AtomicBoolean mustEvict = new AtomicBoolean(false);
 
-  private final Cache cache;  
+  protected final Cache cache;  
 
-  private ArrayList testTaskSetSizes = new  ArrayList();
+  private final ArrayList testTaskSetSizes = new  ArrayList();
+  public volatile int testAbortAfterLoopCount = Integer.MAX_VALUE;
   
   private BlockingQueue<Runnable> poolQueue;
   
@@ -93,21 +114,32 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
     initializeEvictorThreadPool();
   }
 
+  protected boolean includePartitionedRegion(PartitionedRegion region) {
+    return (region.getEvictionAttributes().getAlgorithm().isLRUHeap() 
+        && (region.getDataStore() != null) 
+        && !region.getAttributes().getOffHeap());
+  }
+  
+  protected boolean includeLocalRegion(LocalRegion region) {
+    return (region.getEvictionAttributes().getAlgorithm().isLRUHeap() 
+        && !region.getAttributes().getOffHeap());
+  }
+  
   private List<LocalRegion> getAllRegionList() {
     List<LocalRegion> allRegionList = new ArrayList<LocalRegion>();
     InternalResourceManager irm = (InternalResourceManager)cache
         .getResourceManager();
-    for (ResourceListener<MemoryEvent> listener : irm.getMemoryEventListeners()) {
+    
+    for (ResourceListener<MemoryEvent> listener : irm.getResourceListeners(getResourceType())) {
       if (listener instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion)listener;
-        if (pr.getEvictionAttributes().getAlgorithm().isLRUHeap()
-            && pr.getDataStore() != null) {
+        if (includePartitionedRegion(pr)) {
           allRegionList.addAll(pr.getDataStore().getAllLocalBucketRegions());
         }
       }
       else if (listener instanceof LocalRegion) {
         LocalRegion lr = (LocalRegion)listener;
-        if (lr.getEvictionAttributes().getAlgorithm().isLRUHeap()) {
+        if (includeLocalRegion(lr)) {
           allRegionList.add(lr);
         }
       }
@@ -161,12 +193,12 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
   private void initializeEvictorThreadPool() {
 
     final ThreadGroup evictorThreadGroup = LoggingThreadGroup.createThreadGroup(
-        "EvictorThreadGroup", logger);
+        getEvictorThreadGroupName(), logger);
     ThreadFactory evictorThreadFactory = new ThreadFactory() {
       private int next = 0;
 
       public Thread newThread(Runnable command) {
-        Thread t = new Thread(evictorThreadGroup, command, "EvictorThread "
+        Thread t = new Thread(evictorThreadGroup, command, getEvictorThreadName()
             + next++);
         t.setDaemon(true);
         return t;
@@ -228,7 +260,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
         regionEntryCnt = lr.getRegionMap().sizeInVM();
       }
       float percentage = (regionEntryCnt/numEntriesInVm);
-      long bytesToEvictPerTask = (long)(TOTAL_BYTES_TO_EVICT_FROM_HEAP * percentage);
+      long bytesToEvictPerTask = (long)(getTotalBytesToEvict() * percentage);
       regionsForSingleTask.add(lr);      
       if (mustEvict()) {
         submitRegionEvictionTask(new RegionEvictorTask(regionsForSingleTask, this,bytesToEvictPerTask));
@@ -241,7 +273,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
   private Set<Callable<Object>> createRegionEvictionTasks() {
     Set<Callable<Object>> evictorTaskSet = new HashSet<Callable<Object>>();
     int threadsAvailable = getEvictorThreadPool().getCorePoolSize();
-    long bytesToEvictPerTask = TOTAL_BYTES_TO_EVICT_FROM_HEAP/threadsAvailable;
+    long bytesToEvictPerTask = getTotalBytesToEvict() / threadsAvailable;
     List<LocalRegion> allRegionList = getAllRegionList();
     // This shuffling is not required when eviction triggered for the first time
     Collections.shuffle(allRegionList);
@@ -291,41 +323,141 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
     }
     return evictorTaskSet;
   }
+  
+  // Since the amount of memory used is to a large degree dependent upon when
+  // garbage collection is run, it's difficult to determine when to stop 
+  // evicting.  So, an initial calculation is done to determine the number of
+  // evictions that are likely needed in order to bring memory usage below the
+  // eviction threshold.  This number is stored in 'numFastLoops' and we
+  // quickly loop through this number performing evictions.  We then continue
+  // to evict, but at a progressively slower rate waiting either for an event
+  // which indicates we've dropped below the eviction threshold or another
+  // eviction event with an updated "number of bytes used".  If we get another
+  // eviction event with an updated "number of bytes used" then 'numFastLoops'
+  // is recalculated and we start over.
+  protected volatile int numEvictionLoopsCompleted = 0;
+  protected volatile int numFastLoops;
+  private long previousBytesUsed;
+  private final Object evictionLock = new Object();
+  @Override
+  public void onEvent(final MemoryEvent event) {
+    if (DISABLE_HEAP_EVICTIOR_THREAD_POOL) {
+      return;
+    }
+    
+    // Do we care about eviction events and did the eviction event originate
+    // in this VM ...
+    if(this.isRunning.get() && event.isLocal()) {
+      if (event.getState().isEviction()) {
+        final LogWriter logWriter = cache.getLogger();
+        
+        // Have we previously received an eviction event and already started eviction ...
+        if (this.mustEvict.get() == true) {
+          if (logWriter.fineEnabled()) {
+            logWriter.fine("Updating eviction in response to memory event: " + event + ". previousBytesUsed=" + previousBytesUsed);
+          }
 
-  public void onEvent(MemoryEvent event) {
-    if(isRunning.get()) {
-      if (event.isLocal()) {
-        if (event.getType().isEvictionUp() || event.getType().isEvictMore()) {
-          this.mustEvict.set(true);
-          if (!DISABLE_HEAP_EVICTIOR_THREAD_POOL) {
-            for (;;) {
+          // We lock here to make sure that the thread that was previously
+          // started and running eviction loops is in a state where it's okay
+          // to update the number of fast loops to perform.
+          synchronized (evictionLock) {
+            numEvictionLoopsCompleted = 0;
+            numFastLoops = (int) ((event.getBytesUsed() - event.getThresholds().getEvictionThresholdClearBytes()
+                + getTotalBytesToEvict()) / getTotalBytesToEvict());
+            evictionLock.notifyAll();
+          }
+          
+          // We've updated the number of fast loops to perform, and there's
+          // already a thread running the evictions, so we're done.
+          return;
+        }
+        
+        if (!this.mustEvict.compareAndSet(false, true)) {
+          // Another thread just started evicting.
+          return;
+        }
+        
+        numEvictionLoopsCompleted = 0;
+        numFastLoops = (int) ((event.getBytesUsed() - event.getThresholds().getEvictionThresholdClearBytes()
+            + getTotalBytesToEvict()) / getTotalBytesToEvict());
+        if (logWriter.fineEnabled()) {
+          logWriter.fine("Starting eviction in response to memory event: " + event);
+        }
+        
+        // The new thread which will run in a loop performing evictions
+        final Runnable evictionManagerTask = new Runnable() {
+          @Override
+          public void run() {
+            // Has the test hook been set which will cause eviction to abort early
+            if (numEvictionLoopsCompleted < testAbortAfterLoopCount) {
               try {
+                // Submit tasks into the queue to do the evictions
                 if (EVICT_HIGH_ENTRY_COUNT_BUCKETS_FIRST) {
                   createAndSubmitWeightedRegionEvictionTasks();
-                }
-                else {
+                } else {
                   for (Callable<Object> task : createRegionEvictionTasks()) {
                     submitRegionEvictionTask(task);
                   }
                 }
-                RegionEvictorTask.setLastTaskCompletionTime(System.currentTimeMillis()); // bug 41938
-                break;
+                RegionEvictorTask.setLastTaskCompletionTime(System.currentTimeMillis());
+  
+                // Make sure that another thread isn't processing a new eviction event
+                // and changing the number of fast loops to perform.
+                synchronized (evictionLock) {
+                  int delayTime = getEvictionLoopDelayTime();
+                  if (logWriter.fineEnabled()) {
+                    logWriter.fine("Eviction loop delay time calculated to be " + delayTime + " milliseconds. Fast Loops="
+                        + numFastLoops + ", Loop #=" + numEvictionLoopsCompleted+1);
+                  }
+                  numEvictionLoopsCompleted++;
+                  try {
+                    // Wait and release the lock so that the number of fast loops
+                    // needed can be updated by another thread processing a new
+                    // eviction event.
+                    evictionLock.wait(delayTime);
+                  } catch (InterruptedException iex) {
+                    // Loop and try again
+                  }
+                }
+                
+                // Do we think we're still above the eviction threshold ...
+                if (HeapEvictor.this.mustEvict.get()) {
+                  // Submit this runnable back into the thread pool and execute
+                  // another pass at eviction.
+                  HeapEvictor.this.evictorThreadPool.submit(this);
+                }
               } catch (RegionDestroyedException e) {
                 // A region destroyed exception might be thrown for Region.size() when a bucket
                 // moves due to rebalancing. retry submitting the eviction task without
                 // logging an error message. fixes bug 48162
+                if (HeapEvictor.this.mustEvict.get()) {
+                  HeapEvictor.this.evictorThreadPool.submit(this);
+                }
               }
             }
           }
-        }
-        else if (event.getType().isEvictionDown()
-            || event.getType().isEvictionDisabled()) {
-          this.mustEvict.set(false);
-        }
+        };
+        
+        // Submit the first pass at eviction into the pool
+        this.evictorThreadPool.submit(evictionManagerTask);
+          
+      } else {
+        this.mustEvict.set(false);
       }
     }
   }
 
+  protected int getEvictionLoopDelayTime() {
+    int delayTime = 850; // The waiting period when running fast loops
+    if ((numEvictionLoopsCompleted - numFastLoops) > 2) {
+      delayTime = 3000;  // Way below the threshold
+    } else if (numEvictionLoopsCompleted >= numFastLoops) {
+      delayTime = (numEvictionLoopsCompleted - numFastLoops + 3) * 500; // Just below the threshold
+    }
+    
+    return delayTime;  
+  }
+  
   public boolean mustEvict() {
     return this.mustEvict.get();
   }
@@ -340,5 +472,21 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
     if(isRunning.get())
       return testTaskSetSizes;
     return null;
+  }
+  
+  protected String getEvictorThreadGroupName() {
+    return HeapEvictor.EVICTOR_THREAD_GROUP_NAME;
+  }
+  
+  protected String getEvictorThreadName() {
+    return HeapEvictor.EVICTOR_THREAD_NAME;
+  }
+  
+  public long getTotalBytesToEvict() {
+    return TOTAL_BYTES_TO_EVICT_FROM_HEAP;
+  }
+  
+  protected ResourceType getResourceType() {
+    return ResourceType.HEAP_MEMORY;
   }
 }

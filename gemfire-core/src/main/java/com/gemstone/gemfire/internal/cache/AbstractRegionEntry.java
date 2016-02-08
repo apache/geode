@@ -1,15 +1,29 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
 
 import java.io.IOException;
+import java.util.Arrays;
+
 import org.apache.logging.log4j.Logger;
+
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.InvalidDeltaException;
@@ -41,11 +55,24 @@ import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ChunkWithHeapForm;
+import com.gemstone.gemfire.internal.offheap.GemFireChunk;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
+import com.gemstone.gemfire.internal.offheap.OffHeapCachedDeserializable;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.internal.util.Versionable;
 import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap;
@@ -54,7 +81,8 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxSerializationException;
 import com.gemstone.gemfire.pdx.PdxSerializer;
-
+import com.gemstone.gemfire.pdx.internal.ConvertableToBytes;
+import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 
 /**
  * Abstract implementation class of RegionEntry interface.
@@ -100,10 +128,13 @@ public abstract class AbstractRegionEntry implements RegionEntry,
   protected static final long IN_USE_BY_TX = 0x40L<<56;
 
 
+  protected static final long MARKED_FOR_EVICTION = 0x80L<<56;
 //  public Exception removeTrace; // debugging hot loop in AbstractRegionMap.basicPut()
   
-  protected AbstractRegionEntry(RegionEntryContext context, Object value) {
-    setValue(context,AbstractRegionMap.prepareValueForCache(context, value),false);
+  protected AbstractRegionEntry(RegionEntryContext context,
+      @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE) Object value) {
+    
+    setValue(context,this.prepareValueForCache(context, value, false),false);
 //    setLastModified(System.currentTimeMillis()); [bruce] this must be set later so we can use ==0 to know this is a new entry in checkForConflicts
   }
   
@@ -137,7 +168,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       return true;
 
     } finally {
-      if (isRemoved() && !isTombstone()) {
+      if (isRemoved() && !isTombstone() && !event.isEvicted()) {
         // Phase 2 of region entry removal is done here. The first phase is done
         // by the RegionMap. It is unclear why this code is needed. ARM destroy
         // does this also and we are now doing it as phase3 of the ARM destroy.
@@ -226,7 +257,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
   
 
   @Override
-  public void setValueWithTombstoneCheck(Object v, EntryEvent e) throws RegionClearedException {
+  public void setValueWithTombstoneCheck(@Unretained Object v, EntryEvent e) throws RegionClearedException {
     if (v == Token.TOMBSTONE) {
       makeTombstone((LocalRegion)e.getRegion(), ((EntryEventImpl)e).getVersionTag());
     } else {
@@ -266,15 +297,14 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     return getValueAsToken() == Token.REMOVED_PHASE2;
   }
   
-  // RegionEntry.fillInValue(...)
   public boolean fillInValue(LocalRegion region,
-                             InitialImageOperation.Entry dst,
+                             @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) InitialImageOperation.Entry dst,
                              ByteArrayDataInput in,
                              DM mgr)
   {
     dst.setSerialized(false); // starting default value
 
-    final Object v;
+    @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) final Object v;
     if (isTombstone()) {
       v = Token.TOMBSTONE;
     } else {
@@ -300,46 +330,59 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     }
     else if (v instanceof CachedDeserializable) {
       // don't serialize here if it is not already serialized
-      {
-        Object tmp = ((CachedDeserializable)v).getValue();
-        if (tmp instanceof byte[]) {
-          byte[] bb = (byte[])tmp;
-          dst.value = bb;
-        }
-        else if (isEagerDeserialize && tmp instanceof byte[][]) {
-          // optimize for byte[][] since it will need to be eagerly deserialized
-          // for SQLFabric
-          dst.value = tmp;
-          dst.setEagerDeserialize();
-        }
-        else {
-          try {
-            HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
-            BlobHelper.serializeTo(tmp, hdos);
-            hdos.trim();
-            dst.value = hdos;
-          } catch (IOException e) {
-            RuntimeException e2 = new IllegalArgumentException(LocalizedStrings.AbstractRegionEntry_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING.toLocalizedString());
-            e2.initCause(e);
-            throw e2;
+//      if(v instanceof ByteSource && CachedDeserializableFactory.preferObject()) {
+//        // For SQLFire we prefer eager deserialized
+//        dst.setEagerDeserialize();         
+//      }
+      
+      if (v instanceof StoredObject && !((StoredObject) v).isSerialized()) {
+        dst.value = ((StoredObject) v).getDeserializedForReading();
+      } else {
+        /*if (v instanceof ByteSource && CachedDeserializableFactory.preferObject()) {
+          dst.value = v;
+        } else */ {
+          Object tmp = ((CachedDeserializable) v).getValue();
+          if (tmp instanceof byte[]) {
+            byte[] bb = (byte[]) tmp;
+            dst.value = bb;
+          } else {
+            try {
+              HeapDataOutputStream hdos = new HeapDataOutputStream(
+                  Version.CURRENT);
+              BlobHelper.serializeTo(tmp, hdos);
+              hdos.trim();
+              dst.value = hdos;
+            } catch (IOException e) {
+              RuntimeException e2 = new IllegalArgumentException(
+                  LocalizedStrings.AbstractRegionEntry_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
+                      .toLocalizedString());
+              e2.initCause(e);
+              throw e2;
+            }
           }
+          dst.setSerialized(true);
         }
-        dst.setSerialized(true);
       }
     }
     else if (v instanceof byte[]) {
       dst.value = v;
     }
-    else if (isEagerDeserialize && v instanceof byte[][]) {
-      // optimize for byte[][] since it will need to be eagerly deserialized
-      // for SQLFabric
-      dst.value = v;
+    else { 
+      Object preparedValue = v;
+      if (preparedValue != null) {
+        preparedValue = prepareValueForGII(preparedValue);
+        if (preparedValue == null) {
+          return false;
+        }
+      }
+    if (CachedDeserializableFactory.preferObject()) {
+      dst.value = preparedValue;
       dst.setEagerDeserialize();
     }
     else {
       try {
         HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
-        BlobHelper.serializeTo(v, hdos);
+        BlobHelper.serializeTo(preparedValue, hdos);
         hdos.trim();
         dst.value = hdos;
         dst.setSerialized(true);
@@ -349,7 +392,22 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         throw e2;
       }
     }
+    }
     return true;
+  }
+  
+  /**
+   * To fix bug 49901 if v is a GatewaySenderEventImpl then make
+   * a heap copy of it if it is offheap.
+   * @return the value to provide to the gii request; null if no value should be provided.
+   */
+  public static Object prepareValueForGII(Object v) {
+    assert v != null;
+    if (v instanceof GatewaySenderEventImpl) {
+      return ((GatewaySenderEventImpl) v).makeHeapCopyIfOffHeap();
+    } else {
+      return v;
+    }
   }
   
   public boolean isOverflowedToDisk(LocalRegion r, DistributedRegion.DiskPosition dp) {
@@ -358,7 +416,8 @@ public abstract class AbstractRegionEntry implements RegionEntry,
 
   @Override
   public Object getValue(RegionEntryContext context) {
-    Object result = _getValueUse(context, true);
+    ReferenceCountHelper.createReferenceCountOwner();
+    @Retained Object result = _getValueRetain(context, true);
     //Asif: If the thread is an Index Creation Thread & the value obtained is 
     //Token.REMOVED , we can skip  synchronization block. This is required to prevent
     // the dead lock caused if an Index Update Thread has gone into a wait holding the
@@ -373,6 +432,21 @@ public abstract class AbstractRegionEntry implements RegionEntry,
 //    }
     
     if (Token.isRemoved(result)) {
+      ReferenceCountHelper.setReferenceCountOwner(null);
+      return null;
+    } else {
+      result = OffHeapHelper.copyAndReleaseIfNeeded(result); // sqlf does not dec ref count in this call
+      ReferenceCountHelper.setReferenceCountOwner(null);
+      setRecentlyUsed();
+      return result;
+    }
+  }
+  
+  @Override
+  @Retained
+  public Object getValueRetain(RegionEntryContext context) {
+    @Retained Object result = _getValueRetain(context, true);
+    if (Token.isRemoved(result)) {
       return null;
     } else {
       setRecentlyUsed();
@@ -381,7 +455,8 @@ public abstract class AbstractRegionEntry implements RegionEntry,
   }
   
   @Override
-  public void setValue(RegionEntryContext context, Object value) throws RegionClearedException {
+  @Released
+  public void setValue(RegionEntryContext context, @Unretained Object value) throws RegionClearedException {
     // @todo darrel: This will mark new entries as being recently used
     // It might be better to only mark them when they are modified.
     // Or should we only mark them on reads?
@@ -393,10 +468,14 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     setValue(context,value);
   }
   
-  protected void setValue(RegionEntryContext context, Object value, boolean recentlyUsed) {
-    // value = compress(context,value); // compress is now called in AbstractRegionMap.prepareValueForCache
-    
+  @Released
+  protected void setValue(RegionEntryContext context, @Unretained Object value, boolean recentlyUsed) {
     _setValue(value);
+    if (value != null && context != null && (this instanceof OffHeapRegionEntry) 
+        && context instanceof LocalRegion && ((LocalRegion)context).isThisRegionBeingClosedOrDestroyed()) {
+      ((OffHeapRegionEntry)this).release();
+      ((LocalRegion)context).checkReadiness();
+    }
     if (recentlyUsed) {
       setRecentlyUsed();
     }
@@ -473,21 +552,48 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     return value;    
   }
   
+  private static byte[] compressBytes(RegionEntryContext context, byte[] uncompressedBytes) {
+    byte[] result = uncompressedBytes;
+    if (isCompressible(context, uncompressedBytes)) {
+      long time = context.getCachePerfStats().startCompression();
+      result = context.getCompressor().compress(uncompressedBytes);
+      context.getCachePerfStats().endCompression(time, uncompressedBytes.length, result.length);
+    }
+    return result;
+  }
+  
+  
+  @Retained
   public final Object getValueInVM(RegionEntryContext context) {
-    Object v = _getValueUse(context, true);
+    ReferenceCountHelper.createReferenceCountOwner();
+    @Retained Object v = _getValueRetain(context, true);
     
     if (v == null) { // should only be possible if disk entry
       v = Token.NOT_AVAILABLE;
     }
-    return v;
+    @Retained Object result = OffHeapHelper.copyAndReleaseIfNeeded(v); // TODO OFFHEAP keep it offheap?
+    ReferenceCountHelper.setReferenceCountOwner(null);
+    return result;
   }
   
+  @Retained
   public  Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
    return getValueInVM(owner);
   }
+  
   @Override
+  @Retained
   public Object getValueOffHeapOrDiskWithoutFaultIn(LocalRegion owner) {
-    return _getValueUse(owner, true);
+    @Retained Object result = _getValueRetain(owner, true);
+//    if (result instanceof ByteSource) {
+//      // If the ByteSource contains a Delta or ListOfDelta then we want to deserialize it
+//      Object deserVal = ((CachedDeserializable)result).getDeserializedForReading();
+//      if (deserVal != result) {
+//        OffHeapHelper.release(result);
+//        result = deserVal;
+//      }
+//    }
+    return result;
   }
   
   public Object getValueOnDisk(LocalRegion r)
@@ -542,7 +648,8 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         // Because the pr meta data region will not have an LRU.
         newValueToWrite = ((CachedDeserializable) newValueToWrite).getDeserializedValue(region, null);
         if (!create && newValueToWrite instanceof Versionable) {
-          final Object oldValue = getValueInVM(region); // Heap value should always be deserialized at this point // OFFHEAP will not be deserialized
+          @Retained @Released final Object oldValue = getValueInVM(region); // Heap value should always be deserialized at this point // OFFHEAP will not be deserialized
+          try {
           // BUGFIX for 35029. If oldValue is null the newValue should be put.
           if(oldValue == null) {
           	putValue = true;
@@ -552,6 +659,9 @@ public abstract class AbstractRegionEntry implements RegionEntry,
             Versionable ov = (Versionable) oldValue;
             putValue = nv.isNewerThan(ov);
           }  
+          } finally {
+            OffHeapHelper.release(oldValue);
+          }
         }
       }
 
@@ -593,7 +703,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
             }
           }
         } 
-        setValue(region, AbstractRegionMap.prepareValueForCache(region, newValueToWrite));
+        setValue(region, this.prepareValueForCache(region, newValueToWrite, false));
         result = true;
 
         if (newValueToWrite != Token.TOMBSTONE){
@@ -621,11 +731,12 @@ public abstract class AbstractRegionEntry implements RegionEntry,
    * @throws EntryNotFoundException if expectedOldValue is
    * not null and is not equal to current value
    */
+  @Released
   public final boolean destroy(LocalRegion region,
                             EntryEventImpl event,
                             boolean inTokenMode,
                             boolean cacheWrite,
-                            Object expectedOldValue,
+                            @Unretained Object expectedOldValue,
                             boolean forceDestroy,
                             boolean removeRecoveredEntry)
     throws CacheWriterException,
@@ -648,7 +759,10 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     // :ezoerner:20080814 We also read old value from disk or buffer
     // in the case where there is a non-null expectedOldValue
     // see PartitionedRegion#remove(Object key, Object value)
-    Object curValue = _getValueUse(region, true);
+    ReferenceCountHelper.skipRefCountTracking();
+    @Retained @Released Object curValue = _getValueRetain(region, true);
+    ReferenceCountHelper.unskipRefCountTracking();
+    try {
     if (curValue == null) curValue = Token.NOT_AVAILABLE;
     
     if (curValue == Token.NOT_AVAILABLE) {
@@ -675,7 +789,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     }
 
     if (expectedOldValue != null) {
-      if (!checkExpectedOldValue(expectedOldValue, curValue)) {
+      if (!checkExpectedOldValue(expectedOldValue, curValue, region)) {
         throw new EntryNotFoundException(
           LocalizedStrings.AbstractRegionEntry_THE_CURRENT_VALUE_WAS_NOT_EQUAL_TO_EXPECTED_VALUE.toLocalizedString());
       }
@@ -685,11 +799,14 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       proceed = true;
     }
     else {
-      proceed = event.setOldValue(curValue) || removeRecoveredEntry
+      proceed = event.setOldValue(curValue, curValue instanceof GatewaySenderEventImpl) || removeRecoveredEntry
                 || forceDestroy || region.getConcurrencyChecksEnabled() // fix for bug #47868 - create a tombstone
                 || (event.getOperation() == Operation.REMOVE // fix for bug #42242
                     && (curValue == null || curValue == Token.LOCAL_INVALID
                         || curValue == Token.INVALID));
+    }
+    } finally {
+      OffHeapHelper.releaseWithNoTracking(curValue);
     }
     } // end curValue block
     
@@ -718,7 +835,16 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         if (indexManager != null) {
           try {
             if(isValueNull()) {
-              _setValue(AbstractRegionMap.prepareValueForCache(region, getValueInVMOrDiskWithoutFaultIn(region)));
+              @Released Object value = getValueOffHeapOrDiskWithoutFaultIn(region);
+              try {
+              _setValue(prepareValueForCache(region, value, false));
+              if (value != null && region != null && (this instanceof OffHeapRegionEntry) && region.isThisRegionBeingClosedOrDestroyed()) {
+                ((OffHeapRegionEntry)this).release();
+                region.checkReadiness();
+              }
+              } finally {
+                OffHeapHelper.release(value);
+              }
             }
             indexManager.updateIndexes(this,
                 IndexManager.REMOVE_ENTRY,
@@ -750,9 +876,17 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         removeEntry = true;
       }
 
-      if (removeEntry) {
+      // See #47887, we do not insert a tombstone for evicted HDFS
+      // entries since the value is still present in HDFS
+      // Check if we have to evict or just do destroy.
+      boolean forceRemoveEntry = 
+          (event.isEviction() || event.isExpiration()) 
+          && event.getRegion().isUsedForPartitionedRegionBucket()
+          && event.getRegion().getPartitionedRegion().isHDFSRegion();
+
+      if (removeEntry || forceRemoveEntry) {
         boolean isThisTombstone = isTombstone();
-        if(inTokenMode) {
+        if(inTokenMode && !event.getOperation().isEviction()) {
           setValue(region, Token.DESTROYED);  
         } else {
           removePhase1(region, false);
@@ -770,35 +904,161 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       return false;
     }
   }
+  
+ 
 
-  static boolean checkExpectedOldValue(Object expectedOldValue, Object actualValue) {
+  static boolean checkExpectedOldValue(@Unretained Object expectedOldValue, @Unretained Object actualValue, LocalRegion lr) {
     if (Token.isInvalid(expectedOldValue)) {
       return (actualValue == null) || Token.isInvalid(actualValue);
     } else {
-      return checkEquals(expectedOldValue, actualValue);
+      boolean isCompressedOffHeap = lr.getAttributes().getOffHeap() && lr.getAttributes().getCompressor() != null;
+      return checkEquals(expectedOldValue, actualValue, isCompressedOffHeap);
     }
   }
   
-  static boolean checkEquals(Object v1, Object v2) {
+  private static boolean basicEquals(Object v1, Object v2) {
+    if (v2 != null) {
+      if (v2.getClass().isArray()) {
+        // fix for 52093
+        if (v2 instanceof byte[]) {
+          if (v1 instanceof byte[]) {
+            return Arrays.equals((byte[])v2, (byte[])v1);
+          } else {
+            return false;
+          }
+        } else if (v2 instanceof Object[]) {
+          if (v1 instanceof Object[]) {
+            return Arrays.deepEquals((Object[])v2, (Object[])v1);
+          } else {
+            return false;
+          }
+        } else if (v2 instanceof int[]) {
+          if (v1 instanceof int[]) {
+            return Arrays.equals((int[])v2, (int[])v1);
+          } else {
+            return false;
+          }
+        } else if (v2 instanceof long[]) {
+          if (v1 instanceof long[]) {
+            return Arrays.equals((long[])v2, (long[])v1);
+          } else {
+            return false;
+          }
+        } else if (v2 instanceof boolean[]) {
+          if (v1 instanceof boolean[]) {
+            return Arrays.equals((boolean[])v2, (boolean[])v1);
+          } else {
+            return false;
+          }
+        } else if (v2 instanceof short[]) {
+          if (v1 instanceof short[]) {
+            return Arrays.equals((short[])v2, (short[])v1);
+          } else {
+            return false;
+          }
+        } else if (v2 instanceof char[]) {
+          if (v1 instanceof char[]) {
+            return Arrays.equals((char[])v2, (char[])v1);
+          } else {
+            return false;
+          }
+        } else if (v2 instanceof float[]) {
+          if (v1 instanceof float[]) {
+            return Arrays.equals((float[])v2, (float[])v1);
+          } else {
+            return false;
+          }
+        } else if (v2 instanceof double[]) {
+          if (v1 instanceof double[]) {
+            return Arrays.equals((double[])v2, (double[])v1);
+          } else {
+            return false;
+          }
+        }
+        // fall through and call equals method
+      }
+      return v2.equals(v1);
+    } else {
+      return v1 == null;
+    }
+  }
+  
+  static boolean checkEquals(@Unretained Object v1, @Unretained Object v2, boolean isCompressedOffHeap) {
     // need to give PdxInstance#equals priority
     if (v1 instanceof PdxInstance) {
       return checkPdxEquals((PdxInstance)v1, v2);
     } else if (v2 instanceof PdxInstance) {
       return checkPdxEquals((PdxInstance)v2, v1);
+    } else if (v1 instanceof OffHeapCachedDeserializable) {
+      return checkOffHeapEquals((OffHeapCachedDeserializable)v1, v2);
+    } else if (v2 instanceof OffHeapCachedDeserializable) {
+      return checkOffHeapEquals((OffHeapCachedDeserializable)v2, v1);
     } else if (v1 instanceof CachedDeserializable) {
-      return checkCDEquals((CachedDeserializable)v1, v2);
+      return checkCDEquals((CachedDeserializable)v1, v2, isCompressedOffHeap);
     } else if (v2 instanceof CachedDeserializable) {
-      return checkCDEquals((CachedDeserializable)v2, v1);
+      return checkCDEquals((CachedDeserializable)v2, v1, isCompressedOffHeap);
     } else {
-      if (v2 != null) {
-        return v2.equals(v1);
+      return basicEquals(v1, v2);
+    }
+  }
+  private static boolean checkOffHeapEquals(@Unretained OffHeapCachedDeserializable cd, @Unretained Object obj) {
+    if (cd.isSerializedPdxInstance()) {
+      PdxInstance pi = InternalDataSerializer.readPdxInstance(cd.getSerializedValue(), GemFireCacheImpl.getForPdx("Could not check value equality"));
+      return checkPdxEquals(pi, obj);
+    }
+    if (obj instanceof OffHeapCachedDeserializable) {
+      return cd.checkDataEquals((OffHeapCachedDeserializable)obj);
+    } else {
+      byte[] serializedObj;
+      if (obj instanceof CachedDeserializable) {
+        if (!cd.isSerialized()) {
+          if (obj instanceof StoredObject && !((StoredObject) obj).isSerialized()) {
+            // both are byte[]
+            // obj must be DataAsAddress since it was not OffHeapCachedDeserializable
+            // so its byte[] will be small.
+            byte[] objBytes = (byte[]) ((StoredObject) obj).getDeserializedForReading();
+            return cd.checkDataEquals(objBytes);
+          } else {
+            return false;
+          }
+        }
+        serializedObj = ((CachedDeserializable) obj).getSerializedValue();
+      } else if (obj instanceof byte[]) {
+        if (cd.isSerialized()) {
+          return false;
+        }
+        serializedObj = (byte[]) obj;
       } else {
-        return v1 == null;
+        if (!cd.isSerialized()) {
+          return false;
+        }
+        if (obj == null || obj == Token.NOT_AVAILABLE
+            || Token.isInvalidOrRemoved(obj)) {
+          return false;
+        }
+        serializedObj = EntryEventImpl.serialize(obj);
       }
+      return cd.checkDataEquals(serializedObj);
     }
   }
   
-  private static boolean checkCDEquals(CachedDeserializable cd, Object obj) {
+  private static boolean checkCDEquals(CachedDeserializable cd, Object obj, boolean isCompressedOffHeap) {
+    if (cd instanceof StoredObject && !((StoredObject) cd).isSerialized()) {
+      // cd is an actual byte[].
+      byte[] ba2;
+      if (obj instanceof StoredObject) {
+        if (!((StoredObject) obj).isSerialized()) {
+          return false;
+        }
+        ba2 = (byte[]) ((StoredObject) obj).getDeserializedForReading();
+      } else if (obj instanceof byte[]) {
+        ba2 = (byte[]) obj;
+      } else {
+        return false;
+      }
+      byte[] ba1 = (byte[]) cd.getDeserializedForReading();
+      return Arrays.equals(ba1, ba2);
+    }
     Object cdVal = cd.getValue();
     if (cdVal instanceof byte[]) {
       byte[] cdValBytes = (byte[])cdVal;
@@ -806,14 +1066,21 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       if (pi != null) {
         return checkPdxEquals(pi, obj);
       }
-      //byte[] serializedObj;
-      /**
-       * To be more compatible with previous releases do not compare the serialized forms here.
-       * Instead deserialize and call the equals method.
-       */
+      if (isCompressedOffHeap) { // fix for bug 52248
+        byte[] serializedObj;
+        if (obj instanceof CachedDeserializable) {
+          serializedObj = ((CachedDeserializable) obj).getSerializedValue();
+        } else {
+          serializedObj = EntryEventImpl.serialize(obj); 
+        }
+        return Arrays.equals(cdValBytes, serializedObj); 
+      } else {
+        /**
+         * To be more compatible with previous releases do not compare the serialized forms here.
+         * Instead deserialize and call the equals method.
+         */
       Object deserializedObj;
       if (obj instanceof CachedDeserializable) {
-        //serializedObj = ((CachedDeserializable) obj).getSerializedValue();
         deserializedObj =((CachedDeserializable) obj).getDeserializedForReading();
       } else {
         if (obj == null || obj == Token.NOT_AVAILABLE
@@ -822,15 +1089,19 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         }
         // TODO OPTIMIZE: Before serializing all of obj we could get the top
         // level class name of cdVal and compare it to the top level class name of obj.
-        //serializedObj = EntryEventImpl.serialize(obj);
         deserializedObj = obj;
       }
-      return cd.getDeserializedForReading().equals(deserializedObj);
+      return basicEquals(deserializedObj, cd.getDeserializedForReading());
+      }
 //      boolean result = Arrays.equals((byte[])cdVal, serializedObj);
 //      if (!result) {
 //        try {
 //          Object o1 = BlobHelper.deserializeBlob((byte[])cdVal);
 //          Object o2 = BlobHelper.deserializeBlob(serializedObj);
+//          SimpleMemoryAllocatorImpl.debugLog("checkCDEquals o1=<" + o1 + "> o2=<" + o2 + ">", false);
+//          if (o1.equals(o2)) {
+//            SimpleMemoryAllocatorImpl.debugLog("they are equal! a1=<" + Arrays.toString((byte[])cdVal) + "> a2=<" + Arrays.toString(serializedObj) + ">", false);
+//          }
 //        } catch (IOException e) {
 //          // TODO Auto-generated catch block
 //          e.printStackTrace();
@@ -847,7 +1118,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         // class name of cdVal and the top level class name of obj and compare.
         obj = ((CachedDeserializable) obj).getDeserializedForReading();
       }
-      return cdVal.equals(obj);
+      return basicEquals(cdVal, obj);
     }
   }
   /**
@@ -857,6 +1128,10 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     if (!(obj instanceof PdxInstance)) {
       // obj may be a CachedDeserializable in which case we want to convert it to a PdxInstance even if we are not readSerialized.
       if (obj instanceof CachedDeserializable) {
+        if (obj instanceof StoredObject && !((StoredObject) obj).isSerialized()) {
+          // obj is actually a byte[] which will never be equal to a PdxInstance
+          return false;
+        }
         Object cdVal = ((CachedDeserializable) obj).getValue();
         if (cdVal instanceof byte[]) {
           byte[] cdValBytes = (byte[]) cdVal;
@@ -901,7 +1176,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         }
       }
     }
-    return obj.equals(pdx);
+    return basicEquals(obj, pdx);
   }
 
   
@@ -937,6 +1212,16 @@ public abstract class AbstractRegionEntry implements RegionEntry,
 
   public abstract Object getKey();
   
+  protected static boolean okToStoreOffHeap(Object v, AbstractRegionEntry e) {
+    if (v == null) return false;
+    if (Token.isInvalidOrRemoved(v)) return false;
+    if (v == Token.NOT_AVAILABLE) return false;
+    if (v instanceof DiskEntry.RecoveredEntry) return false; // The disk layer has special logic that ends up storing the nested value in the RecoveredEntry off heap
+    if (!(e instanceof OffHeapRegionEntry)) return false;
+    // TODO should we check for deltas here or is that a user error?
+    return true;
+  }
+
   /**
    * Default implementation. Override in subclasses with primitive keys
    * to prevent creating an Object form of the key for each equality check.
@@ -993,6 +1278,120 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     } while(!done);
   }
 
+  @Override
+  @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
+  public  Object prepareValueForCache(RegionEntryContext r,
+      @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE) Object val,
+      boolean isEntryUpdate) {
+    return prepareValueForCache(r, val, null, isEntryUpdate);
+  }
+
+  @Override
+  @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
+  public  Object prepareValueForCache(RegionEntryContext r,
+      @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE) Object val,
+      EntryEventImpl event, boolean isEntryUpdate) {
+    if (r != null && r.getOffHeap() && okToStoreOffHeap(val, this)) {
+      if (val instanceof StoredObject) {
+        // Check to see if val has the same compression settings as this region.
+        // The recursive calls in this section are safe because
+        // we only do it after copy the off-heap value to the heap.
+        // This is needed to fix bug 52057.
+        StoredObject soVal = (StoredObject) val;
+        assert !soVal.isCompressed();
+        if (r.getCompressor() != null) {
+          // val is uncompressed and we need a compressed value.
+          // So copy the off-heap value to the heap in a form that can be compressed.
+          byte[] valAsBytes = soVal.getValueAsHeapByteArray();
+          Object heapValue;
+          if (soVal.isSerialized()) {
+            heapValue = CachedDeserializableFactory.create(valAsBytes);
+          } else {
+            heapValue = valAsBytes;
+          }
+          return prepareValueForCache(r, heapValue, event, isEntryUpdate);
+        }
+        if (val instanceof Chunk) {
+          // if the reused guy has a refcount then need to inc it
+          if (!((Chunk)val).retain()) {
+            throw new IllegalStateException("Could not use an off heap value because it was freed");
+          }
+        }
+        // else it is DataAsAddress. This code just returns it as prepared.
+        // TODO OFFHEAP: Review the callers to see if they will handle DataAsAddress correctly.
+      } else {
+        byte[] data;
+        boolean isSerialized = !(val instanceof byte[]);
+        if (isSerialized) {
+          if (event != null && event.getCachedSerializedNewValue() != null) {
+            data = event.getCachedSerializedNewValue();
+          } else if (val instanceof CachedDeserializable) {
+            data = ((CachedDeserializable)val).getSerializedValue();
+            // TODO OFFHEAP: cache data in event?
+          } else if (val instanceof PdxInstance) {
+            try {
+              data = ((ConvertableToBytes)val).toBytes();
+              // TODO OFFHEAP: cache data in event?
+            } catch (IOException e) {
+              throw new PdxSerializationException("Could not convert " + val + " to bytes", e);
+            }
+          } else {
+            data = EntryEventImpl.serialize(val);
+            // TODO OFFHEAP: cache data in event?
+          }
+        } else {
+          data = (byte[]) val;
+        }
+        byte[] compressedData = compressBytes(r, data);
+        boolean isCompressed = compressedData != data;
+        ReferenceCountHelper.setReferenceCountOwner(this);
+        MemoryAllocator ma = SimpleMemoryAllocatorImpl.getAllocator(); // fix for bug 47875
+        val = ma.allocateAndInitialize(compressedData, isSerialized, isCompressed, GemFireChunk.TYPE); // TODO:KIRK:48068 race happens right after this line
+        ReferenceCountHelper.setReferenceCountOwner(null);
+        if (val instanceof GemFireChunk) {
+          val = new com.gemstone.gemfire.internal.offheap.ChunkWithHeapForm((GemFireChunk)val, data);
+        }
+//        if (val instanceof Chunk && r instanceof LocalRegion) {
+//          Chunk c = (Chunk) val;
+//          LocalRegion lr = (LocalRegion) r;
+//          SimpleMemoryAllocatorImpl.debugLog("allocated @" + Long.toHexString(c.getMemoryAddress()) + " reg=" + lr.getFullPath(), false);
+//        }
+      }
+      return val;
+    }
+    @Unretained Object nv = val;
+    if (nv instanceof StoredObject) {
+      // This off heap value is being put into a on heap region.
+      byte[] data = ((StoredObject) nv).getSerializedValue();
+      nv = CachedDeserializableFactory.create(data);
+    }
+    // don't bother checking for SQLFire
+    if (!GemFireCacheImpl.sqlfSystem() && nv instanceof PdxInstanceImpl) {
+      // We do not want to put PDXs in the cache as values.
+      // So get the serialized bytes and use a CachedDeserializable.
+      try {
+        byte[] data = ((ConvertableToBytes)nv).toBytes();
+        byte[] compressedData = compressBytes(r, data);
+        if (data == compressedData) {
+          nv = CachedDeserializableFactory.create(data);
+        } else {
+          nv = compressedData;
+        }
+      } catch (IOException e) {
+        throw new PdxSerializationException("Could not convert " + nv + " to bytes", e);
+      }
+    } else {
+      nv = compress(r, nv, event);
+    }
+    return nv;
+  }
+  
+  @Override
+  @Unretained
+  public final Object _getValue() {
+    return getValueField();
+  }
+
   public final boolean isUpdateInProgress() {
     return areAnyBitsSet(UPDATE_IN_PROGRESS);
   }
@@ -1037,6 +1436,29 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     TXManagerImpl.incRefCount(this);
     setInUseByTransaction(true);
   }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public final boolean isMarkedForEviction() {
+    return areAnyBitsSet(MARKED_FOR_EVICTION);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public final void setMarkedForEviction() {
+    setBits(MARKED_FOR_EVICTION);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public final void clearMarkedForEviction() {
+    clearBits(~MARKED_FOR_EVICTION);
+  }
   
   @Override
   public final synchronized void decRefCount(NewLRUClockHand lruList, LocalRegion lr) {
@@ -1068,16 +1490,12 @@ public abstract class AbstractRegionEntry implements RegionEntry,
    * Instead of overriding this method; override areSetValue.
    */
   protected final void _setValue(Object val) {
-    areSetValue(val);
+    setValueField(val);
   }
   
   @Override
-  public final Object _getValue() {
-    return areGetValue();
-  }
-  @Override
   public Token getValueAsToken() {
-    Object v = areGetValue();
+    Object v = getValueField();
     if (v == null || v instanceof Token) {
       return (Token)v;
     } else {
@@ -1085,11 +1503,23 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     }
   }
   
-  protected abstract Object areGetValue();
-  protected abstract void areSetValue(Object v);
+  /**
+   * Reads the value of this region entry.
+   * Provides low level access to the value field.
+   * @return possible OFF_HEAP_OBJECT (caller uses region entry reference)
+   */
+  @Unretained
+  protected abstract Object getValueField();
+  /**
+   * Set the value of this region entry.
+   * Provides low level access to the value field.
+   * @param v the new value to set
+   */
+  protected abstract void setValueField(@Unretained Object v);
 
+  @Retained
   public Object getTransformedValue() {
-    return _getValueUse(null, false);
+    return _getValueRetain(null, false);
   }
   
   public final boolean getValueWasResultOfSearch() {
@@ -1187,7 +1617,19 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       VersionTag tag = VersionTag.create(mbr);
       tag.setEntryVersion(v);
       if (region.getVersionVector() != null) {
-        tag.setRegionVersion(region.getVersionVector().getNextVersion());
+        // Use region version if already provided, else generate
+        long nextRegionVersion = event.getNextRegionVersion();
+        if (nextRegionVersion != -1) {
+          // Set on the tag and record it locally
+          tag.setRegionVersion(nextRegionVersion);
+          RegionVersionVector rvv = region.getVersionVector();
+          rvv.recordVersion(rvv.getOwnerId(),nextRegionVersion);
+          if (logger.isDebugEnabled()) {
+            logger.debug("recorded region version {}; region={}", nextRegionVersion, region.getFullPath());
+          }
+        } else {
+          tag.setRegionVersion(region.getVersionVector().getNextVersion());  
+        }
       }
       if (withDelta) {
         tag.setPreviousMemberID(previous);
@@ -1214,7 +1656,10 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       stamp.setMemberID(mbr);
       event.setVersionTag(tag);
       if (logger.isDebugEnabled()) {
-        logger.debug("generated tag {}; region={}; rvv={}", tag, region.getFullPath(), region.getVersionVector());
+        logger.debug("generated tag {}; key={}; oldvalue={} newvalue={} client={} region={}; rvv={}", tag,
+            event.getKey(), event.getOldValueStringForm(), event.getNewValueStringForm(),
+            (event.getContext() == null? "none" : event.getContext().getDistributedMember().getName()),
+            region.getFullPath(), region.getVersionVector());
       }
       return tag;
     }
@@ -1692,6 +2137,8 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         SystemFailure.checkFailure();
         logger.error(LocalizedMessage.create(LocalizedStrings.LocalRegion_EXCEPTION_OCCURRED_IN_CONFLICTRESOLVER), t);
         thr = t;
+      } finally {
+        timestampedEvent.release();
       }
 
       if (isDebugEnabled) {
@@ -1775,8 +2222,13 @@ public abstract class AbstractRegionEntry implements RegionEntry,
    */
   public static final int MAX_INLINE_STRING_KEY_BYTE_ENCODING = 15;
   
+  /**
+   * This is only retained in off-heap subclasses.  However, it's marked as
+   * Retained here so that callers are aware that the value may be retained.
+   */
   @Override
-  public Object _getValueUse(RegionEntryContext context, boolean decompress) {
+  @Retained 
+  public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
     if (decompress) {
       return decompress(context, _getValue());
     } else {

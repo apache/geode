@@ -1,0 +1,504 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+package com.gemstone.gemfire.cache.query.internal.index;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.IntStream;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import com.gemstone.gemfire.cache.query.data.Portfolio;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+@Category(UnitTest.class)
+public class HashIndexSetJUnitTest {
+  
+  Map<Integer, Portfolio> portfoliosMap;
+  Set<Portfolio> portfolioSet;
+  HashIndexSet his;
+  
+  public void setupHashIndexSet(int numEntries) {
+    his = createHashIndexSet();
+    portfoliosMap = createPortfolioObjects(numEntries, 0);
+    portfolioSet = new HashSet<Portfolio>(portfoliosMap.values());
+    addPortfoliosToHashIndexSet(portfoliosMap, his);
+  }
+  
+  private void addPortfoliosToHashIndexSet(Map<Integer, Portfolio> portfoliosMap, HashIndexSet hashIndexSet) {
+    portfoliosMap.forEach((k,v) -> {
+      try {
+        hashIndexSet.add(k, v);
+      }
+      catch (TypeMismatchException exception) {
+        throw new Error(exception);
+      }
+    });
+  }
+  
+  private HashIndexSet createHashIndexSet() {
+    HashIndexSet his = new HashIndexSet();  
+    HashIndex.IMQEvaluator mockEvaluator = mock(HashIndex.IMQEvaluator.class);
+    when(mockEvaluator.evaluateKey(any(Object.class))).thenAnswer(new EvaluateKeyAnswer());
+    his.setEvaluator(mockEvaluator);
+    return his;
+  }
+  
+  /**
+   * we are "indexed" on indexKey.  Equality of portfolios is based on ID
+   * indexKeys are based on 0 -> numEntries
+   * IDs are startID -> startID + numEntries
+   * @param numToCreate how many portfolios to create
+   * @param startID the ID value to start incrementing from
+   * @return
+   */
+  public Map<Integer, Portfolio> createPortfolioObjects(int numToCreate, int startID) {
+    Map<Integer, Portfolio> portfoliosMap = new HashMap<>();
+    IntStream.range(0, numToCreate).forEach(e -> {
+        Portfolio p = new Portfolio(e + startID);
+        p.indexKey = e;
+        portfoliosMap.put(p.indexKey, p);
+    });
+    return portfoliosMap;
+  }
+  
+  @Test
+  public void testHashIndexSetAdd() throws Exception {
+    int numEntries = 100;
+    setupHashIndexSet(numEntries);
+    
+    Assert.assertEquals(numEntries, his.size());
+    his.iterator().forEachRemaining((e ->portfolioSet.remove(e)));
+    Assert.assertTrue(portfolioSet.isEmpty());  
+  }
+  
+  @Test
+  public void testHashIndexSetAddWithNullKey() throws Exception {
+    int numEntries = 100;
+    setupHashIndexSet(numEntries);
+    
+    Assert.assertEquals(numEntries, his.size());
+    his.add(null, new Portfolio(numEntries + 1));
+    Assert.assertEquals(numEntries + 1, his.size());
+  }
+  
+  //we have to be sure that we dont cause a compaction or growth or else
+  //removed tokens will be removed and a new backing array created
+  @Test
+  public void testHashIndexSetAddUseRemoveTokenSlot() throws Exception {
+    int numEntries = 20;
+    setupHashIndexSet(numEntries);
+    
+    Assert.assertEquals(numEntries, his.size());
+    his.removeAll(portfolioSet);
+    Assert.assertEquals(numEntries, his._removedTokens);
+    Assert.assertEquals(0, his.size());
+    addPortfoliosToHashIndexSet(portfoliosMap, his);
+    
+    Assert.assertEquals(0, his._removedTokens);
+    Assert.assertEquals(numEntries, his.size());
+  }
+  
+  @Test
+  public void testCompactDueToTooManyRemoveTokens() throws Exception {
+    int numEntries = 100;    
+    setupHashIndexSet(numEntries);
+    
+    Assert.assertEquals(numEntries, his.size());
+    his.removeAll(portfolioSet);
+    Assert.assertEquals(numEntries, his._removedTokens);
+    
+    Assert.assertEquals(0, his.size());
+    
+    //Very very bad but we fake out the number of removed tokens
+    his._removedTokens = his._maxSize;
+    addPortfoliosToHashIndexSet(portfoliosMap, his);
+    
+    //compaction should have occured, removed tokens should now be gone
+    Assert.assertEquals(0, his._removedTokens);
+    Assert.assertEquals(numEntries, his.size());
+  }
+  
+  @Test
+  public void testRehashRetainsAllValues() throws Exception {
+    int numEntries = 80;
+    setupHashIndexSet(numEntries);
+    
+    Assert.assertEquals(numEntries, his.size());
+    his.rehash(1000);
+    Assert.assertEquals(numEntries, his.size());
+    his.iterator().forEachRemaining((e ->portfolioSet.remove(e)));
+    Assert.assertTrue(portfolioSet.isEmpty());  
+  }
+  
+  @Test
+  public void testShrinkByRehashRetainsAllValues() throws Exception {
+    int numEntries = 20;
+    setupHashIndexSet(numEntries);
+
+    Assert.assertEquals(numEntries, his.size());
+    his.rehash(64);
+    Assert.assertEquals(numEntries, his.size());
+    his.iterator().forEachRemaining((e ->portfolioSet.remove(e)));
+    Assert.assertTrue(portfolioSet.isEmpty());  
+  }
+  
+  @Test
+  public void testGetByKey() throws Exception {
+    int numEntries = 20;
+    setupHashIndexSet(numEntries);
+
+    Assert.assertEquals(numEntries, his.size());
+    his.get(1).forEachRemaining((e ->portfolioSet.remove(e)));
+    Assert.assertEquals(numEntries - 1, portfolioSet.size());  
+  }
+  
+  @Test
+  public void testGetByKeyMultipleCollisions() throws Exception {
+    int numEntries = 20;
+    int keyToLookup = 1;
+    his = createHashIndexSet();
+    Map<Integer, Portfolio> collectionOfPorts1 = this.createPortfolioObjects(numEntries, 0);
+    Map<Integer, Portfolio> collectionOfPorts2 = this.createPortfolioObjects(numEntries, numEntries);
+    
+    addPortfoliosToHashIndexSet(collectionOfPorts1, his);
+    addPortfoliosToHashIndexSet(collectionOfPorts2, his);
+    
+    Assert.assertEquals(numEntries * 2, his.size());
+    Iterator iterator = his.get(keyToLookup);
+    int numIterated = 0;
+    while (iterator.hasNext()) {
+      numIterated ++;
+      //verify that the returned values match what we lookedup
+      Assert.assertEquals(keyToLookup, ((Portfolio)iterator.next()).indexKey);
+    }
+    Assert.assertEquals(2, numIterated);  
+  }
+  
+  @Test
+  public void testGetByKeyLocatesAfterMultipleColiisionsAndRemoveToken() throws Exception {
+    int numEntries = 20;
+    int keyToLookup = 1;
+    his = createHashIndexSet();
+    Map<Integer, Portfolio> collectionOfPorts1 = this.createPortfolioObjects(numEntries, 0);
+    Map<Integer, Portfolio> collectionOfPorts2 = this.createPortfolioObjects(numEntries, numEntries);
+    Map<Integer, Portfolio> collectionOfPorts3 = this.createPortfolioObjects(numEntries, numEntries * 2);
+    
+    addPortfoliosToHashIndexSet(collectionOfPorts1, his);
+    addPortfoliosToHashIndexSet(collectionOfPorts2, his);
+    addPortfoliosToHashIndexSet(collectionOfPorts3, his);
+    
+    Assert.assertEquals(numEntries * 3, his.size());
+    Iterator iterator = his.get(keyToLookup);
+    int numIterated = 0;
+    while (iterator.hasNext()) {
+      numIterated ++;
+      //verify that the returned values match what we lookedup
+      Assert.assertEquals(keyToLookup, ((Portfolio)iterator.next()).indexKey);
+    }
+    Assert.assertEquals(3, numIterated);  
+    
+    //let's remove the second collision
+    his.remove(keyToLookup, collectionOfPorts2.get(keyToLookup));
+    
+    iterator = his.get(keyToLookup);
+    numIterated = 0;
+    while (iterator.hasNext()) {
+      numIterated ++;
+      //verify that the returned values match what we lookedup
+      Assert.assertEquals(keyToLookup, ((Portfolio)iterator.next()).indexKey);
+    }
+    Assert.assertEquals(2, numIterated);  
+    
+    //Add it back in and make sure we can iterate all 3 again
+    his.add(keyToLookup, collectionOfPorts2.get(keyToLookup));
+    iterator = his.get(keyToLookup);
+    numIterated = 0;
+    while (iterator.hasNext()) {
+      numIterated ++;
+      //verify that the returned values match what we lookedup
+      Assert.assertEquals(keyToLookup, ((Portfolio)iterator.next()).indexKey);
+    }
+    Assert.assertEquals(3, numIterated);  
+
+  }
+  
+  @Test
+  public void testGetAllNotMatching() throws Exception {
+    int numEntries = 20;
+    his = createHashIndexSet();
+    Map<Integer, Portfolio> collectionOfPorts1 = this.createPortfolioObjects(numEntries, 0);
+    Map<Integer, Portfolio> collectionOfPorts2 = this.createPortfolioObjects(numEntries, numEntries);
+    
+    addPortfoliosToHashIndexSet(collectionOfPorts1, his);
+    addPortfoliosToHashIndexSet(collectionOfPorts2, his);
+    
+    Assert.assertEquals(numEntries * 2, his.size());
+    List<Integer> keysNotToMatch = new LinkedList<>();
+    keysNotToMatch.add(3);
+    keysNotToMatch.add(4);
+    Iterator iterator = his.getAllNotMatching(keysNotToMatch);
+    int numIterated = 0;
+    while (iterator.hasNext()) {
+      numIterated ++;
+      int idFound = ((Portfolio)iterator.next()).indexKey;
+      Assert.assertTrue(idFound != 3 && idFound != 4);
+    }
+    //Make sure we iterated all the entries minus the entries that we decided not to match
+    Assert.assertEquals(numEntries * 2 - 4, numIterated);  
+  }
+  
+  @Test
+  public void testIndexOfObject() throws Exception {
+    int numEntries = 10;
+    his = createHashIndexSet();
+    portfoliosMap = createPortfolioObjects(numEntries, 0);
+    portfoliosMap.forEach((k,v) -> {
+      try {
+        int index = his.add(k, portfoliosMap.get(k));
+        int foundIndex = his.index(portfoliosMap.get(k));
+        Assert.assertEquals(index, foundIndex);
+      }
+      catch (TypeMismatchException ex) {
+        throw new Error(ex);
+      }
+    });
+  }
+  
+  //Add multiple portfolios with the same id
+  //they should collide, we should then be able to look up each one correctly
+  @Test
+  public void testIndexOfObjectWithCollision() throws Exception {
+    int numEntries = 10;
+    his = createHashIndexSet();
+    Map<Integer, Portfolio> portfoliosMap1 = createPortfolioObjects(numEntries, 0);
+    Map<Integer, Portfolio> portfoliosMap2 = createPortfolioObjects(numEntries, numEntries);
+
+    portfoliosMap1.forEach((k,v) -> {
+      try {
+        int index = his.add(k, portfoliosMap1.get(k));
+        int foundIndex = his.index(portfoliosMap1.get(k));
+        Assert.assertEquals(index, foundIndex);
+      }
+      catch (TypeMismatchException ex) {
+        throw new Error(ex);
+      }
+    });
+    portfoliosMap2.forEach((k,v) -> {
+      try {
+        int index = his.add(k, portfoliosMap2.get(k));
+        int foundIndex = his.index(portfoliosMap2.get(k));
+        Assert.assertEquals(index, foundIndex);
+      }
+      catch (TypeMismatchException ex) {
+        throw new Error(ex);
+      }
+    });
+  }
+  
+  
+  @Test
+  public void testIndexWhenObjectNotInSet() {
+    int numEntries = 10;
+    his = createHashIndexSet();
+    portfoliosMap = createPortfolioObjects(numEntries, 0);
+    Assert.assertEquals(-1, his.index(portfoliosMap.get(1)));
+  }
+  
+  @Test
+  public void testIndexWhenObjectNotInSetWhenPopulated() {
+    int numEntries = 10;
+    this.setupHashIndexSet(numEntries);
+    Assert.assertEquals(-1, his.index(new Portfolio(numEntries+1)));
+  }
+  
+  
+  @Test
+  public void testRemove() throws Exception {
+    int numEntries = 20;
+    setupHashIndexSet(numEntries);
+
+    Assert.assertEquals(numEntries, his.size());
+    portfoliosMap.forEach((k,v) -> his.remove(k, v));
+    Assert.assertEquals(0, his.size());
+  }
+  
+  //Test remove where we look for an instance that is not at the specified index slot
+  @Test
+  public void testRemoveIgnoreSlot() throws Exception {
+    int numEntries = 20;
+    setupHashIndexSet(numEntries);
+
+    Assert.assertEquals(numEntries, his.size());
+    portfoliosMap.forEach((k,v) -> his.remove(k, v, his.index(v)));
+    Assert.assertEquals(numEntries, his.size());
+  }
+  
+  @Test
+  public void testRemoveAtWithNull() throws Exception {
+    his = createHashIndexSet();
+    Assert.assertTrue(his.isEmpty());
+    Assert.assertFalse(his.removeAt(0));
+  }
+  
+  @Test
+  public void testRemoveAtWithRemoveToken() throws Exception {
+    his = createHashIndexSet();
+    int index = his.add(1, new Portfolio(1));
+    Assert.assertTrue(his.removeAt(index));
+    Assert.assertFalse(his.removeAt(index));
+  }
+  
+  @Test
+  public void testHashIndexRemoveAll() throws Exception {
+    int numEntries = 100;
+    setupHashIndexSet(numEntries);
+    
+    Assert.assertEquals(numEntries, his.size());
+    his.removeAll(portfolioSet);
+    Assert.assertTrue(his.isEmpty());  
+  }
+  
+  //Remove all should still remove all portfolios provided, even if there are more provided then contained
+  @Test
+  public void testHashIndexRemoveAllWithAdditionalPortfolios() throws Exception {
+    int numEntries = 100;
+    setupHashIndexSet(numEntries);
+    
+    Assert.assertEquals(numEntries, his.size());
+    portfolioSet.add(new Portfolio(numEntries + 1));
+    his.removeAll(portfolioSet);
+    Assert.assertTrue(his.isEmpty());  
+  }
+  
+  @Test
+  public void testHashIndexContainsAll() throws Exception {
+    int numEntries = 100;
+    setupHashIndexSet(numEntries);
+    
+    Assert.assertEquals(numEntries, his.size());
+    Assert.assertTrue(his.containsAll(portfolioSet));
+  }
+  
+  @Test
+  public void testHashIndexRetainAll() throws Exception {
+    int numEntries = 10;
+    setupHashIndexSet(numEntries);
+    Set subset = new HashSet();
+    portfolioSet.forEach(e -> {if (e.indexKey % 2 == 0) {subset.add(e);}});
+    Assert.assertEquals(numEntries, his.size());
+    his.retainAll(subset);
+    his.iterator().forEachRemaining((e ->subset.remove(e)));
+    Assert.assertTrue(subset.isEmpty()); 
+    Assert.assertEquals(numEntries/2, his.size());
+  }
+  
+  @Test
+  public void testHashIndexContainsAllShouldReturnFalse() throws Exception {
+    int numEntries = 100;
+    setupHashIndexSet(numEntries);
+    
+    Assert.assertEquals(numEntries, his.size());
+    portfolioSet.add(new Portfolio(numEntries + 1));
+    Assert.assertFalse(his.containsAll(portfolioSet));
+  }
+  
+  @Test
+  public void testClear() throws Exception {
+    int numEntries = 100;
+    setupHashIndexSet(numEntries);
+    
+    Assert.assertEquals(numEntries, his.size());
+    his.clear();
+    Assert.assertTrue(his.isEmpty());
+    Assert.assertTrue(his._removedTokens == 0);
+  }
+  
+  @Test
+  public void testAreNullObjectsEqual() throws Exception {
+    his = createHashIndexSet();
+    Assert.assertTrue(his.areObjectsEqual(null, null));
+  }
+  
+  @Test
+  public void testAreIndexeSetsEqualAndHashCodeSame() throws Exception {
+    Map<Integer, Portfolio> portfolioMap = createPortfolioObjects(100, 0);
+    HashIndexSet indexSet1 = createHashIndexSet();
+    HashIndexSet indexSet2 = createHashIndexSet();
+
+    addPortfoliosToHashIndexSet(portfolioMap, indexSet1);
+    addPortfoliosToHashIndexSet(portfolioMap, indexSet2);
+ 
+    Assert.assertTrue(indexSet1.equals(indexSet2));
+    Assert.assertTrue(indexSet2.equals(indexSet1));
+    Assert.assertEquals(indexSet1.hashCode(), indexSet2.hashCode());
+  }
+  
+  @Test
+  public void testAreIndexeSetsNotEqualAndHashCodeDifferent() throws Exception {
+    Map<Integer, Portfolio> portfolioMap = createPortfolioObjects(100, 0);
+    HashIndexSet indexSet1 = createHashIndexSet();
+    HashIndexSet indexSet2 = createHashIndexSet();
+
+    addPortfoliosToHashIndexSet(portfolioMap, indexSet1);
+
+    indexSet2.add(1, portfolioMap.get(1));
+    Assert.assertFalse(indexSet2.equals(indexSet1));
+    Assert.assertFalse(indexSet1.equals(indexSet2));
+    Assert.assertNotEquals(indexSet1.hashCode(), indexSet2.hashCode()); 
+  }
+  
+  @Test
+  public void testIndexSetNotEqualsOtherObjectType() {
+    HashIndexSet indexSet = createHashIndexSet();
+    Assert.assertFalse(indexSet.equals("Other type"));
+    Assert.assertFalse(indexSet.equals(new Object()));
+  }
+ 
+  private static class EvaluateKeyAnswer implements Answer {
+
+    @Override
+    public Object answer(InvocationOnMock invocation) throws Throwable {
+      Object evalOn = invocation.getArgumentAt(0, Object.class);
+      if (evalOn instanceof Portfolio) {
+        Portfolio p = (Portfolio) evalOn;
+        return p.indexKey;
+      }
+      return null;
+    }
+    
+  }
+  
+  
+}

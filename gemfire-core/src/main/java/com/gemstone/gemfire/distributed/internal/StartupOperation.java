@@ -1,16 +1,24 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed.internal;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -20,8 +28,6 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.org.jgroups.ChannelClosedException;
-import com.gemstone.org.jgroups.ChannelNotConnectedException;
 
 public class StartupOperation {
   private static final Logger logger = LogService.getLogger();
@@ -45,7 +51,6 @@ public class StartupOperation {
   boolean sendStartupMessage(Set recipients, long timeout, Set interfaces, 
       String redundancyZone, boolean enforceUniqueZone)
             throws InterruptedException, ReplyException,
-              ChannelNotConnectedException, ChannelClosedException,
               java.net.UnknownHostException, IOException
   {
     if (Thread.interrupted()) throw new InterruptedException();
@@ -60,9 +65,7 @@ public class StartupOperation {
     msg.setDistributedSystemId(dm.getConfig().getDistributedSystemId());
     msg.setRedundancyZone(redundancyZone);
     msg.setEnforceUniqueZone(enforceUniqueZone);
-    msg.setDirectChannel(dm.getDirectChannel());
     msg.setMcastEnabled(transport.isMcastEnabled());
-    msg.setMcastDiscovery(transport.isMcastDiscovery());
     msg.setMcastPort(dm.getSystem().getOriginalConfig().getMcastPort());
     msg.setMcastHostAddress(dm.getSystem().getOriginalConfig().getMcastAddress());
     msg.setTcpDisabled(transport.isTcpDisabled());

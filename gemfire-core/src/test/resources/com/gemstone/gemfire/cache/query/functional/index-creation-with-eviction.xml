@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.6//EN"
+    "http://www.gemstone.com/dtd/cache6_6.dtd">
+
+<!-- Used in IndexCreationTest.testIndexCreationFromXML, this defines a persistent 
+	region with an index and and eviction -->
+<cache>
+    <!-- Define this cache server -->
+    
+    <disk-store name="fileOverflow" auto-compact="true" max-oplog-size="1" queue-size="10000" time-interval="15">
+        <disk-dirs>
+            <disk-dir dir-size="4096">persistData0</disk-dir>
+        </disk-dirs>
+    </disk-store>
+    
+    <region name="mainReportRegion">
+
+        <region-attributes data-policy="persistent-partition" statistics-enabled="true" disk-store-name="fileOverflow"
+            index-update-type="synchronous">
+
+            <partition-attributes redundant-copies="0" total-num-buckets="1" recovery-delay="30000"
+                startup-recovery-delay="3000">
+            </partition-attributes> 
+        <eviction-attributes>
+
+            <lru-heap-percentage action="overflow-to-disk"/>
+
+        </eviction-attributes>
+
+        </region-attributes>
+        
+        <index name="mainCreationDate">
+            <functional expression="mr.value.createTime" from-clause="/mainReportRegion.entrySet mr"/>
+        </index>
+
+    </region>
+
+</cache>

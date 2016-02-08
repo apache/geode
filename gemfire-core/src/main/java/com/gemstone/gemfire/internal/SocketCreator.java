@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal;
 
@@ -75,10 +84,8 @@ import com.gemstone.gemfire.internal.cache.wan.TransportFilterServerSocket;
 import com.gemstone.gemfire.internal.cache.wan.TransportFilterSocketFactory;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.PasswordUtil;
-import com.gemstone.org.jgroups.util.ConnectionWatcher;
 
 import java.util.*;
 
@@ -107,7 +114,7 @@ import org.apache.logging.log4j.Logger;
  * Additional properties will be set as System properties to be available
  * as needed by other provider implementations.
  */
-public class SocketCreator  implements com.gemstone.org.jgroups.util.SockCreator {
+public class SocketCreator {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -1029,45 +1036,7 @@ public class SocketCreator  implements com.gemstone.org.jgroups.util.SockCreator
 //         rw.readLock().unlock();
 //       }
   }
-  
-  /** has the isReachable method been looked up already? */
-  volatile boolean isReachableChecked;
-  
-  /** InetAddress.isReachable() is in v1.5 and later */
-  volatile Method isReachableMethod;
-  
-  public boolean isHostReachable(InetAddress host) {
-    boolean result = true;
-    try {
-      Method m = null;
-      if (isReachableChecked) {
-        m = isReachableMethod;
-      }
-      else {
-        // deadcoded - InetAddress.isReachable uses the ECHO port
-        // if we don't have root permission, and the ECHO port may
-        // be blocked
-        //m = InetAddress.class.getMethod("isReachable", new Class[] { int.class });
-        //isReachableMethod = m;
-        isReachableChecked = true;
-      }
-      if (m != null) {
-        result = ((Boolean)m.invoke(host, new Object[] {Integer.valueOf(250)})).booleanValue();
-        return result;
-      }
-    }
-    catch (InvocationTargetException e) {
-    }
-//    catch (NoSuchMethodException e) {
-//    }
-    catch (IllegalAccessException e) {
-    }
-    // any other bright ideas?  attempts to connect a socket to a missing
-    // machine may hang, so don't try the echo port or anything requiring
-    // full Sockets
-    return result;
-  }
-  
+
   /** Will be a server socket... this one simply registers the listeners. */
   public void configureServerSSLSocket( Socket socket ) throws IOException {
 //       rw.readLock().lockInterruptibly();
@@ -1197,103 +1166,6 @@ public class SocketCreator  implements com.gemstone.org.jgroups.util.SockCreator
     return (String[]) v.toArray( new String[ v.size() ] );
   }
   
-  /**
-   * Closes the specified socket in a background thread and waits a limited
-   * amount of time for the close to complete. In some cases we see close
-   * hang (see bug 33665).
-   * Made public so it can be used from CacheClientProxy.
-   * @param sock the socket to close
-   * @param who who the socket is connected to
-   * @param extra an optional Runnable with stuff to execute in the async thread
-   */
-  public static void asyncClose(final Socket sock, String who, final Runnable extra) {
-    if (sock == null || sock.isClosed()) {
-      return;
-    }
-    try {
-    ThreadGroup tg = LoggingThreadGroup.createThreadGroup("Socket asyncClose", logger);
-
-    Thread t = new Thread(tg, new Runnable() {
-        public void run() {
-          if (extra != null) {
-            extra.run();
-          }
-          inlineClose(sock);
-        }
-      }, "AsyncSocketCloser for " + who);
-    t.setDaemon(true);
-    try {
-      t.start();
-    } catch (OutOfMemoryError ignore) {
-      // If we can't start a thread to close the socket just do it inline.
-      // See bug 50573.
-      inlineClose(sock);
-      return;
-    }
-    try {
-      // [bruce] if the network fails, this will wait the full amount of time
-      // on every close, so it must be kept very short.  it was 750ms before,
-      // causing frequent hangs in net-down hydra tests
-      t.join(50/*ms*/);
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-    }
-    }
-    catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      // NOTREACHED
-      throw e;
-    }
-  }
-  
-
-  /**
-   * Closes the specified socket
-   * @param sock the socket to close
-   */
-  public static void inlineClose(final Socket sock) {
-    
-    // the next two statements are a mad attempt to fix bug
-    // 36041 - segv in jrockit in pthread signaling code.  This
-    // seems to alleviate the problem.
-    try {
-      sock.shutdownInput();
-      sock.shutdownOutput();
-    }
-    catch (Exception e) {
-    }
-    try {
-      sock.close();
-    } catch (IOException ignore) {
-    } 
-    catch (VirtualMachineError err) {
-      SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
-      // now, so don't let this thread continue.
-      throw err;
-    }
-    catch (java.security.ProviderException pe) {
-      // some ssl implementations have trouble with termination and throw
-      // this exception.  See bug #40783
-    }
-    catch (Error e) {
-      // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
-      // _still_ a possibility that you are dealing with a cascading
-      // error condition, so you also need to check to see if the JVM
-      // is still usable:
-      SystemFailure.checkFailure();
-      // Sun's NIO implementation has been known to throw Errors
-      // that are caused by IOExceptions.  If this is the case, it's
-      // okay.
-      if (e.getCause() instanceof IOException) {
-        // okay...
-
-      } else {
-        throw e;
-      }
-    }
-  }
   
   protected void initializeClientSocketFactory() {
     this.clientSocketFactory = null;

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.client.internal;
 
@@ -66,22 +75,6 @@ public class PingOp {
     @Override
     protected Object processResponse(Message msg) throws Exception {
       processAck(msg, "ping");
-      final int msgType = msg.getMessageType();
-      if (msgType == MessageType.REPLY  &&  msg.getNumberOfParts() > 1) {
-        long endTime = System.currentTimeMillis();
-        long serverTime = msg.getPart(1).getLong();
-        // the new clock offset is computed assuming that the server's timestamp was
-        // taken mid-way between when the ping was sent and the reply was
-        // received:
-        //    timestampElapsedTime = (endTime - startTime)/2
-        //    localTime = startTime + timestampElapsedTime
-        //    offsetFromServer = serverTime - localTime
-        long newCacheTimeOffset = serverTime - startTime/2 - endTime/2;
-        InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-        if (ds != null && ds.isLoner()) { // check for loner so we don't jump time offsets across WAN connections
-          ds.getClock().setCacheTimeOffset(null, newCacheTimeOffset, false);
-        }
-      }
       return null;
     }
     @Override

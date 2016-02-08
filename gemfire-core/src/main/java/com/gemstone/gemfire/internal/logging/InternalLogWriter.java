@@ -1,9 +1,24 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.gemstone.gemfire.internal.logging;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.org.jgroups.util.GFLogWriter;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Each logger has a level and it will only print messages whose
@@ -22,7 +37,7 @@ import com.gemstone.org.jgroups.util.StringId;
  * <li> {@link #NONE_LEVEL}
  * </ol>
  */
-public interface InternalLogWriter extends LogWriter, LogWriterI18n, GFLogWriter {
+public interface InternalLogWriter extends LogWriter, LogWriterI18n {
 
   /**
    * If the writer's level is <code>ALL_LEVEL</code> then all messages
