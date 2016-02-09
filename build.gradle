@@ -68,7 +68,7 @@ task clean(type: Delete) {
 }
 
 // allow external projects to override include location
-if (name == 'gemfire') {
+if (name == 'geode') {
   ext.scriptDir = 'gradle'
 }
 

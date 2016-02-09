@@ -1,0 +1,55 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'war'
+
+dependencies {
+  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  compile 'commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version'
+  compile 'com.fasterxml:classmate:' + project.'classmate.version'
+  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
+  compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
+  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
+  compile 'com.fasterxml.jackson.module:jackson-module-scala_2.10:' + project.'jackson-module-scala_2.10.version'
+  compile 'com.google.guava:guava:' + project.'guava.version'
+  compile 'com.mangofactory:swagger-springmvc:' + project.'swagger-springmvc.version'
+  compile 'com.thoughtworks.paranamer:paranamer:' + project.'paranamer.version'
+  compile 'com.wordnik:swagger-annotations:' + project.'swagger.version'
+  compile 'com.wordnik:swagger-core_2.10:' + project.'swagger.version'
+  compile 'org.json4s:json4s-ast_2.10:' + project.'json4s.version'
+  compile 'org.json4s:json4s-ext_2.10:' + project.'json4s.version'
+  compile 'org.json4s:json4s-core_2.10:' + project.'json4s.version'
+  compile 'org.json4s:json4s-jackson_2.10:' + project.'json4s.version'
+  compile 'org.json4s:json4s-native_2.10:' + project.'json4s.version'
+  compile 'org.scala-lang:scala-library:' + project.'scala.version'
+  compile 'org.scala-lang:scala-reflect:' + project.'scala.version'
+  compile 'org.springframework.hateoas:spring-hateoas:' + project.'spring-hateos.version'
+  compile 'org.springframework:spring-aspects:' + project.'springframework.version'
+  compile 'org.springframework:spring-oxm:' + project.'springframework.version'
+
+  provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  provided project(':geode-core')
+}
+
+jar {
+  from sourceSets.main.output
+}
+
+war {
+  classpath configurations.runtime
+}
+

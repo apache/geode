@@ -1,0 +1,55 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'war'
+
+dependencies {
+  runtime 'org.springframework:spring-aspects:' + project.'springframework.version'
+  runtime 'org.springframework:spring-oxm:' + project.'springframework.version'
+  runtime 'commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version'
+
+  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
+  
+  provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+   
+  // have to use output since we exclude the dependent classes from jar :(
+  provided project(path: ':geode-core', configuration: 'classesOutput')
+  
+  testCompile project(':geode-junit')
+  testRuntime project(':geode-common')
+  testRuntime project(':geode-core')
+}
+
+//Remove the gradle output directories from the eclipse classpath. These
+//are added by the classesOutput configuration, above. Unfortunately, using
+//minusConfigurations does not work here, because it removes the entire
+//geode-core project
+eclipse.classpath.file {
+    whenMerged { classpath ->
+        classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build')}
+    }
+}
+idea.module.iml {
+  whenMerged {module ->
+     module.dependencies.removeAll { entry -> entry.toString().contains('geode-core/build')}
+  }
+}
+
+war {
+  classpath configurations.runtime 
+  classpath project(':geode-core').webJar.archivePath
+}

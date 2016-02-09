@@ -14,28 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'geode'
 
-include 'geode-common'
-include 'geode-joptsimple'
-include 'geode-json'
-include 'geode-junit'
-include 'geode-core'
-include 'geode-web'
-include 'geode-web-api'
-include 'geode-pulse'
-include 'geode-assembly'
-include 'geode-rebalancer'
-include 'geode-lucene'
-include 'geode-wan'
-include 'geode-cq'
-include 'extensions/geode-modules'
-include 'extensions/geode-modules-tomcat7'
-include 'extensions/geode-modules-hibernate'
-include 'extensions/geode-modules-session'
-include 'extensions/geode-modules-assembly'
+test  {
+  doFirst {
+    copy {
+      from 'build/resources/test/tomcat'
+      into 'build/test/tomcat/'
+    }
+  }
+}
 
-def minimumGradleVersion = '2.3'
-if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
-  throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
+dependencies {
+  compile project(':geode-core')
+
+  compile 'org.apache.tomcat:catalina:' + project.'tomcat6.version'
+  compile 'org.apache.tomcat:catalina-ha:' + project.'tomcat6.version'
+  compile 'org.apache.tomcat:juli:' + project.'tomcat6.version'
+
+  testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
+  testRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
+
+  testCompile project(path: ':geode-junit')
+  provided project(path: ':geode-core', configuration: 'testOutput')
 }

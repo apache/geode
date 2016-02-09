@@ -1,0 +1,116 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "org.ajoberstar:gradle-git:1.3.2"
+  }
+}
+
+apply plugin: 'war'
+
+sourceSets {
+  main {
+    resources {
+      exclude('**/gemfire*.properties')
+      exclude('**/sqlfire.properties')
+    }
+  }
+}
+
+dependencies {
+  compile 'org.apache.commons:com.springsource.org.apache.commons.beanutils:1.8.0'
+  compile 'org.apache.commons:com.springsource.org.apache.commons.collections:3.2.0'
+  compile 'org.apache.commons:com.springsource.org.apache.commons.digester:1.8.1'
+  compile 'org.apache.commons:com.springsource.org.apache.commons.logging:1.1.1'
+  compile 'commons-lang:commons-lang:2.6'
+  compile 'org.springframework.ldap:spring-ldap-core:1.3.2.RELEASE'
+  compile 'org.springframework.security:spring-security-config:3.1.7.RELEASE'
+  compile 'org.springframework.security:spring-security-core:3.1.7.RELEASE'
+  compile 'org.springframework.security:spring-security-ldap:3.1.7.RELEASE'
+  compile 'org.springframework.security:spring-security-web:3.1.7.RELEASE'
+  compile 'org.springframework:spring-tx:3.2.12.RELEASE'
+
+  providedCompile 'commons-logging:commons-logging:1.1.3'
+  providedCompile 'commons-codec:commons-codec:1.6'
+  providedCompile 'org.apache.httpcomponents:fluent-hc:4.3.3'
+  providedCompile 'org.apache.httpcomponents:httpclient:4.3.3'
+  providedCompile 'org.apache.httpcomponents:httpclient-cache:4.3.3'
+  providedCompile 'org.apache.httpcomponents:httpcore:4.3.2'
+  providedCompile 'org.apache.httpcomponents:httpmime:4.3.3'
+
+  provided 'org.mortbay.jetty:servlet-api:2.5-20081211'
+  provided 'com.google.guava:guava:15.0'
+
+  testCompile project(':geode-junit')
+
+  testCompile 'org.apache.tomcat.embed:tomcat-embed-core:7.0.30'
+  testCompile 'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.30'
+  testCompile 'org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.30'
+  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:2.47.2'
+  testCompile 'org.seleniumhq.selenium:selenium-api:2.47.2'
+  testCompile 'org.seleniumhq.selenium:selenium-remote-driver:2.47.2'
+  testCompile 'org.seleniumhq.selenium:selenium-support:2.47.2'
+
+  testRuntime 'com.google.code.gson:gson:2.3.1'
+  testRuntime 'org.apache.commons:commons-exec:1.3'
+}
+
+def generatedResources = "$buildDir/generated-resources/main"
+
+sourceSets {
+  main {
+    output.dir(generatedResources, builtBy: 'copyGemFireVersionFile')
+  }
+}
+
+task copyGemFireVersionFile(type: Copy) {
+  from project(':geode-core').createVersionPropertiesFile
+  into generatedResources
+}
+
+jar {
+  from sourceSets.main.output
+}
+
+eclipse.classpath.file {
+  whenMerged { classpath ->
+    classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build')}
+  }
+}
+idea.module.iml {
+  whenMerged {module ->
+    module.dependencies.removeAll { entry -> entry.toString().contains('geode-core/build')}
+  }
+}
+
+
+artifacts {
+  archives war
+}
+
+war {
+  classpath configurations.runtime
+  classpath project(':geode-core').webJar.archivePath
+}
+
+uiTest.dependsOn war

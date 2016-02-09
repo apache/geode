@@ -2,7 +2,7 @@ Create a distribution archive using
 
 ./gradlew distTar
 
-Unpack the archive found in gemfire-assembly/build/distributions and run the gfsh shell
+Unpack the archive found in geode-assembly/build/distributions and run the gfsh shell
 
 cd apache-geode-*
 bin/gfsh
