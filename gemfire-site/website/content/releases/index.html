@@ -15,11 +15,11 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License. -->
 
-<section class="bf-tagline">
+<section class="bf-releases">
     <div class="container">
     	<div class="row">
-    	    <div class="col-md-12">
-    	    	<h2>Apache Geode Releases</h2>
+    	    <div class="col-md-12" id="events">
+    	    	<h2><span class="icon-releases"></span></h2>
 			</div>
 		</div>
 	</div>
@@ -27,31 +27,78 @@ under the License. -->
 
 <section class="bf-releases">
     <div class="container">
-    	<div class="row">
-    	    <div class="col-md-12" id="events">
-    	    	<h2 class="icns-download"><span>Releases</span></h2>
-			</div>
-		</div>
-		</br>
-		<div class="row">
-    		<div class="col-md-9 done">
+      <div class="row">
+    		<div class="col-md-9">
     			<p>
 				Releases of Geode are made available to the general public at no charge, under the <a href="http://apache.org/licenses/">Apache License</a>, in both binary and source distributions.
-				</p>
-				<p>
+				  </p>
+      <!-- RELEASES -->
+      <div class="container">
+        <h3><span class="icon-flag-checkered"> 1.0.0-incubating.M1</span></h3>
+        <!-- BINARY -->
         <ul>
-          <li>Alpha 1.0 Releases - Geode 1.0.0-ALPHA - <strong>N/A</strong></li>
-          <li>General Availability (GA) Releases - Geode 1.0.0 - <strong>N/A</strong></li>
+            <span class="icon-cloud-download"> <strong>Binaries </strong>
+              [ <a href="http://apache.org/dyn/closer.cgi/incubator/geode/1.0.0-incubating.M1/apache-geode-1.0.0-incubating.M1.zip">ZIP</a> , <a href="https://dist.apache.org/repos/dist/release/incubator/geode/1.0.0-incubating.M1/apache-geode-1.0.0-incubating.M1.zip.sha-256">SHA-256</a> ,
+              <a href="https://dist.apache.org/repos/dist/release/incubator/geode/1.0.0-incubating.M1/apache-geode-1.0.0-incubating.M1.zip.asc">PGP</a> ] -
+              [<a href="http://apache.org/dyn/closer.cgi/incubator/geode/1.0.0-incubating.M1/apache-geode-1.0.0-incubating.M1.tar.gz">TAR.GZ</a> , <a href="https://dist.apache.org/repos/dist/release/incubator/geode/1.0.0-incubating.M1/apache-geode-1.0.0-incubating.M1.tar.gz.sha-256">SHA-256</a> ,
+              <a href="https://dist.apache.org/repos/dist/release/incubator/geode/1.0.0-incubating.M1/apache-geode-1.0.0-incubating.M1.tar.gz.asc">PGP</a> ]
+              </span>
+
+              <blockquote>Binary downloads are provided for the convenience of our users and are not official Apache Geode releases. </blockquote>
+            </li>
         </ul>
-        </p>
+        <!-- SOURCE -->
+        <ul>
+            <span class="icon-cloud-download"> <strong>Source</strong>
+               [ <a href="http://apache.org/dyn/closer.cgi/incubator/geode/1.0.0-incubating.M1/apache-geode-src-1.0.0-incubating.M1.zip">ZIP</a> , <a href="https://dist.apache.org/repos/dist/release/incubator/geode/1.0.0-incubating.M1/apache-geode-src-1.0.0-incubating.M1.zip.sha-256">SHA-256</a>,
+               <a href="https://dist.apache.org/repos/dist/release/incubator/geode/1.0.0-incubating.M1/apache-geode-src-1.0.0-incubating.M1.zip.asc">PGP</a>
+                ] -
+               [<a href="http://apache.org/dyn/closer.cgi/incubator/geode/1.0.0-incubating.M1/apache-geode-src-1.0.0-incubating.M1.tar.gz">TAR.GZ</a> , <a href="https://dist.apache.org/repos/dist/release/incubator/geode/1.0.0-incubating.M1/apache-geode-src-1.0.0-incubating.M1.tar.gz.sha-256">SHA-256</a>,
+               <a href="https://dist.apache.org/repos/dist/release/incubator/geode/1.0.0-incubating.M1/apache-geode-src-1.0.0-incubating.M1.tar.gz.asc">PGP</a>
+               ]
+             </span>
+            </li>
+        </ul>
+        <!-- DEPENDENCY MANAGERS -->
+        <div class="container">
+          <h4><span class="icon-archive"> Dependency Managers</span></h4>
+          <ul>
+              <li> <strong>Gradle</strong>
+                <pre class="prettyprint">
+  dependencies {
+      compile 'org.apache.geode:gemfire-core:1.0.0-incubating.M1'
+  }</pre>
+                <!-- ><script src="https://gist.github.com/markito/b7796cafef4bd273bd07.js"></script>-->
+              </li>
+              <li> <strong>Maven</strong>
+                <pre class="prettyprint">
+  &lt;dependencies&gt;
+     &lt;dependency&gt;
+        &lt;groupId&gt;org.apache.geode&lt;/groupId&gt;
+        &lt;artifactId&gt;gemfire-core&lt;/artifactId&gt;
+        &lt;version&gt;1.0.0-incubating.M1&lt;/version&gt;
+     &lt;/dependency&gt;
+  &lt;/dependencies&gt;</pre>
+              </li>
+          </ul>
+        </div>
+      </div>
+      <!-- END OF RELEASE -->
+      <hr/>
+      <div class="container done">
+        <h3><span class="icon-flag-checkered"> General Availability (GA) Releases - Geode 1.0.0</span></h3>
+        Coming soon.
+        <br/>
+      </div>
+      <hr/>
         <p>
 					Project releases are approved by vote of the Apache Geode Podling Project Management Committee (PPMC) and Apache Incubator (PMC). Support for a release is provided by project volunteers on the project <a href="http://geode.incubator.apache.org/community/#mailing-lists">mailing lists</a>. Bugs found in a release may be discussed on the list and reported through the <a href="https://issues.apache.org/jira/browse/GEODE">issue tracker</a>. The user mailing list and issue tracker are the only support options hosted by the Apache Geode project.
 				</p>
 				<p>
-					Note: When downloading from a mirror, please be sure to verify that checksums and signatures are correct. To do so, use the checksum and signature files from the main Apache site at <a href="https://dist.apache.org/repos/dist/release/geode/">https://dist.apache.org/repos/dist/release/geode/</a>. Find here the KEYS file, which contains all OpenPGP keys we use to sign releases here: <a href="https://dist.apache.org/repos/dist/release/geode/KEYS">https://dist.apache.org/repos/dist/release/geode/KEYS</a>
+					<strong>Note</strong>: When downloading from a mirror, please be sure to verify that checksums and signatures are correct. To do so, use the checksum and signature files from the main Apache site at <a href="https://dist.apache.org/repos/dist/release/incubator/geode/">https://dist.apache.org/repos/dist/release/incubator/geode/</a>. Find here the KEYS file, which contains all OpenPGP keys we use to sign releases here: <a href="https://git-wip-us.apache.org/repos/asf?p=incubator-geode.git;a=blob;f=KEYS;h=9d13f70a9ce8f8d6a7c3feb1e194ccec123b5868;hb=c26334542fa9e90daff5f58467d6e174b3e0f3e2">KEYS</a>
 				</p>
 				<p>
-					The PGP signatures can be verified using PGP or GPG. First download the <a href="https://dist.apache.org/repos/dist/release/geode/KEYS">KEYS</a> as well as the <a href="https://dist.apache.org/repos/dist/release/geode/geode-1/v1.0.0/">asc signature</a> file for the particular distribution. Then verify the signatures using:
+					The PGP signatures can be verified using PGP or GPG. First download the <a href="https://git-wip-us.apache.org/repos/asf?p=incubator-geode.git;a=blob;f=KEYS;h=9d13f70a9ce8f8d6a7c3feb1e194ccec123b5868;hb=c26334542fa9e90daff5f58467d6e174b3e0f3e2">KEYS</a> as well as the <a href="https://dist.apache.org/repos/dist/release/incubator/geode/1.0.0-incubating.M1/">asc signature</a> file for the particular distribution. Then verify the signatures using:
 				</p>
 				<p>
        				% pgpk -a KEYS
