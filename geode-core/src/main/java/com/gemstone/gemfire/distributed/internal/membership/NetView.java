@@ -48,6 +48,9 @@ import com.gemstone.gemfire.internal.Version;
  */
 public class NetView implements DataSerializableFixedID {
 
+  private static final Logger logger = LogService.getLogger();
+
+
   private int viewId;
   private List<InternalDistributedMember> members;
   private int[] failureDetectionPorts = new int[10];
