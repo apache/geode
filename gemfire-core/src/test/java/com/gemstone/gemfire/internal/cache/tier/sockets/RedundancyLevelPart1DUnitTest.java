@@ -16,8 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests Redundancy Level Functionality
@@ -46,7 +50,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
         + ") never became " + expected;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
   }
   
   /*
@@ -56,7 +60,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
   public void testRedundancyNotSpecifiedNonPrimaryServerFail()
   {    
     try {
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 0);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 0);
       verifyOrderOfEndpoints();
       server2.invoke(RedundancyLevelTestBase.class, "stopServer");
       //pause(5000);      
@@ -74,10 +78,10 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
           return "pool still contains " + SERVER3;
         }
       };
-      DistributedTestCase.waitForCriterion(wc, 30 * 1000, 1000, true);
+      Wait.waitForCriterion(wc, 30 * 1000, 1000, true);
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test RedundancyNotSpecifiedNonPrimaryServerFail ",
           ex);
     }
@@ -104,7 +108,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //Asif: Increased the socket read timeout to 3000 sec becoz the registering 
       // of keys was timing out sometimes causing fail over to EP4 cozing 
       // below assertion to fail
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 0, 3000, 100);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 0, 3000, 100);
       assertTrue(pool.getPrimaryName().equals(SERVER1));
       verifyOrderOfEndpoints();
       server0.invoke(RedundancyLevelTestBase.class, "stopServer");
@@ -123,12 +127,12 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
           return "pool still contains " + SERVER1;
         }
       };
-      DistributedTestCase.waitForCriterion(wc, 30 * 1000, 1000, true);
+      Wait.waitForCriterion(wc, 30 * 1000, 1000, true);
       assertFalse(pool.getPrimaryName().equals(SERVER1));
       assertEquals(SERVER2, pool.getPrimaryName());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test RedundancyNotSpecifiedPrimaryServerFails ",
           ex);
     }/*finally {
@@ -145,7 +149,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
   public void testRedundancySpecifiedNonFailoverEPFails()
   {
     try {
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1);
       waitConnectedServers(4);
       assertEquals(1, pool.getRedundantNames().size());
       //assertTrue(pool.getRedundantNames().contains(SERVER1));      
@@ -166,7 +170,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //assertEquals(1, proxy.getDeadServers().size());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test testRedundancySpecifiedNonFailoverEPFails ",
           ex);
     }
@@ -184,7 +188,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     try {
       
       FailOverDetectionByCCU = true;
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1, 250, 500);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1, 250, 500);
       waitConnectedServers(4);
       assertEquals(1, pool.getRedundantNames().size());
       // assertTrue(pool.getRedundantNames()
@@ -206,7 +210,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //assertEquals(1, proxy.getDeadServers().size());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test testRedundancySpecifiedNonFailoverEPFailsDetectionByCCU ",
           ex);
     }
@@ -221,7 +225,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
   public void _testRedundancySpecifiedNonFailoverEPFailsDetectionByRegisterInterest()
   {
     try {
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250, 500);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250, 500);
       waitConnectedServers(4);
       assertEquals(1, pool.getRedundantNames().size());
       // assertTrue(pool.getRedundantNames()
@@ -245,7 +249,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //assertEquals(1, proxy.getDeadServers().size());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test testRedundancySpecifiedNonFailoverEPFailsDetectionByRegisterInterest ",
           ex);
     }
@@ -261,7 +265,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
   public void _testRedundancySpecifiedNonFailoverEPFailsDetectionByUnregisterInterest()
   {
     try {
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250,500);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250,500);
       waitConnectedServers(4);
       assertEquals(1, pool.getRedundantNames().size());
       // assertTrue(pool.getRedundantNames()
@@ -284,7 +288,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //assertEquals(1, proxy.getDeadServers().size());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test testRedundancySpecifiedNonFailoverEPFailsDetectionByUnregisterInterest ",
           ex);
     }    
@@ -299,7 +303,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
   public void testRedundancySpecifiedNonFailoverEPFailsDetectionByPut()
   {
     try {
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,500,1000);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,500,1000);
       waitConnectedServers(4);
       assertEquals(1, pool.getRedundantNames().size());
       // assertTrue(pool.getRedundantNames()
@@ -322,7 +326,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
      // assertEquals(1, proxy.getDeadServers().size());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test testRedundancySpecifiedNonFailoverEPFailsDetectionByPut ",
           ex);
     }
@@ -339,7 +343,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
   public void testRedundancySpecifiedNonPrimaryEPFails()
   {
     try {
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1);
       waitConnectedServers(4);
       assertEquals(1, pool.getRedundantNames().size());
       assertTrue(pool.getPrimaryName().equals(SERVER1));
@@ -361,7 +365,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //assertEquals(1, proxy.getDeadServers().size());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test testRedundancySpecifiedNonFailoverEPFails ",
           ex);
     }
@@ -380,7 +384,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     try {
       
       FailOverDetectionByCCU = true;
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1, 250, 500);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1, 250, 500);
       waitConnectedServers(4);
       assertEquals(1, pool.getRedundantNames().size());
       assertTrue(pool.getPrimaryName().equals(SERVER1));
@@ -402,7 +406,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //assertEquals(1, proxy.getDeadServers().size());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test testRedundancySpecifiedNonPrimaryEPFailsDetectionByCCU ",
           ex);
     }
@@ -419,7 +423,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
   public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByRegisterInterest()
   {
     try {
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250, 500);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250, 500);
       waitConnectedServers(4);
       assertEquals(1, pool.getRedundantNames().size());
       assertTrue(pool.getPrimaryName().equals(SERVER1));
@@ -443,7 +447,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //assertEquals(1, proxy.getDeadServers().size());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test testRedundancySpecifiedNonPrimaryEPFailsDetectionByRegisterInterest ",
           ex);
     }
@@ -460,7 +464,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
   public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByUnregisterInterest()
   {
     try {
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250,500);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250,500);
       waitConnectedServers(4);
       assertEquals(1, pool.getRedundantNames().size());
       assertTrue(pool.getPrimaryName().equals(SERVER1));
@@ -483,7 +487,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //assertEquals(1, proxy.getDeadServers().size());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test testRedundancySpecifiedNonPrimaryEPFailsDetectionByUnregisterInterest ",
           ex);
     }
@@ -500,7 +504,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
   public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByPut()
   {
     try {
-      createClientCache(getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250,500);
+      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250,500);
       waitConnectedServers(4);
       assertEquals(1, pool.getRedundantNames().size());
       assertTrue(pool.getPrimaryName().equals(SERVER1));
@@ -527,7 +531,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //assertEquals(1, proxy.getDeadServers().size());
     }
     catch (Exception ex) {
-      fail(
+      Assert.fail(
           "test failed due to exception in test testRedundancySpecifiedNonPrimaryEPFailsDetectionByPut ",
           ex);
     }

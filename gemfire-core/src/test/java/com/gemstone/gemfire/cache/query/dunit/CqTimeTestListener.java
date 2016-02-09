@@ -25,8 +25,8 @@ import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.query.CqEvent;
 import com.gemstone.gemfire.cache.query.CqListener;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * @author anil.
@@ -198,7 +198,7 @@ public class CqTimeTestListener implements CqListener {
         return "never got create event for CQ " + CqTimeTestListener.this.cqName;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, MAX_TIME, 200, true);
+    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
     return true;
   }
   
@@ -211,7 +211,7 @@ public class CqTimeTestListener implements CqListener {
         return "never got destroy event for CQ " + CqTimeTestListener.this.cqName;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, MAX_TIME, 200, true);
+    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
     return true;
   }
   
@@ -224,7 +224,7 @@ public class CqTimeTestListener implements CqListener {
         return "never got invalidate event for CQ " + CqTimeTestListener.this.cqName;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, MAX_TIME, 200, true);
+    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
     return true;
   }
   
@@ -237,7 +237,7 @@ public class CqTimeTestListener implements CqListener {
         return "never got update event for CQ " + CqTimeTestListener.this.cqName;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, MAX_TIME, 200, true);
+    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
     return true;
   }
 
@@ -250,7 +250,7 @@ public class CqTimeTestListener implements CqListener {
         return "never got close event for CQ " + CqTimeTestListener.this.cqName;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, MAX_TIME, 200, true);
+    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
     return true;
   }
   

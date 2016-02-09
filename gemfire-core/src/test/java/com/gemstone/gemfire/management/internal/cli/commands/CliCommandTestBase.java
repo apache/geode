@@ -29,6 +29,7 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
@@ -80,9 +81,12 @@ public class CliCommandTestBase extends CacheTestCase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
+    preTearDownCliCommandTestBase();
     destroyDefaultSetup();
-    super.tearDown2();
+  }
+  
+  protected void preTearDownCliCommandTestBase() throws Exception {
   }
 
   /**
@@ -544,18 +548,18 @@ public class CliCommandTestBase extends CacheTestCase {
   }
 
   protected void info(String string) {
-    getLogWriter().info(string);
+    LogWriterUtils.getLogWriter().info(string);
   }
 
   protected void debug(String string) {
-    getLogWriter().fine(string);
+    LogWriterUtils.getLogWriter().fine(string);
   }
 
   protected void error(String string) {
-    getLogWriter().error(string);
+    LogWriterUtils.getLogWriter().error(string);
   }
 
   protected void error(String string, Throwable e) {
-    getLogWriter().error(string, e);
+    LogWriterUtils.getLogWriter().error(string, e);
   }
 }

@@ -55,7 +55,12 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.LocalDataSet;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.execute.PRClientServerTestBase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -130,12 +135,15 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
-    invokeInEveryVM(CacheTestCase.class, "disconnectFromDS");
-    super.tearDown2();
-    invokeInEveryVM(QueryObserverHolder.class, "reset");
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(CacheTestCase.class, "disconnectFromDS");
+  }
+  
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(QueryObserverHolder.class, "reset");
     cache = null;
-    invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
+    Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
   }
 
   @Override
@@ -156,7 +164,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
    * Test on Replicated Region.
    */
   public void testQueriesWithFilterKeysOnReplicatedRegion() {
-    addExpectedException("IllegalArgumentException");
+    IgnoredException.addIgnoredException("IllegalArgumentException");
 
     Object[][] r = new Object[queriesForRR.length][2];
 
@@ -226,7 +234,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
   public void testInvalidQueries() {
     
-    addExpectedException("Syntax error");
+    IgnoredException.addIgnoredException("Syntax error");
     client.invoke(new CacheSerializableRunnable("Test query on client and server") {
       
       @Override
@@ -361,7 +369,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
    *
    */
   public void testQueriesWithFilterKeysOnPRWithBucketDestroy() {
-    addExpectedException("QueryInvocationTargetException");
+    IgnoredException.addIgnoredException("QueryInvocationTargetException");
     Object[][] r = new Object[queries.length][2];
     Set filter =  new HashSet();
 
@@ -433,11 +441,11 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   *
   */
  public void testQueriesWithFilterKeysOnPRWithRebalancing() {
-   addExpectedException("QueryInvocationTargetException");
-   addExpectedException("java.net.SocketException");
-   addExpectedException("ServerConnectivityException");
-   addExpectedException("FunctionException");
-   addExpectedException("IOException");
+   IgnoredException.addIgnoredException("QueryInvocationTargetException");
+   IgnoredException.addIgnoredException("java.net.SocketException");
+   IgnoredException.addIgnoredException("ServerConnectivityException");
+   IgnoredException.addIgnoredException("FunctionException");
+   IgnoredException.addIgnoredException("IOException");
 
    // Close cache on server1
    server1.invoke(new CacheSerializableRunnable("Set QueryObserver in cache on server1") {
@@ -512,7 +520,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
  
  public void testNonColocatedRegionQueries() {
-   addExpectedException("UnsupportedOperationException");
+   IgnoredException.addIgnoredException("UnsupportedOperationException");
    client.invoke(new CacheSerializableRunnable("Test query on non-colocated regions on server") {
      @Override
      public void run2() throws CacheException {
@@ -527,7 +535,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
           fail("Function call did not fail for query with function context");
          } catch (FunctionException e) {
           if (!(e.getCause() instanceof UnsupportedOperationException)) {
-            fail("Should have received an UnsupportedOperationException but received", e);
+            Assert.fail("Should have received an UnsupportedOperationException but received", e);
           }
          }  
         }   
@@ -725,7 +733,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
     //Create client cache without regions
     client.invoke(QueryUsingFunctionContextDUnitTest.class, "createCacheClientWithoutRegion",
-        new Object[] { getServerHostName(server1.getHost()), port1, port2,
+        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
             port3 });
 
     //Create proxy regions on client.
@@ -1016,7 +1024,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
         Region region = cache.getRegion(regionName);
         for (int j = from; j < to; j++)
           region.put(new Integer(j), portfolio[j]);
-        getLogWriter()
+        LogWriterUtils.getLogWriter()
             .info(
                 "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: Inserted Portfolio data on Region "
                     + regionName);

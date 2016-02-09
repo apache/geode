@@ -30,9 +30,13 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class DurableClientBug39997DUnitTest extends CacheTestCase {
 
@@ -47,7 +51,7 @@ public class DurableClientBug39997DUnitTest extends CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    final String hostName = getServerHostName(host);
+    final String hostName = NetworkUtils.getServerHostName(host);
     final int port = AvailablePortHelper.getRandomAvailableTCPPort();
     vm0.invoke(new SerializableRunnable("create cache") {
       public void run() {
@@ -84,7 +88,7 @@ public class DurableClientBug39997DUnitTest extends CacheTestCase {
         try {
           server.start();
         } catch (IOException e) {
-          fail("couldn't start server", e);
+          Assert.fail("couldn't start server", e);
         }
       }
     });
@@ -93,7 +97,7 @@ public class DurableClientBug39997DUnitTest extends CacheTestCase {
       public void run() {
         Cache cache = getCache();
         final Region region = cache.getRegion("region");
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
 
           public String description() {
             return "Wait for register interest to succeed";

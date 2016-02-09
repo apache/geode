@@ -43,6 +43,8 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
 import com.gemstone.gemfire.cache.client.internal.Connection;
@@ -173,9 +175,9 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
         "createServerCache")).intValue();
 
     client1.invoke(EventIdOptimizationDUnitTest.class, "createClientCache1",
-        new Object[] { getServerHostName(host), new Integer(PORT1) });
+        new Object[] { NetworkUtils.getServerHostName(host), new Integer(PORT1) });
     client2.invoke(EventIdOptimizationDUnitTest.class, "createClientCache2",
-        new Object[] { getServerHostName(host), new Integer(PORT2) });
+        new Object[] { NetworkUtils.getServerHostName(host), new Integer(PORT2) });
 
   }
 
@@ -452,7 +454,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
       synchronized (EventIdOptimizationDUnitTest.class) {
         if (!proceedForValidation)
           try {
-            getLogWriter().info(
+            LogWriterUtils.getLogWriter().info(
                 "Client2 going in wait before starting validation");
             EventIdOptimizationDUnitTest.class.wait();
           }
@@ -461,12 +463,12 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
           }
       }
     }
-    getLogWriter().info("Starting validation on client2");
+    LogWriterUtils.getLogWriter().info("Starting validation on client2");
     if (validationFailed) {
       fail("\n The following eventIds recieved by client2 were not present in the eventId array sent by client1 \n"
           + failureMsg);
     }
-    getLogWriter().info("Validation complete on client2, goin to unregister listeners");
+    LogWriterUtils.getLogWriter().info("Validation complete on client2, goin to unregister listeners");
     
     Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     if (region != null && !region.isDestroyed()) {
@@ -490,7 +492,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
       }
     }
     
-    getLogWriter().info("Test completed, Unregistered the listeners");
+    LogWriterUtils.getLogWriter().info("Test completed, Unregistered the listeners");
   }
 
   /**
@@ -508,15 +510,14 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
   /**
    * Closes the caches on clients and servers
    */
-  public void tearDown2() throws Exception
-  {
+  @Override
+  protected final void preTearDown() throws Exception {
     // close client
     client1.invoke(EventIdOptimizationDUnitTest.class, "closeCache");
     client2.invoke(EventIdOptimizationDUnitTest.class, "closeCache");
     // close server
     server1.invoke(EventIdOptimizationDUnitTest.class, "closeCache");
     server2.invoke(EventIdOptimizationDUnitTest.class, "closeCache");
-
   }
 
   /**
@@ -570,7 +571,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
         && (eventIdAtClient2.getSequenceID() == eventIdForLastKey
             .getSequenceID())) {
       synchronized (EventIdOptimizationDUnitTest.class) {
-        getLogWriter().info("Notifying client2 to proceed for validation");
+        LogWriterUtils.getLogWriter().info("Notifying client2 to proceed for validation");
         proceedForValidation = true;
         EventIdOptimizationDUnitTest.class.notify();
       }

@@ -36,7 +36,10 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * bug test for bug 36805
@@ -130,9 +133,8 @@ public class Bug36805DUnitTest extends DistributedTestCase
     return new Integer(server1.getPort());
   }
 
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close the clients first
     client1.invoke(Bug36805DUnitTest.class, "closeCache");
     client2.invoke(Bug36805DUnitTest.class, "closeCache");
@@ -156,9 +158,9 @@ public class Bug36805DUnitTest extends DistributedTestCase
     Integer port2 = ((Integer)server2.invoke(Bug36805DUnitTest.class,
         "createServerCache"));
     client1.invoke(Bug36805DUnitTest.class, "createClientCache", new Object[] {
-        getServerHostName(server1.getHost()), port1, port2 });
+        NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
     client2.invoke(Bug36805DUnitTest.class, "createClientCache", new Object[] {
-        getServerHostName(server1.getHost()), port1, port2 });
+        NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
     // set a cllabck so that we come to know that whether a failover is called
     // or not
     // if failover is called means this bug is present.
@@ -215,7 +217,7 @@ public class Bug36805DUnitTest extends DistributedTestCase
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
+    Wait.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
 
     // we no longer verify dead servers; live is good enough
 //     start = System.currentTimeMillis();

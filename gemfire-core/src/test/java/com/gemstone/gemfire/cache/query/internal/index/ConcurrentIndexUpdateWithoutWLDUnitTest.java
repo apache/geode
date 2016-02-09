@@ -42,11 +42,15 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 
 /**
  * 
@@ -88,13 +92,10 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
    * Tear down a PartitionedRegionTestCase by cleaning up the existing cache
    * (mainly because we want to destroy any existing PartitionedRegions)
    */
-  public void tearDown2() throws Exception {
-    try {
-      invokeInEveryVM(ConcurrentIndexUpdateWithoutWLDUnitTest.class, "destroyRegions");
-      invokeInEveryVM(CacheTestCase.class, "closeCache");
-    } finally {
-      super.tearDown2();
-    }
+  @Override
+  protected final void preTearDown() throws Exception {
+    Invoke.invokeInEveryVM(ConcurrentIndexUpdateWithoutWLDUnitTest.class, "destroyRegions");
+    Invoke.invokeInEveryVM(CacheTestCase.class, "closeCache");
   }
 
   public static synchronized void destroyRegions() {
@@ -121,12 +122,12 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
     asyncInvs[1] = vm0.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName, 0, stepSize));
     
     for (AsyncInvocation inv : asyncInvs) {
-      DistributedTestCase.join(inv, 30*000, helper.getCache().getLogger());
+      ThreadUtils.join(inv, 30*000);
     }
     
     for (AsyncInvocation inv : asyncInvs) {
       if (inv.exceptionOccurred()) {
-        fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
+        Assert.fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
       }
     }
     
@@ -162,12 +163,12 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
     asyncInvs[1] = vm0.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName, 0, stepSize));
     
     for (AsyncInvocation inv : asyncInvs) {
-      DistributedTestCase.join(inv, 30*000, helper.getCache().getLogger());
+      ThreadUtils.join(inv, 30*000);
     }
     
     for (AsyncInvocation inv : asyncInvs) {
       if (inv.exceptionOccurred()) {
-        fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
+        Assert.fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
       }
     }
     
@@ -206,11 +207,11 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
     asyncInvs[1] = vm0.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName, 0, totalDataSize));
     
     for (AsyncInvocation inv : asyncInvs) {
-      DistributedTestCase.join(inv, 30*000, helper.getCache().getLogger());
+      ThreadUtils.join(inv, 30*000);
     }
     for (AsyncInvocation inv : asyncInvs) {
       if (inv.exceptionOccurred()) {
-        fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
+        Assert.fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
       }
     }
     
@@ -264,12 +265,12 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
     asyncInvs[11] = vm3.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName, (3 * (stepSize)), totalDataSize ));
     
     for (AsyncInvocation inv : asyncInvs) {
-      DistributedTestCase.join(inv, 60*000, helper.getCache().getLogger());
+      ThreadUtils.join(inv, 60*000);
     }
     
     for (AsyncInvocation inv : asyncInvs) {
       if (inv.exceptionOccurred()) {
-        fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
+        Assert.fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
       }
     }
     vm0.invoke(getCacheSerializableRunnableForIndexValidation(regionName, indexName));
@@ -326,11 +327,11 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
     asyncInvs[11] = vm3.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName, (3 * (stepSize)), totalDataSize ));
     
     for (AsyncInvocation inv : asyncInvs) {
-      DistributedTestCase.join(inv, 60*000, helper.getCache().getLogger());
+      ThreadUtils.join(inv, 60*000);
     }
     for (AsyncInvocation inv : asyncInvs) {
       if (inv.exceptionOccurred()) {
-        fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
+        Assert.fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
       }
     }
     vm0.invoke(getCacheSerializableRunnableForIndexValidation(regionName, rindexName));
@@ -398,12 +399,12 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
     asyncInvs[11] = vm3.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName, (3 * (stepSize)), totalDataSize ));
     
     for (AsyncInvocation inv : asyncInvs) {
-      DistributedTestCase.join(inv, 60*000, helper.getCache().getLogger());
+      ThreadUtils.join(inv, 60*000);
     }
     
     for (AsyncInvocation inv : asyncInvs) {
       if (inv.exceptionOccurred()) {
-        fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
+        Assert.fail("Random region operation failed on VM_"+inv.getId(), inv.getException());
       }
     }
     vm0.invoke(getCacheSerializableRunnableForIndexValidation(regionName, indexName));
@@ -477,7 +478,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
           if (index instanceof CompactRangeIndex) {
             // Ignore invalid values.
             if (value != Token.INVALID && value != Token.TOMBSTONE) {
-              getLogWriter().info("Portfolio: "+ ((Portfolio)value));
+              LogWriterUtils.getLogWriter().info("Portfolio: "+ ((Portfolio)value));
               Integer ID = ((Portfolio) value).getID();
 
               assertTrue("Did not find index key for REgionEntry [key: "
@@ -513,7 +514,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
                 expectedNullEntries++;
               }
             } else {
-              getLogWriter().info(internalEntry.getKey()+"");
+              LogWriterUtils.getLogWriter().info(internalEntry.getKey()+"");
               expectedUndefinedEntries++;
             }
           }
@@ -525,7 +526,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
               Collection<Position> positions = ((Portfolio)value).positions.values();
               for (Position pos : positions) {
                 if (pos != null) {
-                  getLogWriter().info("Portfolio: "+ ((Portfolio)value) + "Position: " + pos);
+                  LogWriterUtils.getLogWriter().info("Portfolio: "+ ((Portfolio)value) + "Position: " + pos);
                   String secId = pos.secId;
                   assertTrue("Did not find index key for REgionEntry [key: "
                       + internalEntry.getKey() + " , value: " + value
@@ -599,7 +600,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
 
       IndexStatistics stats = index.getStatistics();
       if (index instanceof CompactRangeIndex) {
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             " Actual Size of Index is: " + actualSize);
 /*        getLogWriter().info(
             " Actual Size of Index is: " + actualSize + " Undefined size is: "
@@ -611,21 +612,21 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
           getLogWriter().info(((RegionEntry) obj).getKey() + "");
         }
 */
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             " Expected Size of Index is: " + expectedIndexSize
                 + " Undefined size is: " + expectedUndefinedEntries
                 + " And NULL size is: " + expectedNullEntries);
         assertEquals("No of index keys NOT equals the no shown in statistics for index:" + index.getName(), ((CompactRangeIndex) index).getIndexStorage().size(), stats.getNumberOfKeys());
       } else {
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             " Actual Size of Index is: " + actualSize + " Undefined size is: "
                 + ((RangeIndex) index).undefinedMappedEntries.getNumEntries()
                 + " And NULL size is: "
                 + ((RangeIndex) index).nullMappedEntries.getNumEntries());
         for (Object obj : ((RangeIndex) index).undefinedMappedEntries.map.keySet()) {
-          getLogWriter().info(((RegionEntry) obj).getKey() + "");
+          LogWriterUtils.getLogWriter().info(((RegionEntry) obj).getKey() + "");
         }
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             " Expected Size of Index is: " + expectedIndexSize
                 + " Undefined size is: " + expectedUndefinedEntries
                 + " And NULL size is: " + expectedNullEntries);
@@ -670,7 +671,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
             if (index instanceof CompactRangeIndex) {
               // Ignore invalid values.
               if (value != Token.INVALID && value != Token.TOMBSTONE) {
-                getLogWriter().info("Portfolio: "+ ((Portfolio)value));
+                LogWriterUtils.getLogWriter().info("Portfolio: "+ ((Portfolio)value));
                 Integer ID = ((Portfolio) value).getID();
   
                 assertTrue("Did not find index key for REgionEntry [key: "
@@ -718,7 +719,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
                 Collection<Position> positions = ((Portfolio)value).positions.values();
                 for (Position pos : positions) {
                   if (pos != null) {
-                    getLogWriter().info("Portfolio: "+ ((Portfolio)value) + "Position: " + pos);
+                    LogWriterUtils.getLogWriter().info("Portfolio: "+ ((Portfolio)value) + "Position: " + pos);
                     String secId = pos.secId;
                     assertTrue("Did not find index key for REgionEntry [key: "
                         + internalEntry.getKey() + " , value: " + value
@@ -765,7 +766,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
           try {
             iter = ((CompactRangeIndex) index).getIndexStorage().iterator(null);
             while (iter.hasNext()) {
-              getLogWriter().info(
+              LogWriterUtils.getLogWriter().info(
                   "Index Values : " + iter.next().getDeserializedValue());
               actualValueSize++;
             }

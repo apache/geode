@@ -46,11 +46,13 @@ import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
 import com.gemstone.gemfire.internal.cache.lru.HeapLRUCapacityController;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
   public PartitionedRegionEvictionDUnitTest(final String name) {
@@ -160,7 +162,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
               return excuse;
             }
           };
-          DistributedTestCase.waitForCriterion(wc, 60000, 1000, true);
+          Wait.waitForCriterion(wc, 60000, 1000, true);
             
           int entriesEvicted = 0;
           
@@ -298,7 +300,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
               return excuse;
             }
           };
-          DistributedTestCase.waitForCriterion(wc, 60000, 1000, true);
+          Wait.waitForCriterion(wc, 60000, 1000, true);
           
           entriesEvicted = ((AbstractLRURegionMap)pr.entries)._getLruList().stats()
               .getEvictions();
@@ -362,7 +364,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
           assertNotNull(pr);
         }
         catch (final CacheException ex) {
-          fail("While creating Partitioned region", ex);
+          Assert.fail("While creating Partitioned region", ex);
         }
       }
     };
@@ -543,7 +545,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
           assertNotNull(pr);
         }
         catch (final CacheException ex) {
-          fail("While creating Partitioned region", ex);
+          Assert.fail("While creating Partitioned region", ex);
         }
       }
     };
@@ -661,7 +663,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
           assertNotNull(pr);
         }
         catch (final CacheException ex) {
-          fail("While creating Partitioned region", ex);
+          Assert.fail("While creating Partitioned region", ex);
         }
       }
     };
@@ -1723,7 +1725,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
           assertNotNull(pr);
         }
         catch (final CacheException ex) {
-          fail("While creating Partitioned region", ex);
+          Assert.fail("While creating Partitioned region", ex);
         }
       }
     };

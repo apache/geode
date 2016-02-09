@@ -39,10 +39,15 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class ColocationFailoverDUnitTest extends DistributedTestCase {
 
@@ -100,7 +105,7 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
     putInPRs();
     verifyColocationInAllVms();
     dataStore1.invoke(ColocationFailoverDUnitTest.class, "closeCache");
-    pause(5000); //wait for volunteering primary
+    Wait.pause(5000); //wait for volunteering primary
     verifyColocationAfterFailover();
   }
   
@@ -206,12 +211,12 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
   }
 
   
   protected static void dump() {
-    final InternalLogWriter logger = getLogWriter();
+    final InternalLogWriter logger = LogWriterUtils.getLogWriter();
     ((PartitionedRegion)customerPR).dumpAllBuckets(false);
     ((PartitionedRegion)orderPR).dumpAllBuckets(false);
     ((PartitionedRegion)shipmentPR).dumpAllBuckets(false);
@@ -348,7 +353,7 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 2 * 60 * 1000, 1000, true);
+    Wait.waitForCriterion(wc, 2 * 60 * 1000, 1000, true);
   }
 
   public static void createCacheInAllVms() {
@@ -374,7 +379,7 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
       assertNotNull(cache);
     }
     catch (Exception e) {
-      fail("Failed while creating the cache", e);
+      Assert.fail("Failed while creating the cache", e);
     }
   }
 
@@ -426,7 +431,7 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
     if (partitionedRegionName.equals(customerPR_Name)) {
       customerPR = cache.createRegion(partitionedRegionName, attr.create());
       assertNotNull(customerPR);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region " + partitionedRegionName
               + " created Successfully :" + customerPR);
 
@@ -434,7 +439,7 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
     if (partitionedRegionName.equals(orderPR_Name)) {
       orderPR = cache.createRegion(partitionedRegionName, attr.create());
       assertNotNull(orderPR);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region " + partitionedRegionName
               + " created Successfully :" + orderPR);
 
@@ -443,7 +448,7 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
     if (partitionedRegionName.equals(shipmentPR_Name)) {
       shipmentPR = cache.createRegion(partitionedRegionName, attr.create());
       assertNotNull(shipmentPR);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region " + partitionedRegionName
               + " created Successfully :" + shipmentPR);
 
@@ -466,14 +471,14 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
     }
   }
 
-  public void tearDown2() throws Exception {
+  @Override
+  protected final void preTearDown() throws Exception {
     closeCache();
-    invokeInEveryVM(new SerializableRunnable() {
+    Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         closeCache();
       }
     });
-    super.tearDown2();
   }
 }
 

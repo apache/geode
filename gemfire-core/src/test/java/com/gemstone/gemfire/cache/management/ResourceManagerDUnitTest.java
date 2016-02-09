@@ -61,6 +61,7 @@ import com.gemstone.gemfire.internal.cache.partitioned.RemoveBucketMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveBucketMessage.RemoveBucketResponse;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
@@ -1022,9 +1023,9 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
             assertEquals(1, sr.size());
             assertEquals(value, sr.iterator().next());
           } catch (QueryException ex) {
-            fail("didn't expect a QueryException", ex);
+            Assert.fail("didn't expect a QueryException", ex);
           } catch (QueryInvalidException ex2) {
-            fail("didn't expect QueryInvalidException", ex2);
+            Assert.fail("didn't expect QueryInvalidException", ex2);
           }
         }
       });

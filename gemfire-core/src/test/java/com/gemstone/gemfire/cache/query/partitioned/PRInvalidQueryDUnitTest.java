@@ -25,6 +25,7 @@ package com.gemstone.gemfire.cache.query.partitioned;
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
@@ -63,7 +64,7 @@ public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
   public void testPRDAckCreationAndQueryingWithInvalidQuery() throws Exception
   {
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Querying PR Test with Expected InvalidQueryException*****");
     Host host = Host.getHost(0);
@@ -76,17 +77,17 @@ public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
     // Creting PR's on the participating VM's
 
     // Creating Accessor node on the VM
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Creating the Accessor node in the PR");
     vm0.invoke(prq.getCacheSerializableRunnableForPRAccessorCreate(name,
         redundancy));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Successfully created the Accessor node in the PR");
 
     // Creating the Datastores Nodes in the VM's
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Creating the Datastore node in the PR");
     vm1.invoke(prq.getCacheSerializableRunnableForPRCreate(name,
@@ -95,11 +96,11 @@ public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
         redundancy));
     vm3.invoke(prq.getCacheSerializableRunnableForPRCreate(name,
         redundancy));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Successfully Created the Datastore node in the PR");
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Successfully Created PR's across all VM's");
 
@@ -117,7 +118,7 @@ public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
         + (2 * step), i + (3 * step)));
     vm3.invoke(prq.getCacheSerializableRunnableForPRPuts(name, portfolio, i
         + (3 * step), cntDest));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Successfully Inserted Portfolio data across PR's");
 
@@ -125,7 +126,7 @@ public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
     // querying the VM for data
     vm0.invoke(prq.getCacheSerializableRunnableForPRInvalidQuery(name,
         invalidQuery));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: *****Querying PR's Test with Expected Invalid Query Exception *****");
   }

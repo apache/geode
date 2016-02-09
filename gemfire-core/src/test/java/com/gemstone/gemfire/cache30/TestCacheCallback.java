@@ -17,8 +17,8 @@
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * An abstract superclass of implementation of GemFire cache callbacks
@@ -69,7 +69,7 @@ public abstract class TestCacheCallback implements CacheCallback {
           return "listener was never invoked";
         }
       };
-      DistributedTestCase.waitForCriterion(ev, timeoutMs, interval, true);
+      Wait.waitForCriterion(ev, timeoutMs, interval, true);
     }
     return wasInvoked();
   }

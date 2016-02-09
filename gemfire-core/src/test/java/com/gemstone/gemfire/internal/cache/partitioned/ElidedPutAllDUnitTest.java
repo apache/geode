@@ -35,6 +35,7 @@ import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
 import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -98,14 +99,14 @@ public class ElidedPutAllDUnitTest extends CacheTestCase {
           try {
             region.postPutAllSend(dpao, successfulPuts);
           } catch (ConcurrentCacheModificationException e) {
-            fail("Should not have received an exception for an elided operation", e);
+            Assert.fail("Should not have received an exception for an elided operation", e);
           } finally {
             event.release();
             dpao.getBaseEvent().release();
             dpao.freeOffHeapResources();
           }
         } catch (Exception e) {
-          fail("caught unexpected exception", e);
+          Assert.fail("caught unexpected exception", e);
         }
       }
     });

@@ -22,10 +22,14 @@ import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.dunit.HelperTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class CqStateDUnitTest extends HelperTestCase {
 
@@ -42,8 +46,8 @@ public class CqStateDUnitTest extends HelperTestCase {
   // CI testing.  See internal ticket #52229
   public void disabledtestBug51222() throws Exception {
     //The client can log this when the server shuts down.
-    addExpectedException("Could not find any server");
-    addExpectedException("java.net.ConnectException");
+    IgnoredException.addIgnoredException("Could not find any server");
+    IgnoredException.addIgnoredException("java.net.ConnectException");
     final String cqName = "theCqInQuestion";
     final String regionName = "aattbbss";
     final Host host = Host.getHost(0);
@@ -55,7 +59,7 @@ public class CqStateDUnitTest extends HelperTestCase {
     startCacheServer(serverA, ports[0], getAuthenticatedServerProperties());
     createReplicatedRegion(serverA, regionName, null);
 
-    final String host0 = getServerHostName(serverA.getHost());
+    final String host0 = NetworkUtils.getServerHostName(serverA.getHost());
     startClient(client, new VM[]{ serverA, serverB }, ports, 1, getClientProperties());
     createCQ(client, cqName, "select * from /"+ regionName, null);
     
@@ -65,13 +69,13 @@ public class CqStateDUnitTest extends HelperTestCase {
     startCacheServers(serverB);
     
     AsyncInvocation async = executeCQ(client, cqName);
-    DistributedTestCase.join(async, 10000, getLogWriter());
+    ThreadUtils.join(async, 10000);
 
     Boolean clientRunning = (Boolean) client.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         final CqQuery cq = getCache().getQueryService().getCq(cqName);
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
           @Override
           public boolean done() {
             return cq.getState().isRunning();

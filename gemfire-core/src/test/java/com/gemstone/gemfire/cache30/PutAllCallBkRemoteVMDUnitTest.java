@@ -42,7 +42,10 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  *
@@ -81,15 +84,16 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
       VM vm1 = host.getVM(1);
       vm0.invoke(PutAllCallBkRemoteVMDUnitTest.class, "createCacheForVM0");
       vm1.invoke(PutAllCallBkRemoteVMDUnitTest.class, "createCacheForVM1");
-      getLogWriter().info("Cache created successfully");
+      LogWriterUtils.getLogWriter().info("Cache created successfully");
     }
     
-    public void tearDown2(){
-        Host host = Host.getHost(0);
-        VM vm0 = host.getVM(0);
-        VM vm1 = host.getVM(1);
-        vm0.invoke(PutAllCallBkRemoteVMDUnitTest.class, "closeCache");
-        vm1.invoke(PutAllCallBkRemoteVMDUnitTest.class, "closeCache");
+    @Override
+    protected final void preTearDown() throws Exception {
+      Host host = Host.getHost(0);
+      VM vm0 = host.getVM(0);
+      VM vm1 = host.getVM(1);
+      vm0.invoke(PutAllCallBkRemoteVMDUnitTest.class, "closeCache");
+      vm1.invoke(PutAllCallBkRemoteVMDUnitTest.class, "closeCache");
     }
     
     public static synchronized void createCacheForVM0(){
@@ -167,7 +171,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
                 }catch (Exception ex){
                     throw new RuntimeException("exception putting entries", ex);
                 }
-                getLogWriter().info("****************paperRegion.get(afterCreate)***************"+paperRegion.get("afterCreate"));
+                LogWriterUtils.getLogWriter().info("****************paperRegion.get(afterCreate)***************"+paperRegion.get("afterCreate"));
 
                 WaitCriterion ev = new WaitCriterion() {
                   public boolean done() {
@@ -184,7 +188,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
                     return "Waiting for event";
                   }
                 };
-                DistributedTestCase.waitForCriterion(ev, 3000, 200, true);
+                Wait.waitForCriterion(ev, 3000, 200, true);
             }
         });
         
@@ -337,9 +341,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
             if(counter==null) counter = new Integer(1);
             paperRegion.put("afterCreate",new Integer(counter.intValue()+1));
             
-            getLogWriter().info("In afterCreate"+putAllcounter);
+            LogWriterUtils.getLogWriter().info("In afterCreate"+putAllcounter);
             if(putAllcounter == forCreate){
-                getLogWriter().info("performingtrue");
+                LogWriterUtils.getLogWriter().info("performingtrue");
                 afterCreate = true;
             }
             try{
@@ -350,7 +354,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
                 
             }
             notified = true;
-            getLogWriter().info("*******afterCreate***** Key :"+event.getKey()+ " Value :"+event.getNewValue());
+            LogWriterUtils.getLogWriter().info("*******afterCreate***** Key :"+event.getKey()+ " Value :"+event.getNewValue());
         }
         
         public void afterUpdate(EntryEvent event){
@@ -358,9 +362,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
             Integer counter = (Integer)paperRegion.get("afterUpdate");
             if(counter==null) counter = new Integer(1);
             paperRegion.put("afterUpdate",new Integer(counter.intValue()+1));
-            getLogWriter().info("In afterUpdate"+afterUpdateputAllcounter);
+            LogWriterUtils.getLogWriter().info("In afterUpdate"+afterUpdateputAllcounter);
             if(afterUpdateputAllcounter == forUpdate){
-                getLogWriter().info("performingtrue afterUpdate");
+                LogWriterUtils.getLogWriter().info("performingtrue afterUpdate");
                 afterUpdate = true;
             }
             try{
@@ -373,7 +377,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
             
             notified = true;
             
-            getLogWriter().info("*******afterUpdate***** Key :"+event.getKey()+ " Value :"+event.getNewValue());
+            LogWriterUtils.getLogWriter().info("*******afterUpdate***** Key :"+event.getKey()+ " Value :"+event.getNewValue());
             
         }
     }
@@ -383,15 +387,15 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
             Integer counter = (Integer)paperRegion.get("beforeCreate");
             if(counter==null) counter = new Integer(1);
             paperRegion.put("beforeCreate",new Integer(counter.intValue()+1));
-            getLogWriter().info("*******BeforeCreate***** event="+event);
+            LogWriterUtils.getLogWriter().info("*******BeforeCreate***** event="+event);
         }
         
         public void beforeUpdate(EntryEvent event) {
             Integer counter = (Integer)paperRegion.get("beforeUpdate");
             if(counter==null) counter = new Integer(1);
             paperRegion.put("beforeUpdate",new Integer(counter.intValue()+1));
-            getLogWriter().info("In beforeUpdate"+beforeUpdateputAllcounter);
-            getLogWriter().info("*******BeforeUpdate***** event="+event);
+            LogWriterUtils.getLogWriter().info("In beforeUpdate"+beforeUpdateputAllcounter);
+            LogWriterUtils.getLogWriter().info("*******BeforeUpdate***** event="+event);
         }
     }
 }// end of test class

@@ -51,8 +51,8 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -247,7 +247,7 @@ public class TXExpiryJUnitTest {
         return "never saw entry destroy of " + key;
       }
     };
-    DistributedTestCase.waitForCriterion(waitForExpire, 3000, 10, true);
+    Wait.waitForCriterion(waitForExpire, 3000, 10, true);
   }
   
   public static void waitForEntryExpiration(LocalRegion lr, String key) {
@@ -257,7 +257,7 @@ public class TXExpiryJUnitTest {
         detector = new ExpirationDetector(lr.getEntryExpiryTask(key));
         ExpiryTask.expiryTaskListener = detector;
         ExpiryTask.permitExpiration();
-        DistributedTestCase.waitForCriterion(detector, 3000, 2, true);
+        Wait.waitForCriterion(detector, 3000, 2, true);
       } while (!detector.hasExpired() && detector.wasRescheduled());
     } finally {
       ExpiryTask.expiryTaskListener = null;
@@ -270,7 +270,7 @@ public class TXExpiryJUnitTest {
         detector = new ExpirationDetector(ttl ? lr.getRegionTTLExpiryTask() : lr.getRegionIdleExpiryTask());
         ExpiryTask.expiryTaskListener = detector;
         ExpiryTask.permitExpiration();
-        DistributedTestCase.waitForCriterion(detector, 3000, 2, true);
+        Wait.waitForCriterion(detector, 3000, 2, true);
       } while (!detector.hasExpired() && detector.wasRescheduled());
     } finally {
       ExpiryTask.expiryTaskListener = null;

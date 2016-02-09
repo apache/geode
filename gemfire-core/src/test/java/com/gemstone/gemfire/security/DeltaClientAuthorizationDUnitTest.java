@@ -32,7 +32,9 @@ import com.gemstone.gemfire.cache.client.NoAvailableServersException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
 /**
  * @since 6.1
@@ -113,8 +115,8 @@ public class DeltaClientAuthorizationDUnitTest extends
     SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions);
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close the clients first
     client1.invoke(SecurityTestUtil.class, "closeCache");
     client2.invoke(SecurityTestUtil.class, "closeCache");
@@ -134,10 +136,10 @@ public class DeltaClientAuthorizationDUnitTest extends
       String authInit = cGen.getAuthInit();
       String accessor = gen.getAuthorizationCallback();
 
-      getLogWriter().info("testAllowPutsGets: Using authinit: " + authInit);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info("testAllowPutsGets: Using authinit: " + authInit);
+      LogWriterUtils.getLogWriter().info(
           "testAllowPutsGets: Using authenticator: " + authenticator);
-      getLogWriter().info("testAllowPutsGets: Using accessor: " + accessor);
+      LogWriterUtils.getLogWriter().info("testAllowPutsGets: Using accessor: " + accessor);
 
       // Start servers with all required properties
       Properties serverProps = buildProperties(authenticator, accessor, false,
@@ -154,7 +156,7 @@ public class DeltaClientAuthorizationDUnitTest extends
           new OperationCode[] { OperationCode.PUT },
           new String[] { regionName }, 1);
       javaProps = cGen.getJavaProperties();
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testAllowPutsGets: For first client credentials: "
               + createCredentials);
       client1.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
@@ -166,7 +168,7 @@ public class DeltaClientAuthorizationDUnitTest extends
           new OperationCode[] { OperationCode.GET },
           new String[] { regionName }, 2);
       javaProps = cGen.getJavaProperties();
-      getLogWriter()
+      LogWriterUtils.getLogWriter()
           .info(
               "testAllowPutsGets: For second client credentials: "
                   + getCredentials);
@@ -196,10 +198,10 @@ public class DeltaClientAuthorizationDUnitTest extends
     }
     catch (Exception ex) {
       if (expectedResult.intValue() == SecurityTestUtil.OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing puts: " + ex);
+        LogWriterUtils.getLogWriter().info("Got expected exception when doing puts: " + ex);
       }
       else {
-        fail("Got unexpected exception when doing puts", ex);
+        Assert.fail("Got unexpected exception when doing puts", ex);
       }
     }
     for (int index = 0; index < num.intValue(); ++index) {
@@ -214,50 +216,50 @@ public class DeltaClientAuthorizationDUnitTest extends
       }
       catch (NoAvailableServersException ex) {
         if (expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "Got expected NoAvailableServers when doing puts: "
                   + ex.getCause());
           continue;
         }
         else {
-          fail("Got unexpected exception when doing puts", ex);
+          Assert.fail("Got unexpected exception when doing puts", ex);
         }
       }
       catch (ServerConnectivityException ex) {
         if ((expectedResult.intValue() == SecurityTestUtil.NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "Got expected NotAuthorizedException when doing puts: "
                   + ex.getCause());
           continue;
         }
         if ((expectedResult.intValue() == SecurityTestUtil.AUTHREQ_EXCEPTION)
             && (ex.getCause() instanceof AuthenticationRequiredException)) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "Got expected AuthenticationRequiredException when doing puts: "
                   + ex.getCause());
           continue;
         }
         if ((expectedResult.intValue() == SecurityTestUtil.AUTHFAIL_EXCEPTION)
             && (ex.getCause() instanceof AuthenticationFailedException)) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "Got expected AuthenticationFailedException when doing puts: "
                   + ex.getCause());
           continue;
         }
         else if (expectedResult.intValue() == SecurityTestUtil.OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing puts: " + ex);
+          LogWriterUtils.getLogWriter().info("Got expected exception when doing puts: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing puts", ex);
+          Assert.fail("Got unexpected exception when doing puts", ex);
         }
       }
       catch (Exception ex) {
         if (expectedResult.intValue() == SecurityTestUtil.OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing puts: " + ex);
+          LogWriterUtils.getLogWriter().info("Got expected exception when doing puts: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing puts", ex);
+          Assert.fail("Got unexpected exception when doing puts", ex);
         }
       }
     }
@@ -274,10 +276,10 @@ public class DeltaClientAuthorizationDUnitTest extends
     }
     catch (Exception ex) {
       if (expectedResult.intValue() == SecurityTestUtil.OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing gets: " + ex);
+        LogWriterUtils.getLogWriter().info("Got expected exception when doing gets: " + ex);
       }
       else {
-        fail("Got unexpected exception when doing gets", ex);
+        Assert.fail("Got unexpected exception when doing gets", ex);
       }
     }
     for (int index = 0; index < num.intValue(); ++index) {
@@ -295,36 +297,36 @@ public class DeltaClientAuthorizationDUnitTest extends
       }
       catch(NoAvailableServersException ex) {
         if(expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "Got expected NoAvailableServers when doing puts: "
               + ex.getCause());
           continue;
         }
         else {
-          fail("Got unexpected exception when doing puts", ex);
+          Assert.fail("Got unexpected exception when doing puts", ex);
         }
       }
       catch (ServerConnectivityException ex) {
         if ((expectedResult.intValue() == SecurityTestUtil.NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "Got expected NotAuthorizedException when doing gets: "
                   + ex.getCause());
           continue;
         }
         else if (expectedResult.intValue() == SecurityTestUtil.OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing gets: " + ex);
+          LogWriterUtils.getLogWriter().info("Got expected exception when doing gets: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing gets", ex);
+          Assert.fail("Got unexpected exception when doing gets", ex);
         }
       }
       catch (Exception ex) {
         if (expectedResult.intValue() == SecurityTestUtil.OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing gets: " + ex);
+          LogWriterUtils.getLogWriter().info("Got expected exception when doing gets: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing gets", ex);
+          Assert.fail("Got unexpected exception when doing gets", ex);
         }
       }
       assertNotNull(value);

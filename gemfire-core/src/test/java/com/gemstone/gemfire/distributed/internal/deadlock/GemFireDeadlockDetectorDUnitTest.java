@@ -33,8 +33,11 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -50,12 +53,12 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
   
   
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 
   private void stopStuckThreads() {
-    invokeInEveryVM(new SerializableRunnable() {
+    Invoke.invokeInEveryVM(new SerializableRunnable() {
       
       public void run() {
         for(Thread thread: stuckThreads) {
@@ -65,7 +68,7 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
             thread.join(30000);
             assertTrue(!thread.isAlive());
           } catch (InterruptedException e) {
-            fail("interrupted", e);
+            Assert.fail("interrupted", e);
           }
         }
       }
@@ -114,7 +117,7 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
     Thread.sleep(5000);
     GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
     LinkedList<Dependency> deadlock = detect.find().findCycle();
-    getLogWriter().info("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
+    LogWriterUtils.getLogWriter().info("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
     assertEquals(8, deadlock.size());
     stopStuckThreads();
     async1.getResult(30000);
@@ -131,7 +134,7 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e) {
-          fail("interrupted", e);
+          Assert.fail("interrupted", e);
         }
         ResultCollector collector = FunctionService.onMember(member).execute(new TestFunction());
         //wait the function to lock the lock on member.
@@ -161,7 +164,7 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
     }
     
     assertTrue(deadlock != null);
-    getLogWriter().info("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
+    LogWriterUtils.getLogWriter().info("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
     assertEquals(4, deadlock.size());
     stopStuckThreads();
     disconnectAllFromDS();

@@ -46,6 +46,8 @@ import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionQueryEvaluator;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -96,7 +98,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
   public void testPRDAckCreationAndQuerying() throws Exception
   {
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Querying PR Test with DACK Started*****");
 
@@ -107,7 +109,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     VM vm3 = host.getVM(3);
 
     // Creating PR's on the participating VM's
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating PR's on VM0, VM1 , VM2 , VM3");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
@@ -118,17 +120,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         redundancy));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
         redundancy));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created PR's on VM0, VM1 , VM2 , VM3");
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating Local region on VM0 to compare result Sets");
     // creating a local region on one of the JVM's
     vm0.invoke(PRQHelp
         .getCacheSerializableRunnableForLocalRegionCreation(localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created Local Region on VM0");
 
@@ -146,7 +148,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         (2 * stepSize), (3 * stepSize)));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio,
         (3 * (stepSize)), totalDataSize));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data across PR's");
 
@@ -154,14 +156,14 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName,
         portfolio, i, totalDataSize));
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data over Local Region on VM0");
 
     // querying the VM for data
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(
         name, localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : *Querying PR's with DACK Test ENDED*****");
   }
@@ -180,7 +182,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
   public void testPRDAckCreationAndQueryingFull() throws Exception
   {
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
     .info(
           "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Querying PR Test with DACK Started*****");
 
@@ -192,7 +194,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     VM vm3 = host.getVM(3);
 
     // Creating PR's on the participating VM's
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating PR's on VM0, VM1 , VM2 , VM3");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
@@ -203,17 +205,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
                                                                redundancy, valueConstraint));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
                                                                redundancy, valueConstraint));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created PR's on VM0, VM1 , VM2 , VM3");
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating Local region on VM0 to compare result Sets");
     // creating a local region on one of the JVM's
     vm0.invoke(PRQHelp
                .getCacheSerializableRunnableForLocalRegionCreation(localName, valueConstraint));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created Local Region on VM0");
 
@@ -231,7 +233,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
                                                              (2 * stepSize), (3 * stepSize)));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfoliosAndPositions,
                                                              (3 * (stepSize)), totalDataSize));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data across PR's");
 
@@ -239,14 +241,14 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName,
                                                              portfoliosAndPositions, i, totalDataSize));
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data over Local Region on VM0");
 
     // querying the VM for data
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(
                                                                                name, localName, true));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : *Querying PR's with DACK Test ENDED*****");
   }
@@ -266,7 +268,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
   public void testPRDAckCreationAndQueryingWithConstants() throws Exception
   {
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQueryingWithConstants : Querying PR Test with DACK Started*****");
 
@@ -281,7 +283,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     VM vm3 = host.getVM(3);
 
     // Creating PR's on the participating VM's
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQueryingWithConstants : Creating PR's on VM0, VM1 , VM2 , VM3");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
@@ -292,17 +294,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         redundancy));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
         redundancy));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQueryingWithConstants : Successfully Created PR's on VM0, VM1 , VM2 , VM3");
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQueryingWithConstants : Creating Local region on VM0 to compare result Sets");
     // creating a local region on one of the JVM's
     vm0.invoke(PRQHelp
         .getCacheSerializableRunnableForLocalRegionCreation(localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQueryingWithConstants : Successfully Created Local Region on VM0");
 
@@ -320,7 +322,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         (2 * stepSize), (3 * stepSize)));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio,
         (3 * (stepSize)), totalDataSize));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQueryingWithConstants : Inserted Portfolio data across PR's");
 
@@ -328,7 +330,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName,
         portfolio, i, totalDataSize));
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQueryingWithConstants : Inserted Portfolio data over Local Region on VM0");
 
@@ -337,7 +339,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         .invoke(PRQHelp
             .getCacheSerializableRunnableForPRQueryWithConstantsAndComparingResults(
                 name, localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQueryingWithConstants : *Querying PR's with DACK Test ENDED*****");
   }
@@ -399,7 +401,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     final MyTestHook th = new MyTestHook();
 
     // add expected exception strings
-    final ExpectedException ex = addExpectedException("Data loss detected");
+    final IgnoredException ex = IgnoredException.addIgnoredException("Data loss detected");
     try {
       Object[] params = new Object[0];
       final DefaultQuery query = (DefaultQuery)getCache().getQueryService()
@@ -522,7 +524,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         for (Object r: th.resultsPerMember.entrySet()){
           Map.Entry e = (Map.Entry)r;
           Integer res = (Integer)e.getValue();
-          getLogWriter().info("PRQueryDUnitTest#testQueryResultsFromMembers : \n" +
+          LogWriterUtils.getLogWriter().info("PRQueryDUnitTest#testQueryResultsFromMembers : \n" +
               "Query [" + queries[q] + "] Member : " + e.getKey() + " results size :" + res.intValue());
           assertEquals("Query [" + queries[q] + "]: The results returned by the member does not match the query limit size : Member : " + e.getKey(), limit[q], res.intValue());
         }
@@ -629,7 +631,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         for (Object r: th.resultsPerMember.entrySet()){
           Map.Entry e = (Map.Entry)r;
           Integer res = (Integer)e.getValue();
-          getLogWriter().info("PRQueryDUnitTest#testQueryResultsFromMembers : \n" +
+          LogWriterUtils.getLogWriter().info("PRQueryDUnitTest#testQueryResultsFromMembers : \n" +
               "Query [" + queries[q] + "] Member : " + e.getKey() + " results size :" + res.intValue());
           if (res.intValue() != 0 /* accessor member */ || res.intValue() != limit[q]) {
             assertEquals("Query [" + queries[q] + "]: The results returned by the member does not match the query limit size : Member : " + e.getKey(), limit[q], res.intValue());
@@ -682,7 +684,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     });
 
     // add expected exception strings
-    final ExpectedException ex = addExpectedException("Data loss detected",
+    final IgnoredException ex = IgnoredException.addIgnoredException("Data loss detected",
         accessor);
     accessor.invoke(new SerializableCallable(
         "Create bucket and test dataloss query") {
@@ -731,7 +733,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
   public void testPRAccessorCreationAndQuerying() throws Exception
   {
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Querying PR Test with DACK Started*****");
     Host host = Host.getHost(0);
@@ -747,17 +749,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     // Creting PR's on the participating VM's
 
     // Creating Accessor node on the VM
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Creating the Accessor node in the PR");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name,
         0));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Successfully created the Accessor node in the PR");
 
     // Creating the Datastores Nodes in the VM's
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Creating the Datastore node in the PR");
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
@@ -766,17 +768,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         redundancy));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
         redundancy));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Successfully Created the Datastore node in the PR");
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Successfully Created PR's across all VM's");
     // creating a local region on one of the JVM's
     vm0.invoke(PRQHelp
         .getCacheSerializableRunnableForLocalRegionCreation(localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Successfully Created Local Region on VM0");
 
@@ -793,7 +795,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         (2 * stepSize), (3 * stepSize)));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio,
         (3 * (stepSize)), totalDataSize));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Inserted Portfolio data across PR's");
 
@@ -804,7 +806,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     // querying the VM for data
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(
         name, localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Querying PR's Test ENDED*****");
   }
@@ -825,7 +827,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    int dataSize = 10;
    int step = 2;
    
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
    .info(
          "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Querying PR Test with DACK Started*****");
 
@@ -837,7 +839,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    VM vm3 = host.getVM(3);
 
    // Creating PR's on the participating VM's
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
      .info(
            "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating PR's on VM0, VM1 , VM2 , VM3");
    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
@@ -848,17 +850,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
                                                               redundancy, valueConstraint));
    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
                                                               redundancy, valueConstraint));
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
      .info(
            "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created PR's on VM0, VM1 , VM2 , VM3");
 
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
      .info(
            "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating Local region on VM0 to compare result Sets");
    // creating a local region on one of the JVM's
    vm0.invoke(PRQHelp
               .getCacheSerializableRunnableForLocalRegionCreation(localName, valueConstraint));
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
      .info(
            "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created Local Region on VM0");
 
@@ -876,7 +878,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
                                                             (2 * step), (3 * step)));
    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
                                                             (3 * (step)), dataSize));
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
      .info(
            "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data across PR's");
 
@@ -884,14 +886,14 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(localName,
                                                             portfoliosAndPositions, i, dataSize));
 
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
      .info(
            "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data over Local Region on VM0");
 
    // querying the VM for data
    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPROrderByQueryAndCompareResults(
                                                                               name, localName));
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
      .info(
            "PRQueryDUnitTest#testPRDAckCreationAndQuerying : *Querying PR's with DACK Test ENDED*****");
  }
@@ -912,7 +914,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    int dataSize = 10;
    int step = 2;
 
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
    .info(
    "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Querying PR Test with DACK Started*****");
 
@@ -924,7 +926,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    VM vm3 = host.getVM(3);
 
    // Creating PR's on the participating VM's
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
    .info(
    "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating PR's on VM0, VM1 , VM2 , VM3");
    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
@@ -935,17 +937,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
        redundancy, valueConstraint));
    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
        redundancy, valueConstraint));
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
    .info(
        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created PR's on VM0, VM1 , VM2 , VM3");
 
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
    .info(
        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating Local region on VM0 to compare result Sets");
    // creating a local region on one of the JVM's
    vm0.invoke(PRQHelp
        .getCacheSerializableRunnableForLocalRegionCreation(localName, valueConstraint));
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
    .info(
        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created Local Region on VM0");
 
@@ -963,7 +965,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
        (2 * step), (3 * step)));
    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
        (3 * (step)), dataSize));
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
    .info(
        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data across PR's");
 
@@ -971,14 +973,14 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(localName,
        portfoliosAndPositions, i, dataSize));
 
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
    .info(
        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data over Local Region on VM0");
 
    // querying the VM for data
    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPROrderByQueryAndVerifyOrder(
        name, localName));
-   getLogWriter()
+   LogWriterUtils.getLogWriter()
    .info(
        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : *Querying PR's with DACK Test ENDED*****");
  }
@@ -999,7 +1001,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     int step = 2;
     
     Class valueConstraint = Portfolio.class;
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Querying PR Test with DACK Started*****");
     Host host = Host.getHost(0);
@@ -1015,17 +1017,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     // Creting PR's on the participating VM's
 
     // Creating Accessor node on the VM
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Creating the Accessor node in the PR");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name,
         0, valueConstraint));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Successfully created the Accessor node in the PR");
 
     // Creating the Datastores Nodes in the VM's
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Creating the Datastore node in the PR");
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
@@ -1034,17 +1036,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         redundancy, valueConstraint));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
         redundancy, valueConstraint));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Successfully Created the Datastore node in the PR");
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Successfully Created PR's across all VM's");
     // creating a local region on one of the JVM's
     vm0.invoke(PRQHelp
         .getCacheSerializableRunnableForLocalRegionCreation(localName, valueConstraint));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Successfully Created Local Region on VM0");
 
@@ -1061,7 +1063,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         (2 * step), (3 * step)));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfolio,
         (3 * (step)), dataSize));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Inserted Portfolio data across PR's");
 
@@ -1072,7 +1074,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     // querying the VM for data
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPROrderByQueryAndCompareResults(
         name, localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Querying PR's Test ENDED*****");
   }
@@ -1082,7 +1084,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     int dataSize = 10;
     int step = 2;
     
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
     .info(
           "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Querying PR Test with DACK Started*****");
 
@@ -1094,7 +1096,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     VM vm3 = host.getVM(3);
 
     // Creating PR's on the participating VM's
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating PR's on VM0, VM1 , VM2 , VM3");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
@@ -1105,17 +1107,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
                                                                redundancy, valueConstraint));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
                                                                redundancy, valueConstraint));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created PR's on VM0, VM1 , VM2 , VM3");
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating Local region on VM0 to compare result Sets");
     // creating a local region on one of the JVM's
     vm0.invoke(PRQHelp
                .getCacheSerializableRunnableForLocalRegionCreation(localName, valueConstraint));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created Local Region on VM0");
 
@@ -1133,7 +1135,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
                                                              (2 * step), (3 * step)));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
                                                              (3 * (step)), dataSize));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data across PR's");
 
@@ -1141,14 +1143,14 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(localName,
                                                              portfoliosAndPositions, i, dataSize));
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data over Local Region on VM0");
 
     // querying the VM for data
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPROrderByQueryWithLimit(
                                                                                name, localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
       .info(
             "PRQueryDUnitTest#testPRDAckCreationAndQuerying : *Querying PR's with DACK Test ENDED*****");
   }
@@ -1167,7 +1169,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
   public void testPRAccessorCreationAndQueryingWithNoData() throws Exception
   {
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQueryingWithNoData : Querying PR Test with No Data  Started*****");
     Host host = Host.getHost(0);
@@ -1183,17 +1185,17 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     // Creting PR's on the participating VM's
 
     // Creating Accessor node on the VM
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQueryingWithNoData : Creating the Accessor node in the PR");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name,
         0));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQueryingWithNoData : Successfully created the Accessor node in the PR");
 
     // Creating the Datastores Nodes in the VM's
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQueryingWithNoData : Creating the Datastore node in the PR");
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
@@ -1202,24 +1204,24 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         redundancy));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
         redundancy));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQueryingWithNoData : Successfully Created the Datastore node in the PR");
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQueryingWithNoData : Successfully Created PR's across all VM's");
     // creating a local region on one of the JVM's
     vm0.invoke(PRQHelp
         .getCacheSerializableRunnableForLocalRegionCreation(localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQueryingWithNoData : Successfully Created Local Region on VM0");
 
     // querying the VM for data
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(
         name, localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryDUnitTest#testPRAccessorCreationAndQueryingWithNoData : Querying PR's Test No Data ENDED*****");
   }

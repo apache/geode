@@ -37,10 +37,14 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -112,15 +116,14 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
 
   }
 
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     vm0.invoke(HAGIIBugDUnitTest.class, "closeCache");
     vm1.invoke(HAGIIBugDUnitTest.class, "closeCache");
     vm2.invoke(HAGIIBugDUnitTest.class, "closeCache");
     vm3.invoke(HAGIIBugDUnitTest.class, "closeCache");
     cache = null;
-    invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
+    Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
   }
 
   protected void createCache(Properties props) throws Exception
@@ -136,7 +139,7 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
   
   public void testDummy() throws Exception
   {
-    getLogWriter().info("This is Dummy test for the GII");  
+    LogWriterUtils.getLogWriter().info("This is Dummy test for the GII");  
   }
   
   
@@ -158,7 +161,7 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
           factory.setCacheListener(regionListener);
           RegionAttributes attrs = factory.create();
           Region region = cache.createRegion(REGION_NAME, attrs);
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "Name of the region is : " + region.getFullPath());
 
           HARegionQueueAttributes hattr = new HARegionQueueAttributes();
@@ -183,14 +186,14 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
     AsyncInvocation[] async = new AsyncInvocation[4];
     async[0] = vm0.invokeAsync(putFrmVm("vm0_2"));
     t1.start();
-    DistributedTestCase.join(t1, 30 * 1000, getLogWriter());
+    ThreadUtils.join(t1, 30 * 1000);
     if (isTestFailed)
       fail("HARegionQueue can not be created");
 
     for (int count = 0; count < 1; count++) {
-      DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+      ThreadUtils.join(async[count], 30 * 1000);
       if (async[count].exceptionOccurred()) {
-        fail("Got exception on " + count, async[count].getException());
+        Assert.fail("Got exception on " + count, async[count].getException());
       }
     }
 
@@ -204,7 +207,7 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
 
     validationFlag = true;
     validateResults(validationFlag);
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "No. of keys that are missed by HARegion Queue during GII "
             + keys_set_after_gii.size());
 
@@ -218,7 +221,7 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
 //    int k = 0;
     for (int i = 0; i < 1; i++) {
       long totalPuts = ((Long)total_no_puts[i]).longValue() - 3 * NO_OF_PUTS;
-      getLogWriter().info("Total no of puts expectesd " + totalPuts);
+      LogWriterUtils.getLogWriter().info("Total no of puts expectesd " + totalPuts);
       for (int j = 0; j < totalPuts; j++) {
         keys_set_after_gii.add("vm" + i + "_2" + j);
 
@@ -239,7 +242,7 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
   {
     HARegion regionForQueue = (HARegion)cache.getRegion(Region.SEPARATOR
         + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "Region Queue size : " + regionForQueue.keys().size());
     Iterator itr = regionForQueue.entries(false).iterator();
     while (itr.hasNext()) {
@@ -315,7 +318,7 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
           }
           TOTAL_NO_OF_PUTS = TOTAL_NO_OF_PUTS + NO_OF_PUTS;
         }
-        getLogWriter().info("Total no of puts : " + TOTAL_NO_OF_PUTS);
+        LogWriterUtils.getLogWriter().info("Total no of puts : " + TOTAL_NO_OF_PUTS);
       }
     };
 

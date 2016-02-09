@@ -36,9 +36,12 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * @author dsmith
@@ -193,7 +196,7 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
           LocalRegion region = (LocalRegion)cache.getRegion("region");
           RegionEntry re = region.getRegionEntry("a");
           Object o = re.getValueInVM(null);
-          getLogWriter().info("key a="+o);;
+          LogWriterUtils.getLogWriter().info("key a="+o);;
           return o == null || o == Token.NOT_AVAILABLE;
         }
       };
@@ -215,7 +218,7 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
           for (String key: keys) {
             RegionEntry re = region.getRegionEntry(key);
             Object o = re.getValueInVM(null);
-            getLogWriter().info("key " + key + "=" + o);
+            LogWriterUtils.getLogWriter().info("key " + key + "=" + o);
             assertTrue("expected key " + key + " to not be evicted",
                 (o != null) && (o != Token.NOT_AVAILABLE));
           }
@@ -333,9 +336,9 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
       public Object call() {
         Cache cache = getCache();
         Region region = cache.getRegion("region");
-        getLogWriter().info("putting key="+key+"="+value);
+        LogWriterUtils.getLogWriter().info("putting key="+key+"="+value);
         Object result = region.put(key, value);
-        getLogWriter().info("done putting key="+key);
+        LogWriterUtils.getLogWriter().info("done putting key="+key);
         return result;
       }
     });
@@ -353,7 +356,7 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
   }
   
   private void waitForReceivedMessages(final VM vm, final long expected) {
-    waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       
       @Override
       public boolean done() {

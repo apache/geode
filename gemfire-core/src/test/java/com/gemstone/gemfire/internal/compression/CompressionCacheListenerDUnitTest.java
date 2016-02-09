@@ -179,15 +179,18 @@ public class CompressionCacheListenerDUnitTest extends CacheTestCase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
+    preTearDownCompressionCacheListenerDUnitTest();
+    
     try {
       SnappyCompressor.getDefaultInstance();
       cleanup(getVM(TEST_VM));
     } catch (Throwable t) {
       // Not a supported OS
     }
-
-    super.tearDown2();
+  }
+  
+  protected void preTearDownCompressionCacheListenerDUnitTest() throws Exception {
   }
 
   /**

@@ -47,10 +47,15 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientTombstoneMessage;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Client is connected to S1 which has a slow dispatcher. Puts are made on S1.  Then S2 is started
@@ -146,7 +151,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
     PORT2 =  AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     //Start the client
     client0.invoke(HAGIIDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(host), new Integer(PORT1),new Integer(PORT2)});
+        new Object[] { NetworkUtils.getServerHostName(host), new Integer(PORT1),new Integer(PORT2)});
   }
   
   public void testGIIRegionQueue()
@@ -159,7 +164,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
 
     client0.invoke(HAGIIDUnitTest.class, "verifyEntries");
     server1.invoke(HAGIIDUnitTest.class, "createServer2Cache" ,new Object[] {new Integer(PORT2)});
-    pause(6000);
+    Wait.pause(6000);
     server0.invoke(HAGIIDUnitTest.class, "stopServer");
     //pause(10000);
     client0.invoke(HAGIIDUnitTest.class, "verifyEntriesAfterGiiViaListener");
@@ -231,7 +236,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
       r.registerInterest("key-3",InterestResultPolicy.KEYS_VALUES);
     }
     catch (Exception ex) {
-      fail("failed while registering keys ", ex);
+      Assert.fail("failed while registering keys ", ex);
     }
   }
   public static void createEntries()
@@ -245,7 +250,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
 
     }
     catch (Exception ex) {
-      fail("failed while createEntries()", ex);
+      Assert.fail("failed while createEntries()", ex);
     }
   }
 
@@ -275,7 +280,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
 
     }
     catch (Exception ex) {
-      fail("failed while r.put()", ex);
+      Assert.fail("failed while r.put()", ex);
     }
   }
   
@@ -326,7 +331,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
           return null;
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 60 * 1000, 200, true);
       // assertEquals( "key-2",r.getEntry("key-2").getValue());
       
       // wait until we
@@ -340,11 +345,11 @@ public class HAGIIDUnitTest extends DistributedTestCase
           return null;
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 60 * 1000, 200, true);
       // assertEquals( "key-3",r.getEntry("key-3").getValue());
     }
     catch (Exception ex) {
-      fail("failed while verifyEntries()", ex);
+      Assert.fail("failed while verifyEntries()", ex);
     }
   }
 
@@ -359,7 +364,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 90 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 90 * 1000, 200, true);
 
     ev = new WaitCriterion() {
       public boolean done() {
@@ -369,7 +374,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
 
     ev = new WaitCriterion() {
       public boolean done() {
@@ -379,7 +384,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     
     assertEquals(3, HAGIIDUnitTest.checker.getUpdates());
   }
@@ -400,7 +405,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
           return null;
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 60 * 1000, 200, true);
 
       // wait until
       // we have a
@@ -413,7 +418,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
           return null;
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 60 * 1000, 200, true);
       // assertEquals( "key-2",r.getEntry("key-2").getValue());
 
 
@@ -428,7 +433,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
           return null;
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 60 * 1000, 200, true);
       
       /*
        * assertEquals( "value-1",r.getEntry("key-1").getValue()); assertEquals(
@@ -438,7 +443,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
 
     }
     catch (Exception ex) {
-      fail("failed while verifyEntriesAfterGII()", ex);
+      Assert.fail("failed while verifyEntriesAfterGII()", ex);
     }
   }
 
@@ -446,11 +451,11 @@ public class HAGIIDUnitTest extends DistributedTestCase
   {
       System.setProperty("slowStartTimeForTesting", "120000");
   }
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+
+  @Override
+  protected final void preTearDown() throws Exception {
     ConflationDUnitTest.unsetIsSlowStart();
-    invokeInEveryVM(ConflationDUnitTest.class, "unsetIsSlowStart");
+    Invoke.invokeInEveryVM(ConflationDUnitTest.class, "unsetIsSlowStart");
     // close the clients first
     client0.invoke(HAGIIDUnitTest.class, "closeCache");
     // then close the servers

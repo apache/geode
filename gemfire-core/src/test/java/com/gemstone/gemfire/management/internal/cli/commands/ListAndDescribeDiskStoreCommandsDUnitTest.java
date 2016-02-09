@@ -29,6 +29,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -68,11 +69,6 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     setupGemFire();
   }
 
-  @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-  }
-
   protected Peer createPeer(final Properties distributedSystemConfiguration, final VM vm) {
     return new Peer(distributedSystemConfiguration, vm);
   }
@@ -95,7 +91,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
   protected Properties createDistributedSystemProperties(final String gemfireName) {
     final Properties distributedSystemProperties = new Properties();
 
-    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     distributedSystemProperties.setProperty(DistributionConfig.NAME_NAME, gemfireName);
 
     return distributedSystemProperties;
@@ -131,7 +127,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     final Result result = executeCommand(CliStrings.LIST_DISK_STORE);
 
     assertNotNull(result);
-    getLogWriter().info(toString(result));
+    LogWriterUtils.getLogWriter().info(toString(result));
     assertEquals(Result.Status.OK, result.getStatus());
   }
 
@@ -140,7 +136,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
         CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=producerData");
 
     assertNotNull(result);
-    getLogWriter().info(toString(result));
+    LogWriterUtils.getLogWriter().info(toString(result));
     assertEquals(Result.Status.OK, result.getStatus());
   }
 

@@ -41,7 +41,11 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import java.io.IOException;
@@ -108,11 +112,11 @@ public class HAInterestTestCase extends DistributedTestCase {
     PORT2 = ((Integer) server2.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
     PORT3 = ((Integer) server3.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
     exceptionOccured = false;
-    addExpectedException("java.net.ConnectException: Connection refused: connect");
+    IgnoredException.addIgnoredException("java.net.ConnectException: Connection refused: connect");
   }
 
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
 
@@ -175,7 +179,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for primary";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     int primaryPort = pool.getPrimaryPort();
     assertTrue(primaryPort != -1);
@@ -256,7 +260,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for client_k1 refresh from server";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     wc = new WaitCriterion() {
       @Override
@@ -272,7 +276,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for client_k2 refresh from server";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
   }
 
   public static void verifyDeadAndLiveServers(final int expectedDeadServers, final int expectedLiveServers) {
@@ -286,7 +290,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for pool.getConnectedServerCount() == expectedLiveServer";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
   }
 
   public static void putK1andK2() {
@@ -309,7 +313,7 @@ public class HAInterestTestCase extends DistributedTestCase {
           };
           t.start();
           try {
-            DistributedTestCase.join(t, 30 * 1000, getLogWriter());
+            ThreadUtils.join(t, 30 * 1000);
           } catch (Exception ignore) {
             exceptionOccured = true;
           }
@@ -422,7 +426,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for cache.getCacheServers().size() == 1";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
     assertNotNull(bs);
@@ -440,7 +444,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for ccn.getClientProxies().size() > 0";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     wc = new WaitCriterion() {
       Iterator iter_prox;
@@ -462,7 +466,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for CacheClientProxy _messageDispatcher to be alive";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
   }
 
   public static void verifyDispatcherIsNotAlive() {
@@ -476,7 +480,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "cache.getCacheServers().size() == 1";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
     assertNotNull(bs);
@@ -494,7 +498,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for ccn.getClientProxies().size() > 0";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     Iterator iter_prox = ccn.getClientProxies().iterator();
     if (iter_prox.hasNext()) {
@@ -590,7 +594,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "connected server count never became 3";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     // close primaryEP
     getPrimaryVM().invoke(HAInterestTestCase.class, "stopServer");
@@ -620,7 +624,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "connected server count never became 3";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     // close primaryEP
     getPrimaryVM().invoke(HAInterestTestCase.class, "stopServer");
@@ -644,7 +648,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "connected server count never became 3";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     // close primaryEP
     VM backup = getBackupVM();
@@ -681,7 +685,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "Never got three connected servers";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     // close secondary EP
     VM result = getBackupVM();
@@ -717,7 +721,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "connected server count never became 3";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     // close secondary EP
     VM result = getBackupVM();
@@ -767,7 +771,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for cache.getCacheServers().size() == 1";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
     assertNotNull(bs);
@@ -785,7 +789,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for ccn.getClientProxies().size() > 0";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     Iterator iter_prox = ccn.getClientProxies().iterator();
 
@@ -805,7 +809,7 @@ public class HAInterestTestCase extends DistributedTestCase {
           return "waiting for keys of interest to include 2 keys";
         }
       };
-      DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+      Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
       Set keysMap = (Set) ccp.cils[RegisterInterestTracker.interestListIndex].getProfile(Region.SEPARATOR + REGION_NAME)
           .getKeysOfInterestFor(ccp.getProxyID());
@@ -827,7 +831,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for cache.getCacheServers().size() == 1";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
     assertNotNull(bs);
@@ -845,7 +849,7 @@ public class HAInterestTestCase extends DistributedTestCase {
         return "waiting for ccn.getClientProxies().size() > 0";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     Iterator iter_prox = ccn.getClientProxies().iterator();
     if (iter_prox.hasNext()) {
@@ -864,7 +868,7 @@ public class HAInterestTestCase extends DistributedTestCase {
           return "waiting for keys of interest to not be null";
         }
       };
-      DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+      Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
       Set keysMap = (Set) ccp.cils[RegisterInterestTracker.interestListIndex]
           .getProfile(Region.SEPARATOR + REGION_NAME)

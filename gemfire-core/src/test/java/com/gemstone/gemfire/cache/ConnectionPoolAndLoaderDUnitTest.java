@@ -28,6 +28,7 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -51,7 +52,8 @@ public class ConnectionPoolAndLoaderDUnitTest  extends CacheTestCase {
     super.setUp();
   }
   
-  public void tearDown2() {
+  @Override
+  protected final void preTearDownCacheTestCase() {
     //TODO grid. This is a hack. The next dunit test to run after
     //this one is the ConnectionPoolAutoDUnit test. That ends up calling
     //getSystem() with no arguments and expects to get a system without
@@ -92,7 +94,7 @@ public class ConnectionPoolAndLoaderDUnitTest  extends CacheTestCase {
       public Object call() {
         Cache cache = getCache();
         PoolFactory factory = PoolManager.createFactory();
-        factory.addServer(getServerHostName(host), serverPort);
+        factory.addServer(NetworkUtils.getServerHostName(host), serverPort);
         factory.create("pool1");
         
         AttributesFactory af = new AttributesFactory();
@@ -171,7 +173,7 @@ public class ConnectionPoolAndLoaderDUnitTest  extends CacheTestCase {
       public Object call() {
         Cache cache = getCache();
         PoolFactory factory = PoolManager.createFactory();
-        factory.addServer(getServerHostName(host), serverPort);
+        factory.addServer(NetworkUtils.getServerHostName(host), serverPort);
         factory.create("pool1");
         
         AttributesFactory af = new AttributesFactory();
@@ -281,7 +283,7 @@ public class ConnectionPoolAndLoaderDUnitTest  extends CacheTestCase {
         Cache cache = getCache();
         useLocator = false;
         PoolFactory factory = PoolManager.createFactory();
-        factory.addServer(getServerHostName(host), serverPort);
+        factory.addServer(NetworkUtils.getServerHostName(host), serverPort);
         factory.create("pool1");
         AttributesFactory af = new AttributesFactory();
         af.setDataPolicy(DataPolicy.NORMAL);
@@ -303,7 +305,7 @@ public class ConnectionPoolAndLoaderDUnitTest  extends CacheTestCase {
         Cache cache = getCache();
         useLocator = false;
         PoolFactory factory = PoolManager.createFactory();
-        factory.addServer(getServerHostName(host), serverPort);
+        factory.addServer(NetworkUtils.getServerHostName(host), serverPort);
         factory.create("pool1");
         AttributesFactory af = new AttributesFactory();
         af.setDataPolicy(DataPolicy.NORMAL);

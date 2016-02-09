@@ -54,10 +54,15 @@ import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.cache.wan.InternalGatewaySenderFactory;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * @author Shobhit Agarwal
@@ -67,7 +72,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
 
   protected static final String regionName = "testRegion";
   protected static Cache cache;
-  private static Set<ExpectedException>expectedExceptions = new HashSet<ExpectedException>();
+  private static Set<IgnoredException>expectedExceptions = new HashSet<IgnoredException>();
 
   
   
@@ -75,10 +80,10 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     super(name);
   }
   
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     closeCache();
-    invokeInEveryVM(new SerializableRunnable() { public void run() {
+    Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() {
       closeCache();
      } });
   }
@@ -184,7 +189,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
               throw new RuntimeException("unexpected exception", e);
             }
             if (entry != null) {
-              getLogWriter().info("found entry " + entry);
+              LogWriterUtils.getLogWriter().info("found entry " + entry);
             }
             return (entry != null);
           }
@@ -193,7 +198,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
             return "Expected "+key+" to be received on remote WAN site";
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30000, 500, true);
+        Wait.waitForCriterion(wc, 30000, 500, true);
 
         wc = new WaitCriterion() {
           public boolean done() {
@@ -206,7 +211,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
             return "waiting for timestamp to be updated";
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30000, 500, true);
+        Wait.waitForCriterion(wc, 30000, 500, true);
 
         Entry entry = region.getEntry(key);
         assertTrue("entry class is wrong: " + entry, entry instanceof EntrySnapshot);
@@ -318,7 +323,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
             return "Expected key-1 to be received on remote WAN site";
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30000, 500, true);
+        Wait.waitForCriterion(wc, 30000, 500, true);
 
         wc = new WaitCriterion() {
           public boolean done() {
@@ -331,7 +336,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
             return "waiting for timestamp to be updated";
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30000, 500, true);
+        Wait.waitForCriterion(wc, 30000, 500, true);
 
         Entry entry = region.getEntry(key);
         assertTrue(entry instanceof NonTXEntry);
@@ -448,7 +453,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
               throw new RuntimeException("unexpected exception", e);
             }
             if (entry != null) {
-              getLogWriter().info("found entry " + entry);
+              LogWriterUtils.getLogWriter().info("found entry " + entry);
             }
             return (entry != null);
           }
@@ -457,7 +462,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
             return "Expected key-1 to be received on remote WAN site";
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30000, 500, true);
+        Wait.waitForCriterion(wc, 30000, 500, true);
 
         wc = new WaitCriterion() {
           public boolean done() {
@@ -470,7 +475,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
             return "waiting for timestamp to be updated";
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30000, 500, true);
+        Wait.waitForCriterion(wc, 30000, 500, true);
 
         Entry entry = region.getEntry(key);
         assertTrue(entry instanceof EntrySnapshot);
@@ -587,7 +592,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
               throw new RuntimeException("unexpected exception", e);
             }
             if (entry != null) {
-              getLogWriter().info("found entry " + entry);
+              LogWriterUtils.getLogWriter().info("found entry " + entry);
             }
             return (entry != null);
           }
@@ -596,7 +601,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
             return "Expected key-1 to be received on remote WAN site";
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30000, 500, true);
+        Wait.waitForCriterion(wc, 30000, 500, true);
 
         wc = new WaitCriterion() {
           public boolean done() {
@@ -609,7 +614,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
             return "waiting for timestamp to be updated";
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30000, 500, true);
+        Wait.waitForCriterion(wc, 30000, 500, true);
 
         Entry entry = region.getEntry(key);
         assertTrue(entry instanceof EntrySnapshot);
@@ -646,27 +651,27 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
    */
 
   private static void createCache(Integer locPort) {
-    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(testName);
+    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     props.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds); 
-    ExpectedException ex = new ExpectedException("could not get remote locator information for remote site");
-    cache.getLogger().info(ex.getAddString());
+    IgnoredException ex = new IgnoredException("could not get remote locator information for remote site");
+    cache.getLogger().info(ex.getAddMessage());
     expectedExceptions.add(ex);
-    ex = new ExpectedException("Pool ln1 is not available");
-    cache.getLogger().info(ex.getAddString());
+    ex = new IgnoredException("Pool ln1 is not available");
+    cache.getLogger().info(ex.getAddMessage());
     expectedExceptions.add(ex);
   }
   
   private static void closeCache() {
     if (cache != null && !cache.isClosed()) {
-      for (ExpectedException expectedException: expectedExceptions) {
-        cache.getLogger().info(expectedException.getRemoveString());
+      for (IgnoredException expectedException: expectedExceptions) {
+        cache.getLogger().info(expectedException.getRemoveMessage());
       }
       expectedExceptions.clear();
       cache.getDistributedSystem().disconnect();
@@ -781,11 +786,11 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
         return "Expected sender isRunning state to be true but is false";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 300000, 500, true);
+    Wait.waitForCriterion(wc, 300000, 500, true);
   }
 
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
-    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(testName);
+    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
@@ -853,7 +858,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
   }
 
   public static int createReceiver(int locPort) {
-    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(testName);
+    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
@@ -945,7 +950,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
   }
 
   public static Integer createFirstLocatorWithDSId(int dsId) {
-    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(testName);
+    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");

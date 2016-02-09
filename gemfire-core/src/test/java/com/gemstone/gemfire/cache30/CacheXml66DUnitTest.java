@@ -41,6 +41,8 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.ClientCacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 /**
  * Tests 7.0 cache.xml feature : Fixed Partitioning.
@@ -157,7 +159,7 @@ public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
     catch (Exception illegal) {
       if (!((illegal instanceof IllegalStateException) && (illegal.getMessage()
           .contains("can not be specified in PartitionAttributesFactory")))) {
-        fail("Expected IllegalStateException ", illegal);
+        Assert.fail("Expected IllegalStateException ", illegal);
       }
 
       RegionAttributesCreation attrs = new RegionAttributesCreation();
@@ -353,7 +355,7 @@ public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
     txMgrCreation.setWriter(new TestTransactionWriter());
     cc.addCacheTransactionManagerCreation(txMgrCreation);
-    ExpectedException expectedException = addExpectedException(LocalizedStrings.TXManager_NO_WRITER_ON_CLIENT.toLocalizedString());
+    IgnoredException expectedException = IgnoredException.addIgnoredException(LocalizedStrings.TXManager_NO_WRITER_ON_CLIENT.toLocalizedString());
     try {
       testXml(cc);
       fail("expected exception not thrown");

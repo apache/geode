@@ -49,10 +49,14 @@ import com.gemstone.gemfire.management.internal.JmxManagerLocatorRequest;
 import com.gemstone.gemfire.management.internal.JmxManagerLocatorResponse;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Cache Server related management test cases
@@ -89,8 +93,8 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     super.setUp();
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void postTearDownLocatorTestBase() throws Exception {
     disconnectAllFromDS();
   }
 
@@ -118,7 +122,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
     final int port = server.invokeInt(CqQueryDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
     cqDUnitTest.createClient(client, port, host0);
@@ -142,7 +146,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
     // Close.
 
-    pause(2000);
+    Wait.pause(2000);
     checkNavigation(managingNode,member,serverPort);
     verifyIndex(server,serverPort);
     // This will test all CQs and will close the cq in its final step
@@ -174,7 +178,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     startLocatorInVM(locator, locatorPort, "");
     
-    String locators = getServerHostName(locator.getHost())+ "[" + locatorPort + "]";
+    String locators = NetworkUtils.getServerHostName(locator.getHost())+ "[" + locatorPort + "]";
     
    
     int serverPort = startBridgeServerInVM(server, null, locators);
@@ -182,7 +186,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     addClientNotifListener(server,serverPort);
 
     // Start a client and make sure that proper notification is received
-    startBridgeClientInVM(client, null, getServerHostName(locator.getHost()), locatorPort);
+    startBridgeClientInVM(client, null, NetworkUtils.getServerHostName(locator.getHost()), locatorPort);
     
     //stop the client and make sure the bridge server notifies
     stopBridgeMemberVM(client);
@@ -211,7 +215,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     startLocator(locator, locatorPort, "");
 
-    String locators = getServerHostName(locator.getHost())+ "[" + locatorPort + "]";
+    String locators = NetworkUtils.getServerHostName(locator.getHost())+ "[" + locatorPort + "]";
     
     //Step 2:
     int serverPort = startBridgeServerInVM(server, null, locators);
@@ -275,7 +279,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
         Properties props = new Properties();
         props.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
         props.setProperty(DistributionConfig.LOCATORS_NAME, otherLocators);
-        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
         props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
         props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
         try {
@@ -283,14 +287,14 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
               + ".log");
           InetAddress bindAddr = null;
           try {
-            bindAddr = InetAddress.getByName(getServerHostName(vm.getHost()));
+            bindAddr = InetAddress.getByName(NetworkUtils.getServerHostName(vm.getHost()));
           } catch (UnknownHostException uhe) {
-            fail("While resolving bind address ", uhe);
+            Assert.fail("While resolving bind address ", uhe);
           }
           Locator locator = Locator.startLocatorAndDS(locatorPort, logFile, bindAddr, props);
           remoteObjects.put(LOCATOR_KEY, locator);
         } catch (IOException ex) {
-          fail("While starting locator on port " + locatorPort, ex);
+          Assert.fail("While starting locator on port " + locatorPort, ex);
         }
       }
     });
@@ -352,7 +356,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, 10 * 1000, 200, true);
+        Wait.waitForCriterion(ev, 10 * 1000, 200, true);
         assertTrue(bean.isRunning());
         TestCacheServerNotif nt = new TestCacheServerNotif();
         try {
@@ -396,7 +400,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
         CacheServerMXBean bean = service
             .getLocalCacheServerMXBean(serverPort);
         assertEquals(bean.getIndexCount(), 1);
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "<ExpectedString> Index is   " + bean.getIndexList()[0]
                 + "</ExpectedString> ");
         try {
@@ -461,7 +465,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, 10 * 1000, 200, true);
+        Wait.waitForCriterion(ev, 10 * 1000, 200, true);
         assertTrue(bean.isRunning());
         assertCacheServerConfig(bean);
 
@@ -487,7 +491,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
         .getMessageTimeToLive());
     assertEquals(CacheServer.DEFAULT_LOAD_POLL_INTERVAL, bean
         .getLoadPollInterval());
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "<ExpectedString> LoadProbe of the Server is  "
             + bean.fetchLoadProbe().toString() + "</ExpectedString> ");
   }
@@ -514,14 +518,14 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
           String clientId = bean.getClientIds()[0];
           assertNotNull(clientId);
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "<ExpectedString> ClientId of the Server is  " + clientId
                   + "</ExpectedString> ");
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Active Query Count  "
                   + bean.getActiveCQCount() + "</ExpectedString> ");
           
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Registered Query Count  "
                   + bean.getRegisteredCQCount() + "</ExpectedString> ");
 
@@ -563,7 +567,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     @Override
     public void handleNotification(Notification notification, Object handback) {
       assertNotNull(notification);
-      getLogWriter().info("Expected String :" + notification.toString());
+      LogWriterUtils.getLogWriter().info("Expected String :" + notification.toString());
     }
 
   }

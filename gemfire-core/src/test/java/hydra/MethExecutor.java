@@ -147,6 +147,7 @@ public class MethExecutor {
       }
       sb.append("] in class ");
       sb.append(c.getName());
+      sb.append(" methods=" + matchingMethods);
       throw new NoSuchMethodException(sb.toString());
     }
     else return (Method) matchingMethods.get(0);

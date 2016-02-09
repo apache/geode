@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
 @SuppressWarnings("deprecation")
 public class OffHeapTestUtil {
 
-  public static void checkOrphans() {
+  public static void checkOrphans() { // TODO:KIRK: need to do something special to guarantee proper tearDown
     SimpleMemoryAllocatorImpl allocator = null;
     try {
       allocator = SimpleMemoryAllocatorImpl.getAllocator();

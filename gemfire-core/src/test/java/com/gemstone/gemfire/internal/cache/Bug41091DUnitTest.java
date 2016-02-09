@@ -34,7 +34,10 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.RequestImageMessage;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -55,8 +58,7 @@ public class Bug41091DUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  protected final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
   
@@ -96,7 +98,7 @@ public class Bug41091DUnitTest extends CacheTestCase {
    
         Properties props = new Properties();
         props.setProperty(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
-        props.setProperty(DistributionConfig.LOCATORS_NAME, getServerHostName(host) + "[" + locatorPort + "]");
+        props.setProperty(DistributionConfig.LOCATORS_NAME, NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]");
         getSystem(props);
         
         
@@ -116,7 +118,7 @@ public class Bug41091DUnitTest extends CacheTestCase {
       public void run() {
         Properties props = new Properties();
         props.setProperty(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
-        props.setProperty(DistributionConfig.LOCATORS_NAME, getServerHostName(host) + "[" + locatorPort + "]");
+        props.setProperty(DistributionConfig.LOCATORS_NAME, NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]");
         getSystem(props);
         Cache cache = getCache();
         AttributesFactory af = new AttributesFactory();
@@ -150,7 +152,7 @@ public class Bug41091DUnitTest extends CacheTestCase {
         disconnectFromDS();
         Properties props = new Properties();
         props.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
-        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
         props.setProperty(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
         props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
         try {
@@ -158,13 +160,13 @@ public class Bug41091DUnitTest extends CacheTestCase {
               + ".log");
           InetAddress bindAddr = null;
           try {
-            bindAddr = InetAddress.getByName(getServerHostName(vm.getHost()));
+            bindAddr = InetAddress.getByName(NetworkUtils.getServerHostName(vm.getHost()));
           } catch (UnknownHostException uhe) {
-            fail("While resolving bind address ", uhe);
+            Assert.fail("While resolving bind address ", uhe);
           }
           Locator locator = Locator.startLocatorAndDS(locatorPort, logFile, bindAddr, props);
         } catch (IOException ex) {
-          fail("While starting locator on port " + locatorPort, ex);
+          Assert.fail("While starting locator on port " + locatorPort, ex);
         }
       }
     });

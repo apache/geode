@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -43,6 +45,8 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 
@@ -145,9 +149,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Override
-  protected void tearDownAfter() throws Exception {
-    super.tearDownAfter();
-
+  protected final void postTearDown() throws Exception {
     LauncherLifecycleCommands launcherLifecycleCommands = new LauncherLifecycleCommands();
     Integer pid;
 
@@ -302,7 +304,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   public void test000StartLocatorCapturesOutputOnError() throws IOException {
     final int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    String pathname = (getClass().getSimpleName() + "_" + testName);
+    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
     File workingDirectory = new File(pathname);
 
     assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
@@ -364,7 +366,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_LOCATOR);
 
-    command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, getClass().getSimpleName().concat("_").concat(testName));
+    command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, getClass().getSimpleName().concat("_").concat(getTestMethodName()));
     command.addOption(CliStrings.START_LOCATOR__PORT, "0");
     command.addOption(CliStrings.START_LOCATOR__PROPERTIES, gemfirePropertiesPathname);
     command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.http-service-port=0");
@@ -389,7 +391,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_LOCATOR);
 
-    command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, getClass().getSimpleName().concat("_").concat(testName));
+    command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, getClass().getSimpleName().concat("_").concat(getTestMethodName()));
     command.addOption(CliStrings.START_LOCATOR__PORT, "0");
     command.addOption(CliStrings.START_LOCATOR__SECURITY_PROPERTIES, gemfireSecurityPropertiesPathname);
     command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.http-service-port=0");
@@ -414,7 +416,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
 
-    command.addOption(CliStrings.START_SERVER__NAME, getClass().getSimpleName().concat("_").concat(testName));
+    command.addOption(CliStrings.START_SERVER__NAME, getClass().getSimpleName().concat("_").concat(getTestMethodName()));
     command.addOption(CliStrings.START_SERVER__CACHE_XML_FILE, cacheXmlPathname);
 
     CommandResult result = executeCommand(command.toString());
@@ -433,7 +435,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
 
-    command.addOption(CliStrings.START_SERVER__NAME, getClass().getSimpleName().concat("_").concat(testName));
+    command.addOption(CliStrings.START_SERVER__NAME, getClass().getSimpleName().concat("_").concat(getTestMethodName()));
     command.addOption(CliStrings.START_SERVER__PROPERTIES, gemfirePropertiesFile);
 
     CommandResult result = executeCommand(command.toString());
@@ -453,7 +455,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
 
-    command.addOption(CliStrings.START_SERVER__NAME, getClass().getSimpleName().concat("_").concat(testName));
+    command.addOption(CliStrings.START_SERVER__NAME, getClass().getSimpleName().concat("_").concat(getTestMethodName()));
     command.addOption(CliStrings.START_SERVER__SECURITY_PROPERTIES, gemfireSecuritiesPropertiesFile);
 
     CommandResult result = executeCommand(command.toString());
@@ -471,7 +473,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   public void test006StartLocatorInRelativeDirectory() {
     final int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    String pathname = (getClass().getSimpleName() + "_" + testName);
+    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
     File workingDirectory = new File(pathname);
 
     assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
@@ -504,7 +506,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   public void test007StatusLocatorUsingMemberNameIDWhenGfshIsNotConnected() {
-    CommandResult result = executeCommand(CliStrings.STATUS_LOCATOR + " --name=" + testName);
+    CommandResult result = executeCommand(CliStrings.STATUS_LOCATOR + " --name=" + getTestMethodName());
 
     assertNotNull(result);
     assertEquals(Result.Status.ERROR, result.getStatus());
@@ -518,7 +520,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     final int jmxManagerPort = ports[0];
     final int locatorPort = ports[1];
 
-    String pathname = (getClass().getSimpleName() + "_" + testName);
+    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
     File workingDirectory = new File(pathname);
 
     assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
@@ -580,7 +582,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     final int jmxManagerPort = ports[0];
     final int locatorPort = ports[1];
 
-    String pathname = (getClass().getSimpleName() + "_" + testName);
+    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
     File workingDirectory = new File(pathname);
 
     assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
@@ -631,7 +633,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   public void test010StopLocatorUsingMemberNameIDWhenGfshIsNotConnected() {
-    CommandResult result = executeCommand(CliStrings.STOP_LOCATOR + " --name=" + testName);
+    CommandResult result = executeCommand(CliStrings.STOP_LOCATOR + " --name=" + getTestMethodName());
 
     assertNotNull(result);
     assertEquals(Result.Status.ERROR, result.getStatus());
@@ -645,7 +647,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     final int jmxManagerPort = ports[0];
     final int locatorPort = ports[1];
 
-    String pathname = (getClass().getSimpleName() + "_" + testName);
+    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
     File workingDirectory = new File(pathname);
 
     assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
@@ -732,7 +734,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     final int jmxManagerPort = ports[0];
     final int locatorPort = ports[1];
 
-    String pathname = (getClass().getSimpleName() + "_" + testName);
+    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
     File workingDirectory = new File(pathname);
 
     assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
@@ -803,14 +805,14 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   public void test013StartServerWithSpring() {
-    String pathname = (getClass().getSimpleName() + "_" + testName);
+    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
     File workingDirectory = new File(pathname);
 
     assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
 
-    command.addOption(CliStrings.START_SERVER__NAME, getClass().getSimpleName().concat("_").concat(testName));
+    command.addOption(CliStrings.START_SERVER__NAME, getClass().getSimpleName().concat("_").concat(getTestMethodName()));
     command.addOption(CliStrings.START_SERVER__USE_CLUSTER_CONFIGURATION, Boolean.FALSE.toString());
     command.addOption(CliStrings.START_SERVER__LOG_LEVEL, "config");
     command.addOption(CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH);
@@ -863,7 +865,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     final int serverPort = ports[0];
     final int locatorPort = ports[1];
 
-    String pathname = getClass().getSimpleName().concat("_").concat(testName);
+    String pathname = getClass().getSimpleName().concat("_").concat(getTestMethodName());
     File workingDirectory = new File(pathname);
 
     assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());

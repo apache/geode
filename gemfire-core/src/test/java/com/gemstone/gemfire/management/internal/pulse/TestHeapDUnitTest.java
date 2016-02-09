@@ -19,7 +19,10 @@ package com.gemstone.gemfire.management.internal.pulse;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagementTestBase;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing heap size from Mbean  
@@ -38,10 +41,6 @@ public class TestHeapDUnitTest extends ManagementTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-  }
-
-  public void tearDown2() throws Exception {
-    super.tearDown2();
   }
 
   public static long getHeapSizeOfClient() {    
@@ -68,7 +67,7 @@ public class TestHeapDUnitTest extends ManagementTestBase {
       }
     };
 
-    waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
+    Wait.waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
     final DistributedSystemMXBean bean = getManagementService()
         .getDistributedSystemMXBean();
     assertNotNull(bean);
@@ -86,7 +85,7 @@ public class TestHeapDUnitTest extends ManagementTestBase {
     long totalHeapSizeFromMXBean = ((Number) managingNode.invoke(
         TestHeapDUnitTest.class, "getHeapSizeOfDS")).intValue();
 
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "testTotalHeapSize totalHeapSizeFromMXBean = "
             + totalHeapSizeFromMXBean + " totalHeapSizeOnAll = "
             + totalHeapSizeOnAll);

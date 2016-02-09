@@ -40,9 +40,14 @@ import com.gemstone.gemfire.internal.cache.VMCachedDeserializable;
 import com.gemstone.gemfire.internal.cache.versions.VMVersionTag;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * concurrency-control tests for client/server
@@ -80,8 +85,8 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
    * did not see secondary buckets perform a delta-GII.
    */
   public void doBucketsSyncOnPrimaryLoss(TestType typeOfTest) {
-    addExpectedException("killing member's ds");
-    addExpectedException("killing member's ds");
+    IgnoredException.addIgnoredException("killing member's ds");
+    IgnoredException.addIgnoredException("killing member's ds");
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -127,7 +132,7 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
       // Now we crash the primary bucket owner simulating death during distribution.
       // The backup buckets should perform a delta-GII for the lost member and
       // get back in sync
-      crashDistributedSystem(primaryOwner);
+      DistributedTestUtils.crashDistributedSystem(primaryOwner);
   
       for (VM vm: verifyVMs) {
         verifySynchronized(vm, primaryID);
@@ -195,7 +200,7 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
         tag.setEntryVersion(1);
         tag.setIsRemoteForTesting();
         EntryEventImpl event = EntryEventImpl.create(bucket, Operation.CREATE, "Object3", true, primary, true, false);        
-        getLogWriter().info("applying this event to the cache: " + event);
+        LogWriterUtils.getLogWriter().info("applying this event to the cache: " + event);
         event.setNewValue(new VMCachedDeserializable("value3", 12));
         event.setVersionTag(tag);
         bucket.getRegionMap().basicPut(event, System.currentTimeMillis(), true, false, null, false, false);
@@ -210,12 +215,12 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
         event = EntryEventImpl.create(bucket, Operation.CREATE, "Object5", true, primary, true, false);
         event.setNewValue(Token.TOMBSTONE);
         event.setVersionTag(tag);
-        getLogWriter().info("applying this event to the cache: " + event);
+        LogWriterUtils.getLogWriter().info("applying this event to the cache: " + event);
         bucket.getRegionMap().basicPut(event, System.currentTimeMillis(), true, false, null, false, false);
         event.release();
 
         bucket.dumpBackingMap();
-        getLogWriter().info("bucket version vector is now " + bucket.getVersionVector().fullToString());
+        LogWriterUtils.getLogWriter().info("bucket version vector is now " + bucket.getVersionVector().fullToString());
         assertTrue("bucket should hold entry Object3 now", bucket.containsKey("Object3"));
         return true;
       }
@@ -227,17 +232,17 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         PartitionedRegion pr = (PartitionedRegion)TestRegion;
         final BucketRegion bucket = pr.getDataStore().getLocalBucketById(0);
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
           String waitingFor = "primary is still in membership view: " + crashedMember;
           boolean dumped = false;
           public boolean done() {
             if (TestRegion.getCache().getDistributionManager().isCurrentMember(crashedMember)) {
-              getLogWriter().info(waitingFor);
+              LogWriterUtils.getLogWriter().info(waitingFor);
               return false;
             }
             if (!TestRegion.containsKey("Object3")) {
               waitingFor = "entry for Object3 not found";
-              getLogWriter().info(waitingFor);
+              LogWriterUtils.getLogWriter().info(waitingFor);
               return false;
             }
             RegionEntry re = bucket.getRegionMap().getEntry("Object5");
@@ -247,7 +252,7 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
                 bucket.dumpBackingMap();
               }
               waitingFor = "entry for Object5 not found";
-              getLogWriter().info(waitingFor);
+              LogWriterUtils.getLogWriter().info(waitingFor);
               return false;
             }
             if (!re.isTombstone()) {
@@ -256,7 +261,7 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
                 bucket.dumpBackingMap();
               }
               waitingFor = "Object5 is not a tombstone but should be: " + re;
-              getLogWriter().info(waitingFor);
+              LogWriterUtils.getLogWriter().info(waitingFor);
               return false;
             }
             return true;

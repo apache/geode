@@ -41,9 +41,15 @@ import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class SingleHopStatsDUnitTest extends CacheTestCase{
 
@@ -105,28 +111,29 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
     member3 = host.getVM(3);
   }
 
-  public void tearDown2() throws Exception {
+  @Override
+  protected final void preTearDownCacheTestCase() throws Exception {
+    // close the clients first
+    member0.invoke(SingleHopStatsDUnitTest.class, "closeCache");
+    member1.invoke(SingleHopStatsDUnitTest.class, "closeCache");
+    member2.invoke(SingleHopStatsDUnitTest.class, "closeCache");
+    member3.invoke(SingleHopStatsDUnitTest.class, "closeCache");
+    closeCache();
+  }
+  
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
     try {
-
-      // close the clients first
-      member0.invoke(SingleHopStatsDUnitTest.class, "closeCache");
-      member1.invoke(SingleHopStatsDUnitTest.class, "closeCache");
-      member2.invoke(SingleHopStatsDUnitTest.class, "closeCache");
-      member3.invoke(SingleHopStatsDUnitTest.class, "closeCache");
-      closeCache();
-
-      super.tearDown2();
-
       member0 = null;
       member1 = null;
       member2 = null;
       member3 = null;
       cache = null;
-      invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
+      Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
 
     }
     finally {
-      unregisterAllDataSerializersFromAllVms();
+      DistributedTestUtils.unregisterAllDataSerializersFromAllVms();
     }
   }
 
@@ -239,7 +246,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
       server.start();
     }
     catch (IOException e) {
-      fail("Failed to start server ", e);
+      Assert.fail("Failed to start server ", e);
     }
 
     if (colocation.equals("No_Colocation")) {
@@ -249,7 +256,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
         attr.setDataPolicy(DataPolicy.REPLICATE);
         region = cache.createRegion(Region_Name, attr.create());
         assertNotNull(region);
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "Distributed Region " + Region_Name + " created Successfully :"
                 + region.toString());
       }else{
@@ -260,7 +267,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
       attr.setPartitionAttributes(paf.create());
       region = cache.createRegion(Region_Name, attr.create());
       assertNotNull(region);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region " + Region_Name + " created Successfully :"
               + region.toString());
       }
@@ -274,7 +281,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
       attr.setPartitionAttributes(paf.create());
       customerRegion = cache.createRegion("CUSTOMER", attr.create());
       assertNotNull(customerRegion);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region CUSTOMER created Successfully :"
               + customerRegion.toString());
 
@@ -286,7 +293,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
       attr.setPartitionAttributes(paf.create());
       orderRegion = cache.createRegion("ORDER", attr.create());
       assertNotNull(orderRegion);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region ORDER created Successfully :"
               + orderRegion.toString());
 
@@ -298,7 +305,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
       attr.setPartitionAttributes(paf.create());
       shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
       assertNotNull(shipmentRegion);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region SHIPMENT created Successfully :"
               + shipmentRegion.toString());
     }
@@ -313,7 +320,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
       RegionAttributes attrs = factory.create();
       region = cache.createRegion(Region_Name, attrs);
       assertNotNull(region);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Region " + Region_Name + " created Successfully :" + region.toString());
     }
     else {
@@ -322,7 +329,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
       RegionAttributes attrs = factory.create();
       customerRegion = cache.createRegion("CUSTOMER", attrs);
       assertNotNull(customerRegion);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region CUSTOMER created Successfully :"
               + customerRegion.toString());
 
@@ -331,7 +338,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
       attrs = factory.create();
       orderRegion = cache.createRegion("ORDER", attrs);
       assertNotNull(orderRegion);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region ORDER created Successfully :"
               + orderRegion.toString());
 
@@ -340,7 +347,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
       attrs = factory.create();
       shipmentRegion = cache.createRegion("SHIPMENT", attrs);
       assertNotNull(shipmentRegion);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region SHIPMENT created Successfully :"
               + shipmentRegion.toString());
     }
@@ -368,7 +375,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
         cms = ((GemFireCacheImpl)cache).getClientMetadataService();
         // since PR metadata is fetched in a background executor thread
         // we need to wait for it to arrive for a bit
-        waitForCriterion(new WaitCriterion(){
+        Wait.waitForCriterion(new WaitCriterion(){
           public boolean done() {
             return regionMetaData.size() == 1;
           }

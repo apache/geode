@@ -56,7 +56,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   /////////  Public test methods
 
   public void testNullFailure() {
-    getLogWriter().info("TODO: this test needs to use VM#bounce.");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("TODO: this test needs to use VM#bounce.");
     try {
       SystemFailure.initiateFailure(null);
       fail("Null failure set allowed");
@@ -308,7 +308,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   
   static private final Runnable listener1 = new Runnable() {
     public void run() {
-      getLogWriter().info("Inside of preListener1");
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Inside of preListener1");
       listenerCount.addAndGet(1);
     }
   };
@@ -398,7 +398,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   
   protected static Boolean verifyConnected() {
     if (SystemFailure.getFailure() != null) {
-      fail("System failure present!", SystemFailure.getFailure());
+      com.gemstone.gemfire.test.dunit.Assert.fail("System failure present!", SystemFailure.getFailure());
       return Boolean.FALSE;
     }
     GemFireCacheImpl gfc = (GemFireCacheImpl)cache;
@@ -495,7 +495,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   protected static void message(String s) {
     System.out.println(s);
     System.err.println(s);
-    getLogWriter().info(s);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(s);
     cache.getLogger().info(s);
   }
   
@@ -545,7 +545,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       }
     }
     public void afterCreate(EntryEvent event) {
-      getLogWriter().info("Invoking afterCreate on listener; name=" +
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                           event.getKey());
       forceOutOfMemory();
     }
@@ -590,7 +590,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
         }
       }
       public void afterCreate(EntryEvent event) {
-        getLogWriter().info("Invoking afterCreate on listener; name=" +
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                             event.getKey());
         forceOutOfMemory();
       }
@@ -660,7 +660,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
 
     public void afterCreate(EntryEvent event) {
-      getLogWriter().info("Invoking afterCreate on listener; name=" +
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                           event.getKey());
       forceLowMemory();
     }
@@ -676,7 +676,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
     
     public void afterCreate(EntryEvent event) {
-      getLogWriter().info("Invoking afterCreate on listener; name=" +
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                           event.getKey());
       forceInternalError();
     }
@@ -692,7 +692,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
     
     public void afterCreate(EntryEvent event) {
-      getLogWriter().info("Invoking afterCreate on listener; name=" +
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                           event.getKey());
       forceInternalError();
     }
@@ -704,7 +704,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
     
     public void afterCreate(EntryEvent event) {
-      getLogWriter().info("Invoking afterCreate on listener; name=" +
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                           event.getKey());
       forceError();
     }
@@ -756,7 +756,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   }
   
   protected void doCreateEntry(String name) {
-    LogWriter log = getLogWriter();
+    LogWriter log = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
     log.info(
         "<ExpectedException action=add>" +
         "dunit.RMIException"

@@ -33,10 +33,13 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class DistributedNoAckRegionCCEDUnitTest extends
     DistributedNoAckRegionDUnitTest {
@@ -126,7 +129,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends
     AsyncInvocation vm1Ops = vm1.invokeAsync(DistributedNoAckRegionCCEDUnitTest.class, "doManyOps");
     AsyncInvocation vm2Ops = vm2.invokeAsync(DistributedNoAckRegionCCEDUnitTest.class, "doManyOps");
     // pause to let a bunch of operations build up
-    pause(5000);
+    Wait.pause(5000);
     AsyncInvocation a0 = vm3.invokeAsync(DistributedNoAckRegionCCEDUnitTest.class, "clearRegion");
     vm0.invoke(DistributedNoAckRegionCCEDUnitTest.class, "unblockListener");
     vm1.invoke(DistributedNoAckRegionCCEDUnitTest.class, "unblockListener");
@@ -139,7 +142,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends
 //    if (a0failed && a1failed) {
 //      fail("neither member saw event conflation - check stats for " + name);
 //    }
-    pause(2000);//this test has with noack, thus we should wait before validating entries
+    Wait.pause(2000);//this test has with noack, thus we should wait before validating entries
     // check consistency of the regions
     Map r0Contents = (Map)vm0.invoke(this.getClass(), "getCCRegionContents");
     Map r1Contents = (Map)vm1.invoke(this.getClass(), "getCCRegionContents");
@@ -171,25 +174,25 @@ public class DistributedNoAckRegionCCEDUnitTest extends
         if (event.isOriginRemote()) {
           synchronized(this) {
             while (ListenerBlocking) {
-              getLogWriter().info("blocking cache operations for " + event.getDistributedMember());
+              LogWriterUtils.getLogWriter().info("blocking cache operations for " + event.getDistributedMember());
               blocked = true;
               try {
                 wait();
               } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                getLogWriter().info("blocking cache listener interrupted");
+                LogWriterUtils.getLogWriter().info("blocking cache listener interrupted");
                 return;
               }
             }
           }
           if (blocked) {
-            getLogWriter().info("allowing cache operations for " + event.getDistributedMember());
+            LogWriterUtils.getLogWriter().info("allowing cache operations for " + event.getDistributedMember());
           }
         }
       }
       @Override
       public void close() {
-        getLogWriter().info("closing blocking listener");
+        LogWriterUtils.getLogWriter().info("closing blocking listener");
         ListenerBlocking = false;
         synchronized(this) {
           notifyAll();
@@ -314,7 +317,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends
             }
             CCRegion = (LocalRegion)f.create(name);
           } catch (CacheException ex) {
-            fail("While creating region", ex);
+            Assert.fail("While creating region", ex);
           }
         }
       };

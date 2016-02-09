@@ -44,7 +44,7 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.data.Position;
 import com.gemstone.gemfire.internal.cache.InternalCache;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -368,7 +368,7 @@ public class ExecutionContextJUnitTest {
     
     for (int i =0; i < th.length ;++i) {
       try {
-        DistributedTestCase.join(th[i], 30 * 1000, null);
+        ThreadUtils.join(th[i], 30 * 1000);
       }catch(Exception e) {
         fail(e.toString());
       }

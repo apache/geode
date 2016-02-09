@@ -37,8 +37,11 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.RegionFactoryImpl;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public abstract class PersistentReplicatedTestBase extends CacheTestCase {
 
@@ -54,7 +57,7 @@ public abstract class PersistentReplicatedTestBase extends CacheTestCase {
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    invokeInEveryVM(PersistentReplicatedTestBase.class,"setRegionName", new Object[]{getUniqueName()});
+    Invoke.invokeInEveryVM(PersistentReplicatedTestBase.class,"setRegionName", new Object[]{getUniqueName()});
     setRegionName(getUniqueName());
     diskDir = new File("diskDir-" + getName()).getAbsoluteFile();
     com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
@@ -67,16 +70,19 @@ public abstract class PersistentReplicatedTestBase extends CacheTestCase {
   }
   
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  protected final void postTearDownCacheTestCase() throws Exception {
     com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
+    postTearDownPersistentReplicatedTestBase();
+  }
+  
+  protected void postTearDownPersistentReplicatedTestBase() throws Exception {
   }
 
   protected void waitForBlockedInitialization(VM vm) {
     vm.invoke(new SerializableRunnable() {
   
       public void run() {
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
   
           public String description() {
             return "Waiting for another persistent member to come online";

@@ -37,6 +37,7 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -68,16 +69,16 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
       VM vm1 = host.getVM(1);
       vm0.invoke(ClearMultiVmCallBkDUnitTest.class, "createCache");
       vm1.invoke(ClearMultiVmCallBkDUnitTest.class, "createCache");
-      getLogWriter().fine("Cache created in successfully");
+      LogWriterUtils.getLogWriter().fine("Cache created in successfully");
     }
     
-    public void tearDown2(){
-        Host host = Host.getHost(0);
-        VM vm0 = host.getVM(0);
-        VM vm1 = host.getVM(1);
-        vm0.invoke(ClearMultiVmCallBkDUnitTest.class, "closeCache");
-        vm1.invoke(ClearMultiVmCallBkDUnitTest.class, "closeCache");
-        
+    @Override
+    protected final void preTearDown() throws Exception {
+      Host host = Host.getHost(0);
+      VM vm0 = host.getVM(0);
+      VM vm1 = host.getVM(1);
+      vm0.invoke(ClearMultiVmCallBkDUnitTest.class, "closeCache");
+      vm1.invoke(ClearMultiVmCallBkDUnitTest.class, "closeCache");
     }
     
     public static void createCache(){
@@ -131,10 +132,10 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
             vm0.invoke(ClearMultiVmCallBkDUnitTest.class, "putMethod", objArr);
             
         }
-        getLogWriter().fine("Did all puts successfully");
+        LogWriterUtils.getLogWriter().fine("Did all puts successfully");
         
         vm0.invoke(ClearMultiVmCallBkDUnitTest.class,"clearMethod");
-        getLogWriter().fine("Did clear successfully");
+        LogWriterUtils.getLogWriter().fine("Did clear successfully");
         
         while(afterClear){
         }       
@@ -157,10 +158,10 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
             vm0.invoke(ClearMultiVmCallBkDUnitTest.class, "putMethod", objArr);
             vm1.invoke(ClearMultiVmCallBkDUnitTest.class, "getMethod", objArr);
         }
-        getLogWriter().fine("Did all puts successfully");
+        LogWriterUtils.getLogWriter().fine("Did all puts successfully");
         //vm0.invoke(ClearMultiVmCallBkDUnitTest.class,"putMethod");
         vm1.invoke(ClearMultiVmCallBkDUnitTest.class,"clearMethod");
-        getLogWriter().fine("Did clear successfully");
+        LogWriterUtils.getLogWriter().fine("Did clear successfully");
         
         while(afterClear){
         }       
@@ -230,7 +231,7 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
     static class ListenerCallBk extends CacheListenerAdapter {
   
         public void afterRegionClear(RegionEvent event){
-            getLogWriter().fine("In afterClear:: CacheListener Callback");
+            LogWriterUtils.getLogWriter().fine("In afterClear:: CacheListener Callback");
             try {
                 int i = 7;
                 region.put(""+i, "inAfterClear");

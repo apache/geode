@@ -36,7 +36,10 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
@@ -150,9 +153,8 @@ public class StatsBugDUnitTest extends DistributedTestCase
    * @throws Exception
    *           thrown if any problem occurs in closing cache
    */
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close client
     client1.invoke(StatsBugDUnitTest.class, "closeCache");
 
@@ -176,13 +178,13 @@ public class StatsBugDUnitTest extends DistributedTestCase
    */
   public void testBug36109() throws Exception
   {
-    getLogWriter().info("testBug36109 : BEGIN");
+    LogWriterUtils.getLogWriter().info("testBug36109 : BEGIN");
     client1.invoke(StatsBugDUnitTest.class, "createClientCacheForInvalidates", new Object[] {
-        getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) });
+        NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) });
     client1.invoke(StatsBugDUnitTest.class, "prepopulateClient");
     primary.invoke(StatsBugDUnitTest.class, "doEntryOperations",
         new Object[] { primaryPrefix });
-    pause(3000);
+    Wait.pause(3000);
     primary.invoke(StatsBugDUnitTest.class, "stopServer");
     try {
       Thread.sleep(5000);
@@ -201,7 +203,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
     }
 
     client1.invoke(StatsBugDUnitTest.class, "verifyNumInvalidates");
-    getLogWriter().info("testBug36109 : END");
+    LogWriterUtils.getLogWriter().info("testBug36109 : END");
   }
 
   /**
@@ -229,7 +231,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
     server.setNotifyBySubscription(false);
     server.setSocketBufferSize(32768);
     server.start();
-    getLogWriter().info("Server started at PORT = " + port);
+    LogWriterUtils.getLogWriter().info("Server started at PORT = " + port);
     return new Integer(port);
   }
 
@@ -254,7 +256,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(REGION_NAME, attrs);
     region.registerInterest("ALL_KEYS");
-    getLogWriter().info("Client cache created");
+    LogWriterUtils.getLogWriter().info("Client cache created");
   }
 
   /**
@@ -278,7 +280,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(REGION_NAME, attrs);
     region.registerInterest("ALL_KEYS", false, false);
-    getLogWriter().info("Client cache created");
+    LogWriterUtils.getLogWriter().info("Client cache created");
   }
   
   /**
@@ -289,11 +291,11 @@ public class StatsBugDUnitTest extends DistributedTestCase
   public static void verifyNumInvalidates()
   {
     long invalidatesRecordedByStats = pool.getInvalidateCount();
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "invalidatesRecordedByStats = " + invalidatesRecordedByStats);
 
     int expectedInvalidates = TOTAL_SERVERS * PUTS_PER_SERVER;
-    getLogWriter().info("expectedInvalidates = " + expectedInvalidates);
+    LogWriterUtils.getLogWriter().info("expectedInvalidates = " + expectedInvalidates);
 
     if (invalidatesRecordedByStats != expectedInvalidates) {
       fail("Invalidates received by client(" + invalidatesRecordedByStats

@@ -43,9 +43,9 @@ public class DurableClientCrashDUnitTest extends DurableClientTestCase {
     this.durableClientVM.invoke(CacheServerTestUtil.class, "setClientCrash", new Object[] {new Boolean(true)});    
   }
   
-  public void tearDown2() throws Exception {
+  @Override
+  protected void preTearDownDurableClientTestCase() throws Exception {
     configureClientStop2();
-    super.tearDown2();
   }
   
   public void configureClientStop2()

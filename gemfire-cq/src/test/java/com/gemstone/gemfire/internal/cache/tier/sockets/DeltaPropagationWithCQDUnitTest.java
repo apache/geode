@@ -54,7 +54,10 @@ import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * @author ashetkar
@@ -101,8 +104,8 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
     client2 = host.getVM(3);
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     server1.invoke(DeltaPropagationWithCQDUnitTest.class, "close");
     server2.invoke(DeltaPropagationWithCQDUnitTest.class, "close");
     client1.invoke(DeltaPropagationWithCQDUnitTest.class, "close");
@@ -126,10 +129,10 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
     // 2. setup a client
     client1
         .invoke(DeltaPropagationWithCQDUnitTest.class, "createClientCache",
-            new Object[] {getServerHostName(server1.getHost()), port,
+            new Object[] {NetworkUtils.getServerHostName(server1.getHost()), port,
                 Boolean.TRUE});
     // 3. setup another client with cqs and interest in all keys.
-    createClientCache(getServerHostName(server1.getHost()), port, true);
+    createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port, true);
     registerCQs(1, "CQWithInterestDUnitTest_cq");
     // 4. put a key on client1
     client1.invoke(DeltaPropagationWithCQDUnitTest.class, "doPut", new Object[] {
@@ -147,7 +150,7 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
             + " cqEvents and " + cqErrors + " cqErrors";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 30 * 1000, 100, true);
+    Wait.waitForCriterion(wc, 30 * 1000, 100, true);
 
     // 7. validate that client2 has the new value
     assertEquals("Latest value: ", "NEW_VALUE", cache.getRegion(regionName)
@@ -164,10 +167,10 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
     // 2. setup a client with register interest
     client1
         .invoke(DeltaPropagationWithCQDUnitTest.class, "createClientCache",
-            new Object[] {getServerHostName(server1.getHost()), port,
+            new Object[] {NetworkUtils.getServerHostName(server1.getHost()), port,
                 Boolean.TRUE});
     // 3. setup another client with cqs but without interest.
-    createClientCache(getServerHostName(server1.getHost()), port, false/*RI*/);
+    createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port, false/*RI*/);
     for (int i = 0; i < numOfCQs; i++) {
       registerCQs(numOfListeners, "Query_"+i);
     }
@@ -200,7 +203,7 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
         return (cqEvents + cqErrors) == events;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 10000, 100, true);
+    Wait.waitForCriterion(wc, 10000, 100, true);
   }
 
   public static void verifyFullValueRequestsFromClients(Long expected)

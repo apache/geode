@@ -60,6 +60,8 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 /**
  * Tests 6.5 cache.xml features.
@@ -247,7 +249,7 @@ public class CacheXml65DUnitTest extends CacheXml61DUnitTest {
     attrs.setPoolName("mypool");
     attrs.setDataPolicy(DataPolicy.EMPTY); // required for multiuser mode
     cache.createVMRegion("rootNORMAL", attrs);
-    addExpectedException("Connection refused: connect");
+    IgnoredException.addIgnoredException("Connection refused: connect");
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
@@ -296,7 +298,7 @@ public class CacheXml65DUnitTest extends CacheXml61DUnitTest {
     } catch (IllegalStateException e) {
       assertTrue(e.getMessage().contains(LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString()));
     } catch (Exception ex) {
-      fail("Unexpected exception", ex);
+      Assert.fail("Unexpected exception", ex);
     }
 
     EvictionAttributes ea = EvictionAttributes.createLRUEntryAttributes(1000, EvictionAction.OVERFLOW_TO_DISK);
@@ -304,9 +306,9 @@ public class CacheXml65DUnitTest extends CacheXml61DUnitTest {
     try {
       root = (RegionCreation)cache.createRegion("root", attrs);
     } catch (IllegalStateException e) {
-      fail("With eviction of overflow to disk, region can specify disk store name", e);
+      Assert.fail("With eviction of overflow to disk, region can specify disk store name", e);
     } catch (Exception ex) {
-      fail("Unexpected exception", ex);
+      Assert.fail("Unexpected exception", ex);
     }
     
     File dir = new File("testDiskStoreValidation");
@@ -323,7 +325,7 @@ public class CacheXml65DUnitTest extends CacheXml61DUnitTest {
       assertTrue(e.getMessage().contains(LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
           .toLocalizedString(new Object[] {"setDiskDirs or setDiskWriteAttributes", getUniqueName()})));
     } catch (Exception ex) { 
-      fail("Unexpected exception", ex);
+      Assert.fail("Unexpected exception", ex);
     }
 
     try {
@@ -335,7 +337,7 @@ public class CacheXml65DUnitTest extends CacheXml61DUnitTest {
       assertTrue(e.getMessage().contains(LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
           .toLocalizedString(new Object[] {"setDiskDirs", getUniqueName()})));
     } catch (Exception ex) {
-      fail("Unexpected exception", ex);
+      Assert.fail("Unexpected exception", ex);
     }
 
     testXml(cache);
@@ -369,7 +371,7 @@ public class CacheXml65DUnitTest extends CacheXml61DUnitTest {
     try {
       root = (RegionCreation)cache.createRegion("root", ra);
     } catch (Exception ex) {
-      fail("Unexpected exception", ex);
+      Assert.fail("Unexpected exception", ex);
     }
     
     factory = new AttributesFactory();
@@ -383,7 +385,7 @@ public class CacheXml65DUnitTest extends CacheXml61DUnitTest {
     try {
       root2 = (RegionCreation)cache.createRegion("root2", ra);
     } catch (Exception ex) {
-      fail("Unexpected exception", ex);
+      Assert.fail("Unexpected exception", ex);
     }
 
     factory = new AttributesFactory();
@@ -397,7 +399,7 @@ public class CacheXml65DUnitTest extends CacheXml61DUnitTest {
     try {
       root3 = (RegionCreation)cache.createRegion("root3", ra);
     } catch (Exception ex) {
-      fail("Unexpected exception", ex);
+      Assert.fail("Unexpected exception", ex);
     }
 
     testXml(cache);
@@ -418,7 +420,7 @@ public class CacheXml65DUnitTest extends CacheXml61DUnitTest {
     try {
       root = (RegionCreation)cache.createRegion("root", ra);
     } catch (Exception ex) {
-      fail("Unexpected exception", ex);
+      Assert.fail("Unexpected exception", ex);
     }
 
     testXml(cache);
@@ -481,7 +483,7 @@ public class CacheXml65DUnitTest extends CacheXml61DUnitTest {
           LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
           .toLocalizedString(new Object[] {"setOverflowDirectory", getUniqueName()})));
     } catch (Exception ex) {
-      fail("Unexpected exception", ex);
+      Assert.fail("Unexpected exception", ex);
     }
 
     cache.getLogger().config(

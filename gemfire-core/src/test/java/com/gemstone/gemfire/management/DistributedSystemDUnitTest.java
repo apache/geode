@@ -49,10 +49,14 @@ import com.gemstone.gemfire.management.internal.NotificationHub.NotificationHubL
 import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.management.internal.beans.MemberMBean;
 import com.gemstone.gemfire.management.internal.beans.SequenceNumber;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Distributed System tests
@@ -110,11 +114,6 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
     super.setUp();
     
 
-  }
-
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-    
   }
 
   /**
@@ -205,7 +204,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
 
         public Object call() throws Exception {
           
-          waitForCriterion(new WaitCriterion() {
+          Wait.waitForCriterion(new WaitCriterion() {
             public String description() {
               return "Waiting for all alert Listener to register with managed node";
             }
@@ -284,7 +283,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
             ManagementService service = getManagementService();
             final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
             
-            waitForCriterion(new WaitCriterion() {
+            Wait.waitForCriterion(new WaitCriterion() {
               public String description() {
                 return "Waiting for all members to send their initial Data";
               }
@@ -304,7 +303,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
                     null);
                 notificationListenerMap.put(objectName, listener);
               } catch (InstanceNotFoundException e) {
-                getLogWriter().error(e);
+                LogWriterUtils.getLogWriter().error(e);
               }
             }
           }
@@ -359,7 +358,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
 
       public void run() {
 
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
           public String description() {
             return "Waiting for all Notifications to reach the Managing Node";
           }
@@ -383,9 +382,9 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
           try {
             mbeanServer.removeNotificationListener(objectName, listener);
           } catch (ListenerNotFoundException e) {
-            getLogWriter().error(e);
+            LogWriterUtils.getLogWriter().error(e);
           } catch (InstanceNotFoundException e) {
-            getLogWriter().error(e);
+            LogWriterUtils.getLogWriter().error(e);
           }
         }
 
@@ -430,7 +429,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
         ManagementService service = getManagementService();
         final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
           public String description() {
             return "Waiting for all members to send their initial Data";
           }
@@ -450,7 +449,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
           try {
             mbeanServer.removeNotificationListener(objectName, listener);
           } catch (InstanceNotFoundException e) {
-            getLogWriter().error(e);
+            LogWriterUtils.getLogWriter().error(e);
           } catch (ListenerNotFoundException e) {
             // TODO: apparently there is never a notification listener on any these mbeans at this point 
             // fix this test so it doesn't hit these unexpected exceptions -- getLogWriter().error(e);
@@ -480,7 +479,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
             } catch (ListenerNotFoundException e) {
               // Expected Exception Do nothing
             } catch (InstanceNotFoundException e) {
-              getLogWriter().error(e);
+              LogWriterUtils.getLogWriter().error(e);
             }
           }
         }
@@ -563,7 +562,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
 
         public Object call() throws Exception {
           final AlertNotifListener nt = AlertNotifListener.getInstance();
-          waitForCriterion(new WaitCriterion() {
+          Wait.waitForCriterion(new WaitCriterion() {
             public String description() {
               return "Waiting for all alerts to reach the Managing Node";
             }
@@ -614,7 +613,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
       vm1.invoke(new SerializableCallable("Warning level Alerts") {
 
         public Object call() throws Exception {
-          final ExpectedException warnEx = addExpectedException(WARNING_LEVEL_MESSAGE);
+          final IgnoredException warnEx = IgnoredException.addIgnoredException(WARNING_LEVEL_MESSAGE);
           logger.warn(WARNING_LEVEL_MESSAGE);
           warnEx.remove();
           return null;
@@ -648,7 +647,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
         public Object call() throws Exception {
           // add expected exception strings         
           
-          final ExpectedException severeEx = addExpectedException(SEVERE_LEVEL_MESSAGE);
+          final IgnoredException severeEx = IgnoredException.addIgnoredException(SEVERE_LEVEL_MESSAGE);
           logger.fatal(SEVERE_LEVEL_MESSAGE);
           severeEx.remove();
           return null;
@@ -706,7 +705,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
           final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
           assertNotNull(service.getDistributedSystemMXBean());
           
-          waitForCriterion(new WaitCriterion() {
+          Wait.waitForCriterion(new WaitCriterion() {
             public String description() {
               return "Waiting All members to intitialize DistributedSystemMBean expect 5 but found " + bean.getMemberCount();
             }
@@ -729,10 +728,10 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
           Iterator<DistributedMember> memberIt = otherMemberSet.iterator();
           while (memberIt.hasNext()) {
             DistributedMember member = memberIt.next();
-            getLogWriter().info(
+            LogWriterUtils.getLogWriter().info(
                 "JVM Metrics For Member " + member.getId() + ":"
                     + bean.showJVMMetrics(member.getId()));
-            getLogWriter().info(
+            LogWriterUtils.getLogWriter().info(
                 "OS Metrics For Member " + member.getId() + ":"
                     + bean.showOSMetrics(member.getId()));
           }
@@ -778,7 +777,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
           DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
           assertNotNull(service.getDistributedSystemMXBean());
           bean.shutDownAllMembers();
-          staticPause(2000);
+          Wait.pause(2000);
           assertEquals(
               cache.getDistributedSystem().getAllOtherMembers().size(), 1);
           return null;
@@ -805,7 +804,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
           waitForAllMembers(4);
           
           for(int i =0; i< bean.listMemberObjectNames().length ; i++){
-            getLogWriter().info(
+            LogWriterUtils.getLogWriter().info(
                 "ObjectNames Of the Mmeber" + bean.listMemberObjectNames()[i] );
           }
 

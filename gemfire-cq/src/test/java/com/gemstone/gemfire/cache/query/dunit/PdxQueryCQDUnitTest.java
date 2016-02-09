@@ -36,9 +36,13 @@ import com.gemstone.gemfire.cache.query.cq.dunit.CqQueryTestListener;
 import com.gemstone.gemfire.cache.query.dunit.PdxQueryCQTestBase.TestObject;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 
 
@@ -84,7 +88,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     final int port0 = vm0.invokeInt(PdxQueryCQTestBase.class, "getCacheServerPort");
     final int port1 = vm1.invokeInt(PdxQueryCQTestBase.class, "getCacheServerPort");
 
-    final String host0 = getServerHostName(vm0.getHost());
+    final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     // Create client pool.
     final String poolName = "testCqPool"; 
@@ -95,17 +99,17 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     // Execute CQ
     SerializableRunnable executeCq = new CacheSerializableRunnable("Execute queries") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Create CQ. ###" + cqName);
+        LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
         // Get CQ Service.
         QueryService qService = null;
         try {
           qService = (PoolManager.find(poolName)).getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         // Create CQ Attributes.
         CqAttributesFactory cqf = new CqAttributesFactory();
-        CqListener[] cqListeners = {new CqQueryTestListener(getLogWriter())};
+        CqListener[] cqListeners = {new CqQueryTestListener(LogWriterUtils.getLogWriter())};
         ((CqQueryTestListener)cqListeners[0]).cqName = cqName;
 
         cqf.initCqListeners(cqListeners);
@@ -125,7 +129,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
         } catch (Exception ex){
           AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
           err.initCause(ex);
-          getLogWriter().info("QueryService is :" + qService, err);
+          LogWriterUtils.getLogWriter().info("QueryService is :" + qService, err);
           throw err;
         }
       }
@@ -164,13 +168,13 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
 
     SerializableRunnable validateCq = new CacheSerializableRunnable("Validate CQs") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Validating CQ. ### " + cqName);
+        LogWriterUtils.getLogWriter().info("### Validating CQ. ### " + cqName);
         // Get CQ Service.
         QueryService cqService = null;
         try {          
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         CqQuery cQuery = cqService.getCq(cqName);
@@ -183,7 +187,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
         final CqQueryTestListener listener = (CqQueryTestListener) cqListeners[0];
         
         //Wait for the events to show up on the client.
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
           
           public boolean done() {
             return listener.getTotalEventCount() >= (numberOfEntries * 2 - queryLimit);
@@ -265,7 +269,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     final int port0 = vm0.invokeInt(PdxQueryCQTestBase.class, "getCacheServerPort");
     final int port1 = vm1.invokeInt(PdxQueryCQTestBase.class, "getCacheServerPort");
 
-    final String host0 = getServerHostName(vm0.getHost());
+    final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     // Create client pool.
     final String poolName = "testCqPool"; 
@@ -314,18 +318,18 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
         }
         region.registerInterest(list);
         
-        getLogWriter().info("### Create CQ. ###" + cqName);
+        LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
         // Get CQ Service.
         QueryService qService = null;
         try {
           qService = (PoolManager.find(poolName)).getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         // Create CQ Attributes.
         for (int i=0; i < queries.length; i++) {
           CqAttributesFactory cqf = new CqAttributesFactory();
-          CqListener[] cqListeners = {new CqQueryTestListener(getLogWriter())};
+          CqListener[] cqListeners = {new CqQueryTestListener(LogWriterUtils.getLogWriter())};
           ((CqQueryTestListener)cqListeners[0]).cqName = (cqName + i);
 
           cqf.initCqListeners(cqListeners);
@@ -345,7 +349,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
           } catch (Exception ex){
             AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
             err.initCause(ex);
-            getLogWriter().info("QueryService is :" + qService, err);
+            LogWriterUtils.getLogWriter().info("QueryService is :" + qService, err);
             throw err;
           }
         }
@@ -469,7 +473,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     final int port1 = vm1.invokeInt(PdxQueryCQTestBase.class, "getCacheServerPort");
     final int port2 = vm2.invokeInt(PdxQueryCQTestBase.class, "getCacheServerPort");
     
-    final String host0 = getServerHostName(vm0.getHost());
+    final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     // Create client pool.
     final String poolName = "testCqPool";     
@@ -505,18 +509,18 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
         }
         region.registerInterest(list);
         
-        getLogWriter().info("### Create CQ. ###" + cqName);
+        LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
         // Get CQ Service.
         QueryService qService = null;
         try {
           qService = (PoolManager.find(poolName)).getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         // Create CQ Attributes.
         for (int i=0; i < queries.length; i++) {
           CqAttributesFactory cqf = new CqAttributesFactory();
-          CqListener[] cqListeners = {new CqQueryTestListener(getLogWriter())};
+          CqListener[] cqListeners = {new CqQueryTestListener(LogWriterUtils.getLogWriter())};
           ((CqQueryTestListener)cqListeners[0]).cqName = (cqName + i);
 
           cqf.initCqListeners(cqListeners);
@@ -536,7 +540,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
           } catch (Exception ex){
             AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
             err.initCause(ex);
-            getLogWriter().info("QueryService is :" + qService, err);
+            LogWriterUtils.getLogWriter().info("QueryService is :" + qService, err);
             throw err;
           }
         }
@@ -654,13 +658,13 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
       final int updateEvents) {
         vm.invoke(new CacheSerializableRunnable("Validate CQs") {
           public void run2() throws CacheException {
-            getLogWriter().info("### Validating CQ. ### " + cqName);
+            LogWriterUtils.getLogWriter().info("### Validating CQ. ### " + cqName);
             // Get CQ Service.
             QueryService cqService = null;
               try {          
                 cqService = getCache().getQueryService();
               } catch (Exception cqe) {
-                fail("Failed to getCQService.", cqe);
+                Assert.fail("Failed to getCQService.", cqe);
               }
       
               CqQuery cQuery = cqService.getCq(cqName);

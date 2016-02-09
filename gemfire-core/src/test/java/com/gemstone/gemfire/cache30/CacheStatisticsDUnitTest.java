@@ -27,6 +27,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Tests the {@link CacheStatistics} that are maintained by a {@link
@@ -213,7 +214,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
 
     oldBefore = before;
     oldAfter = after;
-    pause(150);
+    Wait.pause(150);
     before = ((GemFireCacheImpl)getCache()).cacheTimeMillis();
     region.get(key);
     after = ((GemFireCacheImpl)getCache()).cacheTimeMillis();
@@ -222,7 +223,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
     assertInRange(before, after,  rootStats.getLastAccessedTime());
     assertInRange(oldBefore, oldAfter,  rootStats.getLastModifiedTime());
 
-    pause(150);
+    Wait.pause(150);
     before = ((GemFireCacheImpl)getCache()).cacheTimeMillis();
     region.put(key, value);
     CacheStatistics eStats = region.getEntry(key).getStatistics();
@@ -237,7 +238,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
 
     oldBefore = before;
     oldAfter = after;
-    pause(150);
+    Wait.pause(150);
     before = ((GemFireCacheImpl)getCache()).cacheTimeMillis();
     region.get(key);
     after = ((GemFireCacheImpl)getCache()).cacheTimeMillis();
@@ -252,7 +253,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
     long oldOldAfter = oldAfter;
     oldBefore = before;
     oldAfter = after;
-    pause(150);
+    Wait.pause(150);
     before = ((GemFireCacheImpl)getCache()).cacheTimeMillis();
     region.create(key2, null);
     CacheStatistics eStats2 = region.getEntry(key2).getStatistics();
@@ -272,7 +273,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
     // times
     oldBefore = before;
     oldAfter = after;
-    pause(150);
+    Wait.pause(150);
     before = ((GemFireCacheImpl)getCache()).cacheTimeMillis();
     region.invalidate(key2);
     after = ((GemFireCacheImpl)getCache()).cacheTimeMillis();
@@ -283,7 +284,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
     assertInRange(oldBefore, oldAfter,  rootStats.getLastAccessedTime());
     assertInRange(oldBefore, oldAfter,  rootStats.getLastModifiedTime());
 
-    pause(150);
+    Wait.pause(150);
     before = ((GemFireCacheImpl)getCache()).cacheTimeMillis();
     region.destroy(key2);
     after = ((GemFireCacheImpl)getCache()).cacheTimeMillis();
@@ -397,7 +398,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
 
     // make sure at least 100ms have passed; otherwise, the update
     // may not actually bump the statistics
-    pause(100);
+    Wait.pause(100);
 
     vm1.invoke(new CacheSerializableRunnable("Update") {
         public void run2() throws CacheException {

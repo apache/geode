@@ -35,6 +35,9 @@ import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.cache.client.*;
 
@@ -83,7 +86,7 @@ public class Bug37210DUnitTest extends DistributedTestCase
   {
     super.setUp();
     
-    addExpectedException("java.io.IOException");
+    IgnoredException.addIgnoredException("java.io.IOException");
     
     final Host host = Host.getHost(0);
     server = host.getVM(0);
@@ -120,9 +123,8 @@ public class Bug37210DUnitTest extends DistributedTestCase
    * @throws Exception
    *                 thrown if any problem occurs in closing cache
    */
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close client
     client.invoke(Bug37210DUnitTest.class, "closeCache");
 
@@ -144,11 +146,11 @@ public class Bug37210DUnitTest extends DistributedTestCase
    */
   public void testHAStatsCleanup() throws Exception
   {
-    getLogWriter().info("testHAStatsCleanup : BEGIN");
-    addExpectedException("java.net.SocketException");
-    addExpectedException("Unexpected IOException");
+    LogWriterUtils.getLogWriter().info("testHAStatsCleanup : BEGIN");
+    IgnoredException.addIgnoredException("java.net.SocketException");
+    IgnoredException.addIgnoredException("Unexpected IOException");
     client.invoke(Bug37210DUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(Host.getHost(0)), new Integer(PORT) });
+        new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT) });
     server.invoke(Bug37210DUnitTest.class, "doEntryOperations");
     
     server.invoke(Bug37210DUnitTest.class,
@@ -158,7 +160,7 @@ public class Bug37210DUnitTest extends DistributedTestCase
     Thread.currentThread().sleep(1000);
     server.invoke(Bug37210DUnitTest.class,
             "closeCacheClientProxyAndVerifyStats2");
-    getLogWriter().info("testHAStatsCleanup : END");
+    LogWriterUtils.getLogWriter().info("testHAStatsCleanup : END");
   }
 
   /**
@@ -187,7 +189,7 @@ public class Bug37210DUnitTest extends DistributedTestCase
     server.setSocketBufferSize(32768);
     server.setMaximumTimeBetweenPings(1000000);
     server.start();
-    getLogWriter().info("Server started at PORT = " + port);
+    LogWriterUtils.getLogWriter().info("Server started at PORT = " + port);
     return new Integer(server.getPort());
   }
 

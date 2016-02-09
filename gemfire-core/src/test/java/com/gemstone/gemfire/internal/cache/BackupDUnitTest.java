@@ -50,9 +50,12 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.ReplyMessage;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.partitioned.PersistentPartitionedRegionTestBase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DUnitEnv;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -72,13 +75,12 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
   }
   
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     StringBuilder failures = new StringBuilder();
     FileUtil.delete(getBackupDir(), failures);
     if (failures.length() > 0) {
-      getLogWriter().error(failures.toString());
+      LogWriterUtils.getLogWriter().error(failures.toString());
     }
-    super.tearDown2();
   }
   
   public void testBackupPR() throws Throwable {
@@ -87,9 +89,9 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     
     long lm0 = setBackupFiles(vm0);
@@ -119,7 +121,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     closeCache(vm1);
     
     //Destroy the current data
-    invokeInEveryVM(new SerializableRunnable("Clean disk dirs") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("Clean disk dirs") {
       public void run() {
         try {
           cleanDiskDirs();
@@ -131,9 +133,9 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     
     restoreBackup(2);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     AsyncInvocation async0 = createPersistentRegionAsync(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     AsyncInvocation async1 = createPersistentRegionAsync(vm1);
     
     async0.getResult(MAX_WAIT);
@@ -154,9 +156,9 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     
     createData(vm0, 0, 5, "A", "region1");
@@ -176,7 +178,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     closeCache(vm1);
     
     //Destroy the current data
-    invokeInEveryVM(new SerializableRunnable("Clean disk dirs") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("Clean disk dirs") {
       public void run() {
         try {
           cleanDiskDirs();
@@ -188,9 +190,9 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     
     restoreBackup(2);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     AsyncInvocation async0 = createPersistentRegionAsync(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     AsyncInvocation async1 = createPersistentRegionAsync(vm1);
     
     async0.getResult(MAX_WAIT);
@@ -219,14 +221,14 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     final VM vm2 = host.getVM(2);
     
       
-      getLogWriter().info("Creating region in VM0");
+      LogWriterUtils.getLogWriter().info("Creating region in VM0");
       createPersistentRegion(vm0);
 
       //create a bucket on vm0
       createData(vm0, 0, 1, "A", "region1");
 
       //create the pr on vm1, which won't have any buckets
-      getLogWriter().info("Creating region in VM1");
+      LogWriterUtils.getLogWriter().info("Creating region in VM1");
       createPersistentRegion(vm1);
 
 
@@ -266,7 +268,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
       closeCache(vm1);
 
       //Destroy the current data
-      invokeInEveryVM(new SerializableRunnable("Clean disk dirs") {
+      Invoke.invokeInEveryVM(new SerializableRunnable("Clean disk dirs") {
         public void run() {
           try {
             cleanDiskDirs();
@@ -278,9 +280,9 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
       restoreBackup(2);
 
-      getLogWriter().info("Creating region in VM0");
+      LogWriterUtils.getLogWriter().info("Creating region in VM0");
       AsyncInvocation async0 = createPersistentRegionAsync(vm0);
-      getLogWriter().info("Creating region in VM1");
+      LogWriterUtils.getLogWriter().info("Creating region in VM1");
       AsyncInvocation async1 = createPersistentRegionAsync(vm1);
 
       async0.getResult(MAX_WAIT);
@@ -379,14 +381,14 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     });
     try {
       
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
 
     //create twos bucket on vm0
     createData(vm0, 0, 2, "A", "region1");
 
     //create the pr on vm1, which won't have any buckets
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
 
     createPersistentRegion(vm1);
     
@@ -402,7 +404,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
           results = op.getResults();
           assertEquals(1, results.getTotalBucketTransfersCompleted());
         } catch (Exception e) {
-          fail("interupted", e);
+          Assert.fail("interupted", e);
         }
       }
     });
@@ -416,7 +418,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     closeCache(vm1);
 
     //Destroy the current data
-    invokeInEveryVM(new SerializableRunnable("Clean disk dirs") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("Clean disk dirs") {
       public void run() {
         try {
           cleanDiskDirs();
@@ -428,9 +430,9 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
     restoreBackup(2);
 
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     AsyncInvocation async0 = createPersistentRegionAsync(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     AsyncInvocation async1 = createPersistentRegionAsync(vm1);
 
     async0.getResult(MAX_WAIT);
@@ -459,9 +461,9 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createOverflowRegion(vm1);
     
     createData(vm0, 0, 5, "A", "region1");
@@ -484,11 +486,11 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
-    getLogWriter().info("Creating region in VM2");
+    LogWriterUtils.getLogWriter().info("Creating region in VM2");
     createPersistentRegion(vm2);
     
     createData(vm0, 0, 5, "A", "region1");

@@ -27,8 +27,10 @@ import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.IncompatibleSystemException;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
 public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
@@ -56,7 +58,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof GemFireConfigException)) {
-        fail("Expected GemFireConfigException but received :", e);
+        Assert.fail("Expected GemFireConfigException but received :", e);
       }
     }
   }
@@ -83,7 +85,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     }
     catch (Exception e) {
       if (!(e.getCause()instanceof IncompatibleSystemException)) {
-        fail("Expected IncompatibleSystemException but received :", e);
+        Assert.fail("Expected IncompatibleSystemException but received :", e);
       }
     }
   }
@@ -287,10 +289,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     //Since to fix Bug#46289, we have moved call to initProxy in getConnection which will be called only when batch is getting dispatched.
     //So for locator discovery callback to work, its now expected that atleast try to send a batch so that proxy will be initialized
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      testName + "_RR", "ln", isOffHeap() });
+      getTestMethodName() + "_RR", "ln", isOffHeap() });
   
      vm2.invoke(WANTestBase.class, "doPuts",
-      new Object[] { testName + "_RR", 10});
+      new Object[] { getTestMethodName() + "_RR", 10});
 
     Integer nyLocPort2 = (Integer)vm3
         .invoke(WANTestBase.class, "createSecondRemoteLocator", new Object[] {
@@ -453,10 +455,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     }
     catch (Throwable e) {
       e.printStackTrace();
-     fail("Could not get end time", e);
+     Assert.fail("Could not get end time", e);
     }
     
-    getLogWriter().info("Time taken for all 9 locators discovery in 3 sites: " + (endTime.longValue() - startTime));
+    LogWriterUtils.getLogWriter().info("Time taken for all 9 locators discovery in 3 sites: " + (endTime.longValue() - startTime));
     
     vm0.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
         new Object[] { dsVsPort });

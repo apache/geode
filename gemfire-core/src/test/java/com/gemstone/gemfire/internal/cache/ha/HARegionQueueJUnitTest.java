@@ -54,7 +54,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -292,7 +292,7 @@ public class HARegionQueueJUnitTest
     // call join on the put-threads so that this thread waits till they complete
     // before doing verfication
     for (i = 0; i < TOTAL_PUT_THREADS; i++) {
-      DistributedTestCase.join(putThreads[i], 30 * 1000, null);
+      ThreadUtils.join(putThreads[i], 30 * 1000);
     }
     assertFalse(encounteredException);
 
@@ -384,7 +384,7 @@ public class HARegionQueueJUnitTest
 
       long startTime = System.currentTimeMillis();
       for (int k = 0; k < threads.length; k++) {
-        DistributedTestCase.join(threads[k], 60 * 1000, null);
+        ThreadUtils.join(threads[k], 60 * 1000);
       }
 
       long totalTime = System.currentTimeMillis() - startTime;
@@ -1252,8 +1252,8 @@ public class HARegionQueueJUnitTest
       };
       thread1.start();
       thread2.start();
-      DistributedTestCase.join(thread1, 30 * 1000, null);
-      DistributedTestCase.join(thread2, 30 * 1000, null);
+      ThreadUtils.join(thread1, 30 * 1000);
+      ThreadUtils.join(thread2, 30 * 1000);
       List list2 = HARegionQueue.createMessageListForTesting();
       Iterator iterator = list1.iterator();
       boolean doOnce = false;
@@ -1363,8 +1363,8 @@ public class HARegionQueueJUnitTest
       };
       thread1.start();
       thread2.start();
-      DistributedTestCase.join(thread1, 30 * 1000, null);
-      DistributedTestCase.join(thread2, 30 * 1000, null);
+      ThreadUtils.join(thread1, 30 * 1000);
+      ThreadUtils.join(thread2, 30 * 1000);
       List list2 = HARegionQueue.createMessageListForTesting();
       Iterator iterator = list1.iterator();
       boolean doOnce = false;
@@ -1483,8 +1483,8 @@ public class HARegionQueueJUnitTest
       };
       thread1.start();
       thread2.start();
-      DistributedTestCase.join(thread1, 30 * 1000, null);
-      DistributedTestCase.join(thread2, 30 * 1000, null);
+      ThreadUtils.join(thread1, 30 * 1000);
+      ThreadUtils.join(thread2, 30 * 1000);
       List list2 = HARegionQueue.createMessageListForTesting();
       Iterator iterator = list1.iterator();
       boolean doOnce = true;
@@ -1649,8 +1649,8 @@ public class HARegionQueueJUnitTest
       };
       thread1.start();
       thread2.start();
-      DistributedTestCase.join(thread1, 30 * 1000, null);
-      DistributedTestCase.join(thread2, 30 * 1000, null);
+      ThreadUtils.join(thread1, 30 * 1000);
+      ThreadUtils.join(thread2, 30 * 1000);
       List list2 = HARegionQueue.createMessageListForTesting();
       Iterator iterator = list1.iterator();
       boolean doOnce = true;
@@ -1769,7 +1769,7 @@ public class HARegionQueueJUnitTest
 
       long startTime = System.currentTimeMillis();
       for (int k = 0; k < 3; k++) {
-        DistributedTestCase.join(threads[k], 180 * 1000, null);
+        ThreadUtils.join(threads[k], 180 * 1000);
       }
 
       long totalTime = System.currentTimeMillis() - startTime;
@@ -1848,7 +1848,7 @@ public class HARegionQueueJUnitTest
 
       long startTime = System.currentTimeMillis();
       for (int k = 0; k < 3; k++) {
-        DistributedTestCase.join(threads[k], 60 * 1000, null);
+        ThreadUtils.join(threads[k], 60 * 1000);
       }
 
       long totalTime = System.currentTimeMillis() - startTime;

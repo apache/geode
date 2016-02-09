@@ -39,11 +39,13 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultData;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * The GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest class is test suite of test cases testing the Gfsh
@@ -172,7 +174,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
           }
         };
 
-        DistributedTestCase.waitForCriterion(waitOnManagerCriterion, 30000, 2000, true);
+        Wait.waitForCriterion(waitOnManagerCriterion, 30000, 2000, true);
       }
     });
   }
@@ -195,7 +197,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
 
   protected void log(final String tag, final String message) {
     //System.out.printf("%1$s (%2$s)%n", tag, message);
-    getLogWriter().info(String.format("%1$s (%2$s)%n", tag, message));
+    LogWriterUtils.getLogWriter().info(String.format("%1$s (%2$s)%n", tag, message));
   }
 
   protected CommandResult runCommand(final String command) {

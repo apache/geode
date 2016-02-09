@@ -48,10 +48,13 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Client health stats check
@@ -101,11 +104,11 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     server = host.getVM(1);
     client = host.getVM(2);
     client2 = host.getVM(3);
-    addExpectedException("Connection reset");
+    IgnoredException.addIgnoredException("Connection reset");
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     reset();
     helper.closeCache(managingNode);
     helper.closeCache(client);
@@ -233,9 +236,9 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, "durable-"+clientNum);
     props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "300000");
 
-    props.setProperty("log-file", testName+"_client_" + clientNum + ".log");
+    props.setProperty("log-file", getTestMethodName()+"_client_" + clientNum + ".log");
     props.setProperty("log-level", "info");
-    props.setProperty("statistic-archive-file", testName+"_client_" + clientNum
+    props.setProperty("statistic-archive-file", getTestMethodName()+"_client_" + clientNum
         + ".gfs");
     props.setProperty("statistic-sampling-enabled", "true");
 
@@ -340,7 +343,7 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
         return "Did not receive last key.";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 60*1000, 500, true);
+    Wait.waitForCriterion(wc, 60*1000, 500, true);
   }
 
 
@@ -358,8 +361,8 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
 
       String[] clientIds = bean.getClientIds();
       assertTrue(clientIds.length == 2);
-      getLogWriter().info("<ExpectedString> ClientId-1 of the Server is  " + clientIds[0] + "</ExpectedString> ");
-      getLogWriter().info("<ExpectedString> ClientId-2 of the Server is  " + clientIds[1] + "</ExpectedString> ");
+      LogWriterUtils.getLogWriter().info("<ExpectedString> ClientId-1 of the Server is  " + clientIds[0] + "</ExpectedString> ");
+      LogWriterUtils.getLogWriter().info("<ExpectedString> ClientId-2 of the Server is  " + clientIds[1] + "</ExpectedString> ");
       
       ClientHealthStatus[] clientStatuses = bean.showAllClientStats();
 
@@ -369,15 +372,15 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
       ClientHealthStatus clientStatus2 = bean.showClientStats(clientIds[1]);
       assertNotNull(clientStatus1);
       assertNotNull(clientStatus2);
-      getLogWriter().info("<ExpectedString> ClientStats-1 of the Server is  " + clientStatus1 + "</ExpectedString> ");
-      getLogWriter().info("<ExpectedString> ClientStats-2 of the Server is  " + clientStatus2 + "</ExpectedString> ");
+      LogWriterUtils.getLogWriter().info("<ExpectedString> ClientStats-1 of the Server is  " + clientStatus1 + "</ExpectedString> ");
+      LogWriterUtils.getLogWriter().info("<ExpectedString> ClientStats-2 of the Server is  " + clientStatus2 + "</ExpectedString> ");
 
-      getLogWriter().info("<ExpectedString> clientStatuses " + clientStatuses + "</ExpectedString> ");
+      LogWriterUtils.getLogWriter().info("<ExpectedString> clientStatuses " + clientStatuses + "</ExpectedString> ");
       assertNotNull(clientStatuses);
       
       assertTrue(clientStatuses.length == 2);
       for (ClientHealthStatus status : clientStatuses) {
-        getLogWriter().info("<ExpectedString> ClientStats of the Server is  " + status + "</ExpectedString> ");
+        LogWriterUtils.getLogWriter().info("<ExpectedString> ClientStats of the Server is  " + status + "</ExpectedString> ");
 
       }
 

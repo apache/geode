@@ -42,9 +42,12 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.internal.jta.JTAUtils;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
 
@@ -184,7 +187,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     String jtest = System.getProperty("JTESTS");
     int pid = OSProcess.getId();
     String path = File.createTempFile("dunit-cachejta_", ".xml").getAbsolutePath();
-    getLogWriter().fine("PATH " + path);
+    LogWriterUtils.getLogWriter().fine("PATH " + path);
     /** * Return file as string and then modify the string accordingly ** */
     String file_as_str = readFile(TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml"));
     file_as_str = file_as_str.replaceAll("newDB", "newDB_" + pid);
@@ -210,7 +213,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      getLogWriter().info("", e);
+      LogWriterUtils.getLogWriter().info("", e);
       throw new Exception("" + e);
     }
     return tableName;
@@ -225,7 +228,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     String sql = "create table "
         + tableName
         + " (id integer NOT NULL, name varchar(50), CONSTRAINT "+tableName+"_key PRIMARY KEY(id))";
-    getLogWriter().fine(sql);
+    LogWriterUtils.getLogWriter().fine(sql);
     Connection conn = ds.getConnection();
     Statement sm = conn.createStatement();
     sm.execute(sql);
@@ -234,7 +237,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     for (int i = 1; i <= 10; i++) {
       sql = "insert into " + tableName + " values (" + i + ",'name" + i + "')";
       sm.addBatch(sql);
-      getLogWriter().fine(sql);
+      LogWriterUtils.getLogWriter().fine(sql);
     }
     sm.executeBatch();
     conn.close();
@@ -252,28 +255,28 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     }
     try {
       String tableName = tblName;
-      getLogWriter().fine("Destroying table: " + tableName);
+      LogWriterUtils.getLogWriter().fine("Destroying table: " + tableName);
       cache = TxnManagerMultiThreadDUnitTest.getCache();
       Context ctx = cache.getJNDIContext();
       DataSource ds = (DataSource) ctx.lookup("java:/SimpleDataSource");
       Connection conn = ds.getConnection();
-      getLogWriter().fine(" trying to drop table: " + tableName);
+      LogWriterUtils.getLogWriter().fine(" trying to drop table: " + tableName);
       String sql = "drop table " + tableName;
       Statement sm = conn.createStatement();
       sm.execute(sql);
       conn.close();
-      getLogWriter().fine("destroyTable is Successful!");
+      LogWriterUtils.getLogWriter().fine("destroyTable is Successful!");
     }
     catch (NamingException ne) {
-      getLogWriter().fine("destroy table naming exception: " + ne);
+      LogWriterUtils.getLogWriter().fine("destroy table naming exception: " + ne);
       throw ne;
     }
     catch (SQLException se) {
-      getLogWriter().fine("destroy table sql exception: " + se);
+      LogWriterUtils.getLogWriter().fine("destroy table sql exception: " + se);
       throw se;
     }
     finally {
-      getLogWriter().fine("Closing cache...");
+      LogWriterUtils.getLogWriter().fine("Closing cache...");
       closeCache();
     }
   }//end of destroyTable
@@ -289,7 +292,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      getLogWriter().warning("exception while creating cache", e);
+      LogWriterUtils.getLogWriter().warning("exception while creating cache", e);
     }
   }//end of startCache
 
@@ -297,18 +300,18 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     try {
       if (!cache.isClosed()) {
         cache.close();
-        getLogWriter().fine("Cache closed");
+        LogWriterUtils.getLogWriter().fine("Cache closed");
       }
     }
     catch (Exception e) {
-      getLogWriter().warning("exception while closing cache", e);
+      LogWriterUtils.getLogWriter().warning("exception while closing cache", e);
     }
     try {
       CacheUtils.ds.disconnect();
-      getLogWriter().fine("Disconnected from Distribuited System");
+      LogWriterUtils.getLogWriter().fine("Disconnected from Distribuited System");
     }
     catch (Exception e) {
-      getLogWriter().fine("Error in disconnecting from Distributed System");
+      LogWriterUtils.getLogWriter().fine("Error in disconnecting from Distributed System");
     }
   }//end of closeCache
 
@@ -348,11 +351,12 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
       /*int rowsDeleted = */jtaObj.deleteRows(tblName_delRows);
     }
     catch (Exception e) {
-      getLogWriter().warning("Error: while deleting rows from database using JTAUtils", e);
+      LogWriterUtils.getLogWriter().warning("Error: while deleting rows from database using JTAUtils", e);
     }
   }//end of delRows
 
-  public void tearDown2() throws java.lang.Exception {
+  @Override
+  protected final void preTearDown() throws Exception {
     VM vm0 = Host.getHost(0).getVM(0);
     //get tableName to pass to destroyTable
     String tableName = CacheUtils.getTableName();
@@ -405,11 +409,11 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     //get how many rows actually got committed
     try {
       int rows = jtaObj.getRows(tblName);
-      getLogWriter().fine("Number of rows committed current test method  are: "
+      LogWriterUtils.getLogWriter().fine("Number of rows committed current test method  are: "
           + rows);
     }
     catch (Exception e) {
-      getLogWriter().warning("Error: while getting rows from database using JTAUtils", e);
+      LogWriterUtils.getLogWriter().warning("Error: while getting rows from database using JTAUtils", e);
     }
   }//end of getNumberOfRows
 
@@ -422,9 +426,9 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     VM vm0 = Host.getHost(0).getVM(0);
     AsyncInvocation asyncObj1 = vm0.invokeAsync(
         TxnManagerMultiThreadDUnitTest.class, "callCommitThreads");
-    DistributedTestCase.join(asyncObj1, 30 * 1000, getLogWriter());
+    ThreadUtils.join(asyncObj1, 30 * 1000);
     if(asyncObj1.exceptionOccurred()){
-      fail("asyncObj1 failed", asyncObj1.getException());
+      Assert.fail("asyncObj1 failed", asyncObj1.getException());
     }
     vm0.invoke(TxnManagerMultiThreadDUnitTest.class, "getNumberOfRows");
   }//end of testAllCommit
@@ -434,15 +438,15 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
    *  
    */
   public static void callCommitThreads() {
-    getLogWriter().fine("This is callCommitThreads method");
+    LogWriterUtils.getLogWriter().fine("This is callCommitThreads method");
     try {
-      new CommitThread("ct1", getLogWriter());
-      new CommitThread("ct2", getLogWriter());
-      new CommitThread("ct3", getLogWriter());
-      new CommitThread("ct4", getLogWriter());
+      new CommitThread("ct1", LogWriterUtils.getLogWriter());
+      new CommitThread("ct2", LogWriterUtils.getLogWriter());
+      new CommitThread("ct3", LogWriterUtils.getLogWriter());
+      new CommitThread("ct4", LogWriterUtils.getLogWriter());
     }
     catch (Exception e) {
-      getLogWriter().warning("Failed in Commit Threads", e);
+      LogWriterUtils.getLogWriter().warning("Failed in Commit Threads", e);
       fail("Failed in Commit Threads" + e);
     }
   }//end of callCommitTheads
@@ -455,24 +459,24 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     VM vm0 = Host.getHost(0).getVM(0);
     AsyncInvocation asyncObj1 = vm0.invokeAsync(
         TxnManagerMultiThreadDUnitTest.class, "callCommitandRollbackThreads");
-    DistributedTestCase.join(asyncObj1, 30 * 1000, getLogWriter());
+    ThreadUtils.join(asyncObj1, 30 * 1000);
     if(asyncObj1.exceptionOccurred()){
-      fail("asyncObj1 failed", asyncObj1.getException());
+      Assert.fail("asyncObj1 failed", asyncObj1.getException());
     }
     vm0.invoke(TxnManagerMultiThreadDUnitTest.class, "getNumberOfRows");
   }//end of test3Commit2Rollback
 
   public static void callCommitandRollbackThreads() {
-    getLogWriter().fine("This is callCommitandRollbackThreads method");
+    LogWriterUtils.getLogWriter().fine("This is callCommitandRollbackThreads method");
     try {
-      new CommitThread("ct1", getLogWriter());
-      new CommitThread("ct2", getLogWriter());
-      new CommitThread("ct3", getLogWriter());
-      new RollbackThread("rt1", getLogWriter());
-      new RollbackThread("rt2", getLogWriter());
+      new CommitThread("ct1", LogWriterUtils.getLogWriter());
+      new CommitThread("ct2", LogWriterUtils.getLogWriter());
+      new CommitThread("ct3", LogWriterUtils.getLogWriter());
+      new RollbackThread("rt1", LogWriterUtils.getLogWriter());
+      new RollbackThread("rt2", LogWriterUtils.getLogWriter());
     }
     catch (Exception e) {
-      getLogWriter().info("Failed in Commit and Rollback threads", e);
+      LogWriterUtils.getLogWriter().info("Failed in Commit and Rollback threads", e);
       fail("Failed in Commit and Rollback Threads" + e);
     }
   }//end of callCommitandRollbackThreads

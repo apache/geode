@@ -28,6 +28,7 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class WanCommandListDUnitTest extends WANCommandTestBase {
 
@@ -62,7 +63,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm5.invoke(WANCommandTestBase.class, "createCache",
         new Object[] { punePort });
     
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.LIST_GATEWAY;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
@@ -111,7 +112,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] {
         "ln_Serial", 2, false, 100, 400, false, false, null, false });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.LIST_GATEWAY;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
@@ -162,7 +163,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm6.invoke(WANCommandTestBase.class, "createSender", new Object[] {
         "ln_Parallel", 1, true, 100, 400, false, false, null, false });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.LIST_GATEWAY;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
@@ -224,7 +225,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm7.invoke(WANCommandTestBase.class, "createSender", new Object[] {
         "ln_Parallel", 1, true, 100, 400, false, false, null, false });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.LIST_GATEWAY;
     CommandResult cmdResult = executeCommand(command);
     
@@ -293,7 +294,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm7.invoke(WANCommandTestBase.class, "createSender", new Object[] {
         "ln_Parallel", 1, true, 100, 400, false, false, null, false });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Serial_Sender";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {

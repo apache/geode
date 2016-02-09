@@ -31,6 +31,7 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   
@@ -45,7 +46,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   }
   
   private CommandResult executeCommandWithIgnoredExceptions(String command) {
-    final ExpectedException exln = addExpectedException("Could not connect");
+    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       CommandResult commandResult = executeCommand(command);
       return commandResult;
@@ -734,7 +735,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
         + CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD + "=100" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD";
-    ExpectedException exp = addExpectedException(GatewaySenderException.class
+    IgnoredException exp = IgnoredException.addIgnoredException(GatewaySenderException.class
         .getName());
     try {
       CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);

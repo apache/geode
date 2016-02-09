@@ -35,6 +35,7 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -70,10 +71,10 @@ public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
     vm3 = host.getVM(3);
   }
   
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
     cache = null;
-    invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
+    Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
   }
   
   public void testMultiRegionFunctionExecution(){
@@ -153,7 +154,7 @@ public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
       assertNotNull(cache);
     }
     catch (Exception e) {
-      fail("Failed while creating the cache", e);
+      com.gemstone.gemfire.test.dunit.Assert.fail("Failed while creating the cache", e);
     }
   }
   @SuppressWarnings("unchecked")

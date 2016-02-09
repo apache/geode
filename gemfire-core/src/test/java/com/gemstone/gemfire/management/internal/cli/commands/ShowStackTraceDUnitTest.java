@@ -22,6 +22,7 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -93,9 +94,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, allStacktracesFile.getCanonicalPath());
     String commandString = csb.toString();
-    getLogWriter().info("CommandString : " + commandString);
+    LogWriterUtils.getLogWriter().info("CommandString : " + commandString);
     CommandResult commandResult = executeCommand(commandString);
-    getLogWriter().info("Output : \n" + commandResultToString(commandResult));
+    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
     File mgrStacktraceFile = new File("managerStacktrace.txt");
@@ -105,9 +106,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, mgrStacktraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "Manager");
     commandString = csb.toString();
-    getLogWriter().info("CommandString : " + commandString);
+    LogWriterUtils.getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
-    getLogWriter().info("Output : \n" + commandResultToString(commandResult));
+    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
     File serverStacktraceFile = new File("serverStacktrace.txt");
@@ -117,9 +118,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, serverStacktraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "Server");
     commandString = csb.toString();
-    getLogWriter().info("CommandString : " + commandString);
+    LogWriterUtils.getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
-    getLogWriter().info("Output : \n" + commandResultToString(commandResult));
+    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
     File groupStacktraceFile = new File("groupstacktrace.txt");
@@ -129,9 +130,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, groupStacktraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__GROUP, "G2");
     commandString = csb.toString();
-    getLogWriter().info("CommandString : " + commandString);
+    LogWriterUtils.getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
-    getLogWriter().info("Output : \n" + commandResultToString(commandResult));
+    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
     File wrongStackTraceFile = new File("wrongStackTrace.txt");
@@ -141,9 +142,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, wrongStackTraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "WrongMember");
     commandString = csb.toString();
-    getLogWriter().info("CommandString : " + commandString);
+    LogWriterUtils.getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
-    getLogWriter().info("Output : \n" + commandResultToString(commandResult));
+    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertFalse(commandResult.getStatus().equals(Status.OK));
   }
 }

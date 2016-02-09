@@ -20,6 +20,8 @@ import com.gemstone.gemfire.cache.CacheWriterException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class PDXNewWanDUnitTest extends WANTestBase{
 
@@ -57,18 +59,18 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_RR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_RR",
         1 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_RR", 1 });
+        getTestMethodName() + "_RR", 1 });
   }
   
   /**
@@ -98,18 +100,18 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_RR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_RR",
         1 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_RR", 1 });
+        getTestMethodName() + "_RR", 1 });
     
     
     //bounce vm2
@@ -120,13 +122,13 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     vm2.invoke(WANTestBase.class, "createReceiver_PDX", new Object[] { nyPort });
     
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      testName + "_RR", null, isOffHeap() });
+      getTestMethodName() + "_RR", null, isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_RR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_RR",
       2 });
     
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-      testName + "_RR", 2 });
+      getTestMethodName() + "_RR", 2 });
   }
   
   /**
@@ -156,27 +158,27 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_RR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_RR",
         1 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_RR", 1 });
+        getTestMethodName() + "_RR", 1 });
     
     //bounce vm3
     vm3.invoke(WANTestBase.class, "closeCache");
     
-    ExpectedException ex1 = addExpectedException("Trying to add a PDXType with the same id");
-    ExpectedException ex2 = addExpectedException("CacheWriterException");
-    ExpectedException ex3 = addExpectedException("does match the existing PDX type");
-    ExpectedException ex4 = addExpectedException("ServerOperationException");
-    ExpectedException ex5 = addExpectedException("Stopping the processor");
+    IgnoredException ex1 = IgnoredException.addIgnoredException("Trying to add a PDXType with the same id");
+    IgnoredException ex2 = IgnoredException.addIgnoredException("CacheWriterException");
+    IgnoredException ex3 = IgnoredException.addIgnoredException("does match the existing PDX type");
+    IgnoredException ex4 = IgnoredException.addIgnoredException("ServerOperationException");
+    IgnoredException ex5 = IgnoredException.addIgnoredException("Stopping the processor");
     
     try {
     //blow away vm3's PDX data
@@ -190,17 +192,17 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     
     //Define a different type from vm3
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable2", new Object[] { testName + "_RR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable2", new Object[] { getTestMethodName() + "_RR",
       2 });
     
     //Give the updates some time to make it over the WAN
-    pause(10000);
+    Wait.pause(10000);
     
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-      testName + "_RR", 1 });
+      getTestMethodName() + "_RR", 1 });
     
     vm3.invoke(WANTestBase.class, "closeCache");
     } finally {
@@ -251,11 +253,11 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     vm5.invoke(WANTestBase.class, "createSender", new Object[] { "ny", 2,
     false, 100, 10, false, false, null, true });
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      testName + "_RR", "ny,tk", isOffHeap() });
+      getTestMethodName() + "_RR", "ny,tk", isOffHeap() });
     vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      testName + "_RR", "ln,tk", isOffHeap() });
+      getTestMethodName() + "_RR", "ln,tk", isOffHeap() });
     vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      testName + "_RR", "ln,ny", isOffHeap() });
+      getTestMethodName() + "_RR", "ln,ny", isOffHeap() });
     
     //Start all of the senders
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ny" });
@@ -269,32 +271,32 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     //to ny from ln
     vm3.invoke(WANTestBase.class, "pauseSender", new Object[] { "ny" });
     
-    pause(5000);
+    Wait.pause(5000);
     
     //Do some puts that define a PDX type in ln
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_RR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_RR",
       1 });
     
     //Make sure that tk received the update
     vm5.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-      testName + "_RR", 1 });
+      getTestMethodName() + "_RR", 1 });
     
     //Make ny didn't receive the update because the sender is paused 
     vm4.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-      testName + "_RR", 0 });
+      getTestMethodName() + "_RR", 0 });
     
     //Now, do a put from tk. This serialized object will be distributed
     //to ny from tk, using the type defined by ln.
-    vm5.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_RR",
+    vm5.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_RR",
       2 });
     
     //Verify the ny can read the object
     vm4.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-      testName + "_RR", 2 });
+      getTestMethodName() + "_RR", 2 });
     
     //Wait for vm3 to receive the update (prevents a broken pipe suspect string) 
     vm3.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-      testName + "_RR", 2 });
+      getTestMethodName() + "_RR", 2 });
   }
   
   public void testWANPDX_RR_SerialSender_StartedLater() {
@@ -311,21 +313,21 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_RR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_RR",
         10 });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_RR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_RR",
       40 });
     
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_RR", 40 });
+        getTestMethodName() + "_RR", 40 });
   }
   
   /**
@@ -353,18 +355,18 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 0, 2, isOffHeap() });
+        getTestMethodName() + "_PR", null, 0, 2, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 0, 2, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 0, 2, isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
         1 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 1 });
+        getTestMethodName() + "_PR", 1 });
   }
   
   public void testWANPDX_PR_SerialSender_StartedLater() {
@@ -381,21 +383,21 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 0, 2, isOffHeap() });
+        getTestMethodName() + "_PR", null, 0, 2, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 0, 2, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 0, 2, isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
         20 });
     
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
       40 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 40 });
+        getTestMethodName() + "_PR", 40 });
   }
   
   /**
@@ -424,20 +426,20 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null,1, 5, isOffHeap() });
+        getTestMethodName() + "_PR", null,1, 5, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 5, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 5, isOffHeap() });
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 1, 5, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 1, 5, isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
         10 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 10 });
+        getTestMethodName() + "_PR", 10 });
   }
   
   public void testWANPDX_PR_MultipleVM_SerialSender_StartedLater() {
@@ -455,23 +457,23 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 1, 5, isOffHeap() });
+        getTestMethodName() + "_PR", null, 1, 5, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 5, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 5, isOffHeap() });
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 1, 5, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 1, 5, isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
         10 });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     
-    vm4.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm4.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
       40 });
     
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 40 });
+        getTestMethodName() + "_PR", 40 });
   }
   
   /**
@@ -499,18 +501,18 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         true, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", null, 0, 1, isOffHeap() });
+      getTestMethodName() + "_PR", null, 0, 1, isOffHeap() });
     
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 1, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 0, 1, isOffHeap() });
     
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
         1 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 1});
+        getTestMethodName() + "_PR", 1});
   }
   
   public void testWANPDX_PR_ParallelSender_47826() {
@@ -527,7 +529,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         100, 10, false, false, null, true });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 0, 1, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 0, 1, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "unsetRemoveFromQueueOnException",
         new Object[] { "ln" });
@@ -535,13 +537,13 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] {
-        testName + "_PR", 1 });
+        getTestMethodName() + "_PR", 1 });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 0, 1, isOffHeap() });
+        getTestMethodName() + "_PR", null, 0, 1, isOffHeap() });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 1 });
+        getTestMethodName() + "_PR", 1 });
   }
   
   public void testWANPDX_PR_ParallelSender_StartedLater() {
@@ -558,21 +560,21 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         true, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 0, 2, isOffHeap() });
+        getTestMethodName() + "_PR", null, 0, 2, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 2, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 0, 2, isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
         10 });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
       40 });
     
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 40 });
+        getTestMethodName() + "_PR", 40 });
   }
   
   
@@ -593,21 +595,21 @@ public class PDXNewWanDUnitTest extends WANTestBase{
       true, 100, 10, false, false, null, true });
     
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 0, 2, isOffHeap() });
+        getTestMethodName() + "_PR", null, 0, 2, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 2, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 0, 2, isOffHeap() });
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 2, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 0, 2, isOffHeap() });
     
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
         10 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 10 });
+        getTestMethodName() + "_PR", 10 });
   }
   
   public void testWANPDX_PR_MultipleVM_ParallelSender_StartedLater() {
@@ -627,14 +629,14 @@ public class PDXNewWanDUnitTest extends WANTestBase{
       true, 100, 10, false, false, null, true });
     
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 0, 2, isOffHeap() });
+        getTestMethodName() + "_PR", null, 0, 2, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 2, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 0, 2, isOffHeap() });
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 2, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 0, 2, isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
         10 });
 
     AsyncInvocation inv1 = vm3.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
@@ -648,11 +650,11 @@ public class PDXNewWanDUnitTest extends WANTestBase{
       fail("Caught interrupted exception");
     }
     
-    vm4.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm4.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
       40 });
     
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 40 });
+        getTestMethodName() + "_PR", 40 });
   }
   
   
@@ -670,18 +672,18 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         false, 100, 10, false, false, new PDXGatewayEventFilter(), true });
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_RR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_RR",
         1 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_RR", 1 });
+        getTestMethodName() + "_RR", 1 });
     
     vm3.invoke(PDXNewWanDUnitTest.class, "verifyFilterInvocation", new Object[] { 1});
   }
@@ -704,21 +706,21 @@ public class PDXNewWanDUnitTest extends WANTestBase{
       true, 100, 10, false, false, new PDXGatewayEventFilter(), true });
     
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 0, 2, isOffHeap() });
+        getTestMethodName() + "_PR", null, 0, 2, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 2, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 0, 2, isOffHeap() });
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 2, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 0, 2, isOffHeap() });
     
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
         10 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 10 });
+        getTestMethodName() + "_PR", 10 });
     
     vm3.invoke(PDXNewWanDUnitTest.class, "verifyFilterInvocation", new Object[] { 5});
     vm4.invoke(PDXNewWanDUnitTest.class, "verifyFilterInvocation", new Object[] { 5});
@@ -743,18 +745,18 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 0, 2, isOffHeap() });
+        getTestMethodName() + "_PR", null, 0, 2, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 0, 2, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 0, 2, isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
         1 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-        testName + "_PR", 1 });
+        getTestMethodName() + "_PR", 1 });
     
     vm2.invoke(WANTestBase.class, "killSender", new Object[] {});
     
@@ -762,15 +764,15 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     vm4.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
     
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", null, 1, 2, isOffHeap() });
+      getTestMethodName() + "_PR", null, 1, 2, isOffHeap() });
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", null, 1, 2, isOffHeap() });
+      getTestMethodName() + "_PR", null, 1, 2, isOffHeap() });
     
-    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsPDXSerializable", new Object[] { getTestMethodName() + "_PR",
       1 });
     
     vm2.invoke(WANTestBase.class, "validateRegionSize_PDX", new Object[] {
-      testName + "_PR", 1 });
+      getTestMethodName() + "_PR", 1 });
   }
   
 

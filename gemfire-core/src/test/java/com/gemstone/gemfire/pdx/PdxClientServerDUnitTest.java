@@ -42,6 +42,8 @@ import com.gemstone.gemfire.internal.PdxSerializerObject;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -171,7 +173,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     VM vm2 = host.getVM(2);
 
     System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "true");
-    invokeInEveryVM(new SerializableRunnable() {
+    Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "true");
       }
@@ -239,7 +241,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     });
     } finally { 
       System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "false");
-      invokeInEveryVM(new SerializableRunnable() {
+      Invoke.invokeInEveryVM(new SerializableRunnable() {
         public void run() {
           System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "false");
         }
@@ -392,11 +394,11 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
         getSystem(props);
         Cache cache = getCache();
         PoolFactory pf = PoolManager.createFactory();
-        pf.addServer(getServerHostName(vm0.getHost()), port1);
+        pf.addServer(NetworkUtils.getServerHostName(vm0.getHost()), port1);
         pf.create("pool1");
         
         pf = PoolManager.createFactory();
-        pf.addServer(getServerHostName(vm0.getHost()), port2);
+        pf.addServer(NetworkUtils.getServerHostName(vm0.getHost()), port2);
         pf.create("pool2");
         
         AttributesFactory af = new AttributesFactory();
@@ -497,7 +499,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
         getSystem(props);
         Cache cache = getCache();
         PoolFactory pf = PoolManager.createFactory();
-        pf.addServer(getServerHostName(vm0.getHost()), port);
+        pf.addServer(NetworkUtils.getServerHostName(vm0.getHost()), port);
         pf.create("pool");
         
         AttributesFactory af = new AttributesFactory();
@@ -551,7 +553,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
         DataSerializer.writeObject(new SimpleClass(57, (byte) 3), out);
         
         PoolFactory pf = PoolManager.createFactory();
-        pf.addServer(getServerHostName(vm0.getHost()), port);
+        pf.addServer(NetworkUtils.getServerHostName(vm0.getHost()), port);
         try {
           pf.create("pool");
           fail("should have received an exception");
@@ -702,7 +704,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
 		  System.setProperty("gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS", "true");	
 		}
         ClientCacheFactory cf = new ClientCacheFactory();
-        cf.addPoolServer(getServerHostName(vm.getHost()), port);
+        cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
         cf.setPoolThreadLocalConnections(threadLocalConnections);
         if(autoSerializerPatterns != null && autoSerializerPatterns.length != 0) {
           cf.setPdxSerializer(new ReflectionBasedAutoSerializer(autoSerializerPatterns));

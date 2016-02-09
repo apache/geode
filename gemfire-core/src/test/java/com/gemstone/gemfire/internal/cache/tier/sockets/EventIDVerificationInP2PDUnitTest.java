@@ -31,6 +31,7 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.InternalCacheEvent;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -216,7 +217,7 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
       assertEquals(r.getEntry("key-1").getValue(), "key-1");
     }
     catch (Exception ex) {
-      fail("failed while createEntries()", ex);
+      Assert.fail("failed while createEntries()", ex);
     }
   }
 
@@ -232,7 +233,7 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
 
     }
     catch (Exception ex) {
-      fail("failed while r.put()", ex);
+      Assert.fail("failed while r.put()", ex);
     }
   }
 
@@ -244,7 +245,7 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
       r.destroy("key-1");
     }
     catch (Exception ex) {
-      fail("test failed due to exception in destroy ", ex);
+      Assert.fail("test failed due to exception in destroy ", ex);
     }
   }
 
@@ -256,7 +257,7 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
       r.destroyRegion();
     }
     catch (Exception ex) {
-      fail("test failed due to exception in destroyRegion ", ex);
+      Assert.fail("test failed due to exception in destroyRegion ", ex);
     }
   }
   
@@ -268,7 +269,7 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
       r.invalidateRegion();
     }
     catch (Exception ex) {
-      fail("test failed due to exception in invalidateRegion ", ex);
+      Assert.fail("test failed due to exception in invalidateRegion ", ex);
     }
   }
 
@@ -317,9 +318,8 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
     assertTrue(pass.booleanValue());   
   }
 
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     closeCache();
     vm0.invoke(EventIDVerificationInP2PDUnitTest.class, "closeCache");
   }

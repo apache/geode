@@ -35,9 +35,11 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 public class CacheMapTxnDUnitTest extends DistributedTestCase{
@@ -64,13 +66,13 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
       vm1.invoke(CacheMapTxnDUnitTest.class, "createCache");
     }
     
-    public void tearDown2(){
-        Host host = Host.getHost(0);
-        VM vm0 = host.getVM(0);
-        VM vm1 = host.getVM(1);
-        vm0.invoke(CacheMapTxnDUnitTest.class, "closeCache");
-        vm1.invoke(CacheMapTxnDUnitTest.class, "closeCache");
-        
+    @Override
+    protected final void preTearDown() throws Exception {
+      Host host = Host.getHost(0);
+      VM vm0 = host.getVM(0);
+      VM vm1 = host.getVM(1);
+      vm0.invoke(CacheMapTxnDUnitTest.class, "closeCache");
+      vm1.invoke(CacheMapTxnDUnitTest.class, "closeCache");
     }
     
     public static void createCache(){
@@ -145,15 +147,15 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
         vm0.invoke(CacheMapTxnDUnitTest.class, "miscMethodsOwner");
         AsyncInvocation o2 = vm0.invokeAsync(CacheMapTxnDUnitTest.class, "miscMethodsNotOwner");//invoke in same vm but in seperate thread
         AsyncInvocation o3 = vm1.invokeAsync(CacheMapTxnDUnitTest.class, "miscMethodsNotOwner");//invoke in another vm
-        DistributedTestCase.join(o2, 30 * 1000, getLogWriter());
-        DistributedTestCase.join(o3, 30 * 1000, getLogWriter());
+        ThreadUtils.join(o2, 30 * 1000);
+        ThreadUtils.join(o3, 30 * 1000);
         
         if(o2.exceptionOccurred()){
-          fail("o2 failed", o2.getException());
+          Assert.fail("o2 failed", o2.getException());
         }
         
         if(o3.exceptionOccurred()){
-          fail("o3 failed", o3.getException());
+          Assert.fail("o3 failed", o3.getException());
         }
         
     }//end of testMiscMethods

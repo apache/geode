@@ -29,6 +29,7 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
 
@@ -111,7 +112,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     vm5.invoke(WANCommandTestBase.class, "verifyReceiverState",
         new Object[] { true });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
@@ -171,7 +172,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
 
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(
         WANCommandTestBase.class, "getMember");
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --"
         + CliStrings.STOP_GATEWAYRECEIVER__MEMBER + "=" + vm1Member.getId();
 
@@ -227,7 +228,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     vm5.invoke(WANCommandTestBase.class, "verifyReceiverState",
         new Object[] { true });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --"
         + CliStrings.STOP_GATEWAYRECEIVER__GROUP + "=RG1";
     CommandResult cmdResult = executeCommand(command);
@@ -297,7 +298,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     vm7.invoke(WANCommandTestBase.class, "verifyReceiverState",
         new Object[] { true });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --"
         + CliStrings.STOP_GATEWAYRECEIVER__GROUP + "=RG1,RG2";
     CommandResult cmdResult = executeCommand(command);

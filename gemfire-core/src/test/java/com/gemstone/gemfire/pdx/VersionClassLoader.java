@@ -25,7 +25,7 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
 public class VersionClassLoader {
 
@@ -42,16 +42,16 @@ public class VersionClassLoader {
     String alternateVersionClassPath =  System.getProperty("JTESTS") +
     File.separator + ".." + File.separator + ".." + File.separator +
     "classes" + File.separator + "version" + classVersion;
-    DistributedTestCase.getLogWriter().info("Initializing the class loader :" + alternateVersionClassPath);
+    LogWriterUtils.getLogWriter().info("Initializing the class loader :" + alternateVersionClassPath);
     ClassLoader versionCL = null;
     try {
       versionCL = new URLClassLoader(new URL[]{new File(alternateVersionClassPath).toURI().toURL()}, cl);
       Thread.currentThread().setContextClassLoader(versionCL); 
     } catch (Exception e) {
-      DistributedTestCase.getLogWriter().info("error", e);
+      LogWriterUtils.getLogWriter().info("error", e);
       throw new Exception("Failed to initialize the class loader. " + e.getMessage());
     }
-    DistributedTestCase.getLogWriter().info("Setting/adding class loader with " + alternateVersionClassPath);
+    LogWriterUtils.getLogWriter().info("Setting/adding class loader with " + alternateVersionClassPath);
     return versionCL;
   }
 
@@ -90,7 +90,7 @@ public class VersionClassLoader {
         newObj = constructor.newInstance();
       }
     } catch (Exception e) {
-      DistributedTestCase.getLogWriter().info("error", e);
+      LogWriterUtils.getLogWriter().info("error", e);
       throw new Exception("Failed to get the class instance. ClassName: " + className + "  error: ", e);
     }
     return newObj;

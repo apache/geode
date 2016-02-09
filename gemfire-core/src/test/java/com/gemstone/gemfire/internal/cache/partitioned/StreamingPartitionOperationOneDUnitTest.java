@@ -47,6 +47,7 @@ import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -108,7 +109,7 @@ public class StreamingPartitionOperationOneDUnitTest extends CacheTestCase {
       throw e;
     }
     catch (Throwable t) {
-      fail("getPartitionedDataFrom failed", t);
+      Assert.fail("getPartitionedDataFrom failed", t);
     }
     assertTrue(streamOp.dataValidated);
   }

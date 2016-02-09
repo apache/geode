@@ -46,9 +46,14 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.RegionEventImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  *
@@ -92,9 +97,8 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
   }
 
   /** close the caches* */
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     client1.invoke(HAEventIdPropagationDUnitTest.class, "closeCache");
     // close server
     server1.invoke(HAEventIdPropagationDUnitTest.class, "closeCache");
@@ -123,7 +127,7 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
     int PORT1 = ((Integer)server1.invoke(HAEventIdPropagationDUnitTest.class,
         "createServerCache")).intValue();
     client1.invoke(HAEventIdPropagationDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(server1.getHost()), new Integer(PORT1) });
+        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
   }
 
   /** create the server * */
@@ -212,9 +216,9 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 10 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 10 * 1000, 200, true);
     synchronized(map) {
-      getLogWriter().info("assertThreadIdToSequenceIdMapisNotNullButEmpty: map size is " + map.size());
+      LogWriterUtils.getLogWriter().info("assertThreadIdToSequenceIdMapisNotNullButEmpty: map size is " + map.size());
       assertTrue(map.size() == 1);
     }
 
@@ -415,7 +419,7 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
     }
     catch (Exception e) {
       e.printStackTrace();
-      fail("test failed due to " + e, e);
+      Assert.fail("test failed due to " + e, e);
     }
   }
 
@@ -683,7 +687,7 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
 
     public void afterCreate(EntryEvent event)
     {
-      getLogWriter().fine(" entered after created with " + event.getKey());
+      LogWriterUtils.getLogWriter().fine(" entered after created with " + event.getKey());
       boolean shouldNotify = false;
       Object key = event.getKey();
       if (key.equals(PUTALL_KEY1)) {
@@ -776,7 +780,7 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
 
     public void afterCreate(EntryEvent event)
     {
-      getLogWriter().fine(" entered after created with " + event.getKey());
+      LogWriterUtils.getLogWriter().fine(" entered after created with " + event.getKey());
       boolean shouldNotify = false;
       Object key = event.getKey();
       if (key.equals(PUTALL_KEY1)) {
@@ -852,14 +856,14 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
 
     public void afterRegionDestroy(RegionEvent event)
     {
-      getLogWriter().info("Before Regionestroy in Server");
+      LogWriterUtils.getLogWriter().info("Before Regionestroy in Server");
       eventId = ((RegionEventImpl)event).getEventId();
       assertNotNull(eventId);
       synchronized (lockObject) {
         receivedOperation = true;
         lockObject.notify();
       }
-      getLogWriter().info("After RegionDestroy in Server");
+      LogWriterUtils.getLogWriter().info("After RegionDestroy in Server");
     }
 
     public void afterRegionClear(RegionEvent event)

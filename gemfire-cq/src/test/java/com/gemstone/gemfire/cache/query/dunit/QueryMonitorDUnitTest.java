@@ -48,11 +48,16 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Tests for QueryMonitoring service.
@@ -155,7 +160,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     
     r = new SerializableRunnable("getClientSystem") {
       public void run() {
-        Properties props = getAllDistributedSystemProperties(new Properties());
+        Properties props = DistributedTestUtils.getAllDistributedSystemProperties(new Properties());
         props.put(DistributionConfigImpl.LOCATORS_NAME, "");
         getSystem(props);
       }
@@ -167,14 +172,13 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     Host host = Host.getHost(0);
     disconnectFromDS();
     // shut down clients before servers
     for (int i=numServers; i<4; i++) {
       host.getVM(i).invoke(CacheTestCase.class, "disconnectFromDS");
     }
-    super.tearDown2();
   }
   
   public void createRegion(VM vm){
@@ -227,7 +231,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
         try {
           startBridgeServer(0, false);
         } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+          Assert.fail("While starting CacheServer", ex);
         }
         Cache cache = getCache();
         GemFireCacheImpl.getInstance().TEST_MAX_QUERY_EXECUTION_TIME = queryMonitorTime;
@@ -260,7 +264,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     for (int i=0; i < server.length; i++){
       port[i] = server[i].invokeInt(QueryMonitorDUnitTest.class, "getCacheServerPort");
     }
-    final String host0 = getServerHostName(server[0].getHost());
+    final String host0 = NetworkUtils.getServerHostName(server[0].getHost());
 
     SerializableRunnable initClient = new CacheSerializableRunnable("Init client") {
       public void run2() throws CacheException {
@@ -618,7 +622,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
           }
           
         } catch (Exception ex){
-          fail("Exception creating the query service", ex);
+          Assert.fail("Exception creating the query service", ex);
         }
       }      
     };
@@ -1016,7 +1020,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     cqDUnitTest.createServer(server, 0, true);
     final int port = server.invokeInt(CqQueryDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
     cqDUnitTest.createClient(client, port, host0);
@@ -1133,7 +1137,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
             exampleRegion.put(""+i, new Portfolio(i));
           }
         }
-        getLogWriter().info("### Completed updates in server1 in testCacheOpAfterQueryCancel");
+        LogWriterUtils.getLogWriter().info("### Completed updates in server1 in testCacheOpAfterQueryCancel");
       }
     });
 
@@ -1146,7 +1150,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
             exampleRegion.put(""+i, new Portfolio(i));
           }
         }
-        getLogWriter().info("### Completed updates in server2 in testCacheOpAfterQueryCancel");
+        LogWriterUtils.getLogWriter().info("### Completed updates in server2 in testCacheOpAfterQueryCancel");
       }
     });
 
@@ -1167,19 +1171,19 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
               Query query = queryService.newQuery(qStr);
               query.execute();
             } catch (QueryExecutionTimeoutException qet) {
-              getLogWriter().info("### Got Expected QueryExecutionTimeout exception. " +
+              LogWriterUtils.getLogWriter().info("### Got Expected QueryExecutionTimeout exception. " +
                   qet.getMessage());
               if (qet.getMessage().contains("cancelled after exceeding max execution")){
-                getLogWriter().info("### Doing a put operation");
+                LogWriterUtils.getLogWriter().info("### Doing a put operation");
                 exampleRegion.put(""+i, new Portfolio(i));
               }
             } catch (Exception e){
               fail("Exception executing query." + e.getMessage());
             }
           }
-          getLogWriter().info("### Completed Executing queries in testCacheOpAfterQueryCancel");
+          LogWriterUtils.getLogWriter().info("### Completed Executing queries in testCacheOpAfterQueryCancel");
         } catch (Exception ex){
-          fail("Exception creating the query service", ex);
+          Assert.fail("Exception creating the query service", ex);
         }
       }      
     };
@@ -1187,23 +1191,23 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     AsyncInvocation ai3 = server3.invokeAsync(executeQuery);
     AsyncInvocation ai4 = server4.invokeAsync(executeQuery);
     
-    getLogWriter().info("### Waiting for async threads to join in testCacheOpAfterQueryCancel");
+    LogWriterUtils.getLogWriter().info("### Waiting for async threads to join in testCacheOpAfterQueryCancel");
     try {
-      DistributedTestCase.join(ai1, 5 * 60 * 1000, null);
-      DistributedTestCase.join(ai2, 5 * 60 * 1000, null);
-      DistributedTestCase.join(ai3, 5 * 60 * 1000, null);
-      DistributedTestCase.join(ai4, 5 * 60 * 1000, null);
+      ThreadUtils.join(ai1, 5 * 60 * 1000);
+      ThreadUtils.join(ai2, 5 * 60 * 1000);
+      ThreadUtils.join(ai3, 5 * 60 * 1000);
+      ThreadUtils.join(ai4, 5 * 60 * 1000);
     } catch (Exception ex) {
       fail("Async thread join failure");
     }
-    getLogWriter().info("### DONE Waiting for async threads to join in testCacheOpAfterQueryCancel");
+    LogWriterUtils.getLogWriter().info("### DONE Waiting for async threads to join in testCacheOpAfterQueryCancel");
     
     validateQueryMonitorThreadCnt(server1, 0, 1000);
     validateQueryMonitorThreadCnt(server2, 0, 1000);
     validateQueryMonitorThreadCnt(server3, 0, 1000);
     validateQueryMonitorThreadCnt(server4, 0, 1000);
     
-    getLogWriter().info("### DONE validating query monitor threads testCacheOpAfterQueryCancel");
+    LogWriterUtils.getLogWriter().info("### DONE validating query monitor threads testCacheOpAfterQueryCancel");
     
     stopServer(server1);
     stopServer(server2);
@@ -1223,7 +1227,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
         while (true) {
           if (qm.getQueryMonitorThreadCount() != threadCount) {
             if (waited <= waitTime) {
-              pause(10);
+              Wait.pause(10);
               waited+=10;
               continue;
             } else {

@@ -26,6 +26,8 @@ import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * An abstract class whose test methods test the functionality of
@@ -68,7 +70,7 @@ public abstract class CacheLoaderTestCase
             }
 
           } catch (TimeoutException ex) {
-            fail("Why did I time out?", ex);
+            Assert.fail("Why did I time out?", ex);
           }
 
           Object argument = helper.getArgument();
@@ -303,7 +305,7 @@ public abstract class CacheLoaderTestCase
 
     assertEquals(oldValue, region.get(key));
     assertTrue(loader.wasInvoked());
-    pause(500);
+    Wait.pause(500);
     assertTrue(listener.wasInvoked());
 
     listener = new TestCacheListener() {
@@ -320,7 +322,7 @@ public abstract class CacheLoaderTestCase
     region.getAttributesMutator().setCacheListener(listener);
 
     region.put(key, newValue);
-    pause(500);
+    Wait.pause(500);
     assertFalse(loader.wasInvoked());
     assertTrue(listener.wasInvoked());
   }

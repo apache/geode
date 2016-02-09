@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.cache.wan.concurrent;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueTestBase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 /**
@@ -105,15 +106,15 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
         false, 100, 10, true, false, null, false, 3, OrderPolicy.KEY });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         100 });
     
     vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",
@@ -163,19 +164,19 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
         false, 100, 10, true, false, null, false, 3, OrderPolicy.THREAD });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    AsyncInvocation inv1 = vm4.invokeAsync(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    AsyncInvocation inv1 = vm4.invokeAsync(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         50 });
-    AsyncInvocation inv2 = vm4.invokeAsync(AsyncEventQueueTestBase.class, "doNextPuts", new Object[] { testName + "_RR",
+    AsyncInvocation inv2 = vm4.invokeAsync(AsyncEventQueueTestBase.class, "doNextPuts", new Object[] { getTestMethodName() + "_RR",
       50, 100 });
-    AsyncInvocation inv3 = vm4.invokeAsync(AsyncEventQueueTestBase.class, "doNextPuts", new Object[] { testName + "_RR",
+    AsyncInvocation inv3 = vm4.invokeAsync(AsyncEventQueueTestBase.class, "doNextPuts", new Object[] { getTestMethodName() + "_RR",
       100, 150 });
     
     try {
@@ -183,7 +184,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
       inv2.join();
       inv3.join();
     } catch (InterruptedException ie) {
-      fail(
+      Assert.fail(
           "Cought interrupted exception while waiting for the task tgo complete.",
           ie);
     }
@@ -235,15 +236,15 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
         true, 100, 10, true, false, null, false, 3, OrderPolicy.KEY });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         100 });
     
     vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",
@@ -301,15 +302,15 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
             OrderPolicy.PARTITION });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         100 });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",

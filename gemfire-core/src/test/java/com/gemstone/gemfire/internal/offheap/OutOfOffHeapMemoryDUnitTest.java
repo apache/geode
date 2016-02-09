@@ -40,7 +40,11 @@ import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 
 import static com.jayway.awaitility.Awaitility.with;
@@ -67,11 +71,11 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
   public void setUp() throws Exception {
     disconnectAllFromDS();
     super.setUp();
-    addExpectedException(OutOfOffHeapMemoryException.class.getSimpleName());
+    IgnoredException.addIgnoredException(OutOfOffHeapMemoryException.class.getSimpleName());
   }
 
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     final SerializableRunnable checkOrphans = new SerializableRunnable() {
       @Override
       public void run() {
@@ -80,13 +84,8 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
         }
       }
     };
-    invokeInEveryVM(checkOrphans);
-    try {
-      checkOrphans.run();
-    } finally {
-      invokeInEveryVM(getClass(), "cleanup");
-      super.tearDown2();
-    }
+    Invoke.invokeInEveryVM(checkOrphans);
+    checkOrphans.run();
   }
 
   @SuppressWarnings("unused") // invoked by reflection from tearDown2()

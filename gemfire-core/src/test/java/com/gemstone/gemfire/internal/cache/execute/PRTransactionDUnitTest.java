@@ -43,6 +43,9 @@ import com.gemstone.gemfire.internal.cache.execute.data.Order;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.internal.cache.execute.data.Shipment;
 import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
 /**
@@ -152,7 +155,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         filter.clear();
         args.clear();
         args.add(new Integer(VERIFY_NON_COLOCATION));
-        getLogWriter().info("VERIFY_NON_COLOCATION");
+        LogWriterUtils.getLogWriter().info("VERIFY_NON_COLOCATION");
         args.add(custId);
         args.add(newCus);
         args.add(orderId);
@@ -164,7 +167,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           fail("Expected exception was not thrown");
         }
         catch (FunctionException fe) {
-          getLogWriter().info("Caught Expected exception");
+          LogWriterUtils.getLogWriter().info("Caught Expected exception");
           if(fe.getCause() instanceof TransactionDataNotColocatedException) {
           }
           else {
@@ -175,7 +178,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         }
         // verify that the transaction modifications are applied        
         args.set(0, new Integer(VERIFY_TX));
-        getLogWriter().info("VERIFY_TX");        
+        LogWriterUtils.getLogWriter().info("VERIFY_TX");        
         orderpr.put(orderId, order);
         assertNotNull(orderpr.get(orderId));
         e.withFilter(filter).withArgs(args).execute(txFunction.getId())
@@ -191,17 +194,17 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
             .getResult();
         // verify that the transaction is rolled back        
         args.set(0, new Integer(VERIFY_ROLLBACK));
-        getLogWriter().info("VERIFY_ROLLBACK");        
+        LogWriterUtils.getLogWriter().info("VERIFY_ROLLBACK");        
         e.withFilter(filter).withArgs(args).execute(txFunction.getId())
             .getResult();
         // verify destroy
         args.set(0, new Integer(VERIFY_DESTROY));
-        getLogWriter().info("VERIFY_DESTROY");
+        LogWriterUtils.getLogWriter().info("VERIFY_DESTROY");
         e.withFilter(filter).withArgs(args).execute(txFunction.getId())
             .getResult();
         // verify invalidate
         args.set(0, new Integer(VERIFY_INVALIDATE));
-        getLogWriter().info("VERIFY_INVALIDATE");
+        LogWriterUtils.getLogWriter().info("VERIFY_INVALIDATE");
         e.withFilter(filter).withArgs(args).execute(txFunction.getId())
             .getResult();
         return Boolean.TRUE;
@@ -389,7 +392,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
     }
     catch (Exception e) {
-      fail(
+      Assert.fail(
           "validateAfterPutPartitionedRegion : failed while getting the region",
           e);
     }
@@ -400,7 +403,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     orderPartitionedregion.getDataStore().dumpEntries(false);
     Iterator custIterator = customerPartitionedregion.getDataStore()
         .getEntries().iterator();
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "Found " + customerPartitionedregion.getDataStore().getEntries().size()
             + " Customer entries in the partition");
     Region.Entry custEntry = null;
@@ -410,7 +413,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       Customer cust = (Customer)custEntry.getValue();
       Iterator orderIterator = orderPartitionedregion.getDataStore()
           .getEntries().iterator();
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Found " + orderPartitionedregion.getDataStore().getEntries().size()
               + " Order entries in the partition");
       int orderPerCustomer = 0;
@@ -465,7 +468,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         filter.clear();
         args.clear();
         args.add(new Integer(VERIFY_LISTENER_CALLBACK));
-        getLogWriter().info("VERIFY_LISTENER_CALLBACK");
+        LogWriterUtils.getLogWriter().info("VERIFY_LISTENER_CALLBACK");
         args.add(custId);
         args.add(newCus);
         args.add(orderId);
@@ -513,7 +516,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         filter.clear();
         args.clear();
         args.add(new Integer(VERIFY_REP_READ));
-        getLogWriter().info("VERIFY_REP_READ");
+        LogWriterUtils.getLogWriter().info("VERIFY_REP_READ");
         args.add(custId);
         args.add(newCus);
         args.add(orderId);
@@ -558,7 +561,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         Execution e = FunctionService.onRegion(customerPR);
         // for each customer, update order and shipment
         for (int iterations = 1; iterations <= totalIterations; iterations++) {
-          getLogWriter().info("running perfFunction");
+          LogWriterUtils.getLogWriter().info("running perfFunction");
           long startTime = 0;
           ArrayList args = new ArrayList();
           CustId custId = new CustId(iterations % 10);
@@ -599,7 +602,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         Execution e = FunctionService.onRegion(customerPR);
         // for each customer, update order and shipment
         for (int iterations = 1; iterations <= totalIterations; iterations++) {
-          getLogWriter().info("Running perfFunction");
+          LogWriterUtils.getLogWriter().info("Running perfFunction");
           long startTime = 0;
           ArrayList args = new ArrayList();
           CustId custId = new CustId(iterations % 10);
@@ -635,7 +638,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     double diff = (perfTime.longValue() - perfTxTime.longValue()) * 1.0;
     double percentDiff = (diff / perfTime.longValue()) * 100;
 
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         (totalIterations - warmupIterations) + " iterations of function took:"
             + +perfTime.longValue() + " Nanos, and transaction function took:"
             + perfTxTime.longValue() + " Nanos, difference :" + diff
@@ -677,12 +680,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   public void testColocatedPRWithPROnDifferentNode1() throws Throwable {
   }
   
-  public void tearDown2() throws Exception {
-    try {
-      invokeInEveryVM(verifyNoTxState);
-    } finally {
-      super.tearDown2();
-    }
+  @Override
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(verifyNoTxState);
   }
 
   SerializableCallable verifyNoTxState = new SerializableCallable() {
@@ -715,11 +715,11 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         }
         catch (Exception e) {
           // mgr.rollback();
-          fail(" failed while doing put operation in CacheListener ", e);
+          Assert.fail(" failed while doing put operation in CacheListener ", e);
         }
       }
       mgr.commit();
-      getLogWriter().info("COMMIT completed");
+      LogWriterUtils.getLogWriter().info("COMMIT completed");
     }
   }
 

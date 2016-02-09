@@ -29,6 +29,7 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
 
@@ -110,7 +111,7 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
     vm5.invoke(WANCommandTestBase.class, "verifyReceiverState",
         new Object[] { false });
     
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.START_GATEWAYRECEIVER;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
@@ -168,7 +169,7 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
     
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(
         WANCommandTestBase.class, "getMember");
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.START_GATEWAYRECEIVER + " --"
         + CliStrings.START_GATEWAYRECEIVER__MEMBER+ "=" + vm1Member.getId();
     
@@ -223,7 +224,7 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
     vm5.invoke(WANCommandTestBase.class, "verifyReceiverState",
         new Object[] { false });
     
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.START_GATEWAYRECEIVER + " --"
         + CliStrings.START_GATEWAYRECEIVER__GROUP + "=RG1";
     CommandResult cmdResult = executeCommand(command);
@@ -292,7 +293,7 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
     vm7.invoke(WANCommandTestBase.class, "verifyReceiverState",
         new Object[] { false });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.START_GATEWAYRECEIVER + " --"
         + CliStrings.START_GATEWAYRECEIVER__GROUP + "=RG1,RG2";
     CommandResult cmdResult = executeCommand(command);

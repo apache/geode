@@ -34,7 +34,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.DiskStoreFactoryImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -142,7 +142,7 @@ public class MultiThreadedOplogPerJUnitPerformanceTest
     }
 
     for (int i = 0; i < numberOfThreads; i++) {
-      DistributedTestCase.join(threads[i], 30 * 1000, null);
+      ThreadUtils.join(threads[i], 30 * 1000);
     }
 
     long totalPuts = ((long)numberOfIterations * numberOfKeysPerThread * numberOfThreads);

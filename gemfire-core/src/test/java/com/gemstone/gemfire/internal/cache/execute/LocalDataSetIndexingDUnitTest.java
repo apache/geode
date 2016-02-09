@@ -124,7 +124,7 @@ public class LocalDataSetIndexingDUnitTest extends CacheTestCase {
               "/pr2 e2");
         }
         catch (Exception e) {
-          fail("Test failed due to Exception in index creation ", e);
+          com.gemstone.gemfire.test.dunit.Assert.fail("Test failed due to Exception in index creation ", e);
         }
       }
     };

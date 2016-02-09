@@ -39,6 +39,8 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.remote.CommandProcessor;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -79,8 +81,7 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  protected final void postTearDownCacheTestCase() throws Exception {
     disconnectFromDS();
     CliUtil.isGfshVM = true;
   }
@@ -180,7 +181,7 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
     Properties props = new Properties();
 
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, getServerHostName(host) + "[" + locatorPort + "]");
+    props.setProperty(DistributionConfig.LOCATORS_NAME, NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]");
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
     props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
@@ -207,7 +208,7 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
     setupSystem();
     CommandProcessor commandProcessor = new CommandProcessor();
     Result result = commandProcessor.createCommandStatement(CliStrings.LIST_MEMBER, EMPTY_ENV).process();
-    getLogWriter().info("#SB" + getResultAsString(result));
+    LogWriterUtils.getLogWriter().info("#SB" + getResultAsString(result));
     assertEquals(true, result.getStatus().equals(Status.OK));
   }
 
@@ -230,7 +231,7 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
       CommandProcessor commandProcessor = new CommandProcessor();
       Result result = commandProcessor.createCommandStatement(CliStrings.LIST_MEMBER, EMPTY_ENV).process();
 
-      getLogWriter().info("#SB" + getResultAsString(result));
+      LogWriterUtils.getLogWriter().info("#SB" + getResultAsString(result));
       assertEquals(true, result.getStatus().equals(Status.ERROR));
     } finally {
       locator.stop(); // fix for bug 46562
@@ -249,7 +250,7 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
     csb.addOption(CliStrings.LIST_MEMBER__GROUP, "G1");
     Result result = commandProcessor.createCommandStatement(csb.toString(), EMPTY_ENV).process();
-    getLogWriter().info("#SB" + getResultAsString(result));
+    LogWriterUtils.getLogWriter().info("#SB" + getResultAsString(result));
     assertEquals(true, result.getStatus().equals(Status.OK));
   }
 
@@ -272,7 +273,7 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
       Result result = commandProcessor.createCommandStatement("describe member --name=" + member.getId(),
           EMPTY_ENV).process();
       assertEquals(true, result.getStatus().equals(Status.OK));
-      getLogWriter().info("#SB" + getResultAsString(result));
+      LogWriterUtils.getLogWriter().info("#SB" + getResultAsString(result));
       //assertEquals(true, result.getStatus().equals(Status.OK));
     }
   }

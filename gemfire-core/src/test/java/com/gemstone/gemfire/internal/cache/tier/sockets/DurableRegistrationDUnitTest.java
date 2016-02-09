@@ -39,9 +39,14 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * 
@@ -124,7 +129,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     // seconds
     this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
         new Object[] {
-            getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
+            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
             regionName,
             getClientDistributedSystemProperties(durableClientId,
                 durableClientTimeout), Boolean.TRUE });
@@ -162,7 +167,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
         new Object[] { K4, "Value4" });
 
-    pause(1000);
+    Wait.pause(1000);
     // Step 5: Verify Updates on the Client
 
     assertEquals("Value1", this.server2VM.invoke(
@@ -197,7 +202,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     // Step 8: Re-start the Client
     this.durableClientVM
         .invoke(CacheServerTestUtil.class, "createCacheClient",
-            new Object[] { getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
+            new Object[] { getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
                 regionName,
                 getClientDistributedSystemProperties(durableClientId),
                 Boolean.TRUE });
@@ -210,7 +215,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
       }
     });
 
-    pause(5000);
+    Wait.pause(5000);
 
     assertNull(this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
         "getValue", new Object[] { K1 }));
@@ -220,7 +225,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
         "registerKey", new Object[] { K1, new Boolean(false) });
 
-    pause(5000);
+    Wait.pause(5000);
     assertNull(this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
         "getValue", new Object[] { K1 }));
     assertNull(this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
@@ -235,7 +240,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
         new Object[] { K4, "PingPong_updated_4" });
 
-    pause(5000);
+    Wait.pause(5000);
 
     // Step 9: Verify Updates on the Client
     assertEquals("PingPong_updated_1", this.durableClientVM.invoke(
@@ -276,7 +281,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     final int durableClientTimeout = 600;
     this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
         new Object[] {
-            getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
+            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
             regionName,
             getClientDistributedSystemProperties(durableClientId,
                 durableClientTimeout) });
@@ -314,7 +319,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
         new Object[] { K4, "Value4" });
 
-    pause(1000);
+    Wait.pause(1000);
     // Step 5: Verify Updates on the Client
 
     assertEquals("Value1", this.server2VM.invoke(
@@ -349,7 +354,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     // Step 8: Re-start the Client
     this.durableClientVM
         .invoke(CacheServerTestUtil.class, "createCacheClient",
-            new Object[] { getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
+            new Object[] { getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
                 regionName,
                 getClientDistributedSystemProperties(durableClientId),
                 Boolean.TRUE });
@@ -381,7 +386,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
         "unregisterKey", new Object[] { K3 });
 
-    pause(5000);
+    Wait.pause(5000);
 
     // Step 12: Modify values on the server for all the Keys
     this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
@@ -393,7 +398,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
         new Object[] { K4, "PingPong_updated_4" });
 
-    pause(5000);
+    Wait.pause(5000);
 
     // Step 13: Check the values for the ones not unregistered and the
     // Unregistered Keys' Values should be null
@@ -467,7 +472,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     final int durableClientTimeout = 600;
     this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
         new Object[] {
-            getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 1),
+            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 1),
             regionName,
             getClientDistributedSystemProperties(durableClientId,
                 durableClientTimeout) });
@@ -496,13 +501,13 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
         "createCacheServer", new Object[] { regionName, new Boolean(true),
              PORT2 });
 
-    pause(3000);
+    Wait.pause(3000);
 
     // Check server2 got all the interests registered by the durable client.    
     server2VM.invoke(new CacheSerializableRunnable("Verify Interests.") {
       public void run2() throws CacheException
       {
-        getLogWriter().info("### Verifying interests registered by DurableClient. ###");
+        LogWriterUtils.getLogWriter().info("### Verifying interests registered by DurableClient. ###");
         CacheClientNotifier ccn = CacheClientNotifier.getInstance();
         CacheClientProxy p = null;
         
@@ -510,7 +515,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
         for (int i=0; i < 60; i++) {
           Iterator ps = ccn.getClientProxies().iterator();
           if (!ps.hasNext()) {
-            pause(1000);
+            Wait.pause(1000);
             continue;
           } else {
             p = (CacheClientProxy)ps.next();
@@ -567,7 +572,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     final int durableClientTimeout = 600;
     this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
         new Object[] {
-            getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 1),
+            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 1),
             regionName,
             getClientDistributedSystemProperties(durableClientId,
                 durableClientTimeout) });
@@ -594,12 +599,12 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
         "closeCache");
 
-    pause(2000);
+    Wait.pause(2000);
 
     //Re-start the Client
     this.durableClientVM
         .invoke(CacheServerTestUtil.class, "createCacheClient",
-            new Object[] { getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 1),
+            new Object[] { getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 1),
                 regionName,
                 getClientDistributedSystemProperties(durableClientId),
                 Boolean.TRUE });
@@ -617,13 +622,13 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
         "createCacheServer", new Object[] { regionName, new Boolean(true),
              PORT2 });
 
-    pause(3000);
+    Wait.pause(3000);
 
     // Check server2 got all the interests registered by the durable client.    
     server2VM.invoke(new CacheSerializableRunnable("Verify Interests.") {
       public void run2() throws CacheException
       {
-        getLogWriter().info("### Verifying interests registered by DurableClient. ###");
+        LogWriterUtils.getLogWriter().info("### Verifying interests registered by DurableClient. ###");
         CacheClientNotifier ccn = CacheClientNotifier.getInstance();
         CacheClientProxy p = null;
         
@@ -631,7 +636,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
         for (int i=0; i < 60; i++) {
           Iterator ps = ccn.getClientProxies().iterator();
           if (!ps.hasNext()) {
-            pause(1000);
+            Wait.pause(1000);
             continue;
           } else {
             p = (CacheClientProxy)ps.next();
@@ -703,7 +708,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
     }
     catch (Exception ex) {
-      fail("failed while registering interest in registerKey function", ex);
+      Assert.fail("failed while registering interest in registerKey function", ex);
     }
   }
 
@@ -736,7 +741,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
       region.registerInterest(key, InterestResultPolicy.NONE, isDurable);
     }
     catch (Exception ex) {
-      fail("failed while registering interest in registerKey function", ex);
+      Assert.fail("failed while registering interest in registerKey function", ex);
     }
   }
 
@@ -752,7 +757,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
       region.unregisterInterest(key);
     }
     catch (Exception ex) {
-      fail("failed while registering interest in registerKey function", ex);
+      Assert.fail("failed while registering interest in registerKey function", ex);
     }
   }
 
@@ -801,7 +806,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 15 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 15 * 1000, 200, true);
   }
 
   protected static int getNumberOfClientProxies() {
@@ -858,9 +863,8 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     this.regionName = regionName;
   }
   
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 }

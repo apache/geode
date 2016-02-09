@@ -27,6 +27,7 @@ import security.CredentialGenerator;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
 /**
  * Tests for authorization from client to server. This tests for authorization
@@ -126,10 +127,10 @@ public class ClientPostAuthorizationDUnitTest extends
       String accessor = gen.getAuthorizationCallback();
       TestAuthzCredentialGenerator tgen = new TestAuthzCredentialGenerator(gen);
 
-      getLogWriter().info("testAllPostOps: Using authinit: " + authInit);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info("testAllPostOps: Using authinit: " + authInit);
+      LogWriterUtils.getLogWriter().info(
           "testAllPostOps: Using authenticator: " + authenticator);
-      getLogWriter().info("testAllPostOps: Using accessor: " + accessor);
+      LogWriterUtils.getLogWriter().info("testAllPostOps: Using accessor: " + accessor);
 
       // Start servers with all required properties
       Properties serverProps = buildProperties(authenticator, accessor, true,
@@ -315,7 +316,7 @@ public class ClientPostAuthorizationDUnitTest extends
         OperationWithAction.OPBLOCK_NO_FAILOVER };
 
       AuthzCredentialGenerator gen = getXmlAuthzGenerator();
-      getLogWriter().info("Executing opblocks with credential generator " + gen);
+      LogWriterUtils.getLogWriter().info("Executing opblocks with credential generator " + gen);
       CredentialGenerator cGen = gen.getCredentialGenerator();
       Properties extraAuthProps = cGen.getSystemProperties();
       Properties javaProps = cGen.getJavaProperties();
@@ -325,11 +326,11 @@ public class ClientPostAuthorizationDUnitTest extends
       String accessor = gen.getAuthorizationCallback();
       TestAuthzCredentialGenerator tgen = new TestAuthzCredentialGenerator(gen);
 
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testAllOpsNotifications: Using authinit: " + authInit);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testAllOpsNotifications: Using authenticator: " + authenticator);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testAllOpsNotifications: Using accessor: " + accessor);
 
       // Start servers with all required properties
@@ -383,9 +384,8 @@ public class ClientPostAuthorizationDUnitTest extends
 
   // End Region: Tests
 
-  public void tearDown2() throws Exception {
-
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close the clients first
     client1.invoke(SecurityTestUtil.class, "closeCache");
     client2.invoke(SecurityTestUtil.class, "closeCache");
@@ -394,5 +394,4 @@ public class ClientPostAuthorizationDUnitTest extends
     server1.invoke(SecurityTestUtil.class, "closeCache");
     server2.invoke(SecurityTestUtil.class, "closeCache");
   }
-
 }

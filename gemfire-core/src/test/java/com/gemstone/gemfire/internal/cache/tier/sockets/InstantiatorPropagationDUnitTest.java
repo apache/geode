@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -45,9 +47,14 @@ import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
   private static Cache cache = null;
@@ -144,8 +151,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  protected final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
     client1.invoke(InstantiatorPropagationDUnitTest.class, "closeCache");
@@ -163,7 +169,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
   }
   
   public static void unregisterInstantiatorsInAllVMs() {
-    invokeInEveryVM(DistributedTestCase.class, "unregisterInstantiatorsInThisVM");
+    Invoke.invokeInEveryVM(()->unregisterInstantiatorsInThisVM());
   }
 
   public static void verifyInstantiators(final int numOfInstantiators) {
@@ -180,7 +186,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
           + " instantiators=" + java.util.Arrays.toString(InternalInstantiator.getInstantiators());
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
   }
 
   public static void registerTestObject1() throws Exception {
@@ -192,7 +198,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject1", e);
+      Assert.fail("Test failed due to exception in TestObject1", e);
     }
   }
 
@@ -204,7 +210,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject2", e);
+      Assert.fail("Test failed due to exception in TestObject2", e);
     }
   }
 
@@ -216,7 +222,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject3", e);
+      Assert.fail("Test failed due to exception in TestObject3", e);
     }
   }
 
@@ -228,7 +234,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject4", e);
+      Assert.fail("Test failed due to exception in TestObject4", e);
     }
   }
 
@@ -240,7 +246,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject5", e);
+      Assert.fail("Test failed due to exception in TestObject5", e);
     }
   }
 
@@ -252,7 +258,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject6", e);
+      Assert.fail("Test failed due to exception in TestObject6", e);
     }
   }
 
@@ -264,7 +270,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject7", e);
+      Assert.fail("Test failed due to exception in TestObject7", e);
     }
   }
 
@@ -276,7 +282,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject8", e);
+      Assert.fail("Test failed due to exception in TestObject8", e);
     }
   }
 
@@ -288,7 +294,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject9", e);
+      Assert.fail("Test failed due to exception in TestObject9", e);
     }
   }
 
@@ -300,7 +306,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject10", e);
+      Assert.fail("Test failed due to exception in TestObject10", e);
     }
   }
 
@@ -312,7 +318,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject11", e);
+      Assert.fail("Test failed due to exception in TestObject11", e);
     }
   }
 
@@ -324,7 +330,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject11", e);
+      Assert.fail("Test failed due to exception in TestObject11", e);
     }
   }
 
@@ -336,7 +342,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject13", e);
+      Assert.fail("Test failed due to exception in TestObject13", e);
     }
   }
 
@@ -348,7 +354,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject14", e);
+      Assert.fail("Test failed due to exception in TestObject14", e);
     }
   }
 
@@ -360,7 +366,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject15", e);
+      Assert.fail("Test failed due to exception in TestObject15", e);
     }
   }
 
@@ -372,7 +378,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject16", e);
+      Assert.fail("Test failed due to exception in TestObject16", e);
     }
   }
 
@@ -384,7 +390,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject17", e);
+      Assert.fail("Test failed due to exception in TestObject17", e);
     }
   }
 
@@ -396,7 +402,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject18", e);
+      Assert.fail("Test failed due to exception in TestObject18", e);
     }
   }
   
@@ -408,7 +414,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject19", e);
+      Assert.fail("Test failed due to exception in TestObject19", e);
     }
   }
 
@@ -420,7 +426,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       obj.init(0);
     }
     catch (Exception e) {
-      fail("Test failed due to exception in TestObject20", e);
+      Assert.fail("Test failed due to exception in TestObject20", e);
     }
   }
 
@@ -463,7 +469,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
 
     unregisterInstantiatorsInAllVMs();
     
-    pause(3000);
+    Wait.pause(3000);
 
     server1.invoke(InstantiatorPropagationDUnitTest.class,
         "registerTestObject1");
@@ -475,11 +481,11 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
 
     client1
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT1) });
 
     // // wait for client2 to come online
-    pause(3000);
+    Wait.pause(3000);
     //
     client1.invoke(InstantiatorPropagationDUnitTest.class,
         "verifyInstantiators", new Object[] { new Integer(2) });
@@ -512,7 +518,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       }
     });
     //
-    pause(3000);
+    Wait.pause(3000);
     // Run getAll
     client1.invoke(new CacheSerializableRunnable("Get entry from client") {
       public void run2() throws CacheException {
@@ -536,26 +542,26 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
-    pause(3000);
+    Wait.pause(3000);
 
     client1
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT1) });
     client2
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT2) });
 
     unregisterInstantiatorsInAllVMs();
 
     // wait for client2 to come online
-    pause(2000);
+    Wait.pause(2000);
 
 
     client1.invoke(InstantiatorPropagationDUnitTest.class,
         "registerTestObject3");
-    pause(4000);
+    Wait.pause(4000);
 
     client1.invoke(InstantiatorPropagationDUnitTest.class,
         "verifyInstantiators", new Object[] { new Integer(1) });
@@ -584,21 +590,21 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
 
     client1
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT1) });
     client2
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT2) });
 
     unregisterInstantiatorsInAllVMs();
 
     // wait for client2 to come online
-    pause(2000);
+    Wait.pause(2000);
 
     client1.invoke(InstantiatorPropagationDUnitTest.class,
         "registerTestObject4");
-    pause(4000);
+    Wait.pause(4000);
 
     server1.invoke(InstantiatorPropagationDUnitTest.class, "stopServer");
 
@@ -639,25 +645,25 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
 
     client1
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT1) });
     client2
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT2) });
 
     unregisterInstantiatorsInAllVMs();
 
     // wait for client2 to come online
-    pause(2000);
+    Wait.pause(2000);
 
     client1.invoke(InstantiatorPropagationDUnitTest.class,
         "registerTestObject10");
-    pause(4000);
+    Wait.pause(4000);
 
     server1.invoke(InstantiatorPropagationDUnitTest.class,
         "registerTestObject11");
-    pause(4000);
+    Wait.pause(4000);
 
     server2.invoke(InstantiatorPropagationDUnitTest.class,
         "verifyInstantiators", new Object[] { new Integer(2) });
@@ -683,11 +689,11 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     PORT2 = initServerCache(server2);
     client1
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT1) });
     client2
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT2) });
 
     unregisterInstantiatorsInAllVMs();
@@ -751,21 +757,21 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
 
     client1
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT1) });
     client2
         .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { getServerHostName(server1.getHost()),
+            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
                 new Integer(PORT1) });
-    createClientCache(getServerHostName(server2.getHost()), new Integer(PORT2));
+    createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2));
     unregisterInstantiatorsInAllVMs();
 
     // wait for client2 to come online
-    pause(2000);
+    Wait.pause(2000);
 
     client1.invoke(InstantiatorPropagationDUnitTest.class,
         "registerTestObject12");
-    pause(4000);
+    Wait.pause(4000);
 
     client1.invoke(InstantiatorPropagationDUnitTest.class,
         "verifyInstantiators", new Object[] { new Integer(1) });
@@ -810,20 +816,20 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     PORT1 = initServerCache(server1, 1);
     PORT2 = initServerCache(server2, 2);
 
-    createClientCache_EventId(getServerHostName(server1.getHost()), new Integer(PORT1));
+    createClientCache_EventId(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1));
 
     unregisterInstantiatorsInAllVMs();
     
     client2.invoke(InstantiatorPropagationDUnitTest.class,
         "createClientCache_EventId", new Object[] {
-            getServerHostName(server1.getHost()), new Integer(PORT2) });
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2) });
     setClientServerObserver1();
     client2.invoke(InstantiatorPropagationDUnitTest.class,
         "setClientServerObserver2");
 
     registerTestObject19();
 
-    pause(10000);
+    Wait.pause(10000);
 
     Boolean pass = (Boolean)client2.invoke(
         InstantiatorPropagationDUnitTest.class, "verifyResult");
@@ -841,17 +847,17 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
   
       unregisterInstantiatorsInAllVMs();
 
-      pause(3000);
+      Wait.pause(3000);
   
-      createClientCache(getServerHostName(server1.getHost()),
+      createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
           new Integer(PORT1));
   
       client2
           .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-              new Object[] {getServerHostName(server2.getHost()),
+              new Object[] {NetworkUtils.getServerHostName(server2.getHost()),
                   new Integer(PORT2)});
   
-      pause(3000);
+      Wait.pause(3000);
       unregisterInstantiatorsInAllVMs();
   
       assertTestObject20NotLoaded();
@@ -860,7 +866,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
       client2.invoke(InstantiatorPropagationDUnitTest.class, "assertTestObject20NotLoaded");
   
       registerTestObject20();
-      pause(5000);
+      Wait.pause(5000);
       assertTestObject20Loaded();
       server1.invoke(InstantiatorPropagationDUnitTest.class, "assertTestObject20Loaded");
       //server2.invoke(InstantiatorPropagationDUnitTest.class, "assertTestObject20Loaded"); // classes are not initialized after loading in p2p path

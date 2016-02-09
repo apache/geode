@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,15 +31,18 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
   
   private static final long serialVersionUID = 1L;
 
+  private String testName;
+  
   public SerialWANStatsDUnitTest(String name) {
     super(name);
   }
 
   public void setUp() throws Exception {
     super.setUp();
-    addExpectedException("java.net.ConnectException");
-    addExpectedException("java.net.SocketException");
-    addExpectedException("Unexpected IOException");
+    this.testName = getTestMethodName();
+    addIgnoredException("java.net.ConnectException");
+    addIgnoredException("java.net.SocketException");
+    addIgnoredException("Unexpected IOException");
   }
   
   public void testReplicatedSerialPropagation() throws Exception {

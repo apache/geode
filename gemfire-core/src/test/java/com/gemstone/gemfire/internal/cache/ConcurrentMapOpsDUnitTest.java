@@ -49,11 +49,14 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * tests for the concurrentMapOperations. there are more tests in ClientServerMiscDUnitTest
@@ -145,7 +148,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
           ccf.addPoolServer("localhost", port2);
         }
         ccf.setPoolSubscriptionEnabled(true);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<Integer, String> crf = cCache
             .createClientRegionFactory(isEmpty ? ClientRegionShortcut.PROXY
@@ -275,7 +278,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
                 return "Client expected to get "+MAX_ENTRIES+" creates, but got "+initialCreatesListener.numCreates.get();
               }
             };
-            DistributedTestCase.waitForCriterion(wc, 30*1000, 500, true);
+            Wait.waitForCriterion(wc, 30*1000, 500, true);
           }
         }
         if (!listenerFound) {
@@ -409,7 +412,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
             return "timeout "+e;
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30000, 1000, true);
+        Wait.waitForCriterion(wc, 30000, 1000, true);
         return null;
       }
     });
@@ -457,7 +460,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
             return "timeout "+e.getMessage();
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30000, 1000, true);
+        Wait.waitForCriterion(wc, 30000, 1000, true);
         return null;
       }
     });
@@ -957,7 +960,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
             return r.containsKey(key);
           }
         };
-        waitForCriterion(w, 10000, 200, true);
+        Wait.waitForCriterion(w, 10000, 200, true);
         assertTrue(r.containsKeyOnServer(key));
         boolean result = r.remove(key, null);
 //        if (!result) {
@@ -1046,7 +1049,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     final int port2 = createRegionsAndStartServer(server2, true);
     final String regionName = usePR? PR_REG_NAME : REP_REG_NAME;
 
-    addExpectedException("java.net.SocketException");
+    IgnoredException.addIgnoredException("java.net.SocketException");
     
     createClientRegion(client, port1, false, port2);
     
@@ -1059,11 +1062,11 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     final DistributedMember server1ID = (DistributedMember)server1.invoke(getID);
     final DistributedMember server2ID = (DistributedMember)server2.invoke(getID);
     
-    Set<ExpectedException> exceptions = new HashSet<ExpectedException>();
-    exceptions.add(addExpectedException("Membership: requesting removal", server1));
-    exceptions.add(addExpectedException("Membership: requesting removal", server2));
-    exceptions.add(addExpectedException("ForcedDisconnect", server1));
-    exceptions.add(addExpectedException("ForcedDisconnect", server2));
+    Set<IgnoredException> exceptions = new HashSet<IgnoredException>();
+    exceptions.add(IgnoredException.addIgnoredException("Membership: requesting removal", server1));
+    exceptions.add(IgnoredException.addIgnoredException("Membership: requesting removal", server2));
+    exceptions.add(IgnoredException.addIgnoredException("ForcedDisconnect", server1));
+    exceptions.add(IgnoredException.addIgnoredException("ForcedDisconnect", server2));
     
     try {
 
@@ -1164,7 +1167,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
       });
     } finally {
       disconnectAllFromDS();
-      for (ExpectedException ex: exceptions) {
+      for (IgnoredException ex: exceptions) {
         ex.remove();
       }
     }

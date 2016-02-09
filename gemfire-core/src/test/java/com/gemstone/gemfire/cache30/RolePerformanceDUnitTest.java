@@ -26,6 +26,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
@@ -63,7 +64,7 @@ public class RolePerformanceDUnitTest extends CacheTestCase {
           throw e;
         }
         else {
-          getLogWriter().info("testRolePerformance attempt #" + i + 
+          LogWriterUtils.getLogWriter().info("testRolePerformance attempt #" + i + 
             " failed -- reattempting up to 10x", e);
         }
       }
@@ -101,7 +102,7 @@ public class RolePerformanceDUnitTest extends CacheTestCase {
     String data = name + " results: millisNoRoles=" + millisNoRoles +
       ", millisWithRoles=" + millisWithRoles + ", deviation=" + deviation + 
       ", ceiling=" + ceiling;
-    getLogWriter().info(data);
+    LogWriterUtils.getLogWriter().info(data);
     
     assertTrue("millisWithRoles is greater than allowable deviation: " + data,
                millisWithRoles <= ceiling);

@@ -40,11 +40,15 @@ import com.gemstone.gemfire.cache.query.partitioned.PRQueryDUnitHelper;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.execute.PRClientServerTestBase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * This tests the data inconsistency during update on an index and querying the
@@ -91,10 +95,13 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
-    invokeInEveryVM(CacheTestCase.class, "disconnectFromDS");
-    super.tearDown2();
-    invokeInEveryVM(QueryObserverHolder.class, "reset");
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(CacheTestCase.class, "disconnectFromDS");
+  }
+  
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(QueryObserverHolder.class, "reset");
   }
 
   @Override
@@ -149,7 +156,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
       @Override
       public void run2() throws CacheException {
         QueryService qs = CacheFactory.getAnyInstance().getQueryService();
-        while (!hooked){pause(100);}
+        while (!hooked){Wait.pause(100);}
         Object rs = null;
         try {
           rs = qs.newQuery("<trace> select * from /"+repRegionName+" where ID = 1").execute();          
@@ -175,7 +182,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
       @Override
       public void run2() throws CacheException {
         QueryService qs = CacheFactory.getAnyInstance().getQueryService();
-        while (!hooked){pause(100);}
+        while (!hooked){Wait.pause(100);}
         Object rs = null;
         try {
           rs = qs.newQuery("<trace> select * from /"+repRegionName+" where ID = 1").execute();          
@@ -197,7 +204,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
         hooked = false;//Let client put go further.
       }
     });
-    DistributedTestCase.join(putThread, 200, this.getLogWriter());
+    ThreadUtils.join(putThread, 200);
   }
 
   public void testRangeIndex() {
@@ -252,7 +259,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         QueryService qs = CacheFactory.getAnyInstance().getQueryService();
         Position pos1 = null;
-        while (!hooked){pause(100);}
+        while (!hooked){Wait.pause(100);}
         try {
           Object rs = qs.newQuery("<trace> select pos from /"+repRegionName+" p, p.positions.values pos where pos.secId = 'APPL' AND p.ID = 1").execute();
           CacheFactory.getAnyInstance().getLogger().fine("Shobhit: "+rs);
@@ -264,13 +271,13 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
           }          
         } catch (Exception e) {
           e.printStackTrace();
-          fail("Query execution failed on server.", e);
+          Assert.fail("Query execution failed on server.", e);
           IndexManager.testHook = null;
         } finally {
           hooked = false;//Let client put go further.
         }
         while (!hooked) {
-          pause(100);
+          Wait.pause(100);
         }
         try {
           Object rs = qs.newQuery("<trace> select pos from /"+repRegionName+" p, p.positions.values pos where pos.secId = 'APPL' AND p.ID = 1").execute();
@@ -292,7 +299,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
         }
       }
     });
-    DistributedTestCase.join(putThread, 200, this.getLogWriter());
+    ThreadUtils.join(putThread, 200);
   }
   
   public void testRangeIndexWithIndexAndQueryFromCluaseMisMatch() {
@@ -344,7 +351,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         QueryService qs = CacheFactory.getAnyInstance().getQueryService();
         Position pos1 = null;
-        while (!hooked){pause(100);}
+        while (!hooked){Wait.pause(100);}
         try {
           Object rs = qs.newQuery("<trace> select pos from /"+repRegionName+" p, p.positions.values pos where pos.secId = 'APPL' AND p.ID = 1").execute();
           CacheFactory.getAnyInstance().getLogger().fine("Shobhit: "+rs);
@@ -356,13 +363,13 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
           }          
         } catch (Exception e) {
           e.printStackTrace();
-          fail("Query execution failed on server.", e);
+          Assert.fail("Query execution failed on server.", e);
           IndexManager.testHook = null;
         } finally {
           hooked = false;//Let client put go further.
         }
         while (!hooked) {
-          pause(100);
+          Wait.pause(100);
         }
         try {
           Object rs = qs.newQuery("select pos from /"+repRegionName+" p, p.positions.values pos where pos.secId = 'APPL' AND p.ID = 1").execute();
@@ -383,7 +390,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
         }
       }
     });
-    DistributedTestCase.join(putThread, 200, this.getLogWriter());
+    ThreadUtils.join(putThread, 200);
   }
 
   public void testRangeIndexWithIndexAndQueryFromCluaseMisMatch2() {
@@ -435,7 +442,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         QueryService qs = CacheFactory.getAnyInstance().getQueryService();
         Position pos1 = null;
-        while (!hooked){pause(100);}
+        while (!hooked){Wait.pause(100);}
         try {
           Object rs = qs.newQuery("<trace> select pos from /"+repRegionName+" p, p.collectionHolderMap.values coll, p.positions.values pos where pos.secId = 'APPL' AND p.ID = 1").execute();
           CacheFactory.getAnyInstance().getLogger().fine("Shobhit: "+rs);
@@ -447,13 +454,13 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
           }          
         } catch (Exception e) {
           e.printStackTrace();
-          fail("Query execution failed on server.", e);
+          Assert.fail("Query execution failed on server.", e);
           IndexManager.testHook = null;
         } finally {
           hooked = false;//Let client put go further.
         }
         while (!hooked) {
-          pause(100);
+          Wait.pause(100);
         }
         try {
           Object rs = qs.newQuery("select pos from /"+repRegionName+" p, p.collectionHolderMap.values coll, p.positions.values pos where pos.secId = 'APPL' AND p.ID = 1").execute();
@@ -474,7 +481,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
         }
       }
     });
-    DistributedTestCase.join(putThread, 200, this.getLogWriter());
+    ThreadUtils.join(putThread, 200);
   }
   
   public static void createProxyRegions() {
@@ -537,7 +544,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
         Region region = cache.getRegion(repRegionName);
         for (int j = from; j < to; j++)
           region.put(new Integer(j), portfolio[j]);
-          getLogWriter()
+          LogWriterUtils.getLogWriter()
             .info(
                 "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: Inserted Portfolio data on Region "
                     + regionName);
@@ -551,17 +558,17 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
       switch (spot) {
       case 9: //Before Index update and after region entry lock.
         hooked  = true;
-        getLogWriter().info("QueryDataInconsistency.IndexManagerTestHook is hooked in Update Index Entry.");
+        LogWriterUtils.getLogWriter().info("QueryDataInconsistency.IndexManagerTestHook is hooked in Update Index Entry.");
         while(hooked) {
-          pause(100);
+          Wait.pause(100);
         }
         assertEquals(hooked, false);
         break;
       case 10: //Before Region update and after Index Remove call.
         hooked  = true;
-        getLogWriter().info("QueryDataInconsistency.IndexManagerTestHook is hooked in Remove Index Entry.");
+        LogWriterUtils.getLogWriter().info("QueryDataInconsistency.IndexManagerTestHook is hooked in Remove Index Entry.");
         while(hooked) {
-          pause(100);
+          Wait.pause(100);
         }
         assertEquals(hooked, false);
         break;

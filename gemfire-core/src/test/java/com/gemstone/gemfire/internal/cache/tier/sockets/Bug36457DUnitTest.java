@@ -37,8 +37,11 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -136,9 +139,8 @@ public class Bug36457DUnitTest extends DistributedTestCase
     return new Integer(server1.getPort());
   }
 
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close the clients first
     client1.invoke(Bug36457DUnitTest.class, "closeCache");
     client2.invoke(Bug36457DUnitTest.class, "closeCache");
@@ -162,9 +164,9 @@ public class Bug36457DUnitTest extends DistributedTestCase
     Integer port2 = ((Integer)server2.invoke(Bug36457DUnitTest.class,
         "createServerCache"));
     client1.invoke(Bug36457DUnitTest.class, "createClientCache", new Object[] {
-        getServerHostName(server1.getHost()), port1, port2 });
+        NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
     client2.invoke(Bug36457DUnitTest.class, "createClientCache", new Object[] {
-        getServerHostName(server1.getHost()), port1, port2 });
+        NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
     //set a cllabck so that we come to know that whether a failover is called or not
     // if failover is called means this bug is present.
     client2.invoke(Bug36457DUnitTest.class, "setClientServerObserver");
@@ -188,7 +190,7 @@ public class Bug36457DUnitTest extends DistributedTestCase
         .setInstance(new ClientServerObserverAdapter() {
           public void afterPrimaryIdentificationFromBackup(ServerLocation primaryEndpoint)
           {
-            getLogWriter().fine("TEST FAILED HERE YOGI ");
+            LogWriterUtils.getLogWriter().fine("TEST FAILED HERE YOGI ");
             isFaileoverHappened = true;
           }
         });
@@ -207,7 +209,7 @@ public class Bug36457DUnitTest extends DistributedTestCase
       r.destroyRegion();
     }
     catch (Exception ex) {
-      fail("failed while destroy region ", ex);
+      Assert.fail("failed while destroy region ", ex);
     }
   }
 

@@ -19,6 +19,8 @@ package com.gemstone.gemfire.test.dunit;
 import java.io.Serializable;
 import java.util.concurrent.Callable;
 
+/**
+ * Interface for {@link SerializableCallable} to enable use with lambdas.
+ */
 public interface SerializableCallableIF<T> extends Serializable, Callable<T> {
-
 }

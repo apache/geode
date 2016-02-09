@@ -28,11 +28,14 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * This test aims to test the destroyRegion functionality.
@@ -77,7 +80,7 @@ public class PartitionedRegionDestroyDUnitTest extends
           cache.createRegion(PR_PREFIX + i,
               createRegionAttrsForPR(0, 200));
         }
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "Successfully created " + MAX_REGIONS + " PartitionedRegions.");
       }
     };
@@ -156,7 +159,7 @@ public class PartitionedRegionDestroyDUnitTest extends
           }
         }
         catch (RegionDestroyedException e) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "RegionDestroyedException occured for Region = " + PR_PREFIX + j);
         }
         getCache().getLogger().info("<ExpectedException action=remove>" + 
@@ -164,14 +167,14 @@ public class PartitionedRegionDestroyDUnitTest extends
       }
     });
 
-    DistributedTestCase.join(async1, 30 * 1000, getLogWriter());
+    ThreadUtils.join(async1, 30 * 1000);
     if(async1.exceptionOccurred()) {
-      fail("async1 failed", async1.getException());
+      Assert.fail("async1 failed", async1.getException());
     }
     final String expectedExceptions = "com.gemstone.gemfire.distributed.internal.ReplyException"; 
     addExceptionTag(expectedExceptions);
     
-    pause(1000); // give async a chance to grab the regions...
+    Wait.pause(1000); // give async a chance to grab the regions...
     
     vm0.invoke(new CacheSerializableRunnable("destroyPRRegions") {
 
@@ -225,18 +228,18 @@ public class PartitionedRegionDestroyDUnitTest extends
 
         // Assert that all PartitionedRegions are gone
         assertEquals(0, rootRegion.size());
-        getLogWriter().info("allPartitionedRegions size() =" + rootRegion.size());
+        LogWriterUtils.getLogWriter().info("allPartitionedRegions size() =" + rootRegion.size());
         assertEquals("ThePrIdToPR Map size is:"+PartitionedRegion.prIdToPR.size()+" instead of 0", MAX_REGIONS, PartitionedRegion.prIdToPR.size());
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "PartitionedRegion.prIdToPR.size() ="
                 + PartitionedRegion.prIdToPR.size());
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "# of Subregions of root Region after destroy call = "
                 + rootRegion.subregions(false).size());
         Iterator itr = (rootRegion.subregions(false)).iterator();
         while (itr.hasNext()) {
           Region rg = (Region)itr.next();
-          getLogWriter().info("Root Region SubRegionName = " + rg.getName());
+          LogWriterUtils.getLogWriter().info("Root Region SubRegionName = " + rg.getName());
 //          assertEquals("REGION NAME FOUND:"+rg.getName(),-1, rg.getName().indexOf(
 //              PartitionedRegionHelper.BUCKET_2_NODE_TABLE_PREFIX));
           assertEquals("regionFound that should be gone!:"+rg.getName(),-1, rg.getName().indexOf(

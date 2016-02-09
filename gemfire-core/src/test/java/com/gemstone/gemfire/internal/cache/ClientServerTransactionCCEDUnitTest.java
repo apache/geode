@@ -24,6 +24,8 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -37,10 +39,10 @@ public class ClientServerTransactionCCEDUnitTest extends
   
   public void setUp() throws Exception {
     super.setUp();
-    addExpectedException("Connection reset");
-    addExpectedException("SocketTimeoutException");
-    addExpectedException("ServerConnectivityException");
-    addExpectedException("Socket Closed");
+    IgnoredException.addIgnoredException("Connection reset");
+    IgnoredException.addIgnoredException("SocketTimeoutException");
+    IgnoredException.addIgnoredException("ServerConnectivityException");
+    IgnoredException.addIgnoredException("Socket Closed");
 
   }
   /**
@@ -97,7 +99,7 @@ public class ClientServerTransactionCCEDUnitTest extends
     for (Object key : clientTags.keySet()) {
       VersionTag serverTag = serverTags.get(key);
       serverTag.setMemberID(serverId);
-      getLogWriter().fine("SWAP:key:"+key+" clientVersion:"+clientTags.get(key)+" serverVersion:"+serverTag);
+      LogWriterUtils.getLogWriter().fine("SWAP:key:"+key+" clientVersion:"+clientTags.get(key)+" serverVersion:"+serverTag);
       assertEquals(clientTags.get(key), serverTags.get(key));
       serverTags.remove(key);
     }

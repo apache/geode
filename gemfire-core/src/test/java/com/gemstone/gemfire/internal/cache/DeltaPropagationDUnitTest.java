@@ -63,6 +63,8 @@ import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * @since 6.1
@@ -163,8 +165,8 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
     DeltaPropagationDUnitTest.resetAll();
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     DeltaPropagationDUnitTest.closeCache();
     VM2.invoke(DeltaPropagationDUnitTest.class, "closeCache");
     VM3.invoke(DeltaPropagationDUnitTest.class, "closeCache");
@@ -657,7 +659,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       primary = (((PoolImpl)pool).getPrimaryPort() == PORT1) ? VM0
           : ((((PoolImpl)pool).getPrimaryPort() == PORT2) ? VM1 : VM2);
   
-      getLogWriter().info("waiting for client to receive last_key");
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("waiting for client to receive last_key");
       waitForLastKey();
   
       long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations()
@@ -835,7 +837,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      fail("failed in doLocalOp()", e);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed in doLocalOp()", e);
     }
   }
 
@@ -866,7 +868,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
         }
       };
     }
-    DistributedTestCase.waitForCriterion(wc, 5 * 1000, 100, true);
+    Wait.waitForCriterion(wc, 5 * 1000, 100, true);
   }
 
   public static void assertValue(String rName, String key, Object expected) {
@@ -878,7 +880,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
           + expected, expected.equals(value));
     }
     catch (Exception e) {
-      fail("failed in assertValue()", e);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed in assertValue()", e);
     }
   }
 
@@ -897,7 +899,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
         return "HA Overflow did not occure.";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
+    Wait.waitForCriterion(wc, 10 * 1000, 100, true);
   }
 
   public static void waitForLastKey() {
@@ -910,7 +912,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
         return "Last key NOT received.";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
+    Wait.waitForCriterion(wc, 10 * 1000, 100, true);
   }
 
   public static void prepareDeltas() {
@@ -1015,7 +1017,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       r.put(LAST_KEY, "");
     }
     catch (Exception ex) {
-      fail("failed in createDelta()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed in createDelta()", ex);
     }
   }
 
@@ -1032,7 +1034,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       r.create(DELTA_KEY, deltaPut[0]);
     }
     catch (Exception ex) {
-      fail("failed in createDelta()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed in createDelta()", ex);
     }
   }
 
@@ -1054,7 +1056,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       r.put(LAST_KEY, "");
     }
     catch (Exception ex) {
-      fail("failed in updateDelta()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed in updateDelta()", ex);
     }
   }
 
@@ -1069,7 +1071,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       r.create(LAST_KEY, "");
     }
     catch (Exception ex) {
-      fail("failed in createDeltas()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed in createDeltas()", ex);
     }
   }
 
@@ -1081,7 +1083,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       r.create("KEY-A", "I push the delta out to disk :)");
     }
     catch (Exception ex) {
-      fail("failed in createAnEntry()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed in createAnEntry()", ex);
     }
   }
 
@@ -1093,7 +1095,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       r.invalidate(DELTA_KEY);
     }
     catch (Exception ex) {
-      fail("failed in invalidateDelta()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed in invalidateDelta()", ex);
     }
   }
 
@@ -1476,7 +1478,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       r.registerInterest("ALL_KEYS");
     }
     catch (Exception ex) {
-      fail("failed in registerInterestListAll", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed in registerInterestListAll", ex);
     }
   }
 

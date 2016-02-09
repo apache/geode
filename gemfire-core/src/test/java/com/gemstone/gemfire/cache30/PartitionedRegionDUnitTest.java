@@ -41,6 +41,7 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionException;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.PureLogWriter;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
@@ -187,7 +188,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
         fact.addCacheListener(new CacheListenerAdapter(){
           @Override
           public void afterInvalidate(EntryEvent event) {
-            getLogWriter().info("afterInvalidate invoked with " + event);
+            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("afterInvalidate invoked with " + event);
             InvalidateInvoked = true;
           }
         });
@@ -227,7 +228,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
             
             createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
           } catch (CacheException ex) {
-            fail("While creating Partitioned region", ex);
+            Assert.fail("While creating Partitioned region", ex);
           }
         }
       });
@@ -245,7 +246,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
             }
 
           } catch (CacheException ex) {
-            fail("While creating Partitioned Region", ex);
+            Assert.fail("While creating Partitioned Region", ex);
           }
         }
       });
@@ -259,7 +260,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
           try {
             createRegion(regionName, "root", getRegionAttributes());
           } catch (CacheException ex) {
-            fail("While creating Partitioned region", ex);
+            Assert.fail("While creating Partitioned region", ex);
           }
         }
     };
@@ -293,7 +294,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
             }
           }
           catch (Exception ex) {
-            fail("while creating or populating partitioned region", ex);
+            Assert.fail("while creating or populating partitioned region", ex);
           }
           finally {
             if (region != null) {
@@ -360,7 +361,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
               }
               catch (Exception ex2) {
               }
-              fail("Unexpected exception", ex);
+              Assert.fail("Unexpected exception", ex);
             }
           }
       });
@@ -496,7 +497,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
           try {
             createRegion(regionName, "root", getRegionAttributes());
           } catch (CacheException ex) {
-            fail("While creating Partitioned region", ex);
+            Assert.fail("While creating Partitioned region", ex);
           }
         }
     };

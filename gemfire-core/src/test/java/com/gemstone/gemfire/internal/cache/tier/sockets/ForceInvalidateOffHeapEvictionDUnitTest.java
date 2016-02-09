@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
@@ -35,7 +36,7 @@ public class ForceInvalidateOffHeapEvictionDUnitTest extends
   }
 
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override
@@ -45,12 +46,8 @@ public class ForceInvalidateOffHeapEvictionDUnitTest extends
         }
       }
     };
-    invokeInEveryVM(checkOrphans);
-    try {
-      checkOrphans.run();
-    } finally {
-      super.tearDown2();
-    }
+    Invoke.invokeInEveryVM(checkOrphans);
+    checkOrphans.run();
   }
 
   @Override

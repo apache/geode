@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.util;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import org.apache.logging.log4j.Logger;
+
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  *
@@ -26,23 +28,24 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  *
  */
 public abstract class DebuggerSupport  {
+  private static final Logger logger = LogService.getLogger();
   
   /** Creates a new instance of DebuggerSupport */
   private DebuggerSupport() {
   }
   
   /** Debugger support */
-  public static void waitForJavaDebugger(LogWriterI18n logger) {
-    waitForJavaDebugger(logger, null);
+  public static void waitForJavaDebugger() {
+    waitForJavaDebugger(null);
   }
   
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="IL_INFINITE_LOOP", justification="Endless loop is for debugging purposes.") 
-  public static void waitForJavaDebugger(LogWriterI18n logger, String extraLogMsg) {
+  public static void waitForJavaDebugger(String extraLogMsg) {
     boolean cont = false;
     String msg = ":";
     if (extraLogMsg != null)
       msg += extraLogMsg;
-    logger.severe(LocalizedStrings.DebuggerSupport_WAITING_FOR_DEBUGGER_TO_ATTACH_0, msg);
+    logger.fatal(LocalizedMessage.create(LocalizedStrings.DebuggerSupport_WAITING_FOR_DEBUGGER_TO_ATTACH_0, msg));
     boolean interrupted = false;
     while (!cont) { // set cont to true in debugger when ready to continue
       try {
@@ -57,6 +60,6 @@ public abstract class DebuggerSupport  {
     if (interrupted) {
       Thread.currentThread().interrupt();
     }
-    logger.info(LocalizedStrings.DebuggerSupport_DEBUGGER_CONTINUING);
+    logger.info(LocalizedMessage.create(LocalizedStrings.DebuggerSupport_DEBUGGER_CONTINUING));
   }
 }

@@ -48,6 +48,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionTestHelper;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -584,7 +585,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
         ResultCollector rc1 = dataSet.withArgs(Boolean.TRUE).execute(
             function.getId());
         List l = ((List)rc1.getResult());
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "PRFunctionExecutionDUnitTest#testExecutionOnAllNodes_byName : Result size :"
                 + l.size() + " Result : " + l);
         assertEquals(4, l.size());

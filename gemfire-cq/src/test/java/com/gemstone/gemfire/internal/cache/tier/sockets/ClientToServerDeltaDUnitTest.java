@@ -52,7 +52,10 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Test client to server flow for delta propogation
@@ -130,8 +133,8 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     client2 = host.getVM(3);
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // reset all flags
     DeltaTestImpl.resetDeltaInvokationCounters();
     server.invoke(DeltaTestImpl.class, "resetDeltaInvokationCounters");
@@ -161,11 +164,11 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
             Boolean.TRUE, Boolean.FALSE, clone, enableDelta })).intValue();
 
     client.invoke(ClientToServerDeltaDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(server.getHost()), new Integer(PORT1),
+        new Object[] { NetworkUtils.getServerHostName(server.getHost()), new Integer(PORT1),
             Boolean.FALSE, Boolean.FALSE, Boolean.FALSE });
 
     client2.invoke(ClientToServerDeltaDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(server2.getHost()),
+        new Object[] { NetworkUtils.getServerHostName(server2.getHost()),
             new Integer(PORT2), Boolean.TRUE, Boolean.FALSE, cq, queries, RI });
   }
 
@@ -180,11 +183,11 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
             Boolean.FALSE, Boolean.FALSE, clone, enableDelta })).intValue();
 
     client.invoke(ClientToServerDeltaDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(server.getHost()), new Integer(PORT1),
+        new Object[] { NetworkUtils.getServerHostName(server.getHost()), new Integer(PORT1),
             Boolean.FALSE, Boolean.FALSE, Boolean.FALSE });
 
     client2.invoke(ClientToServerDeltaDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(server2.getHost()),
+        new Object[] { NetworkUtils.getServerHostName(server2.getHost()),
             new Integer(PORT2), Boolean.TRUE, Boolean.FALSE, cq, queries, RI });
   }
 
@@ -713,7 +716,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
         new Object[] { Boolean.FALSE, Boolean.FALSE });
 
     client.invoke(ClientToServerDeltaDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(server.getHost()), new Integer(PORT1),
+        new Object[] { NetworkUtils.getServerHostName(server.getHost()), new Integer(PORT1),
             Boolean.FALSE, Boolean.TRUE, Boolean.FALSE });
 
 /*    server2.invoke(ClientToServerDeltaDUnitTest.class, "setFirstSecondUpdate",
@@ -746,7 +749,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
         new Object[] { Boolean.FALSE, Boolean.FALSE });
 
     client.invoke(ClientToServerDeltaDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(server.getHost()), new Integer(PORT1),
+        new Object[] { NetworkUtils.getServerHostName(server.getHost()), new Integer(PORT1),
             Boolean.FALSE, Boolean.TRUE, Boolean.FALSE });
 
     client.invoke(ClientToServerDeltaDUnitTest.class, "putDelta",
@@ -778,11 +781,11 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
         new Object[] { Boolean.FALSE, Boolean.FALSE });
 
     client.invoke(ClientToServerDeltaDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(server.getHost()), new Integer(PORT1),
+        new Object[] { NetworkUtils.getServerHostName(server.getHost()), new Integer(PORT1),
             Boolean.TRUE, Boolean.TRUE, Boolean.FALSE });
 
     client2.invoke(ClientToServerDeltaDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(server.getHost()), new Integer(PORT1),
+        new Object[] { NetworkUtils.getServerHostName(server.getHost()), new Integer(PORT1),
             Boolean.TRUE, Boolean.FALSE, Boolean.FALSE });
     
     int deltaSent =  (Integer)server2.invoke(
@@ -809,7 +812,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
         new Object[] { Boolean.FALSE, Boolean.FALSE });
 
     client.invoke(ClientToServerDeltaDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(server.getHost()), new Integer(PORT1),
+        new Object[] { NetworkUtils.getServerHostName(server.getHost()), new Integer(PORT1),
             Boolean.FALSE, Boolean.FALSE, Boolean.FALSE});
 
     client.invoke(ClientToServerDeltaDUnitTest.class, "putDelta",
@@ -1000,7 +1003,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
         return "Last key NOT received.";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 10*1000, 100, true);
+    Wait.waitForCriterion(wc, 10*1000, 100, true);
   }
   
   static class CSDeltaTestImpl extends DeltaTestImpl {

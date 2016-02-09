@@ -29,10 +29,12 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext;
 import com.gemstone.gemfire.management.internal.cli.remote.CommandProcessor;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -76,7 +78,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
   @SuppressWarnings("serial")
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCliCommandTestBase() throws Exception {
     Host.getHost(0).getVM(1).invoke(new SerializableRunnable() {
       public void run() {
         DistributionManager.isDedicatedAdminVM = false;
@@ -89,8 +91,6 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
       }
     });
     deleteSavedJarFiles();
-
-    super.tearDown2();
   }
 
   @SuppressWarnings("serial")
@@ -346,7 +346,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
               locatorProps);
 
-          DistributedTestCase.WaitCriterion wc = new DistributedTestCase.WaitCriterion() {
+          WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
@@ -357,7 +357,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          DistributedTestCase.waitForCriterion(wc, 5000, 500, true);
+          Wait.waitForCriterion(wc, 5000, 500, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
@@ -412,7 +412,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
         try {
           assertTrue(sharedConfig.getConfiguration(groupName).getJarNames().contains("DeployCommandsDUnit1.jar"));
         } catch (Exception e) {
-          fail("Error occurred in cluster configuration service", e);
+          Assert.fail("Error occurred in cluster configuration service", e);
         }
       }
     });
@@ -445,7 +445,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
         try {
           assertFalse(sharedConfig.getConfiguration(groupName).getJarNames().contains("DeployCommandsDUnit1.jar"));
         } catch (Exception e) {
-          fail("Error occurred in cluster configuration service", e);
+          Assert.fail("Error occurred in cluster configuration service", e);
         }
       }
     });

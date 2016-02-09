@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.XmlParser;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 /**
  * Tests 8.1 schema based configuration. From this point all config test cases
@@ -140,7 +140,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       testXml(cache);
       fail("Excepted CacheXmlException");

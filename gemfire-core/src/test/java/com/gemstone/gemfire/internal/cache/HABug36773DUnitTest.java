@@ -38,8 +38,11 @@ import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -156,7 +159,7 @@ public class HABug36773DUnitTest extends DistributedTestCase
 
   public void testDummyForBug36773()
   {
-    getLogWriter().info(" This is the dummy test for the Bug 36773");
+    LogWriterUtils.getLogWriter().info(" This is the dummy test for the Bug 36773");
     
   }
   
@@ -171,7 +174,7 @@ public class HABug36773DUnitTest extends DistributedTestCase
       {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         assertNotNull(region);
-        getLogWriter().info("Size of the region " + region.size());
+        LogWriterUtils.getLogWriter().info("Size of the region " + region.size());
         assertEquals(size, region.size());
       }
     };
@@ -234,7 +237,7 @@ public class HABug36773DUnitTest extends DistributedTestCase
           Thread.sleep(700);
         }
         catch (InterruptedException ie) {
-          fail("Interrupted while waiting ", ie);
+          Assert.fail("Interrupted while waiting ", ie);
         }
       }
     }
@@ -260,7 +263,7 @@ public class HABug36773DUnitTest extends DistributedTestCase
       assertEquals(r1.getEntry(KEY2).getValue(), "key-2");
     }
     catch (Exception ex) {
-      fail("failed while createEntriesK1andK2()", ex);
+      Assert.fail("failed while createEntriesK1andK2()", ex);
     }
   }
   
@@ -280,7 +283,7 @@ public class HABug36773DUnitTest extends DistributedTestCase
     new HABug36773DUnitTest("temp").createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    ClientServerTestCase.configureConnectionPool(factory, DistributedTestCase.getIPLiteral(), new int[] {PORT1,PORT2}, true, -1, 2, null);
+    ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getIPLiteral(), new int[] {PORT1,PORT2}, true, -1, 2, null);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
   }
@@ -316,7 +319,7 @@ public class HABug36773DUnitTest extends DistributedTestCase
 
     }
     catch (Exception ex) {
-      fail("failed while registering interest", ex);
+      Assert.fail("failed while registering interest", ex);
     }
   }
 
@@ -354,16 +357,14 @@ public class HABug36773DUnitTest extends DistributedTestCase
 
   }
   
-  public void tearDown2() throws Exception
-  {
+  @Override
+  protected final void preTearDown() throws Exception {
     //close client
     client1.invoke(HABug36773DUnitTest.class, "closeCache");
     client2.invoke(HABug36773DUnitTest.class, "closeCache");
     //close server
     server1.invoke(HABug36773DUnitTest.class, "closeCache");
     server2.invoke(HABug36773DUnitTest.class, "closeCache");
-
   }
-  
 }
 

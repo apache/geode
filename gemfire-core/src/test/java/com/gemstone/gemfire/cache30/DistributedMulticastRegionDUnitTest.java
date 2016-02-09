@@ -37,6 +37,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -60,9 +61,8 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     clean();
-    super.tearDown2();
   }
   
   private void clean(){
@@ -72,7 +72,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
               disconnectFromDS();
             }
         };
-    invokeInEveryVM(cleanVM);    
+    Invoke.invokeInEveryVM(cleanVM);    
   }
   
   public void testMulticastEnabled() {
@@ -172,7 +172,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
     locator1Vm.invoke(new SerializableCallable() {
       @Override
       public Object call() {
-        final File locatorLogFile = new File(testName + "-locator-" + locatorPort + ".log");
+        final File locatorLogFile = new File(getTestMethodName() + "-locator-" + locatorPort + ".log");
         final Properties locatorProps = new Properties();
         locatorProps.setProperty(DistributionConfig.NAME_NAME, "LocatorWithMcast");
         locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, mcastport);

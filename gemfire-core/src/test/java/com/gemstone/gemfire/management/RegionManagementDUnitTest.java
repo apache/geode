@@ -49,8 +49,12 @@ import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This class checks and verifies various data and operations exposed through
@@ -105,11 +109,6 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-  }
-
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-    
   }
 
   /**
@@ -439,7 +438,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
             region.put(new Integer(total), array);
           }
           assertTrue(bean.getEntrySize() > 0);
-          getLogWriter().info("DEBUG: EntrySize =" + bean.getEntrySize());
+          LogWriterUtils.getLogWriter().info("DEBUG: EntrySize =" + bean.getEntrySize());
           
 
 
@@ -470,7 +469,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
           assertNotNull(bean);
 
           assertTrue(bean.getEntrySize() > 0);
-          getLogWriter().info("DEBUG: EntrySize =" + bean.getEntrySize());
+          LogWriterUtils.getLogWriter().info("DEBUG: EntrySize =" + bean.getEntrySize());
         }
       });
 
@@ -673,14 +672,14 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
     attr.setPartitionAttributes(paf.create());
     fixedPrRegion = cache.createRegion(FIXED_PR_NAME, attr.create());
     assertNotNull(fixedPrRegion);
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "Partitioned Region " + FIXED_PR_NAME + " created Successfully :"
             + fixedPrRegion.toString());
 
     RegionMXBean bean = service.getLocalRegionMBean(FIXED_PR_PATH);
     RegionAttributes regAttrs = fixedPrRegion.getAttributes();
 
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "FixedPartitionAttribute From GemFire :"
             + regAttrs.getPartitionAttributes().getFixedPartitionAttributes());
 
@@ -697,7 +696,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
 
     assertEquals(3, fixedPrData.length);
     for (int i = 0; i < fixedPrData.length; i++) {
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "<ExpectedString> Fixed PR Data is " + fixedPrData[i]
               + "</ExpectedString> ");
     }
@@ -731,7 +730,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
           assertNotNull(fixedPrData);
           assertEquals(3, fixedPrData.length);
           for (int i = 0; i < fixedPrData.length; i++) {
-            getLogWriter().info(
+            LogWriterUtils.getLogWriter().info(
                 "<ExpectedString> Remote PR Data is " + fixedPrData[i]
                     + "</ExpectedString> ");
           }
@@ -770,7 +769,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
             Set<ObjectName> names = service.queryMBeanNames(member);
             if(names != null){
               for(ObjectName name : names){
-                getLogWriter().info(
+                LogWriterUtils.getLogWriter().info(
                     "<ExpectedString> ObjectNames arr" + name
                         + "</ExpectedString> ");
               }
@@ -779,11 +778,11 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
             mbeanServer.addNotificationListener(memberMBeanName, regionCreate,
                 null, null);
           } catch (NullPointerException e) {
-            fail("FAILED WITH EXCEPION", e);
+            Assert.fail("FAILED WITH EXCEPION", e);
           } catch (InstanceNotFoundException e) {
-            fail("FAILED WITH EXCEPION", e);
+            Assert.fail("FAILED WITH EXCEPION", e);
           } catch (Exception e) {
-            fail("FAILED WITH EXCEPION", e);
+            Assert.fail("FAILED WITH EXCEPION", e);
           }
 
         }
@@ -817,9 +816,9 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
               null, null);
 
         } catch (NullPointerException e) {
-          fail("FAILED WITH EXCEPION", e);
+          Assert.fail("FAILED WITH EXCEPION", e);
         } catch (InstanceNotFoundException e) {
-          fail("FAILED WITH EXCEPION", e);
+          Assert.fail("FAILED WITH EXCEPION", e);
 
         }
 
@@ -844,7 +843,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
           RegionMXBean bean = null;
           try {
 
-            waitForCriterion(new WaitCriterion() {
+            Wait.waitForCriterion(new WaitCriterion() {
 
               RegionMXBean bean = null;
 
@@ -905,10 +904,10 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
           EvictionAttributesData evictionData = bean.listEvictionAttributes();
           assertNotNull(membershipData);
           assertNotNull(evictionData);
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Membership Data is "
                   + membershipData.toString() + "</ExpectedString> ");
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Eviction Data is " + membershipData.toString()
                   + "</ExpectedString> ");
  
@@ -942,7 +941,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
 
         if (expectedMembers == 0) {
           try {
-            waitForCriterion(new WaitCriterion() {
+            Wait.waitForCriterion(new WaitCriterion() {
 
               RegionMXBean bean = null;
 
@@ -983,15 +982,15 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
 
         // Check Stats related Data
         // Add Mock testing
-        getLogWriter()
+        LogWriterUtils.getLogWriter()
             .info(
                 "<ExpectedString> CacheListenerCallsAvgLatency is "
                     + bean.getCacheListenerCallsAvgLatency()
                     + "</ExpectedString> ");
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "<ExpectedString> CacheWriterCallsAvgLatency is "
                 + bean.getCacheWriterCallsAvgLatency() + "</ExpectedString> ");
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "<ExpectedString> CreatesRate is " + bean.getCreatesRate()
                 + "</ExpectedString> ");
 
@@ -1068,12 +1067,12 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
               .addNotificationListener(memberMBeanName, test, null, null);
         } catch (MalformedObjectNameException e) {
 
-          fail("FAILED WITH EXCEPION", e);
+          Assert.fail("FAILED WITH EXCEPION", e);
         } catch (NullPointerException e) {
-          fail("FAILED WITH EXCEPION", e);
+          Assert.fail("FAILED WITH EXCEPION", e);
 
         } catch (InstanceNotFoundException e) {
-          fail("FAILED WITH EXCEPION", e);
+          Assert.fail("FAILED WITH EXCEPION", e);
 
         }
 
@@ -1092,10 +1091,10 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
         EvictionAttributesData evictionData = bean.listEvictionAttributes();
         assertNotNull(membershipData);
         assertNotNull(evictionData);
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "<ExpectedString> Membership Data is " + membershipData.toString()
                 + "</ExpectedString> ");
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "<ExpectedString> Eviction Data is " + membershipData.toString()
                 + "</ExpectedString> ");
       }
@@ -1143,7 +1142,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
         try {
           bean = service.getLocalRegionMBean(REGION_PATH);
         } catch (ManagementException mgtEx) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Expected Exception  "
                   + mgtEx.getLocalizedMessage() + "</ExpectedString> ");
         }
@@ -1168,12 +1167,12 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         ManagementService service = getManagementService();
-        getLogWriter().info("Closing Par Region");
+        LogWriterUtils.getLogWriter().info("Closing Par Region");
         RegionMXBean bean = null;
         try {
           bean = service.getLocalRegionMBean(PARTITIONED_REGION_PATH);
         } catch (ManagementException mgtEx) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Expected Exception  "
                   + mgtEx.getLocalizedMessage() + "</ExpectedString> ");
         }
@@ -1194,14 +1193,14 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         ManagementService service = getManagementService();
-        getLogWriter().info("Closing Fixed Par Region");
+        LogWriterUtils.getLogWriter().info("Closing Fixed Par Region");
         Region region = cache.getRegion(FIXED_PR_PATH);
         region.close();
         RegionMXBean bean = null;
         try {
           bean = service.getLocalRegionMBean(FIXED_PR_PATH);
         } catch (ManagementException mgtEx) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Expected Exception  "
                   + mgtEx.getLocalizedMessage() + "</ExpectedString> ");
         }
@@ -1422,7 +1421,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
       Notification rn =  notification;
       assertTrue(rn.getType().equals(JMXNotificationType.REGION_CREATED)
           || rn.getType().equals(JMXNotificationType.REGION_CLOSED));
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "<ExpectedString> Member Level Notifications" + rn.toString()
               + "</ExpectedString> ");
     }
@@ -1441,7 +1440,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
     public void handleNotification(Notification notification, Object handback) {
       assertNotNull(notification);
       Notification rn = notification;
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "<ExpectedString> Distributed System Notifications" + rn.toString()
               + "</ExpectedString> ");
     }

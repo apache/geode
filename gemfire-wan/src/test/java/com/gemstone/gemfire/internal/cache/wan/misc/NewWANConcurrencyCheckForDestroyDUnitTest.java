@@ -31,6 +31,8 @@ import com.gemstone.gemfire.internal.cache.Token.Tombstone;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * @author shobhit
@@ -80,7 +82,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
         "createFirstRemoteLocator", new Object[] { 3, lnPort });
     Integer tkRecPort = (Integer) vm5.invoke(WANTestBase.class, "createReceiver", new Object[] { tkPort });
 
-    getLogWriter().info("Created locators and receivers in 3 distributed systems");
+    LogWriterUtils.getLogWriter().info("Created locators and receivers in 3 distributed systems");
      
     //Site 1
     vm1.invoke(WANTestBase.class, "createSender", new Object[] { "ln1", 2,
@@ -110,7 +112,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "tk1" });
     vm5.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "tk1" });
     
-    pause(2000);
+    Wait.pause(2000);
     
     // Perform a put in vm1
     vm1.invoke(new CacheSerializableRunnable("Putting an entry in ds1") {
@@ -127,12 +129,12 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     });
 
     //wait for vm1 to propagate put to vm3 and vm5
-    pause(2000); 
+    Wait.pause(2000); 
 
     destroyTimeStamp = (Long) vm3.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "getVersionTimestampAfterOp");
     
     //wait for vm1 to propagate destroyed entry's new version tag to vm5
-    pause(2000); 
+    Wait.pause(2000); 
 
     vm5.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "verifyTimestampAfterOp", 
           new Object[] {destroyTimeStamp, 1 /* ds 3 receives gatway event only from ds 1*/});
@@ -160,7 +162,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
         "createFirstRemoteLocator", new Object[] { 2, lnPort });
     Integer nyRecPort = (Integer) vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
 
-    getLogWriter().info("Created locators and receivers in 2 distributed systems");
+    LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
      
     //Site 1
     vm1.invoke(WANTestBase.class, "createSender", new Object[] { "ln1", 2,
@@ -178,7 +180,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ny1" });
     vm3.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ny1" });
     
-    pause(2000);
+    Wait.pause(2000);
     
     // Perform a put in vm1
     AsyncInvocation asynch1 = vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
@@ -200,7 +202,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     });
 
     //wait for vm1 to propagate put to vm3
-    pause(1000); 
+    Wait.pause(1000); 
 
     AsyncInvocation asynch2 = vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
       
@@ -210,7 +212,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
         Region region = cache.getRegion("/repRegion");
         
         while (!region.containsKey("testKey")) {
-          pause(10);
+          Wait.pause(10);
         }
         // Test hook to make put wait after RE lock is released but before Gateway events are sent.
         DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 0; 
@@ -238,7 +240,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     }
 
     //Wait for all Gateway events be received by vm3.
-    pause(1000);
+    Wait.pause(1000);
 
     long putAllTimeStampVm1 = (Long) vm1.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "getVersionTimestampAfterPutAllOp");
     
@@ -265,7 +267,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
         "createFirstRemoteLocator", new Object[] { 2, lnPort });
     Integer nyRecPort = (Integer) vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
 
-    getLogWriter().info("Created locators and receivers in 2 distributed systems");
+    LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
      
     //Site 1
     vm1.invoke(WANTestBase.class, "createSender", new Object[] { "ln1", 2,
@@ -283,7 +285,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ny1" });
     vm3.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ny1" });
     
-    pause(2000);
+    Wait.pause(2000);
     
     // Perform a put in vm1
     AsyncInvocation asynch1 = vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
@@ -305,7 +307,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     });
 
     //wait for vm1 to propagate put to vm3
-    pause(1000); 
+    Wait.pause(1000); 
 
     AsyncInvocation asynch2 = vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
       
@@ -315,7 +317,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
         Region region = cache.getRegion("/repRegion");
         
         while (!region.containsKey("testKey")) {
-          pause(10);
+          Wait.pause(10);
         }
         // Test hook to make put wait after RE lock is released but before Gateway events are sent.
         DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 0; 
@@ -343,7 +345,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     }
 
     //Wait for all Gateway events be received by vm3.
-    pause(1000);
+    Wait.pause(1000);
 
     long putAllTimeStampVm1 = (Long) vm1.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "getVersionTimestampAfterPutAllOp");
     
@@ -372,7 +374,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
         "createFirstRemoteLocator", new Object[] { 2, lnPort });
     Integer nyRecPort = (Integer) vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
     
-    getLogWriter().info("Created locators and receivers in 2 distributed systems");
+    LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
 
     //Site 1
     vm1.invoke(WANTestBase.class, "createSender", new Object[] { "ln1", 2,
@@ -393,7 +395,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ny1" });
     vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ny1" });
     
-    pause(2000);
+    Wait.pause(2000);
     
     // Perform a put in vm1
     vm1.invoke(new CacheSerializableRunnable("Putting an entry in ds1") {
@@ -410,7 +412,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     });
 
     //wait for vm4 to have later timestamp before sending operation to vm1
-    pause(300); 
+    Wait.pause(300); 
 
     AsyncInvocation asynch = vm4.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds2 in vm4") {
       
@@ -433,7 +435,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     }
 
     //Wait for all local ds events be received by vm3.
-    pause(1000);
+    Wait.pause(1000);
 
     vm3.invoke(new CacheSerializableRunnable("Check dsid") {
       
@@ -469,7 +471,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     Region region = cache.getRegion("repRegion");
     
     while (!(region.containsKey("testKey") /*&& region.get("testKey").equals("testValue2") */)) {
-      pause(10);
+      Wait.pause(10);
     }
     assertEquals(1, region.size());
 
@@ -481,7 +483,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
       re = ((NonTXEntry)entry).getRegionEntry();
     }
     if (re != null) {
-      getLogWriter().fine("RegionEntry for testKey: " + re.getKey() + " " + re.getValueInVM((LocalRegion) region));
+      LogWriterUtils.getLogWriter().fine("RegionEntry for testKey: " + re.getKey() + " " + re.getValueInVM((LocalRegion) region));
       
       VersionTag tag = re.getVersionStamp().asVersionTag();
       return tag.getVersionTimeStamp();
@@ -501,7 +503,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
 
     Region.Entry entry = ((LocalRegion)region).getEntry("testKey", /*null,*/ true);
     RegionEntry re = ((EntrySnapshot)entry).getRegionEntry();
-    getLogWriter().fine("RegionEntry for testKey: " + re.getKey() + " " + re.getValueInVM((LocalRegion) region));
+    LogWriterUtils.getLogWriter().fine("RegionEntry for testKey: " + re.getKey() + " " + re.getValueInVM((LocalRegion) region));
     assertTrue(re.getValueInVM((LocalRegion) region) instanceof Tombstone);
     
     VersionTag tag = re.getVersionStamp().asVersionTag();

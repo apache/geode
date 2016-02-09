@@ -55,7 +55,8 @@ public class HostedLocatorsDUnitTest extends DistributedTestCase {
     disconnectAllFromDS();
   }
   
-  public void tearDown2() throws Exception {
+  @Override
+  protected final void preTearDown() throws Exception {
     disconnectAllFromDS();
   }
   

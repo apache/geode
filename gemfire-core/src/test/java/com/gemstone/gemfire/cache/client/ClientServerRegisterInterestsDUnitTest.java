@@ -35,6 +35,7 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -68,12 +69,11 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
     super.setUp();
     disconnectAllFromDS();
     setupGemFireCacheServer();
-    addExpectedException("java.net.ConnectException");
+    IgnoredException.addIgnoredException("java.net.ConnectException");
   }
 
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  protected final void preTearDown() throws Exception {
     serverPort.set(0);
     entryEvents.clear();
     gemfireServerVm.invoke(new SerializableRunnable() {

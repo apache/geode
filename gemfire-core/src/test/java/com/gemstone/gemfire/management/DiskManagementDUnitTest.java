@@ -45,6 +45,8 @@ import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Test cases to cover all test cases which pertains to disk from Management
@@ -90,8 +92,8 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
 
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();    
+  @Override
+  protected final void postTearDownManagementTestBase() throws Exception {
     com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
   }
 
@@ -176,9 +178,9 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
     VM vm1 = getManagedNodeList().get(1);
     VM vm2 = getManagedNodeList().get(2);
     
-    getLogWriter().info("Creating region in VM0");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    getLogWriter().info("Creating region in VM1");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
 
     putAnEntry(vm0);
@@ -197,12 +199,12 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
       }
     });
 
-    getLogWriter().info("closing region in vm0");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("closing region in vm0");
     closeRegion(vm0);
 
     updateTheEntry(vm1);
 
-    getLogWriter().info("closing region in vm1");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("closing region in vm1");
     closeRegion(vm1);
     AsyncInvocation future = createPersistentRegionAsync(vm0);
     waitForBlockedInitialization(vm0);
@@ -217,14 +219,14 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
         DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         PersistentMemberDetails[] missingDiskStores = bean
         .listMissingDiskStores();
-        getLogWriter().info("waiting members=" + missingDiskStores);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("waiting members=" + missingDiskStores);
         assertNotNull(missingDiskStores);
         assertEquals(1, missingDiskStores.length);
 
         for (PersistentMemberDetails id : missingDiskStores) {
-          getLogWriter().info("Missing DiskStoreID is =" + id.getDiskStoreId());
-          getLogWriter().info("Missing Host is =" + id.getHost());
-          getLogWriter().info("Missing Directory is =" + id.getDirectory());
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Missing DiskStoreID is =" + id.getDiskStoreId());
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Missing Host is =" + id.getHost());
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Missing Directory is =" + id.getDirectory());
 
           try {
             bean.revokeMissingDiskStores(id.getDiskStoreId());
@@ -377,11 +379,11 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
         Cache cache = getCache();
         Region region = cache.getRegion(REGION_NAME);
         DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-        getLogWriter().info("putting key1");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("putting key1");
         region.put("key1", "value1");
-        getLogWriter().info("putting key2");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("putting key2");
         region.put("key2", "value2");
-        getLogWriter().info("removing key2");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("removing key2");
         region.remove("key2");
         // now that it is compactable the following forceCompaction should
         // go ahead and do a roll and compact it.
@@ -413,7 +415,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
 
         assertTrue(compactedDiskStores.length > 0);
         for (int i = 0; i < compactedDiskStores.length; i++) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Compacted Store " + i + " "
                   + compactedDiskStores[i] + "</ExpectedString> ");
         }
@@ -463,13 +465,13 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
             String[] allDisks = bean.listDiskStores(true);
             assertNotNull(allDisks);
             List<String> listString = Arrays.asList(allDisks);
-            getLogWriter().info(
+            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
                 "<ExpectedString> Remote All Disk Stores Are  "
                     + listString.toString() + "</ExpectedString> ");
             String[] compactedDiskStores = bean.compactAllDiskStores();
             assertTrue(compactedDiskStores.length > 0);
             for (int i = 0; i < compactedDiskStores.length; i++) {
-              getLogWriter().info(
+              com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
                   "<ExpectedString> Remote Compacted Store " + i + " "
                       + compactedDiskStores[i] + "</ExpectedString> ");
             }
@@ -578,7 +580,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
     vm.invoke(new SerializableRunnable() {
 
       public void run() {
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
 
           public String description() {
             return "Waiting to blocked waiting for another persistent member to come online";

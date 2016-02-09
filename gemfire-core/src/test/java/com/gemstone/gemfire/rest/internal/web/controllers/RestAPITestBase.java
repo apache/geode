@@ -28,6 +28,7 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class RestAPITestBase extends DistributedTestCase {
   private static final long serialVersionUID = 1L;
@@ -46,7 +47,7 @@ public class RestAPITestBase extends DistributedTestCase {
   public void setUp() throws Exception {
     super.setUp();
     disconnectAllFromDS();
-    pause(5000);
+    Wait.pause(5000);
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -58,8 +59,7 @@ public class RestAPITestBase extends DistributedTestCase {
    * close the clients and teh servers
    */
   @Override
-  public void tearDown2() throws Exception
-  {
+  protected final void preTearDown() throws Exception {
     vm0.invoke(getClass(), "closeCache");
     vm1.invoke(getClass(), "closeCache");
     vm2.invoke(getClass(), "closeCache");
@@ -79,7 +79,7 @@ public class RestAPITestBase extends DistributedTestCase {
   
   protected static String createCache(VM currentVM) {
     
-    RestAPITestBase test = new RestAPITestBase(testName);
+    RestAPITestBase test = new RestAPITestBase(getTestMethodName());
     
     final String hostName = currentVM.getHost().getHostName();
     final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -98,7 +98,7 @@ public class RestAPITestBase extends DistributedTestCase {
   }
   
   public static String createCacheWithGroups (VM vm, final String groups, final String regionName ) {
-    RestAPITestBase test = new RestAPITestBase(testName);
+    RestAPITestBase test = new RestAPITestBase(getTestMethodName());
     
     final String hostName = vm.getHost().getHostName(); 
     final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();

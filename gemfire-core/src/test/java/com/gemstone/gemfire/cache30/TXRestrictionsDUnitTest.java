@@ -37,6 +37,8 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.internal.OSProcess;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 public class TXRestrictionsDUnitTest extends CacheTestCase {
@@ -72,13 +74,13 @@ public class TXRestrictionsDUnitTest extends CacheTestCase {
     final CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
     final String misConfigRegionName = getUniqueName();
     Region misConfigRgn = getCache().createRegion(misConfigRegionName, getDiskRegionAttributes());
-    invokeInEveryVM(new SerializableRunnable("testPersistentRestriction: Illegal Region Configuration") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("testPersistentRestriction: Illegal Region Configuration") {
         public void run() {
           try {
             getCache().createRegion(misConfigRegionName, getDiskRegionAttributes());
             // rgn1.put("misConfigKey", "oldmisConfigVal");
           } catch (CacheException e) {
-            fail("While creating region", e);
+            Assert.fail("While creating region", e);
           }
         }
       });

@@ -46,6 +46,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
@@ -358,7 +359,7 @@ public class SizingFlagDUnitTest extends CacheTestCase {
         try {
           region.getAttributesMutator().addCacheListener(new TestCacheListener());
         } catch (Exception e) {
-          fail("couldn't create index", e);
+          Assert.fail("couldn't create index", e);
         }
       }
     });

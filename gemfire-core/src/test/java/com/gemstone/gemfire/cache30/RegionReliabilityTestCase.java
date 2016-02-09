@@ -65,9 +65,11 @@ import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXState;
 import com.gemstone.gemfire.internal.cache.TXStateInterface;
 import com.gemstone.gemfire.internal.cache.TXStateProxyImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests region reliability defined by MembershipAttributes.
@@ -82,9 +84,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   }
 
   @Override
-  public void tearDown2() throws java.lang.Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     DistributedCacheOperation.setBeforePutOutgoing(null);
-    super.tearDown2();
   }
 
   // -------------------------------------------------------------------------
@@ -825,7 +826,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
         return "expected zero entries but have " + ((LocalRegion) region).basicEntries(false).size();
       }
     };
-    DistributedTestCase.waitForCriterion(wc1, 30*1000, 10, true);
+    Wait.waitForCriterion(wc1, 30*1000, 10, true);
 
     // create region again
     Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
@@ -1007,7 +1008,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
         return "expected region " + region + " to be destroyed";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 30*1000, 10, true);
+    Wait.waitForCriterion(wc, 30*1000, 10, true);
   }
   
   public static void waitForEntryDestroy(final Region region, final Object key) {
@@ -1019,7 +1020,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
         return "expected entry " + key + " to not exist but it has the value " + region.get(key);
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 30*1000, 10, true);
+    Wait.waitForCriterion(wc, 30*1000, 10, true);
   }
   
   /**
@@ -1412,7 +1413,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       }
     });
     
-    DistributedTestCase.join(thread, 30 * 1000, getLogWriter());
+    ThreadUtils.join(thread, 30 * 1000);
     assertTrue(region.isDestroyed());
     try {
       region.put("fee", "fi");

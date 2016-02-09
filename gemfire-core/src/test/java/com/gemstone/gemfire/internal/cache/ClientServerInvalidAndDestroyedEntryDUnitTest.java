@@ -39,7 +39,9 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableCallableIF;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
@@ -141,7 +143,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
             server.start();
           }
           catch (IOException e) {
-            fail("Failed to start server ", e);
+            Assert.fail("Failed to start server ", e);
           }
         }
         if (usePR) {
@@ -190,10 +192,10 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
         myRegion.invalidate(key2);
       }
     });
-    getLogWriter().info("creating client cache");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
-                    .set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel())
+                    .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
                     .create();
     Region myRegion = c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);;
     if (useTX) {
@@ -204,7 +206,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     assertNotNull(myRegion.get(notAffectedKey));
     
     // get of an invalid entry should return null and create the entry in an invalid state
-    getLogWriter().info("getting "+key1+" - should reach this cache and be INVALID");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("getting "+key1+" - should reach this cache and be INVALID");
     assertNull(myRegion.get(key1));
     assertTrue(myRegion.containsKey(key1));
     
@@ -261,7 +263,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     // test that a listener is not invoked when there is already an invalidated
     // entry in the client cache
     UpdateListener listener = new UpdateListener();
-    listener.log = getLogWriter();
+    listener.log = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
     myRegion.getAttributesMutator().addCacheListener(listener);
     myRegion.get(key1);
     assertEquals("expected no cache listener invocations",
@@ -308,10 +310,10 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
         myRegion.destroy(key2);
       }
     });
-    getLogWriter().info("creating client cache");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
-                    .set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel())
+                    .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
                     .create();
     Region myRegion = c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);;
     if (useTX) {
@@ -320,7 +322,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     // get of a valid entry should work
     assertNotNull(myRegion.get(notAffectedKey));
     // get of an invalid entry should return null and create the entry in an invalid state
-    getLogWriter().info("getting "+key1+" - should reach this cache and be a TOMBSTONE");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("getting "+key1+" - should reach this cache and be a TOMBSTONE");
     assertNull(myRegion.get(key1));
     assertFalse(myRegion.containsKey(key1));
     RegionEntry entry;
@@ -373,7 +375,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     keys.add(notAffectedKey); keys.add(key1); keys.add(key2);
     Map result = myRegion.getAll(keys);
     
-    getLogWriter().info("result of getAll = " + result);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("result of getAll = " + result);
     assertNotNull(result.get(notAffectedKey));
     assertNull(result.get(key1));
     assertNull(result.get(key2));
@@ -430,10 +432,10 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
         }
       }
     });
-    getLogWriter().info("creating client cache");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
-                    .set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel())
+                    .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
                     .setPoolSubscriptionEnabled(true)
                     .create();
     
@@ -456,7 +458,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
           BucketRegion bucket = ((PartitionedRegion)myRegion).getBucketRegion(key10);
           if (bucket != null) {
             event.setRegion(bucket);
-            getLogWriter().info("performing local destroy in " + bucket + " ccEnabled="+bucket.concurrencyChecksEnabled + " rvv="+bucket.getVersionVector());
+            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("performing local destroy in " + bucket + " ccEnabled="+bucket.concurrencyChecksEnabled + " rvv="+bucket.getVersionVector());
             bucket.concurrencyChecksEnabled = false; // turn off cc so entry is removed
             bucket.mapDestroy(event, false, false, null);
             bucket.concurrencyChecksEnabled = true;

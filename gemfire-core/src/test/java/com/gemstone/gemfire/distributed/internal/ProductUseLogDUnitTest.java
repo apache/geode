@@ -28,6 +28,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
@@ -75,7 +76,7 @@ public class ProductUseLogDUnitTest extends DistributedTestCase {
         try {
           server.start();
         } catch (IOException e) {
-          fail("failed to start server", e);
+          Assert.fail("failed to start server", e);
         }
       }
     });
@@ -100,7 +101,8 @@ public class ProductUseLogDUnitTest extends DistributedTestCase {
     return sb.toString();
   }
 
-  public void tearDown2() {
+  @Override
+  protected final void preTearDown() throws Exception {
     disconnectAllFromDS();
   }
 }

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.configuration;
 
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
@@ -40,8 +42,12 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -88,7 +94,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
   }
 
   public void testStartServerAndExecuteCommands() throws InterruptedException, ClassNotFoundException, IOException, ExecutionException {
-    addExpectedException("EntryDestroyedException");
+    IgnoredException.addIgnoredException("EntryDestroyedException");
     Object[] result = setup();
     final int locatorPort = (Integer) result[0];
     final String jmxHost = (String) result[1];
@@ -111,7 +117,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
 
 
     //shutdown everything
-    getLogWriter().info("Shutting down all the members");
+    LogWriterUtils.getLogWriter().info("Shutting down all the members");
     shutdownAll();
     deleteSavedJarFiles();
   }
@@ -141,7 +147,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
 
   protected void executeAndVerifyCommand(String commandString) {
     CommandResult cmdResult = executeCommand(commandString);
-    getLogWriter().info("Command Result : \n" + commandResultToString(cmdResult));
+    LogWriterUtils.getLogWriter().info("Command Result : \n" + commandResultToString(cmdResult));
     assertEquals(Status.OK, cmdResult.getStatus());
     assertFalse(cmdResult.failedToPersist());
   }
@@ -332,7 +338,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null,
               locatorProps);
-          DistributedTestCase.WaitCriterion wc = new DistributedTestCase.WaitCriterion() {
+          WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
@@ -343,7 +349,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          DistributedTestCase.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
+          waitForCriterion(wc, TIMEOUT, INTERVAL, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }

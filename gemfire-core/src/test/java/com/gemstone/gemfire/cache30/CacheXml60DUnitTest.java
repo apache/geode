@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.SerializerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 /**
  * Tests 6.0 cache.xml features.
@@ -192,7 +192,7 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     rmc.setEvictionHeapPercentage(high);
     rmc.setCriticalHeapPercentage(low);
     cache.setResourceManagerCreation(rmc);
-    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE.toLocalizedString());
+    IgnoredException expectedException = IgnoredException.addIgnoredException(LocalizedStrings.MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE.toLocalizedString());
     try {
       testXml(cache);
       assertTrue(false);
@@ -310,7 +310,7 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     closeCache();
     cc.setSerializerCreation(sc);
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       testXml(cc);
       fail("Instantiator should not have registered due to bad class.");
@@ -324,7 +324,7 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     closeCache();
     cc.setSerializerCreation(sc);
 
-    ExpectedException expectedException1 = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException1 = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       testXml(cc);
       fail("Serializer should not have registered due to bad class.");

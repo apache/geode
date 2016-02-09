@@ -53,9 +53,10 @@ import com.gemstone.gemfire.management.internal.cli.json.TypedJson;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxInstanceFactory;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -148,11 +149,6 @@ public class QueryDataDUnitTest extends ManagementTestBase {
 
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-
-  }
-  
   private void initCommonRegions(){
     createRegionsInNodes();
     fillValuesInRegions();
@@ -171,7 +167,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
         Region region = cache.getRegion(regionName);
         for (int j = from; j < to; j++)
           region.put(new Integer(j), portfolio[j]);
-        getLogWriter()
+        LogWriterUtils.getLogWriter()
             .info(
                 "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: Inserted Portfolio data on Region "
                     + regionName);
@@ -406,7 +402,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
               if (jsonString1.contains("result")) {
                 JSONObject jsonObj = new JSONObject(jsonString1);
               } else {
-                getLogWriter().info("Failed Test String" + queriesForRR[i] + " is = " + jsonString1);
+                LogWriterUtils.getLogWriter().info("Failed Test String" + queriesForRR[i] + " is = " + jsonString1);
                 fail("Join on Replicated did not work.");
               }
             }
@@ -785,7 +781,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
             final DistributedRegionMXBean regionMBean = MBeanUtil.getDistributedRegionMbean("/"
                 + PartitionedRegionName6, 3);
 
-            DistributedTestCase.waitForCriterion(new WaitCriterion() {
+            Wait.waitForCriterion(new WaitCriterion() {
 
               public String description() {
                 return "Waiting for all entries to get reflected at managing node";
@@ -799,19 +795,19 @@ public class QueryDataDUnitTest extends ManagementTestBase {
 
             }, MAX_WAIT, 1000, true);
 
-            getLogWriter().info("member1RealData  is = " + member1RealData);
-            getLogWriter().info("member2RealData  is = " + member2RealData);
-            getLogWriter().info("member3RealData  is = " + member3RealData);
+            LogWriterUtils.getLogWriter().info("member1RealData  is = " + member1RealData);
+            LogWriterUtils.getLogWriter().info("member2RealData  is = " + member2RealData);
+            LogWriterUtils.getLogWriter().info("member3RealData  is = " + member3RealData);
             
             String member1Result = bean.queryData(query, member1.getId(), 0);
-            getLogWriter().info("member1Result " + query + " is = " + member1Result);
+            LogWriterUtils.getLogWriter().info("member1Result " + query + " is = " + member1Result);
 
 
             String member2Result = bean.queryData(query, member2.getId(), 0);
-            getLogWriter().info("member2Result " + query + " is = " + member2Result);
+            LogWriterUtils.getLogWriter().info("member2Result " + query + " is = " + member2Result);
             
             String member3Result = bean.queryData(query, member3.getId(), 0);
-            getLogWriter().info("member3Result " + query + " is = " + member3Result);
+            LogWriterUtils.getLogWriter().info("member3Result " + query + " is = " + member3Result);
             
             for (String val : member1RealData) {
               assertTrue(member1Result.contains(val));

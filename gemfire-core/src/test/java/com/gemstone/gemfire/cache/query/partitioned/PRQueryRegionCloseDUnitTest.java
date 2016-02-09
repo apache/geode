@@ -32,10 +32,13 @@ import java.util.Random;
 
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 
 public class PRQueryRegionCloseDUnitTest extends PartitionedRegionDUnitTestCase
@@ -89,7 +92,7 @@ public class PRQueryRegionCloseDUnitTest extends PartitionedRegionDUnitTestCase
 
   {
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Querying PR Test with region Close PR operation*****");
     Host host = Host.getHost(0);
@@ -101,33 +104,33 @@ public class PRQueryRegionCloseDUnitTest extends PartitionedRegionDUnitTestCase
     vmList.add(vm1);
     vmList.add(vm2);
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Creating Accessor node on VM0");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name,
         redundancy));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Successfully Created Accessor node on VM0");
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Creating PR's across all VM1 , VM2");
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
         redundancy));
     vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
         redundancy));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Successfully Created PR on VM1 , VM2");
 
     // creating a local region on one of the JVM's
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Creating Local Region on VM0");
     vm0.invoke(PRQHelp
         .getCacheSerializableRunnableForLocalRegionCreation(localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Successfully Created Local Region on VM0");
 
@@ -137,36 +140,36 @@ public class PRQueryRegionCloseDUnitTest extends PartitionedRegionDUnitTestCase
     final PortfolioData[] portfolio = PRQHelp.createPortfolioData(cnt, cntDest);
 
     // Putting the data into the accessor node
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Inserting Portfolio data through the accessor node");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio,
         cnt, cntDest));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Successfully Inserted Portfolio data through the accessor node");
 
     // Putting the same data in the local region created
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Inserting Portfolio data on local node  VM0 for result Set Comparison");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName,
         portfolio, cnt, cntDest));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Successfully Inserted Portfolio data on local node  VM0 for result Set Comparison");
 
     Random random = new Random();
     AsyncInvocation async0;
     // querying the VM for data
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Querying on VM0 both on PR Region & local ,also  Comparing the Results sets from both");
     async0 = vm0
         .invokeAsync(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(
             name, localName));
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Calling for Region.close() on either of the Datastores VM1 , VM2 at random and then recreating the cache, with a predefined Delay ");
     for (int j = 0; j < queryTestCycle; j++) {
@@ -174,10 +177,10 @@ public class PRQueryRegionCloseDUnitTest extends PartitionedRegionDUnitTestCase
       if( 0 != k ) {
       ((VM)(vmList.get(k))).invoke(PRQHelp.getCacheSerializableRunnableForRegionClose(
           name, redundancy));
-      pause(threadSleepTime);
+      Wait.pause(threadSleepTime);
       }
     }
-    DistributedTestCase.join(async0, 30 * 1000, getLogWriter());
+    ThreadUtils.join(async0, 30 * 1000);
 
     if (async0.exceptionOccurred()) {
       // for now, certain exceptions when a region is closed are acceptable
@@ -193,11 +196,11 @@ public class PRQueryRegionCloseDUnitTest extends PartitionedRegionDUnitTestCase
       } while (t != null);
       
       if (!isForceReattempt) {
-        fail("Unexpected exception during query", async0.getException());
+        Assert.fail("Unexpected exception during query", async0.getException());
       }
     }
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionCloseDUnitTest#testPRWithRegionCloseInOneDatastoreWithoutDelay: Querying with PR Operations ENDED*****");
   }

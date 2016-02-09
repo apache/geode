@@ -28,6 +28,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -49,11 +50,6 @@ public class WANManagementDUnitTest extends ManagementTestBase {
   public WANManagementDUnitTest(String name) throws Exception {
     super(name);
     }
-
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-   
-  }
 
   public void testMBeanCallback() throws Exception {
 
@@ -83,14 +79,14 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
 
     puneSender.invoke(WANTestBase.class, "createPartitionedRegion",
-        new Object[] { testName + "_PR", "pn", 1, 100, false });
+        new Object[] { getTestMethodName() + "_PR", "pn", 1, 100, false });
     managing.invoke(WANTestBase.class, "createPartitionedRegion",
-        new Object[] { testName + "_PR", "pn", 1, 100, false });
+        new Object[] { getTestMethodName() + "_PR", "pn", 1, 100, false });
     
     nyReceiver.invoke(WANTestBase.class, "createReceiver",
         new Object[] { nyPort });
     nyReceiver.invoke(WANTestBase.class, "createPartitionedRegion",
-        new Object[] { testName + "_PR", null, 1, 100, false });
+        new Object[] { getTestMethodName() + "_PR", null, 1, 100, false });
 
     puneSender.invoke(WANTestBase.class, "startSender", new Object[] { "pn" });
     managing.invoke(WANTestBase.class, "startSender", new Object[] { "pn" });
@@ -105,8 +101,8 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     
  
     
-    checkSenderMBean(puneSender, testName + "_PR");
-    checkSenderMBean(managing, testName + "_PR");
+    checkSenderMBean(puneSender, getTestMethodName() + "_PR");
+    checkSenderMBean(managing, getTestMethodName() + "_PR");
     
     checkReceiverMBean(nyReceiver);
     
@@ -141,7 +137,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     nyReceiver.invoke(WANTestBase.class, "createReceiver",
         new Object[] { nyPort });
     nyReceiver.invoke(WANTestBase.class, "createPartitionedRegion",
-        new Object[] { testName + "_PR", null, 1, 100, false });
+        new Object[] { getTestMethodName() + "_PR", null, 1, 100, false });
     
     // keep a larger batch to minimize number of exception occurrences in the
     // log
@@ -149,7 +145,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
         12, true, 100, 300, false, false, null, true });
 
     puneSender.invoke(WANTestBase.class, "createPartitionedRegion",
-        new Object[] { testName + "_PR", "pn", 1, 100, false });
+        new Object[] { getTestMethodName() + "_PR", "pn", 1, 100, false });
 
     puneSender.invoke(WANTestBase.class, "startSender", new Object[] { "pn" });
 
@@ -161,7 +157,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     startManagingNode(managing);
 
 
-    checkSenderMBean(puneSender, testName + "_PR");
+    checkSenderMBean(puneSender, getTestMethodName() + "_PR");
     checkReceiverMBean(nyReceiver);
 
     DistributedMember nyMember = (DistributedMember) nyReceiver.invoke(
@@ -201,15 +197,15 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
 
     puneSender.invoke(WANTestBase.class, "createReplicatedRegionWithAsyncEventQueue", new Object[] {
-      testName + "_RR", "pn", false });
+      getTestMethodName() + "_RR", "pn", false });
     managing.invoke(WANTestBase.class, "createReplicatedRegionWithAsyncEventQueue", new Object[] {
-      testName + "_RR", "pn", false });
+      getTestMethodName() + "_RR", "pn", false });
 
     
     nyReceiver.invoke(WANTestBase.class, "createReceiver",
         new Object[] { nyPort });
     nyReceiver.invoke(WANTestBase.class, "createPartitionedRegion",
-        new Object[] { testName + "_PR", null, 1, 100, false });
+        new Object[] { getTestMethodName() + "_PR", null, 1, 100, false });
     
     checkAsyncQueueMBean(puneSender);
     checkAsyncQueueMBean(managing);
@@ -322,7 +318,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
           DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
           Map<String, Boolean> dsMap = dsBean.viewRemoteClusterStatus();
           
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Ds Map is: " + dsMap
                   + "</ExpectedString> ");
           

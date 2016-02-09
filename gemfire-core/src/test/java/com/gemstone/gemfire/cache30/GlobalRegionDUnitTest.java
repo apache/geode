@@ -31,10 +31,12 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -86,7 +88,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
           try {
             createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
           } catch (CacheException ex) {
-            fail("While creating GLOBAL region", ex);
+            Assert.fail("While creating GLOBAL region", ex);
           }
           assertTrue(getRootRegion("INCOMPATIBLE_ROOT").getAttributes().getScope().isGlobal());
         }
@@ -108,7 +110,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
             }
 
           } catch (CacheException ex) {
-            fail("While creating GLOBAL Region", ex);
+            Assert.fail("While creating GLOBAL Region", ex);
           }
         }
       });
@@ -134,7 +136,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
             }
 
           } catch (CacheException ex) {
-            fail("While creating GLOBAL Region", ex);
+            Assert.fail("While creating GLOBAL Region", ex);
           }
         }
       });
@@ -245,7 +247,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
                       SystemFailure.setFailure((VirtualMachineError)e); // don't throw
                     }
                     String s = "Uncaught exception in thread " + t;
-                    fail(s, e);
+                    Assert.fail(s, e);
                   }
                 };
 
@@ -254,7 +256,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
               Thread thread = new Thread(group, new Runnable() {
                   public void run() {
                     try {
-                      getLogWriter().info("testSynchronousIncrements." + this);
+                      LogWriterUtils.getLogWriter().info("testSynchronousIncrements." + this);
                       final Random rand = new Random(System.identityHashCode(this));
                       try {
                         Region region = getRootRegion().getSubregion(name);
@@ -278,15 +280,15 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
                           region.put(key, value);
                           assertEquals(value, region.get(key));
                           
-                          getLogWriter().info("testSynchronousIncrements." + 
+                          LogWriterUtils.getLogWriter().info("testSynchronousIncrements." + 
                               this + ": " + key + " -> " + value);
                           lock.unlock();
                         }
   
                       } catch (InterruptedException ex) {
-                        fail("While incrementing", ex);
+                        Assert.fail("While incrementing", ex);
                       } catch (Exception ex) {
-                        fail("While incrementing", ex);
+                        Assert.fail("While incrementing", ex);
                       }
                     }
                     catch (VirtualMachineError e) {
@@ -294,7 +296,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
                       throw e;
                     }
                     catch (Throwable t) {
-                      getLogWriter().info("testSynchronousIncrements." + 
+                      LogWriterUtils.getLogWriter().info("testSynchronousIncrements." + 
                           this + " caught Throwable", t);
                     }
                   }
@@ -304,7 +306,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
             }
             
             for (int i = 0; i < threads.length; i++) {
-              DistributedTestCase.join(threads[i], 30 * 1000, getLogWriter());
+              ThreadUtils.join(threads[i], 30 * 1000);
             }
           }
         };
@@ -315,9 +317,9 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     }
 
     for (int i = 0; i < vmCount; i++) {
-      DistributedTestCase.join(invokes[i], 5 * 60 * 1000, getLogWriter());
+      ThreadUtils.join(invokes[i], 5 * 60 * 1000);
       if (invokes[i].exceptionOccurred()) {
-        fail("invocation failed", invokes[i].getException());
+        Assert.fail("invocation failed", invokes[i].getException());
       }
     }
 

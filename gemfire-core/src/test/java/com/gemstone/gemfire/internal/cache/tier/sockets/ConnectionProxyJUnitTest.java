@@ -54,8 +54,8 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -260,7 +260,7 @@ public class ConnectionProxyJUnitTest
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 90 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 90 * 1000, 200, true);
    }
    finally {
      if (server != null) {
@@ -321,7 +321,7 @@ public class ConnectionProxyJUnitTest
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 90 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 90 * 1000, 200, true);
    }
    finally {
      if (server != null) {
@@ -462,7 +462,7 @@ public class ConnectionProxyJUnitTest
          return null;
        }
      };
-     DistributedTestCase.waitForCriterion(ev, 20 * 1000, 200, true);
+     Wait.waitForCriterion(ev, 20 * 1000, 200, true);
    }
    catch (Exception ex) {
      ex.printStackTrace();
@@ -838,7 +838,7 @@ public class ConnectionProxyJUnitTest
         return "ack flag never became " + expectedAckSend;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, timeToWait, 1000, true);
+    Wait.waitForCriterion(wc, timeToWait, 1000, true);
   }  
   
   private void verifyExpiry(long timeToWait)
@@ -851,7 +851,7 @@ public class ConnectionProxyJUnitTest
         return "Entry never expired";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, timeToWait * 2, 200, true);
+    Wait.waitForCriterion(wc, timeToWait * 2, 200, true);
   }
  
 }

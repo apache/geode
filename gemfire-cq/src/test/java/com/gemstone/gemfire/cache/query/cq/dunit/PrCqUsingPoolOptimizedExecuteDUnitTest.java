@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
 import com.gemstone.gemfire.cache.query.internal.cq.CqServiceImpl;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
@@ -31,7 +32,7 @@ public class PrCqUsingPoolOptimizedExecuteDUnitTest extends PrCqUsingPoolDUnitTe
 
   public void setUp() throws Exception {
     super.setUp();
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
       }
@@ -39,12 +40,11 @@ public class PrCqUsingPoolOptimizedExecuteDUnitTest extends PrCqUsingPoolDUnitTe
   }
   
   @Override
-  public void tearDown2() throws Exception {
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;
       }
     });
-    super.tearDown2();
   }
 }

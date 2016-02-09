@@ -56,10 +56,15 @@ import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserver;
 import com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisor;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * @author dsmith
@@ -84,7 +89,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
   public void setUp() throws Exception {
     super.setUp();
     disconnectAllFromDS();
-    invokeInEveryVM(PersistentPartitionedRegionTestBase.class,"setRegionName", new Object[]{getUniqueName()});
+    Invoke.invokeInEveryVM(PersistentPartitionedRegionTestBase.class,"setRegionName", new Object[]{getUniqueName()});
     setRegionName(getUniqueName());
   }
   
@@ -154,7 +159,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
         try {
           rf.start().getResults();
         } catch (Exception e) {
-          fail("interupted", e);
+          Assert.fail("interupted", e);
         }
       }
     });
@@ -198,7 +203,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
 
   protected void createData(VM vm, final int startKey, final int endKey,
       final String value) {
-    getLogWriter().info("createData invoked.  PR_REGION_NAME is " + PR_REGION_NAME);
+    LogWriterUtils.getLogWriter().info("createData invoked.  PR_REGION_NAME is " + PR_REGION_NAME);
         createData(vm, startKey, endKey,value, PR_REGION_NAME);
       }
 
@@ -208,7 +213,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
           
           public void run() {
             Cache cache = getCache();
-            getLogWriter().info("creating data in " + regionName);
+            LogWriterUtils.getLogWriter().info("creating data in " + regionName);
             Region region = cache.getRegion(regionName);
             
             for(int i =startKey; i < endKey; i++) {
@@ -367,7 +372,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
         try {
           recoveryDone.await(MAX_WAIT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-          fail("interrupted", e);
+          Assert.fail("interrupted", e);
         }
       }
     };
@@ -410,7 +415,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
           try {
             recoveryDone.await();
           } catch (InterruptedException e) {
-            fail("Interrupted", e);
+            Assert.fail("Interrupted", e);
           }
         }
       }
@@ -474,7 +479,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
       public Object call() throws Exception {
         Cache cache = getCache();
         final PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
           
           public boolean done() {
             return expectedBuckets.equals(getActualBuckets());
@@ -553,7 +558,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
                 }
               }
             };
-            waitForCriterion(wc, MAX_WAIT, 500, true);
+            Wait.waitForCriterion(wc, MAX_WAIT, 500, true);
           } finally {
             adminDS.disconnect();
           }
@@ -685,7 +690,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
         Cache cache = getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
         final PartitionedRegionDataStore dataStore = region.getDataStore();
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
     
           public boolean done() {
             Set<Integer> vm2Buckets = dataStore.getAllLocalBucketIds();
@@ -707,7 +712,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
       public void run() {
         Cache cache = getCache();
         final Region region = cache.getRegion(regionName);
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
           
           public boolean done() {
             PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(region);
@@ -785,7 +790,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
     BufferedReader br = new BufferedReader(new InputStreamReader(is));
     String line;
     while((line = br.readLine()) != null) {
-      getLogWriter().fine("OUTPUT:" + line);
+      LogWriterUtils.getLogWriter().fine("OUTPUT:" + line);
       //TODO validate output
     };
     

@@ -25,6 +25,7 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.LocatorTestBase;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -43,8 +44,7 @@ public class Bug47667DUnitTest extends LocatorTestBase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  protected final void postTearDownLocatorTestBase() throws Exception {
     disconnectAllFromDS();
   }
 
@@ -56,7 +56,7 @@ public class Bug47667DUnitTest extends LocatorTestBase {
     VM client = host.getVM(3);
 
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locatorHost = getServerHostName(host);
+    final String locatorHost = NetworkUtils.getServerHostName(host);
     startLocatorInVM(locator, locatorPort, "");
 
     String locString = getLocatorString(host, locatorPort);

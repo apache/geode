@@ -34,10 +34,13 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 @SuppressWarnings("serial")
@@ -65,7 +68,7 @@ public class PartitionedRegionCreationDUnitTest extends
    */
   public void testSequentialCreation() throws Exception
   {
-    getLogWriter().info("*****CREATION TEST ACK STARTED*****");
+    LogWriterUtils.getLogWriter().info("*****CREATION TEST ACK STARTED*****");
     final String name = getUniqueName();
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -88,7 +91,7 @@ public class PartitionedRegionCreationDUnitTest extends
     vm1.invoke(getCacheSerializableRunnableForPRValidate(name));
     vm2.invoke(getCacheSerializableRunnableForPRValidate(name));
     vm3.invoke(getCacheSerializableRunnableForPRValidate(name));
-    getLogWriter().info("*****CREATION TEST ACK ENDED*****");
+    LogWriterUtils.getLogWriter().info("*****CREATION TEST ACK ENDED*****");
   }
 
   /**
@@ -101,7 +104,7 @@ public class PartitionedRegionCreationDUnitTest extends
   // 2/8/06
   public void testConcurrentCreation() throws Throwable
   {
-    getLogWriter().info("*****CREATION TEST NO_ACK STARTED*****");
+    LogWriterUtils.getLogWriter().info("*****CREATION TEST NO_ACK STARTED*****");
     final String name = getUniqueName();
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -121,12 +124,12 @@ public class PartitionedRegionCreationDUnitTest extends
 
     /** main thread is waiting for the other threads to complete */
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+      ThreadUtils.join(async[count], 30 * 1000);
     }
 
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
     }
     
@@ -135,7 +138,7 @@ public class PartitionedRegionCreationDUnitTest extends
     vm1.invoke(getCacheSerializableRunnableForPRValidate(name));
     vm2.invoke(getCacheSerializableRunnableForPRValidate(name));
     vm3.invoke(getCacheSerializableRunnableForPRValidate(name));
-    getLogWriter().info("*****CREATION TEST NO_ACK ENDED*****");
+    LogWriterUtils.getLogWriter().info("*****CREATION TEST NO_ACK ENDED*****");
   }
 
   /**
@@ -251,13 +254,13 @@ public class PartitionedRegionCreationDUnitTest extends
 
     /** main thread is waiting for the other threads to complete */
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+      ThreadUtils.join(async[count], 30 * 1000);
     }
     th.join(30 * 1000);
 
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
     }
 
@@ -424,7 +427,7 @@ public class PartitionedRegionCreationDUnitTest extends
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
-    getLogWriter().info("*****INITIALIZATION TEST STARTED*****");
+    LogWriterUtils.getLogWriter().info("*****INITIALIZATION TEST STARTED*****");
     int AsyncInvocationArrSize = 8;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
     async[0] = vm0.invokeAsync(getCacheSerializableRunnableForPRCreate(name,
@@ -438,12 +441,12 @@ public class PartitionedRegionCreationDUnitTest extends
 
     /** main thread is waiting for the other threads to complete */
     for (int count = 0; count < 4; count++) {
-      DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+      ThreadUtils.join(async[count], 30 * 1000);
     }
 
     for (int count = 0; count < 4; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
     }
     
@@ -454,15 +457,15 @@ public class PartitionedRegionCreationDUnitTest extends
     
     /** main thread is waiting for the other threads to complete */
     for (int count = 4; count < AsyncInvocationArrSize; count++) {
-      DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+      ThreadUtils.join(async[count], 30 * 1000);
     }
   
     for (int count = 4; count < AsyncInvocationArrSize; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
     }
-    getLogWriter().info("*****INITIALIZATION TEST ENDED*****");
+    LogWriterUtils.getLogWriter().info("*****INITIALIZATION TEST ENDED*****");
   }
 
   /**
@@ -480,7 +483,7 @@ public class PartitionedRegionCreationDUnitTest extends
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
-    getLogWriter().info("*****REGISTRATION TEST STARTED*****");
+    LogWriterUtils.getLogWriter().info("*****REGISTRATION TEST STARTED*****");
     int AsyncInvocationArrSize = 8;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
     async[0] = vm0.invokeAsync(getCacheSerializableRunnableForPRCreate(name,
@@ -494,12 +497,12 @@ public class PartitionedRegionCreationDUnitTest extends
 
     /** main thread is waiting for the other threads to complete */
     for (int count = 0; count < 4; count++) {
-      DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+      ThreadUtils.join(async[count], 30 * 1000);
     }
 
     for (int count = 0; count < 4; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
     }
     
@@ -514,15 +517,15 @@ public class PartitionedRegionCreationDUnitTest extends
 
     /** main thread is waiting for the other threads to complete */
     for (int count = 4; count < AsyncInvocationArrSize; count++) {
-      DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+      ThreadUtils.join(async[count], 30 * 1000);
     }
   
     for (int count = 4; count < AsyncInvocationArrSize; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
     }
-    getLogWriter().info("*****REGISTRATION TEST ENDED*****");
+    LogWriterUtils.getLogWriter().info("*****REGISTRATION TEST ENDED*****");
   }
   
   /**
@@ -532,7 +535,7 @@ public class PartitionedRegionCreationDUnitTest extends
    */
   public void testPartitionRegionPersistenceConflicts() throws Throwable
   {
-    addExpectedException("IllegalStateException");
+    IgnoredException.addIgnoredException("IllegalStateException");
     final String name = getUniqueName();
     // Cache cache = getCache();
     Host host = Host.getHost(0);
@@ -540,13 +543,13 @@ public class PartitionedRegionCreationDUnitTest extends
     VM dataStore1 = host.getVM(1);
     VM accessor0 = host.getVM(2);
     VM accessor1 = host.getVM(3);
-    getLogWriter().info("*****PERSISTENCE CONFLICTS TEST STARTED*****");
+    LogWriterUtils.getLogWriter().info("*****PERSISTENCE CONFLICTS TEST STARTED*****");
     accessor0.invoke(getCacheSerializableRunnableForPRPersistence(name, 0, false, false));
     accessor1.invoke(getCacheSerializableRunnableForPRPersistence(name, 0, true, true));
     dataStore0.invoke(getCacheSerializableRunnableForPRPersistence(name, 100, true, false));
     dataStore1.invoke(getCacheSerializableRunnableForPRPersistence(name, 100, false, true));
 
-     getLogWriter().info("*****PERSISTENCE CONFLICTS TEST ENDED*****");
+     LogWriterUtils.getLogWriter().info("*****PERSISTENCE CONFLICTS TEST ENDED*****");
   }
 
   /**
@@ -626,7 +629,7 @@ public class PartitionedRegionCreationDUnitTest extends
                 + name + " configs do not exists in  region - "
                 + root.getName());
         }
-        getLogWriter().info(" PartitionedRegionCreationTest PartionedRegionRegistrationTest() Successfully Complete ..  ");
+        LogWriterUtils.getLogWriter().info(" PartitionedRegionCreationTest PartionedRegionRegistrationTest() Successfully Complete ..  ");
       }
     };
     return (CacheSerializableRunnable)registerPrRegion;
@@ -692,11 +695,11 @@ public class PartitionedRegionCreationDUnitTest extends
             getCache().getLogger().warning(
                 "Creation caught IllegalStateException", ex);
             if (exceptionType.equals("GLOBAL"))
-              getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for scope = GLOBAL");
+              LogWriterUtils.getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for scope = GLOBAL");
             if (exceptionType.equals("REDUNDANCY"))
-              getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for 0 > redundancy  > 3  ");
+              LogWriterUtils.getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for 0 > redundancy  > 3  ");
             if (exceptionType.equals("DIFFREG"))
-              getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for regions with diff scope ");
+              LogWriterUtils.getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for regions with diff scope ");
           }
           assertNotNull("Partitioned Region " + regionName + " not in cache",
               cache.getRegion(regionName));
@@ -730,11 +733,11 @@ public class PartitionedRegionCreationDUnitTest extends
               getCache().getLogger().warning(
                   "Creation caught IllegalStateException", ex);
               if (exceptionType.equals("GLOBAL"))
-                getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for scope = GLOBAL");
+                LogWriterUtils.getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for scope = GLOBAL");
               if (exceptionType.equals("REDUNDANCY"))
-                getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for 0 > redundancy  > 3  ");
+                LogWriterUtils.getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for 0 > redundancy  > 3  ");
               if (exceptionType.equals("DIFFREG"))
-                getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for regions with diff scope ");
+                LogWriterUtils.getLogWriter().info("PartitionedRegionCreationDUnitTest:testPartitionedRegionCreationExceptions()  Got a Correct exception for regions with diff scope ");
             }
             assertNotNull("Partitioned Region " + rName + " not in cache",
                 cache.getRegion(rName));
@@ -867,7 +870,7 @@ public class PartitionedRegionCreationDUnitTest extends
       RegionAttributes regionAttribs = attr.create();
       PartitionedRegion accessor = (PartitionedRegion)cache.createRegion(
           "PR1", regionAttribs);
-      getLogWriter().info("Region created in VM1.");
+      LogWriterUtils.getLogWriter().info("Region created in VM1.");
       assertEquals(accessor.getTotalNumberOfBuckets(),
           PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT);
       try {

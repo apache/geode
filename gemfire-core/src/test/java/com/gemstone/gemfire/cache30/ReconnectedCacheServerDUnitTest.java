@@ -41,7 +41,7 @@ public class ReconnectedCacheServerDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void tearDown2() {
+  protected final void preTearDownCacheTestCase() throws Exception {
     if (addedCacheServer && cache != null && !cache.isClosed()) {
       // since I polluted the cache I should shut it down in order
       // to avoid affecting other tests

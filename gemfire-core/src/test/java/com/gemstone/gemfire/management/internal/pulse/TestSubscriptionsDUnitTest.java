@@ -37,11 +37,16 @@ import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagementTestBase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing subscriptions
@@ -78,14 +83,13 @@ public class TestSubscriptionsDUnitTest extends DistributedTestCase {
     client2 = host.getVM(3);
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     helper.closeCache(managingNode);
     helper.closeCache(server);
     helper.closeCache(client);
     helper.closeCache(client2);
     disconnectFromDS();
-    
   }
 
   private static final long serialVersionUID = 1L;
@@ -97,8 +101,8 @@ public class TestSubscriptionsDUnitTest extends DistributedTestCase {
 
     int port = (Integer) createServerCache(server);
     DistributedMember serverMember = helper.getMember(server);
-    createClientCache(client, getServerHostName(server.getHost()), port);
-    createClientCache(client2, getServerHostName(server.getHost()), port);
+    createClientCache(client, NetworkUtils.getServerHostName(server.getHost()), port);
+    createClientCache(client2, NetworkUtils.getServerHostName(server.getHost()), port);
     put(client);
     put(client2);
     registerInterest(client);
@@ -235,11 +239,11 @@ public class TestSubscriptionsDUnitTest extends DistributedTestCase {
               return "TestSubscriptionsDUnitTest wait for getDistributedSystemMXBean to complete and get results";
             }
           };
-          waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
+          Wait.waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
           final DistributedSystemMXBean dsBean = ManagementService
               .getExistingManagementService(cache).getDistributedSystemMXBean();
           assertNotNull(dsBean);
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "TestSubscriptionsDUnitTest dsBean.getNumSubscriptions() ="
                   + dsBean.getNumSubscriptions());
           assertTrue(dsBean.getNumSubscriptions() == 2 ? true : false);
@@ -271,7 +275,7 @@ public class TestSubscriptionsDUnitTest extends DistributedTestCase {
           r1.registerInterest(k1);
           r1.registerInterest(k2);
         } catch (Exception ex) {
-          fail("TestSubscriptionsDUnitTest failed while register Interest", ex);
+          Assert.fail("TestSubscriptionsDUnitTest failed while register Interest", ex);
         }
       }
 
@@ -292,7 +296,7 @@ public class TestSubscriptionsDUnitTest extends DistributedTestCase {
           r1.put(k2, client_k2);
           assertEquals(r1.getEntry(k2).getValue(), client_k2);
         } catch (Exception ex) {
-          fail("failed while put", ex);
+          Assert.fail("failed while put", ex);
         }
       }
 

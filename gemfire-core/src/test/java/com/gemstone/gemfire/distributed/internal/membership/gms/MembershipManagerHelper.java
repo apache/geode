@@ -26,8 +26,8 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This helper class provides access to membership manager information that
@@ -149,7 +149,7 @@ public class MembershipManagerHelper
         return assMsg;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, timeout, 200, true);
+    Wait.waitForCriterion(ev, timeout, 200, true);
   }
   
   public static void crashDistributedSystem(final DistributedSystem msys) {

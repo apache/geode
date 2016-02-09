@@ -32,6 +32,8 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueTestBase;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
@@ -50,7 +52,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
    * is passed.
    */
   public void testCreateAsyncEventQueueWithNullListener() {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(testName);
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     InternalDistributedSystem ds = test.getSystem(props);
@@ -100,13 +102,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, false, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -120,9 +122,9 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm7
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
-    pause(1000);// pause at least for the batchTimeInterval
+    Wait.pause(1000);// pause at least for the batchTimeInterval
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
     int vm4size = (Integer)vm4.invoke(AsyncEventQueueTestBase.class,
@@ -152,13 +154,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 150, true, false, null, false, 2, OrderPolicy.KEY });
 
 	vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-		new Object[] { testName + "_RR", "ln", isOffHeap() });
+		new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 	vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-		new Object[] { testName + "_RR", "ln", isOffHeap() });
+		new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 	vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-	    new Object[] { testName + "_RR", "ln", isOffHeap() });
+	    new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 	vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-		new Object[] { testName + "_RR", "ln", isOffHeap() });
+		new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
 	vm4
 	  .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -167,9 +169,9 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 	  .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
 		new Object[] { "ln" });
 
-	pause(1000);// pause at least for the batchTimeInterval
+	Wait.pause(1000);// pause at least for the batchTimeInterval
 
-	vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+	vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
 		1000 });
 
 	int vm4size = (Integer)vm4.invoke(AsyncEventQueueTestBase.class,
@@ -206,15 +208,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, false, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
@@ -250,15 +252,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, false, false, null, false, "MyAsyncEventListener_CacheLoader" });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithCacheLoaderAndAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln" });
+        new Object[] { getTestMethodName() + "_RR", "ln" });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithCacheLoaderAndAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln" });
+        new Object[] { getTestMethodName() + "_RR", "ln" });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithCacheLoaderAndAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln" });
+        new Object[] { getTestMethodName() + "_RR", "ln" });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithCacheLoaderAndAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln" });
+        new Object[] { getTestMethodName() + "_RR", "ln" });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doGets", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doGets", new Object[] { getTestMethodName() + "_RR",
         10 });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventForOperationDetail",
@@ -302,13 +304,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, false, false, null, false, 1 });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -322,9 +324,9 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm7
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
-    pause(2000);// pause at least for the batchTimeInterval
+    Wait.pause(2000);// pause at least for the batchTimeInterval
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         100 });
     
     vm4.invoke(AsyncEventQueueTestBase.class, "resumeAsyncEventQueue",
@@ -371,13 +373,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, true, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -391,7 +393,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm7
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
-    pause(1000);// pause at least for the batchTimeInterval
+    Wait.pause(1000);// pause at least for the batchTimeInterval
 
     final Map keyValues = new HashMap();
     final Map updateKeyValues = new HashMap();
@@ -400,9 +402,9 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     }
 
     vm4.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_RR", keyValues });
+        getTestMethodName() + "_RR", keyValues });
 
-    pause(1000);
+    Wait.pause(1000);
     vm4.invoke(AsyncEventQueueTestBase.class, "checkAsyncEventQueueSize", new Object[] {
         "ln", keyValues.size() });
 
@@ -413,7 +415,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     // Put the update events and check the queue size.
     // There should be no conflation with the previous create events.
     vm4.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_RR", updateKeyValues });
+        getTestMethodName() + "_RR", updateKeyValues });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "checkAsyncEventQueueSize", new Object[] {
         "ln", keyValues.size() + updateKeyValues.size() });
@@ -421,7 +423,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     // Put the update events again and check the queue size.
     // There should be conflation with the previous update events.
     vm4.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_RR", updateKeyValues });
+        getTestMethodName() + "_RR", updateKeyValues });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "checkAsyncEventQueueSize", new Object[] {
         "ln", keyValues.size() + updateKeyValues.size() });
@@ -477,15 +479,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, false, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
@@ -526,15 +528,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, true, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
         new Object[] { "ln", 1000 });// primary sender
@@ -570,13 +572,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
             100, true, null });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
     // pause async channel and then do the puts
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
     // ------------------ KILL VM4 AND REBUILD
@@ -587,7 +589,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm4.invoke(AsyncEventQueueTestBase.class, "createAsyncEventQueueWithDiskStore",
         new Object[] { "ln", false, 100, 100, true, firstDStore });
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     // -----------------------------------------------------------------------------------
 
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
@@ -619,16 +621,16 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         new Object[] { "ln", false, 100, 100, true, null });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm4.invoke(AsyncEventQueueTestBase.class, "addCacheListenerAndCloseCache",
-        new Object[] { testName + "_RR" });
+        new Object[] { getTestMethodName() + "_RR" });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
     vm5.invoke(AsyncEventQueueTestBase.class, "doPuts",
-        new Object[] { testName + "_RR", 2000 });
+        new Object[] { getTestMethodName() + "_RR", 2000 });
 
     // -----------------------------------------------------------------------------------
     vm5.invoke(AsyncEventQueueTestBase.class, "waitForSenderToBecomePrimary",
@@ -643,8 +645,8 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     int vm5size = (Integer)vm5.invoke(AsyncEventQueueTestBase.class,
         "getAsyncEventListenerMapSize", new Object[] { "ln" });
 
-    getLogWriter().info("vm4 size is: " + vm4size);
-    getLogWriter().info("vm5 size is: " + vm5size);
+    LogWriterUtils.getLogWriter().info("vm4 size is: " + vm4size);
+    LogWriterUtils.getLogWriter().info("vm5 size is: " + vm5size);
     // verify that there is no event loss
     assertTrue(
         "Total number of entries in events map on vm4 and vm5 should be at least 2000",
@@ -678,15 +680,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, true, false, null, false, 3, OrderPolicy.KEY });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
         new Object[] {"ln", 1000 });// primary sender
@@ -725,19 +727,19 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, true, false, null, false, 3, OrderPolicy.THREAD });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invokeAsync(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invokeAsync(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         500 });
-    vm4.invokeAsync(AsyncEventQueueTestBase.class, "doNextPuts", new Object[] { testName + "_RR",
+    vm4.invokeAsync(AsyncEventQueueTestBase.class, "doNextPuts", new Object[] { getTestMethodName() + "_RR",
       500, 1000 });
-    vm4.invokeAsync(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invokeAsync(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
       1000, 1500 });
     
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
@@ -773,15 +775,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, true, false, null, false, 3, null });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
         new Object[] {"ln", 1000 });// primary sender
@@ -818,18 +820,18 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, false, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         500 });
     vm5.invoke(AsyncEventQueueTestBase.class, "doPutsFrom", new Object[] {
-        testName + "_PR", 500, 1000 });
+        getTestMethodName() + "_PR", 500, 1000 });
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
         new Object[] { "ln", 1000 });// primary sender
     vm5.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
@@ -865,13 +867,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, true, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -886,7 +888,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
     
-    pause(2000);
+    Wait.pause(2000);
 
     final Map keyValues = new HashMap();
     final Map updateKeyValues = new HashMap();
@@ -895,7 +897,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     }
 
     vm4.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_PR", keyValues });
+        getTestMethodName() + "_PR", keyValues });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "checkAsyncEventQueueSize", new Object[] {
         "ln", keyValues.size() });
@@ -907,7 +909,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     // Put the update events and check the queue size.
     // There should be no conflation with the previous create events.
     vm5.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_PR", updateKeyValues });
+        getTestMethodName() + "_PR", updateKeyValues });
 
     vm5.invoke(AsyncEventQueueTestBase.class, "checkAsyncEventQueueSize", new Object[] {
         "ln", keyValues.size() + updateKeyValues.size() });
@@ -915,7 +917,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     // Put the update events again and check the queue size.
     // There should be conflation with the previous update events.
     vm5.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-      testName + "_PR", updateKeyValues });
+      getTestMethodName() + "_PR", updateKeyValues });
 
     vm5.invoke(AsyncEventQueueTestBase.class, "checkAsyncEventQueueSize", new Object[] {
       "ln", keyValues.size() + updateKeyValues.size() });
@@ -966,18 +968,18 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         false, 100, 100, false, true, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         500 });
     vm5.invoke(AsyncEventQueueTestBase.class, "doPutsFrom", new Object[] {
-        testName + "_PR", 500, 1000 });
+        getTestMethodName() + "_PR", 500, 1000 });
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
         new Object[] { "ln", 1000 });// primary sender
     vm5.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
@@ -1010,14 +1012,14 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
             100, true, null });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
     // pause async channel and then do the puts
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueueAndWaitForDispatcherToPause",
             new Object[] { "ln" });
   
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         1000 });
 
     // ------------------ KILL VM4 AND REBUILD
@@ -1028,7 +1030,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm4.invoke(AsyncEventQueueTestBase.class, "createAsyncEventQueueWithDiskStore",
         new Object[] { "ln", false, 100, 100, true, firstDStore });
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     // -----------------------------------------------------------------------------------
 
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventListener",
@@ -1056,7 +1058,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
       vm4.invoke(AsyncEventQueueTestBase.class,
           "createReplicatedRegionWithAsyncEventQueue", new Object[] {
-              testName + "_RR", "ln", isOffHeap() });
+              getTestMethodName() + "_RR", "ln", isOffHeap() });
       fail("Expected GatewaySenderConfigException where parallel async event queue can not be used with replicated region");
     }
     catch (Exception e) {
@@ -1086,15 +1088,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         true, 100, 100, false, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         256 });
     
     vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",
@@ -1141,15 +1143,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     	true, 100, 100, false, false, null, false, "MyAsyncEventListener_CacheLoader" });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithCacheLoaderAndAsyncQueue",
-    	new Object[] { testName + "_PR", "ln" });
+    	new Object[] { getTestMethodName() + "_PR", "ln" });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithCacheLoaderAndAsyncQueue",
-    	new Object[] { testName + "_PR", "ln" });
+    	new Object[] { getTestMethodName() + "_PR", "ln" });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithCacheLoaderAndAsyncQueue",
-    	new Object[] { testName + "_PR", "ln" });
+    	new Object[] { getTestMethodName() + "_PR", "ln" });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithCacheLoaderAndAsyncQueue",
-    	new Object[] { testName + "_PR", "ln" });
+    	new Object[] { getTestMethodName() + "_PR", "ln" });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPutAll", new Object[] { testName + "_PR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPutAll", new Object[] { getTestMethodName() + "_PR",
     	100, 10 });
     vm4.invoke(AsyncEventQueueTestBase.class, "validateAsyncEventForOperationDetail",
     	new Object[] { "ln", 250, false, true });
@@ -1180,13 +1182,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         true, 100, 100, false, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -1200,9 +1202,9 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm7
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
-    pause(1000);// pause at least for the batchTimeInterval
+    Wait.pause(1000);// pause at least for the batchTimeInterval
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         1000 });
 
     int vm4size = (Integer)vm4.invoke(AsyncEventQueueTestBase.class,
@@ -1237,13 +1239,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 	  true, 100, 100, false, false, null, false, 2, OrderPolicy.KEY });
 
 	vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-	  new Object[] { testName + "_PR", "ln", isOffHeap() });
+	  new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 	vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-	  new Object[] { testName + "_PR", "ln", isOffHeap() });
+	  new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 	vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-	  new Object[] { testName + "_PR", "ln", isOffHeap() });
+	  new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 	vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-	  new Object[] { testName + "_PR", "ln", isOffHeap() });
+	  new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
 	vm4
 	  .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -1257,9 +1259,9 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 	vm7
 	  .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
 		new Object[] { "ln" });
-	pause(1000);// pause at least for the batchTimeInterval
+	Wait.pause(1000);// pause at least for the batchTimeInterval
 
-	vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_PR",
+	vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
 	  1000 });
 
 	int vm4size = (Integer)vm4.invoke(AsyncEventQueueTestBase.class,
@@ -1290,13 +1292,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         true, 100, 100, true, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -1311,7 +1313,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
 
-    pause(2000);// pause for the batchTimeInterval to ensure that all the
+    Wait.pause(2000);// pause for the batchTimeInterval to ensure that all the
     // senders are paused
 
     final Map keyValues = new HashMap();
@@ -1321,7 +1323,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     }
 
     vm4.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_PR", keyValues });
+        getTestMethodName() + "_PR", keyValues });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "checkAsyncEventQueueSize", new Object[] {
         "ln", keyValues.size() });
@@ -1331,14 +1333,14 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     }
 
     vm4.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_PR", updateKeyValues });
+        getTestMethodName() + "_PR", updateKeyValues });
 
  
     vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncEventQueueSize", new Object[] {
         "ln", keyValues.size() + updateKeyValues.size() }); // no conflation of creates
 
     vm4.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_PR", updateKeyValues });
+        getTestMethodName() + "_PR", updateKeyValues });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncEventQueueSize", new Object[] {
         "ln", keyValues.size() + updateKeyValues.size() }); // conflation of updates
@@ -1395,13 +1397,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         true, 100, 100, true, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPRWithRedundantCopyWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPRWithRedundantCopyWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPRWithRedundantCopyWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPRWithRedundantCopyWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -1416,7 +1418,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
 
-    pause(2000);// pause for the batchTimeInterval to ensure that all the
+    Wait.pause(2000);// pause for the batchTimeInterval to ensure that all the
     // senders are paused
 
     final Map keyValues = new HashMap();
@@ -1426,9 +1428,9 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     }
 
     vm4.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_PR", keyValues });
+        getTestMethodName() + "_PR", keyValues });
 
-    pause(2000);
+    Wait.pause(2000);
     vm4.invoke(AsyncEventQueueTestBase.class, "checkAsyncEventQueueSize", new Object[] {
         "ln", keyValues.size() });
 
@@ -1437,13 +1439,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     }
 
     vm4.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_PR", updateKeyValues });
+        getTestMethodName() + "_PR", updateKeyValues });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "putGivenKeyValue", new Object[] {
-        testName + "_PR", updateKeyValues });
+        getTestMethodName() + "_PR", updateKeyValues });
 
     // pause to ensure that events have been conflated.
-    pause(2000);
+    Wait.pause(2000);
     vm4.invoke(AsyncEventQueueTestBase.class, "checkAsyncEventQueueSize", new Object[] {
         "ln", keyValues.size() + updateKeyValues.size() });
 
@@ -1501,17 +1503,17 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
     vm3.invoke(AsyncEventQueueTestBase.class,
         "createPartitionedRegionAccessorWithAsyncEventQueue", new Object[] {
-            testName + "_PR", "ln" });
+            getTestMethodName() + "_PR", "ln" });
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
-    vm3.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm3.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         256 });
     
     vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",
@@ -1558,15 +1560,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         true, 100, 100, false, true, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_PR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         256 });
     
     vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",
@@ -1617,15 +1619,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         true, 100, 100, false, false, null, false });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(AsyncEventQueueTestBase.class, "createReplicatedRegionWithAsyncEventQueue",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",
@@ -1660,23 +1662,23 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm4.invoke(AsyncEventQueueTestBase.class, "createCache", new Object[] { lnPort });
     vm5.invoke(AsyncEventQueueTestBase.class, "createCache", new Object[] { lnPort });
 
-    getLogWriter().info("Created the cache");
+    LogWriterUtils.getLogWriter().info("Created the cache");
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createAsyncEventQueueWithListener2",
         new Object[] { "ln", true, 100, 5, false, null });
     vm5.invoke(AsyncEventQueueTestBase.class, "createAsyncEventQueueWithListener2",
         new Object[] { "ln", true, 100, 5, false, null });
 
-    getLogWriter().info("Created the AsyncEventQueue");
+    LogWriterUtils.getLogWriter().info("Created the AsyncEventQueue");
 
     vm4.invoke(AsyncEventQueueTestBase.class,
         "createPRWithRedundantCopyWithAsyncEventQueue", new Object[] {
-            testName + "_PR", "ln", isOffHeap() });
+            getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class,
         "createPRWithRedundantCopyWithAsyncEventQueue", new Object[] {
-            testName + "_PR", "ln", isOffHeap() });
+            getTestMethodName() + "_PR", "ln", isOffHeap() });
 
-    getLogWriter().info("Created PR with AsyncEventQueue");
+    LogWriterUtils.getLogWriter().info("Created PR with AsyncEventQueue");
 
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -1684,25 +1686,25 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm5
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
-    pause(1000);// pause for the batchTimeInterval to make sure the AsyncQueue
+    Wait.pause(1000);// pause for the batchTimeInterval to make sure the AsyncQueue
                 // is paused
 
-    getLogWriter().info("Paused the AsyncEventQueue");
+    LogWriterUtils.getLogWriter().info("Paused the AsyncEventQueue");
 
     vm4.invoke(AsyncEventQueueTestBase.class, "doPuts",
-        new Object[] { testName + "_PR", 80 });
+        new Object[] { getTestMethodName() + "_PR", 80 });
 
-    getLogWriter().info("Done puts");
+    LogWriterUtils.getLogWriter().info("Done puts");
 
     Set<Integer> primaryBucketsVm5 = (Set<Integer>)vm5.invoke(
         AsyncEventQueueTestBase.class, "getAllPrimaryBucketsOnTheNode",
-        new Object[] { testName + "_PR" });
+        new Object[] { getTestMethodName() + "_PR" });
 
-    getLogWriter().info("Primary buckets on vm5: " + primaryBucketsVm5);
+    LogWriterUtils.getLogWriter().info("Primary buckets on vm5: " + primaryBucketsVm5);
     // ---------------------------- Kill vm5 --------------------------
     vm5.invoke(AsyncEventQueueTestBase.class, "killSender", new Object[] {});
 
-    pause(1000);// give some time for rebalancing to happen
+    Wait.pause(1000);// give some time for rebalancing to happen
     vm4.invoke(AsyncEventQueueTestBase.class, "resumeAsyncEventQueue",
         new Object[] { "ln" });
 
@@ -1726,23 +1728,23 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm4.invoke(AsyncEventQueueTestBase.class, "createCache", new Object[] { lnPort });
     vm5.invoke(AsyncEventQueueTestBase.class, "createCache", new Object[] { lnPort });
 
-    getLogWriter().info("Created the cache");
+    LogWriterUtils.getLogWriter().info("Created the cache");
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createAsyncEventQueueWithListener2",
         new Object[] { "ln", true, 100, 5, false, null });
     vm5.invoke(AsyncEventQueueTestBase.class, "createAsyncEventQueueWithListener2",
         new Object[] { "ln", true, 100, 5, false, null });
 
-    getLogWriter().info("Created the AsyncEventQueue");
+    LogWriterUtils.getLogWriter().info("Created the AsyncEventQueue");
 
     vm4.invoke(AsyncEventQueueTestBase.class,
         "createPRWithRedundantCopyWithAsyncEventQueue", new Object[] {
-            testName + "_PR", "ln", isOffHeap() });
+            getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class,
         "createPRWithRedundantCopyWithAsyncEventQueue", new Object[] {
-            testName + "_PR", "ln", isOffHeap() });
+            getTestMethodName() + "_PR", "ln", isOffHeap() });
 
-    getLogWriter().info("Created PR with AsyncEventQueue");
+    LogWriterUtils.getLogWriter().info("Created PR with AsyncEventQueue");
 
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -1750,21 +1752,21 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm5
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
-    pause(1000);// pause for the batchTimeInterval to make sure the AsyncQueue
+    Wait.pause(1000);// pause for the batchTimeInterval to make sure the AsyncQueue
                 // is paused
 
-    getLogWriter().info("Paused the AsyncEventQueue");
+    LogWriterUtils.getLogWriter().info("Paused the AsyncEventQueue");
 
     vm4.invoke(AsyncEventQueueTestBase.class, "doPuts",
-        new Object[] { testName + "_PR", 80 });
+        new Object[] { getTestMethodName() + "_PR", 80 });
 
-    getLogWriter().info("Done puts");
+    LogWriterUtils.getLogWriter().info("Done puts");
 
     Set<Integer> primaryBucketsVm5 = (Set<Integer>)vm5.invoke(
         AsyncEventQueueTestBase.class, "getAllPrimaryBucketsOnTheNode",
-        new Object[] { testName + "_PR" });
+        new Object[] { getTestMethodName() + "_PR" });
 
-    getLogWriter().info("Primary buckets on vm5: " + primaryBucketsVm5);
+    LogWriterUtils.getLogWriter().info("Primary buckets on vm5: " + primaryBucketsVm5);
     // ---------------------------- Kill vm5 --------------------------
     vm5.invoke(AsyncEventQueueTestBase.class, "killSender", new Object[] {});
     // ----------------------------------------------------------------
@@ -1775,14 +1777,14 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         new Object[] { "ln", true, 100, 5, false, null });
     vm6.invoke(AsyncEventQueueTestBase.class,
         "createPRWithRedundantCopyWithAsyncEventQueue", new Object[] {
-            testName + "_PR", "ln", isOffHeap() });
+            getTestMethodName() + "_PR", "ln", isOffHeap() });
 
     // ------------------------------------------------------------------
 
-    pause(1000);// give some time for rebalancing to happen
+    Wait.pause(1000);// give some time for rebalancing to happen
     Set<Integer> primaryBucketsVm6 = (Set<Integer>)vm6.invoke(
         AsyncEventQueueTestBase.class, "getAllPrimaryBucketsOnTheNode",
-        new Object[] { testName + "_PR" });
+        new Object[] { getTestMethodName() + "_PR" });
 
     vm4.invoke(AsyncEventQueueTestBase.class, "resumeAsyncEventQueue",
         new Object[] { "ln" });
@@ -1810,23 +1812,23 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm4.invoke(AsyncEventQueueTestBase.class, "createCache", new Object[] { lnPort });
     vm5.invoke(AsyncEventQueueTestBase.class, "createCache", new Object[] { lnPort });
 
-    getLogWriter().info("Created the cache");
+    LogWriterUtils.getLogWriter().info("Created the cache");
 
     vm4.invoke(AsyncEventQueueTestBase.class, "createAsyncEventQueueWithListener2",
         new Object[] { "ln", true, 100, 5, false, null });
     vm5.invoke(AsyncEventQueueTestBase.class, "createAsyncEventQueueWithListener2",
         new Object[] { "ln", true, 100, 5, false, null });
 
-    getLogWriter().info("Created the AsyncEventQueue");
+    LogWriterUtils.getLogWriter().info("Created the AsyncEventQueue");
 
     vm4.invoke(AsyncEventQueueTestBase.class,
         "createPRWithRedundantCopyWithAsyncEventQueue", new Object[] {
-            testName + "_PR", "ln", isOffHeap() });
+            getTestMethodName() + "_PR", "ln", isOffHeap() });
     vm5.invoke(AsyncEventQueueTestBase.class,
         "createPRWithRedundantCopyWithAsyncEventQueue", new Object[] {
-            testName + "_PR", "ln", isOffHeap() });
+            getTestMethodName() + "_PR", "ln", isOffHeap() });
 
-    getLogWriter().info("Created PR with AsyncEventQueue");
+    LogWriterUtils.getLogWriter().info("Created PR with AsyncEventQueue");
 
     vm4
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
@@ -1834,15 +1836,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm5
         .invoke(AsyncEventQueueTestBase.class, "pauseAsyncEventQueue",
             new Object[] { "ln" });
-    pause(1000);// pause for the batchTimeInterval to make sure the AsyncQueue
+    Wait.pause(1000);// pause for the batchTimeInterval to make sure the AsyncQueue
                 // is paused
 
-    getLogWriter().info("Paused the AsyncEventQueue");
+    LogWriterUtils.getLogWriter().info("Paused the AsyncEventQueue");
 
     vm4.invoke(AsyncEventQueueTestBase.class, "doPuts",
-        new Object[] { testName + "_PR", 80 });
+        new Object[] { getTestMethodName() + "_PR", 80 });
 
-    getLogWriter().info("Done puts");
+    LogWriterUtils.getLogWriter().info("Done puts");
 
     // ---------------------------- start vm6 --------------------------
     vm6.invoke(AsyncEventQueueTestBase.class, "createCache", new Object[] { lnPort });
@@ -1850,15 +1852,15 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         new Object[] { "ln", true, 100, 5, false, null });
     vm6.invoke(AsyncEventQueueTestBase.class,
         "createPRWithRedundantCopyWithAsyncEventQueue", new Object[] {
-            testName + "_PR", "ln", isOffHeap() });
+            getTestMethodName() + "_PR", "ln", isOffHeap() });
 
     // ------------------------------------------------------------------
     vm4.invoke(AsyncEventQueueTestBase.class, "doRebalance", new Object[] {});
 
     Set<Integer> primaryBucketsVm6 = (Set<Integer>)vm6.invoke(
         AsyncEventQueueTestBase.class, "getAllPrimaryBucketsOnTheNode",
-        new Object[] { testName + "_PR" });
-    getLogWriter().info("Primary buckets on vm6: " + primaryBucketsVm6);
+        new Object[] { getTestMethodName() + "_PR" });
+    LogWriterUtils.getLogWriter().info("Primary buckets on vm6: " + primaryBucketsVm6);
     vm4.invoke(AsyncEventQueueTestBase.class, "resumeAsyncEventQueue",
         new Object[] { "ln" });
     vm5.invoke(AsyncEventQueueTestBase.class, "resumeAsyncEventQueue",
@@ -1893,19 +1895,19 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
     // create leader (parent) PR on node
     vm3.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegion",
-        new Object[] { testName + "PARENT_PR", null, 0, 100 });
+        new Object[] { getTestMethodName() + "PARENT_PR", null, 0, 100 });
     String parentRegionFullPath = (String)vm3.invoke(
         AsyncEventQueueTestBase.class, "getRegionFullPath",
-        new Object[] { testName + "PARENT_PR" });
+        new Object[] { getTestMethodName() + "PARENT_PR" });
 
     // create colocated (child) PR on node
     vm3.invoke(AsyncEventQueueTestBase.class,
         "createColocatedPartitionedRegionWithAsyncEventQueue", new Object[] {
-            testName + "CHILD_PR", "ln", 100, parentRegionFullPath });
+            getTestMethodName() + "CHILD_PR", "ln", 100, parentRegionFullPath });
 
     // do puts in colocated (child) PR on node
     vm3.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] {
-        testName + "CHILD_PR", 1000 });
+        getTestMethodName() + "CHILD_PR", 1000 });
 
     // wait for AsyncEventQueue to get empty on node
     vm3.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",

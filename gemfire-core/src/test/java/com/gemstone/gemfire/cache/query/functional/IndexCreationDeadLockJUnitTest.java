@@ -46,7 +46,7 @@ import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -190,7 +190,7 @@ public class IndexCreationDeadLockJUnitTest
 
     Thread th = new IndexCreationDeadLockJUnitTest.PutThread("put thread");
     th.start();
-    DistributedTestCase.join(th, 60 * 1000, null);
+    ThreadUtils.join(th, 60 * 1000);
   }
 
   /**
@@ -294,7 +294,7 @@ public class IndexCreationDeadLockJUnitTest
         Thread indxCreationThread = new HelperThread("index creator thread");
         indxCreationThread.start();
         try {
-          DistributedTestCase.join(indxCreationThread, 30 * 1000, null);
+          ThreadUtils.join(indxCreationThread, 30 * 1000);
         }
         catch (Exception e) {
           e.printStackTrace();

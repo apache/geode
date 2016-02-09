@@ -79,11 +79,17 @@ import com.gemstone.gemfire.internal.cache.TXStateProxyImpl;
 import com.gemstone.gemfire.internal.cache.locks.TXLockBatch;
 import com.gemstone.gemfire.internal.cache.locks.TXLockService;
 import com.gemstone.gemfire.internal.cache.locks.TXLockServiceImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class TXDistributedDUnitTest extends CacheTestCase {
   public TXDistributedDUnitTest(String name) {
@@ -107,19 +113,19 @@ public class TXDistributedDUnitTest extends CacheTestCase {
    * Test a remote grantor
    */
   public void testRemoteGrantor() throws Exception {
-    addExpectedException("killing members ds");
+    IgnoredException.addIgnoredException("killing members ds");
     final CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
     final String rgnName = getUniqueName();
     Region rgn = getCache().createRegion(rgnName, getRegionAttributes());
     rgn.create("key", null);
 
-    invokeInEveryVM(new SerializableRunnable("testRemoteGrantor: initial configuration") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("testRemoteGrantor: initial configuration") {
         public void run() {
           try {
             Region rgn1 = getCache().createRegion(rgnName, getRegionAttributes());
             rgn1.put("key", "val0");
           } catch (CacheException e) {
-            fail("While creating region", e);
+            Assert.fail("While creating region", e);
           }
         }
       });
@@ -188,11 +194,11 @@ public class TXDistributedDUnitTest extends CacheTestCase {
               assertTrue(!TXLockService.getDTLS().isLockGrantor());
             }
           } catch (CacheException e) {
-            fail("While creating region", e);
+            Assert.fail("While creating region", e);
           }
         }
       };
-    invokeInEveryVM(remoteComm);
+    Invoke.invokeInEveryVM(remoteComm);
     // vm1.invoke(remoteComm);
     // vm2.invoke(remoteComm);
 
@@ -227,7 +233,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
             rgn2.create("key", null);
             rgn3.create("key", null);
           } catch (CacheException e) {
-            fail("While creating region", e);
+            Assert.fail("While creating region", e);
           }
         }
       };
@@ -461,7 +467,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
       });
     Region rgn = getCache().createRegion(rgnName, factory.create());
     
-    invokeInEveryVM(new SerializableRunnable("testDACKLoadedMessage: intial configuration") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("testDACKLoadedMessage: intial configuration") {
         public void run() {
           try {
             AttributesFactory factory2 = new AttributesFactory();
@@ -471,7 +477,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
             factory2.setMirrorType(MirrorType.KEYS);
             getCache().createRegion(rgnName, factory2.create());
           } catch (CacheException e) {
-            fail("While creating region", e);
+            Assert.fail("While creating region", e);
           }
         }
       });
@@ -482,7 +488,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
     txMgr.commit();
     assertEquals("val1", rgn.getEntry("key1").getValue());
 
-    invokeInEveryVM(new SerializableRunnable("testDACKLoadedMessage: confirm standard case") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("testDACKLoadedMessage: confirm standard case") {
         public void run() {
           Region rgn1 = getCache().getRegion(rgnName);
           assertEquals("val1", rgn1.getEntry("key1").getValue());
@@ -495,7 +501,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
     txMgr.commit();
     assertEquals("val2", rgn.getEntry("key2").getValue());
     
-    invokeInEveryVM(new SerializableRunnable("testDACKLoadedMessage: confirm standard case") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("testDACKLoadedMessage: confirm standard case") {
         public void run() {
           Region rgn1 = getCache().getRegion(rgnName);
           assertEquals("val2", rgn1.getEntry("key2").getValue());
@@ -508,7 +514,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
     rgn.get("key4", new Integer(4));
     txMgr.commit();
 
-    invokeInEveryVM(new SerializableRunnable("testDACKLoadedMessage: confirm standard case") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("testDACKLoadedMessage: confirm standard case") {
         public void run() {
           Region rgn1 = getCache().getRegion(rgnName);
           assertEquals("val3", rgn1.getEntry("key3").getValue());
@@ -521,12 +527,12 @@ public class TXDistributedDUnitTest extends CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
-    p.put("log-level", getDUnitLogLevel());
+    p.put("log-level", LogWriterUtils.getDUnitLogLevel());
     return p;
   }
 
   public void testHighAvailabilityFeatures() throws Exception {
-    addExpectedException("DistributedSystemDisconnectedException");
+    IgnoredException.addIgnoredException("DistributedSystemDisconnectedException");
 //    final CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
 //    final TXManagerImpl txMgrImpl = (TXManagerImpl) txMgr;
     final String rgnName = getUniqueName();
@@ -534,7 +540,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEarlyAck(false);
     Region rgn = getCache().createRegion(rgnName, factory.create());
-    invokeInEveryVM(new SerializableRunnable("testHighAvailabilityFeatures: intial region configuration") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("testHighAvailabilityFeatures: intial region configuration") {
         public void run() {
           try {
             AttributesFactory factory2 = new AttributesFactory();
@@ -543,7 +549,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
             factory2.setDataPolicy(DataPolicy.REPLICATE);
             getCache().createRegion(rgnName, factory2.create());
           } catch (CacheException e) {
-            fail("While creating region", e);
+            Assert.fail("While creating region", e);
           }
         }
       });
@@ -615,7 +621,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
               factory2.setDataPolicy(DataPolicy.REPLICATE);
               rgn1 = getCache().createRegion(rgnName, factory2.create());
             } catch (CacheException e) {
-              fail("While creating region", e);
+              Assert.fail("While creating region", e);
             }
           }
           Region.Entry re = rgn1.getEntry("key0");
@@ -626,7 +632,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
           assertEquals("val1_0", re.getValue());
         }
       };
-    invokeInEveryVM(noChangeValidator);
+    Invoke.invokeInEveryVM(noChangeValidator);
 
     // Test that there is no commit after sending to all recipients
     // but prior to sending the "commit process" message
@@ -667,7 +673,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
         }
       });
     // 3. verify on all VMs, including the origin, that the transaction was not committed
-    invokeInEveryVM(noChangeValidator);
+    Invoke.invokeInEveryVM(noChangeValidator);
 
     // Test commit success upon a single commit process message received.
     originVM.invoke(new SerializableRunnable("Flakey DuringIndividualCommitProcess Transaction") {
@@ -727,7 +733,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
               factory2.setDataPolicy(DataPolicy.REPLICATE);
               rgn1 = getCache().createRegion(rgnName, factory2.create());
             } catch (CacheException e) {
-              fail("While creating region", e);
+              Assert.fail("While creating region", e);
             }
           }
           long giveUp = System.currentTimeMillis() + 10000;
@@ -748,7 +754,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
           }
         }
       };
-    invokeInEveryVM(nonSoloChangeValidator1);
+    Invoke.invokeInEveryVM(nonSoloChangeValidator1);
 
     // Verify successful solo region commit after duringIndividualSend
     // (same as afterIndividualSend).
@@ -766,7 +772,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
             rgn1.put("soloKey0", "soloVal0_0");
             rgn1.put("soloKey1", "soloVal1_0");
           } catch (CacheException e) {
-            fail("While creating region", e);
+            Assert.fail("While creating region", e);
           }
         }
       };
@@ -829,7 +835,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
               factory2.setDataPolicy(DataPolicy.REPLICATE);
               soloRgn = getCache().createRegion(soloRegionName, factory2.create());
             } catch (CacheException e) {
-              fail("While creating region ", e);
+              Assert.fail("While creating region ", e);
             }
           }
           Region.Entry re = soloRgn.getEntry("soloKey0");
@@ -843,7 +849,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
     originVM.invoke(soloRegionCommitValidator1);
     soloRegionVM.invoke(soloRegionCommitValidator1);
     // verify no change in nonSolo region, re-establish region in originVM
-    invokeInEveryVM(nonSoloChangeValidator1);
+    Invoke.invokeInEveryVM(nonSoloChangeValidator1);
 
     // Verify no commit for failed send (afterIndividualSend) for solo
     // Region combined with non-solo Region
@@ -893,7 +899,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
     // Origin and Solo Region VM should be the same as last validation
     originVM.invoke(soloRegionCommitValidator1);
     soloRegionVM.invoke(soloRegionCommitValidator1);
-    invokeInEveryVM(nonSoloChangeValidator1);
+    Invoke.invokeInEveryVM(nonSoloChangeValidator1);
 
     // Verify commit after sending a single
     // (duringIndividualCommitProcess) commit process for solo Region
@@ -959,7 +965,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
               factory2.setDataPolicy(DataPolicy.REPLICATE);
               soloRgn = getCache().createRegion(soloRegionName, factory2.create());
             } catch (CacheException e) {
-              fail("While creating region ", e);
+              Assert.fail("While creating region ", e);
             }
           }
           Region.Entry re = soloRgn.getEntry("soloKey0");
@@ -985,7 +991,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
               factory2.setDataPolicy(DataPolicy.REPLICATE);
               rgn1 = getCache().createRegion(rgnName, factory2.create());
             } catch (CacheException e) {
-              fail("While creating region", e);
+              Assert.fail("While creating region", e);
             }
           }
           Region.Entry re = rgn1.getEntry("key0");
@@ -996,7 +1002,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
           assertEquals("val1_5", re.getValue());
         }
       };
-    invokeInEveryVM(nonSoloChangeValidator2);
+    Invoke.invokeInEveryVM(nonSoloChangeValidator2);
   }
   
   /** 
@@ -1110,7 +1116,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
           Region rgn1 = getCache().createRegion(rgnName, getRegionAttributes());
           rgn1.create("key", null);
         } catch (CacheException e) {
-          fail("While creating region", e);
+          Assert.fail("While creating region", e);
         }
       }
     };
@@ -1217,7 +1223,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
           factory.setDataPolicy(DataPolicy.REPLICATE);
           getCache().createRegion(rgnName, factory.create());
         } catch (CacheException e) {
-          fail("While creating region", e);
+          Assert.fail("While creating region", e);
         }
       }
     });
@@ -1409,9 +1415,9 @@ public class TXDistributedDUnitTest extends CacheTestCase {
         }
       }
     };
-    ExpectedException ee = null;
+    IgnoredException ee = null;
     try {
-      ee = addExpectedException(DiskAccessException.class.getName() + "|" +
+      ee = IgnoredException.addIgnoredException(DiskAccessException.class.getName() + "|" +
           CommitIncompleteException.class.getName() + "|" +
           CommitReplyException.class.getName());
       origin.invoke(doTransaction);
@@ -1442,7 +1448,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
       @Override
       public void run2() {
         final Cache c = getCache();
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
           @Override
           public boolean done() {
             return c.getRegion(rgnName1) == null;
@@ -1508,7 +1514,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
     };
     origin.invoke(assertNoContent);
     } finally {
-      invokeInEveryVM(new SerializableCallable() {
+      Invoke.invokeInEveryVM(new SerializableCallable() {
         @Override
         public Object call() throws Exception {
           TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS = false;

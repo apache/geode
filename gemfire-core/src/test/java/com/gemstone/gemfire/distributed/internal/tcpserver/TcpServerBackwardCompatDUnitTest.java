@@ -37,7 +37,10 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
@@ -62,7 +65,7 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
   public void setUp() throws Exception {
     super.setUp();
     disconnectAllFromDS();
-    invokeInEveryVM(new CacheSerializableRunnable("Set TcpServer.isTesting true") {
+    Invoke.invokeInEveryVM(new CacheSerializableRunnable("Set TcpServer.isTesting true") {
       
       @Override
       public void run2() throws CacheException {
@@ -72,15 +75,14 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
-    invokeInEveryVM(new CacheSerializableRunnable("Set TcpServer.isTesting true") {
+  protected final void preTearDown() throws Exception {
+    Invoke.invokeInEveryVM(new CacheSerializableRunnable("Set TcpServer.isTesting true") {
       
       @Override
       public void run2() throws CacheException {
         TcpServer.isTesting = false;
       }
     });
-    super.tearDown2();
   }
 
   /**
@@ -128,7 +130,7 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
           
           Locator.startLocatorAndDS(port0, logFile0, props);
         } catch (IOException e) {
-          fail("Locator1 start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
+          com.gemstone.gemfire.test.dunit.Assert.fail("Locator1 start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
         }
       }
     });
@@ -185,7 +187,7 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
             }
           };
           
-          DistributedTestCase.waitForCriterion(ev, 1000, 200, true);
+          Wait.waitForCriterion(ev, 1000, 200, true);
           fail("this test must be fixed to work with the jgroups replacement");
           // TODO
 //          Vector members = client.getMembers("mygroup1", new IpAddress(InetAddress.getLocalHost(), port0), true, 5000);
@@ -194,7 +196,7 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
 //          Assert.assertTrue(members.contains(new IpAddress(InetAddress.getLocalHost(), port1)));
 
         } catch (IOException e) {
-          fail("Locator1 start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
+          com.gemstone.gemfire.test.dunit.Assert.fail("Locator1 start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
         }
       }
     });
@@ -247,7 +249,7 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
 //          }
 
         } catch (IOException e) {
-          fail("Locator0 start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
+          com.gemstone.gemfire.test.dunit.Assert.fail("Locator0 start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
         }
       }
     });

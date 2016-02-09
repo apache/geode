@@ -24,8 +24,8 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 @SuppressWarnings("serial")
 public class DistributedRegionFunction extends FunctionAdapter {
@@ -65,7 +65,7 @@ public class DistributedRegionFunction extends FunctionAdapter {
           return excuse;
         }
       };
-      DistributedTestCase.waitForCriterion(wc, 12000, 500, false);
+      Wait.waitForCriterion(wc, 12000, 500, false);
     }
     long endTime = System.currentTimeMillis();
 

@@ -39,9 +39,13 @@ import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 
@@ -86,7 +90,7 @@ public class FailoverDUnitTest extends DistributedTestCase
     PORT2 =  ((Integer)vm1.invoke(FailoverDUnitTest.class, "createServerCache" )).intValue();
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
-    createClientCache(getServerHostName(host), new Integer(PORT1),new Integer(PORT2));
+    createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1),new Integer(PORT2));
     { // calculate the primary vm
       waitForPrimaryAndBackups(1);
       PoolImpl pool = (PoolImpl)PoolManager.find("FailoverPool");
@@ -188,7 +192,7 @@ public class FailoverDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 20 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 20 * 1000, 200, true);
     assertNotNull(pool.getPrimary());
     assertTrue("backups="+pool.getRedundants() + " expected=" + numBackups,
                pool.getRedundants().size() >= numBackups);
@@ -206,7 +210,7 @@ public class FailoverDUnitTest extends DistributedTestCase
       r.registerInterest("key-5");
     }
     catch (Exception ex) {
-      fail("failed while registering keys k1 to k5", ex);
+      Assert.fail("failed while registering keys k1 to k5", ex);
     }
   }
 
@@ -224,7 +228,7 @@ public class FailoverDUnitTest extends DistributedTestCase
       r.create("key-5", "key-5");
     }
     catch (Exception ex) {
-      fail("failed while createEntries()", ex);
+      Assert.fail("failed while createEntries()", ex);
     }
   }
 
@@ -255,7 +259,7 @@ public class FailoverDUnitTest extends DistributedTestCase
 
     }
     catch (Exception ex) {
-      fail("failed while r.put()", ex);
+      Assert.fail("failed while r.put()", ex);
     }
   }
 
@@ -271,7 +275,7 @@ public class FailoverDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 20 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 20 * 1000, 200, true);
 
     assertEquals("value-1", r.getEntry("key-1").getValue());
     assertEquals("value-2", r.getEntry("key-2").getValue());
@@ -298,7 +302,7 @@ public class FailoverDUnitTest extends DistributedTestCase
 
     }
     catch (Exception ex) {
-      fail("failed while r.putDuringFailover()", ex);
+      Assert.fail("failed while r.putDuringFailover()", ex);
     }
   }
 
@@ -314,15 +318,14 @@ public class FailoverDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 20 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 20 * 1000, 200, true);
     assertEquals("value-5", r.getEntry("key-5").getValue());
     assertEquals("value-4", r.getEntry("key-4").getValue());
   }
 
 
-  public void tearDown2() throws Exception
-  {
-	super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
     // then close the servers

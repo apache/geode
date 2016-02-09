@@ -30,8 +30,8 @@ import static org.junit.Assert.*;
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -163,7 +163,7 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends
             return null;
           }
         };
-      DistributedTestCase.waitForCriterion(ev, 30 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 30 * 1000, 200, true);
     }
     
     //Now get 0-9999 entries

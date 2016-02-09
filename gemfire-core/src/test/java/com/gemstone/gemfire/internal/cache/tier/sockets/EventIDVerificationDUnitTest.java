@@ -42,8 +42,10 @@ import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.RegionEventImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -97,7 +99,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
 
     //vm2.invoke(EventIDVerificationDUnitTest.class, "createClientCache", new
     // Object[] { new Integer(PORT1),new Integer(PORT2)});
-    createClientCache(getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
+    createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
     CacheObserverHolder.setInstance(new CacheObserverAdapter());
 
   }
@@ -388,7 +390,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
       assertEquals(r.getEntry("key-1").getValue(), "key-1");
     }
     catch (Exception ex) {
-      fail("failed while createEntries()", ex);
+      Assert.fail("failed while createEntries()", ex);
     }
   }
 
@@ -404,7 +406,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
 
     }
     catch (Exception ex) {
-      fail("failed while r.put()", ex);
+      Assert.fail("failed while r.put()", ex);
     }
   }
 
@@ -416,7 +418,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
       r.destroy("key-1");
     }
     catch (Exception ex) {
-      fail("test failed due to exception in destroy ", ex);
+      Assert.fail("test failed due to exception in destroy ", ex);
     }
   }
 
@@ -429,7 +431,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
       r.remove("key-1");
     }
     catch (Exception ex) {
-      fail("test failed due to exception in remove ", ex);
+      Assert.fail("test failed due to exception in remove ", ex);
     }
   }
 
@@ -442,7 +444,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
       r.destroyRegion();
     }
     catch (Exception ex) {
-      fail("test failed due to exception in destroyRegion ", ex);
+      Assert.fail("test failed due to exception in destroyRegion ", ex);
     }
   }
 
@@ -454,7 +456,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
       r.clear();
     }
     catch (Exception ex) {
-      fail("test failed due to exception in clearRegion ", ex);
+      Assert.fail("test failed due to exception in clearRegion ", ex);
     }
   }
 
@@ -486,9 +488,8 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
     assertEquals(eventId, ((RegionEventImpl)event).getEventId());
   }
 
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
     // then close the servers

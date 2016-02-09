@@ -39,6 +39,8 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
@@ -62,7 +64,7 @@ public class MultiuserDurableCQAuthzDUnitTest extends
   public void setUp() throws Exception {
     super.setUp();
     getSystem();
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         getSystem();
       }
@@ -318,7 +320,7 @@ public class MultiuserDurableCQAuthzDUnitTest extends
           + SecurityTestUtil.proxyCaches[i].getRegion(regionName).getFullPath();
       // Create CQ Attributes.
       CqAttributesFactory cqf = new CqAttributesFactory();
-      CqListener[] cqListeners = {new CqQueryTestListener(getLogWriter())};
+      CqListener[] cqListeners = {new CqQueryTestListener(LogWriterUtils.getLogWriter())};
       ((CqQueryTestListener)cqListeners[0]).cqName = cqName;
 
       cqf.initCqListeners(cqListeners);
@@ -332,7 +334,7 @@ public class MultiuserDurableCQAuthzDUnitTest extends
         AssertionError err = new AssertionError("Failed to create CQ " + cqName
             + " . ");
         err.initCause(ex);
-        getLogWriter().info("CqService is :" + cqService, err);
+        LogWriterUtils.getLogWriter().info("CqService is :" + cqService, err);
         throw err;
       }
     }
@@ -360,16 +362,16 @@ public class MultiuserDurableCQAuthzDUnitTest extends
         try {
           cq1 = cqService.getCq(cqName);
           if (cq1 == null) {
-            getLogWriter().info(
+            LogWriterUtils.getLogWriter().info(
                 "Failed to get CqQuery object for CQ name: " + cqName);
             fail("Failed to get CQ " + cqName);
           } else {
-            getLogWriter().info("Obtained CQ, CQ name: " + cq1.getName());
+            LogWriterUtils.getLogWriter().info("Obtained CQ, CQ name: " + cq1.getName());
             assertTrue("newCq() state mismatch", cq1.getState().isStopped());
           }
         } catch (Exception ex) {
-          getLogWriter().info("CqService is :" + cqService);
-          getLogWriter().error(ex);
+          LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
+          LogWriterUtils.getLogWriter().error(ex);
           AssertionError err = new AssertionError("Failed to execute CQ "
               + cqName);
           err.initCause(ex);
@@ -382,14 +384,14 @@ public class MultiuserDurableCQAuthzDUnitTest extends
           try {
             cqResults = cq1.executeWithInitialResults();
           } catch (Exception ex) {
-            getLogWriter().info("CqService is: " + cqService);
+            LogWriterUtils.getLogWriter().info("CqService is: " + cqService);
             ex.printStackTrace();
             AssertionError err = new AssertionError("Failed to execute CQ "
                 + cqName);
             err.initCause(ex);
             throw err;
           }
-          getLogWriter().info("initial result size = " + cqResults.size());
+          LogWriterUtils.getLogWriter().info("initial result size = " + cqResults.size());
           assertTrue("executeWithInitialResults() state mismatch", cq1
               .getState().isRunning());
           if (expectedResultsSize >= 0) {
@@ -404,7 +406,7 @@ public class MultiuserDurableCQAuthzDUnitTest extends
                 + cqName);
             err.initCause(ex);
             if (expectedErr == null) {
-              getLogWriter().info("CqService is: " + cqService, err);
+              LogWriterUtils.getLogWriter().info("CqService is: " + cqService, err);
             }
             throw err;
           }

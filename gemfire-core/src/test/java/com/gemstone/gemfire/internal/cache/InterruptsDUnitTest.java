@@ -30,6 +30,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.internal.cache.UpdateOperation.UpdateMessage;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -50,8 +51,8 @@ public class InterruptsDUnitTest extends CacheTestCase {
   
   
   @Override
-  public void tearDown2() throws Exception {
-    invokeInEveryVM(new SerializableCallable() {
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(new SerializableCallable() {
       
       @Override
       public Object call() throws Exception {
@@ -59,7 +60,6 @@ public class InterruptsDUnitTest extends CacheTestCase {
         return null;
       }
     });
-    super.tearDown2();
   }
   
   public void _testLoop() throws Throwable {

@@ -40,6 +40,7 @@ import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 import com.gemstone.gemfire.pdx.internal.PdxType;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -178,16 +179,15 @@ public class PdxRenameDUnitTest  extends CacheTestCase{
   }
 
   @Override
-  public void tearDown2() throws Exception {
+  public void preTearDownCacheTestCase() throws Exception {
     for (String path : this.filesToBeDeleted) {
       try {
         FileUtil.delete(new File(path));
       } catch (IOException e) {
-        getLogWriter().error("Unable to delete file", e);
+        LogWriterUtils.getLogWriter().error("Unable to delete file", e);
       }
     }
     this.filesToBeDeleted.clear();
-    super.tearDown2();
   }
   
   enum Day {

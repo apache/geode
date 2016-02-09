@@ -23,7 +23,10 @@ import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.RMIException;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * DUnit test for operations on ParallelGatewaySender
@@ -40,7 +43,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   
   public void setUp() throws Exception {
     super.setUp();
-    addExpectedException("Broken pipe||Unexpected IOException");
+    IgnoredException.addIgnoredException("Broken pipe||Unexpected IOException");
   }
   
   public void testParallelGatewaySenderWithoutStarting() {
@@ -50,14 +53,14 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     createSendersReceiversAndPartitionedRegion(lnPort, nyPort, false, false);
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
     
     vm4.invoke(WANTestBase.class, "verifySenderStoppedState", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "verifySenderStoppedState", new Object[] { "ln" });
     vm6.invoke(WANTestBase.class, "verifySenderStoppedState", new Object[] { "ln" });
     vm7.invoke(WANTestBase.class, "verifySenderStoppedState", new Object[] { "ln" });
     
-    validateRegionSizes(testName + "_PR", 0, vm2, vm3);
+    validateRegionSizes(getTestMethodName() + "_PR", 0, vm2, vm3);
   }
   
   /**
@@ -70,17 +73,17 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     createSendersReceiversAndPartitionedRegion(lnPort, nyPort, true, true);
 
-    pause(2000);
+    Wait.pause(2000);
     
     vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 10 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 10 });
 
     vm4.invoke(WANTestBase.class, "validateParallelSenderQueueAllBucketsDrained", new Object[] {"ln"});
     vm5.invoke(WANTestBase.class, "validateParallelSenderQueueAllBucketsDrained", new Object[] {"ln"});
 
-    validateRegionSizes(testName + "_PR", 10, vm2, vm3);
+    validateRegionSizes(getTestMethodName() + "_PR", 10, vm2, vm3);
   }
 
   
@@ -99,7 +102,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     waitForSendersRunning();
     
     //FIRST RUN: now, the senders are started. So, start the puts
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 100 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 100 });
     
     //now, pause all of the senders
     vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
@@ -108,10 +111,10 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm7.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
     
     //SECOND RUN: keep one thread doing puts to the region
-    vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
+    vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
     
     //verify region size remains on remote vm and is restricted below a specified limit (i.e. number of puts in the first run)
-    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {testName + "_PR", 100 });
+    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {getTestMethodName() + "_PR", 100 });
   }
 
   /**
@@ -129,7 +132,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     waitForSendersRunning();
     
     //now, the senders are started. So, start the puts
-    vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
+    vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
     
     //now, pause all of the senders
     vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
@@ -138,7 +141,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm7.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
     
     //sleep for a second or two
-    pause(2000);
+    Wait.pause(2000);
     
     //resume the senders
     vm4.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
@@ -146,12 +149,12 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm6.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
     vm7.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
     
-    pause(2000);
+    Wait.pause(2000);
 
     validateParallelSenderQueueAllBucketsDrained();
     
     //find the region size on remote vm
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {testName + "_PR", 1000 });
+    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {getTestMethodName() + "_PR", 1000 });
  
   }
 
@@ -179,14 +182,14 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
         true, 100, 10, false, false, null, true });
 
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", null, 1, 100, isOffHeap() });
+      getTestMethodName() + "_PR", null, 1, 100, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", null, 1, 100, isOffHeap() });
+      getTestMethodName() + "_PR", null, 1, 100, isOffHeap() });
   
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
@@ -196,7 +199,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
 
     //start the puts
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 100 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 100 });
 
     //let the queue drain completely
     vm4.invoke(WANTestBase.class, "validateQueueContents", new Object[] { "ln", 0 });
@@ -210,11 +213,11 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
     
     //do more puts
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
     
     //validate region size on remote vm to contain only the events put in local site 
     //before the senders are stopped.
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {testName + "_PR", 100 });
+    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {getTestMethodName() + "_PR", 100 });
   }
 
   /**
@@ -222,7 +225,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * @throws Exception
    */
   public void testParallelPropagationSenderStop() throws Exception {
-    addExpectedException("Broken pipe");
+    IgnoredException.addIgnoredException("Broken pipe");
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -233,16 +236,16 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     waitForSendersRunning();
     
     //FIRST RUN: now, the senders are started. So, do some of the puts
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 100 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 100 });
     
     //now, stop all of the senders
     stopSenders();
     
     //SECOND RUN: keep one thread doing puts
-    vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
+    vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
     
     //verify region size remains on remote vm and is restricted below a specified limit (number of puts in the first run)
-    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {testName + "_PR", 100 });
+    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {getTestMethodName() + "_PR", 100 });
   }
 
   /**
@@ -250,7 +253,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * @throws Exception
    */
   public void testParallelPropagationSenderStartAfterStop() throws Exception {
-    addExpectedException("Broken pipe");
+    IgnoredException.addIgnoredException("Broken pipe");
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -261,36 +264,36 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     waitForSendersRunning();
     
     //FIRST RUN: now, the senders are started. So, do some of the puts
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 200 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 200 });
     
     //now, stop all of the senders
     stopSenders();
     
-    pause(2000);
+    Wait.pause(2000);
     
     //SECOND RUN: do some of the puts after the senders are stopped
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
     
     //Region size on remote site should remain same and below the number of puts done in the FIRST RUN
-    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {testName + "_PR", 200 });
+    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {getTestMethodName() + "_PR", 200 });
     
     //start the senders again
     startSenders();
 
     //Region size on remote site should remain same and below the number of puts done in the FIRST RUN
-    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {testName + "_PR", 200 });
+    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {getTestMethodName() + "_PR", 200 });
 
     //SECOND RUN: do some more puts
-    AsyncInvocation async = vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
+    AsyncInvocation async = vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
     async.join();
     
-    pause(2000);
+    Wait.pause(2000);
     
     //verify all the buckets on all the sender nodes are drained
     validateParallelSenderQueueAllBucketsDrained();
     
     //verify the events propagate to remote site
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {testName + "_PR", 1000 });
+    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {getTestMethodName() + "_PR", 1000 });
     
     vm4.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 0 });
     vm5.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 0 });
@@ -305,7 +308,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * @throws Exception
    */
   public void testParallelPropagationSenderStartAfterStop_Scenario2() throws Exception {
-    addExpectedException("Broken pipe");
+    IgnoredException.addIgnoredException("Broken pipe");
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -315,42 +318,42 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     //make sure all the senders are running before doing any puts
     waitForSendersRunning();
     
-    getLogWriter().info("All the senders are now started");
+    LogWriterUtils.getLogWriter().info("All the senders are now started");
     
     //FIRST RUN: now, the senders are started. So, do some of the puts
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 200 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 200 });
     
-    getLogWriter().info("Done few puts");
+    LogWriterUtils.getLogWriter().info("Done few puts");
     
     //now, stop all of the senders
     stopSenders();
     
-    getLogWriter().info("All the senders are stopped");
-    pause(2000);
+    LogWriterUtils.getLogWriter().info("All the senders are stopped");
+    Wait.pause(2000);
     
     //SECOND RUN: do some of the puts after the senders are stopped
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
-    getLogWriter().info("Done some more puts in second run");
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
+    LogWriterUtils.getLogWriter().info("Done some more puts in second run");
     
     //Region size on remote site should remain same and below the number of puts done in the FIRST RUN
-    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {testName + "_PR", 200 });
+    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {getTestMethodName() + "_PR", 200 });
     
     //SECOND RUN: start async puts on region
-    AsyncInvocation async = vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 5000 });
-    getLogWriter().info("Started high number of puts by async thread");
+    AsyncInvocation async = vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 5000 });
+    LogWriterUtils.getLogWriter().info("Started high number of puts by async thread");
 
-    getLogWriter().info("Starting the senders at the same time");
+    LogWriterUtils.getLogWriter().info("Starting the senders at the same time");
     //when puts are happening by another thread, start the senders
     vm4.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm6.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm7.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
 
-    getLogWriter().info("All the senders are started");
+    LogWriterUtils.getLogWriter().info("All the senders are started");
     
     async.join();
         
-    pause(2000);
+    Wait.pause(2000);
     
     //verify all the buckets on all the sender nodes are drained
     validateParallelSenderQueueAllBucketsDrained();
@@ -364,9 +367,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * @throws Exception
    */
   public void testParallelPropagationSenderStartAfterStopOnAccessorNode() throws Exception {
-    addExpectedException("Broken pipe");
-    addExpectedException("Connection reset");
-    addExpectedException("Unexpected IOException");
+    IgnoredException.addIgnoredException("Broken pipe");
+    IgnoredException.addIgnoredException("Connection reset");
+    IgnoredException.addIgnoredException("Unexpected IOException");
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -377,36 +380,36 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     waitForSendersRunning();
     
     //FIRST RUN: now, the senders are started. So, do some of the puts
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 200 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 200 });
     
     //now, stop all of the senders
     stopSenders();
     
-    pause(2000);
+    Wait.pause(2000);
     
     //SECOND RUN: do some of the puts after the senders are stopped
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
     
     //Region size on remote site should remain same and below the number of puts done in the FIRST RUN
-    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {testName + "_PR", 200 });
+    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {getTestMethodName() + "_PR", 200 });
     
     //start the senders again
     startSenders();
 
     //Region size on remote site should remain same and below the number of puts done in the FIRST RUN
-    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {testName + "_PR", 200 });
+    vm2.invoke(WANTestBase.class, "validateRegionSizeRemainsSame", new Object[] {getTestMethodName() + "_PR", 200 });
 
     //SECOND RUN: do some more puts
-    AsyncInvocation async = vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
+    AsyncInvocation async = vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
     async.join();
-    pause(5000);
+    Wait.pause(5000);
     
     //verify all buckets drained only on non-accessor nodes.
     vm4.invoke(WANTestBase.class, "validateParallelSenderQueueAllBucketsDrained", new Object[] {"ln"});
     vm5.invoke(WANTestBase.class, "validateParallelSenderQueueAllBucketsDrained", new Object[] {"ln"});
     
     //verify the events propagate to remote site
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {testName + "_PR", 1000 });
+    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {getTestMethodName() + "_PR", 1000 });
   }
 
   /**
@@ -420,8 +423,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     createSendersReceiversAndPartitionedRegion(lnPort, nyPort, false, true);
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 1000 });
-    getLogWriter().info("Done 1000 puts on local site");
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 1000 });
+    LogWriterUtils.getLogWriter().info("Done 1000 puts on local site");
     
     //Since puts are already done on userPR, it will have the buckets created. 
     //During sender start, it will wait until those buckets are created for shadowPR as well.
@@ -434,16 +437,16 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     waitForSendersRunning();
     
-    getLogWriter().info("Started senders on local site");
+    LogWriterUtils.getLogWriter().info("Started senders on local site");
     
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR", 5000 });
-    getLogWriter().info("Done 5000 puts on local site");
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 5000 });
+    LogWriterUtils.getLogWriter().info("Done 5000 puts on local site");
     
     vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
     vm6.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
     vm7.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
-    getLogWriter().info("Paused senders on local site");
+    LogWriterUtils.getLogWriter().info("Paused senders on local site");
     
     vm4.invoke(WANTestBase.class, "verifySenderPausedState", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "verifySenderPausedState", new Object[] { "ln" });
@@ -451,14 +454,14 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm7.invoke(WANTestBase.class, "verifySenderPausedState", new Object[] { "ln" });
     
     AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class, "doPuts",
-        new Object[] { testName + "_PR", 1000 });
-    getLogWriter().info("Started 1000 async puts on local site");
+        new Object[] { getTestMethodName() + "_PR", 1000 });
+    LogWriterUtils.getLogWriter().info("Started 1000 async puts on local site");
 
     vm4.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
     vm6.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
     vm7.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
-    getLogWriter().info("Resumed senders on local site");
+    LogWriterUtils.getLogWriter().info("Resumed senders on local site");
 
     vm4.invoke(WANTestBase.class, "verifySenderResumedState", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "verifySenderResumedState", new Object[] { "ln" });
@@ -475,7 +478,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     //verify all buckets drained on all sender nodes.
     validateParallelSenderQueueAllBucketsDrained();
 
-    validateRegionSizes(testName + "_PR", 5000, vm2, vm3);
+    validateRegionSizes(getTestMethodName() + "_PR", 5000, vm2, vm3);
   }
 
   /**
@@ -492,7 +495,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // make sure all the senders are running before doing any puts
     waitForSendersRunning();
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         1000 });
     
     // try destroying on couple of nodes
@@ -512,7 +515,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     }
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR", 1000 });
+        getTestMethodName() + "_PR", 1000 });
   }
 
   public void testDestroyParallelGatewaySender() {
@@ -525,22 +528,22 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // make sure all the senders are running
     waitForSendersRunning();
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         1000 });
     
-    pause(2000);
+    Wait.pause(2000);
     
     //stop the sender and remove from region before calling destroy on it
     stopSenders();
 
     vm4.invoke(WANTestBase.class, "removeSenderFromTheRegion", new Object[] {
-        "ln", testName + "_PR" });
+        "ln", getTestMethodName() + "_PR" });
     vm5.invoke(WANTestBase.class, "removeSenderFromTheRegion", new Object[] {
-        "ln", testName + "_PR" });
+        "ln", getTestMethodName() + "_PR" });
     vm6.invoke(WANTestBase.class, "removeSenderFromTheRegion", new Object[] {
-        "ln", testName + "_PR" });
+        "ln", getTestMethodName() + "_PR" });
     vm7.invoke(WANTestBase.class, "removeSenderFromTheRegion", new Object[] {
-        "ln", testName + "_PR" });
+        "ln", getTestMethodName() + "_PR" });
 
     vm4.invoke(WANTestBase.class, "destroySender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "destroySender", new Object[] { "ln" });
@@ -590,7 +593,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   private void createPartitionedRegions(boolean createAccessors) {
     // Note: This is a test-specific method used by several test to create
     // partitioned regions.
-    String regionName = testName + "_PR";
+    String regionName = getTestMethodName() + "_PR";
     vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
     vm5.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
 

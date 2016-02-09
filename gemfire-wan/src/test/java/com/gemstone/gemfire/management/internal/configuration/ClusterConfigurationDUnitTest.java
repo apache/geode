@@ -53,10 +53,12 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 import org.apache.commons.io.FileUtils;
 
@@ -104,10 +106,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
   
   
   public void testConfigDistribution() throws IOException {
-    addExpectedException("could not get remote locator");
+    IgnoredException.addIgnoredException("could not get remote locator");
     try {
       Object[] result = setup();
-      addExpectedException("EntryDestroyedException");
+      IgnoredException.addIgnoredException("EntryDestroyedException");
       final int locatorPort = (Integer) result[0];
       final String jmxHost = (String) result[1];
       final int jmxPort = (Integer) result[2];
@@ -592,7 +594,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null,
               locatorProps);
-          DistributedTestCase.WaitCriterion wc = new DistributedTestCase.WaitCriterion() {
+          WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
@@ -603,7 +605,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          DistributedTestCase.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
+          Wait.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
@@ -663,7 +665,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null,
               locatorProps);
-          DistributedTestCase.WaitCriterion wc = new DistributedTestCase.WaitCriterion() {
+          WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
@@ -674,7 +676,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          DistributedTestCase.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
+          Wait.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
@@ -836,8 +838,8 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
   }
   protected void executeAndVerifyCommand(String commandString) {
     CommandResult cmdResult = executeCommand(commandString);
-    getLogWriter().info("Command : " + commandString);
-    getLogWriter().info("Command Result : " + commandResultToString(cmdResult));
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Command : " + commandString);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Command Result : " + commandResultToString(cmdResult));
     assertEquals(Status.OK, cmdResult.getStatus());
     assertFalse(cmdResult.failedToPersist());
   }

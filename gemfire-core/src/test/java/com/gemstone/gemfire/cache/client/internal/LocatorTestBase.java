@@ -42,8 +42,12 @@ import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -67,7 +71,8 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
     super(name);
   }
   
-  public void tearDown2() throws Exception {
+  @Override
+  protected final void preTearDown() throws Exception {
     
     SerializableRunnable tearDown = new SerializableRunnable("tearDown") {
       public void run() {
@@ -94,9 +99,13 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
     };
     //We seem to like leaving the DS open if we can for
     //speed, but lets at least destroy our cache and locator.
-    invokeInEveryVM(tearDown);
+    Invoke.invokeInEveryVM(tearDown);
     tearDown.run();
-    super.tearDown2();
+    
+    postTearDownLocatorTestBase();
+  }
+  
+  protected void postTearDownLocatorTestBase() throws Exception {
   }
   
   protected void startLocatorInVM(final VM vm, final int locatorPort, final String otherLocators) {
@@ -108,21 +117,21 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
         Properties props = new Properties();
         props.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
         props.setProperty(DistributionConfig.LOCATORS_NAME, otherLocators);
-        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
         props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
         try {
           File logFile = new File(testName + "-locator" + locatorPort
               + ".log");
           InetAddress bindAddr = null;
           try {
-            bindAddr = InetAddress.getByName(getServerHostName(vm.getHost()));
+            bindAddr = InetAddress.getByName(NetworkUtils.getServerHostName(vm.getHost()));
           } catch (UnknownHostException uhe) {
-            fail("While resolving bind address ", uhe);
+            Assert.fail("While resolving bind address ", uhe);
           }
           Locator locator = Locator.startLocatorAndDS(locatorPort, logFile, bindAddr, props);
           remoteObjects.put(LOCATOR_KEY, locator);
         } catch (IOException ex) {
-          fail("While starting locator on port " + locatorPort, ex);
+          Assert.fail("While starting locator on port " + locatorPort, ex);
         }
       }
     });
@@ -302,7 +311,7 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
   public String getLocatorString(Host host, int[] locatorPorts) {
     StringBuffer str = new StringBuffer();
     for(int i = 0; i < locatorPorts.length; i++) {
-      str.append(getServerHostName(host))
+      str.append(NetworkUtils.getServerHostName(host))
           .append("[")
           .append(locatorPorts[i])
           .append("]");

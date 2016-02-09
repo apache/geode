@@ -47,6 +47,7 @@ import com.gemstone.gemfire.distributed.internal.ReplyException;
 
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -171,7 +172,7 @@ public class PartitionedRegionAPIDUnitTest extends
 			RegionAttributes regionAttribs = attr.create();
 			cache.createRegion("PR1",
 					regionAttribs);
-			getLogWriter().info("Region created in VM1.");
+			LogWriterUtils.getLogWriter().info("Region created in VM1.");
 		}
 	};
 
@@ -191,12 +192,12 @@ public class PartitionedRegionAPIDUnitTest extends
     for (int b = 0; b < numBucks; b++) {
       if (par.getBucketKeys(b).contains(key)) {
         foundIt = true;
-        getLogWriter().severe("Key " + key + " found in bucket " + b);
+        LogWriterUtils.getLogWriter().severe("Key " + key + " found in bucket " + b);
         break;
       }
     }
     if (!foundIt) {
-      getLogWriter().severe("Key " + key + " not found in any bucket");
+      LogWriterUtils.getLogWriter().severe("Key " + key + " not found in any bucket");
     }
     return foundIt;
   }
@@ -347,8 +348,8 @@ public class PartitionedRegionAPIDUnitTest extends
 						"<ExpectedException action=remove>"
 								+ entryNotFoundException
 								+ "</ExpectedException>");
-				getLogWriter().fine("Out of doPutOperations1");
-				getLogWriter().fine("All the puts done successfully for vm0.");
+				LogWriterUtils.getLogWriter().fine("Out of doPutOperations1");
+				LogWriterUtils.getLogWriter().fine("All the puts done successfully for vm0.");
 			}
 		});
 
@@ -506,8 +507,8 @@ public class PartitionedRegionAPIDUnitTest extends
 								+ entryNotFoundException
 								+ "</ExpectedException>");
 
-				getLogWriter().fine("Out of doPutOperations2");
-				getLogWriter().fine("All the puts done successfully for vm1.");
+				LogWriterUtils.getLogWriter().fine("Out of doPutOperations2");
+				LogWriterUtils.getLogWriter().fine("All the puts done successfully for vm1.");
 			}
 		});
 	}
@@ -654,7 +655,7 @@ public class PartitionedRegionAPIDUnitTest extends
 					size = pr.size();
 					assertEquals("Size doesnt return expected value", size, 10);
 //				}
-				getLogWriter().fine(
+				LogWriterUtils.getLogWriter().fine(
 						"All the puts done successfully for vm0.");
                                 
                                 
@@ -795,7 +796,7 @@ public class PartitionedRegionAPIDUnitTest extends
 								"<ExpectedException action=remove>"
 										+ entryNotFoundException
 										+ "</ExpectedException>");
-				getLogWriter()
+				LogWriterUtils.getLogWriter()
 						.fine("All the remove done successfully for vm0.");
 			}
 		});
@@ -1018,7 +1019,7 @@ public class PartitionedRegionAPIDUnitTest extends
 						assertTrue("containsKey() Validation failed for key = "
 								+ i, conKey);
 					}
-					getLogWriter().fine(
+					LogWriterUtils.getLogWriter().fine(
 							"containsKey() Validated entry for key = " + i);
 				}
 
@@ -1036,7 +1037,7 @@ public class PartitionedRegionAPIDUnitTest extends
 								"containsValueForKey() Validation failed for key = "
 										+ i, conKey);
 					}
-					getLogWriter().fine(
+					LogWriterUtils.getLogWriter().fine(
 							"containsValueForKey() Validated entry for key = "
 									+ i);
 				}

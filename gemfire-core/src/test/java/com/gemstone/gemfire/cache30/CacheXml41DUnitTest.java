@@ -42,7 +42,8 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 /**
  * Tests the declarative caching functionality introduced in GemFire 4.1.
@@ -162,7 +163,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
   {
     setXmlFile(findFile("unknownNamedAttributes.xml"));
 
-    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.RegionAttributesCreation_CANNOT_REFERENCE_NONEXISTING_REGION_ATTRIBUTES_NAMED_0.toLocalizedString());
+    IgnoredException expectedException = IgnoredException.addIgnoredException(LocalizedStrings.RegionAttributesCreation_CANNOT_REFERENCE_NONEXISTING_REGION_ATTRIBUTES_NAMED_0.toLocalizedString());
     try {
       getCache();
       fail("Should have thrown an IllegalStateException");
@@ -198,7 +199,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
 
     setXmlFile(findFile("sameRootRegion.xml"));
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -209,7 +210,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
       assertTrue(cause instanceof SAXException);
       cause = ((SAXException)cause).getException();
       if (!(cause instanceof RegionExistsException)) {
-        fail("Expected a RegionExistsException, not a "
+        Assert.fail("Expected a RegionExistsException, not a "
             + cause.getClass().getName(), cause);
       }
     } finally {
@@ -242,7 +243,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
 
     setXmlFile(findFile("sameSubregion.xml"));
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -253,7 +254,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
       assertTrue(cause instanceof SAXException);
       cause = ((SAXException)cause).getException();
       if (!(cause instanceof RegionExistsException)) {
-        fail("Expected a RegionExistsException, not a "
+        Assert.fail("Expected a RegionExistsException, not a "
             + cause.getClass().getName(), cause);
       }
     } finally {

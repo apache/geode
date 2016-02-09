@@ -29,6 +29,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 
 public class CacheXml90DUnitTest extends CacheXml81DUnitTest {
@@ -90,7 +91,7 @@ public class CacheXml90DUnitTest extends CacheXml81DUnitTest {
     assertNotNull(regionBefore);
     assertEquals(true, regionBefore.getAttributes().getOffHeap());
 
-    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.
+    IgnoredException expectedException = IgnoredException.addIgnoredException(LocalizedStrings.
         LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED.toLocalizedString("/"+regionName));
     try {
       testXml(cache);
@@ -124,7 +125,7 @@ public class CacheXml90DUnitTest extends CacheXml81DUnitTest {
     assertNotNull(subRegionBefore);
     assertEquals(true, subRegionBefore.getAttributes().getOffHeap());
 
-    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.
+    IgnoredException expectedException = IgnoredException.addIgnoredException(LocalizedStrings.
         LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED.toLocalizedString("/"+rootRegionName+"/"+subRegionName));
     try {
       testXml(cache);
@@ -181,7 +182,7 @@ public class CacheXml90DUnitTest extends CacheXml81DUnitTest {
       rmc.setEvictionOffHeapPercentage(high);
       rmc.setCriticalOffHeapPercentage(low);
       cache.setResourceManagerCreation(rmc);
-      ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE.toLocalizedString());
+      IgnoredException expectedException = IgnoredException.addIgnoredException(LocalizedStrings.MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE.toLocalizedString());
       try {
         testXml(cache);
         assertTrue(false);

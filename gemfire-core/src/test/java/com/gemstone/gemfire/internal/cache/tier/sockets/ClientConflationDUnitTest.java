@@ -39,9 +39,14 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 
 /**
@@ -105,7 +110,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
       performSteps(DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT);
     }
     catch( Exception e ) {
-      fail("testConflationDefault failed due to exception", e);
+      Assert.fail("testConflationDefault failed due to exception", e);
     }
   }
   
@@ -114,7 +119,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
       performSteps(DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_ON);
     }
     catch( Exception e ) {
-      fail("testConflationOn failed due to exception", e);
+      Assert.fail("testConflationOn failed due to exception", e);
     }
   }
   
@@ -123,13 +128,13 @@ public class ClientConflationDUnitTest extends DistributedTestCase
       performSteps(DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_OFF);
     }
     catch( Exception e ) {
-      fail("testConflationOff failed due to exception", e);
+      Assert.fail("testConflationOff failed due to exception", e);
     }
   }
   
   private void performSteps(String conflation) throws Exception {
-    createClientCacheFeeder(getServerHostName(Host.getHost(0)), new Integer(PORT));
-    vm1.invoke(ClientConflationDUnitTest.class, "createClientCache", new Object[] { getServerHostName(vm1.getHost()), new Integer(PORT),
+    createClientCacheFeeder(NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT));
+    vm1.invoke(ClientConflationDUnitTest.class, "createClientCache", new Object[] { NetworkUtils.getServerHostName(vm1.getHost()), new Integer(PORT),
       conflation});
     vm1.invoke(ClientConflationDUnitTest.class, "setClientServerObserverForBeforeInterestRecovery");
     vm1.invoke(ClientConflationDUnitTest.class, "setAllCountersZero");
@@ -334,7 +339,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     
     final int u1 = update1;
     ev = new WaitCriterion() {
@@ -346,7 +351,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     
     ev = new WaitCriterion() {
       public boolean done() {
@@ -357,7 +362,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     
     final int u2 = update2;
     ev = new WaitCriterion() {
@@ -369,7 +374,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
   }
 
   /**
@@ -500,7 +505,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
   public static void putEntries()
   {
     try {
-      getLogWriter().info("Putting entries...");
+      LogWriterUtils.getLogWriter().info("Putting entries...");
       Region r1 = cacheFeeder.getRegion(Region.SEPARATOR +REGION_NAME1);
       Region r2 = cacheFeeder.getRegion(Region.SEPARATOR +REGION_NAME2);
       r1.put("key-1", "11");
@@ -516,15 +521,15 @@ public class ClientConflationDUnitTest extends DistributedTestCase
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      fail("failed while region.put()", ex);
+      Assert.fail("failed while region.put()", ex);
     }
   }
 
   /**
    * close the cache in tearDown
    */
-  public void tearDown2() throws Exception
-  {
+  @Override
+  protected final void preTearDown() throws Exception {
     // close client
     closeCacheFeeder();
     vm1.invoke(ClientConflationDUnitTest.class, "closeCacheClient");

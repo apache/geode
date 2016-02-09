@@ -25,6 +25,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 public class Bug45164DUnitTest extends CacheTestCase {
@@ -78,7 +79,7 @@ public class Bug45164DUnitTest extends CacheTestCase {
         Cache cache = getCache(new CacheFactory());
         Region<Integer, Object> region = cache.<Integer, Object>createRegionFactory(RegionShortcut.PARTITION).create("test");
         if (region == null) {
-          getLogWriter().error("oops!");
+          LogWriterUtils.getLogWriter().error("oops!");
         }
       }
     };

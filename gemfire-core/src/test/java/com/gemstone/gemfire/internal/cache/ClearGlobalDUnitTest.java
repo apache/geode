@@ -35,6 +35,8 @@ import com.gemstone.gemfire.internal.cache.CacheObserverAdapter;
 import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 import java.util.Properties;
@@ -80,11 +82,11 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
     server1 = host.getVM(0);    
     server1.invoke(ClearGlobalDUnitTest.class, "createCacheServer1");
     createCacheServer2();
-    getLogWriter().fine("Cache created in successfully");
+    LogWriterUtils.getLogWriter().fine("Cache created in successfully");
   }
 
-  public void tearDown2()
-  {        
+  @Override
+  protected final void preTearDown() throws Exception {
     server1.invoke(ClearGlobalDUnitTest.class, "closeCache");
     resetClearCallBack();
     closeCache();
@@ -172,7 +174,7 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
       throw new Exception("Test Failed: " + exceptionMsg);
     }   
     else{  
-      getLogWriter().info("Test Passed Successfully ");
+      LogWriterUtils.getLogWriter().info("Test Passed Successfully ");
     } 
   }
   
@@ -182,7 +184,7 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
     {
       Thread th = new PutThread();
       th.start();
-      DistributedTestCase.join(th, 5 * 60 * 1000, getLogWriter());
+      ThreadUtils.join(th, 5 * 60 * 1000);
       synchronized (lock) {    
         testComplete = true;
         lock.notify();
@@ -202,7 +204,7 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
       catch (TimeoutException ex) {
         //pass
         testFailed = false;        
-        getLogWriter().info("Expected TimeoutException in thread ");        
+        LogWriterUtils.getLogWriter().info("Expected TimeoutException in thread ");        
       }
       catch (Exception ex) {        
         exceptionMsg.append(" Exception occurred while region.put(key,value)");                   

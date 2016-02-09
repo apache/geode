@@ -44,6 +44,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 
 /**
@@ -110,7 +111,7 @@ public class Bug39356DUnitTest extends CacheTestCase {
     SerializableRunnable verifyBuckets = new SerializableRunnable("Verify buckets") {
 
       public void run() {
-        LogWriter log = getLogWriter();
+        LogWriter log = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
         Cache cache = getCache();
         PartitionedRegion r = (PartitionedRegion) cache.getRegion(REGION_NAME);
         for(int i = 0; i < r.getAttributes().getPartitionAttributes().getTotalNumBuckets(); i++) {
@@ -120,7 +121,7 @@ public class Bug39356DUnitTest extends CacheTestCase {
               owners = r.getBucketOwnersForValidation(i);
             } catch (ForceReattemptException e) {
               log.info(Bug39356DUnitTest.class + " verify buckets Caught a ForceReattemptException");
-              pause(1000);
+              Wait.pause(1000);
             }
           }
           if(owners.isEmpty()) {

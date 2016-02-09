@@ -31,9 +31,13 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 
 /**
@@ -69,10 +73,9 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     locator = managedNode1;
   }
 
-  public void tearDown2() throws Exception {
+  @Override
+  protected final void preTearDownManagementTestBase() throws Exception {
     stopLocator(locator);
-    super.tearDown2();
-
   }
 
   /**
@@ -163,21 +166,21 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
         props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
         
         props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
 
         InetAddress bindAddr = null;
         try {
           bindAddr = InetAddress.getByName(getServerHostName(vm.getHost()));
         } catch (UnknownHostException uhe) {
-          fail("While resolving bind address ", uhe);
+          Assert.fail("While resolving bind address ", uhe);
         }
 
         try {
-          File logFile = new File(testName + "-locator" + port + ".log");
+          File logFile = new File(getTestMethodName() + "-locator" + port + ".log");
           Locator locator = Locator.startLocatorAndDS(port, logFile, bindAddr,
               props, isPeer, true, null);
         } catch (IOException ex) {
-          fail("While starting locator on port " + port, ex);
+          Assert.fail("While starting locator on port " + port, ex);
         }
 
         assertTrue(InternalLocator.hasLocator());
@@ -225,8 +228,8 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
         LocatorMXBean bean = service.getLocalLocatorMXBean();
         assertNotNull(bean);
         assertEquals(locPort, bean.getPort());
-        getLogWriter().info("Log of Locator" + bean.viewLog());
-        getLogWriter().info("BindAddress" + bean.getBindAddress());
+        LogWriterUtils.getLogWriter().info("Log of Locator" + bean.viewLog());
+        LogWriterUtils.getLogWriter().info("BindAddress" + bean.getBindAddress());
         assertEquals(isPeer, bean.isPeerLocator());
         return null;
       }
@@ -251,8 +254,8 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
         LocatorMXBean bean = MBeanUtil.getLocatorMbeanProxy(member);
         assertNotNull(bean);
 
-        getLogWriter().info("Log of Locator" + bean.viewLog());
-        getLogWriter().info("BindAddress" + bean.getBindAddress());
+        LogWriterUtils.getLogWriter().info("Log of Locator" + bean.viewLog());
+        LogWriterUtils.getLogWriter().info("BindAddress" + bean.getBindAddress());
 
         return null;
       }
@@ -278,7 +281,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
         final LocatorMXBean bean = service.getLocalLocatorMXBean();
         assertNotNull(bean);
 
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
 
           public String description() {
             return "Waiting for the managers List";
@@ -317,7 +320,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
         final LocatorMXBean bean = service.getLocalLocatorMXBean();
         assertNotNull(bean);
 
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
 
           public String description() {
             return "Waiting for the Willing managers List";

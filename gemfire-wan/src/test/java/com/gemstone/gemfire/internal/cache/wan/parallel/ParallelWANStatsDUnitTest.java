@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,12 +32,15 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
   private static final int NUM_PUTS = 100;
   private static final long serialVersionUID = 1L;
   
+  private String testName;
+  
   public ParallelWANStatsDUnitTest(String name) {
     super(name);
   }
 
   public void setUp() throws Exception {
     super.setUp();
+    this.testName = getTestMethodName();
   }
   
   public void testPartitionedRegionParallelPropagation_BeforeDispatch() throws Exception {
@@ -274,7 +280,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
    * @throws Exception
    */
   public void  testParallePropagationWithRemoteRegionDestroy() throws Exception {
-    addExpectedException("RegionDestroyedException");
+    addIgnoredException("RegionDestroyedException");
     Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
         "createFirstLocatorWithDSId", new Object[] { 1 });
     Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,

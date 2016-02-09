@@ -30,6 +30,8 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.SystemAdmin;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
 public class SystemAdminDUnitTest extends DistributedTestCase {
 
@@ -44,8 +46,7 @@ public class SystemAdminDUnitTest extends DistributedTestCase {
   }
   
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  protected final void preTearDown() throws Exception {
     disconnect();
   }
   
@@ -54,7 +55,7 @@ public class SystemAdminDUnitTest extends DistributedTestCase {
     system = null;
     InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
     if (sys != null && sys.isConnected()) {
-      getLogWriter().info("disconnecting(3)");
+      LogWriterUtils.getLogWriter().info("disconnecting(3)");
       sys.disconnect();
     }
   }
@@ -62,7 +63,7 @@ public class SystemAdminDUnitTest extends DistributedTestCase {
   public void testPrintStacks() throws Exception {
 
     // create a gemfire.properties that lets SystemAdmin find the dunit locator
-    Properties p = getAllDistributedSystemProperties(getDistributedSystemProperties());
+    Properties p = DistributedTestUtils.getAllDistributedSystemProperties(getDistributedSystemProperties());
     try {
       
       SystemAdmin.setDistributedSystemProperties(p);

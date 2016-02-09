@@ -35,6 +35,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.execute.PRClientServerTestBase;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
 public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
 
@@ -75,10 +76,10 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
       String authInit = cGen.getAuthInit();
       String accessor = gen.getAuthorizationCallback();
 
-      getLogWriter().info("testOps1: Using authinit: " + authInit);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info("testOps1: Using authinit: " + authInit);
+      LogWriterUtils.getLogWriter().info(
           "testOps1: Using authenticator: " + authenticator);
-      getLogWriter().info("testOps1: Using accessor: " + accessor);
+      LogWriterUtils.getLogWriter().info("testOps1: Using accessor: " + accessor);
 
       // Start servers with all required properties
       Properties serverProps = buildProperties(authenticator, accessor, false,
@@ -149,21 +150,21 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
         gen.getDisallowedCredentials(new OperationCode[] {client1OpCodes[1]},
             new String[] {regionName}, 1)};
     if (client1Credentials[0] == null || client1Credentials[0].size() == 0) {
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testOps1: Unable to obtain valid credentials with "
               + client1OpCodes[0].toString()
               + " permission; skipping this combination.");
       return false;
     }
     if (client1Credentials[1] == null || client1Credentials[1].size() == 0) {
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testOps1: Unable to obtain valid credentials with no "
               + client1OpCodes[0].toString()
               + " permission; skipping this combination.");
       return false;
     }
     javaProps = cGen.getJavaProperties();
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "testOps1: For first client credentials: " + client1Credentials[0]
             + "\n" + client1Credentials[1]);
     client1.invoke(SecurityTestUtil.class, "createCacheClientForMultiUserMode",
@@ -178,21 +179,21 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
         gen.getDisallowedCredentials(client2OpCodes,
             new String[] {regionName}, 9)};
     if (client2Credentials[0] == null || client2Credentials[0].size() == 0) {
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testOps1: Unable to obtain valid credentials with "
               + client2OpCodes[0].toString()
               + " permission; skipping this combination.");
       return false;
     }
     if (client2Credentials[1] == null || client2Credentials[1].size() == 0) {
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testOps1: Unable to obtain valid credentials with no "
               + client2OpCodes[0].toString()
               + " permission; skipping this combination.");
       return false;
     }
     javaProps = cGen.getJavaProperties();
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "testOps1: For second client credentials: " + client2Credentials[0]
             + "\n" + client2Credentials[1]);
     if (bothClientsInMultiuserMode) {
@@ -354,9 +355,9 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
       String authInit = cGen.getAuthInit();
       String accessor = gen.getAuthorizationCallback();
 
-      getLogWriter().info("testOps2: Using authinit: " + authInit);
-      getLogWriter().info("testOps2: Using authenticator: " + authenticator);
-      getLogWriter().info("testOps2: Using accessor: " + accessor);
+      LogWriterUtils.getLogWriter().info("testOps2: Using authinit: " + authInit);
+      LogWriterUtils.getLogWriter().info("testOps2: Using authenticator: " + authenticator);
+      LogWriterUtils.getLogWriter().info("testOps2: Using accessor: " + accessor);
 
       // Start servers with all required properties
       Properties serverProps = buildProperties(authenticator, accessor, false,
@@ -383,7 +384,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
       };
 
       javaProps = cGen.getJavaProperties();
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testOps2: For first client credentials: " + client1Credentials[0]
               + "\n" + client1Credentials[1]);
       client1.invoke(SecurityTestUtil.class,
@@ -400,7 +401,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
               new String[] {regionName}, 9)};
 
       javaProps = cGen.getJavaProperties();
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testOps2: For second client credentials: " + client2Credentials[0]
               + "\n" + client2Credentials[1]);
       client2.invoke(SecurityTestUtil.class,
@@ -484,10 +485,10 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
       String authInit = cGen.getAuthInit();
       String accessor = gen.getAuthorizationCallback();
 
-      getLogWriter().info("testOpsWithClientsInDifferentModes: Using authinit: " + authInit);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info("testOpsWithClientsInDifferentModes: Using authinit: " + authInit);
+      LogWriterUtils.getLogWriter().info(
           "testOpsWithClientsInDifferentModes: Using authenticator: " + authenticator);
-      getLogWriter().info("testOpsWithClientsInDifferentModes: Using accessor: " + accessor);
+      LogWriterUtils.getLogWriter().info("testOpsWithClientsInDifferentModes: Using accessor: " + accessor);
 
       // Start servers with all required properties
       Properties serverProps = buildProperties(authenticator, accessor, false,
@@ -521,9 +522,8 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
 
   // End Region: Tests
 
-  public void tearDown2() throws Exception {
-
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close the clients first
     client1.invoke(SecurityTestUtil.class, "closeCache");
     client2.invoke(SecurityTestUtil.class, "closeCache");
@@ -532,5 +532,4 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
     server1.invoke(SecurityTestUtil.class, "closeCache");
     server2.invoke(SecurityTestUtil.class, "closeCache");
   }
-
 }

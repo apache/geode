@@ -29,9 +29,14 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DSClock;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
 
@@ -58,25 +63,25 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
         public Object call() {
           Cache cache = getCache();
           cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
-          getLogWriter().info("Done creating region, now creating CacheServer");
+          LogWriterUtils.getLogWriter().info("Done creating region, now creating CacheServer");
           CacheServer server = null;
           try {
             server = cache.addCacheServer();
             server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
             server.start();
           } catch (IOException e) {
-            fail("Starting cache server failed.", e);
+            Assert.fail("Starting cache server failed.", e);
           }
   
           // now set an artificial time offset for the test
           system.getClock().setCacheTimeOffset(null, TEST_OFFSET, true);
           
-          getLogWriter().info("Done creating and starting CacheServer on port " + server.getPort());
+          LogWriterUtils.getLogWriter().info("Done creating and starting CacheServer on port " + server.getPort());
           return server.getPort();
         }
       });
       
-      final String hostName = getServerHostName(vm0.getHost());
+      final String hostName = NetworkUtils.getServerHostName(vm0.getHost());
   
       // Start client with proxy region and register interest
         
@@ -98,14 +103,14 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
       WaitCriterion wc = new WaitCriterion() {
         public boolean done() {
           long clientTimeOffset = clock.getCacheTimeOffset();
-          getLogWriter().info("Client node's new time offset is: " + clientTimeOffset);
+          LogWriterUtils.getLogWriter().info("Client node's new time offset is: " + clientTimeOffset);
           return clientTimeOffset >= TEST_OFFSET;
         }
         public String description() {
           return "Waiting for cacheTimeOffset to be non-zero.  PingOp should have set it to something";
         }
       };
-      waitForCriterion(wc, 60000, 1000, true);
+      Wait.waitForCriterion(wc, 60000, 1000, true);
     } finally {
       cache.close();
       vm1.invoke(CacheTestCase.class, "disconnectFromDS");
@@ -135,27 +140,27 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
         public Object call() {
           Cache cache = getCache();
           cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
-          getLogWriter().info("Done creating region, now creating CacheServer");
+          LogWriterUtils.getLogWriter().info("Done creating region, now creating CacheServer");
           CacheServer server = null;
           try {
             server = cache.addCacheServer();
             server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
             server.start();
           } catch (IOException e) {
-            fail("Starting cache server failed.", e);
+            Assert.fail("Starting cache server failed.", e);
           }
   
           // now set an artificial time offset for the test
           system.getClock().setCacheTimeOffset(null, -TEST_OFFSET, true);
           
-          getLogWriter().info("Done creating and starting CacheServer on port " + server.getPort());
+          LogWriterUtils.getLogWriter().info("Done creating and starting CacheServer on port " + server.getPort());
           return server.getPort();
         }
       });
       
-      pause((int)TEST_OFFSET);  // let cacheTimeMillis consume the time offset
+      Wait.pause((int)TEST_OFFSET);  // let cacheTimeMillis consume the time offset
       
-      final String hostName = getServerHostName(vm0.getHost());
+      final String hostName = NetworkUtils.getServerHostName(vm0.getHost());
   
       // Start client with proxy region and register interest
         
@@ -177,7 +182,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
       WaitCriterion wc = new WaitCriterion() {
         public boolean done() {
           long clientTimeOffset = clock.getCacheTimeOffset();
-          getLogWriter().info("Client node's new time offset is: " + clientTimeOffset);
+          LogWriterUtils.getLogWriter().info("Client node's new time offset is: " + clientTimeOffset);
           if (clientTimeOffset >= 0) {
             return false;
           }
@@ -188,7 +193,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
           return "Waiting for cacheTimeOffset to be negative and cacheTimeMillis to stabilize";
         }
       };
-      waitForCriterion(wc, 60000, 1000, true);
+      Wait.waitForCriterion(wc, 60000, 1000, true);
     } finally {
       cache.close();
       vm1.invoke(CacheTestCase.class, "disconnectFromDS");

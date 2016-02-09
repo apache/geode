@@ -44,6 +44,7 @@ import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.Order;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -114,7 +115,7 @@ public class TransactionsWithDeltaDUnitTest extends CacheTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<Integer, String> crf = cCache
             .createClientRegionFactory(isEmpty ? ClientRegionShortcut.PROXY
@@ -330,7 +331,7 @@ public class TransactionsWithDeltaDUnitTest extends CacheTestCase {
         pr.put(cust1, new Customer(1, "name1"));
         Iterator<CustId> it = pr.keySet().iterator();
         while (it.hasNext()) {
-          getLogWriter().info("SWAP:iterator1:"+pr.get(it.next()));
+          LogWriterUtils.getLogWriter().info("SWAP:iterator1:"+pr.get(it.next()));
         }
         Customer c = pr.get(cust1);
         assertNotNull(c);
@@ -348,10 +349,10 @@ public class TransactionsWithDeltaDUnitTest extends CacheTestCase {
         mgr.begin();
         Customer c = pr.get(cust1);
         c.setName("updatedName");
-        getLogWriter().info("SWAP:doingPut");
+        LogWriterUtils.getLogWriter().info("SWAP:doingPut");
         pr.put(cust1, c);
-        getLogWriter().info("SWAP:getfromtx:"+pr.get(cust1));
-        getLogWriter().info("SWAP:doingCommit");
+        LogWriterUtils.getLogWriter().info("SWAP:getfromtx:"+pr.get(cust1));
+        LogWriterUtils.getLogWriter().info("SWAP:doingCommit");
         assertEquals("updatedName", pr.get(cust1).getName());
         TXStateProxy tx = mgr.internalSuspend();
         assertEquals("name1", pr.get(cust1).getName());

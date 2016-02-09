@@ -26,6 +26,7 @@ import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -103,10 +104,10 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForGroup" + dir, groups, null, logLevel, false,
         false, start, end, 1);
 
-    getLogWriter().info("testExportLogsForGroup command result =" + cmdResult);
+    LogWriterUtils.getLogWriter().info("testExportLogsForGroup command result =" + cmdResult);
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      getLogWriter().info("testExportLogsForGroup cmdStringRsult=" + cmdStringRsult);
+      LogWriterUtils.getLogWriter().info("testExportLogsForGroup cmdStringRsult=" + cmdStringRsult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testExportLogsForGroup failed as did not get CommandResult");
@@ -136,11 +137,11 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForMember" + dir, null, vm1MemberId, logLevel,
         false, false, start, end, 1);
 
-    getLogWriter().info("testExportLogsForMember command result =" + cmdResult);
+    LogWriterUtils.getLogWriter().info("testExportLogsForMember command result =" + cmdResult);
 
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      getLogWriter().info("testExportLogsForMember cmdStringRsult=" + cmdStringRsult);
+      LogWriterUtils.getLogWriter().info("testExportLogsForMember cmdStringRsult=" + cmdStringRsult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testExportLogsForMember failed as did not get CommandResult");

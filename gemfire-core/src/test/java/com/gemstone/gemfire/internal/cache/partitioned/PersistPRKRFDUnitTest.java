@@ -28,9 +28,11 @@ import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Tests the basic use cases for PR persistence.
@@ -73,7 +75,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     AsyncInvocation async1 = vm0.invokeAsync(new CacheSerializableRunnable(title+"async create") {
       public void run2() throws CacheException {
         Region region = getRootRegion(PR_REGION_NAME);
-        ExpectedException expect = addExpectedException("CacheClosedException");
+        IgnoredException expect = IgnoredException.addIgnoredException("CacheClosedException");
         try {
           region.put(10, "b");
           fail("Expect CacheClosedException here");
@@ -92,14 +94,14 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     vm0.invoke(new CacheSerializableRunnable(title+"close disk store") {
       public void run2() throws CacheException {
         GemFireCacheImpl gfc = (GemFireCacheImpl)getCache();
-        pause(500);
+        Wait.pause(500);
         gfc.closeDiskStores();
         synchronized(lockObject) {
           lockObject.notify();
         }
       }
     });
-    DistributedTestCase.join(async1, MAX_WAIT, getLogWriter());
+    ThreadUtils.join(async1, MAX_WAIT);
     closeCache(vm0);
     
     // update
@@ -116,7 +118,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     async1 = vm0.invokeAsync(new CacheSerializableRunnable(title+"async update") {
       public void run2() throws CacheException {
         Region region = getRootRegion(PR_REGION_NAME);
-        ExpectedException expect = addExpectedException("CacheClosedException");
+        IgnoredException expect = IgnoredException.addIgnoredException("CacheClosedException");
         try {
           region.put(1, "b");
           fail("Expect CacheClosedException here");
@@ -135,14 +137,14 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     vm0.invoke(new CacheSerializableRunnable(title+"close disk store") {
       public void run2() throws CacheException {
         GemFireCacheImpl gfc = (GemFireCacheImpl)getCache();
-        pause(500);
+        Wait.pause(500);
         gfc.closeDiskStores();
         synchronized(lockObject) {
           lockObject.notify();
         }
       }
     });
-    DistributedTestCase.join(async1, MAX_WAIT, getLogWriter());
+    ThreadUtils.join(async1, MAX_WAIT);
     closeCache(vm0);
 
     // destroy
@@ -159,7 +161,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     async1 = vm0.invokeAsync(new CacheSerializableRunnable(title+"async destroy") {
       public void run2() throws CacheException {
         Region region = getRootRegion(PR_REGION_NAME);
-        ExpectedException expect = addExpectedException("CacheClosedException");
+        IgnoredException expect = IgnoredException.addIgnoredException("CacheClosedException");
         try {
           region.destroy(2, "b");
           fail("Expect CacheClosedException here");
@@ -178,14 +180,14 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     vm0.invoke(new CacheSerializableRunnable(title+"close disk store") {
       public void run2() throws CacheException {
         GemFireCacheImpl gfc = (GemFireCacheImpl)getCache();
-        pause(500);
+        Wait.pause(500);
         gfc.closeDiskStores();
         synchronized(lockObject) {
           lockObject.notify();
         }
       }
     });
-    DistributedTestCase.join(async1, MAX_WAIT, getLogWriter());
+    ThreadUtils.join(async1, MAX_WAIT);
     
     checkData(vm0, 0, 10, "a");
     checkData(vm0, 10, 11, null);

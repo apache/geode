@@ -23,9 +23,11 @@ import java.util.*;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.*;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -83,7 +85,7 @@ public class PartitionedRegionPRIDDUnitTest extends
     // Create 1/2 * MAX_REGIONS regions in VM 0,1,2 with scope D_ACK.
     createPartitionRegion(vmList, startIndexForRegion, endIndexForRegion,
         localMaxMemory, redundancy, prPrefix);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPRIDGenerationInMultiplePartitionRegion() - Partition regions on 3 nodes successfully created");
 
@@ -99,7 +101,7 @@ public class PartitionedRegionPRIDDUnitTest extends
     // VM 3 contains regions from id MAX_REGIONS to 2*MAX_REGIONS only.
     createPartitionRegion(vmList, startIndexForRegion, endIndexForRegion,
         localMaxMemory, pr2_redundancy, prPrefix);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPRIDGenerationInMultiplePartitionRegion() - Partition regions on 4 nodes successfully created");
     // validating PRID generation for multiple partition regions    
@@ -116,12 +118,12 @@ public class PartitionedRegionPRIDDUnitTest extends
 
     /** main thread is waiting for the other threads to complete */
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+      ThreadUtils.join(async[count], 30 * 1000);
     }
     
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("VM " + count 
+        Assert.fail("VM " + count 
             + " encountered this exception during async invocation", 
             async[count].getException());
       }
@@ -206,10 +208,10 @@ public class PartitionedRegionPRIDDUnitTest extends
         if (prIdPRSet.size() != PartitionedRegion.prIdToPR.size())
           fail("Duplicate PRID are generated in prIdToPR");
 
-        getLogWriter().info("Size of allPartition region : " + prIdSet.size());
-        getLogWriter()
+        LogWriterUtils.getLogWriter().info("Size of allPartition region : " + prIdSet.size());
+        LogWriterUtils.getLogWriter()
             .info("Size of prIdToPR region     : " + prIdPRSet.size());
-        getLogWriter().info("PRID generated successfully");
+        LogWriterUtils.getLogWriter().info("PRID generated successfully");
       }
     };
     return validatePRID;
@@ -233,12 +235,12 @@ public class PartitionedRegionPRIDDUnitTest extends
       numNodes++;
     }
     for (int i = 0; i < numNodes; i++) {
-      DistributedTestCase.join(async[i], 30 * 1000, getLogWriter());
+      ThreadUtils.join(async[i], 30 * 1000);
     }
     
     for (int i = 0; i < numNodes; i++) {
       if (async[i].exceptionOccurred()) {
-        fail("VM " + i 
+        Assert.fail("VM " + i 
             + " encountered this exception during async invocation", 
             async[i].getException());
       }

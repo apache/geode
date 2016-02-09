@@ -22,6 +22,7 @@ import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 public class CompressionRegionOperationsOffHeapDUnitTest extends
@@ -30,8 +31,9 @@ public class CompressionRegionOperationsOffHeapDUnitTest extends
   public CompressionRegionOperationsOffHeapDUnitTest(String name) {
     super(name);
   }
+  
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCompressionRegionOperationsDUnitTest() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override
@@ -41,12 +43,8 @@ public class CompressionRegionOperationsOffHeapDUnitTest extends
         }
       }
     };
-    invokeInEveryVM(checkOrphans);
-    try {
-      checkOrphans.run();
-    } finally {
-      super.tearDown2();
-    }
+    Invoke.invokeInEveryVM(checkOrphans);
+    checkOrphans.run();
   }
 
   @Override

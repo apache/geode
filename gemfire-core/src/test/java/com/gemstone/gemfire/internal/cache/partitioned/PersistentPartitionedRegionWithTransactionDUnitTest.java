@@ -23,6 +23,8 @@ import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -40,24 +42,19 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest extends Persist
   }
   
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-    invokeInEveryVM(new SerializableRunnable() {
-      
+  protected final void postTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS = false;
         System.setProperty(DiskStoreImpl.RECOVER_VALUES_SYNC_PROPERTY_NAME, "false");
       }
     });
-    
   }
-
-
 
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    invokeInEveryVM(new SerializableRunnable() {
+    Invoke.invokeInEveryVM(new SerializableRunnable() {
       
       public void run() {
         TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS = true;
@@ -134,12 +131,12 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest extends Persist
   @Override
   protected void createData(VM vm, final int startKey, final int endKey, final String value,
       final String regionName) {
-    getLogWriter().info("creating runnable to create data for region " + regionName);
+    LogWriterUtils.getLogWriter().info("creating runnable to create data for region " + regionName);
     SerializableRunnable createData = new SerializableRunnable() {
       
       public void run() {
         Cache cache = getCache();
-        getLogWriter().info("getting region " + regionName);
+        LogWriterUtils.getLogWriter().info("getting region " + regionName);
         Region region = cache.getRegion(regionName);
         
         for(int i =startKey; i < endKey; i++) {
@@ -171,7 +168,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest extends Persist
       
       public void run() {
         Cache cache = getCache();
-        getLogWriter().info("checking data in " + regionName);
+        LogWriterUtils.getLogWriter().info("checking data in " + regionName);
         Region region = cache.getRegion(regionName);
         
         for(int i =startKey; i < endKey; i++) {

@@ -43,10 +43,11 @@ import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
-import com.gemstone.gemfire.internal.cache.partitioned.fixed.FixedPartitioningTestBase;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.FixedPartitioningTestBase.Months_Accessor;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -249,7 +250,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
             date = sdf.parse(dateString);
           }
           catch (ParseException e) {
-            FixedPartitioningTestBase.fail("Exception Occured while parseing date", e);
+            Assert.fail("Exception Occured while parseing date", e);
           }
           String value = month.toString() + 10;
           region.put(date, value);
@@ -272,7 +273,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
             date = sdf.parse(dateString);
           }
           catch (ParseException e) {
-            FixedPartitioningTestBase.fail("Exception Occured while parseing date", e);
+            Assert.fail("Exception Occured while parseing date", e);
           }
           DistributedMember key1Pri = PartitionRegionHelper.getPrimaryMemberForKey(region, date);
           assertNotNull(key1Pri);
@@ -468,7 +469,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
           assertTrue(buk0.getBucketAdvisor().isPrimary());
         }
         catch (ForceReattemptException e) {
-          getLogWriter().severe(e);
+          LogWriterUtils.getLogWriter().severe(e);
           fail();
         }
       }
@@ -485,14 +486,14 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
           assertNotNull(k1e);
         }
         catch (ForceReattemptException e) {
-          getLogWriter().severe(e);
+          LogWriterUtils.getLogWriter().severe(e);
           fail();
         }
       }
     };
     for (DistributedMember bom: buk0AllMems) {
       VM v = d2v.get(bom);
-      getLogWriter().info("Visiting bucket owner member " + bom + " for key " + buk0Key1);
+      LogWriterUtils.getLogWriter().info("Visiting bucket owner member " + bom + " for key " + buk0Key1);
       v.invoke(assertHasBucket);
     }
 
@@ -507,14 +508,14 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
           assertFalse(buk0.getBucketAdvisor().isPrimary());
         }
         catch (ForceReattemptException e) {
-          getLogWriter().severe(e);
+          LogWriterUtils.getLogWriter().severe(e);
           fail();
         }
       }
     };
     for (DistributedMember redm: buk0Redundants) {
       VM v = d2v.get(redm);
-      getLogWriter().info("Visiting redundant member " + redm + " for key " + buk0Key1);
+      LogWriterUtils.getLogWriter().info("Visiting redundant member " + redm + " for key " + buk0Key1);
       v.invoke(assertRed);
     }
   }
@@ -588,7 +589,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
         } catch(IllegalStateException expected) {
           System.err.println(expected);
         } catch (UnknownHostException e) {
-          fail("Unknown host", e);
+          Assert.fail("Unknown host", e);
         }
         assertHasMembers(PartitionRegionHelper.getAllMembersForKey(region, 1), member0, member1);
 
@@ -668,7 +669,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
         } catch(IllegalStateException expected) {
           System.err.println(expected);
         } catch (UnknownHostException e) {
-          fail("Unknown host", e);
+          Assert.fail("Unknown host", e);
         }
         assertHasMembers(PartitionRegionHelper.getAllMembersForKey(region, 1), member0, member1);
         
@@ -679,7 +680,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
         } catch(IllegalStateException expected) {
           System.err.println(expected);
         } catch (UnknownHostException e) {
-          fail("Unknown host", e);
+          Assert.fail("Unknown host", e);
         }
         assertHasMembers(PartitionRegionHelper.getAllMembersForKey(region, 1), member0, member1);
         

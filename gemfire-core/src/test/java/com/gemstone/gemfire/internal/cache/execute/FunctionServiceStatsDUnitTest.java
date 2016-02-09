@@ -52,11 +52,13 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionTestHelper;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /*
  * This is DUnite Test to test the Function Execution stats under various
@@ -261,7 +263,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
 
         }
         catch (Exception e) {
-          getLogWriter().info("Exception : " + e.getMessage());
+          LogWriterUtils.getLogWriter().info("Exception : " + e.getMessage());
           e.printStackTrace();
           fail("Test failed after the put operation");
         }
@@ -285,9 +287,9 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
             .getFunctionExecutionsCompleted());
         assertTrue(functionServiceStats.getResultsReceived() >= resultReceived_Aggregate);
 
-        getLogWriter().info("Calling FunctionStats for  TEST_FUNCTION2 :");
+        LogWriterUtils.getLogWriter().info("Calling FunctionStats for  TEST_FUNCTION2 :");
         FunctionStats functionStats = FunctionStats.getFunctionStats(TestFunction.TEST_FUNCTION2, iDS);
-        getLogWriter().info("Called FunctionStats for  TEST_FUNCTION2 :");
+        LogWriterUtils.getLogWriter().info("Called FunctionStats for  TEST_FUNCTION2 :");
         assertEquals(noOfExecutionCalls_TESTFUNCTION2, functionStats
             .getFunctionExecutionCalls());
         assertEquals(noOfExecutionsCompleted_TESTFUNCTION2, functionStats
@@ -378,14 +380,14 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
           ds.disconnect();
           ds = getSystem(props);
           cache = CacheFactory.create(ds);
-          getLogWriter().info("Created Cache on Server");
+          LogWriterUtils.getLogWriter().info("Created Cache on Server");
           assertNotNull(cache);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.DISTRIBUTED_ACK);
           factory.setDataPolicy(DataPolicy.REPLICATE);
           assertNotNull(cache);
           Region region = cache.createRegion(regionName, factory.create());
-          getLogWriter().info("Region Created :" + region);
+          LogWriterUtils.getLogWriter().info("Region Created :" + region);
           assertNotNull(region);
           for (int i = 1; i <= 200; i++) {
             region.put("execKey-" + i, new Integer(i));
@@ -398,13 +400,13 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
             server.start();
           }
           catch (IOException e) {
-            fail("Failed to start the Server", e);
+            Assert.fail("Failed to start the Server", e);
           }
           assertTrue(server.isRunning());
           return new Integer(server.getPort());
         }
         catch (Exception e) {
-          fail(
+          Assert.fail(
               "FunctionServiceStatsDUnitTest#createCache() Failed while creating the cache",
               e);
           throw e;
@@ -427,7 +429,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
           ds.disconnect();
           ds = getSystem(props);
           cache = CacheFactory.create(ds);
-          getLogWriter().info("Created Cache on Client");
+          LogWriterUtils.getLogWriter().info("Created Cache on Client");
           assertNotNull(cache);
 
 
@@ -452,7 +454,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
           factory.setPoolName(p.getName());
           assertNotNull(cache);
           Region region = cache.createRegion(regionName, factory.create());
-          getLogWriter().info("Client Region Created :" + region);
+          LogWriterUtils.getLogWriter().info("Client Region Created :" + region);
           assertNotNull(region);
           for (int i = 1; i <= 200; i++) {
             region.put("execKey-" + i, new Integer(i));
@@ -460,7 +462,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
           return Boolean.TRUE;
         }
         catch (Exception e) {
-          fail(
+          Assert.fail(
               "FunctionServiceStatsDUnitTest#createCache() Failed while creating the cache",
               e);
           throw e;
@@ -517,12 +519,12 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
         }
         catch (FunctionException e) {
           e.printStackTrace();
-          fail("test failed due to", e);
+          Assert.fail("test failed due to", e);
           throw e;
         }
         catch (Exception e) {
           e.printStackTrace();
-          fail("test failed due to", e);
+          Assert.fail("test failed due to", e);
           throw e;
         }
       
@@ -603,7 +605,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
         }
         catch (Exception ex) {
           ex.printStackTrace();
-          getLogWriter().info("Exception : ", ex);
+          LogWriterUtils.getLogWriter().info("Exception : ", ex);
           fail("Test failed after the execute operation nn TRUE");
         }
         function = new TestFunction(true, TestFunction.TEST_FUNCTION5);
@@ -625,7 +627,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
         }
         catch (Exception ex) {
           ex.printStackTrace();
-          getLogWriter().info("Exception : ", ex);
+          LogWriterUtils.getLogWriter().info("Exception : ", ex);
           fail("Test failed after the execute operationssssss");
         }
         return Boolean.TRUE;
@@ -973,7 +975,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
         factory.setScope(Scope.DISTRIBUTED_ACK);
         factory.setDataPolicy(DataPolicy.EMPTY);
         Region region = getCache().createRegion(rName, factory.create());
-        getLogWriter().info("Region Created :" + region);
+        LogWriterUtils.getLogWriter().info("Region Created :" + region);
         assertNotNull(region);
         FunctionService.registerFunction(new TestFunction(true, TestFunction.TEST_FUNCTION2));
         for (int i = 1; i <= 200; i++) {
@@ -991,7 +993,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
         factory.setScope(Scope.DISTRIBUTED_ACK);
         factory.setDataPolicy(DataPolicy.REPLICATE);
         Region region = getCache().createRegion(rName, factory.create());
-        getLogWriter().info("Region Created :" + region);
+        LogWriterUtils.getLogWriter().info("Region Created :" + region);
         assertNotNull(region);
         FunctionService.registerFunction(new TestFunction(true, TestFunction.TEST_FUNCTION2));
         for (int i = 1; i <= 200; i++) {
@@ -1026,12 +1028,12 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
         }
         catch (FunctionException e) {
           e.printStackTrace();
-          fail("test failed due to", e);
+          Assert.fail("test failed due to", e);
           return Boolean.FALSE;
         }
         catch (Exception e) {
           e.printStackTrace();
-          fail("test failed due to", e);
+          Assert.fail("test failed due to", e);
           return Boolean.FALSE;
         }
         
@@ -1088,7 +1090,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
           assertNotNull(ds);
         }
         catch (Exception e) {
-          fail("Failed while creating the Distribued System", e);
+          Assert.fail("Failed while creating the Distribued System", e);
         }
         return Boolean.TRUE;
       }
@@ -1145,9 +1147,9 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
           
         }
         catch (Exception e) {
-          getLogWriter().info("Exception Occured : " + e.getMessage());
+          LogWriterUtils.getLogWriter().info("Exception Occured : " + e.getMessage());
           e.printStackTrace();
-          fail("Test failed", e);
+          Assert.fail("Test failed", e);
         }
         return Boolean.TRUE;
       }
@@ -1294,7 +1296,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
               return excuse;
             }
           };
-          DistributedTestCase.waitForCriterion(wc, 20000, 1000, false);
+          Wait.waitForCriterion(wc, 20000, 1000, false);
           rc.getResult();
         }
         catch (Exception expected) {
@@ -1358,12 +1360,5 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
   private void createScenario() {
     ArrayList commonAttributes = createCommonServerAttributes("TestPartitionedRegion", null, 0, 13, null);
     createClientServerScenarion(commonAttributes, 20, 20, 20);
-  }
-  
-  // this tear down is geeting used in client server mode. this is making use of
-  // cache object for client server
-  //For P2P, i have added separate closeDistributedSystem method 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
   }
 }

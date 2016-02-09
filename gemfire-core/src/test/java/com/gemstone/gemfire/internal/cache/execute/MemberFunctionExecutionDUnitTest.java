@@ -48,7 +48,9 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.ClassBuilder;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -166,7 +168,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
       resultCollector.getResult();
       fail("Should have received FunctionException due to class not found");
     } catch (FunctionException expected) {
-      getLogWriter().warning("received wrong exception cause", expected.getCause());
+      LogWriterUtils.getLogWriter().warning("received wrong exception cause", expected.getCause());
       assertTrue((expected.getCause() instanceof ClassNotFoundException));
     }
   }
@@ -340,7 +342,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
           fail("Should have seen an exception");
         } catch (Exception e) {
           if(!(e.getCause() instanceof FunctionInvocationTargetException)) {
-            fail("failed", e);
+            Assert.fail("failed", e);
           }
         }
         
@@ -385,7 +387,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
         }
       });
       List li = (ArrayList)rc.getResult();
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "MemberFunctionExecutionDUnitTest#excuteOnMembers: Result : " + li);
       assertEquals(li.size(), 1);
       for (Object obj : li) {
@@ -394,9 +396,9 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
       ds.disconnect();
     }
     catch (Exception e) {
-      getLogWriter().info("Exception Occured : "+ e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occured : "+ e.getMessage());
       e.printStackTrace();
-      fail("Test failed",e);
+      Assert.fail("Test failed",e);
     }
   }
   /*
@@ -442,7 +444,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
     try {
       ResultCollector rc = executor.execute(function.getId());
       List li = (ArrayList)rc.getResult();
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "MemberFunctionExecutionDUnitTest#excuteOnMembers: Result : " + li);
       assertEquals(li.size(), noOfMembers.intValue());
       for (Object obj : li) {
@@ -450,9 +452,9 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
       }
     }
     catch (Exception e) {
-      getLogWriter().info("Exception Occured : "+ e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occured : "+ e.getMessage());
       e.printStackTrace();
-      fail("Test failed",e);
+      Assert.fail("Test failed",e);
     }
   }
   
@@ -482,7 +484,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
     try {
       ResultCollector rc = memberExcution.withArgs(Boolean.TRUE).execute(function);
       List li = (ArrayList)rc.getResult();
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "MemberFunctionExecutionDUnitTest#excuteOnMembers: Result : " + li);
       assertEquals(noOfMembers.intValue(), li.size());
       for (Object obj : li) {
@@ -490,9 +492,9 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
       }
     }
     catch (Exception e) {
-      getLogWriter().info("Exception Occured : "+ e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occured : "+ e.getMessage());
       e.printStackTrace();
-      fail("Test failed",e);
+      Assert.fail("Test failed",e);
     }
   }
   
@@ -584,7 +586,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
         }
       });
       List li = (ArrayList)rc.getResult();
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "MemberFunctionExecutionDUnitTest#excuteOnMembers: Result : " + li);
       assertEquals(li.size(), noOfMembers.intValue());
       for (Object obj : li) {
@@ -592,9 +594,9 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
       }
     }
     catch (Exception e) {
-      getLogWriter().info("Exception Occured : "+ e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occured : "+ e.getMessage());
       e.printStackTrace();
-      fail("Test failed",e);
+      Assert.fail("Test failed",e);
     }
   }
   
@@ -612,7 +614,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
       fail("Test Failed");
     }
     catch (Exception expected) {
-      getLogWriter().info("Exception Occured : "+ expected.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception Occured : "+ expected.getMessage());
 //      boolean check = expected.getMessage().equals("Cannot return any result, as Function.hasResult() is false");
       assertTrue(expected.getMessage().equals(LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
           .toLocalizedString("return any")));
@@ -658,20 +660,23 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
       FunctionService.registerFunction(new TestFunction(true,TestFunction.TEST_FUNCTION_NO_LASTRESULT));
     }
     catch (Exception e) {
-      fail("Failed while creating the Distribued System", e);
+      Assert.fail("Failed while creating the Distribued System", e);
     }
     return ds;
   }
   
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     List<VM> members = new ArrayList<VM>(4);
     members.add(member1); members.add(member2); members.add(member3); members.add(member4);
     for (VM member: members) {
       member.invoke(MemberFunctionExecutionDUnitTest.class, "registerExpectedExceptions",
           new Object[] { Boolean.FALSE });
     }
-    super.tearDown2();
+  }
+  
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 }

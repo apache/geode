@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
@@ -74,19 +75,19 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     
     //create PR on site1
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 100, isOffHeap()  });
+      getTestMethodName() + "_PR", "ln", 0, 100, isOffHeap()  });
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 100, isOffHeap()  });
+      getTestMethodName() + "_PR", "ln", 0, 100, isOffHeap()  });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 100, isOffHeap()  });
+      getTestMethodName() + "_PR", "ln", 0, 100, isOffHeap()  });
     
     //create PR on site2
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ny", 0, 100, isOffHeap()  });
+      getTestMethodName() + "_PR", "ny", 0, 100, isOffHeap()  });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ny", 0, 100, isOffHeap()  });
+      getTestMethodName() + "_PR", "ny", 0, 100, isOffHeap()  });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ny", 0, 100, isOffHeap()  });
+      getTestMethodName() + "_PR", "ny", 0, 100, isOffHeap()  });
     
     //start sender on site1
     vm2.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
@@ -109,13 +110,13 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm7.invoke(WANTestBase.class, "pauseSender", new Object[] { "ny" });
     
     //this is required since sender pause doesn't take effect immediately
-    pause(1000);
+    Wait.pause(1000);
     
     //Do 100 puts on site1
-    vm2.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm2.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
       100 });
     //do next 100 puts on site2
-    vm3.invoke(WANTestBase.class, "doPutsFrom", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPutsFrom", new Object[] { getTestMethodName() + "_PR",
       100, 200 });
     //verify queue size on both sites
     vm2.invoke(WANTestBase.class, "verifyQueueSize", new Object[] { "ln", 100 });
@@ -133,7 +134,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
      
     //validate events reached site2 from site1
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR", 200 });
+        getTestMethodName() + "_PR", 200 });
     
     //on site2, verify queue size again
     //this ensures that loopback is not happening since the queue size is same as before
@@ -149,9 +150,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     
     //validate region size on both the sites
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_PR", 200 });
+      getTestMethodName() + "_PR", 200 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_PR", 200 });
+      getTestMethodName() + "_PR", 200 });
   }
   
   /**
@@ -193,17 +194,17 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     
     //create PR on the 3 sites
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 100, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 0, 100, isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln", 0, 100, isOffHeap() });
+      getTestMethodName() + "_PR", "ln", 0, 100, isOffHeap() });
     
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ny", 0, 100, isOffHeap() });
+      getTestMethodName() + "_PR", "ny", 0, 100, isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ny", 0, 100, isOffHeap() });
+      getTestMethodName() + "_PR", "ny", 0, 100, isOffHeap() });
     
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "tk", 0, 100, isOffHeap() });
+      getTestMethodName() + "_PR", "tk", 0, 100, isOffHeap() });
     
     //start senders on all the sites 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
@@ -221,14 +222,14 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(WANTestBase.class, "pauseSender", new Object[] { "tk" });
     
     //need to have this pause since pauseSender doesn't take effect immediately
-    pause(1000);
+    Wait.pause(1000);
     
     //do puts on site1
-    vm3.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
       100 });
     
     //do more puts on site3
-    vm5.invoke(WANTestBase.class, "doPutsFrom", new Object[] { testName + "_PR",
+    vm5.invoke(WANTestBase.class, "doPutsFrom", new Object[] { getTestMethodName() + "_PR",
       100, 200 });
     
     //verify queue size on site1 and site3
@@ -241,9 +242,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     
     //validate region size on site2 (should have 100) and site3 (should have 200)
     vm4.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR", 100 });
+        getTestMethodName() + "_PR", 100 });
     vm5.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR", 200 });
+        getTestMethodName() + "_PR", 200 });
     
     //verify queue size remains same on site3 which means event loopback did not happen
     //this means events coming from site1 are not enqueued back into the sender
@@ -254,11 +255,11 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     
     //validate region size
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_PR", 200 });
+      getTestMethodName() + "_PR", 200 });
     vm4.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_PR", 200 });
+      getTestMethodName() + "_PR", 200 });
     vm5.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_PR", 200 });
+      getTestMethodName() + "_PR", 200 });
   }
   
   /**
@@ -314,17 +315,17 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     //create PR
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln1,ln2", 0, 1, isOffHeap() });
+      getTestMethodName() + "_PR", "ln1,ln2", 0, 1, isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ln1,ln2", 0, 1, isOffHeap() });
+      getTestMethodName() + "_PR", "ln1,ln2", 0, 1, isOffHeap() });
     
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ny1,ny2", 0, 1, isOffHeap() });
+      getTestMethodName() + "_PR", "ny1,ny2", 0, 1, isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "ny1,ny2", 0, 1, isOffHeap() });
+      getTestMethodName() + "_PR", "ny1,ny2", 0, 1, isOffHeap() });
     
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName + "_PR", "tk1,tk2", 0, 1, isOffHeap() });
+      getTestMethodName() + "_PR", "tk1,tk2", 0, 1, isOffHeap() });
 
     //start all the senders
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln1" });
@@ -355,10 +356,10 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(WANTestBase.class, "pauseSender", new Object[] { "tk2" });
     
     //this is required since sender pause doesn't take effect immediately
-    pause(1000);
+    Wait.pause(1000);
 
     //do puts on site1
-    vm3.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR",
+    vm3.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
       100 });
     
     //verify queue size on site1 and site3
@@ -371,7 +372,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     //validate region size on site2
     vm4.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_PR", 100 });
+      getTestMethodName() + "_PR", 100 });
 
     //verify queue size on site2 (sender 2 to 1)
     //should remain at 0 as the events from site1 should not go back to site1
@@ -382,7 +383,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm4.invoke(WANTestBase.class, "verifyQueueSize", new Object[] { "ny2", 0 });
     
     //do more puts on site3
-    vm5.invoke(WANTestBase.class, "doPutsFrom", new Object[] { testName + "_PR",
+    vm5.invoke(WANTestBase.class, "doPutsFrom", new Object[] { getTestMethodName() + "_PR",
       100, 200 });
     
     //resume sender (from site3 to site2) on site3
@@ -390,7 +391,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     
     //validate region size on site2
     vm4.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_PR", 200 });
+      getTestMethodName() + "_PR", 200 });
     
     //verify queue size on site2 (sender 2 to 3)
     //should remain at 0 as the events from site3 should not go back to site3
@@ -413,11 +414,11 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     
     //validate region size on all sites
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_PR", 200 });
+      getTestMethodName() + "_PR", 200 });
     vm4.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_PR", 200 });
+      getTestMethodName() + "_PR", 200 });
     vm5.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_PR", 200 });
+      getTestMethodName() + "_PR", 200 });
   }
   
 

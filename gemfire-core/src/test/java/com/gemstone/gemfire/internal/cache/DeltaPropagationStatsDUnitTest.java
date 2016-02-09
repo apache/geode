@@ -44,7 +44,10 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * @author ashetkar
@@ -91,8 +94,8 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
     vm3 = host.getVM(3);
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     lastKeyReceived = false;
     vm0.invoke(DeltaPropagationStatsDUnitTest.class, "resetLastKeyReceived");
     vm1.invoke(DeltaPropagationStatsDUnitTest.class, "resetLastKeyReceived");
@@ -129,7 +132,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
     int port = (Integer)vm0.invoke(DeltaPropagationStatsDUnitTest.class,
         "createServerCache", args);
 
-    createClientCache(getServerHostName(vm0.getHost()), port);
+    createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
     vm0.invoke(DeltaPropagationStatsDUnitTest.class, "putCleanDelta",
         new Object[] {Integer.valueOf(numOfKeys), Long.valueOf(updates)});
@@ -157,7 +160,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
     int port = (Integer)vm0.invoke(DeltaPropagationStatsDUnitTest.class,
         "createServerCache", args);
 
-    createClientCache(getServerHostName(vm0.getHost()), port);
+    createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
     vm0.invoke(DeltaPropagationStatsDUnitTest.class,
         "putErrorDeltaForReceiver", new Object[] {Integer.valueOf(numOfKeys),
@@ -278,7 +281,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
         Scope.DISTRIBUTED_ACK, Boolean.TRUE};
     Integer port = (Integer)vm0.invoke(DeltaPropagationStatsDUnitTest.class,
         "createServerCache", args);
-    createClientCache(getServerHostName(vm0.getHost()), port);
+    createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
     putCleanDelta(numOfKeys, updates);
     putLastKey();
@@ -314,7 +317,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
         Scope.DISTRIBUTED_ACK, Boolean.TRUE};
     Integer port = (Integer)vm0.invoke(DeltaPropagationStatsDUnitTest.class,
         "createServerCache", args);
-    createClientCache(getServerHostName(vm0.getHost()), port);
+    createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
     putErrorDeltaForReceiver(numOfKeys, updates, errors);
     putErrorDeltaForSender(numOfKeys, updates, errors2, Boolean.FALSE);
@@ -350,7 +353,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
         return "Last key NOT received.";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 15 * 1000, 100, true);
+    Wait.waitForCriterion(wc, 15 * 1000, 100, true);
   }
 
   public static void putCleanDelta(Integer keys, Long updates) {

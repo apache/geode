@@ -42,6 +42,7 @@ import com.gemstone.gemfire.internal.cache.tier.ClientHandShake;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -69,7 +70,8 @@ public class Bug51193DUnitTest extends DistributedTestCase {
     
   }
 
-  public void tearDown2() {
+  @Override
+  protected final void preTearDown() throws Exception {
     closeCache();
     server0.invoke(Bug51193DUnitTest.class, "closeCache");
     client0.invoke(Bug51193DUnitTest.class, "closeCache");
@@ -117,7 +119,7 @@ public class Bug51193DUnitTest extends DistributedTestCase {
   public static Integer createServerCache(Boolean createPR)
       throws Exception {
     Properties props = new Properties();
-    props.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
+    props.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
 
     Bug51193DUnitTest test = new Bug51193DUnitTest("Bug51193DUnitTest");
     DistributedSystem ds = test.getSystem(props);

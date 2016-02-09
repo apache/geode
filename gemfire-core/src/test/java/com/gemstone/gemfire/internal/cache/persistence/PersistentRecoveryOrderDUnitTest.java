@@ -70,11 +70,16 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionHolder;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is a test of how persistent distributed
@@ -106,31 +111,31 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     
     putAnEntry(vm0);
     
-    getLogWriter().info("closing region in vm0");
+    LogWriterUtils.getLogWriter().info("closing region in vm0");
     closeRegion(vm0);
     
     updateTheEntry(vm1);
     
-    getLogWriter().info("closing region in vm1");
+    LogWriterUtils.getLogWriter().info("closing region in vm1");
     closeRegion(vm1);
     
     
     //This ought to wait for VM1 to come back
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     AsyncInvocation future = createPersistentRegionAsync(vm0);
     
     waitForBlockedInitialization(vm0);
     
     assertTrue(future.isAlive());
     
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     
     future.join(MAX_WAIT);
@@ -159,9 +164,9 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     
     putAnEntry(vm0);
@@ -176,17 +181,17 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       }
     });
     
-    getLogWriter().info("closing region in vm0");
+    LogWriterUtils.getLogWriter().info("closing region in vm0");
     closeRegion(vm0);
     
     updateTheEntry(vm1);
     
-    getLogWriter().info("closing region in vm1");
+    LogWriterUtils.getLogWriter().info("closing region in vm1");
     closeCache(vm1);
     
     
     //This ought to wait for VM1 to come back
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     AsyncInvocation future = createPersistentRegionAsync(vm0);
     
     waitForBlockedInitialization(vm0);
@@ -204,7 +209,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
           adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
           adminDS.connect();
           Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
-          getLogWriter().info("waiting members=" + missingIds);
+          LogWriterUtils.getLogWriter().info("waiting members=" + missingIds);
           assertEquals(1, missingIds.size());
           PersistentID missingMember = missingIds.iterator().next();
           adminDS.revokePersistentMember(
@@ -247,8 +252,8 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     
     //Now, we should not be able to create a region
     //in vm1, because the this member was revoked
-    getLogWriter().info("Creating region in VM1");
-    ExpectedException e = addExpectedException(RevokedPersistentDataException.class.getSimpleName(), vm1);
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
+    IgnoredException e = IgnoredException.addIgnoredException(RevokedPersistentDataException.class.getSimpleName(), vm1);
     try {
       createPersistentRegion(vm1);
       fail("We should have received a split distributed system exception");
@@ -294,9 +299,9 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     
     putAnEntry(vm0);
@@ -311,12 +316,12 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       }
     });
     
-    getLogWriter().info("closing region in vm0");
+    LogWriterUtils.getLogWriter().info("closing region in vm0");
     closeRegion(vm0);
     
     updateTheEntry(vm1);
     
-    getLogWriter().info("closing region in vm1");
+    LogWriterUtils.getLogWriter().info("closing region in vm1");
     closeRegion(vm1);
     
     final File dirToRevoke = getDiskDirForVM(vm1);
@@ -332,7 +337,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
         adminDS.connect();
         adminDS.revokePersistentMember(InetAddress.getLocalHost(), dirToRevoke.getCanonicalPath());
         } catch(Exception e) {
-          fail("Unexpected exception", e);
+          Assert.fail("Unexpected exception", e);
         } finally {
           if(adminDS != null) {
             adminDS.disconnect();
@@ -342,7 +347,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     });
     
     //This shouldn't wait, because we revoked the member
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
     
     checkForRecoveryStat(vm0, true);
@@ -361,8 +366,8 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     
     //Now, we should not be able to create a region
     //in vm1, because the this member was revoked
-    getLogWriter().info("Creating region in VM1");
-    ExpectedException e = addExpectedException(RevokedPersistentDataException.class.getSimpleName(), vm1);
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
+    IgnoredException e = IgnoredException.addIgnoredException(RevokedPersistentDataException.class.getSimpleName(), vm1);
     try {
       createPersistentRegion(vm1);
       fail("We should have received a split distributed system exception");
@@ -387,9 +392,9 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     createPersistentRegion(vm2);
     
@@ -405,28 +410,28 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       }
     });
     
-    getLogWriter().info("closing region in vm0");
+    LogWriterUtils.getLogWriter().info("closing region in vm0");
     closeRegion(vm0);
     
     updateTheEntry(vm1);
     
-    getLogWriter().info("closing region in vm1");
+    LogWriterUtils.getLogWriter().info("closing region in vm1");
     closeRegion(vm1);
     
     updateTheEntry(vm2, "D");
     
-    getLogWriter().info("closing region in vm2");
+    LogWriterUtils.getLogWriter().info("closing region in vm2");
     closeRegion(vm2);
     
     
     //These ought to wait for VM2 to come back
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     AsyncInvocation future0 = createPersistentRegionAsync(vm0);
     
     waitForBlockedInitialization(vm0);
     assertTrue(future0.isAlive());
     
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     final AsyncInvocation future1 = createPersistentRegionAsync(vm1);
     waitForBlockedInitialization(vm1);
     assertTrue(future1.isAlive());
@@ -442,7 +447,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
           adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
           adminDS.connect();
           Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
-          getLogWriter().info("waiting members=" + missingIds);
+          LogWriterUtils.getLogWriter().info("waiting members=" + missingIds);
           assertEquals(1, missingIds.size());
         } catch (AdminException e) {
           throw new RuntimeException(e);
@@ -461,7 +466,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       }
     });
     
-    waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       
       public boolean done() {
         return !future1.isAlive();
@@ -484,7 +489,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
           adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
           adminDS.connect();
           final AdminDistributedSystem connectedDS = adminDS;
-          waitForCriterion(new WaitCriterion() {
+          Wait.waitForCriterion(new WaitCriterion() {
 
             public String description() {
               return "Waiting for waiting members to have 2 members";
@@ -577,12 +582,12 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     restoreBackup(vm1);
     
   //This ought to wait for VM1 to come back
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     AsyncInvocation future = createPersistentRegionAsync(vm0);
     waitForBlockedInitialization(vm0);
     assertTrue(future.isAlive());
     
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     
     future.join(MAX_WAIT);
@@ -1045,7 +1050,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     //so it will start up.
     createPersistentRegion(vm0);
 
-    ExpectedException e = addExpectedException(ConflictingPersistentDataException.class.getSimpleName(), vm1);
+    IgnoredException e = IgnoredException.addIgnoredException(ConflictingPersistentDataException.class.getSimpleName(), vm1);
     try {
       //VM1 should not start up, because we should detect that vm1
       //was never in the same distributed system as vm0
@@ -1072,24 +1077,24 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     
     putAnEntry(vm0);
     
-    getLogWriter().info("closing region in vm0");
+    LogWriterUtils.getLogWriter().info("closing region in vm0");
     closeRegion(vm0);
     
     updateTheEntry(vm1);
     
-    getLogWriter().info("closing region in vm1");
+    LogWriterUtils.getLogWriter().info("closing region in vm1");
     closeRegion(vm1);
     
     
     //This ought to wait for VM1 to come back
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     AsyncInvocation future = createPersistentRegionAsync(vm0);
     
     waitForBlockedInitialization(vm0);
@@ -1175,7 +1180,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
     
     //Add a hook which will disconnect from the distributed
@@ -1240,7 +1245,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       
       public void run() {
        final  Cache cache = getCache();
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
 
           public String description() {
             return "Waiting for creation of region " + REGION_NAME;
@@ -1341,7 +1346,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     
     createNonPersistentRegion(vm0);
     
-    ExpectedException e = addExpectedException(IllegalStateException.class.getSimpleName(), vm1);
+    IgnoredException e = IgnoredException.addIgnoredException(IllegalStateException.class.getSimpleName(), vm1);
     try {
       createPersistentRegion(vm1);
       fail("Should have received an IllegalState exception");
@@ -1381,10 +1386,10 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
              Cache cache = getCache();
              Region region = cache.getRegion(REGION_NAME);
              if (region == null) {
-               getLogWriter().severe("removing listener for PersistentRecoveryOrderDUnitTest because region was not found: " + REGION_NAME);
+               LogWriterUtils.getLogWriter().severe("removing listener for PersistentRecoveryOrderDUnitTest because region was not found: " + REGION_NAME);
                Object old = DistributionMessageObserver.setInstance(null);
                if (old != this) {
-                 getLogWriter().severe("removed listener was not the invoked listener", new Exception("stack trace"));
+                 LogWriterUtils.getLogWriter().severe("removed listener was not the invoked listener", new Exception("stack trace"));
                }
                return;
              }
@@ -1668,18 +1673,18 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     
-    getLogWriter().info("Creating region in VM0");
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
     putAnEntry(vm0);
-    getLogWriter().info("closing region in vm0");
+    LogWriterUtils.getLogWriter().info("closing region in vm0");
     closeCache(vm0);
     
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     putAnEntry(vm1);
     
-    getLogWriter().info("Creating region in VM0");
-    ExpectedException ex = addExpectedException("ConflictingPersistentDataException", vm0);
+    LogWriterUtils.getLogWriter().info("Creating region in VM0");
+    IgnoredException ex = IgnoredException.addIgnoredException("ConflictingPersistentDataException", vm0);
     try {
       //this should cause a conflict
       createPersistentRegion(vm0);
@@ -1692,7 +1697,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       ex.remove();
     }
     
-    getLogWriter().info("closing region in vm1");
+    LogWriterUtils.getLogWriter().info("closing region in vm1");
     closeCache(vm1);
     
     //This should work now
@@ -1700,9 +1705,9 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     
     updateTheEntry(vm0);
     
-    ex = addExpectedException("ConflictingPersistentDataException", vm1);
+    ex = IgnoredException.addIgnoredException("ConflictingPersistentDataException", vm1);
     //Now make sure vm1 gets a conflict
-    getLogWriter().info("Creating region in VM1");
+    LogWriterUtils.getLogWriter().info("Creating region in VM1");
     try {
       //this should cause a conflict
       createPersistentRegion(vm1);
@@ -1775,11 +1780,11 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   @Override
   public Properties getDistributedSystemProperties() {
-    getLogWriter().info("Looking for ack-wait-threshold");
+    LogWriterUtils.getLogWriter().info("Looking for ack-wait-threshold");
     String s = System.getProperty("gemfire.ack-wait-threshold");
     if (s != null) {
       SAVED_ACK_WAIT_THRESHOLD = s;
-      getLogWriter().info("removing system property gemfire.ack-wait-threshold");
+      LogWriterUtils.getLogWriter().info("removing system property gemfire.ack-wait-threshold");
       System.getProperties().remove("gemfire.ack-wait-threshold");
     }
     Properties props = super.getDistributedSystemProperties();
@@ -1827,9 +1832,9 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
         try {
           ((GemFireCacheImpl)cache).createVMRegion(REGION_NAME, rf.create(), internalArgs);
         } catch (ClassNotFoundException e) {
-          fail("error", e);
+          Assert.fail("error", e);
         } catch (IOException e) {
-          fail("error", e);
+          Assert.fail("error", e);
         }
       }
     };

@@ -19,8 +19,11 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 import com.gemstone.gemfire.cache.EntryDestroyedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 @SuppressWarnings({"rawtypes", "serial"})
 public class HAInterestPart2DUnitTest extends HAInterestTestCase {
@@ -34,7 +37,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * failover should pick new primary
    */
   public void testPrimaryFailureInUNregisterInterest() throws Exception {
-    createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
+    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
     server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
@@ -60,7 +63,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * Ep list
    */
   public void testSecondaryFailureInUNRegisterInterest() throws Exception {
-    createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
+    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
     server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
@@ -82,7 +85,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * detected live server as well
    */
   public void testDSMDetectsServerLiveJustBeforeInterestRegistration() throws Exception {
-    createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
+    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
     server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
@@ -108,7 +111,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * detected live server as well
    */
   public void testDSMDetectsServerLiveJustAfterInterestRegistration() throws Exception {
-    createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
+    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
 
     createEntriesK1andK2();
     server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
@@ -140,11 +143,11 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * is primary
    */
   public void testRefreshEntriesFromPrimaryWhenDSMDetectsServerLive() throws Exception {
-    addExpectedException(ServerConnectivityException.class.getName());
+    IgnoredException.addIgnoredException(ServerConnectivityException.class.getName());
     
     PORT1 = ((Integer) server1.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
     server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    createClientPoolCacheConnectionToSingleServer(this.getName(), getServerHostName(server1.getHost()));
+    createClientPoolCacheConnectionToSingleServer(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
 
@@ -200,7 +203,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
   }
 
   /**
@@ -222,7 +225,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
     server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
     server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
 
-    createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
+    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
 
     VM backup1 = getBackupVM();
     VM backup2 = getBackupVM(backup1);
@@ -247,7 +250,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   public void testBug35945() throws Exception {
     PORT1 = ((Integer) server1.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
     server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    createClientPoolCacheConnectionToSingleServer(this.getName(), getServerHostName(server1.getHost()));
+    createClientPoolCacheConnectionToSingleServer(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
 
@@ -303,7 +306,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
   }
 
   /**
@@ -311,13 +314,13 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * new endpoint to register interest
    */
   public void testInterestRecoveryFailure() throws Exception {
-    addExpectedException("Server unreachable");
+    IgnoredException.addIgnoredException("Server unreachable");
     
     PORT1 = ((Integer) server1.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
     server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
     PORT2 = ((Integer) server2.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
     server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    createClientPoolCacheWithSmallRetryInterval(this.getName(), getServerHostName(server1.getHost()));
+    createClientPoolCacheWithSmallRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
     VM backup = getBackupVM();
@@ -368,6 +371,6 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
   }
 }

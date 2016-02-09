@@ -31,6 +31,7 @@ import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
@@ -407,7 +408,7 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
           assertTrue("Expected" + expected + " got " + members, members.containsAll(expected));
           assertEquals(4, members.size());
         } catch (UnknownHostException e) {
-          fail("Unable to get IpAddress", e);
+          Assert.fail("Unable to get IpAddress", e);
         }
       }
     });

@@ -22,6 +22,7 @@ import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
@@ -38,7 +39,7 @@ public class DistributedAckOverflowRegionCCEOffHeapDUnitTest extends Distributed
   }
   
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override
@@ -49,8 +50,7 @@ public class DistributedAckOverflowRegionCCEOffHeapDUnitTest extends Distributed
       }
     };
     checkOrphans.run();
-    invokeInEveryVM(checkOrphans);
-    super.tearDown2();
+    Invoke.invokeInEveryVM(checkOrphans);
   }
 
   @Override

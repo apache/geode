@@ -42,12 +42,16 @@ import com.gemstone.gemfire.management.internal.LocalManager;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.ManagementStrings;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class ManagementTestBase extends DistributedTestCase {
 
@@ -120,16 +124,25 @@ public class ManagementTestBase extends DistributedTestCase {
 
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
+    preTearDownManagementTestBase();
+    
     closeAllCache();
     managementService = null;
 
     mcastPort = 0;
     disconnectAllFromDS();
     props.clear();
+    
+    postTearDownManagementTestBase();
   }
 
+  protected void preTearDownManagementTestBase() throws Exception {
+  }
+
+  protected void postTearDownManagementTestBase() throws Exception {
+  }
 
   public void closeAllCache() throws Exception{
     closeCache(managingNode);
@@ -143,7 +156,7 @@ public class ManagementTestBase extends DistributedTestCase {
    * Enable system property gemfire.disableManagement false in each VM.
    */
   public void enableManagement() {
-    invokeInEveryVM(new SerializableRunnable("Enable Management") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("Enable Management") {
       public void run() {
         System.setProperty(InternalDistributedSystem.DISABLE_MANAGEMENT_PROPERTY, "false");
       }
@@ -155,7 +168,7 @@ public class ManagementTestBase extends DistributedTestCase {
    * Disable system property gemfire.disableManagement true in each VM.
    */
   public void disableManagement() {
-    invokeInEveryVM(new SerializableRunnable("Disable Management") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("Disable Management") {
       public void run() {
         System.setProperty(InternalDistributedSystem.DISABLE_MANAGEMENT_PROPERTY, "true");
       }
@@ -213,7 +226,7 @@ public class ManagementTestBase extends DistributedTestCase {
 
   public Cache createCache(Properties props) {
     System.setProperty("dunitLogPerTest", "true");
-    props.setProperty(DistributionConfig.LOG_FILE_NAME,testName+"-.log");
+    props.setProperty(DistributionConfig.LOG_FILE_NAME,getTestMethodName()+"-.log");
     ds = (new ManagementTestBase("temp")).getSystem(props);
     cache = CacheFactory.create(ds);
     managementService = ManagementService.getManagementService(cache);
@@ -238,7 +251,7 @@ public class ManagementTestBase extends DistributedTestCase {
     }
     props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
     props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.LOG_FILE_NAME,testName+"-.log");
+    props.setProperty(DistributionConfig.LOG_FILE_NAME,getTestMethodName()+"-.log");
     ds = (new ManagementTestBase("temp")).getSystem(props);
     cache = CacheFactory.create(ds);
     managementService = ManagementService.getManagementService(cache);
@@ -290,7 +303,7 @@ public class ManagementTestBase extends DistributedTestCase {
   protected void waitForProxy(final ObjectName objectName,
       final Class interfaceClass) {
 
-    waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       public String description() {
         return "Waiting for the proxy of " + objectName.getCanonicalName()
             + " to get propagated to Manager";
@@ -458,7 +471,7 @@ public class ManagementTestBase extends DistributedTestCase {
 
 
         } catch (ManagementException e) {
-          fail("failed with ManagementException", e);
+          Assert.fail("failed with ManagementException", e);
         }
       }
     });
@@ -554,7 +567,7 @@ public class ManagementTestBase extends DistributedTestCase {
         RegionFactory rf = cache
             .createRegionFactory(RegionShortcut.LOCAL);
 
-        getLogWriter().info("Creating Local Region");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating Local Region");
         rf.create(localRegionName);
 
       }
@@ -577,7 +590,7 @@ public class ManagementTestBase extends DistributedTestCase {
         SystemManagementService service = (SystemManagementService) getManagementService();
         Region region = cache.getRegion(parentRegionPath);
 
-        getLogWriter().info("Creating Sub Region");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating Sub Region");
         region.createSubregion(subregionName, region.getAttributes());
 
       }
@@ -620,7 +633,7 @@ public class ManagementTestBase extends DistributedTestCase {
         SystemManagementService service = (SystemManagementService) getManagementService();
 
         RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
-        getLogWriter().info("Creating Dist Region");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating Dist Region");
         rf.create(regionName);
 
       }
@@ -642,7 +655,7 @@ public class ManagementTestBase extends DistributedTestCase {
         SystemManagementService service = (SystemManagementService) getManagementService();
         RegionFactory rf = cache
             .createRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
-        getLogWriter().info("Creating Par Region");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating Par Region");
         rf.create(partitionRegionName);
 
       }
@@ -661,7 +674,7 @@ public class ManagementTestBase extends DistributedTestCase {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
-        getLogWriter().info("Closing Dist Region");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Closing Dist Region");
         Region region = cache.getRegion(regionPath);
         region.close();
 
@@ -677,7 +690,7 @@ public class ManagementTestBase extends DistributedTestCase {
     assertNotNull(service.getDistributedSystemMXBean());
 
 
-    waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       public String description() {
         return "Waiting All members to intimate DistributedSystemMBean";
       }
@@ -685,7 +698,7 @@ public class ManagementTestBase extends DistributedTestCase {
       public boolean done() {
         if (bean.listMemberObjectNames() != null) {
 
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Member Length " + bean.listMemberObjectNames().length);
 
         }
@@ -709,7 +722,7 @@ public class ManagementTestBase extends DistributedTestCase {
 
     final long currentTime = System.currentTimeMillis();
 
-    waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       int actualRefreshCount = 0;
       long lastRefreshTime = service.getLastUpdateTime(objectName);
 

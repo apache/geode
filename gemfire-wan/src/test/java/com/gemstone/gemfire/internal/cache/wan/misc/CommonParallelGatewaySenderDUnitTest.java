@@ -25,8 +25,12 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 import java.util.Set;
 
@@ -41,24 +45,24 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
   }
   
   public void testSameSenderWithNonColocatedRegions() throws Exception {
-    addExpectedException("cannot have the same parallel");
+    IgnoredException.addIgnoredException("cannot have the same parallel");
     Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
         "createFirstLocatorWithDSId", new Object[] { 1 });
     vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
     vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
         true, 100, 10, false, false, null, true });
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", "ln", 1, 100, isOffHeap() });
     try {
       vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", "ln", 1, 100, isOffHeap() });
       fail("Expected IllegateStateException : cannot have the same parallel gateway sender");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
           || !(e.getCause().getMessage()
               .contains("cannot have the same parallel gateway sender id"))) {
-        fail("Expected IllegalStateException", e);
+        Assert.fail("Expected IllegalStateException", e);
       }
     }
   }
@@ -98,22 +102,22 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
         true, 100, 10, false, false, null, true });
 
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", "ln", 1, 100, isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", "ln", 1, 100, isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", "ln", 1, 100, isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", "ln", 1, 100, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", "ln", 1, 100, isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", "ln", 1, 100, isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", "ln", 1, 100, isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", "ln", 1, 100, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
@@ -121,13 +125,13 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm7.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", null, 1, 100, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", null, 1, 100, isOffHeap() });
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", null, 1, 100, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", null, 1, 100, isOffHeap() });
     //before doing any puts, let the senders be running in order to ensure that
     //not a single event will be lost
     vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
@@ -135,9 +139,9 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR1",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR1",
         1000 });
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR2",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR2",
       1000 });
     
     //verify all buckets drained on all sender nodes.
@@ -147,9 +151,9 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm7.invoke(CommonParallelGatewaySenderDUnitTest.class, "validateParallelSenderQueueAllBucketsDrained", new Object[] {"ln"});
     
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR1", 1000 });
+        getTestMethodName() + "_PR1", 1000 });
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR2", 1000 });
+        getTestMethodName() + "_PR2", 1000 });
   }
   
   /**
@@ -186,22 +190,22 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
         true, 100, 10, false, true, null, true });
 
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", "ln", 1, 100, isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", "ln", 1, 100, isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", "ln", 1, 100, isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", "ln", 1, 100, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", "ln", 1, 100, isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", "ln", 1, 100, isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", "ln", 1, 100, isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", "ln", 1, 100, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
@@ -209,13 +213,13 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm7.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", null, 1, 100, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR1", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR1", null, 1, 100, isOffHeap() });
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", null, 1, 100, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR2", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR2", null, 1, 100, isOffHeap() });
     //before doing any puts, let the senders be running in order to ensure that
     //not a single event will be lost
     vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
@@ -223,9 +227,9 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR1",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR1",
         1000 });
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_PR2",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR2",
       1000 });
     
     //verify all buckets drained on all sender nodes.
@@ -235,9 +239,9 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm7.invoke(CommonParallelGatewaySenderDUnitTest.class, "validateParallelSenderQueueAllBucketsDrained", new Object[] {"ln"});
     
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR1", 1000 });
+        getTestMethodName() + "_PR1", 1000 });
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR2", 1000 });
+        getTestMethodName() + "_PR2", 1000 });
   }
   
   
@@ -283,39 +287,39 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     String diskStore4 = (String) vm7.invoke(WANTestBase.class, "createSenderWithDiskStore", 
         new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
 
-    getLogWriter().info("The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3 + "," + diskStore4);
+    LogWriterUtils.getLogWriter().info("The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3 + "," + diskStore4);
     
     //create PR on remote site
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR1", null, 1, 100, isOffHeap() });
+      getTestMethodName()+"PR1", null, 1, 100, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR1", null, 1, 100, isOffHeap() });
+      getTestMethodName()+"PR1", null, 1, 100, isOffHeap() });
     
     //create PR on remote site
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR2", null, 1, 100, isOffHeap() });
+      getTestMethodName()+"PR2", null, 1, 100, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR2", null, 1, 100, isOffHeap() });
+      getTestMethodName()+"PR2", null, 1, 100, isOffHeap() });
     
     //create PR on local site
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR1", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR1", "ln", 1, 100, isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR1", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR1", "ln", 1, 100, isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR1", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR1", "ln", 1, 100, isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR1", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR1", "ln", 1, 100, isOffHeap() });
 
     //create PR on local site
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR2", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR2", "ln", 1, 100, isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR2", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR2", "ln", 1, 100, isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR2", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR2", "ln", 1, 100, isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR2", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR2", "ln", 1, 100, isOffHeap() });
 
     
     //start the senders on local site
@@ -337,9 +341,9 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm7.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
     
     //start puts in region on local site
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName+"PR1", 3000 });
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName+"PR2", 5000 });
-    getLogWriter().info("Completed puts in the region");
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName()+"PR1", 3000 });
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName()+"PR2", 5000 });
+    LogWriterUtils.getLogWriter().info("Completed puts in the region");
     
     //--------------------close and rebuild local site -------------------------------------------------
     //kill the senders
@@ -348,7 +352,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm6.invoke(WANTestBase.class, "killSender", new Object[] {});
     vm7.invoke(WANTestBase.class, "killSender", new Object[] {});
     
-    getLogWriter().info("Killed all the senders.");
+    LogWriterUtils.getLogWriter().info("Killed all the senders.");
     
     //restart the vm
     vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
@@ -356,7 +360,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm6.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
     vm7.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
     
-    getLogWriter().info("Created back the cache");
+    LogWriterUtils.getLogWriter().info("Created back the cache");
     
    //create senders with disk store
     vm4.invoke(WANTestBase.class, "createSenderWithDiskStore", 
@@ -368,16 +372,16 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm7.invoke(WANTestBase.class, "createSenderWithDiskStore", 
         new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore4, true });
     
-    getLogWriter().info("Created the senders back from the disk store.");
+    LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
     //create PR on local site
     AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR1", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR1", "ln", 1, 100, isOffHeap() });
     AsyncInvocation inv2 = vm5.invokeAsync(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR1", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR1", "ln", 1, 100, isOffHeap() });
     AsyncInvocation inv3 = vm6.invokeAsync(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR1", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR1", "ln", 1, 100, isOffHeap() });
     AsyncInvocation inv4 = vm7.invokeAsync(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR1", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR1", "ln", 1, 100, isOffHeap() });
     
     try {
       inv1.join();
@@ -390,13 +394,13 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     }
 
     inv1 = vm4.invokeAsync(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR2", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR2", "ln", 1, 100, isOffHeap() });
     inv2 = vm5.invokeAsync(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR2", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR2", "ln", 1, 100, isOffHeap() });
     inv3 = vm6.invokeAsync(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR2", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR2", "ln", 1, 100, isOffHeap() });
     inv4 = vm7.invokeAsync(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      testName+"PR2", "ln", 1, 100, isOffHeap() });
+      getTestMethodName()+"PR2", "ln", 1, 100, isOffHeap() });
     
     try {
       inv1.join();
@@ -408,7 +412,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
       fail();
     }
     
-    getLogWriter().info("Created back the partitioned regions");
+    LogWriterUtils.getLogWriter().info("Created back the partitioned regions");
     
     //start the senders in async mode. This will ensure that the 
     //node of shadow PR that went down last will come up first
@@ -417,26 +421,26 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm6.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm7.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
     
-    getLogWriter().info("Waiting for senders running.");
+    LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     //wait for senders running
     vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     
-    getLogWriter().info("All the senders are now running...");
+    LogWriterUtils.getLogWriter().info("All the senders are now running...");
     
     //----------------------------------------------------------------------------------------------------
     
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName+"PR1", 3000 });
+      getTestMethodName()+"PR1", 3000 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName+"PR1", 3000 });
+      getTestMethodName()+"PR1", 3000 });
     
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName+"PR2", 5000 });
+      getTestMethodName()+"PR2", 5000 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName+"PR2", 5000 });
+      getTestMethodName()+"PR2", 5000 });
   }
   
   public static void validateParallelSenderQueueAllBucketsDrained(final String senderId) {
@@ -459,7 +463,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
         WaitCriterion wc = new WaitCriterion() {
           public boolean done() {
             if (bucket.keySet().size() == 0) {
-              getLogWriter().info("Bucket " + bucket.getId() + " is empty");
+              LogWriterUtils.getLogWriter().info("Bucket " + bucket.getId() + " is empty");
               return true;
             }
             return false;
@@ -470,7 +474,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
               + bucket.keySet().size() + " This bucket isPrimary: " + bucket.getBucketAdvisor().isPrimary() + " KEYSET: " + bucket.keySet();
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 180000, 50, true);
+        Wait.waitForCriterion(wc, 180000, 50, true);
       
       }//for loop ends
     }

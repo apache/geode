@@ -29,6 +29,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.cache.xmlcache.ClientCacheCreation;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 public class CacheXmlTestCase extends CacheTestCase {
@@ -48,9 +49,13 @@ public class CacheXmlTestCase extends CacheTestCase {
     disconnectAllFromDS();
   }
 
-  public void tearDown2() throws Exception {
+  @Override
+  protected final void preTearDownCacheTestCase() throws Exception {
     this.xmlFile = null;    
-    super.tearDown2();
+  }
+  
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 
@@ -123,7 +128,7 @@ public class CacheXmlTestCase extends CacheTestCase {
 
     } catch (IOException ex) {
       String s = "While generating XML";
-      fail(s, ex);
+      Assert.fail(s, ex);
     }
 
     setXmlFile(file);
@@ -146,7 +151,7 @@ public class CacheXmlTestCase extends CacheTestCase {
           useSchema, version);
       CacheXmlGenerator.generate(cache, new PrintWriter(sw, true),
           useSchema, version);
-      fail(sw.toString(), re);
+      Assert.fail(sw.toString(), re);
     }
   }
 }

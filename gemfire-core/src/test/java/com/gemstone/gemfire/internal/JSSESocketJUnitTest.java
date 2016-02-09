@@ -48,7 +48,7 @@ import org.junit.rules.TestName;
 
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -122,7 +122,7 @@ public class JSSESocketJUnitTest {
     oos.writeObject( expected );
     oos.flush();
     
-    DistributedTestCase.join(serverThread, 30 * 1000, null);
+    ThreadUtils.join(serverThread, 30 * 1000);
     
     client.close();
     if ( expected.equals( receiver[0] ) ) {

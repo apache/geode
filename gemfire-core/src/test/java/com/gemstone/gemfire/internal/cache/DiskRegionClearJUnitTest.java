@@ -44,7 +44,7 @@ import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 // @TODO: use DiskRegionTestingBase and DiskRegionHelperFactory
@@ -184,7 +184,7 @@ public class DiskRegionClearJUnitTest {
         fail("timed out counter="+counter);
       }
     }
-    DistributedTestCase.join(thread, 10 * 60 * 1000, null);
+    ThreadUtils.join(thread, 10 * 60 * 1000);
     Assert.assertTrue(counter == 3);
     if(!cleared)
       fail("clear not done although puts have been done");    

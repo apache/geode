@@ -24,8 +24,11 @@ import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagementTestBase;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing running functions
@@ -44,10 +47,6 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-  }
-
-  public void tearDown2() throws Exception {
-    super.tearDown2();
   }
 
   public static Integer getNumOfRunningFunction() {
@@ -74,7 +73,7 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
       }
     };
 
-    waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
+    Wait.waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
     final DistributedSystemMXBean bean = getManagementService()
         .getDistributedSystemMXBean();
     assertNotNull(bean);
@@ -98,7 +97,7 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
     });
     Integer numOfRunningFunctions = (Integer) managingNode.invoke(
         TestFunctionsDUnitTest.class, "getNumOfRunningFunction");
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "TestNumOfFunctions numOfRunningFunctions= " + numOfRunningFunctions);
     assertTrue(numOfRunningFunctions > 0 ? true : false);
   }

@@ -71,9 +71,8 @@ public class HARegionDUnitTest extends DistributedTestCase
   /**
    * close the cache in tearDown
    */
-  public void tearDown2() throws Exception
-  {
-	super.tearDown2();  
+  @Override
+  protected final void preTearDown() throws Exception {
     vm0.invoke(HARegionDUnitTest.class, "closeCache");
     vm1.invoke(HARegionDUnitTest.class, "closeCache");
   }
@@ -311,7 +310,7 @@ public class HARegionDUnitTest extends DistributedTestCase
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      fail("failed while region.put()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.put()", ex);
     }
   }
 
@@ -327,7 +326,7 @@ public class HARegionDUnitTest extends DistributedTestCase
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      fail("failed while region.put()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.put()", ex);
     }
   }
 
@@ -346,7 +345,7 @@ public class HARegionDUnitTest extends DistributedTestCase
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      fail("failed while region.get()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.get()", ex);
     }
   }
 
@@ -365,7 +364,7 @@ public class HARegionDUnitTest extends DistributedTestCase
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      fail("failed while region.get()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.get()", ex);
     }
   }
 
@@ -384,7 +383,7 @@ public class HARegionDUnitTest extends DistributedTestCase
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      fail("failed while region.get()", ex);
+      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.get()", ex);
     }
   }
 

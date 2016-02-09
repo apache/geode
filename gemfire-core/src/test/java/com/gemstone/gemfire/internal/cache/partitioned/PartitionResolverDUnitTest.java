@@ -77,11 +77,12 @@ public class PartitionResolverDUnitTest extends CacheTestCase {
     datastore1 = host.getVM(1);
     datastore2 = host.getVM(2);
   }
+  
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  protected final void postTearDownCacheTestCase() throws Exception {
     CountingResolver.resetResolverCount();
   }
+  
   void createRegion(boolean isAccessor, int redundantCopies) {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.DISTRIBUTED_ACK);

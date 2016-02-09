@@ -50,9 +50,12 @@ import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  *
@@ -153,7 +156,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
     // Setup a client which subscribes to the server region, registers (aka pulls)
     // interest in keys which creates an assumed HARegionQueue on the server
     // (in the event that the above code didn't already create a HARegion)
-    final String serverHostName = getServerHostName(server.getHost());
+    final String serverHostName = NetworkUtils.getServerHostName(server.getHost());
     client.invoke(new CacheSerializableRunnable("Assert server copy behavior from client") {
       public void run2() throws CacheException {
         getCache();
@@ -200,7 +203,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
             return "region queue never became empty";
           }
         };
-        DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+        Wait.waitForCriterion(ev, 60 * 1000, 200, true);
         
         // Capture the current processed message count to know
         // when the next message has been serialized
@@ -221,7 +224,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+        Wait.waitForCriterion(ev, 60 * 1000, 200, true);
         
         // assert one serialization to send value to interested client
         // more than one implies copy-on-read behavior (bad)
@@ -242,7 +245,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
           long start = NanoTimer.getTime();
           final int maxSecs = 30;
           while(!r.containsKey(ks2)) {
-            pause(100);
+            Wait.pause(100);
             if ((NanoTimer.getTime() - start) > TimeUnit.SECONDS.toNanos(maxSecs)) {
               fail("Waited over " + maxSecs + "s");
             }
@@ -313,7 +316,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
               SerializationCountingValue scv = (SerializationCountingValue)cd.getDeserializedForReading();
               assertEquals(1, scv.count.get());
             } catch (IOException fail) {
-              fail("Unexpected IOException", fail);
+              Assert.fail("Unexpected IOException", fail);
             }
           }
         });

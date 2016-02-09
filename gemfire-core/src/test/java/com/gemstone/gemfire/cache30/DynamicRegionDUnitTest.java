@@ -32,6 +32,7 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -71,8 +72,9 @@ public class DynamicRegionDUnitTest extends CacheTestCase {
    * in a test.
    * </p>
    */
-  public void tearDown2() throws Exception {
-    getLogWriter().info("Running tearDown in " + this);
+  @Override
+  protected final void preTearDownCacheTestCase() throws Exception {
+    LogWriterUtils.getLogWriter().info("Running tearDown in " + this);
     try {
       //Asif destroy dynamic regions at the end of the test
       CacheSerializableRunnable destroyDynRegn = new CacheSerializableRunnable("Destroy Dynamic regions") {
@@ -89,15 +91,13 @@ public class DynamicRegionDUnitTest extends CacheTestCase {
       if(dr != null) {
           dr.localDestroyRegion();      
       }
-
-      super.tearDown2();
     } 
     catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
     }
     catch (Throwable t) {
-      getLogWriter().severe("tearDown in " + this + " failed due to " + t);
+      LogWriterUtils.getLogWriter().severe("tearDown in " + this + " failed due to " + t);
     }
     finally {
       try {
@@ -108,11 +108,11 @@ public class DynamicRegionDUnitTest extends CacheTestCase {
         throw e;
       }
       catch (Throwable t) {
-        getLogWriter().severe("tearDown in " + this + " failed to disconnect all DS due to " + t);  
+        LogWriterUtils.getLogWriter().severe("tearDown in " + this + " failed to disconnect all DS due to " + t);  
       }
     }
     if (! DynamicRegionFactory.get().isClosed()) {
-      getLogWriter().severe("DynamicRegionFactory not closed!", new Exception());
+      LogWriterUtils.getLogWriter().severe("DynamicRegionFactory not closed!", new Exception());
     }
   }
   
@@ -230,7 +230,7 @@ public class DynamicRegionDUnitTest extends CacheTestCase {
       DynamicRegionFactory.get().createDynamicRegion(drFullPath, "subregion" + i);
     }
     
-    getLogWriter().info("testPeerRegion - check #1 make sure other region has new dynamic subregion");
+    LogWriterUtils.getLogWriter().info("testPeerRegion - check #1 make sure other region has new dynamic subregion");
     checkForRegionOtherVm(drFullPath, true);
 
     // spot check the subregions
@@ -239,13 +239,13 @@ public class DynamicRegionDUnitTest extends CacheTestCase {
     // now see if OTHER can recreate which should fetch meta-info from controller
     recreateOtherVm();
 
-    getLogWriter().info("testPeerRegion - check #2 make sure other region has dynamic region after restarting through getInitialImage");
+    LogWriterUtils.getLogWriter().info("testPeerRegion - check #2 make sure other region has dynamic region after restarting through getInitialImage");
     checkForRegionOtherVm(drFullPath, true);
 
     // now close the controller and see if OTHER can still fetch meta-info from disk
     closeCache();
     recreateOtherVm();
-    getLogWriter().info("testPeerRegion - check #3 make sure dynamic region can be recovered from disk");
+    LogWriterUtils.getLogWriter().info("testPeerRegion - check #3 make sure dynamic region can be recovered from disk");
     checkForRegionOtherVm(drFullPath, true);
     for (int i=0; i<10; i++) {
       checkForSubregionOtherVm(drFullPath + "/subregion" + i, true);

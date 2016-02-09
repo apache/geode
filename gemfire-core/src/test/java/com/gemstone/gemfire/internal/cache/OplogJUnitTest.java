@@ -57,8 +57,9 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.Oplog.OPLOG_TYPE;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.jayway.awaitility.Awaitility;
 
@@ -1677,7 +1678,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase
             });
             assertNull(conflated);
             th.start();
-            DistributedTestCase.join(th, 30 * 1000, null);
+            ThreadUtils.join(th, 30 * 1000);
             LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
 
           }
@@ -2093,7 +2094,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase
       finally {
         ((LocalRegion)region).getDiskRegion().releaseWriteLock();
       }
-      DistributedTestCase.join(th, 30 * 1000, null);
+      ThreadUtils.join(th, 30 * 1000);
       region.close();
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
           diskProps, Scope.LOCAL);
@@ -2710,16 +2711,16 @@ public class OplogJUnitTest extends DiskRegionTestingBase
 
     assertEquals(0, dss.getQueueSize());
     put100Int();
-    DistributedTestCase.waitForCriterion(evFull, 2 * 1000, 200, true);
+    Wait.waitForCriterion(evFull, 2 * 1000, 200, true);
     assertEquals(0, dss.getFlushes());
     region.writeToDisk();
-    DistributedTestCase.waitForCriterion(ev, 2 * 1000, 200, true);
-    DistributedTestCase.waitForCriterion(ev2, 1000, 200, true);
+    Wait.waitForCriterion(ev, 2 * 1000, 200, true);
+    Wait.waitForCriterion(ev2, 1000, 200, true);
     put100Int();
-    DistributedTestCase.waitForCriterion(evFull, 2 * 1000, 200, true);
+    Wait.waitForCriterion(evFull, 2 * 1000, 200, true);
     region.writeToDisk();
-    DistributedTestCase.waitForCriterion(ev, 2 * 1000, 200, true);
-    DistributedTestCase.waitForCriterion(ev3, 1000, 200, true);
+    Wait.waitForCriterion(ev, 2 * 1000, 200, true);
+    Wait.waitForCriterion(ev3, 1000, 200, true);
     closeDown();
   }
 
@@ -3169,7 +3170,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase
         }
       });
       try {
-        DistributedTestCase.join(clearOp, 30 * 1000, null);
+        ThreadUtils.join(clearOp, 30 * 1000);
       }
       catch (Exception e) {
         testFailed = true;
@@ -3236,7 +3237,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase
           });
           clearTh.start();
           try {
-            DistributedTestCase.join(clearTh, 120 * 1000, null);
+            ThreadUtils.join(clearTh, 120 * 1000);
             failure = clearTh.isAlive();
             failureCause = "Clear Thread still running !";
           } catch(Exception e) {

@@ -44,10 +44,14 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.locks.DLockGrantor;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -85,17 +89,18 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
       VM vm1 = host.getVM(1);
       vm0.invoke(PutAllGlobalDUnitTest.class, "createCacheForVM0");
       vm1.invoke(PutAllGlobalDUnitTest.class, "createCacheForVM1");
-      getLogWriter().fine("Cache created successfully");
+      LogWriterUtils.getLogWriter().fine("Cache created successfully");
     }
     
-    public void tearDown2(){
-        Host host = Host.getHost(0);
-        VM vm0 = host.getVM(0);
-        VM vm1 = host.getVM(1);
-        vm0.invoke(PutAllGlobalDUnitTest.class, "closeCache");
-        vm1.invoke(PutAllGlobalDUnitTest.class, "closeCache");
-        cache = null;
-        invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
+    @Override
+    protected final void preTearDown() throws Exception {
+      Host host = Host.getHost(0);
+      VM vm0 = host.getVM(0);
+      VM vm1 = host.getVM(1);
+      vm0.invoke(PutAllGlobalDUnitTest.class, "closeCache");
+      vm1.invoke(PutAllGlobalDUnitTest.class, "closeCache");
+      cache = null;
+      Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
     }
     
     public static void createCacheForVM0(){
@@ -181,36 +186,36 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
               long startTime = 0;
                 try{
                     Thread.sleep(500);
-                    getLogWriter().info("async2 proceeding with put operation");
+                    LogWriterUtils.getLogWriter().info("async2 proceeding with put operation");
                     startTime = System.currentTimeMillis();
                     region.put(new Integer(1),"mapVal");
-                    getLogWriter().info("async2 done with put operation");
+                    LogWriterUtils.getLogWriter().info("async2 done with put operation");
                     fail("Should have thrown TimeoutException");
                 }catch(TimeoutException Tx){
                    // Tx.printStackTrace();
-                    getLogWriter().info("PASS: As expected Caught TimeoutException ");
+                    LogWriterUtils.getLogWriter().info("PASS: As expected Caught TimeoutException ");
                     if (startTime + TIMEOUT_PERIOD + DLockGrantor.GRANTOR_THREAD_MAX_WAIT /* slop of grantor max wait ms */ < System.currentTimeMillis()) {
-                      getLogWriter().warning("though this test passed, the put() timed out in "
+                      LogWriterUtils.getLogWriter().warning("though this test passed, the put() timed out in "
                           + (System.currentTimeMillis() - startTime) +
                           " instead of the expected " + TIMEOUT_PERIOD + " milliseconds");
                     }
                 }
                 catch(Exception ex){
-                  fail("async2 threw unexpected exception", ex);
+                  Assert.fail("async2 threw unexpected exception", ex);
                     //ex.printStackTrace();
                 } 
             }
         });
         
-        DistributedTestCase.join(async2, 30 * 1000, getLogWriter());
+        ThreadUtils.join(async2, 30 * 1000);
         if (async2.exceptionOccurred()) {
-          DistributedTestCase.join(async1, 30 * 1000, getLogWriter());
-          fail("async2 failed", async2.getException());
+          ThreadUtils.join(async1, 30 * 1000);
+          Assert.fail("async2 failed", async2.getException());
         }
         
-        DistributedTestCase.join(async1, 30 * 1000, getLogWriter());
+        ThreadUtils.join(async1, 30 * 1000);
         if (async1.exceptionOccurred()) {
-          fail("async1 failed", async1.getException());
+          Assert.fail("async1 failed", async1.getException());
         }
         
     }//end of test case1
@@ -220,18 +225,18 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
     public static void putAllMethod() throws Exception {
         Map m = new HashMap();
         serverSocket.accept();
-        getLogWriter().info("async1 connection received - continuing with putAll operation");
+        LogWriterUtils.getLogWriter().info("async1 connection received - continuing with putAll operation");
         serverSocket.close();
         try{
           for (int i=1; i<2; i++) {
             m.put(new Integer(i), String.valueOf(i));
           }
             region.putAll(m);
-            getLogWriter().info("async1 done with putAll operation");
+            LogWriterUtils.getLogWriter().info("async1 done with putAll operation");
             
         }catch(Exception ex){
 //            ex.printStackTrace();
-            fail("Failed while region.putAll", ex);
+            Assert.fail("Failed while region.putAll", ex);
         }
     }//end of putAllMethod
     
@@ -276,13 +281,13 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
     
     static class BeforeCreateCallback extends CacheWriterAdapter {
         public void beforeCreate(EntryEvent event){
-          getLogWriter().info("beforeCreate invoked for " + event.getKey());
+          LogWriterUtils.getLogWriter().info("beforeCreate invoked for " + event.getKey());
             try{
                 Thread.sleep(5000);
             }catch(InterruptedException ex) {
                 fail("interrupted");
             }
-          getLogWriter().info("beforeCreate done for " + event.getKey());
+          LogWriterUtils.getLogWriter().info("beforeCreate done for " + event.getKey());
             
         }
     }// end of BeforeCreateCallback

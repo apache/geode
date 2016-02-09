@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.dunit.standalone.BounceResult;
  * and run them on a different VM launching system.
  *   
  * @author dsmith
- *
  */
 public abstract class DUnitEnv {
   

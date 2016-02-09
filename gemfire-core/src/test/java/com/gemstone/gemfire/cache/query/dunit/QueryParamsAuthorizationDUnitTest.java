@@ -32,6 +32,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -83,7 +84,7 @@ public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
       @Override
       public Object call() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory()
-            .addPoolServer(getServerHostName(server1.getHost()), port)
+            .addPoolServer(NetworkUtils.getServerHostName(server1.getHost()), port)
             .set("security-client-auth-init",
                 "templates.security.UserPasswordAuthInit.create")
             .set("security-username", "root").set("security-password", "root");

@@ -30,9 +30,14 @@ import com.gemstone.gemfire.cache.query.internal.cq.ServerCQImpl;
 import com.gemstone.gemfire.cache.query.internal.cq.CqServiceImpl;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUsingPoolDUnitTest{
 
@@ -42,7 +47,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
 
   public void setUp() throws Exception {
     super.setUp();
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
       }
@@ -50,13 +55,12 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
   }
   
   @Override
-  public void tearDown2() throws Exception {
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;
       }
     });
-    super.tearDown2();
   }
   
   /**
@@ -76,7 +80,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
     cqDUnitTest.createServer(server1);
     
     final int port1 = server1.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
     
     String poolName = "testCQFailOver";
@@ -137,8 +141,8 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
         try {
           CqServiceImpl = (com.gemstone.gemfire.cache.query.internal.cq.CqServiceImpl) ((DefaultQueryService)getCache().getQueryService()).getCqService();
         } catch (Exception ex) {
-          getLogWriter().info("Failed to get the internal CqServiceImpl.", ex);
-          fail ("Failed to get the internal CqServiceImpl.", ex);
+          LogWriterUtils.getLogWriter().info("Failed to get the internal CqServiceImpl.", ex);
+          Assert.fail ("Failed to get the internal CqServiceImpl.", ex);
         }
         
         // Wait till all the region update is performed.
@@ -160,7 +164,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
           if (cqQuery.getName().equals(cqName)) {
             int size = cqQuery.getCqResultKeysSize();
             if (size != totalObjects) {
-              getLogWriter().info("The number of Cached events " + size + 
+              LogWriterUtils.getLogWriter().info("The number of Cached events " + size + 
                   " is not equal to the expected size " + totalObjects);
               HashSet expectedKeys = new HashSet();
               for (int i = 1; i < totalObjects; i++) {
@@ -168,7 +172,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
               }
               Set cachedKeys = cqQuery.getCqResultKeyCache();
               expectedKeys.removeAll(cachedKeys);
-              getLogWriter().info("Missing keys from the Cache : " + expectedKeys);
+              LogWriterUtils.getLogWriter().info("Missing keys from the Cache : " + expectedKeys);
             }
             assertEquals("The number of keys cached for cq " + cqName + " is wrong.", 
                 totalObjects, cqQuery.getCqResultKeysSize());              
@@ -181,11 +185,11 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
     final int thePort2 = server2.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
     System.out.println("### Port on which server1 running : " + port1 + 
         " Server2 running : " + thePort2);
-    pause(3 * 1000);
+    Wait.pause(3 * 1000);
     
     // Close server1 for CQ fail over to server2.
     cqDUnitTest.closeServer(server1); 
-    pause(3 * 1000);
+    Wait.pause(3 * 1000);
     
     // Verify CQ Cache results.
     server2.invoke(new CacheSerializableRunnable("Verify CQ Cache results"){
@@ -194,8 +198,8 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
         try {
           CqServiceImpl = (CqServiceImpl) ((DefaultQueryService)getCache().getQueryService()).getCqService();
         } catch (Exception ex) {
-          getLogWriter().info("Failed to get the internal CqServiceImpl.", ex);
-          fail ("Failed to get the internal CqServiceImpl.", ex);
+          LogWriterUtils.getLogWriter().info("Failed to get the internal CqServiceImpl.", ex);
+          Assert.fail ("Failed to get the internal CqServiceImpl.", ex);
         }
         
         // Wait till all the region update is performed.

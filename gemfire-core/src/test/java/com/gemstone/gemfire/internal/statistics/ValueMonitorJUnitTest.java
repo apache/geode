@@ -39,8 +39,8 @@ import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.StatisticsManager;
 import com.gemstone.gemfire.internal.statistics.StatisticsNotification.Type;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import junit.framework.TestCase;
@@ -369,6 +369,6 @@ public class ValueMonitorJUnitTest {
         return "waiting for notification";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, ms, interval, throwOnTimeout);
+    Wait.waitForCriterion(wc, ms, interval, throwOnTimeout);
   }
 }

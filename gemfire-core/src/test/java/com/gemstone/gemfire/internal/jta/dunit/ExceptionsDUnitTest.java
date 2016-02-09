@@ -38,6 +38,7 @@ import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
 
@@ -60,7 +61,7 @@ public class ExceptionsDUnitTest extends DistributedTestCase {
       //
       //    sb.append(lineSep);
     }
-    getLogWriter().fine("***********\n " + sb);
+    LogWriterUtils.getLogWriter().fine("***********\n " + sb);
     return sb.toString();
   }
 
@@ -110,10 +111,10 @@ public class ExceptionsDUnitTest extends DistributedTestCase {
      * value=\"83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a\"/>";
      */
     int n1 = str.indexOf(search);
-    getLogWriter().fine("Start Index = " + n1);
+    LogWriterUtils.getLogWriter().fine("Start Index = " + n1);
     int n2 = str.indexOf(last_search, n1);
     StringBuffer sbuff = new StringBuffer(str);
-    getLogWriter().fine("END Index = " + n2);
+    LogWriterUtils.getLogWriter().fine("END Index = " + n2);
     String modified_str = sbuff.replace(n1, n2, new_str).toString();
     return modified_str;
   }
@@ -173,7 +174,7 @@ public class ExceptionsDUnitTest extends DistributedTestCase {
       if (ds != null) ds.disconnect();
     }
     catch (Exception e) {
-      getLogWriter().fine("Error in disconnecting from Distributed System");
+      LogWriterUtils.getLogWriter().fine("Error in disconnecting from Distributed System");
     }
   }
 
@@ -184,7 +185,8 @@ public class ExceptionsDUnitTest extends DistributedTestCase {
     vm0.invoke(ExceptionsDUnitTest.class, "init");
   }
 
-  public void tearDown2() throws NamingException, SQLException {
+  @Override
+  protected final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(ExceptionsDUnitTest.class, "closeCache");
@@ -234,7 +236,7 @@ public class ExceptionsDUnitTest extends DistributedTestCase {
               + "occur");
     }
     catch (Exception e) {
-      getLogWriter().fine("Exception caught in runTest1 due to : " + e);
+      LogWriterUtils.getLogWriter().fine("Exception caught in runTest1 due to : " + e);
       fail("failed in runTest1 due to " + e);
     }
   }

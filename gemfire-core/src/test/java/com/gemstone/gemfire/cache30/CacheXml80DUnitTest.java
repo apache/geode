@@ -47,6 +47,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.cache.xmlcache.DiskStoreAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
+import com.gemstone.gemfire.test.dunit.Assert;
 
 /**
  * @author dsmith
@@ -121,7 +122,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
       pw.close();
     }
     catch (IOException ex) {
-      fail("IOException during cache.xml generation to " + file, ex);
+      Assert.fail("IOException during cache.xml generation to " + file, ex);
     }
     
     // Get index info before closing cache.

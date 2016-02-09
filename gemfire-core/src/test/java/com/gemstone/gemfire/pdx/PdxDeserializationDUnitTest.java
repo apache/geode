@@ -38,10 +38,13 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * A test to ensure that we do not deserialize PDX objects
@@ -268,7 +271,7 @@ public class PdxDeserializationDUnitTest extends CacheTestCase {
   
   protected void checkClientValue(final Region<Object, Object> region) {
     //Because register interest is asynchronous, we need to wait for the value to arrive.
-    waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       
       public boolean done() {
         return region.get("A") != null;
@@ -310,7 +313,7 @@ public class PdxDeserializationDUnitTest extends CacheTestCase {
       }
       
     } catch (Exception e) {
-      fail("got exception from query", e);
+      Assert.fail("got exception from query", e);
     }
     
 
@@ -352,7 +355,7 @@ public class PdxDeserializationDUnitTest extends CacheTestCase {
     try {
       server.start();
     } catch (IOException e) {
-      fail("got exception", e);
+      Assert.fail("got exception", e);
     }
     return server;
   }

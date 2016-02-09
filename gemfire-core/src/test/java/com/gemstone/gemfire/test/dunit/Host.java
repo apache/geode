@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,9 +34,9 @@ import com.gemstone.gemfire.test.dunit.standalone.RemoteDUnitVMIF;
  * started on other hosts via additional Hydra configuration.</P>
  *
  * @author David Whitlock
- *
  */
-public abstract class Host implements java.io.Serializable {
+@SuppressWarnings("serial")
+public abstract class Host implements Serializable {
 
   /** The available hosts */
   protected static List hosts = new ArrayList();

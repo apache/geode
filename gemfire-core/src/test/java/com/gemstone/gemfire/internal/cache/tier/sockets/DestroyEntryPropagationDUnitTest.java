@@ -38,9 +38,14 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CertifiableTestCacheListener;
 import com.gemstone.gemfire.cache.client.*;
@@ -100,9 +105,9 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
     PORT2 =  ((Integer)vm1.invoke(DestroyEntryPropagationDUnitTest.class, "createServerCache" )).intValue();
 
     vm2.invoke(DestroyEntryPropagationDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(Host.getHost(0)), new Integer(PORT1),new Integer(PORT2)});
+        new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1),new Integer(PORT2)});
     vm3.invoke(DestroyEntryPropagationDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(Host.getHost(0)), new Integer(PORT1),new Integer(PORT2)});
+        new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1),new Integer(PORT2)});
 
   }
 
@@ -221,7 +226,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, maxWaitTime, 200, true);
+        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
       }
     });
 
@@ -245,7 +250,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, maxWaitTime, 200, true);
+        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
       }
     });
 
@@ -296,10 +301,10 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
   {
     try {
       Iterator iter = cache.getCacheServers().iterator();
-      getLogWriter().fine ("Asif: servers running = "+cache.getCacheServers().size());
+      LogWriterUtils.getLogWriter().fine ("Asif: servers running = "+cache.getCacheServers().size());
       if (iter.hasNext()) {
         CacheServer server = (CacheServer)iter.next();
-        getLogWriter().fine("asif : server running on port="+server.getPort()+ " asked to kill serevre onport="+port);
+        LogWriterUtils.getLogWriter().fine("asif : server running on port="+server.getPort()+ " asked to kill serevre onport="+port);
          if(port.intValue() == server.getPort()){
          server.stop();
         }
@@ -342,7 +347,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
       assertEquals(r1.getEntry("key2").getValue(), "key-2");
     }
     catch (Exception ex) {
-      fail("failed while createEntries()", ex);
+      Assert.fail("failed while createEntries()", ex);
     }
   }
 
@@ -359,7 +364,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
       r.destroy("key2");
     }
     catch (Exception ex) {
-      fail("failed while destroyEntry()", ex);
+      Assert.fail("failed while destroyEntry()", ex);
     }
   }
 
@@ -372,7 +377,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
       assertNotNull(r.getEntry("key2"));
     }
     catch (Exception ex) {
-      fail("failed while verifyDestroyEntry in C1", ex);
+      Assert.fail("failed while verifyDestroyEntry in C1", ex);
     }
   }
 
@@ -386,7 +391,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
       assertNull(r.getEntry("key2"));
     }
     catch (Exception ex) {
-      fail("failed while verifyDestroyEntry in C1", ex);
+      Assert.fail("failed while verifyDestroyEntry in C1", ex);
     }
   }
 
@@ -400,7 +405,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
       assertNotNull(r.getEntry("key2"));
     }
     catch (Exception ex) {
-      fail("failed while verifyDestroyEntry for key1", ex);
+      Assert.fail("failed while verifyDestroyEntry for key1", ex);
     }
   }
 
@@ -414,7 +419,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
         return "waiting for destroy event for " + key;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 10 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 10 * 1000, 200, true);
     ccl.destroys.remove(key);
   }
 
@@ -447,7 +452,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setPoolName(p.getName());
-    factory.setCacheListener(new CertifiableTestCacheListener(getLogWriter()));
+    factory.setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
 
@@ -459,7 +464,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    factory.setCacheListener(new CertifiableTestCacheListener(getLogWriter()));
+    factory.setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
 
@@ -482,7 +487,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
 
     }
     catch (Exception ex) {
-      fail("failed while registering interest", ex);
+      Assert.fail("failed while registering interest", ex);
     }
   }
 
@@ -494,15 +499,13 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
     }
   }
 
-  public void tearDown2() throws Exception
-  {
+  @Override
+  protected final void preTearDown() throws Exception {
     //close client
     vm2.invoke(DestroyEntryPropagationDUnitTest.class, "closeCache");
     vm3.invoke(DestroyEntryPropagationDUnitTest.class, "closeCache");
     //close server
     vm0.invoke(DestroyEntryPropagationDUnitTest.class, "closeCache");
     vm1.invoke(DestroyEntryPropagationDUnitTest.class, "closeCache");
-
   }
-
 }

@@ -41,6 +41,7 @@ import com.gemstone.gemfire.internal.cache.SearchLoadAndWriteProcessor;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -83,10 +84,10 @@ public class Bug40299DUnitTest extends CacheTestCase
     vm0 = host.getVM(0);
   }
 
-  public void tearDown2() throws Exception
+  @Override
+  protected final void preTearDownCacheTestCase() throws Exception
   {
     vm0.invoke(destroyRegion());
-    super.tearDown2();
   }
 
   /**
@@ -290,7 +291,7 @@ public class Bug40299DUnitTest extends CacheTestCase
 
   public void testQueryGetWithClear()
   {
-    addExpectedException("Entry has been cleared and is not present on disk");
+    IgnoredException.addIgnoredException("Entry has been cleared and is not present on disk");
 	// create region in VM0 
 	vm0.invoke(createCacheForVM0());
 	// Do puts to region.

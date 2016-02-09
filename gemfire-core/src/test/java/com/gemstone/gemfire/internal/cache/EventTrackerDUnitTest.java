@@ -40,9 +40,12 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.internal.cache.EventTracker.BulkOpHolder;
 import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Tests <code>EventTracker</code> management.
@@ -75,13 +78,9 @@ public class EventTrackerDUnitTest extends CacheTestCase {
     disconnectAllFromDS();
   }
 
-  public void tearDown2() throws Exception {
-    try {
-      super.tearDown2();
-    }
-    finally {
-      disconnectAllFromDS();
-    }
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
+    disconnectAllFromDS();
   }
 
   /**
@@ -146,7 +145,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
         try {
           startCacheServer();
         } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+          Assert.fail("While starting CacheServer", ex);
         }
       }
     });
@@ -162,7 +161,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
     
     // Create Create Region in the client
     final int port = serverVM.invokeInt(EventTrackerDUnitTest.class, "getCacheServerPort");
-    final String hostName = getServerHostName(host);
+    final String hostName = NetworkUtils.getServerHostName(host);
     clientVM.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         getCache();
@@ -219,7 +218,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
         try {
           startCacheServer();
         } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+          Assert.fail("While starting CacheServer", ex);
         }
       }
     });
@@ -235,7 +234,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
     
     // Create Create Region in the client
     final int port = serverVM.invokeInt(EventTrackerDUnitTest.class, "getCacheServerPort");
-    final String hostName = getServerHostName(host);
+    final String hostName = NetworkUtils.getServerHostName(host);
     clientVM.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         getCache();
@@ -266,7 +265,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
         
         // Pause for the message tracking timeout
         int waitTime = Integer.parseInt(MESSAGE_TRACKING_TIMEOUT) * 3;
-        pause(waitTime);
+        Wait.pause(waitTime);
     
         // Verify the server no longer contains an entry
         eventState = region.getEventState();
@@ -303,7 +302,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
         try {
           startCacheServer();
         } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+          Assert.fail("While starting CacheServer", ex);
         }
       }
     };
@@ -313,7 +312,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
     
  // Create Create Region in the client
     final int port = vm0.invokeInt(EventTrackerDUnitTest.class, "getCacheServerPort");
-    final String hostName = getServerHostName(host);
+    final String hostName = NetworkUtils.getServerHostName(host);
     vm2.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         getCache();

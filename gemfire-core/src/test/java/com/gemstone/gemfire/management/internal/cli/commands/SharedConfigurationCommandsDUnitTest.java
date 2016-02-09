@@ -34,11 +34,14 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationDUnitTest;
 import com.gemstone.gemfire.management.internal.configuration.domain.Configuration;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 import org.apache.commons.io.FileUtils;
 
@@ -121,7 +124,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile,
               null, locatorProps);
-          DistributedTestCase.WaitCriterion wc = new DistributedTestCase.WaitCriterion() {
+          WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
@@ -132,7 +135,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          DistributedTestCase.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
+          Wait.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
@@ -211,23 +214,23 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
     cmdResult = executeCommand(commandStringBuilder.getCommandString());
     String resultString = commandResultToString(cmdResult);
 
-    getLogWriter().info("#SB Result\n");
-    getLogWriter().info(resultString);
+    LogWriterUtils.getLogWriter().info("#SB Result\n");
+    LogWriterUtils.getLogWriter().info(resultString);
     assertEquals(true, cmdResult.getStatus().equals(Status.OK));
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.STATUS_SHARED_CONFIG);
     cmdResult = executeCommand(commandStringBuilder.getCommandString());
     resultString = commandResultToString(cmdResult);
-    getLogWriter().info("#SB Result\n");
-    getLogWriter().info(resultString);
+    LogWriterUtils.getLogWriter().info("#SB Result\n");
+    LogWriterUtils.getLogWriter().info(resultString);
     assertEquals(Status.OK, cmdResult.getStatus());
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.EXPORT_SHARED_CONFIG);
     commandStringBuilder.addOption(CliStrings.EXPORT_SHARED_CONFIG__FILE, sharedConfigZipFileName);
     cmdResult = executeCommand(commandStringBuilder.getCommandString());
     resultString = commandResultToString(cmdResult);
-    getLogWriter().info("#SB Result\n");
-    getLogWriter().info(resultString);
+    LogWriterUtils.getLogWriter().info("#SB Result\n");
+    LogWriterUtils.getLogWriter().info(resultString);
     assertEquals(Status.OK, cmdResult.getStatus());
 
     //Import into a running system should fail
@@ -287,7 +290,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile,
               null, locatorProps);
 
-          DistributedTestCase.WaitCriterion wc = new DistributedTestCase.WaitCriterion() {
+          WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
@@ -298,7 +301,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          DistributedTestCase.waitForCriterion(wc, 5000, 500, true);
+          Wait.waitForCriterion(wc, 5000, 500, true);
 
           SharedConfiguration sc = locator.getSharedConfiguration();
           assertNotNull(sc);
@@ -318,7 +321,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         } catch (Exception e) {
-          fail("Error occurred in cluster configuration service", e);
+          Assert.fail("Error occurred in cluster configuration service", e);
         }
       }
     });
@@ -330,8 +333,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  protected final void postTearDownCacheTestCase() throws Exception {
     for (int i = 0; i < 4; i++) {
       Host.getHost(0).getVM(i).invoke(SharedConfigurationDUnitTest.locatorCleanup);
     }

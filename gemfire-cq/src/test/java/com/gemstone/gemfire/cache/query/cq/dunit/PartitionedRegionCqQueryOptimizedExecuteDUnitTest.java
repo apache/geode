@@ -24,6 +24,9 @@ import com.gemstone.gemfire.cache.query.internal.cq.CqServiceProvider;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -35,7 +38,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends Partition
 
   public void setUp() throws Exception {
     super.setUp();
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
       }
@@ -43,14 +46,13 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends Partition
   }
   
   @Override
-  public void tearDown2() throws Exception {
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;
         CqServiceProvider.MAINTAIN_KEYS = true;
       }
     });
-    super.tearDown2();
   }
   
   public void testCqExecuteWithoutQueryExecution() throws Exception {
@@ -66,7 +68,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends Partition
 
     final int thePort = server.invokeInt(PartitionedRegionCqQueryOptimizedExecuteDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
     createClient(client, thePort, host0);
@@ -93,7 +95,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends Partition
         for (int i = numOfEntries+1; i <= numOfEntries*2; i++) {
           region1.put(KEY+i, new Portfolio(i));
         }
-        getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
       }
     });
     
@@ -164,7 +166,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends Partition
 
     final int thePort = server.invokeInt(PartitionedRegionCqQueryDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
     createClient(client, thePort, host0);
@@ -192,7 +194,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends Partition
         for (int i = numOfEntries+1; i <= numOfEntries*2; i++) {
           region1.put(KEY+i, new Portfolio(i));
         }
-        getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
       }
     });
     

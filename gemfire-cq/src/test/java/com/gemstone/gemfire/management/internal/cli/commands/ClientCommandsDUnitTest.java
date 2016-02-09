@@ -63,11 +63,14 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.SectionResultData;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 
 
@@ -140,7 +143,7 @@ public void waitForListClientMbean(){
             return "waitForListClientMbean Probing ...";
           }
         };
-        DistributedTestCase.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
+        Wait.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
       }
     }); 
     
@@ -189,7 +192,7 @@ public void waitForListClientMbean2(){
           return "waitForListClientMbean2 Probing ...";
         }
       };
-      DistributedTestCase.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
+      Wait.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
     }
   }); 
   
@@ -249,7 +252,7 @@ public void waitForListClientMbean2(){
             return "waitForMbean Probing for ";
           }
         };
-        DistributedTestCase.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
+        Wait.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
       }
     }); 
     
@@ -301,7 +304,7 @@ public void waitForListClientMbean2(){
             return "waitForListClientMbean3 Probing ...";
           }
         };
-        DistributedTestCase.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
+        Wait.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
       }
     }); 
     
@@ -981,7 +984,7 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
           getSystem(props);
           
           final ClientCacheFactory ccf = new ClientCacheFactory(props);
-          ccf.addPoolServer(getServerHostName(server.getHost()), port);
+          ccf.addPoolServer(NetworkUtils.getServerHostName(server.getHost()), port);
           ccf.setPoolSubscriptionEnabled(true);
           ccf.setPoolPingInterval(1);
           ccf.setPoolStatisticInterval(1);
@@ -1001,7 +1004,7 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
         }else{
           String poolName = "new_pool_" + System.currentTimeMillis();
           try{                      
-            PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(getServerHostName(server.getHost()), port)
+            PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(NetworkUtils.getServerHostName(server.getHost()), port)
               .setThreadLocalConnections(true)
               .setMinConnections(1)
               .setSubscriptionEnabled(true)
@@ -1054,7 +1057,7 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
 
   protected Properties getServerProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+getDUnitLocatorPort()+"]");
+    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
     return p;
   }
   
@@ -1098,7 +1101,7 @@ public void waitForNonSubCliMBean(){
             return "waitForNonSubScribedClientMBean Probing for ";
           }
         };
-        DistributedTestCase.waitForCriterion(waitForMaangerMBean, 5* 60 * 1000, 2000, true);
+        Wait.waitForCriterion(waitForMaangerMBean, 5* 60 * 1000, 2000, true);
       }
     }); 
     
@@ -1146,7 +1149,7 @@ public void waitForMixedClients(){
             return "waitForMixedClients Probing for ";
           }
         };
-        DistributedTestCase.waitForCriterion(waitForMaangerMBean, 5* 60 * 1000, 2000, true);
+        Wait.waitForCriterion(waitForMaangerMBean, 5* 60 * 1000, 2000, true);
       }
     }); 
     
@@ -1394,7 +1397,7 @@ private void setUpNonSubscribedClient() throws Exception {
           getSystem(props);
           
           final ClientCacheFactory ccf = new ClientCacheFactory(props);
-          ccf.addPoolServer(getServerHostName(server.getHost()), port);
+          ccf.addPoolServer(NetworkUtils.getServerHostName(server.getHost()), port);
           ccf.setPoolSubscriptionEnabled(false);
           ccf.setPoolPingInterval(1);
           ccf.setPoolStatisticInterval(1);
@@ -1414,7 +1417,7 @@ private void setUpNonSubscribedClient() throws Exception {
         }else{
           String poolName = "new_pool_" + System.currentTimeMillis();
           try{                      
-            PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(getServerHostName(server.getHost()), port)
+            PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(NetworkUtils.getServerHostName(server.getHost()), port)
               .setThreadLocalConnections(true)
               .setMinConnections(1)
               .setSubscriptionEnabled(false)
@@ -1433,8 +1436,8 @@ private void setUpNonSubscribedClient() throws Exception {
     });
   }
   
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
     Host.getHost(0).getVM(0).invoke(CacheServerTestUtil.class, "closeCache");
     Host.getHost(0).getVM(1).invoke(CacheServerTestUtil.class, "closeCache");
     Host.getHost(0).getVM(2).invoke(CacheServerTestUtil.class, "closeCache");

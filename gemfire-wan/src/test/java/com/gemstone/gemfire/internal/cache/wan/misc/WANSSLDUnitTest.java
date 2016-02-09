@@ -18,7 +18,9 @@ package com.gemstone.gemfire.internal.cache.wan.misc;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class WANSSLDUnitTest extends WANTestBase{
 
@@ -44,24 +46,24 @@ public class WANSSLDUnitTest extends WANTestBase{
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
   }
   
   public void testSenderNoSSLReceiverSSL() {
-    addExpectedException("Unexpected IOException");
-    addExpectedException("SSL Error");
-    addExpectedException("Unrecognized SSL message");
+    IgnoredException.addIgnoredException("Unexpected IOException");
+    IgnoredException.addIgnoredException("SSL Error");
+    IgnoredException.addIgnoredException("Unrecognized SSL message");
     try {
       Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
           "createFirstLocatorWithDSId", new Object[] { 1 });
@@ -77,18 +79,18 @@ public class WANSSLDUnitTest extends WANTestBase{
           false, 100, 10, false, false, null, true });
 
       vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-          testName + "_RR", null, isOffHeap() });
+          getTestMethodName() + "_RR", null, isOffHeap() });
 
       vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
       vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-          testName + "_RR", "ln", isOffHeap() });
+          getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-      vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+      vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
           1000 });
 
       vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-          testName + "_RR", 1000 });
+          getTestMethodName() + "_RR", 1000 });
       fail("Expected exception as only Receiver is SSL enabled. Not Sender");
     }
     catch (Exception e) {
@@ -97,8 +99,8 @@ public class WANSSLDUnitTest extends WANTestBase{
   }
   
   public void testSenderSSLReceiverNoSSL(){
-    addExpectedException("Acceptor received unknown");
-    addExpectedException("failed accepting client");
+    IgnoredException.addIgnoredException("Acceptor received unknown");
+    IgnoredException.addIgnoredException("failed accepting client");
       Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
           "createFirstLocatorWithDSId", new Object[] { 1 });
       Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
@@ -113,18 +115,18 @@ public class WANSSLDUnitTest extends WANTestBase{
           false, 100, 10, false, false, null, true });
 
       vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-          testName + "_RR", null, isOffHeap() });
+          getTestMethodName() + "_RR", null, isOffHeap() });
 
       vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
       vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-          testName + "_RR", "ln", isOffHeap() });
+          getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-      vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+      vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
           1 });
 
       Boolean doesSizeMatch = (Boolean)vm2.invoke(WANSSLDUnitTest.class, "ValidateSSLRegionSize", new Object[] {
-          testName + "_RR", 1 });
+          getTestMethodName() + "_RR", 1 });
       
       assertFalse(doesSizeMatch);
   }
@@ -141,7 +143,7 @@ public class WANSSLDUnitTest extends WANTestBase{
           return null;
         }
       };
-      DistributedTestCase.waitForCriterion(wc, 2000, 500, false);
+      Wait.waitForCriterion(wc, 2000, 500, false);
       
       if(r.size() == regionSize){
         return true;

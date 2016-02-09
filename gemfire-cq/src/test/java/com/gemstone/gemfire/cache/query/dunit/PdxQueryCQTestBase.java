@@ -51,6 +51,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -77,7 +78,8 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
     return bridgeServerPort;
   }
 
-  public void tearDown2() throws Exception {
+  @Override
+  protected final void preTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS(); // tests all expect to create a new ds
     // Reset the testObject numinstance for the next test.
     TestObject.numInstance = 0;
@@ -129,7 +131,7 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
             cpf.setSubscriptionEnabled(subscriptionEnabled);
             cpf.setSubscriptionRedundancy(redundancy);
             for (int i=0; i < servers.length; i++){
-              getLogWriter().info("### Adding to Pool. ### Server : " + servers[i] + " Port : " + ports[i]);
+              com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Adding to Pool. ### Server : " + servers[i] + " Port : " + ports[i]);
               cpf.addServer(servers[i], ports[i]);
             }
             cpf.create(poolName);
@@ -151,18 +153,18 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
           remoteQueryService = (PoolManager.find(poolName)).getQueryService();
           localQueryService = getCache().getQueryService();
         } catch (Exception e) {
-          fail("Failed to get QueryService.", e);
+          Assert.fail("Failed to get QueryService.", e);
         }          
   
         try {
-          getLogWriter().info("### Executing Query on server:" + queryStr);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Executing Query on server:" + queryStr);
           Query query = remoteQueryService.newQuery(queryStr);
           rs[0][0] = (SelectResults)query.execute();
           //printResults (rs[0][0], " ### Remote Query Results : ####");
-          getLogWriter().info("### Executing Query locally:" + queryStr);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Executing Query locally:" + queryStr);
           query = localQueryService.newQuery(queryStr);
           rs[0][1] = (SelectResults)query.execute();
-          getLogWriter().info("### Remote Query rs size: " + (rs[0][0]).size() + 
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Remote Query rs size: " + (rs[0][0]).size() + 
               "Local Query rs size: " + (rs[0][1]).size());
           //printResults (rs[0][1], " ### Local Query Results : ####");
           // Compare local and remote query results.
@@ -171,7 +173,7 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
              fail("Local and Remote Query Results are not matching for query :" + queryStr);  
           }
         } catch (Exception e) {
-          fail("Failed executing " + queryStr, e);
+          Assert.fail("Failed executing " + queryStr, e);
         }
       }
     });
@@ -235,7 +237,7 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
         try {
           startBridgeServer(0, false);
         } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+          Assert.fail("While starting CacheServer", ex);
         }
       }
 
@@ -248,16 +250,16 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
     try {
       qService = (PoolManager.find(poolName)).getQueryService();
     } catch (Exception e) {
-      fail("Failed to get QueryService.", e);
+      Assert.fail("Failed to get QueryService.", e);
     }          
   
     for (int i=0; i < queryString.length; i++){
       try {
-        getLogWriter().info("### Executing Query :" + queryString[i]);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Executing Query :" + queryString[i]);
         Query query = qService.newQuery(queryString[i]);
         results = (SelectResults)query.execute(params[i]);
       } catch (Exception e) {
-        fail("Failed executing " + queryString[i], e);
+        Assert.fail("Failed executing " + queryString[i], e);
       }
     }        
   }
@@ -292,12 +294,12 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
     SerializableRunnable closeCache =
       new CacheSerializableRunnable("Close Client") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Close Client. ###");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Close Client. ###");
         try {
           closeCache();
           disconnectFromDS();
         } catch (Exception ex) {
-          getLogWriter().info("### Failed to get close client. ###");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Failed to get close client. ###");
         }
       }
     };
@@ -332,13 +334,13 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
     
     @Override
     public boolean equals(Object o){
-      getLogWriter().info("In TestObject2.equals() this: " + this + " other :" + o);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("In TestObject2.equals() this: " + this + " other :" + o);
       GemFireCacheImpl.getInstance().getLoggerI18n().fine("In TestObject2.equals() this: " + this + " other :" + o);
       TestObject2 other = (TestObject2)o;
       if (_id == other._id) {
         return true;
       } else {
-        getLogWriter().info("NOT EQUALS");  
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("NOT EQUALS");  
         return false;
       }
     }

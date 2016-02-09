@@ -45,8 +45,8 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -137,7 +137,7 @@ public class IndexMaintenanceAsynchJUnitTest {
             return "index updates never became 8";
           }
         };
-        DistributedTestCase.waitForCriterion(ev, 5000, 200, true);
+        Wait.waitForCriterion(ev, 5000, 200, true);
 
         //queryString= "SELECT DISTINCT * FROM /portfolios p, p.positions.values pos where pos.secId='IBM'";
         queryString= "SELECT DISTINCT * FROM /portfolios where status = 'active'";

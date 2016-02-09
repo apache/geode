@@ -18,6 +18,8 @@ package com.gemstone.gemfire.cache.query.cq.dunit;
 
 
 import com.gemstone.gemfire.cache.query.internal.cq.CqServiceImpl;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
@@ -34,8 +36,8 @@ public class CqDataOptimizedExecuteDUnitTest extends CqDataDUnitTest{
     super.setUp();
     //We're seeing this on the server when the client
     //disconnects.
-    addExpectedException("Connection reset");
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+    IgnoredException.addIgnoredException("Connection reset");
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
       }
@@ -43,12 +45,11 @@ public class CqDataOptimizedExecuteDUnitTest extends CqDataDUnitTest{
   }
   
   @Override
-  public void tearDown2() throws Exception {
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;
       }
     });
-    super.tearDown2();
   }
 }

@@ -33,7 +33,10 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.internal.cache.CacheObserverAdapter;
 import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
 import com.gemstone.gemfire.cache.client.*;
@@ -102,9 +105,8 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
    * close the cache on all the vms
    * @throws Exception
    */
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     client1.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "closeCache");
     client2.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "closeCache");
     server1.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "closeCache");
@@ -168,7 +170,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, 5 * 1000, 200, true);
+        Wait.waitForCriterion(ev, 5 * 1000, 200, true);
       }
     };
     return putFromServer;
@@ -204,11 +206,11 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
     
     //client1 connected to server1
     client1.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "createClient",
-        new Object[] { getServerHostName(server1.getHost()), new Integer(PORT1) });
+        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
     
     //client2 connected to server2
     client2.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "createClient",
-        new Object[] { getServerHostName(server1.getHost()), new Integer(PORT2) });
+        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2) });
   }
 
   public static Integer createServer(Boolean createRegion) throws Exception

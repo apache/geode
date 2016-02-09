@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -56,7 +56,7 @@ public class RegionVersionVectorJUnitTest extends TestCase {
   public void testRegionVersionVectors() throws Exception {
     // this is just a quick set of unit tests for basic RVV functionality
     
-    final String local = DistributedTestCase.getIPLiteral();
+    final String local = NetworkUtils.getIPLiteral();
     InternalDistributedMember server1 = new InternalDistributedMember(local, 101);
     InternalDistributedMember server2 = new InternalDistributedMember(local, 102);
     InternalDistributedMember server3 = new InternalDistributedMember(local, 103);

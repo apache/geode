@@ -35,10 +35,11 @@ import com.gemstone.gemfire.cache.SubscriptionAttributes;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Test to make sure message queuing works.
@@ -128,7 +129,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
         return "waiting for reliableQueuedOps to become 0";
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 5 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 5 * 1000, 200, true);
     
     // now check that the queued op was delivered
     vm.invoke(new CacheSerializableRunnable("check") {

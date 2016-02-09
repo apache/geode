@@ -20,9 +20,11 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -93,22 +95,22 @@ public class PartitionedRegionMultipleDUnitTest extends
     /** creationg and performing put(),get() operations on Partition Region */
     createMultiplePartitionRegion(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionPutAndGet() - Partition Regions Successfully Created ");
     validateMultiplePartitionedRegions(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionPutAndGet() - Partition Regions Successfully Validated ");
     putInMultiplePartitionedRegion(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionPutAndGet() - Put() Operation done Successfully in Partition Regions ");
     getInMultiplePartitionedRegion(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionPutAndGet() - Partition Regions Successfully Validated ");
   }
@@ -148,38 +150,38 @@ public class PartitionedRegionMultipleDUnitTest extends
      */
     createMultiplePartitionRegion(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyKeys() - Partition Regions Successfully Created ");
     validateMultiplePartitionedRegions(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyKeys() - Partition Regions Successfully Validated ");
     putInMultiplePartitionedRegion(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyKeys() - Put() Operation done Successfully in Partition Regions ");
     destroyInMultiplePartitionedRegion(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyKeys() - Destroy(Key) Operation done Successfully in Partition Regions ");
     getDestroyedEntryInMultiplePartitionedRegion(vm0, vm1, vm2, vm3,
         startIndexForRegion, endIndexForRegion, afterPutFlag);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyKeys() - Get() Operation after destoy keys done Successfully in Partition Regions ");
     putDestroyedEntryInMultiplePartitionedRegion(vm0, vm1, vm2, vm3,
         startIndexForRegion, endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyKeys() - Put() Operation after destroy keys done Successfully in Partition Regions ");
     afterPutFlag = 1;
     getDestroyedEntryInMultiplePartitionedRegion(vm0, vm1, vm2, vm3,
         startIndexForRegion, endIndexForRegion, afterPutFlag);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyKeys() - Get() Operation after Put() done Successfully in Partition Regions ");
   }
@@ -210,22 +212,22 @@ public class PartitionedRegionMultipleDUnitTest extends
     /** creating Partition Regions and testing for the APIs contains() */
     createMultiplePartitionRegion(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyAndContainsAPI() - Partition Regions Successfully Created ");
     validateMultiplePartitionedRegions(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyAndContainsAPI() - Partition Regions Successfully Validated ");
     putInMultiplePartitionedRegion(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyAndContainsAPI() - Put() Operation done Successfully in Partition Regions ");
     destroyInMultiplePartitionedRegion(vm0, vm1, vm2, vm3, startIndexForRegion,
         endIndexForRegion);
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyAndContainsAPI() - Destroy(Key) Operation done Successfully in Partition Regions ");
     async[0] = vm0.invokeAsync(validateContainsAPIForPartitionRegion(
@@ -238,16 +240,16 @@ public class PartitionedRegionMultipleDUnitTest extends
         startIndexForRegion, endIndexForRegion));
 
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
-        DistributedTestCase.join(async[count], 120 * 1000, getLogWriter());
+        ThreadUtils.join(async[count], 120 * 1000);
     }
     
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
    }
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "testPartitionedRegionDestroyAndContainsAPI() - Validation of Contains APIs done Successfully in Partition Regions ");
   }
@@ -298,12 +300,12 @@ public class PartitionedRegionMultipleDUnitTest extends
         startIndexForRegion, endIndexForRegion));
 
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
-        DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+        ThreadUtils.join(async[count], 30 * 1000);
     }
     
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
     }
   }
@@ -334,12 +336,12 @@ public class PartitionedRegionMultipleDUnitTest extends
 
     /** main thread is waiting for the other threads to complete */
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
-        DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+        ThreadUtils.join(async[count], 30 * 1000);
     }
     
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
     }
   }
@@ -367,12 +369,12 @@ public class PartitionedRegionMultipleDUnitTest extends
         endIndexForRegion));
     /** main thread is waiting for the other threads to complete */
     for (int count = 0; count < AsyncInvocationArrSize; count++) { 
-        DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+        ThreadUtils.join(async[count], 30 * 1000);
     }
      
     for (int count = 0; count < AsyncInvocationArrSize; count++) { 
       if (async[count].exceptionOccurred()) {
-        fail("Failed due to exception: "+ async[count].getException(),
+        Assert.fail("Failed due to exception: "+ async[count].getException(),
             async[count].getException());
       }
     }  
@@ -406,12 +408,12 @@ public class PartitionedRegionMultipleDUnitTest extends
 
     /** main thread is waiting for the other threads to complete */
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
-        DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+        ThreadUtils.join(async[count], 30 * 1000);
     }
 
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
    }   
   }
@@ -464,7 +466,7 @@ public class PartitionedRegionMultipleDUnitTest extends
             }
           }
 
-          getLogWriter()
+          LogWriterUtils.getLogWriter()
               .info(
                   "validateContainsAPIForPartitionRegion() - Get() Validations done Successfully in Partition Region "
                       + pr.getName());
@@ -479,7 +481,7 @@ public class PartitionedRegionMultipleDUnitTest extends
             }
           }
 
-          getLogWriter()
+          LogWriterUtils.getLogWriter()
               .info(
                   "validateContainsAPIForPartitionRegion() - containsKey() Validations done Successfully in Partition Region "
                       + pr.getName());
@@ -494,7 +496,7 @@ public class PartitionedRegionMultipleDUnitTest extends
               assertTrue(conKey);
             }
           }
-          getLogWriter()
+          LogWriterUtils.getLogWriter()
               .info(
                   "validateContainsAPIForPartitionRegion() - containsValueForKey() Validations done Successfully in Partition Region "
                       + pr.getName());
@@ -508,7 +510,7 @@ public class PartitionedRegionMultipleDUnitTest extends
               assertTrue(conKey);
             }
           }
-          getLogWriter()
+          LogWriterUtils.getLogWriter()
               .info(
                   "validateContainsAPIForPartitionRegion() - containsValue() Validations done Successfully in Partition Region "
                       + pr.getName());
@@ -543,9 +545,9 @@ public class PartitionedRegionMultipleDUnitTest extends
         startIndexForRegion, endIndexForRegion, afterPutFlag));
     /** main thread is waiting for the other threads to complete */
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
-        DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+        ThreadUtils.join(async[count], 30 * 1000);
         if (async[count].exceptionOccurred()) {
-          fail("exception during " + count, async[count].getException());
+          Assert.fail("exception during " + count, async[count].getException());
         }
     }
     
@@ -586,12 +588,12 @@ public class PartitionedRegionMultipleDUnitTest extends
 
     /** main thread is waiting for the other threads to complete */
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
-        DistributedTestCase.join(async[count], 30 * 1000, getLogWriter());
+        ThreadUtils.join(async[count], 30 * 1000);
     }
     
     for (int count = 0; count < AsyncInvocationArrSize; count++) {
       if (async[count].exceptionOccurred()) {
-        fail("exception during " + count, async[count].getException());
+        Assert.fail("exception during " + count, async[count].getException());
       }
     }
   }

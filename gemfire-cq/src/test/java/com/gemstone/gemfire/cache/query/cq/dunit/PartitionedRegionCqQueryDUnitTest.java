@@ -46,9 +46,13 @@ import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * Test class for Partitioned Region and CQs
  * 
@@ -125,14 +129,14 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     // create client 
     
     final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
     
     // register cq.
     createCQ(client, "testCQEvents_0", cqs[0]);
     cqHelper.executeCQ(client, "testCQEvents_0", false, null);
-    pause(2 * 1000);
+    Wait.pause(2 * 1000);
     
     // create values
     int size = 40;
@@ -162,7 +166,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     server1.bounce();
     
     cqHelper.closeClient(client);
-    pause(10 * 1000);
+    Wait.pause(10 * 1000);
     //cc1 = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCqCountFromRegionProfile");
     cc2 = server2.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCqCountFromRegionProfile");
     
@@ -187,14 +191,14 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     // create client 
     
     final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
     
     // register cq.
     createCQ(client, "testCQEvents_0", cqs[0]);
     cqHelper.executeCQ(client, "testCQEvents_0", false, null);
-    pause(2 * 1000);
+    Wait.pause(2 * 1000);
     
     // create values
     int size = 40;
@@ -300,7 +304,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     // create client 
     
     final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
     
@@ -391,7 +395,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     // creating an accessor vm with Bridge Server installed.
     createServer(server1);
     final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
     
@@ -489,7 +493,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     // create client 
     
     final int port = server2.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server2.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server2.getHost());
     
     createClient(client, port, host0);
     
@@ -584,7 +588,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     
     final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
     
@@ -680,7 +684,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     
     final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
     
@@ -776,7 +780,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     
     final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
     createClient(client2, port, host0);
@@ -875,10 +879,10 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     createServer(server2, false , 1);
     
     // Wait for server to initialize.
-    pause(2000);
+    Wait.pause(2000);
     
     final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
     createClient(client2, port, host0);
@@ -1019,7 +1023,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     
     final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
     createClient(client2, port, host0);
@@ -1237,7 +1241,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     createServer(server2);
     
     final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     // Initialize Client.
     createClient(client, port, host0);
@@ -1370,7 +1374,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     createServerWithoutRootRegion(server, 0, false, 0);
     
     final int port = server.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     // Initialize Client.
     createCacheClient(client1, port, host0);
@@ -1435,7 +1439,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
           // REGION NULL
           Log.getLogWriter().info("Local region is NOT null in client 1");
           
-          pause(5*1000);
+          Wait.pause(5*1000);
           CqQuery[] cqs = getCache().getQueryService().getCqs();
           if (cqs != null && cqs.length > 0) {
             assertTrue(cqs[0].isClosed());
@@ -1495,7 +1499,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         "Create Cache Server") {
       public void run2() throws CacheException
       {
-          getLogWriter().info("### Create Cache Server. ###");
+          LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
           //AttributesFactory factory = new AttributesFactory();
           //factory.setScope(Scope.DISTRIBUTED_ACK);
           //factory.setMirrorType(MirrorType.KEYS_VALUES);
@@ -1514,14 +1518,14 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
           //assertTrue(getSystem().getDistributionManager().getOtherDistributionManagerIds().size() > 0);
           for (int i = 0; i < regions.length; i++) {
             Region r = createRegion(regions[i], attr.create());
-            getLogWriter().info("Server created the region: "+r);
+            LogWriterUtils.getLogWriter().info("Server created the region: "+r);
           }
 //          pause(2000);
           try {
             startBridgeServer(port, true);
           }
           catch (Exception ex) {
-            fail("While starting CacheServer", ex);
+            Assert.fail("While starting CacheServer", ex);
           }
 //          pause(2000);
        
@@ -1544,7 +1548,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         "Create Cache Server") {
       public void run2() throws CacheException
       {
-          getLogWriter().info("### Create Cache Server. ###");
+          LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
           //AttributesFactory factory = new AttributesFactory();
           //factory.setScope(Scope.DISTRIBUTED_ACK);
           //factory.setMirrorType(MirrorType.KEYS_VALUES);
@@ -1563,14 +1567,14 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
           //assertTrue(getSystem().getDistributionManager().getOtherDistributionManagerIds().size() > 0);
           for (int i = 0; i < regions.length; i++) {
             Region r = createRegionWithoutRoot(regions[i], attr.create());
-            getLogWriter().info("Server created the region: "+r);
+            LogWriterUtils.getLogWriter().info("Server created the region: "+r);
           }
 //          pause(2000);
           try {
             startBridgeServer(port, true);
           }
           catch (Exception ex) {
-            fail("While starting CacheServer", ex);
+            Assert.fail("While starting CacheServer", ex);
           }
 //          pause(2000);
       }
@@ -1614,8 +1618,8 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     SerializableRunnable createQService =
       new CacheSerializableRunnable("Create Client") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Create Client. ###");
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info("### Create Client. ###");
+        LogWriterUtils.getLogWriter().info(
             "Will connect to server at por: " + serverPorts[0] + " and at host : "
              + serverHost);
         //Region region1 = null;
@@ -1638,7 +1642,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         
         for (int i=0; i < regions.length; i++) {        
           Region clientRegion = createRegion(regions[i], regionFactory.createRegionAttributes());
-          getLogWriter().info("### Successfully Created Region on Client :" + clientRegion);
+          LogWriterUtils.getLogWriter().info("### Successfully Created Region on Client :" + clientRegion);
           //region1.getAttributesMutator().setCacheListener(new CqListener());
         }
       }
@@ -1654,7 +1658,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         //getLogWriter().info("### DEBUG CREATE CQ START ####");
         //pause(20 * 1000);
         
-        getLogWriter().info("### Create CQ. ###" + cqName);
+        LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
         // Get CQ Service.
         QueryService cqService = null;
         try {
@@ -1665,7 +1669,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         }
         // Create CQ Attributes.
         CqAttributesFactory cqf = new CqAttributesFactory();
-        CqListener[] cqListeners = {new CqQueryTestListener(getLogWriter())};
+        CqListener[] cqListeners = {new CqQueryTestListener(LogWriterUtils.getLogWriter())};
         ((CqQueryTestListener)cqListeners[0]).cqName = cqName;
         
         cqf.initCqListeners(cqListeners);
@@ -1675,11 +1679,11 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         try {
           CqQuery cq1 = cqService.newCq(cqName, queryStr, cqa);
           assertTrue("newCq() state mismatch", cq1.getState().isStopped());
-          getLogWriter().info("Created a new CqQuery : "+cq1);
+          LogWriterUtils.getLogWriter().info("Created a new CqQuery : "+cq1);
         } catch (Exception ex){
           AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
           err.initCause(ex);
-          getLogWriter().info("CqService is :" + cqService, err);
+          LogWriterUtils.getLogWriter().info("CqService is :" + cqService, err);
           throw err;
         }
       }
@@ -1718,7 +1722,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         for (int i = 1; i <= size; i++) {
           region1.put(KEY+i, new Portfolio(i));
         }
-        getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
       }
     });
   }
@@ -1745,13 +1749,13 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   public void createCacheClient(VM vm, final String[] serverHosts, final int[] serverPorts, final String redundancyLevel) {
     vm.invoke(new CacheSerializableRunnable("createCacheClient") {
       public void run2() throws CacheException {
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "Will connect to server at por: " + serverPorts[0] + " and at host : "
              + serverHosts[0]);
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer(serverHosts[0]/*getServerHostName(Host.getHost(0))*/, serverPorts[0]);
         ccf.setPoolSubscriptionEnabled(true);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
         
         // Create Client Cache.
         getClientCache(ccf);
@@ -1777,7 +1781,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         for (int i=0; i < regions.length; i++) {        
           Region clientRegion = ((ClientCache)getCache()).createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
           .create(regions[i]);
-          getLogWriter().info("### Successfully Created Region on Client :" + clientRegion);
+          LogWriterUtils.getLogWriter().info("### Successfully Created Region on Client :" + clientRegion);
           //region1.getAttributesMutator().setCacheListener(new CqListener());
         }
       }

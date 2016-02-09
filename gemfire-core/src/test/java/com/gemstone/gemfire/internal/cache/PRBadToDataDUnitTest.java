@@ -24,6 +24,7 @@ import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
@@ -76,7 +77,7 @@ public class PRBadToDataDUnitTest extends CacheTestCase {
           assertNotNull(pr);
         }
         catch (final CacheException ex) {
-          fail("While creating Partitioned region", ex);
+          Assert.fail("While creating Partitioned region", ex);
         }
       }
     };

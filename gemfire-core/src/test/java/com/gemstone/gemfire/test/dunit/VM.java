@@ -18,9 +18,9 @@ package com.gemstone.gemfire.test.dunit;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.rmi.RemoteException;
-import java.util.concurrent.Callable;
 
 import com.gemstone.gemfire.test.dunit.standalone.BounceResult;
 import com.gemstone.gemfire.test.dunit.standalone.RemoteDUnitVMIF;
@@ -31,9 +31,9 @@ import hydra.MethExecutorResult;
  * This class represents a Java Virtual Machine that runs on a host.
  *
  * @author David Whitlock
- *
  */
-public class VM implements java.io.Serializable {
+@SuppressWarnings("serial")
+public class VM implements Serializable {
 
   /** The host on which this VM runs */
   private Host host;
@@ -53,7 +53,7 @@ public class VM implements java.io.Serializable {
    * Creates a new <code>VM</code> that runs on a given host with a
    * given process id.
    */
-  public VM(Host host, int pid, RemoteDUnitVMIF client) {
+  public VM(final Host host, final int pid, final RemoteDUnitVMIF client) {
     this.host = host;
     this.pid = pid;
     this.client = client;
@@ -83,7 +83,7 @@ public class VM implements java.io.Serializable {
    * <code>void</code> return type in this VM.  If the return type of
    * the method is <code>void</code>, <code>null</code> is returned.
    *
-   * @param c
+   * @param targetClass
    *        The class on which to invoke the method
    * @param methodName
    *        The name of the method to invoke
@@ -92,8 +92,8 @@ public class VM implements java.io.Serializable {
    *         An exception occurred on while invoking the method in
    *         this VM
    */
-  public Object invoke(Class c, String methodName) {
-    return invoke(c, methodName, new Object[0]);
+  public Object invoke(final Class targetClass, final String methodName) {
+    return invoke(targetClass, methodName, new Object[0]);
   }
 
   /**
@@ -102,13 +102,13 @@ public class VM implements java.io.Serializable {
    * return type of the method is <code>void</code>, <code>null</code>
    * is returned.
    *
-   * @param c
+   * @param targetClass
    *        The class on which to invoke the method
    * @param methodName
    *        The name of the method to invoke
    */
-  public AsyncInvocation invokeAsync(Class c, String methodName) {
-    return invokeAsync(c, methodName, null);
+  public AsyncInvocation invokeAsync(final Class targetClass, final String methodName) {
+    return invokeAsync(targetClass, methodName, null);
   }
 
   /**
@@ -116,7 +116,7 @@ public class VM implements java.io.Serializable {
    * <code>void</code> return type in this VM.  If the return type of
    * the method is <code>void</code>, <code>null</code> is returned.
    *
-   * @param c
+   * @param targetClass
    *        The class on which to invoke the method
    * @param methodName
    *        The name of the method to invoke
@@ -128,17 +128,17 @@ public class VM implements java.io.Serializable {
    *         An exception occurred on while invoking the method in
    *         this VM
    */
-  public Object invoke(Class c, String methodName, Object[] args) {
+  public Object invoke(Class targetClass, String methodName, Object[] args) {
     if (!this.available) {
       String s = "VM not available: " + this;
-      throw new RMIException(this, c.getName(), methodName,
+      throw new RMIException(this, targetClass.getName(), methodName,
             new IllegalStateException(s));
     }
     MethExecutorResult result = null;
     int retryCount = 120;
     do {
     try {
-      result = this.client.executeMethodOnClass(c.getName(), methodName, args);
+      result = this.client.executeMethodOnClass(targetClass.getName(), methodName, args);
       break; // out of while loop
     } catch( RemoteException e ) {
       boolean isWindows = false;
@@ -157,7 +157,7 @@ public class VM implements java.io.Serializable {
           }
         }
       } else {
-        throw new RMIException(this, c.getName(), methodName, e );
+        throw new RMIException(this, targetClass.getName(), methodName, e );
       }
     }
     } while (true);
@@ -167,7 +167,7 @@ public class VM implements java.io.Serializable {
 
     } else {
       Throwable thr = result.getException();
-      throw new RMIException(this, c.getName(), methodName, thr,
+      throw new RMIException(this, targetClass.getName(), methodName, thr,
                              result.getStackTrace()); 
     }
   }
@@ -177,7 +177,7 @@ public class VM implements java.io.Serializable {
    * <code>void</code> return type in this VM.  If the return type of
    * the method is <code>void</code>, <code>null</code> is returned.
    *
-   * @param c
+   * @param targetClass
    *        The class on which to invoke the method
    * @param methodName
    *        The name of the method to invoke
@@ -185,13 +185,13 @@ public class VM implements java.io.Serializable {
    *        Arguments passed to the method call (must be {@link
    *        java.io.Serializable}). 
    */
-  public AsyncInvocation invokeAsync(final Class c, 
+  public AsyncInvocation invokeAsync(final Class targetClass, 
                                      final String methodName,
                                      final Object[] args) {
     AsyncInvocation ai =
-      new AsyncInvocation(c, methodName, new Runnable() {
+      new AsyncInvocation(targetClass, methodName, new Runnable() {
         public void run() {
-          final Object o = invoke(c, methodName, args);
+          final Object o = invoke(targetClass, methodName, args);
           AsyncInvocation.setReturnValue(o);
         }
       });
@@ -282,12 +282,14 @@ public class VM implements java.io.Serializable {
   }
   
   /**
-   * Invokes the <code>run</code method of a {@link Runnable} in this
+   * Invokes the <code>run</code> method of a {@link Runnable} in this
    * VM.  If the invocation throws AssertionFailedError, and repeatTimeoutMs
    * is >0, the <code>run</code> method is invoked repeatedly until it
    * either succeeds, or repeatTimeoutMs has passed.  The AssertionFailedError
    * is thrown back to the sender of this method if <code>run</code> has not
    * completed successfully before repeatTimeoutMs has passed.
+   * 
+   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} with {@link #invoke(SerializableCallableIF)} instead.
    */
   public void invokeRepeatingIfNecessary(RepeatableRunnable o, long repeatTimeoutMs) {
     invoke(o, "runRepeatingIfNecessary", new Object[] {new Long(repeatTimeoutMs)});
@@ -374,15 +376,15 @@ public class VM implements java.io.Serializable {
   /**
    * Invokes the <code>main</code> method of a given class
    *
-   * @param c
+   * @param targetClass
    *        The class on which to invoke the <code>main</code> method
    * @param args
    *        The "command line" arguments to pass to the
    *        <code>main</code> method
    */
-  public void invokeMain(Class c, String[] args) {
+  public void invokeMain(Class targetClass, String[] args) {
     Object[] stupid = new Object[] { args };
-    invoke(c, "main", stupid);
+    invoke(targetClass, "main", stupid);
   }
 
   /**
@@ -1340,6 +1342,16 @@ public class VM implements java.io.Serializable {
   
   public File getWorkingDirectory() {
     return DUnitEnv.get().getWorkingDirectory(this.getPid());
+  }
+
+  /** Return the total number of VMs on all hosts */
+  public static int getVMCount() {
+    int count = 0;
+    for (int h = 0; h < Host.getHostCount(); h++) {
+      Host host = Host.getHost(h);
+      count += host.getVMCount();
+    }
+    return count;
   }
 
 }

@@ -40,7 +40,11 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManage
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Tests peer to peer authentication in Gemfire
@@ -94,7 +98,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "26753");
     props.setProperty(DistributionConfig.LOCATORS_NAME, 
-                      DistributedTestCase.getIPLiteral() + "[" + port + "]");
+                      NetworkUtils.getIPLiteral() + "[" + port + "]");
     props.setProperty(DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
         "templates.security.UserPasswordAuthInit.create");
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
@@ -111,7 +115,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "26753");
     props.setProperty(DistributionConfig.LOCATORS_NAME, 
-                      DistributedTestCase.getIPLiteral() +"[" + port + "]");
+                      NetworkUtils.getIPLiteral() +"[" + port + "]");
     props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
         "templates.security.LdapUserAuthenticator.create");
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
@@ -162,7 +166,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     }
     String authInit = " Incorrect_AuthInitialize";
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = DistributedTestCase.getIPLiteral() + "[" + port + "]";
+    final String locators = NetworkUtils.getIPLiteral() + "[" + port + "]";
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
@@ -173,7 +177,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
             getUniqueName(), new Integer(port), props, javaProps,
             expectedExceptions});
 
-    LogWriter dsLogger = createLogWriter(props);
+    LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
     SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
     try {
       new SecurityTestUtil("tmp").createSystem(props, null);
@@ -200,7 +204,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
       props = new Properties();
     }
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = DistributedTestCase.getIPLiteral() +"["+port+"]";
+    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
@@ -211,7 +215,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
             getUniqueName(), new Integer(port), props, javaProps,
             expectedExceptions });
 
-    LogWriter dsLogger = createLogWriter(props);
+    LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
     SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
     try {
       new SecurityTestUtil("tmp").createSystem(props, javaProps);
@@ -240,7 +244,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
       props = new Properties();
     }
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = DistributedTestCase.getIPLiteral() +"["+port+"]";
+    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
@@ -251,7 +255,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
             getUniqueName(), new Integer(port), props, javaProps,
             expectedExceptions });
 
-    LogWriter dsLogger = createLogWriter(props);
+    LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
     SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
     try {
       new SecurityTestUtil("tmp").createSystem(props, null);
@@ -278,7 +282,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
       props = new Properties();
     }
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = DistributedTestCase.getIPLiteral() +"["+port+"]";
+    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
@@ -306,7 +310,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
       throws Exception {
 
     disconnectAllFromDS();
-    addExpectedException("Authentication failed");
+    IgnoredException.addIgnoredException("Authentication failed");
 
     CredentialGenerator gen = new DummyCredentialGenerator();
     Properties props = gen.getSystemProperties();
@@ -316,7 +320,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
       props = new Properties();
     }
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = DistributedTestCase.getIPLiteral() +"["+port+"]";
+    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
@@ -336,7 +340,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
       javaProps = gen.getJavaProperties();
       props.putAll(credentials);
 
-      LogWriter dsLogger = createLogWriter(props);
+      LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
       SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
       try {
         new SecurityTestUtil("tmp").createSystem(props, javaProps);
@@ -398,7 +402,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     // Start the locator with the LDAP authenticator
     Properties props = new Properties();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = DistributedTestCase.getIPLiteral() +"["+port+"]";
+    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
         authInit);
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
@@ -446,7 +450,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
         props, javaProps });
 
     // wait for view propagation
-    pause(2000);
+    Wait.pause(2000);
     // Verify the number of members on all peers and locator
     locatorVM.invoke(P2PAuthenticationDUnitTest.class, "verifyMembers",
         new Object[] { new Integer(4) });
@@ -458,7 +462,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
 
     // Disconnect the first peer and check again
     disconnectFromDS();
-    pause(2000);
+    Wait.pause(2000);
     locatorVM.invoke(P2PAuthenticationDUnitTest.class, "verifyMembers",
         new Object[] { new Integer(3) });
     peer2.invoke(P2PAuthenticationDUnitTest.class, "verifyMembers",
@@ -468,7 +472,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
 
     // Disconnect the second peer and check again
     peer2.invoke(DistributedTestCase.class, "disconnectFromDS");
-    pause(2000);
+    Wait.pause(2000);
     locatorVM.invoke(P2PAuthenticationDUnitTest.class, "verifyMembers",
         new Object[] { new Integer(2) });
     peer3.invoke(P2PAuthenticationDUnitTest.class, "verifyMembers",
@@ -476,7 +480,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
 
     // Same for last peer
     peer3.invoke(DistributedTestCase.class, "disconnectFromDS");
-    pause(2000);
+    Wait.pause(2000);
     locatorVM.invoke(P2PAuthenticationDUnitTest.class, "verifyMembers",
         new Object[] { new Integer(1) });
 
@@ -512,7 +516,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     // Start the locator with the Dummy authenticator
     Properties props = new Properties();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = DistributedTestCase.getIPLiteral() +"["+port+"]";
+    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
         authInit);
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
@@ -548,7 +552,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     props.putAll(credentials);
     props.putAll(extraProps);
 
-    LogWriter dsLogger = createLogWriter(props);
+    LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
     SecurityTestUtil.addExpectedExceptions(
         new String[] { IllegalArgumentException.class.getName() }, dsLogger);
     try {
@@ -580,7 +584,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
         props, javaProps });
 
     // wait for view propagation
-    pause(2000);
+    Wait.pause(2000);
     // Verify the number of members on all peers and locator
     locatorVM.invoke(P2PAuthenticationDUnitTest.class, "verifyMembers",
         new Object[] { new Integer(4) });

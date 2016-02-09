@@ -32,8 +32,9 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -76,8 +77,8 @@ public class BlockingHARegionJUnitTest
       thread1.start();
       thread2.start();
 
-      DistributedTestCase.join(thread1, 30 * 1000, null);
-      DistributedTestCase.join(thread2, 30 * 1000, null);
+      ThreadUtils.join(thread1, 30 * 1000);
+      ThreadUtils.join(thread2, 30 * 1000);
 
       if (exceptionOccured) {
         fail(" Test failed due to " + exceptionString);
@@ -124,7 +125,7 @@ public class BlockingHARegionJUnitTest
           return null;
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 1000, 200, true);
+      Wait.waitForCriterion(ev, 1000, 200, true);
       assertTrue(thread1.isAlive()); //thread should still be alive (in wait state)
       
       Thread thread2 = new DoTake(hrq,1);
@@ -138,7 +139,7 @@ public class BlockingHARegionJUnitTest
         }
       };
       //sleep. take will proceed and so will sleeping put
-      DistributedTestCase.waitForCriterion(ev, 3 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 3 * 1000, 200, true);
 
       // thread should have died since put should have proceeded
       ev = new WaitCriterion() {
@@ -149,10 +150,10 @@ public class BlockingHARegionJUnitTest
           return "thread1 still alive";
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 30 * 1000, 1000, true);
+      Wait.waitForCriterion(ev, 30 * 1000, 1000, true);
       
-      DistributedTestCase.join(thread1, 30 * 1000, null); // for completeness
-      DistributedTestCase.join(thread2, 30 * 1000, null);
+      ThreadUtils.join(thread1, 30 * 1000); // for completeness
+      ThreadUtils.join(thread2, 30 * 1000);
       if (exceptionOccured) {
         fail(" Test failed due to " + exceptionString);
       }
@@ -204,7 +205,7 @@ public class BlockingHARegionJUnitTest
           return null;
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 30 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 30 * 1000, 200, true);
       
       assertTrue(thread1.isAlive());
       assertTrue(thread2.isAlive());
@@ -225,11 +226,11 @@ public class BlockingHARegionJUnitTest
       
       Thread.sleep(2000);
       
-      DistributedTestCase.join(thread1, 5 * 60 * 1000, null);
-      DistributedTestCase.join(thread2, 5 * 60 * 1000, null);
-      DistributedTestCase.join(thread3, 5 * 60 * 1000, null);
-      DistributedTestCase.join(thread4, 5 * 60 * 1000, null);
-      DistributedTestCase.join(thread5, 5 * 60 * 1000, null);
+      ThreadUtils.join(thread1, 5 * 60 * 1000);
+      ThreadUtils.join(thread2, 5 * 60 * 1000);
+      ThreadUtils.join(thread3, 5 * 60 * 1000);
+      ThreadUtils.join(thread4, 5 * 60 * 1000);
+      ThreadUtils.join(thread5, 5 * 60 * 1000);
       
       cache.close();
     }
@@ -282,11 +283,11 @@ public class BlockingHARegionJUnitTest
       thread9.start();
       thread10.start();
       
-      DistributedTestCase.join(thread6, 30 * 1000, null);
-      DistributedTestCase.join(thread7, 30 * 1000, null);
-      DistributedTestCase.join(thread8, 30 * 1000, null);
-      DistributedTestCase.join(thread9, 30 * 1000, null);
-      DistributedTestCase.join(thread10, 30 * 1000, null);
+      ThreadUtils.join(thread6, 30 * 1000);
+      ThreadUtils.join(thread7, 30 * 1000);
+      ThreadUtils.join(thread8, 30 * 1000);
+      ThreadUtils.join(thread9, 30 * 1000);
+      ThreadUtils.join(thread10, 30 * 1000);
       
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
@@ -296,7 +297,7 @@ public class BlockingHARegionJUnitTest
           return null;
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 30 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 30 * 1000, 200, true);
       
       assertTrue(thread1.isAlive());
       assertTrue(thread2.isAlive());
@@ -319,11 +320,11 @@ public class BlockingHARegionJUnitTest
       Thread.sleep(2000);
       
       
-      DistributedTestCase.join(thread1, 30 * 1000, null);
-      DistributedTestCase.join(thread2, 30 * 1000, null);
-      DistributedTestCase.join(thread3, 30 * 1000, null);
-      DistributedTestCase.join(thread4, 30 * 1000, null);
-      DistributedTestCase.join(thread5, 30 * 1000, null);
+      ThreadUtils.join(thread1, 30 * 1000);
+      ThreadUtils.join(thread2, 30 * 1000);
+      ThreadUtils.join(thread3, 30 * 1000);
+      ThreadUtils.join(thread4, 30 * 1000);
+      ThreadUtils.join(thread5, 30 * 1000);
       
       cache.close();
     }
@@ -377,7 +378,7 @@ public class BlockingHARegionJUnitTest
         }
       };
       t1.start();
-      DistributedTestCase.join(t1, 20 * 1000, null);
+      ThreadUtils.join(t1, 20 * 1000);
       if (exceptionOccured) {
         fail(" Test failed due to " + exceptionString);
       }

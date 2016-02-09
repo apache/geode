@@ -41,7 +41,7 @@ import com.gemstone.gemfire.cache.query.CacheUtils;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -221,7 +221,7 @@ public class MapInterface2JUnitTest {
          callbackSync.notify();
           }
      }
-     DistributedTestCase.join(th, 30 * 1000, null);
+     ThreadUtils.join(th, 30 * 1000);
   }
   
   
@@ -274,7 +274,7 @@ public class MapInterface2JUnitTest {
      }catch (Exception cwe) {
        fail("The test experienced exception "+cwe);   
      }    
-     DistributedTestCase.join(th, 30 * 1000, null);
+     ThreadUtils.join(th, 30 * 1000);
   }
   
   

@@ -32,10 +32,13 @@ import java.util.Random;
 
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 
 public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestCase
@@ -88,7 +91,7 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
       throws Exception
 
   {
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Querying with PR Destroy Region Operation Test Started");
     Host host = Host.getHost(0);
@@ -102,16 +105,16 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
     vmList.add(vm2);
     vmList.add(vm3);
     
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Creating Accessor node on VM0");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name,
         redundancy));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Successfully Created Accessor node on VM0");
 
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Creating PR's across all VM1 , VM2, VM3");
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
@@ -122,17 +125,17 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
         redundancy));
     
     
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Successfully Created PR on VM1 , VM2, VM3");
 
     // creating a local region on one of the JVM's
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Creating Local Region on VM0");
     vm0.invoke(PRQHelp
         .getCacheSerializableRunnableForLocalRegionCreation(localName));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Successfully Created Local Region on VM0");
 
@@ -143,22 +146,22 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
  
 
     // Putting the data into the accessor node
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Inserting Portfolio data through the accessor node");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio,
         cnt, cntDest));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Successfully Inserted Portfolio data through the accessor node");
 
     // Putting the same data in the local region created
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Inserting Portfolio data on local node  VM0 for result Set Comparison");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName,
         portfolio, cnt, cntDest));
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Successfully Inserted Portfolio data on local node  VM0 for result Set Comparison");
 
@@ -167,7 +170,7 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
 
     // Execute query first time. This is to make sure all the buckets are created 
     // (lazy bucket creation).
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Querying on VM0 First time");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(
@@ -175,15 +178,15 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
 
     // Now execute the query. And while query execution in process destroy the region 
     // on one of the node.
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Querying on VM0 both on PR Region & local ,also  Comparing the Results sets from both");
     async0 = vm0
         .invokeAsync(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(
             name, localName));
     
-    pause(5);
-    getLogWriter()
+    Wait.pause(5);
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Calling for Region.destroyRegion() on either of the Datastores VM1 , VM2 at random and then recreating the cache, with a predefined Delay ");
     
@@ -193,7 +196,7 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
           name, redundancy));
     
     
-      DistributedTestCase.join(async0, 30 * 1000, getLogWriter());
+      ThreadUtils.join(async0, 30 * 1000);
 
     if (async0.exceptionOccurred()) {
       // for Elbe, certain exceptions when a region is destroyed are acceptable
@@ -209,10 +212,10 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
       } while (t != null);
       
       if (!isForceReattempt) {
-        fail("Unexpected exception during query", async0.getException());
+        Assert.fail("Unexpected exception during query", async0.getException());
       }
     }
-    getLogWriter()
+    LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Querying with PR Destroy Region Operation Test ENDED");
   }

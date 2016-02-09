@@ -25,9 +25,13 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 
 /**
@@ -95,9 +99,9 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
     vm1.invoke(CacheServerTestUtil.class, "disableShufflingOfEndpoints");
     vm2.invoke(CacheServerTestUtil.class, "disableShufflingOfEndpoints");
     vm1.invoke(CacheServerTestUtil.class, "createCacheClient", new Object[] {
-        getClientPool(getServerHostName(host),redundancyLevel), REGION_NAME });
+        getClientPool(NetworkUtils.getServerHostName(host),redundancyLevel), REGION_NAME });
     vm2.invoke(CacheServerTestUtil.class, "createCacheClient", new Object[] {
-        getClientPool(getServerHostName(host),0), REGION_NAME });
+        getClientPool(NetworkUtils.getServerHostName(host),0), REGION_NAME });
   }
 
 /**
@@ -165,7 +169,7 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
       assertEquals(r.getEntry("key-6").getValue(), "key-6");
     }
     catch (Exception ex) {
-      fail("failed while createEntries()", ex);
+      Assert.fail("failed while createEntries()", ex);
     }
   }
 
@@ -182,7 +186,7 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
       }
     }
     catch (Exception ex) {
-      fail("failed while createEntries()", ex);
+      Assert.fail("failed while createEntries()", ex);
     }
   }
 
@@ -201,7 +205,7 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
       return new Integer(p.getPrimaryPort());
     }
     catch (Exception ex) {
-      fail("failed while registering keys k1 to k5", ex);
+      Assert.fail("failed while registering keys k1 to k5", ex);
       return null;
     }
   }
@@ -247,7 +251,7 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
       assertEquals(r.getEntry("key-6").getValue(), "vm2-key-6" + v);
     }
     catch (Exception ex) {
-      fail("failed while r.put()", ex);
+      Assert.fail("failed while r.put()", ex);
     }
   }
 
@@ -288,17 +292,18 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
           return excuse;
         }
       };
-      DistributedTestCase.waitForCriterion(wc, 40 * 1000, 1000, true);
+      Wait.waitForCriterion(wc, 40 * 1000, 1000, true);
       
       // Verify that 'key-6' was not invalidated
       assertEquals("key-6", r.getEntry("key-6").getValue());
     }
     catch (Exception ex) {
-      fail("failed while r.put()", ex);
+      Assert.fail("failed while r.put()", ex);
     }
   }
 
-  public void tearDown2() throws Exception {
+  @Override
+  protected final void preTearDown() throws Exception {
     closeAll();
   }
 

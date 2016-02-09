@@ -32,7 +32,10 @@ import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.remote.CommandProcessor;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -70,8 +73,8 @@ public class ShowDeadlockDUnitTest extends CacheTestCase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
-    invokeInEveryVM(new SerializableRunnable() {
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(new SerializableRunnable() {
       private static final long serialVersionUID = 1L;
 
       public void run() {
@@ -110,7 +113,7 @@ public class ShowDeadlockDUnitTest extends CacheTestCase {
 
     String deadLockOutputFromCommand = getResultAsString(result);
 
-    getLogWriter().info("output = " + deadLockOutputFromCommand);
+    LogWriterUtils.getLogWriter().info("output = " + deadLockOutputFromCommand);
     assertEquals(true, result.hasIncomingFiles());
     assertEquals(true, result.getStatus().equals(Status.OK));
     assertEquals(true, deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK));
@@ -146,7 +149,7 @@ public class ShowDeadlockDUnitTest extends CacheTestCase {
     Result result = commandProcessor.createCommandStatement(csb.toString(), EMPTY_ENV).process();
 
     String deadLockOutputFromCommand = getResultAsString(result);
-    getLogWriter().info("Deadlock = " + deadLockOutputFromCommand);
+    LogWriterUtils.getLogWriter().info("Deadlock = " + deadLockOutputFromCommand);
     result.saveIncomingFiles(null);
     assertEquals(true, deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED));
     assertEquals(true, result.getStatus().equals(Status.OK));
@@ -183,7 +186,7 @@ public class ShowDeadlockDUnitTest extends CacheTestCase {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e) {
-          fail("interrupted", e);
+          Assert.fail("interrupted", e);
         }
         ResultCollector collector = FunctionService.onMember(system, member).execute(new TestFunction());
         //wait the function to lock the lock on member.

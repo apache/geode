@@ -57,7 +57,10 @@ import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.Customer;
 import com.gemstone.gemfire.internal.cache.execute.data.Order;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -79,7 +82,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
   @Override
   public void setUp() throws Exception{
     super.setUp();
-    this.invokeInEveryVM(new SerializableCallable() {
+    Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         System.setProperty("gemfire.sync-commits", "true");
@@ -95,7 +98,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
 //      }
 //    });
 
-    this.invokeInEveryVM(new SerializableCallable() {
+    Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         //System.setProperty("gemfire.ALLOW_PERSISTENT_TRANSACTIONS", "true");
@@ -105,15 +108,16 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
     }); 
   }
   
-  public void tearDown2() throws Exception {
-    this.invokeInEveryVM(new SerializableCallable() {
+  @Override
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         System.setProperty("gemfire.sync-commits", "false");
         return null;
       }
     });
-    this.invokeInEveryVM(new SerializableCallable() {
+    Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         //System.setProperty("gemfire.ALLOW_PERSISTENT_TRANSACTIONS", "false");
@@ -121,8 +125,6 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
         return null;
       }
     }); 
-    
-    super.tearDown2();
   }
   
   public DistributedTransactionDUnitTest(String name) {
@@ -1950,7 +1952,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
         public Exception ex = new Exception();
         
         public void run() {
-          getLogWriter().info("Inside TxConflictRunnable.TxThread after aquiring locks");
+          LogWriterUtils.getLogWriter().info("Inside TxConflictRunnable.TxThread after aquiring locks");
           CacheTransactionManager mgr = getGemfireCache().getTxManager();
           mgr.setDistributed(true);
           mgr.begin();
@@ -1963,10 +1965,10 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
             mgr.commit();
           } catch (CommitConflictException ce) {
             gotConflict = true;
-            getLogWriter().info("Received exception ", ce);
+            LogWriterUtils.getLogWriter().info("Received exception ", ce);
           } catch (Exception e) {
             gotOtherException = true;
-            getLogWriter().info("Received exception ", e);
+            LogWriterUtils.getLogWriter().info("Received exception ", e);
             ex.initCause(e);
           }
         }
@@ -1984,7 +1986,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
       assertTrue("This test should fail with CommitConflictException",
           txThread.gotConflict);
       if (txThread.gotOtherException) {
-        fail("Received unexpected exception ", txThread.ex);
+        Assert.fail("Received unexpected exception ", txThread.ex);
       }
     }
   }
@@ -2085,7 +2087,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
         public Exception ex = new Exception();
 
         public void run() {
-          getLogWriter()
+          LogWriterUtils.getLogWriter()
               .info("Inside TxRunnable.TxThread after aquiring locks");
           CacheTransactionManager mgr = getGemfireCache().getTxManager();
           mgr.setDistributed(true);
@@ -2099,7 +2101,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
             mgr.commit();
           } catch (Exception e) {
             gotException = true;
-            getLogWriter().info("Received exception ", e);
+            LogWriterUtils.getLogWriter().info("Received exception ", e);
             ex.initCause(e);
           }
         }
@@ -2114,7 +2116,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
         e.printStackTrace();
       }
       if (txThread.gotException) {
-        fail("Received exception ", txThread.ex);
+        Assert.fail("Received exception ", txThread.ex);
       }
     }
   }

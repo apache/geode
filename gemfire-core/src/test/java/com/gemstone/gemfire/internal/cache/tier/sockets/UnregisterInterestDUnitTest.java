@@ -37,9 +37,13 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.FilterProfile;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * @author ashetkar
@@ -78,7 +82,8 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
     client2.invoke(UnregisterInterestDUnitTest.class, "createClientCache", new Object[]{client2.getHost(), port});
   }
 
-  public void tearDown2() throws Exception {
+  @Override
+  protected final void preTearDown() throws Exception {
     closeCache();
     server0.invoke(UnregisterInterestDUnitTest.class, "closeCache");
     client1.invoke(UnregisterInterestDUnitTest.class, "closeCache");
@@ -214,7 +219,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
       checkFilters(value, valueInv);
       break;
     default:
-      fail("Invalid interest type: " + interestType, new IllegalArgumentException("Invalid interest type: " + interestType));
+      Assert.fail("Invalid interest type: " + interestType, new IllegalArgumentException("Invalid interest type: " + interestType));
     }
   }
 
@@ -258,7 +263,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
     case filter:
       break;
     default:
-      fail("Invalid interest type: " + interestType, new IllegalArgumentException("Invalid interest type: " + interestType));
+      Assert.fail("Invalid interest type: " + interestType, new IllegalArgumentException("Invalid interest type: " + interestType));
     }
   }
 
@@ -302,14 +307,14 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
         return "Expected to receive " + inv + " invalidates but received " + pool.getInvalidateCount();
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 10000, 100, true);
+    Wait.waitForCriterion(wc, 10000, 100, true);
   }
 
   public static Integer createCacheAndStartServer() throws Exception {
     DistributedSystem ds = new UnregisterInterestDUnitTest("UnregisterInterestDUnitTest").getSystem();
     ds.disconnect();
     Properties props = new Properties();
-    props.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
+    props.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
     CacheFactory cf = new CacheFactory(props);
     cache = cf.create();
     RegionFactory rf = ((GemFireCacheImpl)cache).createRegionFactory(RegionShortcut.REPLICATE);

@@ -31,7 +31,9 @@ import com.gemstone.gemfire.cache.client.internal.ClientPartitionAdvisor;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
 
@@ -91,12 +93,12 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
       // check if the function was routed to pruned nodes
       Map resultMap = region.getAll(testKeyList);
       assertTrue(resultMap.equals(origVals));
-      pause(2000);
+      Wait.pause(2000);
       Map secondResultMap = region.getAll(testKeyList);
       assertTrue(secondResultMap.equals(origVals));
     }
     catch (Exception e) {
-      fail("Test failed after the getAll operation", e);
+      Assert.fail("Test failed after the getAll operation", e);
     }
   }
   
@@ -119,7 +121,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
             + regionMetaData.size();
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 5000, 200, true);
+    Wait.waitForCriterion(wc, 5000, 200, true);
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
     wc = new WaitCriterion() {
@@ -133,7 +135,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
             + prMetaData.getBucketServerLocationsMap_TEST_ONLY().size();
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 5000, 200, true);
+    Wait.waitForCriterion(wc, 5000, 200, true);
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
         .entrySet()) {
       assertEquals(2, ((List)entry.getValue()).size());
@@ -167,7 +169,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
       region.putAll(keysValuesMap);
       // check the listener
       // check how the function was executed
-      pause(2000);
+      Wait.pause(2000);
       region.putAll(keysValuesMap);
       
       // check if the client meta-data is in synch
@@ -176,7 +178,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
       // check if the function was routed to pruned nodes
       Map<String, String> resultMap = region.getAll(testKeysList);
       assertTrue(resultMap.equals(keysValuesMap));
-      pause(2000);
+      Wait.pause(2000);
       Map<String, String> secondResultMap = region.getAll(testKeysList);
       assertTrue(secondResultMap.equals(keysValuesMap));
 
@@ -187,17 +189,12 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
         noValueMap.put(key, null);
       }
       assertEquals(noValueMap, region.getAll(testKeysList));
-      pause(2000); // Why does this test keep pausing for 2 seconds and then do the exact same thing?
+      Wait.pause(2000); // Why does this test keep pausing for 2 seconds and then do the exact same thing?
       region.removeAll(testKeysList);
       assertEquals(noValueMap, region.getAll(testKeysList));
     }
     catch (Exception e) {
-      fail("Test failed after the putAll operation", e);
+      Assert.fail("Test failed after the putAll operation", e);
     }
-  }
-  
-  @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
   }
 }

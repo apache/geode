@@ -34,9 +34,12 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests the functionality of the {@link RequiredRoles} class.
@@ -192,7 +195,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
         return "waiting for test start";
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     assertTrue(this.startTestWaitForRequiredRoles);
     assertFalse(this.finishTestWaitForRequiredRoles);
     
@@ -220,7 +223,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
         
     // create region in vm3... gain for 2 roles
     Host.getHost(0).getVM(vm3).invoke(create);
-    DistributedTestCase.join(threadA, 30 * 1000, getLogWriter());
+    ThreadUtils.join(threadA, 30 * 1000);
     assertTrue(this.finishTestWaitForRequiredRoles);
     assertTrue(this.rolesTestWaitForRequiredRoles.isEmpty());
     
@@ -240,7 +243,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     this.finishTestWaitForRequiredRoles = false;
     threadA = new Thread(group, runWaitForRequiredRoles);
     threadA.start();
-    DistributedTestCase.join(threadA, 30 * 1000, getLogWriter());
+    ThreadUtils.join(threadA, 30 * 1000);
     assertTrue(this.startTestWaitForRequiredRoles);
     assertTrue(this.finishTestWaitForRequiredRoles);
     assertTrue(this.rolesTestWaitForRequiredRoles.isEmpty());
@@ -253,7 +256,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     this.finishTestWaitForRequiredRoles = false;
     threadA = new Thread(group, runWaitForRequiredRoles);
     threadA.start();
-    DistributedTestCase.join(threadA, 30 * 1000, getLogWriter());
+    ThreadUtils.join(threadA, 30 * 1000);
     assertTrue(this.startTestWaitForRequiredRoles);
     assertTrue(this.finishTestWaitForRequiredRoles);
     assertTrue(this.rolesTestWaitForRequiredRoles.isEmpty());
@@ -276,14 +279,14 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
         return "waiting for test start";
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     assertTrue(this.startTestWaitForRequiredRoles);
     assertFalse(this.finishTestWaitForRequiredRoles);
     assertMissingRoles(name, vmRoles[vm2]);
     
     // end the wait and make sure no roles are missing
     Host.getHost(0).getVM(vm2).invoke(create);
-    DistributedTestCase.join(threadA, 30 * 1000, getLogWriter());
+    ThreadUtils.join(threadA, 30 * 1000);
     assertTrue(this.startTestWaitForRequiredRoles);
     assertTrue(this.finishTestWaitForRequiredRoles);
     assertTrue(this.rolesTestWaitForRequiredRoles.isEmpty());
@@ -429,7 +432,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
             SystemFailure.setFailure((VirtualMachineError)e); // don't throw
           }
           String s = "Uncaught exception in thread " + t;
-          getLogWriter().error(s, e);
+          LogWriterUtils.getLogWriter().error(s, e);
           fail(s);
         }
       };

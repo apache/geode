@@ -79,7 +79,7 @@ public class PRQueryPerfDUnitTest extends PartitionedRegionDUnitTestCase {
   throws Exception
  {
 
-    LogWriter log = getLogWriter();
+    LogWriter log = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
     log.info("BenchMarking PR Querying Test Started*****");
     Host host = Host.getHost(0);
 
@@ -165,7 +165,7 @@ public class PRQueryPerfDUnitTest extends PartitionedRegionDUnitTestCase {
   public void norun_testBenchmarkingQueryingOneAccessorTwoDS_Redundancy0()
       throws Exception
   {
-    LogWriter log = getLogWriter();
+    LogWriter log = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
 
     log.info("BenchMarking PR Querying Test Started*****");
     Host host = Host.getHost(0);
@@ -249,7 +249,7 @@ public class PRQueryPerfDUnitTest extends PartitionedRegionDUnitTestCase {
   public void norun_testBenchmarkingQueryingOneAccessorTwoDS_D_ACK_Redundancy1()
       throws Exception
   {
-    LogWriter log = getLogWriter();
+    LogWriter log = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
     log.info("BenchMarking PR Querying Test Started*****");
     Host host = Host.getHost(0);
 
@@ -330,7 +330,7 @@ public class PRQueryPerfDUnitTest extends PartitionedRegionDUnitTestCase {
   public void norun_testBenchmarkingQueryingOneAccessorThreeDS_Redundancy1()
       throws Exception
   {
-    LogWriter log = getLogWriter();
+    LogWriter log = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
     log.info("BenchMarking PR Querying Test Started*****");
     Host host = Host.getHost(0);
 
@@ -415,7 +415,7 @@ public class PRQueryPerfDUnitTest extends PartitionedRegionDUnitTestCase {
   public void norun_testBenchmarkingQueryingOneAccessorThreeDS_Redundancy2()
       throws Exception
   {
-    LogWriter log = getLogWriter();
+    LogWriter log = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
     log.info("BenchMarking PR Querying Test Started*****");
     Host host = Host.getHost(0);
 

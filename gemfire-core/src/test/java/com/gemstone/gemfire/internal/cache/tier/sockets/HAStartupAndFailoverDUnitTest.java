@@ -38,9 +38,14 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 
 /**
@@ -81,8 +86,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     server2 = host.getVM(1);
     server3 = host.getVM(2);
     
-    addExpectedException("java.io.IOException");
-    addExpectedException("SocketException");
+    IgnoredException.addIgnoredException("java.io.IOException");
+    IgnoredException.addIgnoredException("SocketException");
 
     // start servers first
     PORT1 =  ((Integer) server1.invoke(HAStartupAndFailoverDUnitTest.class, "createServerCache"));
@@ -98,7 +103,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     public void testPrimaryFailover() throws Exception
     {
 
-      createClientCache(this.getName(), getServerHostName(server1.getHost()));
+      createClientCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       // primary
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
 
@@ -146,7 +151,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     public void testExceptionWhileMakingPrimary()throws Exception
     {
 
-      createClientCacheWithIncorrectPrimary(this.getName(), getServerHostName(server1.getHost()));
+      createClientCacheWithIncorrectPrimary(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       // failed primary due to incorect host name of the server
 
       // new primary
@@ -175,7 +180,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     public void testTwoPrimaryFailedOneAfterTheAnother() throws Exception
     {
 
-      createClientCacheWithLargeRetryInterval(this.getName(), getServerHostName(server1.getHost()));
+      createClientCacheWithLargeRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       // primary
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
 
@@ -202,7 +207,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
      */
     public void testPrimaryShouldBeNullAndEPListShouldBeEmptyWhenAllServersAreDead() throws Exception
     {
-      createClientCache(this.getName(), getServerHostName(server1.getHost()));
+      createClientCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       verifyPrimaryShouldNotBeNullAndEPListShouldNotBeEmpty();
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "stopServer");
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "stopServer");
@@ -216,7 +221,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
      */
     public void testCacheClientUpdatersInitiatesFailoverOnPrimaryFailure() throws Exception
     {
-      createClientCacheWithLargeRetryInterval(this.getName(), getServerHostName(server1.getHost()));
+      createClientCacheWithLargeRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
@@ -234,7 +239,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
      */
     public void testCacheClientUpdaterInitiatesFailoverOnSecondaryFailure() throws Exception
     {
-      createClientCacheWithLargeRetryInterval(this.getName(), getServerHostName(server1.getHost()));
+      createClientCacheWithLargeRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
@@ -253,7 +258,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     public void testCacheClientUpdaterInitiatesFailoverOnBothPrimaryAndSecondaryFailure() throws Exception
     {
 
-      createClientCacheWithLargeRetryInterval(this.getName(), getServerHostName(server1.getHost()));
+      createClientCacheWithLargeRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
@@ -271,7 +276,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     public void testCacheClientUpdaterInitiatesFailoverOnBothPrimaryAndSecondaryFailureWithServerMonitors() throws Exception
     {
 
-      createClientCache(this.getName(), getServerHostName(server1.getHost()));
+      createClientCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
@@ -290,7 +295,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       // create a client with large retry interval for server monitors and no client updater thread
       // so that only cache operation can detect a server failure and should initiate failover
       createClientCacheWithLargeRetryIntervalAndWithoutCallbackConnection(this.getName()
-          , getServerHostName(server1.getHost()));
+          , NetworkUtils.getServerHostName(server1.getHost()));
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "stopServer");
       put();
       verifyDeadAndLiveServers(1,2);
@@ -305,7 +310,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
         r1.put("key-3", "server-value-3");
       }
       catch (Exception ex) {
-        fail("failed while r.put()", ex);
+        Assert.fail("failed while r.put()", ex);
       }
     }
 
@@ -321,7 +326,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
 //     while (proxy.getDeadServers().size() != expectedDeadServers) { // wait until condition is met
 //       assertTrue("Waited over " + maxWaitTime + "for dead servers to become : " + expectedDeadServers ,
 //           //" This issue can occur on Solaris as DSM thread get stuck in connectForServer() call, and hence not recovering any newly started server. This may be beacuase of tcp_ip_abort_cinterval kernal level property on solaris which has 3 minutes as a default value ",
@@ -393,7 +398,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       assertNotNull(" Primary endpoint should not be null", pool.getPrimaryName());
       assertTrue("Endpoint List should not be Empty as all server are live",pool.getConnectedServerCount() > 0);
       }catch(Exception e){
-        fail("failed while verifyPrimaryShouldNotBeNullAndEPListShouldNotBeEmpty()", e);
+        Assert.fail("failed while verifyPrimaryShouldNotBeNullAndEPListShouldNotBeEmpty()", e);
       }
     }
 
@@ -404,7 +409,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       } catch (NoSubscriptionServersAvailableException e) {
         // pass
       } catch(Exception e){
-        fail("failed while verifyPrimaryShouldBeNullAndEPListShouldBeEmpty()", e);
+        Assert.fail("failed while verifyPrimaryShouldBeNullAndEPListShouldBeEmpty()", e);
       }
     }
 
@@ -462,7 +467,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
           return excuse;
         }
       };
-      DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
       
       CacheServerImpl bs = (CacheServerImpl)cache.getCacheServers()
           .iterator().next();
@@ -479,7 +484,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
           return excuse;
         }
       };
-      DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
       
       Collection<CacheClientProxy> proxies = ccn.getClientProxies();
       Iterator<CacheClientProxy> iter_prox = proxies.iterator();
@@ -495,7 +500,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
             return excuse;
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+        Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
         
         // assertTrue("Dispatcher on primary should be alive",
         // proxy._messageDispatcher.isAlive());
@@ -522,7 +527,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
           return excuse;
         }
       };
-      DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
       
       CacheServerImpl bs = (CacheServerImpl)c.getCacheServers().iterator()
           .next();
@@ -539,7 +544,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
           return excuse;
         }
       };
-      DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
       
       Iterator iter_prox = ccn.getClientProxies().iterator();
       if (iter_prox.hasNext()) {
@@ -712,9 +717,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
   }
 
 
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
 

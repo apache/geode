@@ -26,6 +26,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.test.dunit.Assert;
 
 /**
  * Tests the functionality of a {@link Scope#LOCAL locally scoped}
@@ -124,7 +125,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
             helper.netSearch(true);
 
           } catch (TimeoutException ex) {
-            fail("Why did I timeout?", ex);
+            Assert.fail("Why did I timeout?", ex);
           }
 
           return null;

@@ -33,6 +33,7 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -104,7 +105,8 @@ public abstract class DistributedCacheTestCase
   /**
    * Closes the cache in this VM and each remote VM
    */
-  public void tearDown2() throws Exception {
+  @Override
+  protected final void preTearDown() throws Exception {
     StringBuffer problems = new StringBuffer();
 
     if (cache != null) {
@@ -137,8 +139,6 @@ public abstract class DistributedCacheTestCase
 
     assertEquals("Problems while tearing down", 
                  "", problems.toString().trim());
-
-    super.tearDown2();
   }
 
   /**
@@ -229,7 +229,7 @@ public abstract class DistributedCacheTestCase
 
     Region newRegion =
       root.createSubregion(name, factory.create());
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
       "Created Region '" + newRegion.getFullPath() + "'");
   }
 
@@ -301,7 +301,7 @@ public abstract class DistributedCacheTestCase
                              factory.create());
     sub.create(entryName, null);
 
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
       "Defined Entry named '" + entryName + "' in region '" +
       sub.getFullPath() +"'");
   }
@@ -328,7 +328,7 @@ public abstract class DistributedCacheTestCase
 
     sub.put(entryName, value);
 
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
       "Put value " + value + " in entry " + entryName + " in region '" +
       region.getFullPath() +"'");
   }
@@ -377,7 +377,7 @@ public abstract class DistributedCacheTestCase
 
     sub.put(entryName, value);
 
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
       "Replaced value " + value + "in entry " + entryName + " in region '" +
       region.getFullPath() +"'");
   }
@@ -466,7 +466,7 @@ public abstract class DistributedCacheTestCase
     Host host = Host.getHost(0);
     int vmCount = host.getVMCount();
     for (int i=0; i<vmCount; i++) {
-      getLogWriter().info("Invoking " + methodName + "on VM#" + i);
+      LogWriterUtils.getLogWriter().info("Invoking " + methodName + "on VM#" + i);
       host.getVM(i).invoke(this.getClass(), methodName, args);
     }
   }

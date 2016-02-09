@@ -36,6 +36,7 @@ import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -67,16 +68,16 @@ public class Bug33359DUnitTest extends DistributedTestCase {
       VM vm1 = host.getVM(1);
       vm0.invoke(Bug33359DUnitTest.class, "createCacheVM0");
       vm1.invoke(Bug33359DUnitTest.class, "createCacheVM1");
-      getLogWriter().fine("Cache created in successfully");
+      LogWriterUtils.getLogWriter().fine("Cache created in successfully");
     }
     
-    public void tearDown2(){
-        Host host = Host.getHost(0);
-        VM vm0 = host.getVM(0);
-        VM vm1 = host.getVM(1);
-        vm0.invoke(Bug33359DUnitTest.class, "closeCache");
-        vm1.invoke(Bug33359DUnitTest.class, "closeCache");
-        
+    @Override
+    protected final void preTearDown(){
+      Host host = Host.getHost(0);
+      VM vm0 = host.getVM(0);
+      VM vm1 = host.getVM(1);
+      vm0.invoke(Bug33359DUnitTest.class, "closeCache");
+      vm1.invoke(Bug33359DUnitTest.class, "closeCache");
     }
     
     public static void createCacheVM0(){
@@ -140,7 +141,7 @@ public class Bug33359DUnitTest extends DistributedTestCase {
                 for(int i=0; i<10; i++){
                     region.put(new Integer(i), Integer.toString(i));
                 }                
-                getLogWriter().fine("Did all puts successfully");
+                LogWriterUtils.getLogWriter().fine("Did all puts successfully");
             }
         }
         );        
@@ -148,7 +149,7 @@ public class Bug33359DUnitTest extends DistributedTestCase {
         vm0.invoke(new CacheSerializableRunnable("perform clear on region"){
             public void run2() throws CacheException {
                 region.clear();
-                getLogWriter().fine("region is cleared");
+                LogWriterUtils.getLogWriter().fine("region is cleared");
             }
         }
         );        

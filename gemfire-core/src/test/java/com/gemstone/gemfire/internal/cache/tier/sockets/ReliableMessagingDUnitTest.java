@@ -40,9 +40,15 @@ import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.ha.HAHelper;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
 import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * 
@@ -107,15 +113,15 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
    * QRM to other redundant servers.    
    */
   public void testPeriodicAckSendByClientPrimaryFailover() throws Exception {    
-    addExpectedException("java.net.ConnectException");
+    IgnoredException.addIgnoredException("java.net.ConnectException");
     createEntries();
     setClientServerObserverForBeforeSendingClientAck();    
     server1.invoke(ReliableMessagingDUnitTest.class, "putOnServer");
-    getLogWriter().info("Entering waitForServerUpdate");
+    LogWriterUtils.getLogWriter().info("Entering waitForServerUpdate");
     waitForServerUpdate();    
-    getLogWriter().info("Entering waitForCallback");
+    LogWriterUtils.getLogWriter().info("Entering waitForCallback");
     waitForCallback();
-    getLogWriter().info("Entering waitForClientAck");
+    LogWriterUtils.getLogWriter().info("Entering waitForClientAck");
     waitForClientAck();
     server2.invoke(ReliableMessagingDUnitTest.class, "checkTidAndSeq");
   }
@@ -145,7 +151,7 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
           (System.currentTimeMillis() - start) < maxWaitTime);
       sleep(1000);
     }
-    getLogWriter().info("seo = " + seo);
+    LogWriterUtils.getLogWriter().info("seo = " + seo);
     assertTrue("Creation time " + creationTime + " supposed to be same as seo " 
         + seo.getCreationTime(), creationTime == seo.getCreationTime());
   }
@@ -163,7 +169,7 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 10 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 10 * 1000, 200, true);
     Map.Entry entry;
     synchronized (map) {
       Iterator iter = map.entrySet().iterator();
@@ -174,7 +180,7 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
           .getValue();
       assertFalse(seo.getAckSend());
       creationTime = seo.getCreationTime();
-      getLogWriter().info("seo is " + seo.toString());
+      LogWriterUtils.getLogWriter().info("seo is " + seo.toString());
       assertTrue("Creation time not set", creationTime != 0);
       
       Object args[] =
@@ -235,7 +241,7 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
       Thread.sleep(ms);
     }
     catch (InterruptedException e) {
-      fail("Interrupted", e);
+      Assert.fail("Interrupted", e);
     }
   }
   
@@ -264,7 +270,7 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
       }
     }
     catch (Exception e) {
-      fail("failed while stopServer()", e);
+      Assert.fail("failed while stopServer()", e);
     }
   }
   
@@ -293,13 +299,13 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
     origObserver = ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeSendingClientAck()
       {
-        getLogWriter().info("beforeSendingClientAck invoked");
+        LogWriterUtils.getLogWriter().info("beforeSendingClientAck invoked");
         setCreationTimeTidAndSeq();   
         server1.invoke(ReliableMessagingDUnitTest.class, "stopServer");
         checkServerCount(1,1);
         server2.invoke(ReliableMessagingDUnitTest.class, "checkEmptyDispatchedMsgs");        
         PoolImpl.BEFORE_SENDING_CLIENT_ACK_CALLBACK_FLAG = false;       
-        getLogWriter().info("end of beforeSendingClientAck");
+        LogWriterUtils.getLogWriter().info("end of beforeSendingClientAck");
             }
     });
   }
@@ -370,7 +376,7 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    getLogWriter().info("Server started at PORT = " + port);
+    LogWriterUtils.getLogWriter().info("Server started at PORT = " + port);
 
     return new Integer(server.getPort());
   }
@@ -382,7 +388,7 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");
     cache = test.createCache(props);
-    String host = getServerHostName(Host.getHost(0));
+    String host = NetworkUtils.getServerHostName(Host.getHost(0));
     PoolImpl p = (PoolImpl)PoolManager.createFactory()
       .addServer(host, PORT1)
       .addServer(host, PORT2)
@@ -408,10 +414,9 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
     pool = p;
   }
 
-  public void tearDown2() throws Exception
-  {
+  @Override
+  protected final void preTearDown() throws Exception {
     creationTime = 0;
-    super.tearDown2();   
     closeCache();
     server1.invoke(ReliableMessagingDUnitTest.class, "closeCache");
     server2.invoke(ReliableMessagingDUnitTest.class, "closeCache");

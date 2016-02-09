@@ -19,6 +19,7 @@ package com.gemstone.gemfire.cache.query.partitioned;
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -68,7 +69,7 @@ public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "PRBasicRemoveIndexDUnitTest.testPRBasicIndexCreate test now starts ....");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
         redundancy));
@@ -96,7 +97,7 @@ public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase
     //remove indexes
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForRemoveIndex(name, false));
     
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
     "PRBasicRemoveIndexDUnitTest.testPRBasicRemoveIndex test now  ends sucessfully");
 
   }
@@ -111,7 +112,7 @@ public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "PRBasicRemoveIndexDUnitTest.testPRBasicIndexCreate test now starts ....");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
         redundancy));

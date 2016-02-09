@@ -40,7 +40,10 @@ import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.util.Callable;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -74,9 +77,8 @@ public class DeltaClientPostAuthorizationDUnitTest extends
     SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions);
   }
 
-  public void tearDown2() throws Exception {
-
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     // close the clients first
     client1.invoke(SecurityTestUtil.class, "closeCache");
     client2.invoke(SecurityTestUtil.class, "closeCache");
@@ -87,8 +89,8 @@ public class DeltaClientPostAuthorizationDUnitTest extends
   }
 
   public void testPutPostOpNotifications() throws Exception {
-    addExpectedException("Unexpected IOException");
-    addExpectedException("SocketException");
+    IgnoredException.addIgnoredException("Unexpected IOException");
+    IgnoredException.addIgnoredException("SocketException");
 
     OperationWithAction[] allOps = {
         // Test CREATE and verify with a GET
@@ -134,11 +136,11 @@ public class DeltaClientPostAuthorizationDUnitTest extends
       String accessor = gen.getAuthorizationCallback();
       TestAuthzCredentialGenerator tgen = new TestAuthzCredentialGenerator(gen);
 
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testAllOpsNotifications: Using authinit: " + authInit);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testAllOpsNotifications: Using authenticator: " + authenticator);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "testAllOpsNotifications: Using accessor: " + accessor);
 
       // Start servers with all required properties
@@ -217,7 +219,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends
           fail("executeOpBlock: Unknown client number " + clientNum);
           break;
       }
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "executeOpBlock: performing operation number ["
               + currentOp.getOpNum() + "]: " + currentOp);
       if ((opFlags & OpFlags.USE_OLDCONN) == 0) {
@@ -253,7 +255,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends
                 extraAuthzProps });
         // Start the client with valid credentials but allowed or disallowed to
         // perform an operation
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "executeOpBlock: For client" + clientNum + credentialsTypeStr
                 + " credentials: " + opCredentials);
         boolean setupDynamicRegionFactory = (opFlags & OpFlags.ENABLE_DRF) > 0;
@@ -374,7 +376,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends
       policy = InterestResultPolicy.NONE;
     }
     final int numOps = indices.length;
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "Got doOp for op: " + op.toString() + ", numOps: " + numOps
             + ", indices: " + indicesToString(indices) + ", expect: " + expectedResult);
     boolean exceptionOccured = false;
@@ -512,20 +514,20 @@ public class DeltaClientPostAuthorizationDUnitTest extends
             || ex instanceof QueryInvocationTargetException || ex instanceof CqException)
             && (expectedResult.intValue() == SecurityTestUtil.NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "doOp: Got expected NotAuthorizedException when doing operation ["
                   + op + "] with flags " + OpFlags.description(flags) 
                   + ": " + ex.getCause());
           continue;
         }
         else if (expectedResult.intValue() == SecurityTestUtil.OTHER_EXCEPTION) {
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "doOp: Got expected exception when doing operation: "
                   + ex.toString());
           continue;
         }
         else {
-          fail("doOp: Got unexpected exception when doing operation. Policy = " 
+          Assert.fail("doOp: Got unexpected exception when doing operation. Policy = " 
               + policy + " flags = " + OpFlags.description(flags), ex);
         }
       }

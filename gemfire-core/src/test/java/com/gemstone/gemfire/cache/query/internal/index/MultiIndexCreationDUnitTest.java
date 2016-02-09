@@ -31,10 +31,13 @@ import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager.TestHook;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class MultiIndexCreationDUnitTest extends CacheTestCase {
 
@@ -87,8 +90,8 @@ public class MultiIndexCreationDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         long giveupTime = System.currentTimeMillis() + 60000;
         while (!hooked && System.currentTimeMillis() < giveupTime) {
-          getLogWriter().info("Query Waiting for index hook.");
-          pause(100);
+          LogWriterUtils.getLogWriter().info("Query Waiting for index hook.");
+          Wait.pause(100);
         }
         assertTrue(hooked);
         
@@ -124,12 +127,12 @@ public class MultiIndexCreationDUnitTest extends CacheTestCase {
       }
     });
     
-    DistributedTestCase.join(a1, 6000, this.getLogWriter());
+    ThreadUtils.join(a1, 6000);
     
     if(a1.exceptionOccurred()) {
       fail(a1.getException().getMessage());
     }
-    DistributedTestCase.join(a2, 6000, this.getLogWriter());
+    ThreadUtils.join(a2, 6000);
     if(a2.exceptionOccurred()) {
       fail(a2.getException().getMessage());
     }
@@ -169,11 +172,14 @@ public class MultiIndexCreationDUnitTest extends CacheTestCase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     hooked = false;
-    invokeInEveryVM(CacheTestCase.class, "disconnectFromDS");
-    super.tearDown2();
-    invokeInEveryVM(QueryObserverHolder.class, "reset");
+    Invoke.invokeInEveryVM(CacheTestCase.class, "disconnectFromDS");
+  }
+  
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(QueryObserverHolder.class, "reset");
   }
 
   private static class MultiIndexCreationTestHook implements TestHook {
@@ -183,10 +189,10 @@ public class MultiIndexCreationDUnitTest extends CacheTestCase {
       long giveupTime = System.currentTimeMillis() + 60000;
       if (spot == 13) {
         hooked = true;
-        getLogWriter().info("MultiIndexCreationTestHook is hooked in create defined indexes.");
+        LogWriterUtils.getLogWriter().info("MultiIndexCreationTestHook is hooked in create defined indexes.");
         while (hooked && System.currentTimeMillis() < giveupTime) {
-          getLogWriter().info("MultiIndexCreationTestHook waiting.");
-          pause(100);
+          LogWriterUtils.getLogWriter().info("MultiIndexCreationTestHook waiting.");
+          Wait.pause(100);
         }
         assertEquals(hooked, false);
       }

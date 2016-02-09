@@ -42,10 +42,14 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionQueryEvaluator.TestHook;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * @author shobhit
@@ -121,11 +125,11 @@ public class IndexTrackingQueryObserverDUnitTest extends CacheTestCase {
     });
 
     if (async1.exceptionOccurred()) {
-      fail("", async1.getException());
+      Assert.fail("", async1.getException());
     }
 
     if (async1.exceptionOccurred()) {
-      fail("", async1.getException());
+      Assert.fail("", async1.getException());
     }
   }
 
@@ -195,7 +199,7 @@ public class IndexTrackingQueryObserverDUnitTest extends CacheTestCase {
             assertTrue(keyIndex1 instanceof PartitionedIndex);
           }
         } catch (Exception e) {
-          fail("While creating Index on PR", e);
+          Assert.fail("While creating Index on PR", e);
         }
         Region region = getCache().getRegion("portfolio");
         //Inject TestHook in QueryObserver before running query.
@@ -224,7 +228,7 @@ public class IndexTrackingQueryObserverDUnitTest extends CacheTestCase {
         try {
           results = (SelectResults) query.execute();
         } catch (Exception e) {
-          fail("While running query on PR", e);
+          Assert.fail("While running query on PR", e);
         }
 
         // The query should return all elements in region.
@@ -249,7 +253,7 @@ public class IndexTrackingQueryObserverDUnitTest extends CacheTestCase {
         final IndexTrackingTestHook th = (IndexTrackingTestHook) ((IndexTrackingQueryObserver) observer)
             .getTestHook();
 
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
 
           public boolean done() {
             if(th.getRegionMap() != null) {
@@ -271,7 +275,7 @@ public class IndexTrackingQueryObserverDUnitTest extends CacheTestCase {
           totalResults += i.intValue();
         }
         
-        getLogWriter().fine("Index Info result size is " + totalResults);
+        LogWriterUtils.getLogWriter().fine("Index Info result size is " + totalResults);
         assertEquals(results, totalResults);
       }
     };

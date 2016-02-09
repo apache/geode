@@ -44,8 +44,10 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.functions.LocalDataSetFunction;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -141,7 +143,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
       Region localRegion = PartitionRegionHelper.getLocalDataForContext((RegionFunctionContext)context);
       Iterator it = localRegion.keySet().iterator();
       while (it.hasNext()) {
-        getLogWriter().info("LocalKeys:"+it.next());
+        LogWriterUtils.getLogWriter().info("LocalKeys:"+it.next());
       }
       context.getResultSender().lastResult(Boolean.TRUE);
     }
@@ -204,7 +206,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
     }
     catch (Exception e) {
       e.printStackTrace();
-      fail("Test failed due to ", e);
+      Assert.fail("Test failed due to ", e);
     }
   }
   private void registerFunctions() {
@@ -249,7 +251,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
       assertNotNull(cache);
     }
     catch (Exception e) {
-      fail("Failed while creating the cache", e);
+      Assert.fail("Failed while creating the cache", e);
     }
   }
 
@@ -302,7 +304,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
     if (partitionedRegionName.equals("CustomerPR")) {
       customerPR = cache.createRegion(partitionedRegionName, attr.create());
       assertNotNull(customerPR);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region " + partitionedRegionName
               + " created Successfully :" + customerPR);
 
@@ -310,7 +312,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
     if (partitionedRegionName.equals("OrderPR")) {
       orderPR = cache.createRegion(partitionedRegionName, attr.create());
       assertNotNull(orderPR);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region " + partitionedRegionName
               + " created Successfully :" + orderPR);
 
@@ -319,7 +321,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
     if (partitionedRegionName.equals("ShipmentPR")) {
       shipmentPR = cache.createRegion(partitionedRegionName, attr.create());
       assertNotNull(shipmentPR);
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           "Partitioned Region " + partitionedRegionName
               + " created Successfully :" + shipmentPR);
 

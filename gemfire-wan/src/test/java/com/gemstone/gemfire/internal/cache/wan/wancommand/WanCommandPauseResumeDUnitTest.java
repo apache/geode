@@ -27,6 +27,7 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
 
@@ -116,7 +117,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
         "ln", true, false });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --"
         + CliStrings.PAUSE_GATEWAYSENDER__ID + "=ln";
     CommandResult cmdResult = executeCommand(command);
@@ -174,7 +175,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
 
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(
         WANCommandTestBase.class, "getMember");
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --"
         + CliStrings.PAUSE_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.PAUSE_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
@@ -235,7 +236,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
         "ln", true, false });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --"
         + CliStrings.PAUSE_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.PAUSE_GATEWAYSENDER__GROUP + "=SenderGroup1";
@@ -322,7 +323,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     vm7.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
         "ln", true, false });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --"
         + CliStrings.PAUSE_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.PAUSE_GATEWAYSENDER__GROUP + "=SenderGroup1,SenderGroup2";
@@ -443,7 +444,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
         "ln", true, true });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.RESUME_GATEWAYSENDER + " --"
         + CliStrings.RESUME_GATEWAYSENDER__ID + "=ln";
     CommandResult cmdResult = executeCommand(command);
@@ -506,7 +507,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
 
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(
         WANCommandTestBase.class, "getMember");
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.RESUME_GATEWAYSENDER + " --"
         + CliStrings.RESUME_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.RESUME_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
@@ -578,7 +579,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
         "ln", true, true });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.RESUME_GATEWAYSENDER + " --"
         + CliStrings.RESUME_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.RESUME_GATEWAYSENDER__GROUP + "=SenderGroup1";
@@ -681,7 +682,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     vm7.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
         "ln", true, true });
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.RESUME_GATEWAYSENDER + " --"
         + CliStrings.RESUME_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.RESUME_GATEWAYSENDER__GROUP

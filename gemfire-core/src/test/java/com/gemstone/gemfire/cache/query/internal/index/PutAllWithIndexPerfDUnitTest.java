@@ -39,7 +39,10 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
@@ -65,13 +68,9 @@ public class PutAllWithIndexPerfDUnitTest extends CacheTestCase {
     disconnectAllFromDS();
   }
 
-  public void tearDown2() throws Exception {
-    try {
-      super.tearDown2();
-    }
-    finally {
-      disconnectAllFromDS();
-    }
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
+    disconnectAllFromDS();
   }
 
   public void testPutAllWithIndexes() {
@@ -85,7 +84,7 @@ public class PutAllWithIndexPerfDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.put("locators", "localhost["+getDUnitLocatorPort()+"]");
+          config.put("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
           Cache cache = new CacheFactory(config).create();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -93,20 +92,20 @@ public class PutAllWithIndexPerfDUnitTest extends CacheTestCase {
           try {
             startBridgeServer(0, false);
           } catch (Exception ex) {
-            fail("While starting CacheServer", ex);
+            Assert.fail("While starting CacheServer", ex);
           }
           //Create Index on empty region
           try {
             cache.getQueryService().createIndex("idIndex", "ID", "/"+name);
           } catch (Exception e) {
-            fail("index creation failed", e);
+            Assert.fail("index creation failed", e);
           }
         }
       });
 
     // Create client region
     final int port = vm0.invokeInt(PutAllWithIndexPerfDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(vm0.getHost());
+    final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     vm1.invoke(new CacheSerializableRunnable("Create region") {
         public void run2() throws CacheException {
           Properties config = new Properties();
@@ -157,7 +156,7 @@ public class PutAllWithIndexPerfDUnitTest extends CacheTestCase {
           cache.getRegion(name).clear();
           cache.getQueryService().createIndex("idIndex", "p.ID", "/"+name+" p");
         } catch (Exception e) {
-          fail("index creation failed", e);
+          Assert.fail("index creation failed", e);
         }
       }
     });

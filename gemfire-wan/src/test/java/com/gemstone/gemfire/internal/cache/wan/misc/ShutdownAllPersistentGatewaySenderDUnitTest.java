@@ -29,8 +29,12 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
   private static final long MAX_WAIT = 70000;
@@ -44,13 +48,13 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    addExpectedException("Cache is being closed by ShutdownAll");
+    IgnoredException.addIgnoredException("Cache is being closed by ShutdownAll");
   }
 
   private static final long serialVersionUID = 1L;
 
   public void testGatewaySender() throws Exception {
-    addExpectedException("Cache is shutting down");
+    IgnoredException.addIgnoredException("Cache is shutting down");
 
     Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
         "createFirstLocatorWithDSId", new Object[] { 1 });
@@ -64,9 +68,9 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
         new Object[] { nyPort });
 
     vm2.invoke(WANTestBase.class, "createPersistentPartitionedRegion",
-        new Object[] { testName + "_PR", "ln", 1, 100, isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPersistentPartitionedRegion",
-        new Object[] { testName + "_PR", "ln", 1, 100, isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
 
@@ -76,7 +80,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "createPersistentPartitionedRegion",
-        new Object[] { testName + "_PR", "ln", 1, 100, isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
 
     // set the CacheObserver to block the ShutdownAll
     SerializableRunnable waitAtShutdownAll = new SerializableRunnable() {
@@ -86,8 +90,8 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
         CacheObserverHolder.setInstance(new CacheObserverAdapter() {
           @Override
           public void beforeShutdownAll() {
-            final Region region = cache.getRegion(testName + "_PR");
-            waitForCriterion(new WaitCriterion() {
+            final Region region = cache.getRegion(getTestMethodName() + "_PR");
+            Wait.waitForCriterion(new WaitCriterion() {
               @Override
               public boolean done() {
                 return region.size() >= 2;
@@ -106,26 +110,26 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
     vm3.invoke(waitAtShutdownAll);
     
     AsyncInvocation vm4_future = vm4.invokeAsync(WANTestBase.class, "doPuts",
-        new Object[] { testName + "_PR", NUM_KEYS });
+        new Object[] { getTestMethodName() + "_PR", NUM_KEYS });
 
     // ShutdownAll will be suspended at observer, so puts will continue
     AsyncInvocation future = shutDownAllMembers(vm2, 2, MAX_WAIT);
     future.join(MAX_WAIT);
 
     // now restart vm1 with gatewayHub
-    getLogWriter().info("restart in VM2");
+    LogWriterUtils.getLogWriter().info("restart in VM2");
     vm2.invoke(WANTestBase.class, "createCache", new Object[] { nyPort });
     vm3.invoke(WANTestBase.class, "createCache", new Object[] { nyPort });
     AsyncInvocation vm3_future = vm3.invokeAsync(WANTestBase.class,
-        "createPersistentPartitionedRegion", new Object[] { testName + "_PR",
+        "createPersistentPartitionedRegion", new Object[] { getTestMethodName() + "_PR",
             "ln", 1, 100, isOffHeap() });
     vm2.invoke(WANTestBase.class, "createPersistentPartitionedRegion",
-        new Object[] { testName + "_PR", "ln", 1, 100, isOffHeap() });
+        new Object[] { getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
     vm3_future.join(MAX_WAIT);
 
     vm3.invoke(new SerializableRunnable() {
       public void run() {
-        final Region region = cache.getRegion(testName + "_PR");
+        final Region region = cache.getRegion(getTestMethodName() + "_PR");
         cache.getLogger().info(
             "vm1's region size before restart gatewayhub is " + region.size());
       }
@@ -137,7 +141,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
     vm4_future.join(MAX_WAIT);
     vm4.invoke(new SerializableRunnable() {
       public void run() {
-        Region region = cache.getRegion(testName + "_PR");
+        Region region = cache.getRegion(getTestMethodName() + "_PR");
         assertEquals(NUM_KEYS, region.size());
       }
     });
@@ -145,11 +149,11 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
     // verify the other side (vm1)'s entries received from gateway
     vm2.invoke(new SerializableRunnable() {
       public void run() {
-        final Region region = cache.getRegion(testName + "_PR");
+        final Region region = cache.getRegion(getTestMethodName() + "_PR");
 
         cache.getLogger().info(
             "vm1's region size after restart gatewayhub is " + region.size());
-        waitForCriterion(new WaitCriterion() {
+        Wait.waitForCriterion(new WaitCriterion() {
           public boolean done() {
             Object lastvalue = region.get(NUM_KEYS - 1);
             if (lastvalue != null && lastvalue.equals(NUM_KEYS - 1)) {

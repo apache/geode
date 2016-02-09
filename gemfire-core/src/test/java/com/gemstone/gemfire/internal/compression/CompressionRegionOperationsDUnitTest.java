@@ -147,7 +147,18 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Error error = null;
+    Exception exception = null;
+    
+    try {
+      preTearDownCompressionRegionOperationsDUnitTest();
+    } catch (Error e) {
+      error = e;
+    } catch (Exception e) {
+      exception = e;
+    }
+    
     try {
       SnappyCompressor.getDefaultInstance();
       cleanup(getVM(TEST_VM));
@@ -155,8 +166,16 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
       // Not a supported OS
     }
     
-    super.tearDown2();
-  }  
+    if (error != null) {
+      throw error;
+    }
+    if (exception != null) {
+      throw exception;
+    }
+  }
+  
+  protected void preTearDownCompressionRegionOperationsDUnitTest() throws Exception {
+  }
 
   /**
    * Invokes basic get/put operations tests on the test vm.

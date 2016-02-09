@@ -44,11 +44,14 @@ import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.Resou
 import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
 import com.gemstone.gemfire.internal.cache.control.MemoryThresholds.MemoryState;
 import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class EvictionTestBase extends CacheTestCase {
 
@@ -83,18 +86,6 @@ public class EvictionTestBase extends CacheTestCase {
     dataStore2 = host.getVM(1);
     dataStore3 = host.getVM(2);
     dataStore4 = host.getVM(3);
-  }
-
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-    /*
-     * dataStore1.invoke(EvictionTestBase.class, "destroyObjects", new Object[] {
-     * setEvictionOn, evictionAlgorithm, regionName, totalNoOfBuckets,
-     * evictionAction, evictorInterval });
-     * dataStore2.invoke(EvictionTestBase.class, "createPartitionedRegion", new
-     * Object[] { setEvictionOn, evictionAlgorithm, regionName,
-     * totalNoOfBuckets, evictionAction, evictorInterval });
-     */
   }
 
   public void prepareScenario1(EvictionAlgorithm evictionAlgorithm,int maxEntries) {
@@ -138,7 +129,7 @@ public class EvictionTestBase extends CacheTestCase {
             .getEvictions();
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 60000, 1000, true);
+        Wait.waitForCriterion(wc, 60000, 1000, true);
       }
     });
   }
@@ -290,14 +281,14 @@ public class EvictionTestBase extends CacheTestCase {
       ds = getSystem(props);
       cache = CacheFactory.create(ds);
       assertNotNull(cache);
-      getLogWriter().info("cache= " + cache);
-      getLogWriter().info("cache closed= " + cache.isClosed());
+      LogWriterUtils.getLogWriter().info("cache= " + cache);
+      LogWriterUtils.getLogWriter().info("cache closed= " + cache.isClosed());
       cache.getResourceManager().setEvictionHeapPercentage(85);
-      getLogWriter().info("eviction= "+cache.getResourceManager().getEvictionHeapPercentage());
-      getLogWriter().info("critical= "+cache.getResourceManager().getCriticalHeapPercentage());
+      LogWriterUtils.getLogWriter().info("eviction= "+cache.getResourceManager().getEvictionHeapPercentage());
+      LogWriterUtils.getLogWriter().info("critical= "+cache.getResourceManager().getCriticalHeapPercentage());
     }
     catch (Exception e) {
-      fail("Failed while creating the cache", e);
+      Assert.fail("Failed while creating the cache", e);
     }
   }
 
@@ -375,7 +366,7 @@ public class EvictionTestBase extends CacheTestCase {
 
     region = cache.createRegion(regionName, factory.create());
     assertNotNull(region);
-    getLogWriter().info("Partitioned Region created Successfully :" + region);
+    LogWriterUtils.getLogWriter().info("Partitioned Region created Successfully :" + region);
   }
 
   public static void putData(final String regionName, final int noOfElememts,
@@ -399,7 +390,7 @@ public class EvictionTestBase extends CacheTestCase {
         final Region pr = cache.getRegion("DR1");
         for (int counter = 1; counter <= noOfElememts; counter++) {
           pr.put(new Integer(counter), new byte[sizeOfElement * 1024 * 1024]);
-          getLogWriter().info("Amar put data element no->" + counter);
+          LogWriterUtils.getLogWriter().info("Amar put data element no->" + counter);
         }
       }
     });
@@ -422,7 +413,7 @@ public class EvictionTestBase extends CacheTestCase {
             if (bucketRegion == null) {
               continue;
             }
-            getLogWriter().info(
+            LogWriterUtils.getLogWriter().info(
                 "FINAL bucket= " + bucketRegion.getFullPath() + "size= "
                     + bucketRegion.size());
           }
@@ -437,7 +428,7 @@ public class EvictionTestBase extends CacheTestCase {
     };
     long evictionsInVM1 = (Long)dataStore1.invoke(validate);
     long evictionsInVM2 = (Long)dataStore2.invoke(validate);
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "EEE evicitons = " + noOfEvictions + " "
             + (evictionsInVM1 + evictionsInVM2));
     assertEquals(noOfEvictions, (evictionsInVM1 + evictionsInVM2));
@@ -488,7 +479,7 @@ public class EvictionTestBase extends CacheTestCase {
         while(itr.hasNext())
         {
           BucketRegion br=(BucketRegion)itr.next();
-          getLogWriter().info("Print "+ br.size());
+          LogWriterUtils.getLogWriter().info("Print "+ br.size());
         }
       }
     });

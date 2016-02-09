@@ -59,11 +59,6 @@ public class CompressionRegionFactoryDUnitTest extends CacheTestCase {
     super.setUp();
   }
   
-  @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-  }
-  
   /**
    * Asserts that a region is created when a valid compressor is used.
    * Asserts that the region attributes contain the correct compressor value. 

@@ -19,7 +19,9 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 
 /**
  * @author dsmith
@@ -50,7 +52,7 @@ public class DurableClientReconnectAutoDUnitTest extends
   protected PoolFactory getPoolFactory() {
     Host host = Host.getHost(0);
     PoolFactory factory = PoolManager.createFactory()
-    .addLocator(getServerHostName(host), getDUnitLocatorPort());
+    .addLocator(NetworkUtils.getServerHostName(host), DistributedTestUtils.getDUnitLocatorPort());
     return factory;
   }
 

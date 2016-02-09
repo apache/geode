@@ -45,6 +45,7 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -88,11 +89,6 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     super.setUp();
     createDefaultSetup(null);
     setupGemFire();
-  }
-
-  @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
   }
 
   protected Index createIndex(final String name, final String indexedExpression, final String fromClause) {
@@ -142,7 +138,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
   protected Properties createDistributedSystemProperties(final String gemfireName) {
     final Properties distributedSystemProperties = new Properties();
 
-    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     distributedSystemProperties.setProperty(DistributionConfig.NAME_NAME, gemfireName);
 
     return distributedSystemProperties;
@@ -180,7 +176,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
               }
             }
           } catch (Exception e) {
-            getLogWriter().error(
+            LogWriterUtils.getLogWriter().error(
                 String.format("Error occurred creating Index (%1$s) on Region (%2$s) - (%3$s)", indexName,
                     region.getFullPath(), e.getMessage()));
           }
@@ -282,11 +278,11 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
   @SuppressWarnings("unchecked")
   protected <T extends Comparable<T>, B extends AbstractBean<T>> B query(final Cache cache, final String queryString) {
     try {
-      getLogWriter().info(String.format("Running Query (%1$s) in GemFire...", queryString));
+      LogWriterUtils.getLogWriter().info(String.format("Running Query (%1$s) in GemFire...", queryString));
 
       final SelectResults<B> results = (SelectResults<B>) cache.getQueryService().newQuery(queryString).execute();
 
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           String.format("Running Query (%1$s) in GemFire returned (%2$d) result(s).", queryString, results.size()));
 
       return (results.iterator().hasNext() ? results.iterator().next() : null);
@@ -298,12 +294,12 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
   protected <T extends Comparable<T>, B extends AbstractBean<T>> B query(final Region<T, B> region,
       final String queryPredicate) {
     try {
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           String.format("Running Query (%1$s) on Region (%2$s)...", queryPredicate, region.getFullPath()));
 
       final SelectResults<B> results = region.query(queryPredicate);
 
-      getLogWriter().info(
+      LogWriterUtils.getLogWriter().info(
           String.format("Running Query (%1$s) on Region (%2$s) returned (%3$d) result(s).", queryPredicate,
               region.getFullPath(), results.size()));
 
@@ -319,7 +315,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     final Result result = executeCommand(CliStrings.LIST_INDEX + " --" + CliStrings.LIST_INDEX__STATS);
 
     assertNotNull(result);
-    getLogWriter().info(toString(result));
+    LogWriterUtils.getLogWriter().info(toString(result));
     assertEquals(Result.Status.OK, result.getStatus());
   }
 

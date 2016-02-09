@@ -40,6 +40,7 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -72,14 +73,15 @@ public class PutAllMultiVmDUnitTest extends DistributedTestCase{
       vm1.invoke(PutAllMultiVmDUnitTest.class, "createCache");
     }
     
-    public void tearDown2(){
-        Host host = Host.getHost(0);
-        VM vm0 = host.getVM(0);
-        VM vm1 = host.getVM(1);
-        vm0.invoke(PutAllMultiVmDUnitTest.class, "closeCache");
-        vm1.invoke(PutAllMultiVmDUnitTest.class, "closeCache");
-        cache = null;
-        invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
+    @Override
+    protected final void preTearDown() throws Exception {
+      Host host = Host.getHost(0);
+      VM vm0 = host.getVM(0);
+      VM vm1 = host.getVM(1);
+      vm0.invoke(PutAllMultiVmDUnitTest.class, "closeCache");
+      vm1.invoke(PutAllMultiVmDUnitTest.class, "closeCache");
+      cache = null;
+      Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
     }
     
     public static void createCache(){

@@ -41,9 +41,12 @@ import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.datasource.GemFireTransactionDataSource;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.internal.jta.UserTransactionImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
 
@@ -123,7 +126,8 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
     vm0.invoke(TransactionTimeOutDUnitTest.class, "init");
   }
 
-  public  void tearDown2() throws NamingException, SQLException {
+  @Override
+  protected final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(TransactionTimeOutDUnitTest.class, "closeCache");
@@ -135,13 +139,13 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
     AsyncInvocation async1 = vm0.invokeAsync(TransactionTimeOutDUnitTest.class, "runTest1");
     AsyncInvocation async2 =vm0.invokeAsync(TransactionTimeOutDUnitTest.class, "runTest2");
     
-    DistributedTestCase.join(async1, 30 * 1000, getLogWriter());
-    DistributedTestCase.join(async2, 30 * 1000, getLogWriter());
+    ThreadUtils.join(async1, 30 * 1000);
+    ThreadUtils.join(async2, 30 * 1000);
     if(async1.exceptionOccurred()){
-      fail("async1 failed", async1.getException());
+      Assert.fail("async1 failed", async1.getException());
     }
     if(async2.exceptionOccurred()){
-      fail("async2 failed", async2.getException());
+      Assert.fail("async2 failed", async2.getException());
     }
   }
 
@@ -213,7 +217,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       return;
     }
     catch (Exception e) {
-      getLogWriter().fine("Exception caught " + e);
+      LogWriterUtils.getLogWriter().fine("Exception caught " + e);
       fail("failed in naming lookup: " + e);
       return;
     }
@@ -239,7 +243,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       return;
     }
     catch (Exception e) {
-      getLogWriter().fine("Exception caught " + e);
+      LogWriterUtils.getLogWriter().fine("Exception caught " + e);
       fail("failed in naming lookup: " + e);
       return;
     }
@@ -492,7 +496,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       //
       //    sb.append(lineSep);
     }
-    getLogWriter().fine("***********\n " + sb);
+    LogWriterUtils.getLogWriter().fine("***********\n " + sb);
     return sb.toString();
   }
 }

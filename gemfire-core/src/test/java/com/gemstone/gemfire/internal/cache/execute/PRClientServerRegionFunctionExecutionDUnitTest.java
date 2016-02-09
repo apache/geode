@@ -56,9 +56,13 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServerTestBase {
   private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
@@ -211,7 +215,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     isByName = new Boolean(true);
     toRegister = new Boolean(true);
 
-    final ExpectedException ex = addExpectedException("did not send last result");
+    final IgnoredException ex = IgnoredException.addIgnoredException("did not send last result");
     client.invoke(PRClientServerRegionFunctionExecutionDUnitTest.class,
         "serverSingleKeyExecution_NoLastResult", new Object[] { isByName,
             toRegister });
@@ -485,7 +489,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       if (!(ex.getCause() instanceof ServerConnectivityException)
           && !(ex.getCause() instanceof FunctionInvocationTargetException)) {
         ex.printStackTrace();
-        getLogWriter().info("Exception : ", ex);
+        LogWriterUtils.getLogWriter().info("Exception : ", ex);
         fail("Test failed after the execute operation");
       }
     }
@@ -521,8 +525,8 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       assertEquals(1, ((List)rs.getResult()).size());
     } catch (Exception ex) {
         ex.printStackTrace();
-        getLogWriter().info("Exception : ", ex);
-        fail("Test failed after the execute operation", ex);
+        LogWriterUtils.getLogWriter().info("Exception : ", ex);
+        Assert.fail("Test failed after the execute operation", ex);
     }
   }
   
@@ -556,7 +560,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       assertEquals(1, ((List)rs.getResult()).size());
     } catch (Exception ex) {
         ex.printStackTrace();
-        getLogWriter().info("Exception : ", ex);
+        LogWriterUtils.getLogWriter().info("Exception : ", ex);
         fail("Test failed after the execute operation");
     }
   }
@@ -668,7 +672,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       String excuse;
       public boolean done() {
         int sz = pool.getConnectedServerCount();
-        getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "Checking for the Live Servers : Expected  : " + expectedLiveServers
                 + " Available :" + sz);
         if (sz == expectedLiveServers.intValue()) {
@@ -681,7 +685,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
+    Wait.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
   }
   
   public static void executeFunction() throws ServerException,
@@ -701,7 +705,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       ResultCollector rc1 = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(
           function.getId());
       List l = ((List)rc1.getResult());
-      getLogWriter().info("Result size : " + l.size());
+      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
       assertEquals(3, l.size());
 
       for (Iterator i = l.iterator(); i.hasNext();) {
@@ -709,7 +713,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       }
     }
     catch (Exception e) {
-      getLogWriter().info("Got an exception : " + e.getMessage());
+      LogWriterUtils.getLogWriter().info("Got an exception : " + e.getMessage());
       assertTrue(e instanceof EOFException || e instanceof SocketException
           || e instanceof SocketTimeoutException
           || e instanceof ServerException || e instanceof IOException
@@ -730,7 +734,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     ResultCollector rc1 = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(
         function.getId());
     List l = ((List)rc1.getResult());
-    getLogWriter().info("Result size : " + l.size());
+    LogWriterUtils.getLogWriter().info("Result size : " + l.size());
     return l;
   }
   
@@ -778,7 +782,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     PartitionedRegion region = (PartitionedRegion)cache.getRegion(PartitionedRegionName);
     HashMap localBucket2RegionMap = (HashMap)region
     .getDataStore().getSizeLocally();
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
     "Size of the " + PartitionedRegionName + " in this VM :- "
         + localBucket2RegionMap.size());
     Set entrySet = localBucket2RegionMap.entrySet();
@@ -821,7 +825,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
             .iterator().next());
       }
       catch (Exception expected) {
-        getLogWriter().info("Exception : " + expected.getMessage());
+        LogWriterUtils.getLogWriter().info("Exception : " + expected.getMessage());
         expected.printStackTrace();
         fail("Test failed after the put operation");
       }
@@ -850,7 +854,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       List l = null;
       ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE,  function, isByName);
       l = ((List)rc1.getResult());
-      getLogWriter().info("Result size : " + l.size());
+      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Iterator i = l.iterator(); i.hasNext();) {
         assertEquals(Boolean.TRUE, i.next());
@@ -872,7 +876,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       assertEquals(origVals, foundVals);
       
     }catch(Exception e){
-      fail("Test failed after the put operation", e);
+      Assert.fail("Test failed after the put operation", e);
       
     }
   }
@@ -902,7 +906,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE,
           function, isByName);
       l = ((List)rc1.getResult());
-      getLogWriter().info("Result size : " + l.size());
+      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Iterator i = l.iterator(); i.hasNext();) {
         assertTrue(i.next() instanceof MyFunctionExecutionException);
@@ -987,14 +991,14 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE,
           function, isByName);
       l = ((List)rc1.getResult());
-      getLogWriter().info("Result size : " + l.size());
+      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Iterator i = l.iterator(); i.hasNext();) {
         assertEquals(Boolean.TRUE, i.next());
       }
 
     }catch(Exception e){
-      fail("Test failed after the put operation", e);
+      Assert.fail("Test failed after the put operation", e);
       
     }
   }
@@ -1023,8 +1027,8 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
 
     }catch (Exception ex) {
       ex.printStackTrace();
-      getLogWriter().info("Exception : " , ex);
-      fail("Test failed after the put operation",ex);
+      LogWriterUtils.getLogWriter().info("Exception : " , ex);
+      Assert.fail("Test failed after the put operation",ex);
     }
   }
   
@@ -1067,13 +1071,13 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
         }
       });
       l = ((List)rc1.getResult());
-      getLogWriter().info("Result size : " + l.size());
+      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Iterator i = l.iterator(); i.hasNext();) {
         assertEquals(Boolean.TRUE, i.next());
       }
     }catch(Exception e){
-      getLogWriter().info("Exception : " + e.getMessage());
+      LogWriterUtils.getLogWriter().info("Exception : " + e.getMessage());
       e.printStackTrace();
       fail("Test failed after the put operation");
       
@@ -1127,7 +1131,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
     catch (Throwable e) {
       e.printStackTrace();
-      fail("This is not expected Exception", e);
+      Assert.fail("This is not expected Exception", e);
     }
 
   }
@@ -1163,7 +1167,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
           .toLocalizedString("return any"))));
     }
     catch (Exception notexpected) {
-      fail("Test failed during execute or sleeping", notexpected);
+      Assert.fail("Test failed during execute or sleeping", notexpected);
     } finally {
       cache.getLogger().info("<ExpectedException action=remove>" +
           "FunctionException" +
@@ -1245,8 +1249,8 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
 
     }catch (Exception ex) {
       ex.printStackTrace();
-      getLogWriter().info("Exception : " , ex);
-      fail("Test failed after the put operation",ex);
+      LogWriterUtils.getLogWriter().info("Exception : " , ex);
+      Assert.fail("Test failed after the put operation",ex);
     }
   }
   
@@ -1300,8 +1304,8 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      getLogWriter().info("Exception : ", ex);
-      fail("Test failed after the put operation", ex);
+      LogWriterUtils.getLogWriter().info("Exception : ", ex);
+      Assert.fail("Test failed after the put operation", ex);
     }
     
     try {
@@ -1320,8 +1324,8 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      getLogWriter().info("Exception : ", ex);
-      fail("Test failed after the put operation", ex);
+      LogWriterUtils.getLogWriter().info("Exception : ", ex);
+      Assert.fail("Test failed after the put operation", ex);
     }
   }
   
@@ -1382,8 +1386,8 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
 
     }catch (Exception ex) {
       ex.printStackTrace();
-      getLogWriter().info("Exception : " , ex);
-      fail("Test failed after the put operation",ex);
+      LogWriterUtils.getLogWriter().info("Exception : " , ex);
+      Assert.fail("Test failed after the put operation",ex);
     }
     
     Region region2 = cache.getRegion(PartitionedRegionName+"2");
@@ -1454,7 +1458,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      fail("This is not expected Exception", ex);
+      Assert.fail("This is not expected Exception", ex);
     }
   }
   
@@ -1494,7 +1498,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       });
     }
     catch (Exception expected) {
-      getLogWriter().fine("Exception occured : " + expected.getMessage());
+      LogWriterUtils.getLogWriter().fine("Exception occured : " + expected.getMessage());
       assertTrue(expected.getMessage().contains(
           "No target node found for KEY = " + testKey)
           || expected.getMessage()
@@ -1556,8 +1560,8 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
 
     }catch (Exception ex) {
       ex.printStackTrace();
-      getLogWriter().info("Exception : " , ex);
-      fail("Test failed after the put operation",ex);
+      LogWriterUtils.getLogWriter().info("Exception : " , ex);
+      Assert.fail("Test failed after the put operation",ex);
     }
   }
   
@@ -1612,7 +1616,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       });
     }
     catch (Exception expected) {
-      getLogWriter().fine("Exception occured : " + expected.getMessage());
+      LogWriterUtils.getLogWriter().fine("Exception occured : " + expected.getMessage());
       assertTrue(expected.getCause().getMessage().contains(
           "Could not create an instance of  com.gemstone.gemfire.internal.cache.execute.PRClientServerRegionFunctionExecutionDUnitTest$UnDeserializable"));
     } finally {
@@ -1633,11 +1637,6 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
   }
   
-  @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-  }
-
   /**
    * Attempt to do a client server function execution with an arg that fail deserialization
    * on the server. The client should see an exception instead of a hang if bug 43430 is fixed.

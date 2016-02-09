@@ -18,6 +18,7 @@ package com.gemstone.gemfire.test.dunit.tests;
 
 import java.util.Properties;
 
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DUnitEnv;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
@@ -117,14 +118,14 @@ public class BasicDUnitTest extends DistributedTestCase {
     ai.join();
     // TODO shouldn't we call fail() here?
     if (ai.exceptionOccurred()) {
-      fail("remoteBind failed", ai.getException());
+      Assert.fail("remoteBind failed", ai.getException());
     }
 
     ai = vm.invokeAsync(this.getClass(), "remoteValidateBind",
                         new Object[] {name, value });
     ai.join();
     if (ai.exceptionOccurred()) {
-      fail("remoteValidateBind failed", ai.getException());
+      Assert.fail("remoteValidateBind failed", ai.getException());
     }
   }
 

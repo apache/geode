@@ -49,10 +49,6 @@ public class LocalProcessLauncherDUnitTest extends DistributedTestCase {
     new File(getClass().getSimpleName()).mkdir();
   }
   
-  @Override
-  public void tearDown2() throws Exception {
-  }
-  
   public void testExistingPidFileThrows() throws Exception {
     final File pidFile = new File(getClass().getSimpleName() 
         + File.separator + "testExistingPidFileThrows.pid");

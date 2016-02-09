@@ -36,8 +36,11 @@ import com.gemstone.gemfire.management.RegionMXBean;
 
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing remote Cluster
@@ -54,11 +57,6 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
 
   public TestRemoteClusterDUnitTest(String name) throws Exception {
     super(name);
-  }
-
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-
   }
 
   public void testMBeanCallback() throws Exception {
@@ -87,14 +85,14 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
         true, 100, 300, false, false, null, true });
 
     puneSender.invoke(WANTestBase.class, "createPartitionedRegion",
-        new Object[] { testName + "_PR", "pn", 1, 100, false });
+        new Object[] { getTestMethodName() + "_PR", "pn", 1, 100, false });
     managing.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "pn", 1, 100, false });
+        getTestMethodName() + "_PR", "pn", 1, 100, false });
 
     nyReceiver.invoke(WANTestBase.class, "createReceiver",
         new Object[] { nyPort });
     nyReceiver.invoke(WANTestBase.class, "createPartitionedRegion",
-        new Object[] { testName + "_PR", null, 1, 100, false });
+        new Object[] { getTestMethodName() + "_PR", null, 1, 100, false });
 
     puneSender.invoke(WANTestBase.class, "startSender", new Object[] { "pn" });
     managing.invoke(WANTestBase.class, "startSender", new Object[] { "pn" });
@@ -105,8 +103,8 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
     managing.invoke(WANTestBase.class, "waitForSenderRunningState",
         new Object[] { "pn" });
 
-    checkSenderMBean(puneSender, testName + "_PR");
-    checkSenderMBean(managing, testName + "_PR");
+    checkSenderMBean(puneSender, getTestMethodName() + "_PR");
+    checkSenderMBean(managing, getTestMethodName() + "_PR");
 
     checkReceiverMBean(nyReceiver);
 
@@ -159,14 +157,14 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
               return "wait for getDistributedSystemMXBean to complete and get results";
             }
           };
-          waitForCriterion(waitCriteria2, 2 * 60 * 1000, 5000, true);
+          Wait.waitForCriterion(waitCriteria2, 2 * 60 * 1000, 5000, true);
           ManagementService service = ManagementService
               .getManagementService(cache);
           final DistributedSystemMXBean dsBean = service
               .getDistributedSystemMXBean();
           assertNotNull(dsBean);
           Map<String, Boolean> dsMap = dsBean.viewRemoteClusterStatus();
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "Ds Map is: " + dsMap.size());
           assertNotNull(dsMap);
           assertEquals(true, dsMap.size() > 0 ? true : false);

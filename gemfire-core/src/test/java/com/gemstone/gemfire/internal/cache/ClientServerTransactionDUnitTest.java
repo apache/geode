@@ -16,8 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,16 +32,38 @@ import java.util.concurrent.TimeUnit;
 import javax.naming.Context;
 import javax.transaction.UserTransaction;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.*;
-import org.junit.Ignore;
-
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.CacheLoaderException;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.CacheWriterException;
+import com.gemstone.gemfire.cache.CommitConflictException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.InterestPolicy;
+import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Region.Entry;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.SubscriptionAttributes;
+import com.gemstone.gemfire.cache.TransactionDataNodeHasDepartedException;
+import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
+import com.gemstone.gemfire.cache.TransactionEvent;
+import com.gemstone.gemfire.cache.TransactionException;
+import com.gemstone.gemfire.cache.TransactionId;
+import com.gemstone.gemfire.cache.TransactionInDoubtException;
+import com.gemstone.gemfire.cache.TransactionWriter;
+import com.gemstone.gemfire.cache.TransactionWriterException;
+import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.execute.Execution;
@@ -65,11 +88,13 @@ import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.internal.cache.execute.util.CommitFunction;
 import com.gemstone.gemfire.internal.cache.execute.util.RollbackFunction;
 import com.gemstone.gemfire.internal.cache.tx.ClientTXStateStub;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests the basic client-server transaction functionality
@@ -88,7 +113,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   
   public void setUp() throws Exception {
     super.setUp();
-    addExpectedException("java.net.SocketException");
+    IgnoredException.addIgnoredException("java.net.SocketException");
   }
 
   private Integer createRegionsAndStartServer(VM vm, boolean accessor) {
@@ -338,10 +363,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       public Object call() throws Exception {
         final TXManagerImpl txmgr = getGemfireCache().getTxManager();
         try {
-          waitForCriterion(new WaitCriterion() {
+          Wait.waitForCriterion(new WaitCriterion() {
             public boolean done() {
               Set states = txmgr.getTransactionsForClient((InternalDistributedMember)myId);
-              getLogWriter().info("found " + states.size() + " tx states for " + myId);
+              com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("found " + states.size() + " tx states for " + myId);
               return states.isEmpty();
             }
             public String description() {
@@ -398,17 +423,17 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertEquals(initSize, pr.size());
         assertEquals(initSize, r.size());
 
-        getLogWriter().info("Looking up transaction manager");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Looking up transaction manager");
         TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
         Context ctx = getCache().getJNDIContext();
         UserTransaction utx = (UserTransaction)ctx.lookup("java:/UserTransaction");
-        getLogWriter().info("starting transaction");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("starting transaction");
         if (useJTA) {
           utx.begin();
         } else {
           mgr.begin();
         }
-        getLogWriter().info("done starting transaction");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("done starting transaction");
         for (int i = 0; i < MAX_ENTRIES; i++) {
           CustId custId = new CustId(i);
           Customer cust = new Customer("name"+suffix+i, "address"+suffix+i);
@@ -420,10 +445,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           Customer cust = new Customer("name"+suffix+i, "address"+suffix+i);
           assertEquals(cust, r.get(custId));
           assertEquals(cust, pr.get(custId));
-          getLogWriter().info("SWAP:get:"+r.get(custId));
-          getLogWriter().info("SWAP:get:"+pr.get(custId));
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("SWAP:get:"+r.get(custId));
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("SWAP:get:"+pr.get(custId));
         }
-        getLogWriter().info("suspending transaction");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("suspending transaction");
         if (!useJTA) {
           TXStateProxy tx = mgr.internalSuspend();
           if (prePopulateData) {
@@ -438,7 +463,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             assertNull(r.get(new CustId(i)));
             assertNull(pr.get(new CustId(i)));
           }
-          getLogWriter().info("resuming transaction");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("resuming transaction");
           mgr.resume(tx);
         }
         assertEquals(
@@ -447,13 +472,13 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertEquals(
             "pr sized should be " + MAX_ENTRIES + " but it is:" + pr.size(),
             MAX_ENTRIES, pr.size());
-        getLogWriter().info("committing transaction");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("committing transaction");
         if (useJTA) {
           utx.commit();
         } else {
           getCache().getCacheTransactionManager().commit();
         }
-        getLogWriter().info("done committing transaction");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("done committing transaction");
         assertEquals(
             "r sized should be " + MAX_ENTRIES + " but it is:" + r.size(),
             MAX_ENTRIES, r.size());
@@ -548,7 +573,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             return "waiting for hosted tx in progress to terminate";
           }
         };
-        waitForCriterion(w, 10000, 200, true);
+        Wait.waitForCriterion(w, 10000, 200, true);
         return null;
       }
     });
@@ -683,7 +708,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         Order order = (orderRegion.getAll(keys)).get(orderId);
         assertNotNull(order);
         mgr.rollback();
-        getLogWriter().info("entry for " + orderId + " = " + orderRegion.getEntry(orderId));
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("entry for " + orderId + " = " + orderRegion.getEntry(orderId));
         assertNull(orderRegion.getEntry(orderId));
         return null;
       }
@@ -970,7 +995,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 //	        Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
 //	        Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
 	        final ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-	        waitForCriterion(new WaitCriterion() {
+	        Wait.waitForCriterion(new WaitCriterion() {
                   
                   @Override
                   public boolean done() {
@@ -1405,7 +1430,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     VM server2 = host.getVM(1);
     VM client = host.getVM(2);
     
-    addExpectedException("java.net.SocketException");
+    IgnoredException.addIgnoredException("java.net.SocketException");
     
     final int port1 = createRegionsAndStartServer(server1, true);
     final int port2 = createRegionsAndStartServer(server2, false);
@@ -2665,7 +2690,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     final int port2 = createRegionsAndStartServer(server2, false);
     final int port = createRegionsAndStartServer(server1, true);
     
-    addExpectedException("ClassCastException");
+    IgnoredException.addIgnoredException("ClassCastException");
     SerializableRunnable suspectStrings = new SerializableRunnable("suspect string") {
       public void run() {
         InternalDistributedSystem.getLoggerI18n().convertToLogWriter().info(
@@ -2699,7 +2724,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
               );
 
           Region cust = getCache().getRegion(CUSTOMER);
-          getLogWriter().fine("SWAP:doing first get from client");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().fine("SWAP:doing first get from client");
           assertNull(cust.get(new CustId(0)));
           assertNull(cust.get(new CustId(1)));
           ArrayList args = new ArrayList();
@@ -2762,8 +2787,8 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     doFunctionWithFailureWork(false);
   }
   private void doFunctionWithFailureWork(final boolean commit) {
-    addExpectedException("TransactionDataNodeHasDepartedException");
-    addExpectedException("ClassCastException");
+    IgnoredException.addIgnoredException("TransactionDataNodeHasDepartedException");
+    IgnoredException.addIgnoredException("ClassCastException");
     Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
@@ -2946,7 +2971,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         };
         // tx should timeout after 1 ms but to deal with loaded machines and thread
         // scheduling latency wait for 10 seconds before reporting an error.
-        DistributedTestCase.waitForCriterion(waitForTxTimeout, 10 * 1000, 10, true);
+        Wait.waitForCriterion(waitForTxTimeout, 10 * 1000, 10, true);
         try {
           mgr.resume(txId);
           fail("expected exception not thrown");
@@ -3353,7 +3378,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
                 return "expected:"+keys+" found:"+clientListener.keys;
               }
             };
-            DistributedTestCase.waitForCriterion(wc, 30*1000, 500, true);
+            Wait.waitForCriterion(wc, 30*1000, 500, true);
           }
         }
         assertTrue(foundListener);

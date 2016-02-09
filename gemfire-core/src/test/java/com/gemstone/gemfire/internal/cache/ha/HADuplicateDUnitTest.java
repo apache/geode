@@ -40,6 +40,8 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -105,15 +107,13 @@ public class HADuplicateDUnitTest extends DistributedTestCase
     client2 = host.getVM(3);
   }
 
-  public void tearDown2() throws Exception
-  {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     client1.invoke(HADuplicateDUnitTest.class, "closeCache");
     // close server
     server1.invoke(HADuplicateDUnitTest.class, "reSetQRMslow");
     server1.invoke(HADuplicateDUnitTest.class, "closeCache");
     server2.invoke(HADuplicateDUnitTest.class, "closeCache");
-
   }
 
   public void _testDuplicate() throws Exception
@@ -160,8 +160,8 @@ public class HADuplicateDUnitTest extends DistributedTestCase
   public void testSample() throws Exception
   {
 
-    addExpectedException("IOException");
-    addExpectedException("Connection reset");
+    IgnoredException.addIgnoredException("IOException");
+    IgnoredException.addIgnoredException("Connection reset");
     createClientServerConfiguration();
     server1.invoke(new CacheSerializableRunnable("putKey") {
 
@@ -225,7 +225,7 @@ public class HADuplicateDUnitTest extends DistributedTestCase
     PORT2 = ((Integer)server2.invoke(HADuplicateDUnitTest.class,
         "createServerCache")).intValue();
     client1.invoke(HADuplicateDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) });
+        new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) });
 
   }
 

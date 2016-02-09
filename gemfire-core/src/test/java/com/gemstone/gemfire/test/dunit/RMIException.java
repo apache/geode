@@ -42,8 +42,8 @@ import com.gemstone.gemfire.GemFireException;
  * see hydra.RemoteTestModuleIF
  *
  * @author David Whitlock
- *
  */
+@SuppressWarnings("serial")
 public class RMIException extends GemFireException {
 
   /** SHADOWED FIELD that holds the cause exception (as opposed to the

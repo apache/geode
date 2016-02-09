@@ -25,6 +25,7 @@ import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -96,11 +97,11 @@ public class MiscellaneousCommandsExportLogsPart2DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForLogLevel" + dir, null, null, logLevel, false,
         false, start, end, 1);
 
-    getLogWriter().info("testExportLogsForLogLevel command=" + cmdResult);
+    LogWriterUtils.getLogWriter().info("testExportLogsForLogLevel command=" + cmdResult);
 
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      getLogWriter().info("testExportLogsForLogLevel cmdStringRsult=" + cmdStringRsult);
+      LogWriterUtils.getLogWriter().info("testExportLogsForLogLevel cmdStringRsult=" + cmdStringRsult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testExportLogsForLogLevel failed as did not get CommandResult");
@@ -128,21 +129,16 @@ public class MiscellaneousCommandsExportLogsPart2DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForLogLevelWithUPTOLOGLEVEL" + dir, null, null,
         logLevel, true, false, start, end, 1);
 
-    getLogWriter().info("testExportLogsForLogLevelWithUPTOLOGLEVEL command=" + cmdResult);
+    LogWriterUtils.getLogWriter().info("testExportLogsForLogLevelWithUPTOLOGLEVEL command=" + cmdResult);
 
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      getLogWriter().info("testExportLogsForLogLevelWithUPTOLOGLEVEL cmdStringRsult=" + cmdStringRsult);
+      LogWriterUtils.getLogWriter().info("testExportLogsForLogLevelWithUPTOLOGLEVEL cmdStringRsult=" + cmdStringRsult);
 
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testExportLogsForLogLevelWithUPTOLOGLEVEL failed as did not get CommandResult");
     }
     FileUtil.delete(new File("testExportLogsForLogLevelWithUPTOLOGLEVEL" + dir));
-  }
-
-  @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
   }
 }

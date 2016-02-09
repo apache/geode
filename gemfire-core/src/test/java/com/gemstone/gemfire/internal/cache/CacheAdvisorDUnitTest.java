@@ -40,6 +40,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -174,7 +175,7 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
     RegionAttributes attrs = fac.create();
     DistributedRegion rgn = (DistributedRegion)createRegion(rgnName, attrs);
     
-    invokeInEveryVM(new CacheSerializableRunnable("CachAdvisorTest.testNetLoadAdviceWithAttributesMutator;createRegion") {
+    Invoke.invokeInEveryVM(new CacheSerializableRunnable("CachAdvisorTest.testNetLoadAdviceWithAttributesMutator;createRegion") {
       public void run2() throws CacheException {
         AttributesFactory f = new AttributesFactory();
         f.setScope(Scope.DISTRIBUTED_ACK);
@@ -231,7 +232,7 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
     final InternalDistributedMember myMemberId = getSystem().getDistributionManager().getId();
     
     // assert that other VMs advisors have test member id 
-    invokeInEveryVM(new CacheSerializableRunnable("CacheAdvisorDUnitTest.basicTestClose;verify1") {
+    Invoke.invokeInEveryVM(new CacheSerializableRunnable("CacheAdvisorDUnitTest.basicTestClose;verify1") {
       public void run2() throws CacheException {
         DistributedRegion rgn1 = (DistributedRegion)getRootRegion();
         assertTrue(rgn1.getDistributionAdvisor().adviseGeneric().contains(myMemberId));
@@ -249,7 +250,7 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
       fail("expected op(" + op + ") to be CACHE_CLOSE, REGION_CLOSE, or REGION_LOCAL_DESTROY");
     }
     final InternalDistributedMember closedMemberId = getSystem().getDistributionManager().getId();
-    invokeInEveryVM(new CacheSerializableRunnable("CacheAdvisorDUnitTest.basicTestClose;verify") {
+    Invoke.invokeInEveryVM(new CacheSerializableRunnable("CacheAdvisorDUnitTest.basicTestClose;verify") {
       public void run2() throws CacheException {
         DistributedRegion rgn1 = (DistributedRegion)getRootRegion();
         assertTrue(!rgn1.getDistributionAdvisor().adviseGeneric().contains(closedMemberId));

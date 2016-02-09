@@ -31,6 +31,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -109,8 +110,8 @@ public class DeltaSizingDUnitTest extends CacheTestCase {
           int port2) {
         AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
         PoolFactory pf = PoolManager.createFactory();
-        pf.addServer(getServerHostName(host), port1);
-        pf.addServer(getServerHostName(host), port2);
+        pf.addServer(NetworkUtils.getServerHostName(host), port1);
+        pf.addServer(NetworkUtils.getServerHostName(host), port2);
         pf.create("pool");
         attr.setCloningEnabled(clone);
         attr.setDataPolicy(DataPolicy.EMPTY);

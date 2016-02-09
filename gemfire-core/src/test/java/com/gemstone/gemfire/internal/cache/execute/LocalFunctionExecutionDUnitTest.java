@@ -34,8 +34,11 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -96,7 +99,7 @@ public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
       assertNotNull(cache);
     }
     catch (Exception e) {
-      fail("Failed while creating the cache", e);
+      Assert.fail("Failed while creating the cache", e);
     }
   }
   
@@ -113,7 +116,7 @@ public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
     
     region = cache.createRegion(partitionedRegionName, attr.create());
     assertNotNull(region);
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "Partitioned Region " + partitionedRegionName
             + " created Successfully :" + region);
   }
@@ -126,7 +129,7 @@ public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
     assertNotNull(cache);
     region = cache.createRegion(distributedRegionName, attr.create());
     assertNotNull(region);
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "Distributed Region " + distributedRegionName
             + " created Successfully :" + region);
   }
@@ -144,7 +147,7 @@ public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
       FunctionService.registerFunction(function1);
       ResultCollector rc = FunctionService.onRegion(region).withArgs(Boolean.TRUE).execute(function1.getId());
       rc.getResult();
-      fail("Exception should occur",new Exception("Test Failed"));
+      Assert.fail("Exception should occur",new Exception("Test Failed"));
     }
     catch (Exception e) {
       assertTrue(e.getMessage().contains("I have been thrown from TestFunction"));
@@ -158,7 +161,7 @@ public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
       DistributedMember localmember = system.getDistributedMember();
       ResultCollector rc = FunctionService.onMember(system, localmember).withArgs(Boolean.TRUE).execute(function1.getId());
       rc.getResult();
-      fail("Exception should occur",new Exception("Test Failed"));
+      Assert.fail("Exception should occur",new Exception("Test Failed"));
     }
     catch (Exception e) {
       assertTrue(e.getMessage().contains("I have been thrown from TestFunction"));
@@ -166,13 +169,13 @@ public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
     }    
   }
   
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     if(cache != null) {
       cache.close();
     }
     cache = null;
-    invokeInEveryVM(new SerializableRunnable() { public void run() {
+    Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() {
       if(cache != null) {
         cache.close();
       }

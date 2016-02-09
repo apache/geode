@@ -23,9 +23,11 @@ import com.gemstone.gemfire.cache.DuplicatePrimaryPartitionException;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.partition.PartitionNotAvailableException;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.ExpectedException;
 
 /**
  * This Dunit test class have multiple tests to tests different validations of
@@ -53,10 +55,6 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();
-  }
-
   /**
    * This test validates that null partition name cannot be added in
    * FixedPartitionAttributes
@@ -77,7 +75,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       if (!((illegal.getCause() instanceof IllegalStateException) && (illegal
           .getCause().getMessage()
           .contains("Fixed partition name cannot be null")))) {
-        fail("Expected IllegalStateException ", illegal);
+        Assert.fail("Expected IllegalStateException ", illegal);
       }
     }
   }
@@ -107,7 +105,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       if (!((illegal.getCause() instanceof IllegalStateException) && (illegal
           .getCause().getMessage()
           .contains("can be added only once in FixedPartitionAttributes")))) {
-        fail("Expected IllegalStateException ", illegal);
+        Assert.fail("Expected IllegalStateException ", illegal);
       }
     }
   }
@@ -134,7 +132,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     catch (Exception illegal) {
       if (!((illegal.getCause() instanceof IllegalStateException) && (illegal
           .getCause().getMessage().contains("can not be defined for accessor")))) {
-        fail("Expected IllegalStateException ", illegal);
+        Assert.fail("Expected IllegalStateException ", illegal);
       }
     }
   }
@@ -147,7 +145,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
 
   public void testSamePartitionName_Primary_OnTwoMembers() {
-    ExpectedException ex = addExpectedException("DuplicatePrimaryPartitionException");
+    IgnoredException ex = IgnoredException.addIgnoredException("DuplicatePrimaryPartitionException");
     try {
       member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -179,7 +177,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       if (!((duplicate.getCause() instanceof DuplicatePrimaryPartitionException) && (duplicate
           .getCause().getMessage()
           .contains("can not be defined as primary on more than one node")))) {
-        fail("Expected DuplicatePrimaryPartitionException ", duplicate);
+        Assert.fail("Expected DuplicatePrimaryPartitionException ", duplicate);
       }
     } finally {
       ex.remove();
@@ -192,7 +190,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
 
   public void testSamePartitionName_DifferentNumBuckets() {
-    ExpectedException ex = addExpectedException("IllegalStateException");
+    IgnoredException ex = IgnoredException.addIgnoredException("IllegalStateException");
     try {
       member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -220,7 +218,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     catch (Exception illegal) {
       if (!((illegal.getCause() instanceof IllegalStateException) && (illegal
           .getCause().getMessage().contains("num-buckets are not same")))) {
-        fail("Expected IllegalStateException ", illegal);
+        Assert.fail("Expected IllegalStateException ", illegal);
       }
     } finally {
       ex.remove();
@@ -235,7 +233,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
 
   public void testNumberOfPartitions() {
-    ExpectedException expected = addExpectedException("IllegalStateException");
+    IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
       member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
       member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
@@ -282,7 +280,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       if (!((ex.getCause() instanceof IllegalStateException) && (ex.getCause()
           .getMessage()
           .contains("should never exceed number of redundant copies")))) {
-        fail("Expected IllegalStateException ", ex);
+        Assert.fail("Expected IllegalStateException ", ex);
       }
     } finally {
       expected.remove();
@@ -295,7 +293,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
 
   public void testNumBuckets_totalNumBuckets() {
-    ExpectedException expected = addExpectedException("IllegalStateException");
+    IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
       member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
       member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
@@ -330,7 +328,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       if (!((ex.getCause() instanceof IllegalStateException) && (ex.getCause()
           .getMessage()
           .contains("for different primary partitions should not be greater than total-num-buckets ")))) {
-        fail("Expected IllegalStateException ", ex);
+        Assert.fail("Expected IllegalStateException ", ex);
       }
     } finally {
       expected.remove();
@@ -372,7 +370,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     }
     catch (Exception ex) {
       if (!((ex.getCause() instanceof PartitionNotAvailableException))) {
-        fail("Expected PartitionNotAvailableException ", ex);
+        Assert.fail("Expected PartitionNotAvailableException ", ex);
       }
     }
   }
@@ -384,7 +382,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   public void test_DataStoreWithoutPartition_DataStoreWithPartition() {
-    ExpectedException expected = addExpectedException("IllegalStateException");
+    IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
       member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
       member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
@@ -402,7 +400,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     }
     catch (Exception ex) {
       if (!((ex.getCause() instanceof IllegalStateException))) {
-        fail("Expected IllegalStateException ", ex);
+        Assert.fail("Expected IllegalStateException ", ex);
       }
     } finally {
       expected.remove();
@@ -416,7 +414,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
 
   public void test_DataStoreWithPartition_DataStoreWithoutPartition() {
-    ExpectedException expected = addExpectedException("IllegalStateException");
+    IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
       member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -434,7 +432,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     }
     catch (Exception ex) {
       if (!((ex.getCause() instanceof IllegalStateException))) {
-        fail("Expected IllegalStateException ", ex);
+        Assert.fail("Expected IllegalStateException ", ex);
       }
     } finally {
       expected.remove();
@@ -668,7 +666,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     }
     catch (Exception ex) {
       if (!((ex.getCause() instanceof EntryNotFoundException))) {
-        fail("Expected EntryNotFoundException ", ex);
+        Assert.fail("Expected EntryNotFoundException ", ex);
       }
     }
     
@@ -727,7 +725,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     }
     catch (Exception ex) {
       if (!((ex.getCause() instanceof IllegalStateException))) {
-        fail("Expected IllegalStateException ", ex);
+        Assert.fail("Expected IllegalStateException ", ex);
       }
     }
   }
@@ -876,7 +874,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     }
     catch (Exception ex) {
       if (!((ex.getCause() instanceof IllegalStateException))) {
-        fail("Expected IllegalStateException ", ex);
+        Assert.fail("Expected IllegalStateException ", ex);
       }
     }
   }
@@ -931,7 +929,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     }
     catch (Exception ex) {
       if (!((ex.getCause() instanceof IllegalStateException))) {
-        fail("Expected IllegalStateException ", ex);
+        Assert.fail("Expected IllegalStateException ", ex);
       }
     }
   }
@@ -1208,7 +1206,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     createRegionWithPartitionAttributes("Quarter", fpaList, 3, 40, 12,
         new QuarterPartitionResolver(), null, false);
 
-    pause(1000);
+    Wait.pause(1000);
 
     member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
         new Object[] { 3, 0 });
@@ -1328,7 +1326,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
         new Object[] { 9, 3 });
 
     member4.invoke(FixedPartitioningTestBase.class, "closeCache");
-    pause(1000);
+    Wait.pause(1000);
 
     member1.invoke(FixedPartitioningTestBase.class,
         "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter1,
@@ -1438,7 +1436,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
         new Object[] { 6, 3 });
 
     member4.invoke(FixedPartitioningTestBase.class, "closeCache");
-    pause(1000);
+    Wait.pause(1000);
 
     member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarterAfterCacheClosed",
         new Object[] { 6, 6 });
@@ -1456,7 +1454,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
         new Object[] { "Quarter", fpaList, 1, 40, 12,
             new QuarterPartitionResolver(), null, false });
 
-    pause(1000);
+    Wait.pause(1000);
 
     member1.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
         new Object[] { Quarter1, true });
@@ -1543,7 +1541,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
     member4.invoke(FixedPartitioningTestBase.class, "closeCache");
     member2.invoke(FixedPartitioningTestBase.class, "closeCache");
-    pause(1000);
+    Wait.pause(1000);
 
     member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarterAfterCacheClosed",
         new Object[] { 6, 6 });
@@ -1572,7 +1570,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
         new Object[] { "Quarter", fpaList, 1, 40, 12,
             new QuarterPartitionResolver(), null, false });
-    pause(1000);
+    Wait.pause(1000);
 
     member1.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
         new Object[] { Quarter1, true });
@@ -1594,7 +1592,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     
     member4.invoke(FixedPartitioningTestBase.class, "doRebalance");
     
-    pause(2000);
+    Wait.pause(2000);
     member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
         new Object[] { 6, 3 });
     member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
@@ -1674,7 +1672,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
     member3.invoke(FixedPartitioningTestBase.class, "closeCache");
     
-    pause(1000);  
+    Wait.pause(1000);  
     
     member1.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs_Nodedown");
     member2.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs_Nodedown");
@@ -1685,7 +1683,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
         new Object[] { "Quarter", fpaList, 2, 40, 12,
             new QuarterPartitionResolver(), null, false });
     
-    pause(3000);
+    Wait.pause(3000);
     
     member1.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs_Nodeup");
     member2.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs_Nodeup");

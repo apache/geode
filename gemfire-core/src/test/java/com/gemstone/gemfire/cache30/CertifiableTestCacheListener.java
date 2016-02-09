@@ -26,8 +26,8 @@ import java.util.*;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class CertifiableTestCacheListener extends TestCacheListener implements Declarable2 {
   final public Set destroys = Collections.synchronizedSet(new HashSet());
@@ -100,7 +100,7 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
         return "Waiting for key creation: " + key;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, MAX_TIME, 200, true);
+    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
     return true;
   }
   
@@ -113,7 +113,7 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
         return "Waiting for key destroy: " + key;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, MAX_TIME, 200, true);
+    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
     return true;
   }
   
@@ -126,7 +126,7 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
         return "Waiting for key invalidate: " + key;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, MAX_TIME, 200, true);
+    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
     return true;
   }
   
@@ -139,7 +139,7 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
         return "Waiting for key update: " + key;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, MAX_TIME, 200, true);
+    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
     return true;
   }
 

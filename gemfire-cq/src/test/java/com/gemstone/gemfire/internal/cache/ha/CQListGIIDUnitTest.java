@@ -57,9 +57,10 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -174,8 +175,8 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
   /**
    * Tears down the test.
    */
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void preTearDown() throws Exception {
     serverVM0.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
     serverVM1.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
     closeCache();
@@ -332,7 +333,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
   public static void createClientCache(Integer port1, Integer port2,
       Integer port3, String rLevel, Boolean addListener) throws Exception {
     CacheServerTestUtil.disableShufflingOfEndpoints();
-    String host = DistributedTestCase.getIPLiteral();
+    String host = NetworkUtils.getIPLiteral();
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -362,7 +363,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
       cache.getQueryService();
     }
     catch (Exception cqe) {
-      fail("Failed to getCQService.", cqe);
+      Assert.fail("Failed to getCQService.", cqe);
     }
 
     AttributesFactory factory = new AttributesFactory();
@@ -377,18 +378,18 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
 
   /* Register CQs */
   public static void createCQ(String cqName, String queryStr) {
-    getLogWriter().info("### Create CQ. ###" + cqName);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
     // Get CQ Service.
     QueryService cqService = null;
     try {
       cqService = cache.getQueryService();
     }
     catch (Exception cqe) {
-      fail("Failed to getCQService.", cqe);
+      Assert.fail("Failed to getCQService.", cqe);
     }
     // Create CQ Attributes.
     CqAttributesFactory cqf = new CqAttributesFactory();
-    CqListener[] cqListeners = { new CqQueryTestListener(getLogWriter()) };
+    CqListener[] cqListeners = { new CqQueryTestListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()) };
     ((CqQueryTestListener)cqListeners[0]).cqName = cqName;
 
     cqf.initCqListeners(cqListeners);
@@ -400,7 +401,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
       assertTrue("newCq() state mismatch", cq1.getState().isStopped());
     }
     catch (Exception ex) {
-      getLogWriter().info("CqService is :" + cqService);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
       ex.printStackTrace();
       AssertionError err = new AssertionError("Failed to create CQ " + cqName
           + " . ");
@@ -410,7 +411,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
   }
 
   public static void executeCQ(String cqName, Boolean initialResults) {
-    getLogWriter().info("### DEBUG EXECUTE CQ START ####");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### DEBUG EXECUTE CQ START ####");
     // Get CQ Service.
     QueryService cqService = null;
     CqQuery cq1 = null;
@@ -420,19 +421,19 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
     try {
       cq1 = cqService.getCq(cqName);
       if (cq1 == null) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Failed to get CqQuery object for CQ name: " + cqName);
-        fail("Failed to get CQ " + cqName, new Exception("Failed to get CQ "
+        Assert.fail("Failed to get CQ " + cqName, new Exception("Failed to get CQ "
             + cqName));
       }
       else {
-        getLogWriter().info("Obtained CQ, CQ name: " + cq1.getName());
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Obtained CQ, CQ name: " + cq1.getName());
         assertTrue("newCq() state mismatch", cq1.getState().isStopped());
       }
     }
     catch (Exception ex) {
-      getLogWriter().info("CqService is :" + cqService);
-      getLogWriter().error(ex);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().error(ex);
       AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
       err.initCause(ex);
       throw err;
@@ -445,14 +446,14 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
         cqResults = cq1.executeWithInitialResults();
       }
       catch (Exception ex) {
-        getLogWriter().info("CqService is :" + cqService);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
         ex.printStackTrace();
         AssertionError err = new AssertionError("Failed to execute  CQ "
             + cqName);
         err.initCause(ex);
         throw err;
       }
-      getLogWriter().info("initial result size = " + cqResults.size());
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("initial result size = " + cqResults.size());
       assertTrue("executeWithInitialResults() state mismatch", cq1.getState()
           .isRunning());
       // if (expectedResultsSize >= 0) {
@@ -466,7 +467,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
         cq1.execute();
       }
       catch (Exception ex) {
-        getLogWriter().info("CqService is :" + cqService);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
         ex.printStackTrace();
         AssertionError err = new AssertionError("Failed to execute  CQ "
             + cqName);
@@ -483,7 +484,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
     try {
       region = cache.getRegion("root").getSubregion(regionName);
       region.getAttributesMutator().setCacheListener(
-          new CertifiableTestCacheListener(getLogWriter()));
+          new CertifiableTestCacheListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()));
     }
     catch (Exception cqe) {
       AssertionError err = new AssertionError("Failed to get Region.");
@@ -517,12 +518,12 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
     }
     catch (Exception cqe) {
       cqe.printStackTrace();
-      fail("Failed to getCQService.", cqe);
+      Assert.fail("Failed to getCQService.", cqe);
     }
 
     CqQuery cQuery = cqService.getCq(cqName);
     if (cQuery == null) {
-      fail("Failed to get CqQuery for CQ : " + cqName, new Exception(
+      Assert.fail("Failed to get CqQuery for CQ : " + cqName, new Exception(
           "Failed to get CqQuery for CQ : " + cqName));
     }
 
@@ -569,7 +570,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
       r.registerInterest("ALL_KEYS");
     }
     catch (Exception ex) {
-      fail("failed in registerInterestListAll", ex);
+      Assert.fail("failed in registerInterestListAll", ex);
     }
   }
 
@@ -582,7 +583,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
       r.registerInterest("k5");
     }
     catch (Exception ex) {
-      fail("failed while registering keys", ex);
+      Assert.fail("failed while registering keys", ex);
     }
   }
 
@@ -593,11 +594,11 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
       for (int i = 0; i < num.longValue(); i++) {
         r.put(KEY + i, new Portfolio(i + 1));
       }
-      getLogWriter().info(
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
           "### Number of Entries in Region " + rName + ": " + r.keys().size());
     }
     catch (Exception ex) {
-      fail("failed in putEntries()", ex);
+      Assert.fail("failed in putEntries()", ex);
     }
   }
 
@@ -724,7 +725,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      fail("failed in VerifyCUMCQList()" + e, e);
+      Assert.fail("failed in VerifyCUMCQList()" + e, e);
     }
   }
 

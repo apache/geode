@@ -25,8 +25,12 @@ import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Test class for testing {@link CqServiceImpl#EXECUTE_QUERY_DURING_INIT} flag
@@ -40,7 +44,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest{
 
   public void setUp() throws Exception {
     super.setUp();
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
       }
@@ -48,14 +52,13 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest{
   }
   
   @Override
-  public void tearDown2() throws Exception {
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+  protected final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;
         CqServiceProvider.MAINTAIN_KEYS = true;
       }
     });
-    super.tearDown2();
   }
   
   public void testCqExecuteWithoutQueryExecution() throws Exception {
@@ -71,7 +74,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest{
 
     final int thePort = server.invokeInt(CqQueryDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
     createClient(client, thePort, host0);
@@ -98,7 +101,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest{
         for (int i = numOfEntries+1; i <= numOfEntries*2; i++) {
           region1.put(KEY+i, new Portfolio(i));
         }
-        getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
       }
     });
     
@@ -170,7 +173,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest{
 
     final int thePort = server.invokeInt(CqQueryDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
     createClient(client, thePort, host0);
@@ -198,7 +201,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest{
         for (int i = numOfEntries+1; i <= numOfEntries*2; i++) {
           region1.put(KEY+i, new Portfolio(i));
         }
-        getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
       }
     });
     
@@ -265,13 +268,13 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest{
 
     final int port1 = server1.invokeInt(CqQueryDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
 
     createServer(server2, ports[0]);
     final int thePort2 = server2.invokeInt(CqQueryDUnitTest.class,
         "getCacheServerPort");
-    pause(8 * 1000);
+    Wait.pause(8 * 1000);
 
     // Create client
     createClientWith2Pools(client, new int[] { port1 }, new int[] { thePort2 },
@@ -284,7 +287,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest{
     createCQ(client, "testCQAllServersLeave_" + 12, cqs[12], true);
     executeCQ(client, "testCQAllServersLeave_" + 12, false, null);
 
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
     waitForCqsConnected(client, "testCQAllServersLeave_11", 1);
     waitForCqsConnected(client, "testCQAllServersLeave_12", 1);
     // CREATE.

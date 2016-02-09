@@ -54,11 +54,14 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.management.membership.ClientMembership;
 import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
 import com.gemstone.gemfire.management.membership.ClientMembershipListener;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests the ClientMembership API including ClientMembershipListener.
@@ -83,8 +86,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     super.setUp();
   }
   
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
     InternalClientMembership.unregisterAllListeners();
   }
 
@@ -104,7 +107,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
   }
   
   protected int getAcceptsInProgress() {
@@ -119,9 +122,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       never arrives. 
    */
   public void testConnectionTimeout() throws Exception {
-    addExpectedException("failed accepting client connection");
+    IgnoredException.addIgnoredException("failed accepting client connection");
     final Host host = Host.getHost(0);
-    final String hostName = getServerHostName(host);
+    final String hostName = NetworkUtils.getServerHostName(host);
     final VM vm0 = host.getVM(0);
     System.setProperty(AcceptorImpl.ACCEPT_TIMEOUT_PROPERTY_NAME, "1000");
     try {
@@ -132,7 +135,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       SerializableRunnable createMeanSocket = new CacheSerializableRunnable("Connect to server with socket") {
         public void run2() throws CacheException {
           getCache(); // create a cache so we have stats
-          getLogWriter().info("connecting to cache server with socket");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("connecting to cache server with socket");
           try {
             InetAddress addr = InetAddress.getByName(hostName);
             meanSocket = new Socket(addr, port);
@@ -144,7 +147,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       };
       SerializableRunnable closeMeanSocket = new CacheSerializableRunnable("close mean socket") {
         public void run2() throws CacheException {
-          getLogWriter().info("closing mean socket");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("closing mean socket");
           try {
             meanSocket.close();
           }
@@ -155,28 +158,28 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
       assertEquals(0, getAcceptsInProgress());
       
-      getLogWriter().info("creating mean socket");
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating mean socket");
       vm0.invoke(createMeanSocket);
       try {
-        getLogWriter().info("waiting to see it connect on server");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("waiting to see it connect on server");
         waitForAcceptsInProgressToBe(1);
       } finally {
-        getLogWriter().info("closing mean socket");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("closing mean socket");
         vm0.invoke(closeMeanSocket);
       }
-      getLogWriter().info("waiting to see accept to go away on server");
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("waiting to see accept to go away on server");
       waitForAcceptsInProgressToBe(0);
 
       // now try it without a close. Server should timeout the mean connect
-      getLogWriter().info("creating mean socket 2");
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating mean socket 2");
       vm0.invoke(createMeanSocket);
       try {
-        getLogWriter().info("waiting to see it connect on server 2");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("waiting to see it connect on server 2");
         waitForAcceptsInProgressToBe(1);
-        getLogWriter().info("waiting to see accept to go away on server without us closing");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("waiting to see accept to go away on server without us closing");
         waitForAcceptsInProgressToBe(0);
       } finally {
-        getLogWriter().info("closing mean socket 2");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("closing mean socket 2");
         vm0.invoke(closeMeanSocket);
       }
 
@@ -734,7 +737,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
    */
   public void testClientMembershipEventsInClient() throws Exception {
     getSystem();
-    addExpectedException("IOException");
+    IgnoredException.addIgnoredException("IOException");
     final boolean[] fired = new boolean[3];
     final DistributedMember[] member = new DistributedMember[3];
     final String[] memberId = new String[3];
@@ -743,7 +746,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     // create and register ClientMembershipListener in controller vm...
     ClientMembershipListener listener = new ClientMembershipListener() {
       public synchronized void memberJoined(ClientMembershipEvent event) {
-        getLogWriter().info("[testClientMembershipEventsInClient] memberJoined: " + event);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] memberJoined: " + event);
         fired[JOINED] = true;
         member[JOINED] = event.getMember();
         memberId[JOINED] = event.getMemberId();
@@ -751,11 +754,11 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         notifyAll();
       }
       public synchronized void memberLeft(ClientMembershipEvent event) {
-        getLogWriter().info("[testClientMembershipEventsInClient] memberLeft: " + event);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] memberLeft: " + event);
 //        fail("Please update testClientMembershipEventsInClient to handle memberLeft for BridgeServer.");
       }
       public synchronized void memberCrashed(ClientMembershipEvent event) {
-        getLogWriter().info("[testClientMembershipEventsInClient] memberCrashed: " + event);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] memberCrashed: " + event);
         fired[CRASHED] = true;
         member[CRASHED] = event.getMember();
         memberId[CRASHED] = event.getMemberId();
@@ -773,7 +776,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create BridgeServer") {
       public void run2() throws CacheException {
         try {
-          getLogWriter().info("[testClientMembershipEventsInClient] Create BridgeServer");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] Create BridgeServer");
           getSystem();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -800,9 +803,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     String serverMemberId = (String) vm0.invoke(ClientMembershipDUnitTest.class,
                                                 "getMemberId");
 
-    getLogWriter().info("[testClientMembershipEventsInClient] ports[0]=" + ports[0]);
-    getLogWriter().info("[testClientMembershipEventsInClient] serverMember=" + serverMember);
-    getLogWriter().info("[testClientMembershipEventsInClient] serverMemberId=" + serverMemberId);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] ports[0]=" + ports[0]);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] serverMember=" + serverMember);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] serverMemberId=" + serverMemberId);
 
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
@@ -818,7 +821,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertFalse(isClient[CRASHED]);
     
     // sanity check...
-    getLogWriter().info("[testClientMembershipEventsInClient] sanity check");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] sanity check");
     DistributedMember test = new TestDistributedMember("test");
     InternalClientMembership.notifyJoined(test, SERVER);
     synchronized(listener) {
@@ -842,7 +845,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     resetArraysForTesting(fired, member, memberId, isClient);
     
     // create bridge client in controller vm...
-    getLogWriter().info("[testClientMembershipEventsInClient] create bridge client");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] create bridge client");
     Properties config = new Properties();
     config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     config.setProperty(DistributionConfig.LOCATORS_NAME, "");
@@ -852,12 +855,12 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       getCache();
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(Scope.LOCAL);
-      ClientServerTestCase.configureConnectionPool(factory, getServerHostName(Host.getHost(0)), ports, true, -1, -1, null);
+      ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(Host.getHost(0)), ports, true, -1, -1, null);
       createRegion(name, factory.create());
       assertNotNull(getRootRegion().getSubregion(name));
     }
     catch (CacheException ex) {
-      fail("While creating Region on Edge", ex);
+      Assert.fail("While creating Region on Edge", ex);
     }
     synchronized(listener) {
       if (!fired[JOINED] && !fired[CRASHED]) {
@@ -865,7 +868,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       }
     }
     
-    getLogWriter().info("[testClientMembershipEventsInClient] assert client detected server join");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] assert client detected server join");
     
     // first check the getCurrentServers() result
     ClientCache clientCache = (ClientCache)getCache();
@@ -894,7 +897,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     vm0.invoke(new SerializableRunnable("Stop BridgeServer") {
       public void run() {
-        getLogWriter().info("[testClientMembershipEventsInClient] Stop BridgeServer");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] Stop BridgeServer");
         stopBridgeServers(getCache());
       }
     });
@@ -904,7 +907,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       }
     }
     
-    getLogWriter().info("[testClientMembershipEventsInClient] assert client detected server departure");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] assert client detected server departure");
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
     assertNull(memberId[JOINED]);
@@ -925,7 +928,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     vm0.invoke(new CacheSerializableRunnable("Recreate BridgeServer") {
       public void run2() throws CacheException {
         try {
-          getLogWriter().info("[testClientMembershipEventsInClient] restarting BridgeServer");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] restarting BridgeServer");
           startBridgeServer(ports[0]);
         }
         catch(IOException e) {
@@ -940,7 +943,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       }
     }
     
-    getLogWriter().info("[testClientMembershipEventsInClient] assert client detected server recovery");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] assert client detected server recovery");
     assertTrue(fired[JOINED]);
     assertNotNull(member[JOINED]);
     assertNotNull(memberId[JOINED]);
@@ -969,7 +972,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     // create and register ClientMembershipListener in controller vm...
     ClientMembershipListener listener = new ClientMembershipListener() {
       public synchronized void memberJoined(ClientMembershipEvent event) {
-        getLogWriter().info("[testClientMembershipEventsInServer] memberJoined: " + event);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] memberJoined: " + event);
         fired[JOINED] = true;
         member[JOINED] = event.getMember();
         memberId[JOINED] = event.getMemberId();
@@ -978,7 +981,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         assertFalse(fired[LEFT] || fired[CRASHED]);
       }
       public synchronized void memberLeft(ClientMembershipEvent event) {
-        getLogWriter().info("[testClientMembershipEventsInServer] memberLeft: " + event);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] memberLeft: " + event);
         fired[LEFT] = true;
         member[LEFT] = event.getMember();
         memberId[LEFT] = event.getMemberId();
@@ -987,7 +990,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         assertFalse(fired[JOINED] || fired[CRASHED]);
       }
       public synchronized void memberCrashed(ClientMembershipEvent event) {
-        getLogWriter().info("[testClientMembershipEventsInServer] memberCrashed: " + event);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] memberCrashed: " + event);
         fired[CRASHED] = true;
         member[CRASHED] = event.getMember();
         memberId[CRASHED] = event.getMemberId();
@@ -1003,7 +1006,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     final int[] ports = new int[1];
 
     // create BridgeServer in controller vm...
-    getLogWriter().info("[testClientMembershipEventsInServer] Create BridgeServer");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] Create BridgeServer");
     getSystem();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -1016,9 +1019,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     String serverMemberId = getMemberId();
     DistributedMember serverMember = getDistributedMember();
 
-    getLogWriter().info("[testClientMembershipEventsInServer] ports[0]=" + ports[0]);
-    getLogWriter().info("[testClientMembershipEventsInServer] serverMemberId=" + serverMemberId);
-    getLogWriter().info("[testClientMembershipEventsInServer] serverMember=" + serverMember);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] ports[0]=" + ports[0]);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] serverMemberId=" + serverMemberId);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] serverMember=" + serverMember);
 
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
@@ -1034,7 +1037,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertFalse(isClient[CRASHED]);
     
     // sanity check...
-    getLogWriter().info("[testClientMembershipEventsInServer] sanity check");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] sanity check");
     DistributedMember test = new TestDistributedMember("test");
     InternalClientMembership.notifyJoined(test, CLIENT);
     synchronized(listener) {
@@ -1060,14 +1063,14 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     SerializableRunnable createConnectionPool =
     new CacheSerializableRunnable("Create connectionPool") {
       public void run2() throws CacheException {
-        getLogWriter().info("[testClientMembershipEventsInServer] create bridge client");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] create bridge client");
         Properties config = new Properties();
         config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
         config.setProperty(DistributionConfig.LOCATORS_NAME, "");
         getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, 2, null);
+        ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(host), ports, true, -1, 2, null);
         createRegion(name, factory.create());
         assertNotNull(getRootRegion().getSubregion(name));
       }
@@ -1086,7 +1089,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       }
     }
     
-    getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client join");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client join");
     assertTrue(fired[JOINED]);
     assertEquals(member[JOINED] + " should equal " + clientMember,
       clientMember, member[JOINED]);
@@ -1107,7 +1110,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     
     vm0.invoke(new SerializableRunnable("Stop bridge client") {
       public void run() {
-        getLogWriter().info("[testClientMembershipEventsInServer] Stop bridge client");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] Stop bridge client");
         getRootRegion().getSubregion(name).close();
         Map m = PoolManager.getAll();
         Iterator mit = m.values().iterator();
@@ -1124,7 +1127,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       }
     }
     
-    getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client left");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client left");
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
     assertNull(memberId[JOINED]);
@@ -1150,7 +1153,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       }
     }
     
-    getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client re-join");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client re-join");
     assertTrue(fired[JOINED]);
     assertEquals(clientMember, member[JOINED]);
     assertEquals(clientMemberId, memberId[JOINED]);
@@ -1171,7 +1174,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     try {
       vm0.invoke(new SerializableRunnable("Stop bridge client") {
         public void run() {
-          getLogWriter().info("[testClientMembershipEventsInServer] Stop bridge client");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] Stop bridge client");
           getRootRegion().getSubregion(name).close();
           Map m = PoolManager.getAll();
           Iterator mit = m.values().iterator();
@@ -1188,7 +1191,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         }
       }
       
-      getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client crashed");
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client crashed");
       assertFalse(fired[JOINED]);
       assertNull(member[JOINED]);
       assertNull(memberId[JOINED]);
@@ -1217,7 +1220,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
    * timeout.
    */
   private void pauseForClientToJoin() {
-    pause(2000);
+    Wait.pause(2000);
   }
   
   /** 
@@ -1308,10 +1311,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     final String name = this.getUniqueName();
     final int[] ports = new int[1];
     
-    addExpectedException("ConnectException");
+    IgnoredException.addIgnoredException("ConnectException");
 
     // create BridgeServer in controller vm...
-    getLogWriter().info("[testGetConnectedClients] Create BridgeServer");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] Create BridgeServer");
     getSystem();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -1323,14 +1326,14 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertTrue(ports[0] != 0);
     String serverMemberId = getMemberId();
 
-    getLogWriter().info("[testGetConnectedClients] ports[0]=" + ports[0]);
-    getLogWriter().info("[testGetConnectedClients] serverMemberId=" + serverMemberId);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] ports[0]=" + ports[0]);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] serverMemberId=" + serverMemberId);
 
     final Host host = Host.getHost(0);
     SerializableRunnable createPool =
     new CacheSerializableRunnable("Create connection pool") {
       public void run2() throws CacheException {
-        getLogWriter().info("[testGetConnectedClients] create bridge client");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] create bridge client");
         Properties config = new Properties();
         config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
         config.setProperty(DistributionConfig.LOCATORS_NAME, "");
@@ -1340,7 +1343,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        Pool p = ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, -1, null);
+        Pool p = ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(host), ports, true, -1, -1, null);
         createRegion(name, factory.create());
         assertNotNull(getRootRegion().getSubregion(name));
         assertTrue(p.getServers().size() > 0);
@@ -1376,7 +1379,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           return true;
         }
       };
-      waitForCriterion(wc, 30000, 100, false);
+      Wait.waitForCriterion(wc, 30000, 100, false);
     }
     
     Map connectedClients = InternalClientMembership.getConnectedClients(false);
@@ -1384,10 +1387,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(clientMemberIds.size(), connectedClients.size());
     for (Iterator iter = connectedClients.keySet().iterator(); iter.hasNext();) {
       String connectedClient = (String)iter.next();
-      getLogWriter().info("[testGetConnectedClients] checking for client " + connectedClient);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] checking for client " + connectedClient);
       assertTrue(clientMemberIds.contains(connectedClient));
       Object[] result = (Object[])connectedClients.get(connectedClient);
-      getLogWriter().info("[testGetConnectedClients] result: " + 
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] result: " + 
                           (result==null? "none"
                               : String.valueOf(result[0])+"; connections="+result[1]));
     }
@@ -1408,7 +1411,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       vm.invoke(new CacheSerializableRunnable("Create bridge server") {
         public void run2() throws CacheException {
           // create BridgeServer in controller vm...
-          getLogWriter().info("[testGetConnectedServers] Create BridgeServer");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedServers] Create BridgeServer");
           getSystem();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -1421,15 +1424,15 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
             testGetConnectedServers_port = startBridgeServer(0);
           }
           catch (IOException e) {
-            getLogWriter().error("startBridgeServer threw IOException", e);
+            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().error("startBridgeServer threw IOException", e);
             fail("startBridgeServer threw IOException " + e.getMessage());
           }
           
           assertTrue(testGetConnectedServers_port != 0);
       
-          getLogWriter().info("[testGetConnectedServers] port=" + 
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedServers] port=" + 
             ports[whichVM]);
-          getLogWriter().info("[testGetConnectedServers] serverMemberId=" + 
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedServers] serverMemberId=" + 
             getDistributedMember());
         }
       });
@@ -1438,7 +1441,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       assertTrue(ports[whichVM] != 0);
     }
     
-    getLogWriter().info("[testGetConnectedServers] create bridge client");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedServers] create bridge client");
     Properties config = new Properties();
     config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     config.setProperty(DistributionConfig.LOCATORS_NAME, "");
@@ -1449,10 +1452,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     factory.setScope(Scope.LOCAL);
 
     for (int i = 0; i < ports.length; i++) {
-      getLogWriter().info("[testGetConnectedServers] creating connectionpool for " + 
-        getServerHostName(host) + " " + ports[i]);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedServers] creating connectionpool for " + 
+        NetworkUtils.getServerHostName(host) + " " + ports[i]);
       int[] thisServerPorts = new int[] { ports[i] };
-      ClientServerTestCase.configureConnectionPoolWithName(factory, getServerHostName(host), thisServerPorts, false, -1, -1, null,"pooly"+i);
+      ClientServerTestCase.configureConnectionPoolWithName(factory, NetworkUtils.getServerHostName(host), thisServerPorts, false, -1, -1, null,"pooly"+i);
       Region region = createRegion(name+"_"+i, factory.create());
       assertNotNull(getRootRegion().getSubregion(name+"_"+i));
       region.get("KEY-1");
@@ -1478,7 +1481,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           return true;
         }
       };
-      waitForCriterion(wc, 60000, 100, false);
+      Wait.waitForCriterion(wc, 60000, 100, false);
     }
 
     {
@@ -1491,7 +1494,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(host.getVMCount(), connectedServers.size());
     for (Iterator iter = connectedServers.keySet().iterator(); iter.hasNext();) {
       String connectedServer = (String) iter.next();
-      getLogWriter().info("[testGetConnectedServers]  value for connectedServer: " + 
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedServers]  value for connectedServer: " + 
                           connectedServers.get(connectedServer));
     }
   }
@@ -1516,7 +1519,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       vm.invoke(new CacheSerializableRunnable("Create bridge server") {
         public void run2() throws CacheException {
           // create BridgeServer in controller vm...
-          getLogWriter().info("[testGetNotifiedClients] Create BridgeServer");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetNotifiedClients] Create BridgeServer");
           getSystem();
           AttributesFactory factory = new AttributesFactory();
           Region region = createRegion(name, factory.create());
@@ -1528,15 +1531,15 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
             testGetNotifiedClients_port = startBridgeServer(0);
           }
           catch (IOException e) {
-            getLogWriter().error("startBridgeServer threw IOException", e);
+            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().error("startBridgeServer threw IOException", e);
             fail("startBridgeServer threw IOException " + e.getMessage());
           }
           
           assertTrue(testGetNotifiedClients_port != 0);
       
-          getLogWriter().info("[testGetNotifiedClients] port=" + 
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetNotifiedClients] port=" + 
             ports[whichVM]);
-          getLogWriter().info("[testGetNotifiedClients] serverMemberId=" + 
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetNotifiedClients] serverMemberId=" + 
             getMemberId());
         }
       });
@@ -1545,7 +1548,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       assertTrue(ports[whichVM] != 0);
     }
     
-    getLogWriter().info("[testGetNotifiedClients] create bridge client");
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetNotifiedClients] create bridge client");
     Properties config = new Properties();
     config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     config.setProperty(DistributionConfig.LOCATORS_NAME, "");
@@ -1555,8 +1558,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
 
-    getLogWriter().info("[testGetNotifiedClients] creating connection pool");
-    ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, -1, null);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetNotifiedClients] creating connection pool");
+    ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(host), ports, true, -1, -1, null);
     Region region = createRegion(name, factory.create());
     assertNotNull(getRootRegion().getSubregion(name));
     region.registerInterest("KEY-1");

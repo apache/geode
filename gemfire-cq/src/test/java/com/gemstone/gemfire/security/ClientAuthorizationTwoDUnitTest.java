@@ -18,6 +18,7 @@ package com.gemstone.gemfire.security;
 
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 /**
  * Tests for authorization from client to server. This tests for authorization
@@ -64,11 +65,11 @@ public class ClientAuthorizationTwoDUnitTest extends
   // Region: Tests
 
   public void testAllOpsWithFailover2() {
-    addExpectedException("Read timed out");
-    addExpectedException("Connection reset");
-    addExpectedException("SocketTimeoutException");
-    addExpectedException("ServerConnectivityException");
-    addExpectedException("Socket Closed");
+    IgnoredException.addIgnoredException("Read timed out");
+    IgnoredException.addIgnoredException("Connection reset");
+    IgnoredException.addIgnoredException("SocketTimeoutException");
+    IgnoredException.addIgnoredException("ServerConnectivityException");
+    IgnoredException.addIgnoredException("Socket Closed");
 
     OperationWithAction[] allOps = {
         // Register interest in all keys using list
@@ -230,9 +231,7 @@ public class ClientAuthorizationTwoDUnitTest extends
   // End Region: Tests
 
   @Override
-  public void tearDown2() throws Exception {
-
-    super.tearDown2();
+  protected final void preTearDown() throws Exception {
     // close the clients first
     client1.invoke(SecurityTestUtil.class, "closeCache");
     client2.invoke(SecurityTestUtil.class, "closeCache");
@@ -241,5 +240,4 @@ public class ClientAuthorizationTwoDUnitTest extends
     server1.invoke(SecurityTestUtil.class, "closeCache");
     server2.invoke(SecurityTestUtil.class, "closeCache");
   }
-
 }

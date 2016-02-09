@@ -34,9 +34,13 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * The Region Destroy Operation from Cache Client does not pass the Client side
@@ -104,10 +108,10 @@ public class Bug36269DUnitTest extends DistributedTestCase
   {
     try {
       createClientCache();
-      acquireConnectionsAndDestroyRegion(getServerHostName(Host.getHost(0)));
+      acquireConnectionsAndDestroyRegion(NetworkUtils.getServerHostName(Host.getHost(0)));
       server1.invoke(Bug36269DUnitTest.class, "verifyRegionDestroy");
       server2.invoke(Bug36269DUnitTest.class, "verifyRegionDestroy");
-      pause(5000);
+      Wait.pause(5000);
       verifyNoRegionDestroyOnOriginator();
     }
     catch (Exception ex) {
@@ -124,7 +128,7 @@ public class Bug36269DUnitTest extends DistributedTestCase
       srp.destroyRegionOnForTestsOnly(desCon, new EventID(new byte[] {1}, 1, 1), null);
     }
     catch (Exception ex) {
-      fail("while setting acquireConnections", ex);
+      Assert.fail("while setting acquireConnections", ex);
     }
   }
 
@@ -137,7 +141,7 @@ public class Bug36269DUnitTest extends DistributedTestCase
     new Bug36269DUnitTest("temp").createCache(props);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     PoolImpl p;
-    String host = getServerHostName(Host.getHost(0));
+    String host = NetworkUtils.getServerHostName(Host.getHost(0));
     try {
       p = (PoolImpl)PoolManager.createFactory()
         .addServer(host, PORT1)
@@ -184,7 +188,7 @@ public class Bug36269DUnitTest extends DistributedTestCase
       assertNotNull(r);
     }
     catch (Exception ex) {
-      fail("failed while verifyNoRegionDestroyOnOriginator()", ex);
+      Assert.fail("failed while verifyNoRegionDestroyOnOriginator()", ex);
     }
   }
 
@@ -199,10 +203,10 @@ public class Bug36269DUnitTest extends DistributedTestCase
           return null;
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 40 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 40 * 1000, 200, true);
     }
     catch (Exception ex) {
-      fail("failed while verifyRegionDestroy", ex);
+      Assert.fail("failed while verifyRegionDestroy", ex);
     }
   }
 
@@ -214,13 +218,11 @@ public class Bug36269DUnitTest extends DistributedTestCase
     }
   }
 
-  public void tearDown2() throws Exception
-  {
+  @Override
+  protected final void preTearDown() throws Exception {
     closeCache();
     // close server
     server1.invoke(Bug36269DUnitTest.class, "closeCache");
     server2.invoke(Bug36269DUnitTest.class, "closeCache");
-
   }
-
 }

@@ -21,6 +21,9 @@ import java.util.Properties;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
@@ -36,7 +39,7 @@ public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
   }
 
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override
@@ -46,12 +49,8 @@ public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
         }
       }
     };
-    invokeInEveryVM(checkOrphans);
-    try {
-      checkOrphans.run();
-    } finally {
-      super.tearDown2();
-    }
+    Invoke.invokeInEveryVM(checkOrphans);
+    checkOrphans.run();
   }
 
   @Override
@@ -71,14 +70,14 @@ public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
       ds = getSystem(getDistributedSystemProperties());
       cache = CacheFactory.create(ds);
       assertNotNull(cache);
-      getLogWriter().info("cache= " + cache);
-      getLogWriter().info("cache closed= " + cache.isClosed());
+      LogWriterUtils.getLogWriter().info("cache= " + cache);
+      LogWriterUtils.getLogWriter().info("cache closed= " + cache.isClosed());
       cache.getResourceManager().setEvictionOffHeapPercentage(20);
-      getLogWriter().info("eviction= "+cache.getResourceManager().getEvictionOffHeapPercentage());
-      getLogWriter().info("critical= "+cache.getResourceManager().getCriticalOffHeapPercentage());
+      LogWriterUtils.getLogWriter().info("eviction= "+cache.getResourceManager().getEvictionOffHeapPercentage());
+      LogWriterUtils.getLogWriter().info("critical= "+cache.getResourceManager().getCriticalOffHeapPercentage());
     }
     catch (Exception e) {
-      fail("Failed while creating the cache", e);
+      Assert.fail("Failed while creating the cache", e);
     }
   }
 

@@ -44,10 +44,15 @@ import com.gemstone.gemfire.internal.cache.TombstoneService;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * concurrency-control tests for client/server
@@ -63,7 +68,8 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
     HARegionQueue.setMessageSyncInterval(5);
   }
   
-  public void tearDown2() {
+  @Override
+  protected final void preTearDownCacheTestCase() {
     disconnectAllFromDS();
     HARegionQueue.setMessageSyncInterval(HARegionQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
   }
@@ -150,19 +156,19 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
     createEntries(vm0);
     destroyEntries(vm0);
     
-    getLogWriter().info("***************** register interest on all keys");
+    LogWriterUtils.getLogWriter().info("***************** register interest on all keys");
     createClientRegion(vm2, name, port, true);
     registerInterest(vm2);
     ensureAllTombstonesPresent(vm2);
     
-    getLogWriter().info("***************** clear cache and register interest on one key, Object0");
+    LogWriterUtils.getLogWriter().info("***************** clear cache and register interest on one key, Object0");
     clearLocalCache(vm2);
     registerInterestOneKey(vm2, "Object0");
     List<String> keys = new ArrayList(1);
     keys.add("Object0");
     ensureAllTombstonesPresent(vm2, keys);
 
-    getLogWriter().info("***************** clear cache and register interest on four keys");
+    LogWriterUtils.getLogWriter().info("***************** clear cache and register interest on four keys");
     clearLocalCache(vm2);
     keys = new ArrayList(4);
     for (int i=0; i<4; i++) {
@@ -171,12 +177,12 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
     registerInterest(vm2, keys);
     ensureAllTombstonesPresent(vm2, keys);
 
-    getLogWriter().info("***************** clear cache and register interest with regex on four keys");
+    LogWriterUtils.getLogWriter().info("***************** clear cache and register interest with regex on four keys");
     clearLocalCache(vm2);
     registerInterestRegex(vm2, "Object[0-3]");
     ensureAllTombstonesPresent(vm2, keys);
 
-    getLogWriter().info("***************** fetch entries with getAll()");
+    LogWriterUtils.getLogWriter().info("***************** fetch entries with getAll()");
     clearLocalCache(vm2);
     getAll(vm2);
     ensureAllTombstonesPresent(vm2);
@@ -203,19 +209,19 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
     createEntries(vm0);
     invalidateEntries(vm0);
     
-    getLogWriter().info("***************** register interest on all keys");
+    LogWriterUtils.getLogWriter().info("***************** register interest on all keys");
     createClientRegion(vm2, name, port, true);
     registerInterest(vm2);
     ensureAllInvalidsPresent(vm2);
     
-    getLogWriter().info("***************** clear cache and register interest on one key, Object0");
+    LogWriterUtils.getLogWriter().info("***************** clear cache and register interest on one key, Object0");
     clearLocalCache(vm2);
     registerInterestOneKey(vm2, "Object0");
     List<String> keys = new ArrayList(1);
     keys.add("Object0");
     ensureAllInvalidsPresent(vm2, keys);
 
-    getLogWriter().info("***************** clear cache and register interest on four keys");
+    LogWriterUtils.getLogWriter().info("***************** clear cache and register interest on four keys");
     clearLocalCache(vm2);
     keys = new ArrayList(4);
     for (int i=0; i<4; i++) {
@@ -224,12 +230,12 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
     registerInterest(vm2, keys);
     ensureAllInvalidsPresent(vm2, keys);
 
-    getLogWriter().info("***************** clear cache and register interest with regex on four keys");
+    LogWriterUtils.getLogWriter().info("***************** clear cache and register interest with regex on four keys");
     clearLocalCache(vm2);
     registerInterestRegex(vm2, "Object[0-3]");
     ensureAllInvalidsPresent(vm2, keys);
 
-    getLogWriter().info("***************** fetch entries with getAll()");
+    LogWriterUtils.getLogWriter().info("***************** fetch entries with getAll()");
     clearLocalCache(vm2);
     getAll(vm2);
     ensureAllInvalidsPresent(vm2);
@@ -383,7 +389,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
       //other bucket might be in vm1
       forceGC(vm1);
     }
-    pause(5000); // better chance that WaitCriteria will succeed 1st time if we pause a bit
+    Wait.pause(5000); // better chance that WaitCriteria will succeed 1st time if we pause a bit
     checkClientReceivedGC(vm2);
     checkClientReceivedGC(vm3);
     checkServerQueuesEmpty(vm0);
@@ -440,7 +446,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
             assertTrue("expected key object_"+i+" to be in the cache but it isn't", TestRegion.containsKey("object_"+i));
           }
         } catch (NullPointerException e) {
-          fail("caught NPE", e);
+          Assert.fail("caught NPE", e);
         }
       }
     });
@@ -476,8 +482,8 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
           
           @Override
           public boolean done() {
-            getLogWriter().info("tombstone count = " + TestRegion.getTombstoneCount());
-            getLogWriter().info("region size = " + TestRegion.size());
+            LogWriterUtils.getLogWriter().info("tombstone count = " + TestRegion.getTombstoneCount());
+            LogWriterUtils.getLogWriter().info("region size = " + TestRegion.size());
             return TestRegion.getTombstoneCount() == 0 && TestRegion.size() == 0;
           }
           
@@ -486,7 +492,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
             return "waiting for garbage collection to occur";
           }
         };
-        waitForCriterion(wc, 60000, 2000, true);
+        Wait.waitForCriterion(wc, 60000, 2000, true);
         return null;
       }
     });
@@ -512,7 +518,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
 //                  if (first) {
 //                    ((LocalRegion)proxy.getHARegion()).dumpBackingMap();
 //                  }
-                  getLogWriter().info("queue size ("+size+") is still > 0 for " + proxy.getProxyID()); 
+                  LogWriterUtils.getLogWriter().info("queue size ("+size+") is still > 0 for " + proxy.getProxyID()); 
                   return false;
                 }
               }
@@ -520,7 +526,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
             // also ensure that server regions have been cleaned up
             int regionEntryCount = TestRegion.getRegionMap().size();
             if (regionEntryCount > 0) {
-              getLogWriter().info("TestRegion has unexpected entries - all should have been GC'd but we have " + regionEntryCount);
+              LogWriterUtils.getLogWriter().info("TestRegion has unexpected entries - all should have been GC'd but we have " + regionEntryCount);
               TestRegion.dumpBackingMap();
               return false;
             }
@@ -532,7 +538,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
             return "waiting for queue removal messages to clear client queues";
           }
         };
-        waitForCriterion(wc, 60000, 2000, true);
+        Wait.waitForCriterion(wc, 60000, 2000, true);
         return null;
       }
     });
@@ -543,7 +549,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
     vm.invoke(new SerializableCallable("check that GC did not happen") {
       public Object call() throws Exception {
         if (TestRegion.getTombstoneCount() == 0) {
-          getLogWriter().warning("region has no tombstones");
+          LogWriterUtils.getLogWriter().warning("region has no tombstones");
 //          TestRegion.dumpBackingMap();
           throw new AssertionFailedError("expected to find tombstones but region is empty");
         }
@@ -584,9 +590,9 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory();
-        cf.addPoolServer(getServerHostName(vm.getHost()), port);
+        cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
         cf.setPoolSubscriptionEnabled(true);
-        cf.set("log-level", getDUnitLogLevel());
+        cf.set("log-level", LogWriterUtils.getDUnitLogLevel());
         ClientCache cache = getClientCache(cf);
         ClientRegionFactory crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
         crf.setConcurrencyChecksEnabled(ccEnabled);
@@ -605,14 +611,14 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory();
-        cf.addPoolServer(getServerHostName(vm.getHost()), port1);
-        cf.addPoolServer(getServerHostName(vm.getHost()), port2);
+        cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port1);
+        cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port2);
         cf.setPoolSubscriptionEnabled(true);
         cf.setPoolSubscriptionRedundancy(1);
         // bug #50683 - secondary durable queue retains all GC messages
         cf.set("durable-client-id", ""+vm.getPid());
         cf.set("durable-client-timeout", "" + 200);
-        cf.set("log-level", getDUnitLogLevel());
+        cf.set("log-level", LogWriterUtils.getDUnitLogLevel());
         ClientCache cache = getClientCache(cf);
         ClientRegionFactory crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
         crf.setConcurrencyChecksEnabled(ccEnabled);

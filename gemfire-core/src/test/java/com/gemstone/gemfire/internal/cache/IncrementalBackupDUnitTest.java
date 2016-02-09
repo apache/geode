@@ -50,11 +50,13 @@ import com.gemstone.gemfire.internal.JarDeployer;
 import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.internal.util.TransformUtils;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests for the incremental backup feature.
@@ -88,7 +90,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
   private final SerializableRunnable createRegions = new SerializableRunnable() {
     @Override
     public void run() {
-      Cache cache = getCache(new CacheFactory().set("log-level", getDUnitLogLevel()));
+      Cache cache = getCache(new CacheFactory().set("log-level", LogWriterUtils.getDUnitLogLevel()));
       cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("fooStore");
       cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("barStore");
       getRegionFactory(cache).setDiskStoreName("fooStore").create("fooRegion");
@@ -125,7 +127,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
    * @param message a message to log.
    */
   private void log(String message) {
-    getLogWriter().info("[IncrementalBackupDUnitTest] " + message);
+    LogWriterUtils.getLogWriter().info("[IncrementalBackupDUnitTest] " + message);
   }
 
   /**
@@ -365,7 +367,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
     });
     
     final Set<PersistentID> missingMembers = new HashSet<PersistentID>();
-    DistributedTestCase.waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
         missingMembers.clear();
@@ -666,12 +668,10 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
    * Removes backup directories (and all backup data).
    */
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     FileUtil.delete(getIncremental2Dir());
     FileUtil.delete(getIncrementalDir());
     FileUtil.delete(getBaselineDir());
-    
-    super.tearDown2();
   }
 
   /**
@@ -837,7 +837,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
      * member is back online.
      */
     final Set<PersistentID> missingMembers = new HashSet<PersistentID>();
-    DistributedTestCase.waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
         missingMembers.clear();

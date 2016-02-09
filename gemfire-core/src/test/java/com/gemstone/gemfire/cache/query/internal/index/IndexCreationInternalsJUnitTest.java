@@ -45,7 +45,7 @@ import com.gemstone.gemfire.cache.query.internal.CompiledRegion;
 import com.gemstone.gemfire.cache.query.internal.QCompiler;
 import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -199,8 +199,8 @@ public class IndexCreationInternalsJUnitTest {
     th1.start();
     th2.start();
     name = imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1");
-    DistributedTestCase.join(th1, 30 * 1000, null);
-    DistributedTestCase.join(th2, 30 * 1000, null);
+    ThreadUtils.join(th1, 30 * 1000);
+    ThreadUtils.join(th2, 30 * 1000);
     if( !(name.equals(this.childThreadName1) && name.equals(this.childThreadName2)) ) {
      fail("Canonicalization name generation test failed in concurrent scenario as first name is "+this.childThreadName1 + "and second is "+name + " and third is "+this.childThreadName2);   
     }

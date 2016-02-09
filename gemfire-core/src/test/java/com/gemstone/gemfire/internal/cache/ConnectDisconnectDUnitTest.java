@@ -39,10 +39,12 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
 /** A test of 46438 - missing response to an update attributes message */
 public class ConnectDisconnectDUnitTest extends CacheTestCase {
@@ -52,7 +54,7 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
   }
 
 
-  private ExpectedException ex;
+  private IgnoredException ex;
 
   public ConnectDisconnectDUnitTest(String name) {
     super(name);
@@ -74,7 +76,7 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
 //     setLocatorPorts(ports);
 
     for(int i = 0; i < 20; i++) {
-      getLogWriter().info("Test run: " + i);
+      LogWriterUtils.getLogWriter().info("Test run: " + i);
       runOnce();
       tearDown();
       setUp();
@@ -88,7 +90,7 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
   static int[] locatorPorts;
   
   public void setLocatorPorts(int[] ports) {
-    deleteLocatorStateFile(ports);
+    DistributedTestUtils.deleteLocatorStateFile(ports);
     String locators = "";
     for (int i=0; i<ports.length; i++) {
       if (i > 0) {
@@ -109,13 +111,12 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
     locatorPorts = ports;
   }
   
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  @Override
+  protected final void postTearDownCacheTestCase() throws Exception {
     if (locatorPorts != null) {
-      deleteLocatorStateFile(locatorPorts);
+      DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
     }
   }
-  
 
   /**
    * This test creates 4 vms and starts a cache in each VM. If that doesn't hang, it destroys the DS in all

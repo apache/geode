@@ -66,10 +66,16 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
@@ -159,15 +165,15 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     
     //We're seeing this on the server when the client
     //disconnects.
-    addExpectedException("Connection reset");
-    addExpectedException("SocketTimeoutException");
-    addExpectedException("ServerConnectivityException");
-    addExpectedException("Socket Closed");
-    addExpectedException("SocketException");
+    IgnoredException.addIgnoredException("Connection reset");
+    IgnoredException.addIgnoredException("SocketTimeoutException");
+    IgnoredException.addIgnoredException("ServerConnectivityException");
+    IgnoredException.addIgnoredException("Socket Closed");
+    IgnoredException.addIgnoredException("SocketException");
     // avoid IllegalStateException from HandShake by connecting all vms tor
     // system before creating connection pools
     getSystem();
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         getSystem();
       }
@@ -202,7 +208,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         "Create Cache Server") {
       public void run2() throws CacheException
       {
-        getLogWriter().info("### Create Cache Server. ###");
+        LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
         factory.setMirrorType(mirrorType);
@@ -223,7 +229,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         }
 
         catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+          Assert.fail("While starting CacheServer", ex);
         }
         
       }
@@ -245,7 +251,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         "Create Cache Server") {
       public void run2() throws CacheException
       {
-          getLogWriter().info("### Create Cache Server. ###");
+          LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
           //AttributesFactory factory = new AttributesFactory();
           //factory.setScope(Scope.DISTRIBUTED_ACK);
           //factory.setMirrorType(MirrorType.KEYS_VALUES);
@@ -264,13 +270,13 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           //assertTrue(getSystem().getDistributionManager().getOtherDistributionManagerIds().size() > 0);
           for (int i = 0; i < regions.length; i++) {
             Region r = createRegion(regions[i], attr.create());
-            getLogWriter().info("Server created the region: "+r);
+            LogWriterUtils.getLogWriter().info("Server created the region: "+r);
           }
           try {
             startBridgeServer(port, true);
           }
           catch (Exception ex) {
-            fail("While starting CacheServer", ex);
+            Assert.fail("While starting CacheServer", ex);
           }
        
       }
@@ -284,7 +290,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
   public void closeServer(VM server) {
     server.invoke(new SerializableRunnable("Close CacheServer") {
       public void run() {
-        getLogWriter().info("### Close CacheServer. ###");
+        LogWriterUtils.getLogWriter().info("### Close CacheServer. ###");
         stopBridgeServer(getCache());
       }
     });
@@ -302,14 +308,14 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     SerializableRunnable createQService =
       new CacheSerializableRunnable("Create Client") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Create Client. ###");
+        LogWriterUtils.getLogWriter().info("### Create Client. ###");
         //Region region1 = null;
         // Initialize CQ Service.
         try {
           getCache().getQueryService();
-          addExpectedException("java.net.ConnectException");
+          IgnoredException.addIgnoredException("java.net.ConnectException");
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         AttributesFactory regionFactory = new AttributesFactory();
@@ -326,7 +332,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         }
         for (int i=0; i < regions.length; i++) {        
           createRegion(regions[i], regionFactory.createRegionAttributes());
-          getLogWriter().info("### Successfully Created Region on Client :" + regions[i]);
+          LogWriterUtils.getLogWriter().info("### Successfully Created Region on Client :" + regions[i]);
           //region1.getAttributesMutator().setCacheListener(new CqListener());
         }
       }
@@ -341,18 +347,18 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     SerializableRunnable closeCQService =
       new CacheSerializableRunnable("Close Client") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Close Client. ###");
+        LogWriterUtils.getLogWriter().info("### Close Client. ###");
         try {
           ((DefaultQueryService)getCache().getQueryService()).closeCqService();
         } catch (Exception ex) {
-          getLogWriter().info("### Failed to get CqService during ClientClose() ###");
+          LogWriterUtils.getLogWriter().info("### Failed to get CqService during ClientClose() ###");
         }
         
       }
     };
     
     client.invoke(closeCQService);
-    pause(1000);
+    Wait.pause(1000);
   }
 
   public void createFunctionalIndex(VM vm, final String indexName, final String indexedExpression, final String fromClause) {
@@ -362,12 +368,12 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         try {
           qs = getCache().getQueryService();
         }catch (Exception ex) {
-          getLogWriter().info("### Failed to get CqService during ClientClose() ###");
+          LogWriterUtils.getLogWriter().info("### Failed to get CqService during ClientClose() ###");
         }
         try {
           qs.createIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, fromClause);
         } catch (Exception ex) {
-          getLogWriter().info("### Failed to create Index :" + indexName);
+          LogWriterUtils.getLogWriter().info("### Failed to create Index :" + indexName);
         }
       }
     });
@@ -381,7 +387,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         for (int i = 1; i <= size; i++) {
           region1.put(KEY+i, new Portfolio(i, i));
         }
-        getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
       }
     });
   }
@@ -396,7 +402,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           portfolio.createTime = System.currentTimeMillis();
           region1.put(KEY+i, portfolio);
         }
-        getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
       }
     });
   }
@@ -409,7 +415,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         for (int i = 1; i <= size; i++) {
           region1.destroy(KEY+i);
         }
-        getLogWriter().info("### Number of Entries In Region after Delete :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries In Region after Delete :" + region1.keys().size());
       }
       
     });
@@ -425,7 +431,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         for (int i = 1; i <= size; i++) {
           region1.invalidate(KEY+i);
         }
-        getLogWriter().info("### Number of Entries In Region after Delete :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries In Region after Delete :" + region1.keys().size());
       }
       
     });
@@ -444,7 +450,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         // Create Cache.
         getCache();
-        addExpectedException("java.net.ConnectException");
+        IgnoredException.addIgnoredException("java.net.ConnectException");
         
         PoolFactory cpf = PoolManager.createFactory();
         cpf.setSubscriptionEnabled(true);
@@ -455,7 +461,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         } 
         
         for (int i=0; i < servers.length; i++){
-          getLogWriter().info("### Adding to Pool. ### Server : " + servers[i] + " Port : " + ports[i]);
+          LogWriterUtils.getLogWriter().info("### Adding to Pool. ### Server : " + servers[i] + " Port : " + ports[i]);
           cpf.addServer(servers[i], ports[i]);
         }
         
@@ -472,17 +478,17 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         //getLogWriter().info("### DEBUG CREATE CQ START ####");
         //pause(20 * 1000);
         
-        getLogWriter().info("### Create CQ. ###" + cqName);
+        LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
         // Get CQ Service.
         QueryService qService = null;
         try {
           qService = (PoolManager.find(poolName)).getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         // Create CQ Attributes.
         CqAttributesFactory cqf = new CqAttributesFactory();
-        CqListener[] cqListeners = {new CqQueryTestListener(getLogWriter())};
+        CqListener[] cqListeners = {new CqQueryTestListener(LogWriterUtils.getLogWriter())};
         ((CqQueryTestListener)cqListeners[0]).cqName = cqName;
         
         cqf.initCqListeners(cqListeners);
@@ -495,7 +501,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         } catch (Exception ex){
           AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
           err.initCause(ex);
-          getLogWriter().info("QueryService is :" + qService, err);
+          LogWriterUtils.getLogWriter().info("QueryService is :" + qService, err);
           throw err;
         }
       }
@@ -510,17 +516,17 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         //getLogWriter().info("### DEBUG CREATE CQ START ####");
         //pause(20 * 1000);
         
-        getLogWriter().info("### Create CQ. ###" + cqName);
+        LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
         // Get CQ Service.
         QueryService qService = null;
         try {
           qService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         // Create CQ Attributes.
         CqAttributesFactory cqf = new CqAttributesFactory();
-        CqListener[] cqListeners = {new CqQueryTestListener(getLogWriter())};
+        CqListener[] cqListeners = {new CqQueryTestListener(LogWriterUtils.getLogWriter())};
         ((CqQueryTestListener)cqListeners[0]).cqName = cqName;
         
         cqf.initCqListeners(cqListeners);
@@ -533,7 +539,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         } catch (Exception ex){
           AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
           err.initCause(ex);
-          getLogWriter().info("QueryService is :" + qService, err);
+          LogWriterUtils.getLogWriter().info("QueryService is :" + qService, err);
           throw err;
         }
       }
@@ -545,10 +551,10 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     vm.invoke(new CacheSerializableRunnable("Create CQ with no name:" ) {
       public void run2() throws CacheException {
         //pause(60 * 1000);
-        getLogWriter().info("### DEBUG CREATE CQ START ####");
+        LogWriterUtils.getLogWriter().info("### DEBUG CREATE CQ START ####");
         //pause(20 * 1000);
         
-        getLogWriter().info("### Create CQ with no name. ###");
+        LogWriterUtils.getLogWriter().info("### Create CQ with no name. ###");
         // Get CQ Service.
         QueryService qService = null;
         CqQuery cq1 = null;
@@ -557,14 +563,14 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         try {
           qService = (PoolManager.find(poolName)).getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         SelectResults cqResults = null;
         for (int i = 0; i < 20; ++i) {
           // Create CQ Attributes.
           CqAttributesFactory cqf = new CqAttributesFactory();
-          CqListener[] cqListeners = {new CqQueryTestListener(getLogWriter())};
+          CqListener[] cqListeners = {new CqQueryTestListener(LogWriterUtils.getLogWriter())};
           
           cqf.initCqListeners(cqListeners);
           CqAttributes cqa = cqf.create();
@@ -574,38 +580,38 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
             cq1 = qService.newCq(queryStr, cqa);
             ((CqQueryTestListener)cqListeners[0]).cqName = cq1.getName();
           } catch (Exception ex){
-            getLogWriter().info("CQService is :" + qService);
-            fail("Failed to create CQ with no name" +  " . ", ex);
+            LogWriterUtils.getLogWriter().info("CQService is :" + qService);
+            Assert.fail("Failed to create CQ with no name" +  " . ", ex);
           }
           
           if (cq1 == null) {
-            getLogWriter().info("Failed to get CqQuery object for CQ with no name.");
+            LogWriterUtils.getLogWriter().info("Failed to get CqQuery object for CQ with no name.");
           }
           else {
             cqName = cq1.getName();
-            getLogWriter().info("Created CQ with no name, generated CQ name: " + cqName + " CQ state:" + cq1.getState());
+            LogWriterUtils.getLogWriter().info("Created CQ with no name, generated CQ name: " + cqName + " CQ state:" + cq1.getState());
             assertTrue("Create CQ with no name illegal state", cq1.getState().isStopped());
           }
           if ( i%2 == 0) {
             try {
               cqResults = cq1.executeWithInitialResults();
             } catch (Exception ex){
-              getLogWriter().info("CqService is :" + qService);
-              fail("Failed to execute CQ with initial results, cq name: " 
+              LogWriterUtils.getLogWriter().info("CqService is :" + qService);
+              Assert.fail("Failed to execute CQ with initial results, cq name: " 
                   + cqName + " . ",  ex);
             }
-            getLogWriter().info("initial result size = " + cqResults.size());
-            getLogWriter().info("CQ state after execute with initial results = " + cq1.getState());
+            LogWriterUtils.getLogWriter().info("initial result size = " + cqResults.size());
+            LogWriterUtils.getLogWriter().info("CQ state after execute with initial results = " + cq1.getState());
             assertTrue("executeWithInitialResults() state mismatch", cq1.getState().isRunning());
           }
           else {
             try {
               cq1.execute();
             } catch (Exception ex){
-              getLogWriter().info("CQService is :" + qService);
-              fail("Failed to execute CQ " + cqName + " . ", ex);
+              LogWriterUtils.getLogWriter().info("CQService is :" + qService);
+              Assert.fail("Failed to execute CQ " + cqName + " . ", ex);
             }
-            getLogWriter().info("CQ state after execute = " + cq1.getState());
+            LogWriterUtils.getLogWriter().info("CQ state after execute = " + cq1.getState());
             assertTrue("execute() state mismatch", cq1.getState().isRunning());
           }
           
@@ -613,8 +619,8 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           try {
             cq1.close();
           } catch (Exception ex){
-            getLogWriter().info("CqService is :" + qService);
-            fail("Failed to close CQ " + cqName + " . ", ex);
+            LogWriterUtils.getLogWriter().info("CqService is :" + qService);
+            Assert.fail("Failed to close CQ " + cqName + " . ", ex);
           }
           assertTrue("closeCq() state mismatch", cq1.getState().isClosed());
         }
@@ -642,7 +648,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
 
       private void work() throws CacheException {
       //pause(60 * 1000);
-      getLogWriter().info("### DEBUG EXECUTE CQ START ####");
+      LogWriterUtils.getLogWriter().info("### DEBUG EXECUTE CQ START ####");
       //pause(20 * 1000);
       
       // Get CQ Service.
@@ -662,16 +668,16 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
       try {
         cq1 = cqService.getCq(cqName);
         if (cq1 == null) {
-          getLogWriter().info("Failed to get CqQuery object for CQ name: " + cqName);
+          LogWriterUtils.getLogWriter().info("Failed to get CqQuery object for CQ name: " + cqName);
           fail("Failed to get CQ " + cqName);
         }
         else {
-          getLogWriter().info("Obtained CQ, CQ name: " + cq1.getName());
+          LogWriterUtils.getLogWriter().info("Obtained CQ, CQ name: " + cq1.getName());
           assertTrue("newCq() state mismatch", cq1.getState().isStopped());
         }
       } catch (Exception ex){
-        getLogWriter().info("CqService is :" + cqService);
-        getLogWriter().error(ex);
+        LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
+        LogWriterUtils.getLogWriter().error(ex);
         AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
         err.initCause(ex);
         throw err;
@@ -683,13 +689,13 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         try {
           cqResults = cq1.executeWithInitialResults();
         } catch (Exception ex){
-          getLogWriter().info("CqService is :" + cqService);
+          LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
           ex.printStackTrace();
           AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
           err.initCause(ex);
           throw err;
         }
-        getLogWriter().info("initial result size = " + cqResults.size());
+        LogWriterUtils.getLogWriter().info("initial result size = " + cqResults.size());
         assertTrue("executeWithInitialResults() state mismatch", cq1.getState().isRunning());
         if (expectedResultsSize >= 0) {
           assertEquals("Unexpected results size for CQ: " + cqName + 
@@ -719,7 +725,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
           err.initCause(ex);
           if (expectedErr == null) {
-            getLogWriter().info("CqService is :" + cqService, err);
+            LogWriterUtils.getLogWriter().info("CqService is :" + cqService, err);
           }
           throw err;
         }
@@ -749,13 +755,13 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
   public void stopCQ(VM vm, final String cqName) throws Exception {
     vm.invoke(new CacheSerializableRunnable("Stop CQ :" + cqName) {
       public void run2() throws CacheException {
-        getLogWriter().info("### Stop CQ. ###" + cqName);
+        LogWriterUtils.getLogWriter().info("### Stop CQ. ###" + cqName);
         // Get CQ Service.
         QueryService cqService = null;
         try {
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         // Stop CQ.
@@ -764,7 +770,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           cq1 = cqService.getCq(cqName);
           cq1.stop();
         } catch (Exception ex){
-          fail("Failed to stop CQ " + cqName + " . ", ex);
+          Assert.fail("Failed to stop CQ " + cqName + " . ", ex);
         }
         assertTrue("Stop CQ state mismatch", cq1.getState().isStopped());
       }
@@ -777,20 +783,20 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     vm.invoke(new CacheSerializableRunnable("Stop CQ :" + cqName) {
       public void run2() throws CacheException {
         CqQuery cq1 = null;
-        getLogWriter().info("### Stop and Exec CQ. ###" + cqName);
+        LogWriterUtils.getLogWriter().info("### Stop and Exec CQ. ###" + cqName);
         // Get CQ Service.
         QueryService cqService = null;
         try {
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCqService.", cqe);
+          Assert.fail("Failed to getCqService.", cqe);
         }
         
         // Get CQ.
         try {
           cq1 = cqService.getCq(cqName);
         } catch (Exception ex){
-          fail("Failed to get CQ " + cqName + " . ", ex);
+          Assert.fail("Failed to get CQ " + cqName + " . ", ex);
         }
         
         for (int i = 0; i < count; ++i) {
@@ -798,21 +804,21 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           try {
             cq1.stop();
           } catch (Exception ex) {
-            fail("Count = " + i + "Failed to stop CQ " + cqName + " . ", ex);
+            Assert.fail("Count = " + i + "Failed to stop CQ " + cqName + " . ", ex);
           }
           assertTrue("Stop CQ state mismatch, count = " + i, cq1.getState().isStopped());
-          getLogWriter().info("After stop in Stop and Execute loop, ran successfully, loop count: " + i);
-          getLogWriter().info("CQ state: " + cq1.getState());
+          LogWriterUtils.getLogWriter().info("After stop in Stop and Execute loop, ran successfully, loop count: " + i);
+          LogWriterUtils.getLogWriter().info("CQ state: " + cq1.getState());
           
           // Re-execute CQ
           try {
             cq1.execute();
           } catch (Exception ex) {
-            fail("Count = " + i + "Failed to execute CQ " + cqName + " . ", ex);
+            Assert.fail("Count = " + i + "Failed to execute CQ " + cqName + " . ", ex);
           }
           assertTrue("Execute CQ state mismatch, count = " + i, cq1.getState().isRunning());
-          getLogWriter().info("After execute in Stop and Execute loop, ran successfully, loop count: " + i);
-          getLogWriter().info("CQ state: " + cq1.getState());
+          LogWriterUtils.getLogWriter().info("After execute in Stop and Execute loop, ran successfully, loop count: " + i);
+          LogWriterUtils.getLogWriter().info("CQ state: " + cq1.getState());
         }
       }
     });
@@ -823,13 +829,13 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
   public void closeCQ(VM vm, final String cqName) throws Exception {
     vm.invoke(new CacheSerializableRunnable("Close CQ :" + cqName) {
       public void run2() throws CacheException {
-        getLogWriter().info("### Close CQ. ###" + cqName);
+        LogWriterUtils.getLogWriter().info("### Close CQ. ###" + cqName);
         // Get CQ Service.
         QueryService cqService = null;
         try {
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCqService.", cqe);
+          Assert.fail("Failed to getCqService.", cqe);
         }
         
         // Close CQ.
@@ -838,7 +844,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           cq1 = cqService.getCq(cqName);
           cq1.close();
         } catch (Exception ex) {
-          fail("Failed to close CQ " + cqName + " . ", ex);
+          Assert.fail("Failed to close CQ " + cqName + " . ", ex);
         }
         assertTrue("Close CQ state mismatch", cq1.getState().isClosed());
       }
@@ -854,7 +860,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         Region region = null;
         try {
           region = getRootRegion().getSubregion(regionName);
-          region.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(getLogWriter()));
+          region.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
         } catch (Exception cqe) {
           AssertionError err = new AssertionError("Failed to get Region.");
           err.initCause(cqe);
@@ -891,14 +897,14 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         try {
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         int numCqs = 0;
         try {
           numCqs = cqService.getCqs().length;
         } catch (Exception ex) {
-          fail ("Failed to get the CQ Count.", ex);
+          Assert.fail ("Failed to get the CQ Count.", ex);
         }
         assertEquals("Number of cqs mismatch.", cqCnt, numCqs);
       }
@@ -913,13 +919,13 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
   private void failIfCQExists(VM vm, final String cqName) {
     vm.invoke(new CacheSerializableRunnable("Fail if CQ exists") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Fail if CQ Exists. ### " + cqName);
+        LogWriterUtils.getLogWriter().info("### Fail if CQ Exists. ### " + cqName);
         // Get CQ Service.
         QueryService cqService = null;
         try {          
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         CqQuery cQuery = cqService.getCq(cqName);
@@ -935,13 +941,13 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     vm.invoke(new CacheSerializableRunnable("Validate CQs") {
       public void run2() throws CacheException {
         
-        getLogWriter().info("### Validating CQ. ### " + cqName);
+        LogWriterUtils.getLogWriter().info("### Validating CQ. ### " + cqName);
         // Get CQ Service.
         QueryService cqService = null;
         try {          
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         CqQuery cQuery = cqService.getCq(cqName);
@@ -984,13 +990,13 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
       final int totalEvents) {
     vm.invoke(new CacheSerializableRunnable("Validate CQs") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Validating CQ. ### " + cqName);
+        LogWriterUtils.getLogWriter().info("### Validating CQ. ### " + cqName);
         // Get CQ Service.
         QueryService cqService = null;
         try {          
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         CqQuery cQuery = cqService.getCq(cqName);
@@ -1101,7 +1107,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         try {
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         CqQuery cQuery = cqService.getCq(cqName);
@@ -1160,7 +1166,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         try {
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
 
         CqQuery cQuery = cqService.getCq(cqName);
@@ -1177,7 +1183,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
               + "ms for Cq State to be changed to " + state
               + "; consider raising " + WAIT_PROPERTY, 
               (System.currentTimeMillis() - start) < MAX_TIME);
-          pause(100);
+          Wait.pause(100);
         }
       }
     });
@@ -1192,7 +1198,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         try {
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         CqQuery cQuery = cqService.getCq(cqName);
@@ -1211,7 +1217,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
   public void validateQuery(VM vm, final String query, final int resultSize) {
     vm.invoke(new CacheSerializableRunnable("Validate Query") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Validating Query. ###");
+        LogWriterUtils.getLogWriter().info("### Validating Query. ###");
         QueryService qs = getCache().getQueryService();
         
         Query q = qs.newQuery(query);
@@ -1219,12 +1225,12 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           Object r = q.execute();
           if(r instanceof Collection){
             int rSize = ((Collection)r).size();
-            getLogWriter().info("### Result Size is :" + rSize);
+            LogWriterUtils.getLogWriter().info("### Result Size is :" + rSize);
             assertEquals(rSize, resultSize);
           }
         }
         catch (Exception e) {
-          fail("Failed to execute the query.", e);
+          Assert.fail("Failed to execute the query.", e);
         }
       }
     });
@@ -1270,20 +1276,20 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     vm.invoke(new CacheSerializableRunnable("Stop CQ :" + cqName) {
       public void run2() throws CacheException {
         CqQuery cq1 = null;
-        getLogWriter().info("### CQ attributes mutator for ###" + cqName);
+        LogWriterUtils.getLogWriter().info("### CQ attributes mutator for ###" + cqName);
         // Get CQ Service.
         QueryService cqService = null;
         try {
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         // Get CQ.
         try {
           cq1 = cqService.getCq(cqName);
         } catch (Exception ex) {
-          fail("Failed to get CQ " + cqName + " . ", ex);
+          Assert.fail("Failed to get CQ " + cqName + " . ", ex);
         }
         CqAttributesMutator cqAttrMutator = cq1.getCqAttributesMutator();
         CqAttributes cqAttr = cq1.getCqAttributes();
@@ -1340,7 +1346,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     /* Init Server and Client */
     createServer(server);
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     String poolName = "testInterestListAndCQs";
     createPool(client, poolName, host0, thePort);
@@ -1363,7 +1369,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     for (int i=1; i <=10; i++){
       waitForCreated(client, "testInterestListAndCQs_0", KEY + i);
     }
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
     
     // validate CQs.
     validateCQ(client, "testInterestListAndCQs_0",
@@ -1404,7 +1410,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
             return excuse;
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+        Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
         
         CertifiableTestCacheListener ctl = (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
         for (int i = 1; i <= 10; i++) {
@@ -1532,7 +1538,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     /* Init Server and Client */
     createServer(server);
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     String poolName = "testCQStopExecute";
     createPool(client, poolName, host0, thePort);
@@ -1619,7 +1625,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     /* Init Server and Client */
     createServer(server);
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     String poolName = "testCQAttributesMutator";
     createPool(client, poolName, host0, thePort);
@@ -1717,7 +1723,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     /* Init Server and Client */
     createServer(server);
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     String poolName = "testCQCreateClose";
     System.out.println("##### Pool Name :" + poolName + " host :" + host0 + " port :" + thePort);
@@ -1816,22 +1822,22 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     
     client.invoke(new CacheSerializableRunnable("CloseAll CQ :") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Close All CQ. ###");
+        LogWriterUtils.getLogWriter().info("### Close All CQ. ###");
         // Get CQ Service.
         QueryService cqService = null;
         try {          
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          getLogWriter().info("Failed to getCQService.", cqe);
-          fail("Failed to getCQService.", cqe);
+          LogWriterUtils.getLogWriter().info("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         // Close CQ.
         try {
           cqService.closeCqs();
         } catch (Exception ex) {
-          getLogWriter().info("Failed to close All CQ.", ex);
-          fail("Failed to close All CQ. ", ex);
+          LogWriterUtils.getLogWriter().info("Failed to close All CQ.", ex);
+          Assert.fail("Failed to close All CQ. ", ex);
         }
       }
     });
@@ -1850,20 +1856,20 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     // Call close all CQ.
     client.invoke(new CacheSerializableRunnable("CloseAll CQ 2 :") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Close All CQ 2. ###");
+        LogWriterUtils.getLogWriter().info("### Close All CQ 2. ###");
         // Get CQ Service.
         QueryService cqService = null;
         try {          
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         // Close CQ.
         try {
           cqService.closeCqs();
         } catch (Exception ex) {
-          fail("Failed to close All CQ  . ", ex);
+          Assert.fail("Failed to close All CQ  . ", ex);
         }
       }
     });
@@ -1886,7 +1892,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     /* Init Server and Client */
     createServer(server);
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     String poolName = "testRegionDestroy";
     createPool(client, poolName, host0, thePort);
@@ -1947,7 +1953,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
             return excuse;
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 30 * 1000, 250, true);
+        Wait.waitForCriterion(wc, 30 * 1000, 250, true);
         
         Region region = getRootRegion().getSubregion(regions[0]);
         assertNotNull(region);
@@ -1969,7 +1975,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
       }
     });
     
-    pause(2 * 1000);
+    Wait.pause(2 * 1000);
     validateCQCount(client, 0);
     
     closeClient(client);
@@ -1991,7 +1997,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     /* Create Server and Client */
     createServer(server);
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     String poolName1 = "testCQWithMultipleClients1";
     String poolName2 = "testCQWithMultipleClients2";
@@ -2144,7 +2150,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     createServer(server);
     
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     String poolName = "testCQResultSet";
     createPool(client, poolName, host0, thePort);
@@ -2155,7 +2161,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     /* CQ Test with initial Values. */
     int size = 10;
     createValues(server, regions[0], size);
-    pause(1*500);
+    Wait.pause(1*500);
     
     // Create CQs.
     createCQ(client, poolName, "testCQResultSet_0", cqs[0]);    
@@ -2218,7 +2224,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     createServer(server);
     
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testCQEvents";
     createPool(client, poolName, host0, thePort);
@@ -2292,7 +2298,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
       }
     });
     
-    pause(1 * 1000);
+    Wait.pause(1 * 1000);
     // cqs should not get any creates, deletes or updates. rdubey.
     validateCQ(client, "testCQEvents_0",
         /* resultSize: */ noTest,
@@ -2323,7 +2329,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     createServer(server);
     
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testCQEvents";
     createPool(client, poolName, host0, thePort);
@@ -2397,7 +2403,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
       }
     });
     
-    pause(1 * 1000);
+    Wait.pause(1 * 1000);
     // cqs should not get any creates, deletes or updates. rdubey.
     validateCQ(client, "testCQEvents_0",
         /* resultSize: */ noTest,
@@ -2425,7 +2431,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     createServer(server);
     
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testEnableDisableCQ";
     createPool(client, poolName, host0, thePort);
@@ -2446,16 +2452,16 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           cqService = getCache().getQueryService();
           cqService.stopCqs();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }                
       }      
     });
     
-    pause(1 * 1000);
+    Wait.pause(1 * 1000);
     // Init values at server.
     int size = 10;
     createValues(server, regions[0], size);
-    pause(1 * 500);
+    Wait.pause(1 * 500);
     // There should not be any creates.
     validateCQ(client, "testEnableDisable_0",
         /* resultSize: */ noTest,
@@ -2476,11 +2482,11 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           cqService = getCache().getQueryService();
           cqService.executeCqs();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }                
       }
     });
-    pause(1 * 1000);
+    Wait.pause(1 * 1000);
     createValues(server, regions[0], size);    
     waitForUpdated(client, "testEnableDisable_0", KEY+size);
     // It gets created on the CQs
@@ -2503,14 +2509,14 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           cqService = getCache().getQueryService();
           cqService.stopCqs("/root/" + regions[0]);
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }                
       }
     });
     
-    pause(2 * 1000);
+    Wait.pause(2 * 1000);
     deleteValues(server, regions[0], size / 2);
-    pause(1 * 500);    
+    Wait.pause(1 * 500);    
     // There should not be any deletes.
     validateCQ(client, "testEnableDisable_0",
         /* resultSize: */ noTest,
@@ -2531,11 +2537,11 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           cqService = getCache().getQueryService();
           cqService.executeCqs("/root/" + regions[0]);
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }                
       }
     });
-    pause(1 * 1000);
+    Wait.pause(1 * 1000);
     createValues(server, regions[0], size / 2);    
     waitForCreated(client, "testEnableDisable_0", KEY+(size / 2));
     // Gets updated on the CQ.
@@ -2566,7 +2572,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     createServer(server);
     
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     String poolName = "testQuery";
     createPool(client, poolName, host0, thePort);
@@ -2611,7 +2617,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     createServer(server1);
     
     final int port1 = server1.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     // Create client.
 //    Properties props = new Properties();
     // Create client with redundancyLevel -1
@@ -2629,23 +2635,23 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
       createCQ(client, poolName, "testCQFailOver_" + i, cqs[i]);
       executeCQ(client, "testCQFailOver_" + i, false, null);
     }
-    pause(1 * 1000);
+    Wait.pause(1 * 1000);
     
     // CREATE.
     createValues(server1, regions[0], 10);
     createValues(server1, regions[1], 10);
     waitForCreated(client, "testCQFailOver_0", KEY+10);
 
-    pause(1 * 1000);
+    Wait.pause(1 * 1000);
     
     createServer(server2, ports[0]);
     final int thePort2 = server2.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
     System.out.println("### Port on which server1 running : " + port1 + 
         " Server2 running : " + thePort2);
-    pause(3 * 1000);
+    Wait.pause(3 * 1000);
 
     // Extra pause - added after downmerging trunk r17050
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
     
     // UPDATE - 1.
     createValues(server1, regions[0], 10);    
@@ -2663,7 +2669,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     closeServer(server1);
     
     // Fail over should happen.
-    pause(3 * 1000);
+    Wait.pause(3 * 1000);
     
     for (int i=0; i < numCQs; i++) {
       validateCQ(client, "testCQFailOver_" + i, noTest, resultsCnt[i], resultsCnt[i], noTest);
@@ -2700,12 +2706,12 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     VM client = host.getVM(3);
     
     //Killing servers can cause this message on the client side.
-    addExpectedException("Could not find any server");
+    IgnoredException.addIgnoredException("Could not find any server");
     
     createServer(server1);
     
     final int port1 = server1.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     
@@ -2735,7 +2741,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
       executeCQ(client, "testCQHA_" + i, false, null);
     }
     
-    pause(1 * 1000);
+    Wait.pause(1 * 1000);
     
     // CREATE.
     createValues(server1, regions[0], 10);
@@ -2751,7 +2757,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     // Close server1.
     // To maintain the redundancy; it will make connection to endpoint-3.
     closeServer(server1);
-    pause(3 * 1000);
+    Wait.pause(3 * 1000);
     
     // UPDATE-1.
     createValues(server2, regions[0], 10);
@@ -2768,7 +2774,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     
     // Close server-2
     closeServer(server2);
-    pause(2 * 1000);
+    Wait.pause(2 * 1000);
     
     // UPDATE - 2.
     clearCQListenerEvents(client, "testCQHA_0");
@@ -2805,7 +2811,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     createServer(server1);
     
     final int port1 = server1.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
     
@@ -2830,7 +2836,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     registerInterestListCQ(client1, regions[0], interestSize, false);
     registerInterestListCQ(client2, regions[0], 0, true);
     
-    pause(1 * 1000);
+    Wait.pause(1 * 1000);
     
     // CREATE.
     createValues(server1, regions[0], 100);
@@ -2842,7 +2848,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     server2.invoke(new CacheSerializableRunnable("Create Cache Server") {
       public void run2() throws CacheException
       {
-        getLogWriter().info("### Create Cache Server. ###");
+        LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
         factory.setMirrorType(MirrorType.KEYS_VALUES);
@@ -2856,7 +2862,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           try {
             startBridgeServer(ports[0], true);
           } catch (Exception ex) {
-            fail("While starting CacheServer", ex);
+            Assert.fail("While starting CacheServer", ex);
           }
 
           while(true) {
@@ -2868,7 +2874,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
               }
               break;
             }
-            pause(20);
+            Wait.pause(20);
           }
         } finally {
           InitialImageOperation.slowImageProcessing = 0;
@@ -2877,7 +2883,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     }
     );
 
-    pause(3 * 1000);
+    Wait.pause(3 * 1000);
     
     
     // Check if CQs are registered as part of GII.
@@ -2937,7 +2943,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     createServer(server2);
     
     final int port1 = server1.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     final int thePort2 = server2.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
     
@@ -2945,7 +2951,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
       new CacheSerializableRunnable("Create region") {
       public void run2() throws CacheException {
         getCache();
-        addExpectedException("java.net.ConnectException||java.net.SocketException");
+        IgnoredException.addIgnoredException("java.net.ConnectException||java.net.SocketException");
         AttributesFactory regionFactory = new AttributesFactory();
         regionFactory.setScope(Scope.LOCAL);
         
@@ -2980,7 +2986,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     });
     
     
-    pause(2 * 1000);
+    Wait.pause(2 * 1000);
     closeServer(server1);
     closeServer(server2);
   }
@@ -2997,7 +3003,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     createServer(server);
     
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     // Create client.
     // createClient(client, thePort, host0);
@@ -3044,7 +3050,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           getCache().getLogger().info("cqs for region: /root/"+regions[1]+" : "+cq.length);
           assertNotNull("CQservice should not return null for cqs on this region : /root/"+regions[1], cq);
         } catch (Exception cqe) {
-          fail("Failed to getCQService", cqe);
+          Assert.fail("Failed to getCQService", cqe);
         }                
       }
     });
@@ -3072,7 +3078,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
 
     final int thePort = server.invokeInt(CqQueryUsingPoolDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testQueryWithNULLInWhereClause";
     createPool(client, poolName, host0, thePort);
@@ -3127,7 +3133,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     "Create Cache Server") {
       public void run2() throws CacheException
       {
-        getLogWriter().info("### Create Cache Server. ###");
+        LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
         
         // Create region with Global scope
         AttributesFactory factory1 = new AttributesFactory();
@@ -3141,16 +3147,16 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         factory2.setMirrorType(MirrorType.KEYS_VALUES);
         createRegion(regions[1], factory2.createRegionAttributes());
         
-        pause(2000);
+        Wait.pause(2000);
 
         try {
           startBridgeServer(port, true);
         }
 
         catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+          Assert.fail("While starting CacheServer", ex);
         }
-        pause(2000);
+        Wait.pause(2000);
 
       }
     };
@@ -3161,7 +3167,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     final int port1 = server1.invokeInt(CqQueryUsingPoolDUnitTest.class,
         "getCacheServerPort");
 
-    final String host0 = getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     final int thePort2 = server2.invokeInt(CqQueryUsingPoolDUnitTest.class,
     "getCacheServerPort");
@@ -3228,14 +3234,14 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     server.invoke(new CacheSerializableRunnable("Server Region Entries") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
-        getLogWriter().info("### Entries in Server :" + region.keys().size());
+        LogWriterUtils.getLogWriter().info("### Entries in Server :" + region.keys().size());
       }
     });
     
     client.invoke(new CacheSerializableRunnable("Client Region Entries") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
-        getLogWriter().info("### Entries in Client :" + region.keys().size()); 
+        LogWriterUtils.getLogWriter().info("### Entries in Client :" + region.keys().size()); 
       }
     });
   }

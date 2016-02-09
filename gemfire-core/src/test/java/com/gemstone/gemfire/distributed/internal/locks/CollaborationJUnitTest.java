@@ -30,8 +30,9 @@ import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 
@@ -104,7 +105,7 @@ public class CollaborationJUnitTest {
         return "waiting for thread";
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 5 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 5 * 1000, 200, true);
     assertTrue(this.collaboration.hasCurrentTopic(threadA));
     
     // thread two blocks until one releeases
@@ -125,7 +126,7 @@ public class CollaborationJUnitTest {
               return "waiting for release";
             }
           };
-          DistributedTestCase.waitForCriterion(ev2, 20 * 1000, 200, true);
+          Wait.waitForCriterion(ev2, 20 * 1000, 200, true);
         }
         finally {
           collaboration.release();
@@ -145,7 +146,7 @@ public class CollaborationJUnitTest {
         return "waiting for thread b";
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 5 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 5 * 1000, 200, true);
     
     // threadA holds topic and threadB is waiting...
     assertTrue(this.collaboration.hasCurrentTopic(threadA));
@@ -153,7 +154,7 @@ public class CollaborationJUnitTest {
 
     // let threadA release so that threadB gets lock
     this.flagTestBlocksUntilRelease = false;
-    DistributedTestCase.join(threadA, 30 * 1000, null);
+    ThreadUtils.join(threadA, 30 * 1000);
     
     // make sure threadB is doing what it's supposed to do...
     ev = new WaitCriterion() {
@@ -166,11 +167,11 @@ public class CollaborationJUnitTest {
         return "threadB";
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 5 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 5 * 1000, 200, true);
     // threadB must have lock now... let threadB release
     assertTrue(this.collaboration.hasCurrentTopic(threadB));
     this.flagTestBlocksUntilRelease = false;
-    DistributedTestCase.join(threadB, 30 * 1000, null);
+    ThreadUtils.join(threadB, 30 * 1000);
 
     // collaboration should be free now    
     assertFalse(this.collaboration.hasCurrentTopic(threadA));
@@ -207,7 +208,7 @@ public class CollaborationJUnitTest {
               return null;
             }
           };
-          DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+          Wait.waitForCriterion(ev, 60 * 1000, 200, true);
         }
         finally {
           collaboration.release();
@@ -225,7 +226,7 @@ public class CollaborationJUnitTest {
         return "wait for ThreadA";
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 30 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 30 * 1000, 200, true);
     assertTrue(this.collaboration.hasCurrentTopic(threadA));
     assertTrue(this.collaboration.isCurrentTopic(topicA));
     
@@ -245,7 +246,7 @@ public class CollaborationJUnitTest {
               return null;
             }
           };
-          DistributedTestCase.waitForCriterion(ev2, 60 * 1000, 200, true);
+          Wait.waitForCriterion(ev2, 60 * 1000, 200, true);
         }
         finally {
           collaboration.release();
@@ -263,7 +264,7 @@ public class CollaborationJUnitTest {
         return "";
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     assertTrue(this.collaboration.hasCurrentTopic(threadB));
     
     // thread three blocks for new topic
@@ -284,7 +285,7 @@ public class CollaborationJUnitTest {
               return null;
             }
           };
-          DistributedTestCase.waitForCriterion(ev2, 60 * 1000, 200, true);
+          Wait.waitForCriterion(ev2, 60 * 1000, 200, true);
         }
         finally {
           collaboration.release();
@@ -302,7 +303,7 @@ public class CollaborationJUnitTest {
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     assertFalse(this.collaboration.hasCurrentTopic(threadC));
     assertFalse(this.collaboration.isCurrentTopic(topicB));
     
@@ -336,12 +337,12 @@ public class CollaborationJUnitTest {
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     assertTrue(this.collaboration.hasCurrentTopic(threadD));
     
     // release threadA
     this.threadAFlag_TestLateComerJoinsIn = false;
-    DistributedTestCase.join(threadA, 30 * 1000, null);
+    ThreadUtils.join(threadA, 30 * 1000);
     assertFalse(this.collaboration.hasCurrentTopic(threadA));
     assertTrue(this.collaboration.hasCurrentTopic(threadB));
     assertFalse(this.collaboration.hasCurrentTopic(threadC));
@@ -351,7 +352,7 @@ public class CollaborationJUnitTest {
     
     // release threadB
     this.threadBFlag_TestLateComerJoinsIn = false;
-    DistributedTestCase.join(threadB, 30 * 1000, null);
+    ThreadUtils.join(threadB, 30 * 1000);
     assertFalse(this.collaboration.hasCurrentTopic(threadB));
     assertFalse(this.collaboration.hasCurrentTopic(threadC));
     assertTrue(this.collaboration.hasCurrentTopic(threadD));
@@ -360,7 +361,7 @@ public class CollaborationJUnitTest {
     
     // release threadD
     this.threadDFlag_TestLateComerJoinsIn = false;
-    DistributedTestCase.join(threadD, 30 * 1000, null);
+    ThreadUtils.join(threadD, 30 * 1000);
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
@@ -371,7 +372,7 @@ public class CollaborationJUnitTest {
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     assertTrue(this.collaboration.hasCurrentTopic(threadC));
     assertFalse(this.collaboration.hasCurrentTopic(threadD));
     assertFalse(this.collaboration.isCurrentTopic(topicA));
@@ -379,7 +380,7 @@ public class CollaborationJUnitTest {
     
     // release threadC
     this.threadCFlag_TestLateComerJoinsIn = false;
-    DistributedTestCase.join(threadC, 30 * 1000, null);
+    ThreadUtils.join(threadC, 30 * 1000);
     assertFalse(this.collaboration.hasCurrentTopic(threadC));
     assertFalse(this.collaboration.isCurrentTopic(topicA));
     assertFalse(this.collaboration.isCurrentTopic(topicB));
@@ -420,7 +421,7 @@ public class CollaborationJUnitTest {
                   return "other threads lining up";
                 }
               };
-              DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+              Wait.waitForCriterion(ev, 60 * 1000, 200, true);
               collaboration.release();
               released = true;
             }
@@ -454,7 +455,7 @@ public class CollaborationJUnitTest {
           return "waiting for numThreads * 10";
         }
       };
-      DistributedTestCase.waitForCriterion(ev, 5 * 60 * 1000, 200, true);
+      Wait.waitForCriterion(ev, 5 * 60 * 1000, 200, true);
     }
     finally {
       if (this.runTestFairnessStressfully) {
@@ -463,7 +464,7 @@ public class CollaborationJUnitTest {
     }
     
     for (int t = 0; t < threads.length; t++) {
-      DistributedTestCase.join(threads[t], 30 * 1000, null);
+      ThreadUtils.join(threads[t], 30 * 1000);
     }
     
     // assert that all topics are acquired in order
@@ -552,7 +553,7 @@ public class CollaborationJUnitTest {
               return null;
             }
           };
-          DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+          Wait.waitForCriterion(ev, 60 * 1000, 200, true);
         }
         finally {
           collaboration.release();
@@ -573,12 +574,12 @@ public class CollaborationJUnitTest {
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, 60 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     
     // after starting thread, hasCurrentTopic(thread) returns true
     assertTrue(this.collaboration.hasCurrentTopic(thread));
     this.flagTestThreadHasCurrentTopic = false;
-    DistributedTestCase.join(thread, 30 * 1000, null);
+    ThreadUtils.join(thread, 30 * 1000);
     
     // after thread finishes, hasCurrentTopic(thread) returns false
     assertTrue(!this.collaboration.hasCurrentTopic(thread));

@@ -35,8 +35,12 @@ import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
@@ -58,7 +62,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     // avoid IllegalStateException from HandShake by connecting all vms to
     // system before creating pool
     getSystem();
-    invokeInEveryVM(new SerializableRunnable("getSystem") {
+    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         getSystem();
       }
@@ -74,7 +78,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
       final int cqListenerInvocations) {
     vm.invoke(new CacheSerializableRunnable("Validate CQs") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Validating CQ Stats. ### " + cqName);
+        LogWriterUtils.getLogWriter().info("### Validating CQ Stats. ### " + cqName);
 //      Get CQ Service.
         QueryService qService = null;
         try {          
@@ -157,7 +161,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
       final int clientsWithCqs) {
     vm.invoke(new CacheSerializableRunnable("Validate CQ Service Stats") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Validating CQ Service Stats. ### ");
+        LogWriterUtils.getLogWriter().info("### Validating CQ Service Stats. ### ");
 //      Get CQ Service.
         QueryService qService = null;
         try {          
@@ -245,7 +249,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     /* Init Server and Client */
     cqDUnitTest.createServer(server);
     final int port = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     cqDUnitTest.createClient(client, port, host0);
     
     /* Create CQs. */
@@ -272,7 +276,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], 200);
     // Wait for client to Synch.
     cqDUnitTest.waitForCreated(client, "testCQStatistics_0", CqQueryDUnitTest.KEY+200);
-    pause(PAUSE);
+    Wait.pause(PAUSE);
     size = 200;
     
     // validate CQs.
@@ -296,7 +300,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     // Wait for client to Synch.
     cqDUnitTest.waitForDestroyed(client, "testCQStatistics_0", CqQueryDUnitTest.KEY+100);
     size = 10;
-    pause(PAUSE);
+    Wait.pause(PAUSE);
     
     cqDUnitTest.validateCQ(client, "testCQStatistics_0",
         /* resultSize: */ CqQueryDUnitTest.noTest,
@@ -315,7 +319,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     
     // Test  CQ Close
     cqDUnitTest.closeCQ(client, "testCQStatistics_0");
-    pause(PAUSE);
+    Wait.pause(PAUSE);
     
     // Close.
     cqDUnitTest.closeClient(client);
@@ -336,7 +340,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     /* Init Server and Client */
     cqDUnitTest.createServer(server);
     final int port = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
     cqDUnitTest.createClient(client1, port, host0);
     cqDUnitTest.createClient(client2, port, host0);
     
@@ -345,7 +349,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     String cqName10 = new String("testCQServiceStatistics_10");   
     cqDUnitTest.createCQ(client1, cqName, cqDUnitTest.cqs[0]);
     cqDUnitTest.createCQ(client2, cqName10, cqDUnitTest.cqs[2]); 
-    pause(PAUSE);
+    Wait.pause(PAUSE);
     // Test CQ Service stats
     getCache().getLogger().info("Validating CQ Service stats on clients: #1");
     validateCQServiceStats(client1, 1, 0, 1, 0, 1, 1, CqQueryDUnitTest.noTest);
@@ -353,7 +357,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     
     cqDUnitTest.executeCQ(client1, cqName, false, null);
     cqDUnitTest.executeCQ(client2, cqName10, false, null);
-    pause(PAUSE);
+    Wait.pause(PAUSE);
     
     getCache().getLogger().info("Validating CQ Service stats on clients: #2");
     validateCQServiceStats(client1, 1, 1, 0, 0, 1, 1, CqQueryDUnitTest.noTest);
@@ -378,7 +382,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
         /* queryUpdates: */ 0,
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
-    pause(PAUSE);
+    Wait.pause(PAUSE);
     
     // Test CQ Service stats
     getCache().getLogger().info("Validating CQ Service stats on clients: #3");
@@ -391,7 +395,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     
     //Create CQs with no name, execute, and close. 
     cqDUnitTest.createAndExecCQNoName(client1, cqDUnitTest.cqs[0]); 
-    pause(PAUSE);      
+    Wait.pause(PAUSE);      
     
     // Test CQ Service stats
     getCache().getLogger().info("Validating CQ Service stats on client: #4");
@@ -402,7 +406,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     
     // Test  CQ Close
     cqDUnitTest.closeCQ(client1, cqName);
-    pause(PAUSE);      
+    Wait.pause(PAUSE);      
     
     // Test CQ Service stats
     getCache().getLogger().info("Validating CQ Service stats on client: #5");
@@ -413,7 +417,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     
     //Test stop CQ
     cqDUnitTest.stopCQ(client2, cqName10);
-    pause(PAUSE);
+    Wait.pause(PAUSE);
     
     // Test CQ Service stats
     getCache().getLogger().info("Validating CQ Service stats on client: #6");
@@ -423,7 +427,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
     
     // Test  CQ Close
     cqDUnitTest.closeCQ(client2, cqName10);
-    pause(PAUSE);
+    Wait.pause(PAUSE);
     
     // Test CQ Service stats
     getCache().getLogger().info("Validating CQ Service stats on client: #7");

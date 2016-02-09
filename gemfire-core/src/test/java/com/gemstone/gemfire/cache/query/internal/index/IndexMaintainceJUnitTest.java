@@ -51,7 +51,7 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.functional.StructSetOrResultsSet;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -322,7 +322,7 @@ public class IndexMaintainceJUnitTest {
             }
           });
           th.start();
-          DistributedTestCase.join(th, 30 * 1000, null);
+          ThreadUtils.join(th, 30 * 1000);
           assertTrue(IndexMaintainceJUnitTest.region.size() == 1);
         }
       });

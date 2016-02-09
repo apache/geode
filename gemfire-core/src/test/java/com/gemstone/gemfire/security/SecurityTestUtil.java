@@ -78,7 +78,12 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.PureLogWriter;
 import com.gemstone.gemfire.internal.util.Callable;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Contains utility methods for setting up servers/clients for authentication
@@ -207,7 +212,7 @@ public class SecurityTestUtil extends DistributedTestCase {
 
     Integer locatorPort = new Integer(AvailablePort
         .getRandomAvailablePort(AvailablePort.SOCKET));
-    String addr = DistributedTestCase.getIPLiteral();
+    String addr = NetworkUtils.getIPLiteral();
     if (locatorString == null) {
       locatorString = addr + "[" + locatorPort + ']';
     }
@@ -287,14 +292,14 @@ public class SecurityTestUtil extends DistributedTestCase {
       authProps.setProperty(DistributionConfig.LOCATORS_NAME, locatorString);
       if (locatorPort != null) {
         authProps.setProperty(DistributionConfig.START_LOCATOR_NAME,
-            DistributedTestCase.getIPLiteral() + "[" + locatorPort.toString() + ']');
+            NetworkUtils.getIPLiteral() + "[" + locatorPort.toString() + ']');
       }
     } else {
-      authProps.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
+      authProps.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
     }
     authProps.setProperty(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "finest");
-    getLogWriter().info("Set the server properties to: " + authProps);
-    getLogWriter().info("Set the java properties to: " + javaProps);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Set the server properties to: " + authProps);
+    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Set the java properties to: " + javaProps);
 
     SecurityTestUtil tmpInstance = new SecurityTestUtil("temp");
     try {
@@ -305,24 +310,24 @@ public class SecurityTestUtil extends DistributedTestCase {
     }
     catch (AuthenticationRequiredException ex) {
       if (expectedResult.intValue() == AUTHREQ_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting peer: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when starting peer: " + ex);
         return new Integer(0);
       }
       else {
-        fail("Got unexpected exception when starting peer", ex);
+        Assert.fail("Got unexpected exception when starting peer", ex);
       }
     }
     catch (AuthenticationFailedException ex) {
       if (expectedResult.intValue() == AUTHFAIL_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting peer: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when starting peer: " + ex);
         return new Integer(0);
       }
       else {
-        fail("Got unexpected exception when starting peer", ex);
+        Assert.fail("Got unexpected exception when starting peer", ex);
       }
     }
     catch (Exception ex) {
-      fail("Got unexpected exception when starting peer", ex);
+      Assert.fail("Got unexpected exception when starting peer", ex);
     }
 
     if (setupDynamicRegionFactory.booleanValue()) {
@@ -348,7 +353,7 @@ public class SecurityTestUtil extends DistributedTestCase {
       server1.start();
     }
     catch (Exception ex) {
-      fail("Got unexpected exception when starting CacheServer", ex);
+      Assert.fail("Got unexpected exception when starting CacheServer", ex);
     }
     return new Integer(server1.getPort());
   }
@@ -422,7 +427,7 @@ public class SecurityTestUtil extends DistributedTestCase {
         //poolFactory.setSubscriptionEnabled(false);
       }
       pool = ClientServerTestCase.configureConnectionPoolWithNameAndFactory(factory,
-          DistributedTestCase.getIPLiteral(), portsI, subscriptionEnabled, 0,
+          NetworkUtils.getIPLiteral(), portsI, subscriptionEnabled, 0,
           numConnections == null ? -1 : numConnections.intValue(), null, null,
           poolFactory);
 
@@ -431,17 +436,17 @@ public class SecurityTestUtil extends DistributedTestCase {
       }
       tmpInstance.openCache();
       try {
-        getLogWriter().info("multi-user mode " + multiUserAuthMode);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("multi-user mode " + multiUserAuthMode);
         proxyCaches[0] = (ProxyCache)((PoolImpl) pool).createAuthenticatedCacheView(authProps);
         if (!multiUserAuthMode) {
           fail("Expected a UnsupportedOperationException but got none in single-user mode");
         }
       } catch (UnsupportedOperationException uoe) {
         if (!multiUserAuthMode) {
-          getLogWriter().info("Got expected UnsupportedOperationException in single-user mode");
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected UnsupportedOperationException in single-user mode");
         }
         else {
-          fail("Got unexpected exception in multi-user mode ", uoe);
+          Assert.fail("Got unexpected exception in multi-user mode ", uoe);
         }
       }
 
@@ -462,33 +467,33 @@ public class SecurityTestUtil extends DistributedTestCase {
     catch (AuthenticationRequiredException ex) {
       if (expectedResult.intValue() == AUTHREQ_EXCEPTION
           || expectedResult.intValue() == NOFORCE_AUTHREQ_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when starting client: " + ex);
       }
       else {
-        fail("Got unexpected exception when starting client", ex);
+        Assert.fail("Got unexpected exception when starting client", ex);
       }
     }
     catch (AuthenticationFailedException ex) {
       if (expectedResult.intValue() == AUTHFAIL_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when starting client: " + ex);
       }
       else {
-        fail("Got unexpected exception when starting client", ex);
+        Assert.fail("Got unexpected exception when starting client", ex);
       }
     }
     catch (ServerRefusedConnectionException ex) {
       if (expectedResult.intValue() == CONNREFUSED_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when starting client: " + ex);
       }
       else {
-        fail("Got unexpected exception when starting client", ex);
+        Assert.fail("Got unexpected exception when starting client", ex);
       }
     }
     catch (Exception ex) {
-      fail("Got unexpected exception when starting client", ex);
+      Assert.fail("Got unexpected exception when starting client", ex);
     }
   }
 
@@ -564,7 +569,7 @@ public class SecurityTestUtil extends DistributedTestCase {
       poolFactory.setMultiuserAuthentication(multiUserAuthMode);
       poolFactory.setSubscriptionEnabled(true);
       pool = ClientServerTestCase.configureConnectionPoolWithNameAndFactory(factory,
-          DistributedTestCase.getIPLiteral(), portsI, true, 1,
+          NetworkUtils.getIPLiteral(), portsI, true, 1,
           numConnections == null ? -1 : numConnections.intValue(), null, null,
           poolFactory);
 
@@ -591,33 +596,33 @@ public class SecurityTestUtil extends DistributedTestCase {
     catch (AuthenticationRequiredException ex) {
       if (expectedResult.intValue() == AUTHREQ_EXCEPTION
           || expectedResult.intValue() == NOFORCE_AUTHREQ_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when starting client: " + ex);
       }
       else {
-        fail("Got unexpected exception when starting client", ex);
+        Assert.fail("Got unexpected exception when starting client", ex);
       }
     }
     catch (AuthenticationFailedException ex) {
       if (expectedResult.intValue() == AUTHFAIL_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when starting client: " + ex);
       }
       else {
-        fail("Got unexpected exception when starting client", ex);
+        Assert.fail("Got unexpected exception when starting client", ex);
       }
     }
     catch (ServerRefusedConnectionException ex) {
       if (expectedResult.intValue() == CONNREFUSED_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when starting client: " + ex);
       }
       else {
-        fail("Got unexpected exception when starting client", ex);
+        Assert.fail("Got unexpected exception when starting client", ex);
       }
     }
     catch (Exception ex) {
-      fail("Got unexpected exception when starting client", ex);
+      Assert.fail("Got unexpected exception when starting client", ex);
     }
   }
 
@@ -647,7 +652,7 @@ public class SecurityTestUtil extends DistributedTestCase {
         server.start();
       }
       catch (Exception ex) {
-        fail("Unexpected exception when restarting cache servers", ex);
+        Assert.fail("Unexpected exception when restarting cache servers", ex);
       }
       assertTrue(server.isRunning());
     }
@@ -664,7 +669,7 @@ public class SecurityTestUtil extends DistributedTestCase {
       }
       authProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
       authProps.setProperty(DistributionConfig.LOCATORS_NAME, 
-                            DistributedTestCase.getIPLiteral() + "[" + port + "]");
+                            NetworkUtils.getIPLiteral() + "[" + port + "]");
       authProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
       clearStaticSSLContext();
       setJavaProps((Properties)javaProps);
@@ -678,7 +683,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           authProps);
     }
     catch (IOException ex) {
-      fail("While starting locator on port " + port.intValue(), ex);
+      Assert.fail("While starting locator on port " + port.intValue(), ex);
     }
   }
 
@@ -690,7 +695,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           .getDistributedSystem().getLogWriter());
     }
     catch (Exception ex) {
-      fail("While stopping locator on port " + port.intValue(), ex);
+      Assert.fail("While stopping locator on port " + port.intValue(), ex);
     }
   }
 
@@ -712,7 +717,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           return ((Boolean)cond.call()).booleanValue();
         }
         catch (Exception e) {
-          fail("Unexpected exception", e);
+          Assert.fail("Unexpected exception", e);
         }
         return false; // NOTREACHED
       }
@@ -720,7 +725,7 @@ public class SecurityTestUtil extends DistributedTestCase {
         return null;
       }
     };
-    DistributedTestCase.waitForCriterion(ev, sleepMillis * numTries, 200, true);
+    Wait.waitForCriterion(ev, sleepMillis * numTries, 200, true);
   }
 
   public static Object getLocalValue(Region region, Object key) {
@@ -757,10 +762,10 @@ public class SecurityTestUtil extends DistributedTestCase {
     }
     catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing puts: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing puts: " + ex);
       }
       else {
-        fail("Got unexpected exception when doing puts", ex);
+        Assert.fail("Got unexpected exception when doing puts", ex);
       }
     }
     for (int index = 0; index < num.intValue(); ++index) {
@@ -777,50 +782,50 @@ public class SecurityTestUtil extends DistributedTestCase {
       }
       catch(NoAvailableServersException ex) {
         if(expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected NoAvailableServers when doing puts: "
               + ex.getCause());
           continue;
         }
         else {
-          fail("Got unexpected exception when doing puts", ex);
+          Assert.fail("Got unexpected exception when doing puts", ex);
         }
       }
       catch (ServerConnectivityException ex) {
         if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected NotAuthorizedException when doing puts: "
                   + ex.getCause());
           continue;
         }
         if ((expectedResult.intValue() == AUTHREQ_EXCEPTION)
             && (ex.getCause() instanceof AuthenticationRequiredException)) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected AuthenticationRequiredException when doing puts: "
                   + ex.getCause());
           continue;
         }
         if ((expectedResult.intValue() == AUTHFAIL_EXCEPTION)
             && (ex.getCause() instanceof AuthenticationFailedException)) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected AuthenticationFailedException when doing puts: "
                   + ex.getCause());
           continue;
         }
         else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing puts: " + ex);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing puts: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing puts", ex);
+          Assert.fail("Got unexpected exception when doing puts", ex);
         }
       }
       catch (Exception ex) {
         if (expectedResult.intValue() == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing puts: " + ex);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing puts: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing puts", ex);
+          Assert.fail("Got unexpected exception when doing puts", ex);
         }
       }
     }
@@ -840,10 +845,10 @@ public class SecurityTestUtil extends DistributedTestCase {
     }
     catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing getAll: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing getAll: " + ex);
       }
       else {
-        fail("Got unexpected exception when doing getAll", ex);
+        Assert.fail("Got unexpected exception when doing getAll", ex);
       }
     }
     try {
@@ -869,28 +874,28 @@ public class SecurityTestUtil extends DistributedTestCase {
       }
     } catch (NoAvailableServersException ex) {
       if (expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NoAvailableServers when doing getAll: "
                 + ex.getCause());
       } else {
-        fail("Got unexpected exception when doing getAll", ex);
+        Assert.fail("Got unexpected exception when doing getAll", ex);
       }
     } catch (ServerConnectivityException ex) {
       if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
           && (ex.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NotAuthorizedException when doing getAll: "
                 + ex.getCause());
       } else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing getAll: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing getAll: " + ex);
       } else {
-        fail("Got unexpected exception when doing getAll", ex);
+        Assert.fail("Got unexpected exception when doing getAll", ex);
       }
     } catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing getAll: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing getAll: " + ex);
       } else {
-        fail("Got unexpected exception when doing getAll", ex);
+        Assert.fail("Got unexpected exception when doing getAll", ex);
       }
     }
   }
@@ -916,10 +921,10 @@ public class SecurityTestUtil extends DistributedTestCase {
     }
     catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing gets: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing gets: " + ex);
       }
       else {
-        fail("Got unexpected exception when doing gets", ex);
+        Assert.fail("Got unexpected exception when doing gets", ex);
       }
     }
     for (int index = 0; index < num.intValue(); ++index) {
@@ -937,36 +942,36 @@ public class SecurityTestUtil extends DistributedTestCase {
       }
       catch(NoAvailableServersException ex) {
         if(expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected NoAvailableServers when doing gets: "
               + ex.getCause());
           continue;
         }
         else {
-          fail("Got unexpected exception when doing gets", ex);
+          Assert.fail("Got unexpected exception when doing gets", ex);
         }
       }
       catch (ServerConnectivityException ex) {
         if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected NotAuthorizedException when doing gets: "
                   + ex.getCause());
           continue;
         }
         else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing gets: " + ex);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing gets: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing gets", ex);
+          Assert.fail("Got unexpected exception when doing gets", ex);
         }
       }
       catch (Exception ex) {
         if (expectedResult.intValue() == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing gets: " + ex);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing gets: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing gets", ex);
+          Assert.fail("Got unexpected exception when doing gets", ex);
         }
       }
       assertNotNull(value);
@@ -1017,10 +1022,10 @@ public class SecurityTestUtil extends DistributedTestCase {
       assertNotNull(region);
     } catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when doing region destroy: " + ex);
       } else {
-        fail("Got unexpected exception when doing region destroy", ex);
+        Assert.fail("Got unexpected exception when doing region destroy", ex);
       }
     }
 
@@ -1037,30 +1042,30 @@ public class SecurityTestUtil extends DistributedTestCase {
       assertNull(region);
     } catch (NoAvailableServersException ex) {
       if (expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NoAvailableServers when doing region destroy: "
                 + ex.getCause());
       } else {
-        fail("Got unexpected exception when doing region destroy", ex);
+        Assert.fail("Got unexpected exception when doing region destroy", ex);
       }
     } catch (ServerConnectivityException ex) {
       if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
           && (ex.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NotAuthorizedException when doing region destroy: "
                 + ex.getCause());
       } else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when doing region destroy: " + ex);
       } else {
-        fail("Got unexpected exception when doing region destroy", ex);
+        Assert.fail("Got unexpected exception when doing region destroy", ex);
       }
     } catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when doing region destroy: " + ex);
       } else {
-        fail("Got unexpected exception when doing region destroy", ex);
+        Assert.fail("Got unexpected exception when doing region destroy", ex);
       }
     }
   }
@@ -1081,10 +1086,10 @@ public class SecurityTestUtil extends DistributedTestCase {
     }
     catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing destroys: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing destroys: " + ex);
       }
       else {
-        fail("Got unexpected exception when doing destroys", ex);
+        Assert.fail("Got unexpected exception when doing destroys", ex);
       }
     }
     for (int index = 0; index < num.intValue(); ++index) {
@@ -1096,36 +1101,36 @@ public class SecurityTestUtil extends DistributedTestCase {
       }
       catch(NoAvailableServersException ex) {
         if(expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected NoAvailableServers when doing destroys: "
               + ex.getCause());
           continue;
         }
         else {
-          fail("Got unexpected exception when doing destroys", ex);
+          Assert.fail("Got unexpected exception when doing destroys", ex);
         }
       }
       catch (ServerConnectivityException ex) {
         if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected NotAuthorizedException when doing destroys: "
                   + ex.getCause());
           continue;
         }
         else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing destroys: " + ex);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing destroys: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing destroys", ex);
+          Assert.fail("Got unexpected exception when doing destroys", ex);
         }
       }
       catch (Exception ex) {
         if (expectedResult.intValue() == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing destroys: " + ex);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing destroys: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing destroys", ex);
+          Assert.fail("Got unexpected exception when doing destroys", ex);
         }
       }
     }
@@ -1147,10 +1152,10 @@ public class SecurityTestUtil extends DistributedTestCase {
     }
     catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing invalidates: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing invalidates: " + ex);
       }
       else {
-        fail("Got unexpected exception when doing invalidates", ex);
+        Assert.fail("Got unexpected exception when doing invalidates", ex);
       }
     }
     for (int index = 0; index < num.intValue(); ++index) {
@@ -1162,36 +1167,36 @@ public class SecurityTestUtil extends DistributedTestCase {
       }
       catch(NoAvailableServersException ex) {
         if(expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected NoAvailableServers when doing invalidates: "
               + ex.getCause());
           continue;
         }
         else {
-          fail("Got unexpected exception when doing invalidates", ex);
+          Assert.fail("Got unexpected exception when doing invalidates", ex);
         }
       }
       catch (ServerConnectivityException ex) {
         if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected NotAuthorizedException when doing invalidates: "
                   + ex.getCause());
           continue;
         }
         else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing invalidates: " + ex);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing invalidates: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing invalidates", ex);
+          Assert.fail("Got unexpected exception when doing invalidates", ex);
         }
       }
       catch (Exception ex) {
         if (expectedResult.intValue() == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing invalidates: " + ex);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing invalidates: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing invalidates", ex);
+          Assert.fail("Got unexpected exception when doing invalidates", ex);
         }
       }
     }
@@ -1213,10 +1218,10 @@ public class SecurityTestUtil extends DistributedTestCase {
     }
     catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing containsKey: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing containsKey: " + ex);
       }
       else {
-        fail("Got unexpected exception when doing containsKey", ex);
+        Assert.fail("Got unexpected exception when doing containsKey", ex);
       }
     }
     for (int index = 0; index < num.intValue(); ++index) {
@@ -1229,36 +1234,36 @@ public class SecurityTestUtil extends DistributedTestCase {
       }
       catch(NoAvailableServersException ex) {
         if(expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected NoAvailableServers when doing containsKey: "
               + ex.getCause());
           continue;
         }
         else {
-          fail("Got unexpected exception when doing containsKey", ex);
+          Assert.fail("Got unexpected exception when doing containsKey", ex);
         }
       }
       catch (ServerConnectivityException ex) {
         if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter().info(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
               "Got expected NotAuthorizedException when doing containsKey: "
                   + ex.getCause());
           continue;
         }
         else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing containsKey: " + ex);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing containsKey: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing containsKey", ex);
+          Assert.fail("Got unexpected exception when doing containsKey", ex);
         }
       }
       catch (Exception ex) {
         if (expectedResult.intValue() == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing containsKey: " + ex);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing containsKey: " + ex);
         }
         else {
-          fail("Got unexpected exception when doing containsKey", ex);
+          Assert.fail("Got unexpected exception when doing containsKey", ex);
         }
       }
       assertEquals(expectedValue, result);
@@ -1277,9 +1282,9 @@ public class SecurityTestUtil extends DistributedTestCase {
       assertNotNull(region);
     } catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing queries: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing queries: " + ex);
       } else {
-        fail("Got unexpected exception when doing queries", ex);
+        Assert.fail("Got unexpected exception when doing queries", ex);
       }
     }
     String queryStr = "SELECT DISTINCT * FROM " + region.getFullPath();
@@ -1292,39 +1297,39 @@ public class SecurityTestUtil extends DistributedTestCase {
       }
     } catch (NoAvailableServersException ex) {
       if (expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NoAvailableServers when doing queries: "
                 + ex.getCause());
       } else {
-        fail("Got unexpected exception when doing queries", ex);
+        Assert.fail("Got unexpected exception when doing queries", ex);
       }
     } catch (ServerConnectivityException ex) {
       if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
           && (ex.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NotAuthorizedException when doing queries: "
                 + ex.getCause());
       } else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing queries: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing queries: " + ex);
       } else {
-        fail("Got unexpected exception when doing queries", ex);
+        Assert.fail("Got unexpected exception when doing queries", ex);
       }
     } catch (QueryInvocationTargetException qite) {
       if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
           && (qite.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NotAuthorizedException when doing queries: "
                 + qite.getCause());
       } else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing queries: " + qite);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing queries: " + qite);
       } else {
-        fail("Got unexpected exception when doing queries", qite);
+        Assert.fail("Got unexpected exception when doing queries", qite);
       }
     } catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing queries: " + ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Got expected exception when doing queries: " + ex);
       } else {
-        fail("Got unexpected exception when doing queries", ex);
+        Assert.fail("Got unexpected exception when doing queries", ex);
       }
     }
   }
@@ -1342,10 +1347,10 @@ public class SecurityTestUtil extends DistributedTestCase {
       assertNotNull(region);
     } catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when executing function: " + ex);
       } else {
-        fail("Got unexpected exception when executing function", ex);
+        Assert.fail("Got unexpected exception when executing function", ex);
       }
     }
     try {
@@ -1372,44 +1377,44 @@ public class SecurityTestUtil extends DistributedTestCase {
       }
     } catch (NoAvailableServersException ex) {
       if (expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NoAvailableServers when executing function: "
                 + ex.getCause());
       } else {
-        fail("Got unexpected exception when executing function", ex);
+        Assert.fail("Got unexpected exception when executing function", ex);
       }
     } catch (ServerConnectivityException ex) {
       if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
           && (ex.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NotAuthorizedException when executing function: "
                 + ex.getCause());
       } else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when executing function: " + ex);
       } else {
-        fail("Got unexpected exception when executing function", ex);
+        Assert.fail("Got unexpected exception when executing function", ex);
       }
     } catch (FunctionException ex) {
       if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
           && ((ex.getCause() instanceof NotAuthorizedException) || ((ex
               .getCause() instanceof ServerOperationException) && (((ServerOperationException)ex
               .getCause()).getCause() instanceof NotAuthorizedException)))) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NotAuthorizedException when executing function: "
                 + ex.getCause());
       } else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when executing function: " + ex);
       } else {
-        fail("Got unexpected exception when executing function", ex);
+        Assert.fail("Got unexpected exception when executing function", ex);
       }
     } catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when executing function: " + ex);
       } else {
-        fail("Got unexpected exception when executing function", ex);
+        Assert.fail("Got unexpected exception when executing function", ex);
       }
     }
   }
@@ -1426,10 +1431,10 @@ public class SecurityTestUtil extends DistributedTestCase {
       assertNotNull(region);
     } catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when executing query: " + ex);
       } else {
-        fail("Got unexpected exception when executing query", ex);
+        Assert.fail("Got unexpected exception when executing query", ex);
       }
     }
     try {
@@ -1448,30 +1453,30 @@ public class SecurityTestUtil extends DistributedTestCase {
       assertEquals(expectedValue.intValue(), result.asList().size());
     } catch (NoAvailableServersException ex) {
       if (expectedResult.intValue() == SecurityTestUtil.NO_AVAILABLE_SERVERS) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NoAvailableServers when executing query: "
                 + ex.getCause());
       } else {
-        fail("Got unexpected exception when executing query", ex);
+        Assert.fail("Got unexpected exception when executing query", ex);
       }
     } catch (ServerConnectivityException ex) {
       if ((expectedResult.intValue() == NOTAUTHZ_EXCEPTION)
           && (ex.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected NotAuthorizedException when executing query: "
                 + ex.getCause());
       } else if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when executing query: " + ex);
       } else {
-        fail("Got unexpected exception when executing query", ex);
+        Assert.fail("Got unexpected exception when executing query", ex);
       }
     } catch (Exception ex) {
       if (expectedResult.intValue() == OTHER_EXCEPTION) {
-        getLogWriter().info(
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
             "Got expected exception when executing query: " + ex);
       } else {
-        fail("Got unexpected exception when executing query", ex);
+        Assert.fail("Got unexpected exception when executing query", ex);
       }
     }
   }
@@ -1493,7 +1498,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           + ", but expected results " + expectedResults.length);
     }
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("PUT: MultiUser# " + i);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("PUT: MultiUser# " + i);
       doPutsP(num, Integer.valueOf(i), expectedResults[i], false);
     }
   }
@@ -1519,7 +1524,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           + ", but expected results " + expectedResults.length);
     }
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info(
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
           "GET_ALL" + (useTX ? " in TX" : "") + ": MultiUser# " + i);
       doGetAllP(Integer.valueOf(i), expectedResults[i], useTX);
     }
@@ -1532,7 +1537,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           + ", but expected results " + expectedResults.length);
     }
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("GET: MultiUser# " + i);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("GET: MultiUser# " + i);
       doGetsP(num, Integer.valueOf(i), expectedResults[i], false);
     }
   }
@@ -1544,7 +1549,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           + ", but expected results " + expectedResults.length);
     }
     for (int i = numOfUsers-1; i >= 0; i--) {
-      getLogWriter().info("DESTROY: MultiUser# " + i);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("DESTROY: MultiUser# " + i);
       doRegionDestroysP(Integer.valueOf(i), expectedResults[i]);
     }
   }
@@ -1556,7 +1561,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           + ", but expected results " + expectedResults.length);
     }
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("DESTROY: MultiUser# " + i);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("DESTROY: MultiUser# " + i);
       doDestroysP(num, Integer.valueOf(i), expectedResults[i], false);
     }
   }
@@ -1568,7 +1573,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           + ", but expected results " + expectedResults.length);
     }
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("INVALIDATE: MultiUser# " + i);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("INVALIDATE: MultiUser# " + i);
       doInvalidatesP(num, Integer.valueOf(i), expectedResults[i], false);
     }
   }
@@ -1584,7 +1589,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           + ", but #expected output " + results.length);
     }
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("CONTAINS_KEY: MultiUser# " + i);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("CONTAINS_KEY: MultiUser# " + i);
       doContainsKeysP(num, Integer.valueOf(i), expectedResults[i], false, results[i]);
     }
   }
@@ -1596,7 +1601,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           + ", but #expected results " + expectedResults.length);
     }
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("QUERY: MultiUser# " + i);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("QUERY: MultiUser# " + i);
       doQueriesP(Integer.valueOf(i), expectedResults[i], valueSize);
     }
   }
@@ -1612,16 +1617,16 @@ public class SecurityTestUtil extends DistributedTestCase {
           + ", but #expected output " + results.length);
     }
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("FunctionExecute:onRegion MultiUser# " + i);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("FunctionExecute:onRegion MultiUser# " + i);
       doFunctionExecuteP(Integer.valueOf(i), function, expectedResults[i], results[i], "region");
     }
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("FunctionExecute:onServer MultiUser# " + i);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("FunctionExecute:onServer MultiUser# " + i);
       doFunctionExecuteP(Integer.valueOf(i), function, expectedResults[i], results[i], "server");
     }
     if (!isFailoverCase) {
       for (int i = 0; i < numOfUsers; i++) {
-        getLogWriter().info("FunctionExecute:onServers MultiUser# " + i);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("FunctionExecute:onServers MultiUser# " + i);
         doFunctionExecuteP(Integer.valueOf(i), function, expectedResults[i],
             results[i], "servers");
       }
@@ -1635,7 +1640,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           + ", but #expected results " + expectedResults.length);
     }
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("QueryExecute: MultiUser# " + i);
+      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("QueryExecute: MultiUser# " + i);
       doQueryExecuteP(Integer.valueOf(i), expectedResults[i], result);
     }
   }
@@ -1682,7 +1687,7 @@ public class SecurityTestUtil extends DistributedTestCase {
           fail("Expected " + expectedResult + " but found "
               + e.getClass().getSimpleName() + " in doSimpleGet()");
         } else {
-          getLogWriter().fine(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().fine(
               "Got expected " + e.getClass().getSimpleName()
                   + " in doSimpleGet()");
         }
@@ -1699,10 +1704,10 @@ public class SecurityTestUtil extends DistributedTestCase {
         }
       } catch (Exception e) {
         if (!e.getClass().getSimpleName().endsWith(expectedResult)) {
-          fail("Expected " + expectedResult + " but found "
+          Assert.fail("Expected " + expectedResult + " but found "
               + e.getClass().getSimpleName() + " in doSimplePut()", e);
         } else {
-          getLogWriter().fine(
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().fine(
               "Got expected " + e.getClass().getSimpleName()
                   + " in doSimplePut()");
         }
@@ -1730,11 +1735,11 @@ public class SecurityTestUtil extends DistributedTestCase {
         }
       }
       catch (IllegalAccessException ex) {
-        getLogWriter()
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
             .warning("Exception while clearing static SSL field.", ex);
       }
       catch (ClassCastException ex) {
-        getLogWriter()
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
             .warning("Exception while clearing static SSL field.", ex);
       }
     }
@@ -1754,7 +1759,7 @@ public class SecurityTestUtil extends DistributedTestCase {
         assertNull(field.get(obj));
       }
       catch (IllegalAccessException ex) {
-        getLogWriter().warning("Exception while clearing SSL fields.", ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().warning("Exception while clearing SSL fields.", ex);
       }
     }
   }
@@ -1779,7 +1784,7 @@ public class SecurityTestUtil extends DistributedTestCase {
         }
       }
       catch (IllegalAccessException ex) {
-        getLogWriter().warning("Exception while getting SSL fields.", ex);
+        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().warning("Exception while getting SSL fields.", ex);
       }
     }
     return resultFields;

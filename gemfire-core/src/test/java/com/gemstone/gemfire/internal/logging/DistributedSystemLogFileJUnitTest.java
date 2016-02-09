@@ -43,8 +43,8 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.logging.log4j.FastLogger;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -113,7 +113,7 @@ public class DistributedSystemLogFileJUnitTest {
     assertEquals("Expected " + LogWriterImpl.levelToString(InternalLogWriter.INFO_LEVEL) + " but was " + LogWriterImpl.levelToString(logWriter.getLogWriterLevel()),
         InternalLogWriter.INFO_LEVEL, logWriter.getLogWriterLevel());
     
-    DistributedTestCase.waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
         return logFile.exists();
@@ -504,7 +504,7 @@ public class DistributedSystemLogFileJUnitTest {
     assertTrue(logWriter instanceof FastLogger);
     assertTrue(((FastLogger)logWriter).isDelegating());
 
-    DistributedTestCase.waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
         return logFile.exists();
@@ -720,7 +720,7 @@ public class DistributedSystemLogFileJUnitTest {
     assertTrue(logWriter instanceof FastLogger);
     assertTrue(((FastLogger)logWriter).isDelegating());
 
-    DistributedTestCase.waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
         return logFile.exists();
@@ -961,7 +961,7 @@ public class DistributedSystemLogFileJUnitTest {
     assertTrue(((FastLogger)logWriter).isDelegating());
 
     
-    DistributedTestCase.waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
         return securityLogFile.exists() && logFile.exists();
@@ -1076,7 +1076,7 @@ public class DistributedSystemLogFileJUnitTest {
     assertTrue(((FastLogger)securityLogWriter).isDelegating());
     assertTrue(((FastLogger)logWriter).isDelegating());
 
-    DistributedTestCase.waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
         return securityLogFile.exists() && logFile.exists();
@@ -1248,7 +1248,7 @@ public class DistributedSystemLogFileJUnitTest {
     assertTrue(((FastLogger)securityLogWriter).isDelegating());
     assertTrue(((FastLogger)logWriter).isDelegating());
 
-    DistributedTestCase.waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
         return logFile.exists();
@@ -1397,7 +1397,7 @@ public class DistributedSystemLogFileJUnitTest {
     assertTrue(((FastLogger)securityLogWriter).isDelegating());
     assertTrue(((FastLogger)logWriter).isDelegating());
 
-    DistributedTestCase.waitForCriterion(new WaitCriterion() {
+    Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
         return logFile.exists();

@@ -23,9 +23,11 @@ import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Test Region expiration - both time-to-live and idle timeout.
@@ -124,7 +126,7 @@ public class RegionExpirationDUnitTest extends CacheTestCase {
         return "region never destroyed";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 30 * 1000, 1000, true);
+    Wait.waitForCriterion(wc, 30 * 1000, 1000, true);
   }
 
   public void testWhenBothTtlAndIdleAreSet() 
@@ -162,9 +164,9 @@ public class RegionExpirationDUnitTest extends CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    getLogWriter().info("vm0 is " + vm0.getPid() + ", vm1 is " + vm1);
+    LogWriterUtils.getLogWriter().info("vm0 is " + vm0.getPid() + ", vm1 is " + vm1);
 
-    getLogWriter().info("2: " + regionName + " action is " + action);
+    LogWriterUtils.getLogWriter().info("2: " + regionName + " action is " + action);
 
     final long tilt = System.currentTimeMillis() + timeoutSecs * 1000;
 
@@ -216,7 +218,7 @@ public class RegionExpirationDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Get") {
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(regionName);
-          getLogWriter().info("3: " + regionName + ", " + region + ", action is " + action);
+          LogWriterUtils.getLogWriter().info("3: " + regionName + ", " + region + ", action is " + action);
           if (action.isInvalidate() || action.isLocalInvalidate()) {
             assertTrue(!region.containsValueForKey(key));
           } else {
@@ -253,7 +255,7 @@ public class RegionExpirationDUnitTest extends CacheTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEarlyAck(false);
     RegionAttributes attrs = factory.create();
-    getLogWriter().info("4: " + regionName + " ttl action is " + ttl);
+    LogWriterUtils.getLogWriter().info("4: " + regionName + " ttl action is " + ttl);
     getOrCreateRootRegion().createSubregion(regionName, attrs);
   }
 

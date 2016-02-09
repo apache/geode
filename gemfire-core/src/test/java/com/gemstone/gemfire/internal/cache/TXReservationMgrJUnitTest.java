@@ -30,7 +30,7 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CommitConflictException;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -124,7 +124,7 @@ public class TXReservationMgrJUnitTest {
       threads[i].start();
     }
     for (int i=0; i < THREAD_COUNT; i++) {
-      DistributedTestCase.join(threads[i], 60 * 1000, null); // increased from 30 to 60 for parallel junit runs
+      ThreadUtils.join(threads[i], 60 * 1000); // increased from 30 to 60 for parallel junit runs
     }
     int invalidCount = 0;
     for (int i=0; i < KEY_COUNT; i++) {

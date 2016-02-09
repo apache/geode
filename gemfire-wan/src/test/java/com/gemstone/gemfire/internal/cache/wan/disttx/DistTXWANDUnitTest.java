@@ -21,6 +21,8 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
 public class DistTXWANDUnitTest extends WANTestBase {
@@ -34,10 +36,10 @@ public class DistTXWANDUnitTest extends WANTestBase {
   public void setUp() throws Exception {
     super.setUp();
     
-    this.invokeInEveryVM(new SerializableCallable() {
+    Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty("gemfire.log-level", getDUnitLogLevel());
+        System.setProperty("gemfire.log-level", LogWriterUtils.getDUnitLogLevel());
         return null;
       }
     }); 
@@ -71,27 +73,27 @@ public class DistTXWANDUnitTest extends WANTestBase {
         false, 100, 10, false, false, null, true });
 
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() });
 
-    vm4.invoke(WANTestBase.class, "doDistTXPuts", new Object[] { testName + "_PR",
+    vm4.invoke(WANTestBase.class, "doDistTXPuts", new Object[] { getTestMethodName() + "_PR",
         50 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR", 50 });
+        getTestMethodName() + "_PR", 50 });
   }
 
   public void testPartitionedSerialPropagation_SenderNotSameAsCoordinator() throws Exception {
@@ -116,27 +118,27 @@ public class DistTXWANDUnitTest extends WANTestBase {
         false, 100, 10, false, false, null, true });
 
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 1, 100, isOffHeap() });
+        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() });
 
-    vm6.invoke(WANTestBase.class, "doDistTXPuts", new Object[] { testName + "_PR",
+    vm6.invoke(WANTestBase.class, "doDistTXPuts", new Object[] { getTestMethodName() + "_PR",
         50 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR", 50 });
+        getTestMethodName() + "_PR", 50 });
   }
 
   
@@ -164,13 +166,13 @@ public class DistTXWANDUnitTest extends WANTestBase {
         true, 100, 10, false, false, null, true });
 
     vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap()  });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap()  });
     vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap()  });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap()  });
     vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap()  });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap()  });
     vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 1, 100, isOffHeap()  });
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap()  });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
@@ -178,9 +180,9 @@ public class DistTXWANDUnitTest extends WANTestBase {
     vm7.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 1, 100, isOffHeap()  });
+        getTestMethodName() + "_PR", null, 1, 100, isOffHeap()  });
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 1, 100, isOffHeap()  });
+        getTestMethodName() + "_PR", null, 1, 100, isOffHeap()  });
 
     //before doing any puts, let the senders be running in order to ensure that
     //not a single event will be lost
@@ -189,7 +191,7 @@ public class DistTXWANDUnitTest extends WANTestBase {
     vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
     
-    vm4.invoke(WANTestBase.class, "doDistTXPuts", new Object[] { testName + "_PR",
+    vm4.invoke(WANTestBase.class, "doDistTXPuts", new Object[] { getTestMethodName() + "_PR",
         5 });
     
     //verify all buckets drained on all sender nodes.
@@ -199,7 +201,7 @@ public class DistTXWANDUnitTest extends WANTestBase {
     vm7.invoke(WANTestBase.class, "validateParallelSenderQueueAllBucketsDrained", new Object[] {"ln"});
     
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR", 5 });
+        getTestMethodName() + "_PR", 5 });
   }
 
   public void testDummy() {

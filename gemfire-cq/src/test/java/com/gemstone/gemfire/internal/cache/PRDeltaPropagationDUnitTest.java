@@ -56,10 +56,14 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * 
@@ -784,7 +788,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
       assertNotNull(cache);
     }
     catch (Exception e) {
-      fail("Failed while creating the cache", e);
+      Assert.fail("Failed while creating the cache", e);
     }
   }
 
@@ -820,7 +824,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     assertNotNull(cache);
     deltaPR = cache.createRegion(partitionedRegionName, attr.create());
     assertNotNull(deltaPR);
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "Partitioned Region " + partitionedRegionName
             + " created Successfully :" + deltaPR);
   }
@@ -842,7 +846,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
       server1.start();
     }
     catch (IOException e) {
-      fail("Failed to start the Server", e);
+      Assert.fail("Failed to start the Server", e);
     }
     assertTrue(server1.isRunning());
     return new Integer(server1.getPort());
@@ -1107,7 +1111,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
         return "Last key NOT received.";
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 10*1000, 100, true);
+    Wait.waitForCriterion(wc, 10*1000, 100, true);
   }
 
   public static Boolean verifyQueryUpdateExecuted() {
@@ -1138,14 +1142,13 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     ConflationDUnitTest.unsetIsSlowStart();
   }
 
-  public void tearDown2() throws Exception {
-    super.tearDown2();    
+  @Override
+  protected final void preTearDown() throws Exception {
     closeCache();
     client1.invoke(PRDeltaPropagationDUnitTest.class, "closeCache");
     dataStore1.invoke(PRDeltaPropagationDUnitTest.class, "closeCache");
     dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "closeCache");
     dataStore3.invoke(PRDeltaPropagationDUnitTest.class, "closeCache");
-    
   }
 
   public static void closeCache() {

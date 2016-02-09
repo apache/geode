@@ -61,7 +61,8 @@ import com.gemstone.gemfire.internal.cache.xmlcache.ClientCacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
@@ -96,7 +97,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
     setXmlFile(nonExistent);
 //    System.out.println("testNonExistentFile - set: " + System.currentTimeMillis());
 
-    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.
+    IgnoredException expectedException = IgnoredException.addIgnoredException(LocalizedStrings.
         GemFireCache_DECLARATIVE_CACHE_XML_FILERESOURCE_0_DOES_NOT_EXIST.toLocalizedString(nonExistent.getPath()));
     try {
       getCache();
@@ -119,7 +120,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
     dir.deleteOnExit();
     setXmlFile(dir);
 
-    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.
+    IgnoredException expectedException = IgnoredException.addIgnoredException(LocalizedStrings.
         GemFireCache_DECLARATIVE_XML_FILE_0_IS_NOT_A_FILE.toLocalizedString(dir));
     try {
       getCache();
@@ -293,7 +294,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testMalformed() {
     setXmlFile(findFile("malformed.xml"));
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -311,7 +312,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testBadInt() {
     setXmlFile(findFile("badInt.xml"));
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -333,7 +334,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testBadFloat() {
     setXmlFile(findFile("badFloat.xml"));
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -352,7 +353,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testBadScope() {
     setXmlFile(findFile("badScope.xml"));
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -371,7 +372,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testBadKeyConstraintClass() {
     setXmlFile(findFile("badKeyConstraintClass.xml"));
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -390,7 +391,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testCallbackNotDeclarable() {
     setXmlFile(findFile("callbackNotDeclarable.xml"));
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -412,7 +413,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testCallbackWithException() {
     setXmlFile(findFile("callbackWithException.xml"));
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -434,7 +435,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testLoaderNotLoader() {
     setXmlFile(findFile("loaderNotLoader.xml"));
 
-    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -595,7 +596,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
       assertTrue("No XML files in " + dirName, xmlFiles.length > 0);
       for (int i = 0; i < xmlFiles.length; i++) {
         File xmlFile = xmlFiles[i];
-        getLogWriter().info("Parsing " + xmlFile);
+        LogWriterUtils.getLogWriter().info("Parsing " + xmlFile);
 
         FileInputStream fis = new FileInputStream(xmlFile);
         CacheXmlParser.parse(fis);

@@ -35,7 +35,9 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
 public class WANLocatorServerDUnitTest extends WANTestBase {
 
@@ -92,7 +94,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
 
   public static void createLocator(Integer port1, Integer port2, Integer port3,
       Integer startingPort) {
-    WANTestBase test = new WANTestBase(testName);
+    WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + 1);
@@ -105,7 +107,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   }
 
   public static void createReceiver(Integer port1, Integer port2, Integer port3) {
-    WANTestBase test = new WANTestBase(testName);
+    WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port1
@@ -130,7 +132,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   }
 
   public static void createServer(Integer port1, Integer port2, Integer port3) {
-    WANTestBase test = new WANTestBase(testName);
+    WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port1
@@ -149,12 +151,12 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
       fail("Test " + test.getName() + " failed to start CacheServer on port "
           + port);
     }
-    getLogWriter().info(
+    LogWriterUtils.getLogWriter().info(
         "Server Started on port : " + port + " : server : " + server);
   }
 
   public static void disconnect() {
-    WANTestBase test = new WANTestBase(testName);
+    WANTestBase test = new WANTestBase(getTestMethodName());
     test.getSystem().disconnect();
   }
 
@@ -186,7 +188,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
       con1 = proxy.acquireConnection();
     }
     catch (Exception e) {
-      fail("No Exception expected", e);
+      Assert.fail("No Exception expected", e);
     }
 
   }

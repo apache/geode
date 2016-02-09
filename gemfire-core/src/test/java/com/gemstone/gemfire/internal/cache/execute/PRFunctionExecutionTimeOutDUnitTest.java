@@ -41,6 +41,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegionTestHelper;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -666,7 +667,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends
    * @throws Exception
    */
   public void testLocalMultiKeyExecution_byName() throws Exception {
-    addExpectedException("BucketMovedException");
+    IgnoredException.addIgnoredException("BucketMovedException");
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
     VM localOnly = host.getVM(3);
@@ -797,7 +798,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends
     final VM datastore1 = host.getVM(1);
     final VM datastore2 = host.getVM(2);
     final VM datastore3 = host.getVM(3);
-    addExpectedException("BucketMovedException");
+    IgnoredException.addIgnoredException("BucketMovedException");
     getCache();
     SerializableCallable dataStoreCreate = new SerializableCallable(
         "Create PR with Function Factory") {

@@ -40,9 +40,13 @@ import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.cache30.CertifiableTestCacheListener;
@@ -94,7 +98,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server. 
     final int size = 10;
@@ -112,7 +116,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     this.registerInterestList(client, cqDUnitTest.regions[0], 4, KEYS);
 
     //Wait for Index to get updated.
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
 
     //This query execution should fail as it will run on client index and index are not updated just by registerInterest.
     //Validate query results.
@@ -140,7 +144,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testClientIndexUpdateWithRegisterInterest";
     cqDUnitTest.createPool(client, poolName, host0, port);
@@ -155,7 +159,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     this.createValues(client, cqDUnitTest.regions[0], size, 1);
 
     //wait for index to get updated.
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
     //this.validateQueryOnIndex(client, incompleteQ+"p.getID() > 0", 10);
     
     this.validateQueryOnIndex(client, incompleteQ+"p.ID > 0", 10);
@@ -167,7 +171,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     this.registerInterestList(client, cqDUnitTest.regions[0], size, KEYS, 4 /*start index*/);
 
     //Wait for Index to get updated.
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
 
     //This query execution should fail as it will run on client index and index are not updated just by registerInterest.
     //Validate query results.
@@ -191,7 +195,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     //Init values at server. 
     final int size = 10;
@@ -209,7 +213,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     cqDUnitTest.registerInterestListCQ(client, cqDUnitTest.regions[0], size, true);
 
     //Wait for Index to get updated.
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
 
     //This query execution should fail as it will run on client index and index are not updated just by registerInterest.
     //Validate query results.
@@ -232,7 +236,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     //Init values at server. 
     final int size = 10;
@@ -250,7 +254,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     this.registerInterestList(client, cqDUnitTest.regions[0], 2, REGEX);
 
     //Wait for Index to get updated.
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
 
     //This query execution should fail as it will run on client index and index are not updated just by registerInterest.
     //Validate query results.
@@ -279,7 +283,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     //Init values at server. 
     final int size = 1000;
@@ -336,7 +340,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server. 
     final int size = 10;
@@ -354,7 +358,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     this.registerInterestList(client, ROOT, size, 0);
 
     //Wait for Index to get updated.
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
 
     //This query execution should fail as it will run on client index and index are not updated just by registerInterest.
     //Validate query results.
@@ -377,7 +381,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server. 
     final int size = 10;
@@ -395,7 +399,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     this.registerInterestList(client, ROOT, 4, KEYS);
 
     //Wait for Index to get updated.
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
 
     //This query execution should fail as it will run on client index and index are not updated just by registerInterest.
     //Validate query results.
@@ -418,7 +422,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
         "getCacheServerPort");
-    final String host0 = getServerHostName(server.getHost());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server. 
     final int size = 10;
@@ -436,7 +440,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     this.registerInterestList(client, "root", 2, REGEX);
 
     //Wait for Index to get updated.
-    pause(5 * 1000);
+    Wait.pause(5 * 1000);
 
     //This query execution should fail as it will run on client index and index are not updated just by registerInterest.
     //Validate query results.
@@ -465,7 +469,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
           } else {
             region = getRootRegion().getSubregion(regionName);
           }
-          region.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(getLogWriter()));
+          region.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
         } catch (Exception cqe) {
           AssertionError err = new AssertionError("Failed to get Region.");
           err.initCause(cqe);
@@ -508,7 +512,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
           } else {
             region = getRootRegion().getSubregion(regionName);
           }
-          region.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(getLogWriter()));
+          region.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
         } catch (Exception cqe) {
           AssertionError err = new AssertionError("Failed to get Region.");
           err.initCause(cqe);
@@ -544,7 +548,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
         "Create Cache Server") {
       public void run2() throws CacheException
       {
-        getLogWriter().info("### Create Cache Server. ###");
+        LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
         AttributesFactory factory = new AttributesFactory();
         factory.setMirrorType(MirrorType.KEYS_VALUES);
 
@@ -559,16 +563,16 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
         
         
-        pause(2000);
+        Wait.pause(2000);
 
         try {
           startBridgeServer(thePort, true);
         }
 
         catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+          Assert.fail("While starting CacheServer", ex);
         }
-        pause(2000);
+        Wait.pause(2000);
         
       }
     };
@@ -620,7 +624,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 //          getLogWriter().info("### puting '"+KEY+i+"' in region " + region1);
           region1.put(KEY+i, new Portfolio((start != 0 ? start : 1) * i, i));
         }
-        getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
       }
     });
   }
@@ -642,13 +646,13 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     SerializableRunnable createQService =
       new CacheSerializableRunnable("Create Client") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Create Client. ###");
+        LogWriterUtils.getLogWriter().info("### Create Client. ###");
         //Region region1 = null;
         // Initialize CQ Service.
         try {
           getCache().getQueryService();
         } catch (Exception cqe) {
-          fail("Failed to getCQService.", cqe);
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         AttributesFactory regionFactory = new AttributesFactory();
@@ -665,7 +669,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
         }
                
           createRootRegion(regionFactory.createRegionAttributes());
-          getLogWriter().info("### Successfully Created Root Region on Client");
+          LogWriterUtils.getLogWriter().info("### Successfully Created Root Region on Client");
       }
     };
     
@@ -686,7 +690,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
   public void validateQueryOnIndexWithRegion(VM vm, final String query, final int resultSize, final String region) {
     vm.invoke(new CacheSerializableRunnable("Validate Query") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Validating Query. ###");
+        LogWriterUtils.getLogWriter().info("### Validating Query. ###");
         QueryService qs = getCache().getQueryService();
         
         Query q = qs.newQuery(query);
@@ -697,7 +701,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
           Object r = q.execute();
           if(r instanceof SelectResults){
             int rSize = ((SelectResults)r).asSet().size();
-            getLogWriter().info("### Result Size is :" + rSize);
+            LogWriterUtils.getLogWriter().info("### Result Size is :" + rSize);
             
             if(region == null) {
               assertEquals(resultSize, rSize);
@@ -715,7 +719,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
           }
         }
         catch (Exception e) {
-          fail("Failed to execute the query.", e);
+          Assert.fail("Failed to execute the query.", e);
         }
         if(!observer.isIndexesUsed) {
           fail("Index not used for query");
@@ -727,7 +731,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
   public void asyncClearRegion(VM vm, final String regionName){
     vm.invokeAsync(new CacheSerializableRunnable("Destroy entries") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Clearing Region. ###");
+        LogWriterUtils.getLogWriter().info("### Clearing Region. ###");
         Region region1;
         if(!"root".equals(regionName)){
           region1 = getRootRegion().getSubregion(regionName);
@@ -735,7 +739,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
           region1 = getRootRegion();
         }
         region1.clear();
-        getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
       }
     });
   }
@@ -743,7 +747,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
   private SerializableRunnable getSRClearRegion(final String regionName) {
     SerializableRunnable sr = new CacheSerializableRunnable("Destroy entries") {
       public void run2() throws CacheException {
-        getLogWriter().info("### Clearing Region. ###");
+        LogWriterUtils.getLogWriter().info("### Clearing Region. ###");
         Region region1;
         if(!"root".equals(regionName)){
           region1 = getRootRegion().getSubregion(regionName);
@@ -751,7 +755,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
           region1 = getRootRegion();
         }
         region1.clear();
-        getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
+        LogWriterUtils.getLogWriter().info("### Number of Entries in Region :" + region1.keys().size());
       }
     };
     return sr;
@@ -770,7 +774,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
           } else {
             region = getRootRegion().getSubregion(regionName);
           }
-          region.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(getLogWriter()));
+          region.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
         } catch (Exception cqe) {
           AssertionError err = new AssertionError("Failed to get Region.");
           err.initCause(cqe);

@@ -30,8 +30,10 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.tier.ConnectionProxy;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.ConnectionFactoryImpl;
@@ -133,8 +135,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends
   }
 
   @Override
-  public void tearDown2() throws Exception {
-    super.tearDown2();
+  protected final void postTearDown() throws Exception {
     client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
         "unsetHandshakeVersionForTesting");
     client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
@@ -168,7 +169,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends
         "setHandshakeVersionForTesting");
     client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
         "createClientCache", new Object[] {
-            getServerHostName(server1.getHost()), port1 });
+            NetworkUtils.getServerHostName(server1.getHost()), port1 });
     client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
         "verifyConnectionToServerFailed");
   }
@@ -250,7 +251,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends
       r.destroyRegion();
     }
     catch (Exception ex) {
-      fail("failed while destroy region ", ex);
+      Assert.fail("failed while destroy region ", ex);
     }
   }
 

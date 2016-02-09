@@ -41,8 +41,8 @@ import com.gemstone.gemfire.internal.cache.execute.InternalFunctionInvocationTar
 import com.gemstone.gemfire.internal.cache.execute.MyFunctionExecutionException;
 import com.gemstone.gemfire.internal.cache.execute.RegionFunctionContextImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -797,7 +797,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 15000, 1000, false);
+    Wait.waitForCriterion(wc, 15000, 1000, false);
     if (context.getArguments() instanceof Boolean) {
       context.getResultSender().lastResult((Serializable) context.getArguments());
     }
@@ -911,7 +911,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
         return excuse;
       }
     };
-    DistributedTestCase.waitForCriterion(wc, 10000, 500, false);
+    Wait.waitForCriterion(wc, 10000, 500, false);
     rcontext.getResultSender().lastResult((Serializable) rcontext.getArguments());
   }
   

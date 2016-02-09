@@ -34,6 +34,7 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.internal.cache.lru.Sizeable;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
@@ -177,7 +178,7 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends
             i++;
           }
           assertEquals(1, pr.getDataStore().localBucket2RegionMap.size());
-          getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
           "putObjectInPartitionRegion() - Put operation done successfully");
         }
         else {
@@ -190,7 +191,7 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends
             fail("Bucket gets created even if no memory is available");
           }
           catch (PartitionedRegionStorageException e) {
-            getLogWriter()
+            LogWriterUtils.getLogWriter()
             .info(
             "putObjectInPartitionRegion()- got correct PartitionedRegionStorageException while creating bucket when no memory is available");
           }

@@ -34,6 +34,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
@@ -294,8 +295,8 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     params[3] = cacheClientSslRequireAuth;
     params[4] = TRUSTED_STORE;
     params[5] = TRUSTED_STORE;
-    ExpectedException expect = addExpectedException("javax.net.ssl.SSLException", serverVM);
-    ExpectedException expect2 = addExpectedException("IOException", serverVM);
+    IgnoredException expect = IgnoredException.addIgnoredException("javax.net.ssl.SSLException", serverVM);
+    IgnoredException expect2 = IgnoredException.addIgnoredException("IOException", serverVM);
     try{
       //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);    
       clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpClientVMTaskNoSubscription", params);
@@ -384,7 +385,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     params[3] = cacheClientSslRequireAuth;
     params[4] = TRUSTED_STORE;
     params[5] = TRUSTED_STORE;
-    ExpectedException expect = addExpectedException("javax.net.ssl.SSLHandshakeException", serverVM);
+    IgnoredException expect = IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException", serverVM);
     try{
       //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);    
       clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpClientVMTask", params);
@@ -411,15 +412,13 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     }
   }
   
-  public void tearDown2() throws Exception
-  {
+  @Override
+  protected final void preTearDown() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
     VM clientVM = host.getVM(2);
     clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "closeClientCacheTask");
     serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "closeCacheTask");
-    super.tearDown2();
   }
-
 }
 

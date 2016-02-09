@@ -169,7 +169,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
     } finally {
       this.xmlProps = null;
       try {
-        tearDown2();
+        preTearDown();
       } finally {
         DistributedRegion.ignoreReconnect = false;
       }

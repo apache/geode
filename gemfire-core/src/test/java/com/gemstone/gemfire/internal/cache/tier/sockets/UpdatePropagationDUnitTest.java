@@ -44,9 +44,14 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  *
@@ -123,12 +128,12 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     PORT2 =  ((Integer)server2.invoke(getClass(), "createServerCache" )).intValue();
 
     client1.invoke(getClass(), "createClientCache", new Object[] {
-      getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)});
+      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)});
     client2.invoke(getClass(), "createClientCache", new Object[] {
-      getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)});
+      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)});
     
-    addExpectedException("java.net.SocketException");
-    addExpectedException("Unexpected IOException");
+    IgnoredException.addIgnoredException("java.net.SocketException");
+    IgnoredException.addIgnoredException("Unexpected IOException");
 
   }
   
@@ -191,7 +196,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, maxWaitTime, 200, true);
+        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
       }
     });
 
@@ -216,7 +221,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, maxWaitTime, 200, true);
+        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
       }
     });
 
@@ -244,7 +249,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, maxWaitTime, 200, true);
+        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
       }
     });
 
@@ -252,7 +257,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     // Client1 should not receive updated value while client2 should receive
     client1.invoke(impl.getClass(),
         "acquireConnectionsAndPutonK1andK2",
-        new Object[] { getServerHostName(client1.getHost())});
+        new Object[] { NetworkUtils.getServerHostName(client1.getHost())});
     //pause(5000);
     //Check if both the puts ( on key1 & key2 ) have reached the servers
     server1.invoke(impl.getClass(), "verifyUpdates");
@@ -301,7 +306,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, maxWaitTime, 200, true);
+        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
       }
     });
     client2.invoke(new CacheSerializableRunnable("Wait for server on port1 to be dead") {
@@ -325,7 +330,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, maxWaitTime, 200, true);
+        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
       }
     });
 
@@ -348,7 +353,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, maxWaitTime, 200, true);
+        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
       }
     });
 
@@ -368,18 +373,18 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(ev, maxWaitTime, 200, true);
+        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
       }
     });
     
-    pause(5000);
+    Wait.pause(5000);
 
     //Do a put on Server1 via Connection object from client1.
     // Client1 should not receive updated value while client2 should receive
     client1.invoke(impl.getClass(),
         "acquireConnectionsAndPutonK1andK2",
-        new Object[] { getServerHostName(client1.getHost())});
-    pause(5000);
+        new Object[] { NetworkUtils.getServerHostName(client1.getHost())});
+    Wait.pause(5000);
     //Check if both the puts ( on key1 & key2 ) have reached the servers
     server1.invoke(impl.getClass(), "verifyUpdates");
     server2.invoke(impl.getClass(), "verifyUpdates");
@@ -465,7 +470,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
       }
     }
     catch (Exception ex) {
-      fail("failed while createEntriesK1andK2()", ex);
+      Assert.fail("failed while createEntriesK1andK2()", ex);
     }
   }
 
@@ -537,7 +542,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
 
     }
     catch (Exception ex) {
-      fail("failed while registering interest", ex);
+      Assert.fail("failed while registering interest", ex);
     }
   }
 
@@ -551,7 +556,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
       assertEquals("key-2", r.getEntry("key2").getValue());
     }
     catch (Exception ex) {
-      fail("failed while verifyNoUpdates()", ex);
+      Assert.fail("failed while verifyNoUpdates()", ex);
     }
   }
 
@@ -571,7 +576,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
       }
     }
     catch (Exception ex) {
-      fail("failed while region", ex);
+      Assert.fail("failed while region", ex);
     }
   }
 
@@ -583,17 +588,15 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     }
   }
 
-  public void tearDown2() throws Exception
-  {
+  @Override
+  protected final void preTearDown() throws Exception {
     //close client
     client1.invoke(getClass(), "closeCache");
     client2.invoke(getClass(), "closeCache");
     //close server
     server1.invoke(getClass(), "closeCache");
     server2.invoke(getClass(), "closeCache");
-
   }
-
 }
 
 

@@ -39,6 +39,8 @@ import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -65,7 +67,7 @@ public class ClassNotFoundExceptionDUnitTest extends CacheTestCase {
   }
   
   public void doTest(final ObjectFactory objectFactory) throws InterruptedException {
-    addExpectedException("SerializationException");
+    IgnoredException.addIgnoredException("SerializationException");
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -189,7 +191,7 @@ public class ClassNotFoundExceptionDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         disconnectFromDS();
         ClientCacheFactory cf = new ClientCacheFactory();
-        cf.addPoolServer(getServerHostName(vm.getHost()), port);
+        cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
         cf.setPoolSubscriptionEnabled(true);
         ClientCache cache = getClientCache(cf);
         cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)

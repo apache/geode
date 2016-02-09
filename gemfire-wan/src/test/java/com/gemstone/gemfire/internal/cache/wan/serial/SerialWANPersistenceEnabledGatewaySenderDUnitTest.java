@@ -19,6 +19,8 @@ package com.gemstone.gemfire.internal.cache.wan.serial;
 
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * @author skumar
@@ -62,29 +64,29 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
         false, 100, 10, false, true, null, true });
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
 
   }
 
@@ -113,29 +115,29 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
         false, 100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", null, isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", null, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", null, isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
 
   }
 
@@ -164,29 +166,29 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
         false, 100, 10, false, true, null, true });
 
     vm2.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", null, isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", null, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", null, isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPersistentReplicatedRegion",
-        new Object[] { testName + "_RR", "ln", isOffHeap() });
+        new Object[] { getTestMethodName() + "_RR", "ln", isOffHeap() });
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
 
   }
 
@@ -215,33 +217,33 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
         "createSenderWithDiskStore", new Object[] { "ln", 2, false,
             100, 10, false, true, null, null, true });
 
-    getLogWriter().info("The first ds is " + firstDStore);
-    getLogWriter().info("The first ds is " + secondDStore);
+    LogWriterUtils.getLogWriter().info("The first ds is " + firstDStore);
+    LogWriterUtils.getLogWriter().info("The first ds is " + secondDStore);
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
-    getLogWriter().info("Completed puts in the region");
+    LogWriterUtils.getLogWriter().info("Completed puts in the region");
 
     // verify if the queue has all the events
     // vm4.invoke(WANTestBase.class, "checkQueueSize", new Object[] { "ln", 1000
@@ -260,36 +262,36 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     vm6.invoke(WANTestBase.class, "killSender", new Object[] {});
     vm7.invoke(WANTestBase.class, "killSender", new Object[] {});
     
-    getLogWriter().info("Killed all the sender. ");
+    LogWriterUtils.getLogWriter().info("Killed all the sender. ");
     // restart the vm
     vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
     vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
     vm4.invoke(WANTestBase.class, "createSenderWithDiskStore", new Object[] {
         "ln", 2, false, 100, 10, false, true, null,
         firstDStore, true });
-    getLogWriter().info("Creted the sender.... in vm4 ");
+    LogWriterUtils.getLogWriter().info("Creted the sender.... in vm4 ");
     vm5.invoke(WANTestBase.class, "createSenderWithDiskStore", new Object[] {
         "ln", 2, false, 100, 10, false, true, null,
         secondDStore, true });
-    getLogWriter().info("Creted the sender.... in vm5 ");
+    LogWriterUtils.getLogWriter().info("Creted the sender.... in vm5 ");
     AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class, "startSender",
         new Object[] { "ln" });
-    getLogWriter().info("Started the sender in vm 4");
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 4");
 
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    getLogWriter().info("Started the sender in vm 5");
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 5");
     try {
       inv1.join();
     } catch (InterruptedException e) {
       fail("Got interrupted exception while waiting for startSender to finish.");
     }
 
-    pause(5000);
+    Wait.pause(5000);
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
 
   }
 
@@ -320,39 +322,39 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
         "createSenderWithDiskStore", new Object[] { "ln", 2, false,
             100, 10, false, true, null, null, true  });
 
-    getLogWriter().info("The first ds is " + firstDStore);
-    getLogWriter().info("The first ds is " + secondDStore);
+    LogWriterUtils.getLogWriter().info("The first ds is " + firstDStore);
+    LogWriterUtils.getLogWriter().info("The first ds is " + secondDStore);
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
-    getLogWriter().info("Completed puts in the region");
+    LogWriterUtils.getLogWriter().info("Completed puts in the region");
 
     // kill the vm
     vm4.invoke(WANTestBase.class, "killSender", new Object[] {});
     vm5.invoke(WANTestBase.class, "killSender", new Object[] {});
 
-    getLogWriter().info("Killed the sender. ");
+    LogWriterUtils.getLogWriter().info("Killed the sender. ");
     // restart the vm
     vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
     vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
@@ -360,36 +362,36 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     vm4.invoke(WANTestBase.class,
         "createSenderWithDiskStore", new Object[] { "ln", 2, false,
       100, 10, false, true, null, firstDStore, true  });
-    getLogWriter().info("Created the sender.... in vm4 ");
+    LogWriterUtils.getLogWriter().info("Created the sender.... in vm4 ");
     vm5.invoke(WANTestBase.class,
         "createSenderWithDiskStore", new Object[] { "ln", 2, false,
             100, 10, false, true, null, secondDStore, true  });
-    getLogWriter().info("Created the sender.... in vm5 ");
+    LogWriterUtils.getLogWriter().info("Created the sender.... in vm5 ");
     
     vm4.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-      testName + "_RR", "ln", isOffHeap() });
+      getTestMethodName() + "_RR", "ln", isOffHeap() });
     
     vm5.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-      testName + "_RR", "ln", isOffHeap() });
+      getTestMethodName() + "_RR", "ln", isOffHeap() });
   
     AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class, "startSender",
         new Object[] { "ln" });
-    getLogWriter().info("Started the sender in vm 4");
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 4");
 
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    getLogWriter().info("Started the sender in vm 5");
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 5");
     try {
       inv1.join();
     } catch (InterruptedException e) {
       fail("Got interrupted exception while waiting for startSedner to finish.");
     }
 
-    pause(5000);
+    Wait.pause(5000);
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
 
   }
   
@@ -421,29 +423,29 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
             100, 10, false, false, null, true });
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
-    getLogWriter().info("Completed puts in the region");
+    LogWriterUtils.getLogWriter().info("Completed puts in the region");
 
     // verify if the queue has all the events
     // vm4.invoke(WANTestBase.class, "checkQueueSize", new Object[] { "ln", 1000
@@ -460,27 +462,27 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     vm4.invoke(WANTestBase.class, "killSender", new Object[] {});
     vm5.invoke(WANTestBase.class, "killSender", new Object[] {});
 
-    getLogWriter().info("Killed the sender. ");
+    LogWriterUtils.getLogWriter().info("Killed the sender. ");
     // restart the vm
     vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
     vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
     vm4.invoke(WANTestBase.class, "createSender", new Object[] {
         "ln", 2, false, 100, 10, false, false, null, true});
-    getLogWriter().info("Creted the sender.... in vm4 ");
+    LogWriterUtils.getLogWriter().info("Creted the sender.... in vm4 ");
     vm5.invoke(WANTestBase.class, "createSender", new Object[] {
         "ln", 2, false, 100, 10, false, false, null, true});
-    getLogWriter().info("Creted the sender.... in vm5 ");
+    LogWriterUtils.getLogWriter().info("Creted the sender.... in vm5 ");
     
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    getLogWriter().info("Started the sender in vm 4");
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 4");
 
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    getLogWriter().info("Started the sender in vm 5");
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 5");
     
     AsyncInvocation inv1 =  vm4.invokeAsync(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-      testName + "_RR", "ln", isOffHeap() });
+      getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-      testName + "_RR", "ln", isOffHeap() });
+      getTestMethodName() + "_RR", "ln", isOffHeap() });
     
     try {
       inv1.join();
@@ -488,14 +490,14 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
       fail("Got interrupted exception while waiting for startSedner to finish.");
     }
 
-    pause(5000);
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    Wait.pause(5000);
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
       1000 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
 
   }
   
@@ -527,39 +529,39 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
         "createSenderWithDiskStore", new Object[] { "ln", 2, false,
             100, 10, false, true, null, null, true  });
 
-    getLogWriter().info("The first ds is " + firstDStore);
-    getLogWriter().info("The first ds is " + secondDStore);
+    LogWriterUtils.getLogWriter().info("The first ds is " + firstDStore);
+    LogWriterUtils.getLogWriter().info("The first ds is " + secondDStore);
 
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm5.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm6.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
     vm7.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
         1000 });
 
-    getLogWriter().info("Completed puts in the region");
+    LogWriterUtils.getLogWriter().info("Completed puts in the region");
 
     // kill the vm
     vm4.invoke(WANTestBase.class, "killSender", new Object[] {});
     vm5.invoke(WANTestBase.class, "killSender", new Object[] {});
 
-    getLogWriter().info("Killed the sender. ");
+    LogWriterUtils.getLogWriter().info("Killed the sender. ");
     // restart the vm
     vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
     vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
@@ -567,36 +569,36 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     vm4.invoke(WANTestBase.class,
         "createSenderWithDiskStore", new Object[] { "ln", 2, false,
       100, 10, false, true, null, firstDStore, true  });
-    getLogWriter().info("Created the sender.... in vm4 ");
+    LogWriterUtils.getLogWriter().info("Created the sender.... in vm4 ");
     vm5.invoke(WANTestBase.class,
         "createSenderWithDiskStore", new Object[] { "ln", 2, false,
             100, 10, false, true, null, secondDStore, true  });
-    getLogWriter().info("Created the sender.... in vm5 ");
+    LogWriterUtils.getLogWriter().info("Created the sender.... in vm5 ");
     
     vm4.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-      testName + "_RR", "ln", isOffHeap() });
+      getTestMethodName() + "_RR", "ln", isOffHeap() });
     
     vm5.invoke(WANTestBase.class, "createPersistentReplicatedRegion", new Object[] {
-      testName + "_RR", "ln", isOffHeap() });
+      getTestMethodName() + "_RR", "ln", isOffHeap() });
   
     AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class, "startSender",
         new Object[] { "ln" });
-    getLogWriter().info("Started the sender in vm 4");
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 4");
 
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    getLogWriter().info("Started the sender in vm 5");
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 5");
     try {
       inv1.join();
     } catch (InterruptedException e) {
       fail("Got interrupted exception while waiting for startSedner to finish.");
     }
 
-    pause(5000);
+    Wait.pause(5000);
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        getTestMethodName() + "_RR", 1000 });
 
   }
 }

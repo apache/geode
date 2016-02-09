@@ -21,9 +21,6 @@ import java.util.concurrent.TimeoutException;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.SystemFailure;
 
-// @todo davidw Add the ability to get a return value back from the
-// async method call.  (Use a static ThreadLocal field that is
-// accessible from the Runnable used in VM#invoke)
 /**
  * <P>An <code>AsyncInvocation</code> represents the invocation of a
  * remote invocation that executes asynchronously from its caller.  An
@@ -50,6 +47,9 @@ import com.gemstone.gemfire.SystemFailure;
  * @see VM#invokeAsync(Class, String)
  */
 public class AsyncInvocation<T> extends Thread {
+  //@todo davidw Add the ability to get a return value back from the
+  //async method call.  (Use a static ThreadLocal field that is
+  //accessible from the Runnable used in VM#invoke)
   
   private static final ThreadLocal returnValue = new ThreadLocal();
 
@@ -158,20 +158,22 @@ public class AsyncInvocation<T> extends Thread {
   //////////////////////  Inner Classes  //////////////////////
 
   /**
-   * A <code>ThreadGroup</code> that notices when an exception occurrs
+   * A <code>ThreadGroup</code> that notices when an exception occurs
    * during an <code>AsyncInvocation</code>.
+   * 
+   * TODO: reimplement using Futures
    */
   private static class AsyncInvocationGroup extends ThreadGroup {
     AsyncInvocationGroup() {
       super("Async Invocations");
     }
 
-    public void uncaughtException(Thread t, Throwable e) {
-      if (e instanceof VirtualMachineError) {
-        SystemFailure.setFailure((VirtualMachineError)e); // don't throw
+    public void uncaughtException(Thread thread, Throwable throwable) {
+      if (throwable instanceof VirtualMachineError) {
+        SystemFailure.setFailure((VirtualMachineError)throwable); // don't throw
       }
-      if (t instanceof AsyncInvocation) {
-        ((AsyncInvocation) t).exception = e;
+      if (thread instanceof AsyncInvocation) {
+        ((AsyncInvocation) thread).exception = throwable;
       }
     }
   }
@@ -202,8 +204,7 @@ public class AsyncInvocation<T> extends Thread {
     return this.returnedObj;
   }
   
-  public void run()
-  {
+  public void run() {
     super.run();
     this.returnedObj = (T) returnValue.get();
     returnValue.set(null);

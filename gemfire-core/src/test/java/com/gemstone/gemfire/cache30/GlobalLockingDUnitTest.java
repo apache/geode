@@ -29,6 +29,7 @@ import com.gemstone.gemfire.cache.RegionExistsException;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -71,13 +72,13 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
    * Tests for 32356 R2 tryLock w/ 0 timeout broken in Distributed Lock Service
    */
   public void testBug32356() throws Exception {
-    getLogWriter().fine("[testBug32356]");
+    LogWriterUtils.getLogWriter().fine("[testBug32356]");
     Host host = Host.getHost(0);
     final String name = this.getUniqueName();
     final Object key = "32356";
 
     // lock/unlock '32356' in all vms... (make all vms aware of token)
-    getLogWriter().fine("[testBug32356] lock/unlock '32356' in all vms");
+    LogWriterUtils.getLogWriter().fine("[testBug32356] lock/unlock '32356' in all vms");
     for (int i = 0; i < 4; i++) {
       final int vm = i;
       host.getVM(vm).invoke(new CacheSerializableRunnable("testBug32356_step1") {
@@ -92,7 +93,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
     }
 
     // attempt try-lock of zero wait time in all vms
-    getLogWriter().fine("[testBug32356] attempt try-lock of zero wait time in all vms");
+    LogWriterUtils.getLogWriter().fine("[testBug32356] attempt try-lock of zero wait time in all vms");
     for (int i = 0; i < 4; i++) {
       final int vm = i;
       host.getVM(vm).invoke(new CacheSerializableRunnable("testBug32356_step2") {

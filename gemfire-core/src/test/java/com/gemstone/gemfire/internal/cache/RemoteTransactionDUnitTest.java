@@ -96,12 +96,15 @@ import com.gemstone.gemfire.internal.cache.execute.data.Customer;
 import com.gemstone.gemfire.internal.cache.execute.data.Order;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * @author sbawaska
@@ -123,7 +126,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
       //TXManagerImpl mgr = getGemfireCache().getTxManager();
       //assertEquals(0, mgr.hostedTransactionsInProgressForTest());
       final TXManagerImpl mgr = getGemfireCache().getTxManager();
-      waitForCriterion(new WaitCriterion() {
+      Wait.waitForCriterion(new WaitCriterion() {
         @Override
         public boolean done() {
           return mgr.hostedTransactionsInProgressForTest() == 0;
@@ -149,12 +152,11 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDownCacheTestCase() throws Exception {
     try {
-      invokeInEveryVM(verifyNoTxState);
+      Invoke.invokeInEveryVM(verifyNoTxState);
     } finally {
       closeAllCache();
-      super.tearDown2();
     }
   }
   
@@ -251,7 +253,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
     }
     public Object call() throws Exception {
       CacheTransactionManager mgr = getGemfireCache().getTxManager();
-      getLogWriter().fine("testTXPut starting tx");
+      LogWriterUtils.getLogWriter().fine("testTXPut starting tx");
       mgr.begin();
       Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
       Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
@@ -2537,7 +2539,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
         PartitionedRegion pr = (PartitionedRegion)getGemfireCache().getRegion(CUSTOMER);
         Set filter = new HashSet();
         filter.add(expectedCustId);
-        getLogWriter().info("SWAP:inside NestedTxFunc calling func2:");
+        LogWriterUtils.getLogWriter().info("SWAP:inside NestedTxFunc calling func2:");
         r.put(expectedCustId, expectedCustomer);
         FunctionService.onRegion(pr).withFilter(filter).execute(new NestedTxFunction2()).getResult();
         assertNotNull(getGemfireCache().getTxManager().getTXState());
@@ -3463,7 +3465,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port);
         ccf.setPoolSubscriptionEnabled(true);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<Integer, String> crf = cCache
             .createClientRegionFactory(isEmpty ? ClientRegionShortcut.PROXY
@@ -3643,7 +3645,7 @@ protected static class ClientListener extends CacheListenerAdapter {
             return "listener was never invoked";
           }
         };
-        DistributedTestCase.waitForCriterion(waitForListenerInvocation, 10 * 1000, 10, true);
+        Wait.waitForCriterion(waitForListenerInvocation, 10 * 1000, 10, true);
         return null;
       }
     });
@@ -3675,7 +3677,7 @@ protected static class ClientListener extends CacheListenerAdapter {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port);
         ccf.setPoolSubscriptionEnabled(true);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<Integer, String> crf = cCache
             .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
@@ -3718,7 +3720,7 @@ protected static class ClientListener extends CacheListenerAdapter {
             return "listener invoked:"+l.invoked;
           }
         };
-        DistributedTestCase.waitForCriterion(wc, 10*1000, 200, true);
+        Wait.waitForCriterion(wc, 10*1000, 200, true);
         return null;
       }
     });
@@ -3764,7 +3766,7 @@ protected static class ClientListener extends CacheListenerAdapter {
             return "listener was never invoked";
           }
         };
-        DistributedTestCase.waitForCriterion(waitForListenerInvocation, 10 * 1000, 10, true);
+        Wait.waitForCriterion(waitForListenerInvocation, 10 * 1000, 10, true);
         return null;
       }
     });
@@ -3914,7 +3916,7 @@ protected static class ClientListener extends CacheListenerAdapter {
       
       //Putting a string key causes this, the partition resolver
       //doesn't handle it.
-      addExpectedException("IllegalStateException");
+      IgnoredException.addIgnoredException("IllegalStateException");
       assertEquals(Status.STATUS_ACTIVE, tx.getStatus());
       final CountDownLatch latch = new CountDownLatch(1);
       Thread t = new Thread(new Runnable() {
@@ -3953,12 +3955,12 @@ protected static class ClientListener extends CacheListenerAdapter {
       private int count;
       @Override
       public void afterCreate(EntryEvent event) {
-        getLogWriter().info("afterCreate invoked for " + event);
+        LogWriterUtils.getLogWriter().info("afterCreate invoked for " + event);
         count++;
       }
       @Override
       public void afterUpdate(EntryEvent event) {
-        getLogWriter().info("afterUpdate invoked for " + event);
+        LogWriterUtils.getLogWriter().info("afterUpdate invoked for " + event);
         count++;
       }
     }
@@ -4102,11 +4104,11 @@ protected static class ClientListener extends CacheListenerAdapter {
         // is not hosting the tx. But it will not allow an expiration
         // initiated on the hosting jvm.
         // tx is hosted in vm2 so expiration can happen in vm1.
-        DistributedTestCase.waitForCriterion(wc2, 30000, 5, true);
+        Wait.waitForCriterion(wc2, 30000, 5, true);
         getCache().getCacheTransactionManager().resume(tx);
         assertTrue(r.containsKey("key"));
         getCache().getCacheTransactionManager().commit();
-        DistributedTestCase.waitForCriterion(wc2, 30000, 5, true);
+        Wait.waitForCriterion(wc2, 30000, 5, true);
         return null;
       }
     });

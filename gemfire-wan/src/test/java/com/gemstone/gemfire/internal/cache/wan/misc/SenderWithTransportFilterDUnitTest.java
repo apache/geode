@@ -62,7 +62,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     vm2.invoke(SenderWithTransportFilterDUnitTest.class,
         "createReceiverWithTransportFilters", new Object[] { nyPort });
     vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", null, isOffHeap() });
+        getTestMethodName() + "_RR", null, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
 
@@ -71,15 +71,15 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
             1, false, false, true });
 
     vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        testName + "_RR", "ln", isOffHeap() });
+        getTestMethodName() + "_RR", "ln", isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "doPuts",
-        new Object[] { testName + "_RR", 100 });
+        new Object[] { getTestMethodName() + "_RR", 100 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 100 });
+        getTestMethodName() + "_RR", 100 });
   }
 
   public void testParallelSenderWithTansportFilter() {
@@ -92,7 +92,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     vm2.invoke(SenderWithTransportFilterDUnitTest.class,
         "createReceiverWithTransportFilters", new Object[] { nyPort });
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", null, 0, 10, isOffHeap() });
+        getTestMethodName() + "_PR", null, 0, 10, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
 
@@ -101,19 +101,19 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
             1, false, false, true });
 
     vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        testName + "_PR", "ln", 0, 10, isOffHeap() });
+        getTestMethodName() + "_PR", "ln", 0, 10, isOffHeap() });
 
     vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm3.invoke(WANTestBase.class, "doPuts",
-        new Object[] { testName + "_PR", 100 });
+        new Object[] { getTestMethodName() + "_PR", 100 });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_PR", 100 });
+        getTestMethodName() + "_PR", 100 });
   }
   
   public static int createReceiverWithTransportFilters(int locPort) {
-    WANTestBase test = new WANTestBase(testName);
+    WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort

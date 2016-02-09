@@ -28,6 +28,7 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 public class WanCommandStatusDUnitTest extends WANCommandTestBase{
   
@@ -77,7 +78,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] {
         "ln_Parallel", 2, true, 100, 400, false, false, null, true});
 
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial";
     CommandResult cmdResult = executeCommand(command);
@@ -116,7 +117,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm5.invoke(WANCommandTestBase.class, "startSender",
         new Object[] { "ln_Parallel" });
 
-    pause(10000);
+    Wait.pause(10000);
     command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial";
     cmdResult = executeCommand(command);
@@ -177,7 +178,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(
         WANCommandTestBase.class, "getMember");
     
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --"
         + CliStrings.STATUS_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
@@ -208,7 +209,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(WANCommandTestBase.class, "startSender",
         new Object[] { "ln_Parallel" });
 
-    pause(10000);
+    Wait.pause(10000);
     command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --"
         + CliStrings.STATUS_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
@@ -295,7 +296,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(
         WANCommandTestBase.class, "getMember");
     
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__GROUP + "=Serial_Sender";
     
@@ -331,7 +332,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(WANCommandTestBase.class, "startSender",
         new Object[] { "ln_Parallel" });
 
-    pause(10000);
+    Wait.pause(10000);
     command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__GROUP + "=Serial_Sender";
     
@@ -376,7 +377,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(WANCommandTestBase.class, "createAndStartReceiver", new Object[] { lnPort });
     vm5.invoke(WANCommandTestBase.class, "createAndStartReceiver", new Object[] { lnPort });
     
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.STATUS_GATEWAYRECEIVER; 
     CommandResult cmdResult = executeCommand(command);
     
@@ -407,7 +408,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(WANCommandTestBase.class, "stopReceiver");
     vm5.invoke(WANCommandTestBase.class, "stopReceiver");
     
-    pause(10000);
+    Wait.pause(10000);
     
     command = CliStrings.STATUS_GATEWAYRECEIVER; 
     cmdResult = executeCommand(command);
@@ -457,7 +458,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     final DistributedMember vm3Member = (DistributedMember) vm3.invoke(
         WANCommandTestBase.class, "getMember");
     
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.STATUS_GATEWAYRECEIVER+ " --"
     + CliStrings.STATUS_GATEWAYRECEIVER__MEMBER + "=" + vm3Member.getId();
     
@@ -484,7 +485,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(WANCommandTestBase.class, "stopReceiver");
     vm5.invoke(WANCommandTestBase.class, "stopReceiver");
     
-    pause(10000);
+    Wait.pause(10000);
     
     command = CliStrings.STATUS_GATEWAYRECEIVER+ " --"
     + CliStrings.STATUS_GATEWAYRECEIVER__MEMBER + "=" + vm3Member.getId();
@@ -531,7 +532,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm5.invoke(WANCommandTestBase.class, "createAndStartReceiverWithGroup", new Object[] { lnPort, "RG1"  });
     vm6.invoke(WANCommandTestBase.class, "createAndStartReceiverWithGroup", new Object[] { lnPort, "RG2"  });
     
-    pause(10000);
+    Wait.pause(10000);
     String command = CliStrings.STATUS_GATEWAYRECEIVER + " --"
         + CliStrings.STATUS_GATEWAYRECEIVER__GROUP + "=RG1";
     
@@ -558,7 +559,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(WANCommandTestBase.class, "stopReceiver");
     vm5.invoke(WANCommandTestBase.class, "stopReceiver");
 
-    pause(10000);
+    Wait.pause(10000);
     command = CliStrings.STATUS_GATEWAYRECEIVER + " --"+ CliStrings.STATUS_GATEWAYRECEIVER__GROUP + "=RG1";
     
     cmdResult = executeCommand(command);

@@ -30,9 +30,12 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * 
@@ -77,7 +80,7 @@ public class DurableClientStatsDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void tearDown2() throws Exception {
+  protected final void preTearDown() throws Exception {
     // Stop server 1
     this.server1VM.invoke(CacheServerTestUtil.class, "closeCache");
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
@@ -99,23 +102,23 @@ public class DurableClientStatsDUnitTest extends DistributedTestCase {
 
     startAndCloseNonDurableClientCache(durableClientTimeout);
     startAndCloseNonDurableClientCache(1);      //////// -> Reconnection1
-    pause(1400);        //////// -> Queue Dropped1
+    Wait.pause(1400);        //////// -> Queue Dropped1
     startAndCloseNonDurableClientCache(1);
-    pause(1400);        //////// -> Queue Dropped2
+    Wait.pause(1400);        //////// -> Queue Dropped2
     
     startRegisterAndCloseNonDurableClientCache( durableClientTimeout);
-    pause(500);
+    Wait.pause(500);
 
     this.server1VM.invoke(DurableClientStatsDUnitTest.class, "putValue",
         new Object[] { K1, "Value1" });         //////// -> Enqueue Message1
 
-    pause(500);
+    Wait.pause(500);
     startAndCloseNonDurableClientCache(1);      //////// -> Reconnection2
-    pause(1400);        //////// -> Queue Dropped3
+    Wait.pause(1400);        //////// -> Queue Dropped3
     startAndCloseNonDurableClientCache(1);
-    pause(1400);        //////// -> Queue Dropped4
+    Wait.pause(1400);        //////// -> Queue Dropped4
     startRegisterAndCloseNonDurableClientCache( durableClientTimeout);
-    pause(500);
+    Wait.pause(500);
 
     this.server1VM.invoke(DurableClientStatsDUnitTest.class, "putValue",
         new Object[] { K1, "NewValue1" });      //////// -> Enqueue Message2
@@ -143,23 +146,23 @@ public class DurableClientStatsDUnitTest extends DistributedTestCase {
 
     startAndCloseDurableClientCache(durableClientTimeout);
     startAndCloseDurableClientCache(1);      //////// -> Reconnection1
-    pause(1400);        //////// -> Queue Dropped1
+    Wait.pause(1400);        //////// -> Queue Dropped1
     startAndCloseDurableClientCache(1);
-    pause(1400);        //////// -> Queue Dropped2
+    Wait.pause(1400);        //////// -> Queue Dropped2
     
     startRegisterAndCloseDurableClientCache( durableClientTimeout);
-    pause(500);
+    Wait.pause(500);
 
     this.server1VM.invoke(DurableClientStatsDUnitTest.class, "putValue",
         new Object[] { K1, "Value1" });         //////// -> Enqueue Message1
 
-    pause(500);
+    Wait.pause(500);
     startAndCloseDurableClientCache(1);      //////// -> Reconnection2
-    pause(1400);        //////// -> Queue Dropped3
+    Wait.pause(1400);        //////// -> Queue Dropped3
     startAndCloseDurableClientCache(1);
-    pause(1400);        //////// -> Queue Dropped4
+    Wait.pause(1400);        //////// -> Queue Dropped4
     startRegisterAndCloseDurableClientCache( durableClientTimeout);
-    pause(500);
+    Wait.pause(500);
 
     this.server1VM.invoke(DurableClientStatsDUnitTest.class, "putValue",
         new Object[] { K1, "NewValue1" });      //////// -> Enqueue Message2
@@ -178,7 +181,7 @@ public class DurableClientStatsDUnitTest extends DistributedTestCase {
 
     this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
         new Object[] {
-            getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, true, 0),
+            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, true, 0),
             regionName,
             getDurableClientDistributedSystemProperties(durableClientId,
                 durableClientTimeout), Boolean.TRUE });
@@ -203,7 +206,7 @@ public class DurableClientStatsDUnitTest extends DistributedTestCase {
 
     this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
         new Object[] {
-            getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, true, 0),
+            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, true, 0),
             regionName,
             getNonDurableClientDistributedSystemProperties(durableClientId,
                 durableClientTimeout), Boolean.TRUE });
@@ -228,7 +231,7 @@ public class DurableClientStatsDUnitTest extends DistributedTestCase {
 
     this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
         new Object[] {
-            getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, true, 0),
+            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, true, 0),
             regionName,
             getDurableClientDistributedSystemProperties(durableClientId,
                 durableClientTimeout), Boolean.TRUE });
@@ -252,7 +255,7 @@ public class DurableClientStatsDUnitTest extends DistributedTestCase {
 
     this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
         new Object[] {
-            getClientPool(getServerHostName(durableClientVM.getHost()), PORT1, true, 0),
+            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, true, 0),
             regionName,
             getNonDurableClientDistributedSystemProperties(durableClientId,
                 durableClientTimeout), Boolean.TRUE });
@@ -336,7 +339,7 @@ public class DurableClientStatsDUnitTest extends DistributedTestCase {
       region.registerInterest(key, InterestResultPolicy.NONE, isDurable);
     }
     catch (Exception ex) {
-      fail("failed while registering interest in registerKey function", ex);
+      Assert.fail("failed while registering interest in registerKey function", ex);
     }
   }
 
