@@ -93,6 +93,8 @@ public class CompactRangeIndex extends AbstractIndex {
   protected ThreadLocal<OldKeyValuePair> oldKeyValue;
  
   private IndexStore indexStore;
+  
+  static boolean TEST_ALWAYS_UPDATE_IN_PROGRESS = false;
 
   public CompactRangeIndex(String indexName, Region region, String fromClause,
       String indexedExpression, String projectionAttributes,
@@ -883,7 +885,7 @@ public class CompactRangeIndex extends AbstractIndex {
         } else {
           if (value != null) {
             boolean ok = true;
-            if (indexEntry.isUpdateInProgress()) {
+            if (indexEntry.isUpdateInProgress() || TEST_ALWAYS_UPDATE_IN_PROGRESS) {
               IndexInfo indexInfo = (IndexInfo) context
                   .cacheGet(CompiledValue.INDEX_INFO);
               if (runtimeItr == null) {

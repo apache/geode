@@ -46,6 +46,7 @@ import com.gemstone.gemfire.cache.query.internal.Bag;
 import com.gemstone.gemfire.cache.query.internal.CompiledID;
 import com.gemstone.gemfire.cache.query.internal.CompiledIndexOperation;
 import com.gemstone.gemfire.cache.query.internal.CompiledIteratorDef;
+import com.gemstone.gemfire.cache.query.internal.CompiledOperation;
 import com.gemstone.gemfire.cache.query.internal.CompiledPath;
 import com.gemstone.gemfire.cache.query.internal.CompiledValue;
 import com.gemstone.gemfire.cache.query.internal.CqEntry;
@@ -1701,6 +1702,9 @@ public abstract class AbstractIndex implements IndexProtocol
       return ((CompiledID) path).getId();
     }
     else if (path instanceof CompiledPath) {
+      return getReceiverNameFromPath(path.getReceiver());
+    }
+    else if (path instanceof CompiledOperation) {
       return getReceiverNameFromPath(path.getReceiver());
     }
     else if (path instanceof CompiledIndexOperation) {

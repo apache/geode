@@ -252,7 +252,32 @@ public class CompactRangeIndexJUnitTest  {
     }
     assertEquals("incorrect number of entries in collection", 0, count);
   }
-  
+
+  @Test
+  public void testUpdateInProgressWithMethodInvocationInIndexClauseShouldNotThrowException() throws Exception {
+    try {
+      CompactRangeIndex.TEST_ALWAYS_UPDATE_IN_PROGRESS = true;
+      index = utils.createIndex("indexName", "getP1().getSharesOutstanding()", "/exampleRegion");
+      Region region = utils.getCache().getRegion("exampleRegion");
+
+      // create objects
+      int numObjects = 10;
+      for (int i = 1; i <= numObjects; i++) {
+        Portfolio p = new Portfolio(i);
+        p.status = null;
+        region.put("KEY-" + i, p);
+      }
+      // execute query and check result size
+      QueryService qs = utils.getCache().getQueryService();
+      SelectResults results = (SelectResults) qs
+          .newQuery(
+              "<trace>SELECT DISTINCT e.key FROM /exampleRegion AS e WHERE e.ID = 1 AND e.getP1().getSharesOutstanding() >= -1 AND e.getP1().getSharesOutstanding() <= 1000 LIMIT 10 ")
+          .execute();
+    } finally {
+      CompactRangeIndex.TEST_ALWAYS_UPDATE_IN_PROGRESS = false;
+    }
+  }
+
   private class MemoryIndexStoreREToIndexElemTestHook implements TestHook {
 
     private CountDownLatch readyToStartRemoveLatch;
