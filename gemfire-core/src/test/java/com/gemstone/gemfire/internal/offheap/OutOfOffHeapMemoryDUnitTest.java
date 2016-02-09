@@ -17,6 +17,8 @@
 package com.gemstone.gemfire.internal.offheap;
 
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -39,6 +41,10 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+
+
+import static com.jayway.awaitility.Awaitility.with;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 /**
  * Test behavior of region when running out of off-heap memory.
@@ -63,21 +69,6 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
     super.setUp();
     addExpectedException(OutOfOffHeapMemoryException.class.getSimpleName());
   }
-  
-//  public static void caseSetUp() {
-//    //disconnectAllFromDS();
-//    for (int i = 0; i < Host.getHost(0).getVMCount(); i++) {
-//      Host.getHost(0).getVM(i).invoke(new SerializableRunnable() {
-//        public void run() {
-//          InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
-//          if (ids != null && ids.isConnected()) {
-//            logger.warn(OutOfOffHeapMemoryDUnitTest.class.getSimpleName() + " found DistributedSystem connection from previous test: {}", ids);
-//            ids.disconnect();
-//          }
-//        }
-//      });
-//    }
-//  }
 
   @Override
   public void tearDown2() throws Exception {
@@ -152,28 +143,14 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
       ooohme = e;
     }
     assertNotNull(ooohme);
-    
-    // wait for cache to close and system to disconnect
-    final WaitCriterion waitForDisconnect = new WaitCriterion() {
-      public boolean done() {
-        return cache.isClosed() && !system.isConnected() && dm.isClosed();
-      }
-      public String description() {
-        return "Waiting for cache, system and dm to close";
-      }
-    };
-    waitForCriterion(waitForDisconnect, 10*1000, 100, true);
-    
+
+    with().pollInterval(100, TimeUnit.MILLISECONDS).await().atMost(10, TimeUnit.SECONDS).until(() ->
+        cache.isClosed() && !system.isConnected() && dm.isClosed());
+
     // wait for cache instance to be nulled out
-    final WaitCriterion waitForNull = new WaitCriterion() {
-      public boolean done() {
-        return GemFireCacheImpl.getInstance() == null;
-      }
-      public String description() {
-        return "Waiting for GemFireCacheImpl to null its instance";
-      }
-    };
-    waitForCriterion(waitForNull, 10*1000, 100, true);
+    with().pollInterval(100, TimeUnit.MILLISECONDS).await().atMost(10, TimeUnit.SECONDS).until(()->
+        GemFireCacheImpl.getInstance() == null && InternalDistributedSystem.getAnyInstance() == null);
+
     assertNull(GemFireCacheImpl.getInstance());
     
     // verify system was closed out due to OutOfOffHeapMemoryException
@@ -203,10 +180,6 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
     } catch (DistributedSystemDisconnectedException expected) {
       assertRootCause(expected, OutOfOffHeapMemoryException.class);
     }
-    
-    // verify Cache and IDS are nulled out
-    assertNull(GemFireCacheImpl.getInstance());
-    assertNull(InternalDistributedSystem.getAnyInstance());
   }
   
   private void assertRootCause(Throwable throwable, Class<?> expected) {
@@ -306,72 +279,27 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
         public void run() {
           final int countMembersPlusLocator = vmCount+1-1; // +1 for locator, -1 for OOOHME member
           final int countOtherMembers = vmCount-1-1; // -1 for self, -1 for OOOHME member
-          
-          final WaitCriterion waitForDisconnect = new WaitCriterion() {
-            public boolean done() {
-              InternalDistributedSystem ids = (InternalDistributedSystem)OutOfOffHeapMemoryDUnitTest.system.get();
-              DistributedRegion dr = (DistributedRegion)OutOfOffHeapMemoryDUnitTest.cache.get().getRegion(name);
-              return countMembersPlusLocator == ids.getDistributionManager().getDistributionManagerIds().size()
-                  && countOtherMembers == dr.getDistributionAdvisor().getNumProfiles();
-            }
-            public String description() {
-              String msg = "";
-              InternalDistributedSystem ids = (InternalDistributedSystem)OutOfOffHeapMemoryDUnitTest.system.get();
-              int currentMemberCount = ids.getDistributionManager().getDistributionManagerIds().size();
-              if (countMembersPlusLocator != currentMemberCount) {
-                msg += " expected " + countMembersPlusLocator + " members but found " + currentMemberCount;
-              }
-              DistributedRegion dr = (DistributedRegion)OutOfOffHeapMemoryDUnitTest.cache.get().getRegion(name);
-              int profileCount = dr.getDistributionAdvisor().getNumProfiles();
-              if (countOtherMembers != profileCount) {
-                msg += " expected " + countOtherMembers + " profiles but found " + profileCount;
-              }
-              return msg;
-            }
+
+          with().pollInterval(10, TimeUnit.MILLISECONDS).await().atMost(30, TimeUnit.SECONDS).until(numDistributionManagers(), equalTo(countMembersPlusLocator));
+          with().pollInterval(10, TimeUnit.MILLISECONDS).await().atMost(30, TimeUnit.SECONDS).until(numProfiles(), equalTo(countOtherMembers));
+
+        }
+
+        private Callable<Integer> numProfiles() {
+          return () -> {
+            DistributedRegion dr = (DistributedRegion)OutOfOffHeapMemoryDUnitTest.cache.get().getRegion(name);
+            return dr.getDistributionAdvisor().getNumProfiles();
           };
-          waitForCriterion(waitForDisconnect, 30*1000, 10, true);
+        }
+
+        private Callable<Integer> numDistributionManagers() {
+          return () -> {
+            InternalDistributedSystem ids = (InternalDistributedSystem)OutOfOffHeapMemoryDUnitTest.system.get();
+            return ids.getDistributionManager().getDistributionManagerIds().size();
+          };
         }
       });
     }
   }
-
-//  private static void foo() {
-//    final WaitCriterion waitForDisconnect = new WaitCriterion() {
-//      public boolean done() {
-//        return cache.isClosed() && !system.isConnected() && dm.isClosed();
-//      }
-//      public String description() {
-//        return "Waiting for cache, system and dm to close";
-//      }
-//    };
-//    waitForCriterion(waitForDisconnect, 10*1000, 100, true);
-//  }
-  
-  // setUp() and caseSetUp() are commented out -- they were in place because of incompatible DistributedSystem bleed over from earlier DUnit tests
-  
-//@Override
-//public void setUp() throws Exception {
-//  super.setUp();
-//  long begin = System.currentTimeMillis();
-//  Cache gfc = null;
-//  while (gfc == null) {
-//    try {
-//      gfc = getCache();
-//      break;
-//    } catch (IllegalStateException e) {
-//      if (System.currentTimeMillis() > begin+60*1000) {
-//        fail("OutOfOffHeapMemoryDUnitTest waited too long to getCache", e);
-//      } else if (e.getMessage().contains("A connection to a distributed system already exists in this VM.  It has the following configuration")) {
-//        InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
-//        if (ids != null && ids.isConnected()) {
-//          ids.getLogWriter().warning("OutOfOffHeapMemoryDUnitTest found DistributedSystem connection from previous test", e);
-//          ids.disconnect();
-//        }
-//      } else {
-//        throw e;
-//      }
-//    }
-//  }
-//}
 
 }
