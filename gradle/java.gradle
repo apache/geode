@@ -88,6 +88,14 @@ subprojects {
     }
   }
  
+  // This ensures that javadoc and source jars also have any prefix paths stripped and will
+  // be created as libs/foo-sources.jar instead of libs/extensions/foo-sources.jar for example.
+  tasks.all { task ->
+    if (task instanceof Jar) {
+      baseName = sanitizedName()
+    }
+  }
+
   task jarTest (type: Jar, dependsOn: testClasses) {
     description 'Assembles a jar archive of test classes.'
     from sourceSets.test.output
@@ -125,11 +133,6 @@ subprojects {
     compile 'com.google.code.findbugs:jsr305:' + project.'jsr305.version'
     compile 'javax.enterprise:cdi-api:' + project.'cdi-api.version'
   }
-
-  jar {
-    baseName = sanitizedName()
-  }
-
 }
 
 
