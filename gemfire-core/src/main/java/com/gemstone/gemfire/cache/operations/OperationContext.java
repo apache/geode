@@ -482,9 +482,9 @@ public abstract class OperationContext {
 
   /**
    * When called post-operation, returns true if the operation was one that performed an update.
-   * An update occurs when one of the following methods on {@link getOperationCode()} returns true:
-   * {@linkplain isPut()}, {@linkplain isPutAll()}, {@linkplain isDestroy()}, {@linkplain isRemoveAll()},
-   * {@linkplain isInvalidate()}, {@linkplain isRegionCreate()}, {@linkplain isRegionClear()}, {@linkplain isRegionDestroy()}.
+   * An update occurs when one of the following methods on <code>getOperationCode()</code> returns true:
+   * <code>isPut()</code>, <code>isPutAll()</code>, <code>isDestroy()</code>, <code>isRemoveAll()</code>,
+   * <code>isInvalidate()</code>, <code>isRegionCreate()</code>, <code>isRegionClear()</code>, <code>isRegionDestroy()</code>.
    * Otherwise, returns false.
    * 
    * @since 6.6
