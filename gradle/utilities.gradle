@@ -27,5 +27,15 @@ allprojects {
       def parts = project.name.split("/")
       return parts[parts.length - 1];
     }
+
+    disableMavenPublishing = {
+      // Use this closure when a project should not publish anything to maven. It appears that the nexus
+      // upload task still needs to exist, which is why an empty one is created.
+      afterEvaluate {
+        tasks.remove(install)
+        tasks.remove(uploadArchives)
+        task uploadArchives << { }
+      }
+    }
   }
 }

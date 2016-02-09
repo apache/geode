@@ -26,14 +26,7 @@ extraArchive {
   tests = false
 }
 
-// We are not publishing anything from this project into maven and using two distributions seems
-// to break the nexus plugin.  So we delete the nexus tasks but we have to replace the upload task
-// with an empty task of the same name...argh.
-afterEvaluate {
-  tasks.remove(install)
-  tasks.remove(uploadArchives)
-  task uploadArchives << { }
-}
+disableMavenPublishing()
 
 // Gradle doesn't automatically remove the jar artifact even though we disabled it
 // this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.
