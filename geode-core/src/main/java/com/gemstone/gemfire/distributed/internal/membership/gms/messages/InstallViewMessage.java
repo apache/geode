@@ -30,24 +30,32 @@ import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 
 public class InstallViewMessage extends HighPriorityDistributionMessage {
-
   enum messageType {
     INSTALL, PREPARE, SYNC
   }
   private NetView view;
   private Object credentials;
   private messageType kind;
+  private int previousViewId;
 
   public InstallViewMessage(NetView view, Object credentials) {
     this.view = view;
     this.kind = messageType.INSTALL;
     this.credentials = credentials;
+    this.previousViewId = view.getViewId();
   }
 
   public InstallViewMessage(NetView view, Object credentials, boolean preparing) {
     this.view = view;
     this.kind = preparing? messageType.PREPARE : messageType.INSTALL;
     this.credentials = credentials;
+  }
+
+  public InstallViewMessage(NetView view, Object credentials, int previousViewId, boolean preparing) {
+    this.view = view;
+    this.kind = preparing? messageType.PREPARE : messageType.INSTALL;
+    this.credentials = credentials;
+    this.previousViewId = previousViewId;
   }
   
   public InstallViewMessage() {
@@ -60,6 +68,10 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
 
   public NetView getView() {
     return view;
+  }
+
+  public int getPreviousViewId() {
+    return previousViewId;
   }
 
   public Object getCredentials() {
@@ -83,6 +95,7 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
+    out.writeInt(previousViewId);
     out.writeInt(kind.ordinal());
     DataSerializer.writeObject(this.view, out);
     DataSerializer.writeObject(this.credentials, out);
@@ -91,6 +104,7 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
+    this.previousViewId = in.readInt();
     this.kind = messageType.values()[in.readInt()];
     this.view = DataSerializer.readObject(in);
     this.credentials = DataSerializer.readObject(in);
@@ -98,7 +112,7 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
 
   @Override
   public String toString() {
-    return "InstallViewMessage(type="+this.kind+"; "+this.view
+    return "InstallViewMessage(type="+this.kind+"; Current ViewID="+view.getViewId()+"; Previous View ID="+previousViewId+"; "+this.view
             +"; cred="+(credentials==null?"null": "not null")
              +")";
   }
