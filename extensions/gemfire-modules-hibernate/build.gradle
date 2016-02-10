@@ -29,5 +29,5 @@ dependencies {
   testRuntime 'org.hsqldb:hsqldb:' + project.'hsqldb.version'
   testRuntime 'org.javassist:javassist:' + project.'javassist.version'
 
-  provided project(path: ':gemfire-junit')
+  testCompile project(path: ':gemfire-junit')
 }
