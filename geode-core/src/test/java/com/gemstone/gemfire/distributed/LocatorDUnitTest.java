@@ -1434,8 +1434,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
     this.port1 = freeTCPPorts[0];
     this.port2 = freeTCPPorts[1];
     int port3 = freeTCPPorts[2];
-    deleteLocatorStateFile(port1, port2, port3);
-    final String host0 = getServerHostName(host);
+    DistributedTestUtils.deleteLocatorStateFile(port1, port2, port3);
+    final String host0 = NetworkUtils.getServerHostName(host);
     final String locators = host0 + "[" + port1 + "]," +
         host0 + "[" + port2 + "]," +
         host0 + "[" + port3 + "]";
@@ -1488,7 +1488,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(waitCriterion, 10 * 1000, 200, true);
+        Wait.waitForCriterion(waitCriterion, 10 * 1000, 200, true);
 
         // three applications plus
         assertEquals(6, system.getDM().getViewMembers().size());
@@ -1512,7 +1512,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(waitCriterion, 10 * 1000, 200, true);
+        Wait.waitForCriterion(waitCriterion, 10 * 1000, 200, true);
 
         final String newLocators = host0 + "[" + port2 + "]," +
             host0 + "[" + port3 + "]";
@@ -1540,7 +1540,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
             return null;
           }
         };
-        DistributedTestCase.waitForCriterion(waitCriterion, 10 * 1000, 200, true);
+        Wait.waitForCriterion(waitCriterion, 10 * 1000, 200, true);
 
         int netviewId = vm1.invoke(() -> GMSJoinLeaveHelper.getViewId());
         assertEquals(netviewId, (int) vm2.invoke(() -> GMSJoinLeaveHelper.getViewId()));
@@ -1573,7 +1573,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
         try {
           Locator.startLocatorAndDS((int) args[0], logFile, (Properties) args[1]);
         } catch (IOException ex) {
-          fail("While starting process on port " + args[0], ex);
+          com.gemstone.gemfire.test.dunit.Assert.fail("While starting process on port " + args[0], ex);
         }
       }
     });
@@ -1586,7 +1586,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
         try {
           Locator.startLocatorAndDS((int) args[0], logFile, (Properties) args[1]);
         } catch (IOException ex) {
-          fail("While starting process on port " + args[0], ex);
+          com.gemstone.gemfire.test.dunit.Assert.fail("While starting process on port " + args[0], ex);
         }
       }
     });
