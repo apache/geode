@@ -166,8 +166,12 @@ public class BackupManager implements MembershipListener {
     return baselineDir;
   }
   
-  public HashSet<PersistentID> finishBackup(File targetDir, File baselineDir) throws IOException {
+  public HashSet<PersistentID> finishBackup(File targetDir, File baselineDir, boolean abort) throws IOException {
     try {
+      if(abort) {
+        return new HashSet<PersistentID>();
+      }
+      
       File backupDir = getBackupDir(targetDir);
       
       // Make sure our baseline is okay for this member
@@ -223,6 +227,10 @@ public class BackupManager implements MembershipListener {
     } finally {
       cleanup();
     }
+  }
+  
+  public void abort() {
+    cleanup();
   }
   
   private void backupConfigFiles(RestoreScript restoreScript, File backupDir) throws IOException {

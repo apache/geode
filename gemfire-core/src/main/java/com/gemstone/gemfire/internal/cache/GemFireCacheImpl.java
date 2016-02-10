@@ -2729,7 +2729,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   }
 
-  public final InternalDistributedSystem getDistributedSystem() {
+  public InternalDistributedSystem getDistributedSystem() {
     return this.system;
   }
 

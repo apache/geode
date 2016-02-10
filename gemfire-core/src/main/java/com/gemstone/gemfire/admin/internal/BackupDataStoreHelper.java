@@ -12,7 +12,7 @@ import com.gemstone.gemfire.internal.Assert;
 
 public class BackupDataStoreHelper {
 
-  private static String LOCK_SERVICE_NAME = BackupDataStoreHelper.class.getSimpleName();
+  public static String LOCK_SERVICE_NAME = BackupDataStoreHelper.class.getSimpleName();
 
   private static String LOCK_NAME = LOCK_SERVICE_NAME + "_token";
   

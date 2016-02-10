@@ -199,7 +199,7 @@ public class BackupJUnitTest {
     
     BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
     backup.prepareBackup();
-    backup.finishBackup(backupDir,null);
+    backup.finishBackup(backupDir, null, false);
     
     //Put another key to make sure we restore
     //from a backup that doesn't contain this key
@@ -247,7 +247,7 @@ public class BackupJUnitTest {
 
     BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
     backup.prepareBackup();
-    backup.finishBackup(backupDir,null);
+    backup.finishBackup(backupDir, null, false);
     assertEquals("No backup files should have been created", Collections.emptyList(), Arrays.asList(backupDir.list()));
   }
   
@@ -261,7 +261,7 @@ public class BackupJUnitTest {
 
     BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
     backup.prepareBackup();
-    backup.finishBackup(backupDir,null);
+    backup.finishBackup(backupDir, null, false);
     
     
     assertEquals("No backup files should have been created", Collections.emptyList(), Arrays.asList(backupDir.list()));
@@ -318,7 +318,7 @@ public class BackupJUnitTest {
 
     BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
     backup.prepareBackup();
-    backup.finishBackup(backupDir,null);
+    backup.finishBackup(backupDir, null, false);
     File cacheXmlBackup = FileUtil.find(backupDir, ".*config.cache.xml");
     assertTrue(cacheXmlBackup.exists());
     byte[] expectedBytes = getBytes(CACHE_XML_FILE);

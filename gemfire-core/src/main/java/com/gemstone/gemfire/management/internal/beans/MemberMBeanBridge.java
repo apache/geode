@@ -1155,10 +1155,16 @@ public class MemberMBeanBridge {
       try {
         BackupManager manager = cache.startBackup(cache.getDistributedSystem()
             .getDistributedMember());
-        Set<PersistentID> existingDataStores = manager.prepareBackup();
-
-        Set<PersistentID> successfulDataStores = manager
-          .finishBackup(targetDir, null/* TODO rishi */);
+        boolean abort = true;
+        Set<PersistentID> existingDataStores;
+        Set<PersistentID> successfulDataStores;
+        try {
+          existingDataStores = manager.prepareBackup();
+          abort = false;
+        } finally {
+          successfulDataStores = manager
+              .finishBackup(targetDir, null/* TODO rishi */, abort);
+        }
         diskBackUpResult = new DiskBackupResult[existingDataStores.size()];
         int j = 0;
 

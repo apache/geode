@@ -58,18 +58,20 @@ public class FinishBackupRequest  extends CliLegacyMessage {
   
   private File targetDir;
   private File baselineDir;
+  private boolean abort;
   
   public FinishBackupRequest() {
     super();
   }
 
-  public FinishBackupRequest(File targetDir,File baselineDir) {
+  public FinishBackupRequest(File targetDir,File baselineDir, boolean abort) {
     this.targetDir = targetDir;
     this.baselineDir = baselineDir;
+    this.abort = abort;
   }
   
-  public static Map<DistributedMember, Set<PersistentID>> send(DM dm, Set recipients, File targetDir, File baselineDir) {
-    FinishBackupRequest request = new FinishBackupRequest(targetDir,baselineDir);
+  public static Map<DistributedMember, Set<PersistentID>> send(DM dm, Set recipients, File targetDir, File baselineDir, boolean abort) {
+    FinishBackupRequest request = new FinishBackupRequest(targetDir,baselineDir, abort);
     request.setRecipients(recipients);
 
     FinishBackupReplyProcessor replyProcessor = new FinishBackupReplyProcessor(dm, recipients);
@@ -94,11 +96,11 @@ public class FinishBackupRequest  extends CliLegacyMessage {
   protected AdminResponse createResponse(DistributionManager dm) {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     HashSet<PersistentID> persistentIds;
-    if(cache == null) {
+    if(cache == null || cache.getBackupManager() == null) {
       persistentIds = new HashSet<PersistentID>();
     } else {
       try {
-        persistentIds = cache.getBackupManager().finishBackup(targetDir, baselineDir);
+        persistentIds = cache.getBackupManager().finishBackup(targetDir, baselineDir, abort);
       } catch (IOException e) {
         logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, this.getClass()), e);
         return AdminFailureResponse.create(dm, getSender(), e);
@@ -117,6 +119,7 @@ public class FinishBackupRequest  extends CliLegacyMessage {
     super.fromData(in);
     targetDir = DataSerializer.readFile(in);
     baselineDir = DataSerializer.readFile(in);
+    abort = DataSerializer.readBoolean(in);
   }
 
   @Override
@@ -124,6 +127,7 @@ public class FinishBackupRequest  extends CliLegacyMessage {
     super.toData(out);
     DataSerializer.writeFile(targetDir, out);
     DataSerializer.writeFile(baselineDir, out);
+    DataSerializer.writeBoolean(abort, out);
   }
 
   private static class FinishBackupReplyProcessor extends AdminMultipleReplyProcessor {

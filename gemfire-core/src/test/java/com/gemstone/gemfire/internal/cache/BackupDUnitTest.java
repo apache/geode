@@ -31,7 +31,10 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.admin.BackupStatus;
+import com.gemstone.gemfire.admin.internal.FinishBackupRequest;
+import com.gemstone.gemfire.admin.internal.PrepareBackupRequest;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
@@ -49,11 +52,13 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.ReplyMessage;
 import com.gemstone.gemfire.internal.FileUtil;
+import com.gemstone.gemfire.internal.admin.remote.AdminFailureResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.PersistentPartitionedRegionTestBase;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DUnitEnv;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
@@ -352,6 +357,58 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     };
     
     backupWhileBucketIsMoved(observer);
+  }
+  
+  public void testBackupStatusCleanedUpAfterFailureOnOneMember() throws Throwable {
+    IgnoredException.addIgnoredException("Uncaught exception");
+    IgnoredException.addIgnoredException("Stop processing");
+    Host host = Host.getHost(0);
+    final VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    final VM vm2 = host.getVM(2);
+
+    //Create an observer that will fail a backup
+    //When this member receives a prepare
+    DistributionMessageObserver observer = new SerializableDistributionMessageObserver() {
+      @Override
+      public void beforeProcessMessage(DistributionManager dm,
+          DistributionMessage message) {
+        if(message instanceof PrepareBackupRequest) {
+          DistributionMessageObserver.setInstance(null);
+          IOException exception = new IOException("Backup in progess");
+          AdminFailureResponse response = AdminFailureResponse.create(dm, message.getSender(), exception);
+          response.setMsgId(((PrepareBackupRequest) message).getMsgId());
+          dm.putOutgoing(response);
+          throw new RuntimeException("Stop processing");
+        }
+      }
+    };
+    
+    vm0.invoke(() -> {
+      disconnectFromDS();
+      DistributionMessageObserver.setInstance(observer);
+    });
+    
+    createPersistentRegion(vm0);
+    createPersistentRegion(vm1);
+    
+    createData(vm0, 0, 5, "A", "region1");
+    createData(vm0, 0, 5, "B", "region2");
+    
+    try {
+      backup(vm2);
+      fail("Backup should have failed with in progress exception");
+    } catch(Exception expected) {
+      //that's ok, hte backup should have failed
+    }
+    
+    //A second backup should succeed because the observer
+    //has been cleared and the backup state should be cleared.
+    BackupStatus status = backup(vm2);
+    assertEquals(2, status.getBackedUpDiskStores().size());
+    assertEquals(Collections.emptySet(), status.getOfflineDiskStores());
+
+    
   }
    
   /**

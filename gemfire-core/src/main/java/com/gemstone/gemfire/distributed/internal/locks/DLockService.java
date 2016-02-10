@@ -2998,7 +2998,7 @@ public class DLockService extends DistributedLockService {
         ds.getCancelCriterion().checkCancelInProgress(null);
         
         // make sure thread group is ready...
-        readyThreadGroup();
+        readyThreadGroup(ds);
         
         if (services.get(serviceName) != null) {
           throw new IllegalArgumentException(LocalizedStrings.DLockService_SERVICE_NAMED_0_ALREADY_CREATED.toLocalizedString(serviceName));
@@ -3203,6 +3203,18 @@ public class DLockService extends DistributedLockService {
   protected static synchronized DistributedLockStats getDistributedLockStats() {
     return stats;
   }
+  
+  public static void addLockServiceForTests(String name, DLockService service) {
+    synchronized (services) {
+      services.put(name, service);
+    }
+  }
+  
+  public static void removeLockServiceForTests(String name) {
+    synchronized (services) {
+      services.remove(name);
+    }
+  }
 
   protected static void removeLockService(DLockService service) {
     service.removeAllTokens();
@@ -3253,10 +3265,8 @@ public class DLockService extends DistributedLockService {
   //   Internal
   // -------------------------------------------------------------------------
   
-  protected static synchronized void readyThreadGroup() {
+  protected static synchronized void readyThreadGroup(InternalDistributedSystem ds) {
     if (threadGroup == null) {
-      InternalDistributedSystem ds = 
-          InternalDistributedSystem.getAnyInstance();
       Assert.assertTrue(ds != null, 
           "Cannot find any instance of InternalDistributedSystem");
       String threadGroupName = LocalizedStrings.DLockService_DISTRIBUTED_LOCKING_THREADS.toLocalizedString();

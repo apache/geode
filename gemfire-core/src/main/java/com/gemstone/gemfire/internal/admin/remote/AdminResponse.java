@@ -42,7 +42,7 @@ public abstract class AdminResponse extends HighPriorityDistributionMessage
     return this.msgId;
   }
 
-  void setMsgId(int msgId) {
+  public void setMsgId(int msgId) {
     this.msgId = msgId;
   }
   

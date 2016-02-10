@@ -265,7 +265,7 @@ public class DistributedSystemBridge {
     this.dm = system.getDistributionManager();
     this.alertLevel = ManagementConstants.DEFAULT_ALERT_LEVEL;
     this.thisMemberName = MBeanJMXAdapter
-    .getMemberMBeanName(InternalDistributedSystem.getConnectedInstance().getDistributedMember());
+    .getMemberMBeanName(system.getDistributedMember());
 
     this.distributedSystemId = this.system.getConfig().getDistributedSystemId();
 
@@ -588,9 +588,6 @@ public class DistributedSystemBridge {
       diskBackupStatus.setBackedUpDiskStores(backedUpDiskStores);
       diskBackupStatus.setOfflineDiskStores(setOfMissingDiskStr);
       return diskBackupStatus;
-
-    } catch (Exception e) {
-      throw new Exception(e.getLocalizedMessage());
     } finally {
       BackupDataStoreHelper.releaseLock(dm);
     }
