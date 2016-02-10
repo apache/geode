@@ -342,7 +342,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /**
    * send a join request and wait for a reply.  Process the reply.
    * This may throw a SystemConnectException or an AuthenticationFailedException
-   * 
+   *
    * @return true if the attempt succeeded, false if it timed out
    */
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "WA_NOT_IN_LOOP")
@@ -2227,7 +2227,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     /**
      * performs health checks on the collection of members, removing any that
      * are found to be healthy
-     * 
+     *
      * @param suspects
      */
     private void removeHealthyMembers(final Set<InternalDistributedMember> suspects) throws InterruptedException {
