@@ -195,24 +195,24 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
 
       SearchState state = searchState;
-      
-      long locatorWaitTime = ((long)services.getConfig().getLocatorWaitTime()) * 1000L;
+
+      long locatorWaitTime = ((long) services.getConfig().getLocatorWaitTime()) * 1000L;
       long timeout = services.getConfig().getJoinTimeout();
       logger.debug("join timeout is set to {}", timeout);
-      long retrySleep =  JOIN_RETRY_SLEEP;
+      long retrySleep = JOIN_RETRY_SLEEP;
       long startTime = System.currentTimeMillis();
       long locatorGiveUpTime = startTime + locatorWaitTime;
       long giveupTime = startTime + timeout;
 
-      for (int tries=0; !this.isJoined && !this.isStopping; tries++) {
+      for (int tries = 0; !this.isJoined && !this.isStopping; tries++) {
         logger.debug("searching for the membership coordinator");
         boolean found = findCoordinator();
         if (found) {
           logger.debug("found possible coordinator {}", state.possibleCoordinator);
           if (localAddress.getNetMember().preferredForCoordinator()
               && state.possibleCoordinator.equals(this.localAddress)) {
-            if (tries > 2 || System.currentTimeMillis() < giveupTime ) {
-              synchronized(viewInstallationLock) {
+            if (tries > 2 || System.currentTimeMillis() < giveupTime) {
+              synchronized (viewInstallationLock) {
                 becomeCoordinator();
               }
               return true;
@@ -713,6 +713,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (preparing) {
       this.preparedView = view;
     } else {
+      //Added a check in the view processor to turn off the ViewCreator
+      //if another server is the coordinator - GEODE-870
       if(!localAddress.equals(view.getCoordinator()) && getViewCreator() != null)
       {
         stopCoordinatorServices();
@@ -1075,12 +1077,16 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   /**
    * for testing, do not use in any other case as it is not thread safe
+   *
+   * @param req
    */
   JoinResponseMessage[] getJoinResponseMessage() {
     return joinResponse;
   }
+
   /***
    * for testing purpose
+   *
    * @param jrm
    */
   void setJoinResponseMessage(JoinResponseMessage jrm) {
