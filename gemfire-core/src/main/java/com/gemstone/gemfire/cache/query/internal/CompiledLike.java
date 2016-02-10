@@ -46,11 +46,11 @@ public class CompiledLike extends CompiledComparison
 
   final static int WILDCARD_UNDERSCORE = 1;
   
-  private int wildcardType = -1;
+  private Object wildcardTypeKey = new Object();
   
-  private int wildcardPosition = -1;
+  private Object wildcardPositionKey = new Object();
   
-  private int patternLength = 0;
+  private Object patternLengthKey = new Object();
   
   final static String LOWEST_STRING = "";
 
@@ -64,7 +64,7 @@ public class CompiledLike extends CompiledComparison
 
   private final CompiledValue var;
 
-  private boolean isIndexEvaluated = false;
+  private Object isIndexEvaluatedKey = new Object();
   
   //private final CompiledBindArgument bindArg;
   private final CompiledValue bindArg;
@@ -75,6 +75,21 @@ public class CompiledLike extends CompiledComparison
     this.bindArg = pattern;
   }
 
+  private int getWildcardPosition(ExecutionContext context) {
+    return (Integer)context.cacheGet(wildcardPositionKey, -1);
+  }
+  
+  private int getWildcardType(ExecutionContext context) {
+    return (Integer)context.cacheGet(wildcardTypeKey, -1);
+  }
+  
+  private int getPatternLength(ExecutionContext context) {
+    return (Integer) context.cacheGet(patternLengthKey, 0);
+  }
+  
+  private boolean getIsIndexEvaluated(ExecutionContext context) {
+    return (Boolean) context.cacheGet(isIndexEvaluatedKey, false);
+  }
   
   OrganizedOperands organizeOperands(ExecutionContext context,
       boolean completeExpansionNeeded, RuntimeIterator[] indpndntItrs)
@@ -88,8 +103,8 @@ public class CompiledLike extends CompiledComparison
     } else {
       // 2 or 3 conditions; create junctions
       if ((getOperator() == OQLLexerTokenTypes.TOK_NE)
-          && (wildcardPosition == patternLength - 1)
-          && (wildcardType == WILDCARD_PERCENT)) {
+          && (getWildcardPosition(context) == getPatternLength(context) - 1)
+          && (getWildcardType(context) == WILDCARD_PERCENT)) {
         // negation supported only for trailing %
         // GroupJunction is created since the boundary conditions go out of
         // range and will be evaluated as false if a RangeJunction was used
@@ -128,13 +143,13 @@ public class CompiledLike extends CompiledComparison
       QueryInvocationTargetException {
     String pattern = (String) this.bindArg.evaluate(context);
     // check if it is filter evaluatable
-    CompiledComparison[] cvs = getRangeIfSargable(this.var, pattern);
+    CompiledComparison[] cvs = getRangeIfSargable(context, this.var, pattern);
 
     for (CompiledComparison cc : cvs) {
       // negation supported only for trailing %
       if ((getOperator() == OQLLexerTokenTypes.TOK_NE)
-          && (wildcardPosition == patternLength - 1)
-          && (wildcardType == WILDCARD_PERCENT)) {
+          && (getWildcardPosition(context) == getPatternLength(context) - 1)
+          && (getWildcardType(context) == WILDCARD_PERCENT)) {
         cc.negate();
       }
       cc.computeDependencies(context);
@@ -202,13 +217,15 @@ public class CompiledLike extends CompiledComparison
    * @param pattern
    * @return The generated CompiledComparisons
    */
-  CompiledComparison[] getRangeIfSargable(CompiledValue var, String pattern) {
+  CompiledComparison[] getRangeIfSargable(ExecutionContext context, CompiledValue var, String pattern) {
     CompiledComparison[] cv = null;
     StringBuffer buffer = new StringBuffer(pattern);
     // check if the string has a % or _ anywhere
-    wildcardPosition = checkIfSargableAndRemoveEscapeChars(buffer);
-    patternLength = buffer.length();
-    isIndexEvaluated = true;
+    int wildcardPosition = checkIfSargableAndRemoveEscapeChars(context, buffer);
+    context.cachePut(wildcardPositionKey, wildcardPosition);
+    int patternLength = buffer.length();
+    context.cachePut(patternLengthKey, patternLength);
+    context.cachePut(isIndexEvaluatedKey, true);
     // if wildcardPosition is >= 0 means it is sargable
     if (wildcardPosition >= 0) {
       int len = patternLength;
@@ -249,7 +266,7 @@ public class CompiledLike extends CompiledComparison
         
         // if % is not the last char in the string.
         // or the wildchar is _ which could be anywhere
-        if (len < (patternLength - 1) || wildcardType == WILDCARD_UNDERSCORE) {
+        if (len < (patternLength - 1) || getWildcardType(context) == WILDCARD_UNDERSCORE) {
           // negation not supported if % is not the last char and also for a _
           // anywhere
           if (getOperator() == OQLLexerTokenTypes.TOK_NE) {
@@ -374,17 +391,17 @@ public class CompiledLike extends CompiledComparison
    * @param buffer
    * @return position of wildcard if sargable otherwise -1
    */
-  int checkIfSargableAndRemoveEscapeChars(StringBuffer buffer) {
+  int checkIfSargableAndRemoveEscapeChars(ExecutionContext context, StringBuffer buffer) {
     int len = buffer.length();
     int wildcardPosition = -1;
     for (int i = 0; i < len; ++i) {
       char ch = buffer.charAt(i);
       if (ch == UNDERSCORE) {
-        wildcardType = WILDCARD_UNDERSCORE;
+        context.cachePut(wildcardTypeKey, WILDCARD_UNDERSCORE);
         wildcardPosition = i; // the position of the wildcard
         break;
       } else if (ch == PERCENT) {
-        wildcardType = WILDCARD_PERCENT;
+        context.cachePut(wildcardTypeKey, WILDCARD_PERCENT);
         wildcardPosition = i; // the position of the wildcard
         break;
       } else if (ch == BACKSLASH) {
@@ -434,7 +451,7 @@ public class CompiledLike extends CompiledComparison
       NameResolutionException, QueryInvocationTargetException
   {
     //reset the isIndexEvaluated flag here since index is not being used here
-    isIndexEvaluated = false;
+    context.cachePut(isIndexEvaluatedKey, false);
 
     Pattern pattern = (Pattern)context.cacheGet(this.bindArg);
     if(pattern == null) {
@@ -484,7 +501,7 @@ public class CompiledLike extends CompiledComparison
      * re-filterevaluation of this CompiledLike.
      */
     PlanInfo result = null;
-    if (isIndexEvaluated) {
+    if (getIsIndexEvaluated(context)) {
       result = new PlanInfo();
       result.evalAsFilter = false;
     } else {

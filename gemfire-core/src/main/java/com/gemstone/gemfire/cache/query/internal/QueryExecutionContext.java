@@ -116,6 +116,10 @@ public class QueryExecutionContext extends ExecutionContext {
   }
 
   public Object cacheGet(Object key) {
+    return cacheGet(key, null);
+  }
+  
+  public Object cacheGet(Object key, Object defaultValue) {
     //execCache can be empty in cases where we are doing adds to indexes
     //in that case, we use a default execCache
     int scopeId = -1;
@@ -123,7 +127,13 @@ public class QueryExecutionContext extends ExecutionContext {
       scopeId = (Integer) execCacheStack.peek();
     }
     Map execCache = (Map)execCaches.get(scopeId);
-    return execCache != null? execCache.get(key): null;
+    if (execCache == null) {
+      return defaultValue;
+    }
+    if (execCache.containsKey(key)) {
+      return execCache.get(key);
+    }
+    return defaultValue;
   }
 
   public void pushExecCache(int scopeNum) {

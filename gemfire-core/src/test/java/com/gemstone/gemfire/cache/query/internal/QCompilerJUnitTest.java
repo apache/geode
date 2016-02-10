@@ -46,82 +46,83 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class QCompilerJUnitTest {
 
+  QueryExecutionContext context = new QueryExecutionContext(null, null);
   @Test
   public void testStringConditioningForLike_1() {
     String s1 = "abc%";
     StringBuffer buffer = new StringBuffer(s1);
     CompiledLike cl = new CompiledLike(null, null);
-    int wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    int wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(3,wildCardPosition);
     assertEquals(s1, buffer.toString());
     
     s1 = "abc\\%abc";
     buffer = new StringBuffer(s1);
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(-1,wildCardPosition);
     assertEquals(buffer.toString(), "abc%abc");
     
     s1 = "abc\\\\%abc";
     buffer = new StringBuffer(s1);
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(4,wildCardPosition);
     assertEquals(buffer.toString(), "abc\\%abc");
 
     s1 = "abc\\\\\\%abc";
     buffer = new StringBuffer(s1);
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(-1,wildCardPosition);
     assertEquals(buffer.toString(), "abc\\%abc");
 
     s1 = "%";
     buffer = new StringBuffer(s1);
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(0,wildCardPosition);
     assertEquals(buffer.toString(), s1);
 
     s1 = "%abc";
     buffer = new StringBuffer(s1);
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(0,wildCardPosition);
     assertEquals(buffer.toString(), "%abc");
 
     s1 = "%%abc";
     buffer = new StringBuffer(s1);
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(0,wildCardPosition);
     assertEquals(buffer.toString(), "%%abc");
 
     s1 = "%\\%abc";
     buffer = new StringBuffer(s1);
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(0,wildCardPosition);
     assertEquals(buffer.toString(), "%\\%abc");
 
     s1 = "_abc";
     buffer = new StringBuffer(s1);
 
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(0,wildCardPosition);
     assertEquals(buffer.toString(), "_abc");
     
     s1 = "\\_abc";
     buffer = new StringBuffer(s1);
     
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(-1,wildCardPosition);
     assertEquals(buffer.toString(), "_abc");
     
     s1 = "ab\\%c%d";
     buffer = new StringBuffer(s1);
     
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(4,wildCardPosition);
     assertEquals(buffer.toString(), "ab%c%d");
     
     s1 = "ab\\__d";
     buffer = new StringBuffer(s1);
     
-    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(buffer);
+    wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertEquals(3,wildCardPosition);
     assertEquals(buffer.toString(), "ab__d");
   }
@@ -132,7 +133,7 @@ public class QCompilerJUnitTest {
     CompiledLiteral literal = new CompiledLiteral(pattern);
     CompiledID cid = new CompiledID("val");
     CompiledLike cl = new CompiledLike(cid, literal);
-    CompiledComparison[] cc = cl.getRangeIfSargable(cid, pattern);
+    CompiledComparison[] cc = cl.getRangeIfSargable(context,cid, pattern);
     assertEquals(1, cc.length);
    
     ArrayList cv = (ArrayList) cc[0].getChildren();
@@ -145,7 +146,7 @@ public class QCompilerJUnitTest {
     pattern = "ab%";
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context,cid, pattern);
     assertEquals(2, cc.length);
     
     cv = (ArrayList) cc[0].getChildren();
@@ -165,7 +166,7 @@ public class QCompilerJUnitTest {
     pattern = "a%c";
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context,cid, pattern);
     assertEquals(3, cc.length);
 
     cv = (ArrayList) cc[0].getChildren();
@@ -187,7 +188,7 @@ public class QCompilerJUnitTest {
     pattern = "%bc";
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context,cid, pattern);
     assertEquals(2, cc.length);
  
     cv = (ArrayList) cc[0].getChildren();
@@ -202,7 +203,7 @@ public class QCompilerJUnitTest {
     pattern = "ab_";
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context,cid, pattern);
     assertEquals(3, cc.length);
     
     cv = (ArrayList) cc[0].getChildren();
@@ -224,7 +225,7 @@ public class QCompilerJUnitTest {
     pattern = "_bc";
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context,cid, pattern);
     assertEquals(2, cc.length);
 
     cv = (ArrayList) cc[0].getChildren();
@@ -239,7 +240,7 @@ public class QCompilerJUnitTest {
     pattern = "a_c";
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context,cid, pattern);
     assertEquals(3, cc.length);
     
     cv = (ArrayList) cc[0].getChildren();
@@ -261,7 +262,7 @@ public class QCompilerJUnitTest {
     pattern = "_b%";
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context,cid, pattern);
     assertEquals(2, cc.length);
 
     cv = (ArrayList) cc[0].getChildren();
@@ -276,7 +277,7 @@ public class QCompilerJUnitTest {
     pattern = "a\\%bc";
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context,cid, pattern);
     assertEquals(1, cc.length);
 
     cv = (ArrayList) cc[0].getChildren();
@@ -290,7 +291,7 @@ public class QCompilerJUnitTest {
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
     cl.negate();
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context,cid, pattern);
     assertEquals(2, cc.length);
     
     cv = (ArrayList) cc[0].getChildren();
@@ -311,7 +312,7 @@ public class QCompilerJUnitTest {
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
     cl.negate();
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context, cid, pattern);
     assertEquals(2, cc.length);
 
     cv = (ArrayList) cc[0].getChildren();
@@ -327,7 +328,7 @@ public class QCompilerJUnitTest {
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
     cl.negate();
-    cc = cl.getRangeIfSargable(cid, pattern);
+    cc = cl.getRangeIfSargable(context, cid, pattern);
     assertEquals(2, cc.length);
 
     cv = (ArrayList) cc[0].getChildren();

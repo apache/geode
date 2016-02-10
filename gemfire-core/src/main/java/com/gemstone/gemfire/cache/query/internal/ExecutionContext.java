@@ -656,6 +656,10 @@ public class ExecutionContext {
   public Object cacheGet(Object key) {
     return null;
   }
+  
+  public Object cacheGet(Object key, Object defaultValue) {
+    return defaultValue;
+  }
 
   public boolean isCqQueryContext() {
     return false;
