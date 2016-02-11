@@ -187,7 +187,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
   }
   
   /* Returns Cache Server Port */
-  static int getCacheServerPort() {
+  public static int getCacheServerPort() {
     return bridgeServerPort;
   }
   

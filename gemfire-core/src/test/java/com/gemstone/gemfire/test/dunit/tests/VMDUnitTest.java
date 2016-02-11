@@ -52,7 +52,7 @@ public class VMDUnitTest extends DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     assertEquals(BOOLEAN_VALUE,
-                 vm.invoke(() -> VMDUnitTest.remoteBooleanMethod())); 
+                 (boolean) vm.invoke(() -> VMDUnitTest.remoteBooleanMethod())); 
   }
 
   /**
@@ -79,7 +79,7 @@ public class VMDUnitTest extends DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     assertEquals(LONG_VALUE,
-                 vm.invoke(() -> VMDUnitTest.remoteLongMethod())); 
+                 (long) vm.invoke(() -> VMDUnitTest.remoteLongMethod())); 
   }
 
   /**

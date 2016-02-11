@@ -1861,7 +1861,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     // gather details for later creation of pool...
     assertEquals(ports[0],
-                 vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getTestServerEventsInLonerClient_port()));
+                 (int) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getTestServerEventsInLonerClient_port()));
     String serverMemberId = (String) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getMemberId());
     DistributedMember serverMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
 
@@ -2029,7 +2029,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     // gather details for later creation of pool...
     assertEquals(ports[0],
-                 vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getTestServerEventsInLonerClient_port()));
+        (int) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getTestServerEventsInLonerClient_port()));
     serverMemberId = (String) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getMemberId());
     serverMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
 

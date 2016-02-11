@@ -118,7 +118,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends DistributedTestCase
       public void afterCreate(EntryEvent event)
       {
         if (!receiver) {
-          vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.setEventIDData( ((EntryEventImpl)event).getEventId() ));
+          vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.setEventIDData( ((EntryEventImpl)event).getEventId() ));
         }
         else {
           testEventIDResult = ((EntryEventImpl)event).getEventId().equals(

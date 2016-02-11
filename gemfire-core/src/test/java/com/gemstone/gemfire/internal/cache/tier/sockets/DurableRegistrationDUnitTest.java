@@ -115,7 +115,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     // Step 1: Starting the servers
     PORT1 = ((Integer)this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true)
             ))).intValue();
-    PORT2 = ((Integer)this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true),
+    PORT2 = ((Integer)this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true)
             ))).intValue();
 
     // Step 2: Bring Up the Client

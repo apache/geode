@@ -4256,7 +4256,7 @@ public class WANTestBase extends DistributedTestCase{
   }
   
   public static void checkAllSiteMetaData(     
-      Map<Integer, List<Integer>> dsVsPorts) {
+      Map<Integer, ArrayList<Integer>> dsVsPorts) {
     waitForSitesToUpdate();
     assertNotNull(system);
 //    Map<Integer,Set<DistributionLocatorId>> allSiteMetaData = ((DistributionConfigImpl)system
@@ -4270,7 +4270,7 @@ public class WANTestBase extends DistributedTestCase{
     System.out.println("Server allSiteMetaData : " + ((InternalLocator)locator).getlocatorMembershipListener().getAllServerLocatorsInfo());
     
     //assertEquals(dsVsPorts.size(), allSiteMetaData.size());
-    for (Map.Entry<Integer, List<Integer>> entry : dsVsPorts.entrySet()) {
+    for (Map.Entry<Integer, ArrayList<Integer>> entry : dsVsPorts.entrySet()) {
       Set<DistributionLocatorId> locators = allSiteMetaData.get(entry.getKey());
       assertNotNull(locators);
       List<Integer> value = entry.getValue();

@@ -1691,7 +1691,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   } 
   
   /* Returs Cache Server Port */
-  private static int getCacheServerPort() {
+  protected static int getCacheServerPort() {
     return bridgeServerPort;
   }
   

@@ -74,7 +74,7 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
       "SELECT p FROM " + regName + " p, p.idTickers idTickers WHERE p.ticker = 'vmware'", // 4
     };
 
-  private static int getCacheServerPort() {
+  protected static int getCacheServerPort() {
     return bridgeServerPort;
   }
 
