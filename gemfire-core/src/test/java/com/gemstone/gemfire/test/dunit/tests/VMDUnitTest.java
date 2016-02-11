@@ -40,22 +40,6 @@ public class VMDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  ////////  Test Methods
-
-  public void notestInvokeNonExistentMethod() {
-    Host host = Host.getHost(0);
-    VM vm = host.getVM(0);
-    try {
-      vm.invoke(() -> VMDUnitTest.nonExistentMethod());
-      fail("Should have thrown an RMIException");
-
-    } catch (RMIException ex) {
-      String s = "Excepted a NoSuchMethodException, got a " +
-        ex.getCause();;
-      assertTrue(s, ex.getCause() instanceof NoSuchMethodException);
-    }
-  }
-
   /**
    * Accessed via reflection.  DO NOT REMOVE
    * @return
@@ -127,25 +111,6 @@ public class VMDUnitTest extends DistributedTestCase {
   protected static class ClassWithByte implements Serializable {
     public byte getByte() {
       return BYTE_VALUE;
-    }
-  }
-
-  public void notestInvokeInstanceLong() {
-    Host host = Host.getHost(0);
-    VM vm = host.getVM(0);
-    assertEquals(LONG_VALUE,
-                 vm.invokeLong(new ClassWithLong(), "getLong"));
-  }
-
-  public void notestInvokeInstanceLongNotLong() {
-    Host host = Host.getHost(0);
-    VM vm = host.getVM(0);
-    try {
-      vm.invokeLong(new ClassWithByte(), "getByte");
-      fail("Should have thrown an IllegalArgumentException");
-
-    } catch (IllegalArgumentException ex) {
-
     }
   }
 
