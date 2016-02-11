@@ -43,7 +43,6 @@ allprojects {
   gradle.startParameter.continueOnFailure = true
   
   repositories {
-    mavenLocal()
     mavenCentral()
     maven { url "http://repo.spring.io/release" }
     maven { url "http://repo.spring.io/milestone" }
