@@ -89,19 +89,19 @@ public class HABug36738DUnitTest extends DistributedTestCase
 
   @Override
   protected final void preTearDown() throws Exception {
-    server1.invoke(HABug36738DUnitTest.class, "closeCache");
-    server2.invoke(HABug36738DUnitTest.class, "closeCache");
+    server1.invoke(() -> HABug36738DUnitTest.closeCache());
+    server2.invoke(() -> HABug36738DUnitTest.closeCache());
   }
 
   public void testBug36768() throws Exception
   {
     createServer1();
     Wait.pause(10000);
-    server1.invoke(HABug36738DUnitTest.class, "checkRegionQueueSize");
+    server1.invoke(() -> HABug36738DUnitTest.checkRegionQueueSize());
     createServer2();
-    server1.invoke(HABug36738DUnitTest.class, "checkRegionQueueSize");
-    server2.invoke(HABug36738DUnitTest.class, "checkRegionQueueSize");
-    server2.invoke(HABug36738DUnitTest.class, "printRecs");
+    server1.invoke(() -> HABug36738DUnitTest.checkRegionQueueSize());
+    server2.invoke(() -> HABug36738DUnitTest.checkRegionQueueSize());
+    server2.invoke(() -> HABug36738DUnitTest.printRecs());
   }
 
   public static void printRecs()
@@ -122,15 +122,13 @@ public class HABug36738DUnitTest extends DistributedTestCase
   // function to create server and region in it.
   private void createServer1() throws Exception
   {
-    server1.invoke(HABug36738DUnitTest.class, "createServerCache",
-        new Object[] { new Boolean(true) });
+    server1.invoke(() -> HABug36738DUnitTest.createServerCache( new Boolean(true) ));
   }
 
   // function to create server without region.
   private void createServer2() throws Exception
   {
-    server2.invoke(HABug36738DUnitTest.class, "createServerCache",
-        new Object[] { new Boolean(false) });
+    server2.invoke(() -> HABug36738DUnitTest.createServerCache( new Boolean(false) ));
   }
 
   public static void createServerCache(Boolean isRegion) throws Exception

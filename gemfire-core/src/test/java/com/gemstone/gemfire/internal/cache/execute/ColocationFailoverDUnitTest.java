@@ -93,7 +93,7 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
     createShipmentPR();
     putInPRs();
     verifyColocationInAllVms();
-    dataStore1.invoke(ColocationFailoverDUnitTest.class, "closeCache");
+    dataStore1.invoke(() -> ColocationFailoverDUnitTest.closeCache());
     verifyPrimaryColocationAfterFailover();
   }
   
@@ -104,34 +104,31 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
     createShipmentPR();
     putInPRs();
     verifyColocationInAllVms();
-    dataStore1.invoke(ColocationFailoverDUnitTest.class, "closeCache");
+    dataStore1.invoke(() -> ColocationFailoverDUnitTest.closeCache());
     Wait.pause(5000); //wait for volunteering primary
     verifyColocationAfterFailover();
   }
   
   private void verifyColocationInAllVms() {
     verifyColocation();
-    dataStore1.invoke(ColocationFailoverDUnitTest.class, "verifyColocation");
-    dataStore2.invoke(ColocationFailoverDUnitTest.class, "verifyColocation");
-    dataStore3.invoke(ColocationFailoverDUnitTest.class, "verifyColocation");
-    dataStore4.invoke(ColocationFailoverDUnitTest.class, "verifyColocation");
+    dataStore1.invoke(() -> ColocationFailoverDUnitTest.verifyColocation());
+    dataStore2.invoke(() -> ColocationFailoverDUnitTest.verifyColocation());
+    dataStore3.invoke(() -> ColocationFailoverDUnitTest.verifyColocation());
+    dataStore4.invoke(() -> ColocationFailoverDUnitTest.verifyColocation());
   }
 
   private void verifyPrimaryColocationAfterFailover() {
     verifyPrimaryColocation();
-    dataStore2.invoke(ColocationFailoverDUnitTest.class,
-        "verifyPrimaryColocation");
-    dataStore3.invoke(ColocationFailoverDUnitTest.class,
-        "verifyPrimaryColocation");
-    dataStore4.invoke(ColocationFailoverDUnitTest.class,
-        "verifyPrimaryColocation");
+    dataStore2.invoke(() -> ColocationFailoverDUnitTest.verifyPrimaryColocation());
+    dataStore3.invoke(() -> ColocationFailoverDUnitTest.verifyPrimaryColocation());
+    dataStore4.invoke(() -> ColocationFailoverDUnitTest.verifyPrimaryColocation());
   }
 
   private void verifyColocationAfterFailover() {
     verifyColocation();
-    dataStore2.invoke(ColocationFailoverDUnitTest.class, "verifyColocation");
-    dataStore3.invoke(ColocationFailoverDUnitTest.class, "verifyColocation");
-    dataStore4.invoke(ColocationFailoverDUnitTest.class, "verifyColocation");
+    dataStore2.invoke(() -> ColocationFailoverDUnitTest.verifyColocation());
+    dataStore3.invoke(() -> ColocationFailoverDUnitTest.verifyColocation());
+    dataStore4.invoke(() -> ColocationFailoverDUnitTest.verifyColocation());
   }
 
   public static void closeCache() {
@@ -358,10 +355,10 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
 
   public static void createCacheInAllVms() {
     createCacheInVm();
-    dataStore1.invoke(ColocationFailoverDUnitTest.class, "createCacheInVm");
-    dataStore2.invoke(ColocationFailoverDUnitTest.class, "createCacheInVm");
-    dataStore3.invoke(ColocationFailoverDUnitTest.class, "createCacheInVm");
-    dataStore4.invoke(ColocationFailoverDUnitTest.class, "createCacheInVm");
+    dataStore1.invoke(() -> ColocationFailoverDUnitTest.createCacheInVm());
+    dataStore2.invoke(() -> ColocationFailoverDUnitTest.createCacheInVm());
+    dataStore3.invoke(() -> ColocationFailoverDUnitTest.createCacheInVm());
+    dataStore4.invoke(() -> ColocationFailoverDUnitTest.createCacheInVm());
   }
 
   public static void createCacheInVm() {
@@ -457,10 +454,10 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
 
   private static void putInPRs() {
     put();
-    dataStore1.invoke(ColocationFailoverDUnitTest.class, "put");
-    dataStore2.invoke(ColocationFailoverDUnitTest.class, "put");
-    dataStore3.invoke(ColocationFailoverDUnitTest.class, "put");
-    dataStore4.invoke(ColocationFailoverDUnitTest.class, "put");
+    dataStore1.invoke(() -> ColocationFailoverDUnitTest.put());
+    dataStore2.invoke(() -> ColocationFailoverDUnitTest.put());
+    dataStore3.invoke(() -> ColocationFailoverDUnitTest.put());
+    dataStore4.invoke(() -> ColocationFailoverDUnitTest.put());
   }
 
   public static void put() {

@@ -82,40 +82,33 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
   public void testEventIDsDACK() throws Exception
   {
     createServerCache(new Integer(DISTRIBUTED_ACK));
-    vm0.invoke(EventIDVerificationInP2PDUnitTest.class, "createServerCache",
-        new Object[] { new Integer(DISTRIBUTED_ACK) });
+    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache( new Integer(DISTRIBUTED_ACK) ));
     verifyOperations();
   }
 
   public void testEventIDsGLOBAL() throws Exception
   {
     createServerCache(new Integer(GLOBAL));
-    vm0.invoke(EventIDVerificationInP2PDUnitTest.class, "createServerCache",
-        new Object[] { new Integer(GLOBAL) });
+    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache( new Integer(GLOBAL) ));
     verifyOperations();
   }
 
   public void _testEventIDsNOACK() throws Exception
   {
     createServerCache(new Integer(0));
-    vm0.invoke(EventIDVerificationInP2PDUnitTest.class, "createServerCache",
-        new Object[] { new Integer(0) });
+    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache( new Integer(0) ));
 
     createEntry();
-    Boolean pass = (Boolean)vm0.invoke(EventIDVerificationInP2PDUnitTest.class,
-        "verifyResult", new Object[]{eventId} );
+    Boolean pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
     put();
-    pass = (Boolean)vm0.invoke(EventIDVerificationInP2PDUnitTest.class,
-        "verifyResult", new Object[]{eventId} );
+    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
     destroy();
-    pass = (Boolean)vm0.invoke(EventIDVerificationInP2PDUnitTest.class,
-        "verifyResult", new Object[]{eventId} );
+    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
     destroyRegion();
-    pass = (Boolean)vm0.invoke(EventIDVerificationInP2PDUnitTest.class,
-        "verifyResult", new Object[]{eventId} );
+    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
   }
 
@@ -297,31 +290,26 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
   public static void verifyOperations()
   {
     createEntry();
-    Boolean pass = (Boolean)vm0.invoke(EventIDVerificationInP2PDUnitTest.class,
-        "verifyResult", new Object[]{eventId} );
+    Boolean pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertTrue(pass.booleanValue());
     put();
-    pass = (Boolean)vm0.invoke(EventIDVerificationInP2PDUnitTest.class,
-        "verifyResult", new Object[]{eventId} );
+    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertTrue(pass.booleanValue());
     invalidateRegion();
-    pass = (Boolean)vm0.invoke(EventIDVerificationInP2PDUnitTest.class,
-        "verifyResult", new Object[]{eventId} );
+    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertTrue(pass.booleanValue());
     destroy();
-    pass = (Boolean)vm0.invoke(EventIDVerificationInP2PDUnitTest.class,
-        "verifyResult", new Object[]{eventId} );
+    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertTrue(pass.booleanValue());
     destroyRegion();
-    pass = (Boolean)vm0.invoke(EventIDVerificationInP2PDUnitTest.class,
-        "verifyResult", new Object[]{eventId} );
+    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertTrue(pass.booleanValue());   
   }
 
   @Override
   protected final void preTearDown() throws Exception {
     closeCache();
-    vm0.invoke(EventIDVerificationInP2PDUnitTest.class, "closeCache");
+    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.closeCache());
   }
 
   public static void closeCache()

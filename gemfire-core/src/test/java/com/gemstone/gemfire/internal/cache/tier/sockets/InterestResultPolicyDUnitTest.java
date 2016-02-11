@@ -86,8 +86,8 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
-    PORT =  ((Integer)vm0.invoke(InterestResultPolicyDUnitTest.class, "createServerCache" )).intValue();
-    vm0.invoke(InterestResultPolicyDUnitTest.class, "populateServerCache");
+    PORT =  ((Integer)vm0.invoke(() -> InterestResultPolicyDUnitTest.createServerCache())).intValue();
+    vm0.invoke(() -> InterestResultPolicyDUnitTest.populateServerCache());
   }
 
   /**
@@ -99,9 +99,9 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
     this.expectedEx = IgnoredException.addIgnoredException(ServerConnectivityException.class
         .getName());
     // close server
-    vm0.invoke(InterestResultPolicyDUnitTest.class, "closeCache");
+    vm0.invoke(() -> InterestResultPolicyDUnitTest.closeCache());
     // close client
-    vm1.invoke(InterestResultPolicyDUnitTest.class, "closeCache");
+    vm1.invoke(() -> InterestResultPolicyDUnitTest.closeCache());
   }
 
   @Override
@@ -126,8 +126,8 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
     Object[] objArr = new Object[2];
     objArr[0] = InterestResultPolicy.NONE;
     objArr[1] = new Integer(PREPOPULATED_ENTRIES);
-    vm1.invoke(InterestResultPolicyDUnitTest.class, "createClientCache", new Object[] {
-      NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)});
+    vm1.invoke(() -> InterestResultPolicyDUnitTest.createClientCache(
+      NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)));
     vm1.invoke(InterestResultPolicyDUnitTest.class, "registerInterest", objArr);
     vm1.invoke(InterestResultPolicyDUnitTest.class, "verifyResult", objArr);
     logger.fine("testPolicyNone END");
@@ -148,8 +148,8 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
     Object[] objArr = new Object[2];
     objArr[0] = InterestResultPolicy.KEYS;
     objArr[1] = new Integer(PREPOPULATED_ENTRIES);
-    vm1.invoke(InterestResultPolicyDUnitTest.class, "createClientCache", new Object[] {
-      NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)});;
+    vm1.invoke(() -> InterestResultPolicyDUnitTest.createClientCache(
+      NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)));;
     vm1.invoke(InterestResultPolicyDUnitTest.class, "registerInterest", objArr);
     vm1.invoke(InterestResultPolicyDUnitTest.class, "verifyResult", objArr);
     logger.fine("testPolicyKeys END");
@@ -170,8 +170,8 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
     Object[] objArr = new Object[2];
     objArr[0] = InterestResultPolicy.KEYS_VALUES;
     objArr[1] = new Integer(PREPOPULATED_ENTRIES);
-    vm1.invoke(InterestResultPolicyDUnitTest.class, "createClientCache", new Object[] {
-      NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)});
+    vm1.invoke(() -> InterestResultPolicyDUnitTest.createClientCache(
+      NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)));
     vm1.invoke(InterestResultPolicyDUnitTest.class, "registerInterest", objArr);
     vm1.invoke(InterestResultPolicyDUnitTest.class, "verifyResult", objArr);
     logger.fine("testPolicyKeyValues END");
@@ -195,12 +195,11 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
     objArr[0] = InterestResultPolicy.KEYS;
     /* registering for 5 extra keys */
     objArr[1] = new Integer(PREPOPULATED_ENTRIES + 5);
-    vm1.invoke(InterestResultPolicyDUnitTest.class, "createClientCache", new Object[] {
-      NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)});
+    vm1.invoke(() -> InterestResultPolicyDUnitTest.createClientCache(
+      NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)));
     vm1.invoke(InterestResultPolicyDUnitTest.class, "registerInterest", objArr);
     vm1.invoke(InterestResultPolicyDUnitTest.class, "verifyResult", objArr);
-    Integer cnt = (Integer)vm0.invoke(InterestResultPolicyDUnitTest.class,
-        "getEntryCount");
+    Integer cnt = (Integer)vm0.invoke(() -> InterestResultPolicyDUnitTest.getEntryCount());
     assertEquals(cnt.intValue(), PREPOPULATED_ENTRIES);
     logger.fine("testBug35358 END");
   }

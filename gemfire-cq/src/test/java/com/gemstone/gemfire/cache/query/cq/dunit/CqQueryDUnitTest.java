@@ -1618,7 +1618,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     createServer(server);
     createServer(server2);
 
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
@@ -1661,7 +1661,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     /* Init Server and Client */
     createServer(server);
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     createClient(client, thePort, host0);
     
@@ -1831,7 +1831,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     /* Init Server and Client */
     createServer(server);
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     createClient(client, thePort, host0);
     
@@ -1914,7 +1914,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     /* Init Server and Client */
     createServer(server);
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     createClient(client, thePort, host0);
     
@@ -2010,7 +2010,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     /* Init Server and Client */
     createServer(server);
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     createClient(client, thePort, host0);
     
@@ -2196,7 +2196,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     /* Init Server and Client */
     createServer(server);
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     createClient(client, thePort, host0);
     
@@ -2280,7 +2280,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     /* Create Server and Client */
     createServer(server);
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     createClient(client1, thePort, host0);
     createClient(client2, thePort, host0);
@@ -2430,7 +2430,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     createServer(server);
     
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     // Create client.
@@ -2501,7 +2501,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     createServer(server);
     
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     // Create client.
@@ -2603,8 +2603,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     createMapValues(server, regions[0], size/2);
 
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
@@ -2688,7 +2687,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     createServer(server);
     
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     // Create client.
@@ -2830,7 +2829,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     createServer(server);
     
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     // Create client.
@@ -2872,7 +2871,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     createServer(server1);
     
-    final int port1 = server1.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     // Create client.
 //    Properties props = new Properties();
@@ -2898,7 +2897,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     Wait.pause(1 * 1000);
     
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     System.out.println("### Port on which server1 running : " + port1 + 
         " Server2 running : " + thePort2);
     Wait.pause(3 * 1000);
@@ -2960,16 +2959,16 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     createServer(server1);
     
-    final int port1 = server1.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     
     createServer(server3, ports[1]);
-    final int port3 = server3.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int port3 = server3.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     System.out.println("### Port on which server1 running : " + port1 + 
         " server2 running : " + thePort2 + 
         " Server3 running : " + port3);
@@ -3058,10 +3057,10 @@ public class CqQueryDUnitTest extends CacheTestCase {
     createServer(server1);
     createServer(server2);
     
-    final int port1 = server1.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
-    final int thePort2 = server2.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     
     SerializableRunnable createConnectionPool =
       new CacheSerializableRunnable("Create region") {
@@ -3118,7 +3117,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     createServer(server);
     
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     // Create client.
@@ -3187,7 +3186,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     createReplicateRegionWithLocalDestroy(server, new String[]{regions[0]});
     
     
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     // Create client.
@@ -3222,8 +3221,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
 
     createServer(server);
 
-    final int thePort = server.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
@@ -3306,13 +3304,11 @@ public class CqQueryDUnitTest extends CacheTestCase {
     server1.invoke(createServer);
     server2.invoke(createServer);
     
-    final int port1 = server1.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
 
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
-    final int thePort2 = server2.invokeInt(CqQueryDUnitTest.class,
-    "getCacheServerPort");
+    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
 
     // Create client.
     createClient(client, new int[] {port1, thePort2}, host0, "-1");
@@ -3375,7 +3371,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
       
       createServer(server);
       
-      final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+      final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
       final String host0 = NetworkUtils.getServerHostName(server.getHost());
       
       // Create client.
@@ -3407,7 +3403,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
       
       createServer(server);
       
-      final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+      final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
       final String host0 = NetworkUtils.getServerHostName(server.getHost());
       
       // Create client.
@@ -3459,7 +3455,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
       
       createServer(server);
       
-      final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+      final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
       final String host0 = NetworkUtils.getServerHostName(server.getHost());
       
       // Create client.
@@ -3510,8 +3506,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
 
     createServer(server1);
 
-    final int port1 = server1.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
@@ -3530,8 +3525,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     waitForCreated(client, "testCQAllServersLeave_11", KEY + 10);
 
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     Wait.pause(8 * 1000);
 
     // Close server1.
@@ -3558,8 +3552,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     VM client = host.getVM(2);
 
     createServer(server1);
-    final int port1 = server1.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
     
@@ -3577,8 +3570,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     waitForCreated(client, "testCQAllServersLeave_11", KEY + 10);
 
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     Wait.pause(10 * 1000);
 
     // Close server1 and pause so server has chance to close
@@ -3605,8 +3597,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     VM client = host.getVM(2);
 
     createServer(server1);
-    final int port1 = server1.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
@@ -3626,8 +3617,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     
     //start server 2
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     Wait.pause(8 * 1000);
 
     // Close server1.
@@ -3667,8 +3657,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     VM client = host.getVM(2);
 
     createServer(server1);
-    final int port1 = server1.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
@@ -3685,8 +3674,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     waitForCreated(client, "testCQAllServersLeave_11", KEY + 10);
 
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     Wait.pause(8 * 1000);
 
     // Close server1 and give time for server1 to actually shutdown
@@ -3716,14 +3704,12 @@ public class CqQueryDUnitTest extends CacheTestCase {
 
     createServer(server1);
 
-    final int port1 = server1.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
 
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     Wait.pause(8 * 1000);
 
     // Create client
@@ -3770,7 +3756,7 @@ public void testCqCloseAndExecuteWithInitialResults() throws Exception {
    
    createServer(server);
    
-   final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+   final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
    final String host0 = NetworkUtils.getServerHostName(server.getHost());
    
    // Create client.
@@ -3799,7 +3785,7 @@ public void testCQEventsWithNotEqualsUndefined() throws Exception {
   
   createServer(server);
   
-  final int thePort = server.invokeInt(CqQueryDUnitTest.class, "getCacheServerPort");
+  final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
   final String host0 = NetworkUtils.getServerHostName(server.getHost());
   
   // Create client.

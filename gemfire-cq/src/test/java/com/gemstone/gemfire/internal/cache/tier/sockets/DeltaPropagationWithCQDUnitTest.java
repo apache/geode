@@ -106,10 +106,10 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
 
   @Override
   protected final void preTearDown() throws Exception {
-    server1.invoke(DeltaPropagationWithCQDUnitTest.class, "close");
-    server2.invoke(DeltaPropagationWithCQDUnitTest.class, "close");
-    client1.invoke(DeltaPropagationWithCQDUnitTest.class, "close");
-    client2.invoke(DeltaPropagationWithCQDUnitTest.class, "close");
+    server1.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
+    server2.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
+    client1.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
+    client2.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
     close();
   }
   
@@ -124,22 +124,20 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
 
   public void testCqWithRI() throws Exception {
     // 1. setup a cache server
-    int port = (Integer)server1.invoke(DeltaPropagationWithCQDUnitTest.class,
-        "createCacheServer");
+    int port = (Integer)server1.invoke(() -> DeltaPropagationWithCQDUnitTest.createCacheServer());
     // 2. setup a client
     client1
-        .invoke(DeltaPropagationWithCQDUnitTest.class, "createClientCache",
-            new Object[] {NetworkUtils.getServerHostName(server1.getHost()), port,
-                Boolean.TRUE});
+        .invoke(() -> DeltaPropagationWithCQDUnitTest.createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port,
+                Boolean.TRUE));
     // 3. setup another client with cqs and interest in all keys.
     createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port, true);
     registerCQs(1, "CQWithInterestDUnitTest_cq");
     // 4. put a key on client1
-    client1.invoke(DeltaPropagationWithCQDUnitTest.class, "doPut", new Object[] {
-        "SAMPLE_KEY", "SAMPLE_VALUE"});
+    client1.invoke(() -> DeltaPropagationWithCQDUnitTest.doPut(
+        "SAMPLE_KEY", "SAMPLE_VALUE"));
     // 5. update the key with new value, on client1
-    client1.invoke(DeltaPropagationWithCQDUnitTest.class, "doPut", new Object[] {
-        "SAMPLE_KEY", "NEW_VALUE"});
+    client1.invoke(() -> DeltaPropagationWithCQDUnitTest.doPut(
+        "SAMPLE_KEY", "NEW_VALUE"));
     // 6. Wait for some time
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
@@ -162,13 +160,11 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
     int numOfKeys = 10;
     int numOfCQs = 3;
     // 1. setup a cache server
-    int port = (Integer)server1.invoke(DeltaPropagationWithCQDUnitTest.class,
-        "createCacheServer");
+    int port = (Integer)server1.invoke(() -> DeltaPropagationWithCQDUnitTest.createCacheServer());
     // 2. setup a client with register interest
     client1
-        .invoke(DeltaPropagationWithCQDUnitTest.class, "createClientCache",
-            new Object[] {NetworkUtils.getServerHostName(server1.getHost()), port,
-                Boolean.TRUE});
+        .invoke(() -> DeltaPropagationWithCQDUnitTest.createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port,
+                Boolean.TRUE));
     // 3. setup another client with cqs but without interest.
     createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port, false/*RI*/);
     for (int i = 0; i < numOfCQs; i++) {
@@ -179,17 +175,14 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
     // verify client2's CQ listeners see above puts
     verifyCqListeners(numOfListeners * numOfKeys * numOfCQs);
     // verify full value requests at server are zero
-    server1.invoke(DeltaPropagationWithCQDUnitTest.class,
-        "verifyFullValueRequestsFromClients", new Object[] {0L});
+    server1.invoke(() -> DeltaPropagationWithCQDUnitTest.verifyFullValueRequestsFromClients(0L));
 
     // 4. do delta updates on client1
-    client1.invoke(DeltaPropagationWithCQDUnitTest.class, "doPuts",
-        new Object[] {numOfKeys, true});
+    client1.invoke(() -> DeltaPropagationWithCQDUnitTest.doPuts(numOfKeys, true));
     // verify client2's CQ listeners see above puts
     verifyCqListeners(numOfListeners * numOfKeys * numOfCQs * 2);
     // verify full value requests at server 
-    server1.invoke(DeltaPropagationWithCQDUnitTest.class,
-        "verifyFullValueRequestsFromClients", new Object[] {10L});
+    server1.invoke(() -> DeltaPropagationWithCQDUnitTest.verifyFullValueRequestsFromClients(10L));
   }
 
   public static void verifyCqListeners(final Integer events) throws Exception {

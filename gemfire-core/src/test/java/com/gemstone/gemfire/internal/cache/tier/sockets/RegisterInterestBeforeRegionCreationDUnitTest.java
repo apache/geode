@@ -107,10 +107,10 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
    */
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "closeCache");
-    client2.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "closeCache");
-    server1.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "closeCache");
-    server2.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "closeCache");
+    client1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
+    client2.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
+    server1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
+    server2.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
   }
 
   
@@ -197,20 +197,16 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
   private void createClientServerConfigurationForClearTest() throws Exception
   {
     //create server and region
-    PORT1 = ((Integer)server1.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class,
-        "createServer", new Object[] { new Boolean(true) })).intValue();
+    PORT1 = ((Integer)server1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.createServer( new Boolean(true) ))).intValue();
     
     //only create server, no region
-    PORT2 = ((Integer)server2.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class,
-        "createServer", new Object[] { new Boolean(false) })).intValue();
+    PORT2 = ((Integer)server2.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.createServer( new Boolean(false) ))).intValue();
     
     //client1 connected to server1
-    client1.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "createClient",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
+    client1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.createClient( NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
     
     //client2 connected to server2
-    client2.invoke(RegisterInterestBeforeRegionCreationDUnitTest.class, "createClient",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2) });
+    client2.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.createClient( NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2) ));
   }
 
   public static Integer createServer(Boolean createRegion) throws Exception

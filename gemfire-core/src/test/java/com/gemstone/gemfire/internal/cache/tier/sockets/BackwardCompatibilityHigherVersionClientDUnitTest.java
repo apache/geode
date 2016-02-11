@@ -136,17 +136,13 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends
 
   @Override
   protected final void postTearDown() throws Exception {
-    client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
-        "unsetHandshakeVersionForTesting");
-    client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
-        "unsetConnectionToServerFailed");
+    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.unsetHandshakeVersionForTesting());
+    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.unsetConnectionToServerFailed());
 
     // close the clients first
-    client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
-        "closeCache");
+    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.closeCache());
     // then close the servers
-    server1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
-        "closeCache");
+    server1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.closeCache());
   }
 
   public static void closeCache() {
@@ -161,17 +157,12 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends
    * Verify that server responds to a higher versioned client.
    */
   public void testHigherVersionedClient() {
-    Integer port1 = ((Integer)server1.invoke(
-        BackwardCompatibilityHigherVersionClientDUnitTest.class,
-        "createServerCache"));
+    Integer port1 = ((Integer)server1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.createServerCache()));
 
-    client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
-        "setHandshakeVersionForTesting");
-    client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), port1 });
-    client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest.class,
-        "verifyConnectionToServerFailed");
+    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.setHandshakeVersionForTesting());
+    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.verifyConnectionToServerFailed());
   }
 
   /* 

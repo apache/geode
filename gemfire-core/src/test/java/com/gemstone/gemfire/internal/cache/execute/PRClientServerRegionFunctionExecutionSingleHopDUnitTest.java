@@ -82,9 +82,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
       isByName = new Boolean(false);
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverAllKeyExecution",
-          new Object[] { isByName});
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverAllKeyExecution( isByName));
     }
 
     
@@ -93,8 +91,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      */
     public void testServerGetAllFunction(){
       createScenario();
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "getAll");
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.getAll());
     }
     
     /*
@@ -102,8 +99,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      */
     public void testServerPutAllFunction(){
       createScenario();
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "putAll");
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.putAll());
     }    
     /*
      * Execution of the function on server with single key as the routing
@@ -114,8 +110,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
       isByName = new Boolean(true);
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverSingleKeyExecution", new Object[] { isByName});
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverSingleKeyExecution( isByName));
     }
     
     /*
@@ -126,8 +121,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      */
     public void testserverSingleKeyExecution_FunctionInvocationTargetException() {
       createScenario();
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverSingleKeyExecution_FunctionInvocationTargetException");
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverSingleKeyExecution_FunctionInvocationTargetException());
     }
 
     public void testServerSingleKeyExecution_SocketTimeOut() {
@@ -140,9 +134,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       final IgnoredException expectedEx = IgnoredException.addIgnoredException(
           DistributedSystemDisconnectedException.class.getName(), server1);
       try {
-        client.invoke(
-            PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-            "serverSingleKeyExecutionSocketTimeOut", new Object[] { isByName });
+        client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverSingleKeyExecutionSocketTimeOut( isByName ));
       } finally {
         expectedEx.remove();
       }
@@ -157,8 +149,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
       isByName = new Boolean(false);
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverSingleKeyExecution", new Object[] { isByName });
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverSingleKeyExecution( isByName ));
     } 
     
     /*
@@ -167,8 +158,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      */   
     public void testServerSingleKeyExecution_byInlineFunction() {
       createScenario();
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverSingleKeyExecution_Inline");
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverSingleKeyExecution_Inline());
     }
     
     /*
@@ -180,12 +170,10 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
       isByName = new Boolean(true);
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverMultiKeyExecution",
-          new Object[] { isByName});
-      server1.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "checkBucketsOnServer");
-      server2.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "checkBucketsOnServer");
-      server3.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "checkBucketsOnServer");
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverMultiKeyExecution( isByName));
+      server1.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.checkBucketsOnServer());
+      server2.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.checkBucketsOnServer());
+      server3.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.checkBucketsOnServer());
     }
     
     /*
@@ -199,15 +187,11 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       bucketFilterSet.add(3);
       bucketFilterSet.add(6);
       bucketFilterSet.add(8);
-      client.invoke(PRClientServerTestBase.class,
-          "serverBucketFilterExecution",
-          new Object[]{bucketFilterSet});
+      client.invoke(() -> PRClientServerTestBase.serverBucketFilterExecution(bucketFilterSet));
       bucketFilterSet.clear();
       //Test single filter
       bucketFilterSet.add(7);
-      client.invoke(PRClientServerTestBase.class,
-          "serverBucketFilterExecution",
-          new Object[]{bucketFilterSet});      
+      client.invoke(() -> PRClientServerTestBase.serverBucketFilterExecution(bucketFilterSet));      
     }
     
     public void testBucketFilterOverride(){
@@ -224,9 +208,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       keyFilterSet.add(75);
       keyFilterSet.add(25);
       
-      client.invoke(PRClientServerTestBase.class,
-          "serverBucketFilterOverrideExecution",
-          new Object[]{bucketFilterSet, keyFilterSet});   
+      client.invoke(() -> PRClientServerTestBase.serverBucketFilterOverrideExecution(bucketFilterSet, keyFilterSet));   
       
     }
     
@@ -235,9 +217,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
       registerFunctionAtServer(function);
       isByName = new Boolean(true);
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverMultiKeyExecutionSocketTimeOut",
-          new Object[] { isByName});
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverMultiKeyExecutionSocketTimeOut( isByName));
     }
     
     /*
@@ -246,8 +226,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      */
     public void testserverMultiKeyExecution_byInlineFunction(){
       createScenario();
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverMultiKeyExecution_Inline");
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverMultiKeyExecution_Inline());
     }
     
     /*
@@ -260,8 +239,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       IgnoredException.addIgnoredException("FunctionException: IOException while sending");
       IgnoredException.addIgnoredException("java.net.SocketException: Software caused connection abort");
       createScenario();
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverMultiKeyExecution_FunctionInvocationTargetException");
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverMultiKeyExecution_FunctionInvocationTargetException());
     }
     
     /*
@@ -274,9 +252,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       Function function = new TestFunction(false,TEST_FUNCTION7);
       registerFunctionAtServer(function);
       isByName = new Boolean(true);
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverMultiKeyExecutionNoResult",
-          new Object[] { isByName});
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverMultiKeyExecutionNoResult( isByName));
     }
 
     /*
@@ -288,9 +264,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
       isByName = new Boolean(false);
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "serverMultiKeyExecution",
-          new Object[] { isByName});
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverMultiKeyExecution( isByName));
     }
     
     /*
@@ -303,8 +277,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
       isByName = new Boolean(true);
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-        "serverMultiKeyExecutionOnASingleBucket", new Object[] { isByName});
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverMultiKeyExecutionOnASingleBucket( isByName));
     }
     
     /*
@@ -317,8 +290,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
       isByName = new Boolean(false);
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-        "serverMultiKeyExecutionOnASingleBucket", new Object[] { isByName});
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverMultiKeyExecutionOnASingleBucket( isByName));
     }
 
     /*
@@ -332,27 +304,18 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       createClientServerScenarion(commonAttributes, 20, 20, 20);
       Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
       registerFunctionAtServer(function);
-      server2.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "stopServerHA");
-      server3.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "stopServerHA");
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "putOperation");
+      server2.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.stopServerHA());
+      server3.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.stopServerHA());
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.putOperation());
       
       int AsyncInvocationArrSize = 1;
       AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-      async[0] = client.invokeAsync(
-          PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "executeFunctionHA");
-      server2.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "startServerHA");
-      server3.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "startServerHA");
-      server1.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "stopServerHA");
-      client.invoke(PRClientServerRegionFunctionExecutionDUnitTest.class,
-          "verifyDeadAndLiveServers", new Object[] { new Integer(1),
-              new Integer(2) });
+      async[0] = client.invokeAsync(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.executeFunctionHA());
+      server2.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.startServerHA());
+      server3.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.startServerHA());
+      server1.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.stopServerHA());
+      client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.verifyDeadAndLiveServers( new Integer(1),
+              new Integer(2) ));
       ThreadUtils.join(async[0], 6 * 60 * 1000);
       if (async[0].getException() != null) {
         Assert.fail("UnExpected Exception Occured : ", async[0].getException());
@@ -372,16 +335,16 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       createClientServerScenarion(commonAttributes,20, 20, 20);
       Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_HA);
       registerFunctionAtServer(function);
-      server2.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "stopServerHA");
-      server3.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "stopServerHA");
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "putOperation");
+      server2.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.stopServerHA());
+      server3.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.stopServerHA());
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.putOperation());
       int AsyncInvocationArrSize = 1;
       AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-      async[0] = client.invokeAsync(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "executeFunctionHA");
-      server2.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "startServerHA");
-      server3.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "startServerHA");
-      server1.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "closeCacheHA");
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class, "verifyDeadAndLiveServers",new Object[]{new Integer(1),new Integer(2)});
+      async[0] = client.invokeAsync(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.executeFunctionHA());
+      server2.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.startServerHA());
+      server3.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.startServerHA());
+      server1.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.closeCacheHA());
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.verifyDeadAndLiveServers(new Integer(1),new Integer(2)));
       ThreadUtils.join(async[0],  5 * 60 * 1000);
       if(async[0].getException() != null){
         Assert.fail("UnExpected Exception Occured : ", async[0].getException());
@@ -392,16 +355,11 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
     public void testBug40714() {
       createScenario();
-      server1.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "registerFunction");
-      server1.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "registerFunction");
-      server1.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "registerFunction");
-      client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-          "registerFunction");
-      client.invoke(PRClientServerRegionFunctionExecutionDUnitTest.class,
-          "FunctionExecution_Inline_Bug40714");
+      server1.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.registerFunction());
+      server1.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.registerFunction());
+      server1.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.registerFunction());
+      client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.registerFunction());
+      client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.FunctionExecution_Inline_Bug40714());
     }
 
     public static void registerFunction() {

@@ -185,81 +185,77 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
     PORT =  createServerCache();
     
     // Create a feeder.
-    vm0.invoke(ClientInterestNotifyDUnitTest.class, "createClientCacheFeeder",
-        new Object[] {NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)});
+    vm0.invoke(() -> ClientInterestNotifyDUnitTest.createClientCacheFeeder(NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)));
     
     // Client 1 overrides NBS to true.
     // Client 2 "overrides" NSB to false.
     // Client 3 uses the default NBS which is false on the server.
     
-    vm1.invoke(ClientInterestNotifyDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT), "ClientOn"});
+    vm1.invoke(() -> ClientInterestNotifyDUnitTest.createClientCache( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT), "ClientOn"));
     /*
-    vm2.invoke(ClientInterestNotifyDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(Host.getHost(0)), new Integer(PORT), 
-      DistributionConfig.NOTIFY_BY_SUBSCRIPTION_OVERRIDE_PROP_VALUE_OFF, "ClientOff"});
-    vm3.invoke(ClientInterestNotifyDUnitTest.class, "createClientCache",
-        new Object[] { getServerHostName(Host.getHost(0)), new Integer(PORT), 
-      DistributionConfig.NOTIFY_BY_SUBSCRIPTION_OVERRIDE_PROP_VALUE_DEFAULT, "ClientDefault"});
+    vm2.invoke(() -> ClientInterestNotifyDUnitTest.createClientCache( getServerHostName(Host.getHost(0)), new Integer(PORT), 
+      DistributionConfig.NOTIFY_BY_SUBSCRIPTION_OVERRIDE_PROP_VALUE_OFF, "ClientOff"));
+    vm3.invoke(() -> ClientInterestNotifyDUnitTest.createClientCache( getServerHostName(Host.getHost(0)), new Integer(PORT), 
+      DistributionConfig.NOTIFY_BY_SUBSCRIPTION_OVERRIDE_PROP_VALUE_DEFAULT, "ClientDefault"));
       */
     
     // Feeder doFeed does one put on one key for each of the 3 regions so
     // that the following client RI with ALL_KEYS and KEYS_VALUE result works.
     
-    vm0.invoke(ClientInterestNotifyDUnitTest.class, "doFeed");
+    vm0.invoke(() -> ClientInterestNotifyDUnitTest.doFeed());
     
     // RI on ALL_KEYS with InterestResultPolicy KEYS_VALUES.
     
-    vm1.invoke(ClientInterestNotifyDUnitTest.class, "registerInterest");
+    vm1.invoke(() -> ClientInterestNotifyDUnitTest.registerInterest());
     /*
-    vm2.invoke(ClientInterestNotifyDUnitTest.class, "registerInterest");
-    vm3.invoke(ClientInterestNotifyDUnitTest.class, "registerInterest");
+    vm2.invoke(() -> ClientInterestNotifyDUnitTest.registerInterest());
+    vm3.invoke(() -> ClientInterestNotifyDUnitTest.registerInterest());
     */
 
     // Get key for region 3 for all clients to check no unwanted notifications
     // arrive on client 1 region 3 since we do not register interest on any
     // client but notifications should arrive for client 2 and client 3.
     
-    vm1.invoke(ClientInterestNotifyDUnitTest.class, "getEntries");
+    vm1.invoke(() -> ClientInterestNotifyDUnitTest.getEntries());
     /*
-    vm2.invoke(ClientInterestNotifyDUnitTest.class, "getEntries");
-    vm3.invoke(ClientInterestNotifyDUnitTest.class, "getEntries");
+    vm2.invoke(() -> ClientInterestNotifyDUnitTest.getEntries());
+    vm3.invoke(() -> ClientInterestNotifyDUnitTest.getEntries());
     */
     
     // Feeder doEntryOps does 2 puts, 1 invalidate and 1 destroy on a
     // single key for each of the 3 regions.
     
-    vm0.invoke(ClientInterestNotifyDUnitTest.class, "doEntryOps");    
+    vm0.invoke(() -> ClientInterestNotifyDUnitTest.doEntryOps());    
     
     waitForQueuesToDrain();
     
     // Unregister interest to check it works and no extra notifications received.
     
-    vm1.invoke(ClientInterestNotifyDUnitTest.class, "unregisterInterest");
+    vm1.invoke(() -> ClientInterestNotifyDUnitTest.unregisterInterest());
     /*
-    vm2.invoke(ClientInterestNotifyDUnitTest.class, "unregisterInterest");
-    vm3.invoke(ClientInterestNotifyDUnitTest.class, "unregisterInterest");
+    vm2.invoke(() -> ClientInterestNotifyDUnitTest.unregisterInterest());
+    vm3.invoke(() -> ClientInterestNotifyDUnitTest.unregisterInterest());
     */
     
     // Feeder doEntryOps again does 2 puts, 1 invalidate and 1 destroy on a
     // single key for each of the 3 regions while no interest on the clients.
     
-    vm0.invoke(ClientInterestNotifyDUnitTest.class, "doEntryOps");
+    vm0.invoke(() -> ClientInterestNotifyDUnitTest.doEntryOps());
     
     assertAllQueuesEmpty(); // since no client has registered interest
     
     // Re-register interest on all clients except for region 3 again.
     
-    vm1.invoke(ClientInterestNotifyDUnitTest.class, "registerInterest");
+    vm1.invoke(() -> ClientInterestNotifyDUnitTest.registerInterest());
     /*
-    vm2.invoke(ClientInterestNotifyDUnitTest.class, "registerInterest");
-    vm3.invoke(ClientInterestNotifyDUnitTest.class, "registerInterest");
+    vm2.invoke(() -> ClientInterestNotifyDUnitTest.registerInterest());
+    vm3.invoke(() -> ClientInterestNotifyDUnitTest.registerInterest());
     */
     
     // Feeder doEntryOps again does 2 puts, 1 invalidate and 1 destroy on a
     // single key for each of the 3 regions after clients re-register interest.
     
-    vm0.invoke(ClientInterestNotifyDUnitTest.class, "doEntryOps");
+    vm0.invoke(() -> ClientInterestNotifyDUnitTest.doEntryOps());
     
     waitForQueuesToDrain();
     
@@ -295,27 +291,18 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
     // Region 3 of clients 2 and 3 receive an invalidate and a destroy each
     // because NBS is set to false for those clients.
     
-    vm1.invoke(ClientInterestNotifyDUnitTest.class, "doValidation",
-        new Object[] {REGION_NAME1, 1, 3, 2, 2});
-    vm1.invoke(ClientInterestNotifyDUnitTest.class, "doValidation",
-        new Object[] {REGION_NAME2, 0, 0, 1, 1});
-    vm1.invoke(ClientInterestNotifyDUnitTest.class, "doValidation",
-        new Object[] {REGION_NAME3, 1, 0, 0, 0});
+    vm1.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME1, 1, 3, 2, 2));
+    vm1.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME2, 0, 0, 1, 1));
+    vm1.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME3, 1, 0, 0, 0));
     
     /*
-    vm2.invoke(ClientInterestNotifyDUnitTest.class, "doValidation",
-        new Object[] {REGION_NAME1, 0, 0, 1, 1});
-    vm2.invoke(ClientInterestNotifyDUnitTest.class, "doValidation",
-        new Object[] {REGION_NAME2, 0, 0, 1, 1});
-    vm2.invoke(ClientInterestNotifyDUnitTest.class, "doValidation",
-        new Object[] {REGION_NAME3, 1, 0, 1, 1});
+    vm2.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME1, 0, 0, 1, 1));
+    vm2.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME2, 0, 0, 1, 1));
+    vm2.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME3, 1, 0, 1, 1));
     
-    vm3.invoke(ClientInterestNotifyDUnitTest.class, "doValidation",
-        new Object[] {REGION_NAME1, 0, 0, 1, 1});
-    vm3.invoke(ClientInterestNotifyDUnitTest.class, "doValidation",
-        new Object[] {REGION_NAME2, 0, 0, 1, 1});
-    vm3.invoke(ClientInterestNotifyDUnitTest.class, "doValidation",
-        new Object[] {REGION_NAME3, 1, 0, 1, 1});
+    vm3.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME1, 0, 0, 1, 1));
+    vm3.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME2, 0, 0, 1, 1));
+    vm3.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME3, 1, 0, 1, 1));
         */
   }
   
@@ -639,11 +626,11 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
    */
   @Override
   protected final void preTearDown() throws Exception {
-    vm0.invoke(ClientInterestNotifyDUnitTest.class, "closeCache");
-    vm1.invoke(ClientInterestNotifyDUnitTest.class, "closeCache");
+    vm0.invoke(() -> ClientInterestNotifyDUnitTest.closeCache());
+    vm1.invoke(() -> ClientInterestNotifyDUnitTest.closeCache());
     /*
-    vm2.invoke(ClientInterestNotifyDUnitTest.class, "closeCache");
-    vm3.invoke(ClientInterestNotifyDUnitTest.class, "closeCache");
+    vm2.invoke(() -> ClientInterestNotifyDUnitTest.closeCache());
+    vm3.invoke(() -> ClientInterestNotifyDUnitTest.closeCache());
     */
     closeCacheServer();
   }

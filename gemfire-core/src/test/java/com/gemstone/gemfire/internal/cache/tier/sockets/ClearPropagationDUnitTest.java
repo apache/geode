@@ -100,15 +100,11 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
     //client 2 VM
     client2 = host.getVM(3);
 
-    int PORT1 = ((Integer)server1.invoke(ClearPropagationDUnitTest.class,
-        "createServerCache")).intValue();
-    int PORT2 = ((Integer)server2.invoke(ClearPropagationDUnitTest.class,
-        "createServerCache")).intValue();
+    int PORT1 = ((Integer)server1.invoke(() -> ClearPropagationDUnitTest.createServerCache())).intValue();
+    int PORT2 = ((Integer)server2.invoke(() -> ClearPropagationDUnitTest.createServerCache())).intValue();
 
-    client1.invoke(ClearPropagationDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2) });
-    client2.invoke(ClearPropagationDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2) });
+    client1.invoke(() -> ClearPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2) ));
+    client2.invoke(() -> ClearPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2) ));
 
     CacheObserverHolder.setInstance(new CacheObserverAdapter());
 
@@ -151,26 +147,24 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
 
 
     //First create entries on both servers via the two client
-    client1.invoke(ClearPropagationDUnitTest.class, "createEntriesK1andK2");
-    client2.invoke(ClearPropagationDUnitTest.class, "createEntriesK1andK2");
-    client1.invoke(ClearPropagationDUnitTest.class, "registerKeysK1andK2");
-    client2.invoke(ClearPropagationDUnitTest.class, "registerKeysK1andK2");
+    client1.invoke(() -> ClearPropagationDUnitTest.createEntriesK1andK2());
+    client2.invoke(() -> ClearPropagationDUnitTest.createEntriesK1andK2());
+    client1.invoke(() -> ClearPropagationDUnitTest.registerKeysK1andK2());
+    client2.invoke(() -> ClearPropagationDUnitTest.registerKeysK1andK2());
 
     server1.invoke(checkSizeRegion(2, false/*Do not Block*/));
     server2.invoke(checkSizeRegion(2, false/*Do not Block*/));
     client1.invoke(checkSizeRegion(2, false/*Do not Block*/));
     client2.invoke(checkSizeRegion(2, false/*Do not Block*/));
 
-    client1.invoke(ClearPropagationDUnitTest.class,
-        "acquireConnectionsAndClear",
-        new Object[] { NetworkUtils.getServerHostName(client1.getHost())});
+    client1.invoke(() -> ClearPropagationDUnitTest.acquireConnectionsAndClear( NetworkUtils.getServerHostName(client1.getHost())));
 
     client1.invoke(checkSizeRegion(2, false/*Do not Block*/));
     client2.invoke(checkSizeRegion(0, true /* block*/));
     server1.invoke(checkSizeRegion(0, false/*Do not Block*/));
     server2.invoke(checkSizeRegion(0, false/*Do not Block*/));
 
-    client1.invoke(ClearPropagationDUnitTest.class, "verifyNoUpdates");
+    client1.invoke(() -> ClearPropagationDUnitTest.verifyNoUpdates());
 
   }
 
@@ -202,26 +196,24 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
 	client1.invoke(resetFlags);
 	client2.invoke(resetFlags);
 
-    client1.invoke(ClearPropagationDUnitTest.class, "createEntriesK1andK2");
-    client2.invoke(ClearPropagationDUnitTest.class, "createEntriesK1andK2");
-    client1.invoke(ClearPropagationDUnitTest.class, "registerKeysK1andK2");
-    client2.invoke(ClearPropagationDUnitTest.class, "registerKeysK1andK2");
+    client1.invoke(() -> ClearPropagationDUnitTest.createEntriesK1andK2());
+    client2.invoke(() -> ClearPropagationDUnitTest.createEntriesK1andK2());
+    client1.invoke(() -> ClearPropagationDUnitTest.registerKeysK1andK2());
+    client2.invoke(() -> ClearPropagationDUnitTest.registerKeysK1andK2());
 
     server1.invoke(checkSizeRegion(2, false/*Do not Block*/));
     server2.invoke(checkSizeRegion(2, false/*Do not Block*/));
     client1.invoke(checkSizeRegion(2, false/*Do not Block*/));
     client2.invoke(checkSizeRegion(2, false/*Do not Block*/));
 
-    client1.invoke(ClearPropagationDUnitTest.class,
-      "acquireConnectionsAndDestroyRegion",
-      new Object[] { NetworkUtils.getServerHostName(client1.getHost())});
+    client1.invoke(() -> ClearPropagationDUnitTest.acquireConnectionsAndDestroyRegion( NetworkUtils.getServerHostName(client1.getHost())));
 
     client1.invoke(checkSizeRegion(2, false/*Do not Block*/));
     client2.invoke(checkDestroyRegion(true /* block*/));
     server1.invoke(checkDestroyRegion(false/*Do not Block*/));
     server2.invoke(checkDestroyRegion(false/*Do not Block*/));
 
-    client1.invoke(ClearPropagationDUnitTest.class, "verifyNoUpdates");
+    client1.invoke(() -> ClearPropagationDUnitTest.verifyNoUpdates());
 
   }
 
@@ -479,10 +471,10 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     //close client
-    client1.invoke(ClearPropagationDUnitTest.class, "closeCache");
-    client2.invoke(ClearPropagationDUnitTest.class, "closeCache");
+    client1.invoke(() -> ClearPropagationDUnitTest.closeCache());
+    client2.invoke(() -> ClearPropagationDUnitTest.closeCache());
     //close server
-    server1.invoke(ClearPropagationDUnitTest.class, "closeCache");
-    server2.invoke(ClearPropagationDUnitTest.class, "closeCache");
+    server1.invoke(() -> ClearPropagationDUnitTest.closeCache());
+    server2.invoke(() -> ClearPropagationDUnitTest.closeCache());
   }
 }

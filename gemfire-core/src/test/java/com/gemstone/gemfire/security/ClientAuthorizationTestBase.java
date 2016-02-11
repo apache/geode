@@ -798,10 +798,9 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
             opFlags), new Integer(expectedResult));
       }
       else {
-        clientVM.invoke(ClientAuthorizationTestBase.class, "doOp",
-            new Object[] { new Byte(opCode.toOrdinal()),
+        clientVM.invoke(() -> ClientAuthorizationTestBase.doOp( new Byte(opCode.toOrdinal()),
                 currentOp.getIndices(), new Integer(opFlags),
-                new Integer(expectedResult) });
+                new Integer(expectedResult) ));
       }
     }
   }
@@ -875,21 +874,19 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
           if (opBlock.size() > 0) {
             port1Keeper.release();
             // Start the first server and execute the operation block
-            server1.invoke(ClientAuthorizationTestBase.class,
-                "createCacheServer", new Object[] {
+            server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
                     SecurityTestUtil.getLocatorPort(), port1, serverProps,
-                    javaProps });
-            server2.invoke(SecurityTestUtil.class, "closeCache");
+                    javaProps ));
+            server2.invoke(() -> SecurityTestUtil.closeCache());
             executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps,
                 extraAuthzProps, tgen, rnd);
             if (!currentOp.equals(OperationWithAction.OPBLOCK_NO_FAILOVER)) {
               // Failover to the second server and run the block again
               port2Keeper.release();
-              server2.invoke(ClientAuthorizationTestBase.class,
-                  "createCacheServer", new Object[] {
+              server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
                       SecurityTestUtil.getLocatorPort(), port2, serverProps,
-                      javaProps });
-              server1.invoke(SecurityTestUtil.class, "closeCache");
+                      javaProps ));
+              server1.invoke(() -> SecurityTestUtil.closeCache());
               executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps,
                   extraAuthzProps, tgen, rnd);
             }

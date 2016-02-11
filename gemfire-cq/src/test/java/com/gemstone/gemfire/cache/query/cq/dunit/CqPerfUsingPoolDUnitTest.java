@@ -85,8 +85,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     
     cqDUnitTest.createServer(server);
     
-    final int port = server.invokeInt(CqQueryUsingPoolDUnitTest.class,
-    "getCacheServerPort");
+    final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     // Create client.
@@ -191,7 +190,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     VM client = host.getVM(1);
     
     cqDUnitTest.createServer(server);
-    final int port = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     // cqDUnitTest.createClient(client, port, host0);
 
@@ -411,7 +410,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     VM client = host.getVM(1);
     
     cqDUnitTest.createServer(server);
-    final int port = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     //cqDUnitTest.createClient(client, port, host0);
     
@@ -529,7 +528,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     VM clients[] = new VM[]{client1, client2, client3};
     
     cqDUnitTest.createServer(server);
-    final int port = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     String poolName = "testMatchingCQWithMultipleClients";     
     for (int clientIndex=0; clientIndex < 3; clientIndex++){
@@ -692,7 +691,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     
     VM clients[] = new VM[]{client1, client2};
     
-    final int port1 = server1.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     // Create client.
     
@@ -739,7 +738,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     cqDUnitTest.createServer(server2, ports[0]);
     
     
-    final int port2 = server2.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port2 = server2.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     System.out.println("### Port on which server1 running : " + port1 + 
         " Server2 running : " + port2);
 
@@ -856,8 +855,8 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     
 //    VM clients[] = new VM[]{client1, client2};
     
-    final int port1 = server1.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final int port2 = server2.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port2 = server2.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     // Create client.

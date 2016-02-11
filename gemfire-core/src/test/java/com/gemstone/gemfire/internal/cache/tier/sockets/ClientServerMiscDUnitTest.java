@@ -148,8 +148,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     int port1 = initServerCache(true); // vm0
     int port2 = initServerCache2(true); // vm1
     String serverName = NetworkUtils.getServerHostName(Host.getHost(0));
-    host.getVM(2).invoke(this.getClass(), "createClientCacheV", new Object[]{serverName, port1});
-    host.getVM(3).invoke(this.getClass(), "createClientCacheV", new Object[]{serverName, port2});
+    host.getVM(2).invoke(() -> this.createClientCacheV(serverName, port1));
+    host.getVM(3).invoke(() -> this.createClientCacheV(serverName, port2));
     LogWriterUtils.getLogWriter().info("Testing concurrent map operations from a client with a distributed region");
     concurrentMapTest(host.getVM(2), "/" + REGION_NAME1);
     // TODO add verification in vm3
@@ -162,8 +162,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     int port1 = initServerCache(true); // vm0
     int port2 = initServerCache2(true); // vm1
     String serverName = NetworkUtils.getServerHostName(Host.getHost(0));
-    host.getVM(2).invoke(this.getClass(), "createEmptyClientCache", new Object[]{serverName, port1});
-    host.getVM(3).invoke(this.getClass(), "createClientCacheV", new Object[]{serverName, port2});
+    host.getVM(2).invoke(() -> this.createEmptyClientCache(serverName, port1));
+    host.getVM(3).invoke(() -> this.createClientCacheV(serverName, port2));
     LogWriterUtils.getLogWriter().info("Testing concurrent map operations from a client with a distributed region");
     concurrentMapTest(host.getVM(2), "/" + REGION_NAME1);
     // TODO add verification in vm3
@@ -382,7 +382,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1);
     populateCache();
     registerInterest();
-    server1.invoke(ClientServerMiscDUnitTest.class, "put");
+    server1.invoke(() -> ClientServerMiscDUnitTest.put());
 
 //    pause(5000 + 5000 + 10000);
     /*final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
@@ -417,9 +417,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     registerInterestInBothTheRegions();
     closeRegion1();
     Wait.pause(6000);
-    server1.invoke(ClientServerMiscDUnitTest.class,
-        "verifyInterestListOnServer");
-    server1.invoke(ClientServerMiscDUnitTest.class, "put");
+    server1.invoke(() -> ClientServerMiscDUnitTest.verifyInterestListOnServer());
+    server1.invoke(() -> ClientServerMiscDUnitTest.put());
     //pause(5000);
     verifyUpdatesOnRegion2();
   }
@@ -443,8 +442,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     assertEquals(false, pool.isDestroyed());
     pool.destroy();
     assertEquals(true, pool.isDestroyed());
-    server1.invoke(ClientServerMiscDUnitTest.class,
-        "verifyNoCacheClientProxyOnServer");
+    server1.invoke(() -> ClientServerMiscDUnitTest.verifyNoCacheClientProxyOnServer());
 
   }
 
@@ -465,9 +463,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     PoolImpl pool = (PoolImpl)createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)),PORT1);
     destroyRegion1();
     // pause(5000);
-    server1.invoke(ClientServerMiscDUnitTest.class,
-        "verifyCacheClientProxyOnServer", new Object[] { new String(
-            REGION_NAME1) });
+    server1.invoke(() -> ClientServerMiscDUnitTest.verifyCacheClientProxyOnServer( new String(
+            REGION_NAME1) ));
     Connection conn = pool.acquireConnection();
     assertNotNull(conn);
     assertEquals(1, pool.getConnectedServerCount());
@@ -479,8 +476,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     pool.destroy();
     assertEquals(true, pool.isDestroyed());
     // pause(5000);
-    server1.invoke(ClientServerMiscDUnitTest.class,
-        "verifyNoCacheClientProxyOnServer");
+    server1.invoke(() -> ClientServerMiscDUnitTest.verifyNoCacheClientProxyOnServer());
     try {
       getCache().createRegion(REGION_NAME2, attrs);
       fail("expected IllegalStateException");
@@ -502,7 +498,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1);
     registerInterestForInvalidatesInBothTheRegions();
     populateCache();
-    server1.invoke(ClientServerMiscDUnitTest.class, "put");
+    server1.invoke(() -> ClientServerMiscDUnitTest.put());
     //pause(5000);
     verifyInvalidatesOnBothRegions();
 
@@ -594,7 +590,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     assertNotNull(conn);
 
     populateCache();
-    server1.invoke(ClientServerMiscDUnitTest.class, "put");
+    server1.invoke(() -> ClientServerMiscDUnitTest.put());
     // pause(5000);
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
@@ -692,8 +688,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     //region1.registerInterest(CacheClientProxy.ALL_KEYS);
     region2.registerInterest("ALL_KEYS");
     Wait.pause(6000);
-    server1.invoke(ClientServerMiscDUnitTest.class,
-        "verifyInterestListOnServer");
+    server1.invoke(() -> ClientServerMiscDUnitTest.verifyInterestListOnServer());
 
   }
   /**
@@ -1368,7 +1363,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     // close the clients first
     closeCache();
     // then close the servers
-    server1.invoke(ClientServerMiscDUnitTest.class, "closeCache");
+    server1.invoke(() -> ClientServerMiscDUnitTest.closeCache());
   }
 
   public static void closeCache()

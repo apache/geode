@@ -58,8 +58,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
   @Ignore("Disabled due to bug #50618")
   public void testServerGetAllFunction(){
     createScenario();
-    client.invoke(SingleHopGetAllPutAllDUnitTest.class,
-        "getAll");
+    client.invoke(() -> SingleHopGetAllPutAllDUnitTest.getAll());
   }  
   
   private void createScenario() {
@@ -148,8 +147,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
    */
   public void testServerPutAllFunction(){
     createScenario();
-    client.invoke(SingleHopGetAllPutAllDUnitTest.class,
-        "putAll");
+    client.invoke(() -> SingleHopGetAllPutAllDUnitTest.putAll());
   }
   
   public static void putAll() {

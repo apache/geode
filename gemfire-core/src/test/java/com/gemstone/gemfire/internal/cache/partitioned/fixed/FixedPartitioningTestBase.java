@@ -1321,10 +1321,10 @@ public class FixedPartitioningTestBase extends DistributedTestCase {
   protected final void preTearDown() throws Exception {
     try {
       closeCache();
-      member1.invoke(FixedPartitioningTestBase.class, "closeCache");
-      member2.invoke(FixedPartitioningTestBase.class, "closeCache");
-      member3.invoke(FixedPartitioningTestBase.class, "closeCache");
-      member4.invoke(FixedPartitioningTestBase.class, "closeCache");
+      member1.invoke(() -> FixedPartitioningTestBase.closeCache());
+      member2.invoke(() -> FixedPartitioningTestBase.closeCache());
+      member3.invoke(() -> FixedPartitioningTestBase.closeCache());
+      member4.invoke(() -> FixedPartitioningTestBase.closeCache());
     }
     finally {
    // locally destroy all root regions and close the cache
@@ -1334,7 +1334,7 @@ public class FixedPartitioningTestBase extends DistributedTestCase {
         Host host = Host.getHost(h);
         for (int v = 0; v < host.getVMCount(); v++) {
           VM vm = host.getVM(v);
-          vm.invoke(FixedPartitioningTestBase.class, "remoteTearDown");
+          vm.invoke(() -> FixedPartitioningTestBase.remoteTearDown());
         }
       }
     }

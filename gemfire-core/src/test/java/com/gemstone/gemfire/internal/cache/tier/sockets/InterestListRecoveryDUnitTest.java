@@ -97,8 +97,8 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
     server1 = host.getVM(0);
     server2 = host.getVM(1);
     //start servers first
-    PORT1 =  ((Integer)server1.invoke(InterestListRecoveryDUnitTest.class, "createServerCache" )).intValue();
-    PORT2 =  ((Integer)server2.invoke(InterestListRecoveryDUnitTest.class, "createServerCache" )).intValue();
+    PORT1 =  ((Integer)server1.invoke(() -> InterestListRecoveryDUnitTest.createServerCache())).intValue();
+    PORT2 =  ((Integer)server2.invoke(() -> InterestListRecoveryDUnitTest.createServerCache())).intValue();
 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("server1 port is " + String.valueOf(PORT1));
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("server2 port is " + String.valueOf(PORT2));
@@ -110,7 +110,7 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
   public void XtestKeyInterestRecoveryWhileServerFailover() throws Exception
   {
     createEntries();
-    server1.invoke(InterestListRecoveryDUnitTest.class, "createEntries");
+    server1.invoke(() -> InterestListRecoveryDUnitTest.createEntries());
     registerK1toK5();
     setServerUnavailable("localhost"+PORT1);
     Wait.pause(20000);
@@ -119,7 +119,7 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
     Wait.pause(20000);
     setServerUnavailable("localhost"+PORT2);
     Wait.pause(20000);
-    server1.invoke(InterestListRecoveryDUnitTest.class, "verifyUnregisterK1toK3");
+    server1.invoke(() -> InterestListRecoveryDUnitTest.verifyUnregisterK1toK3());
 
   }
 
@@ -129,8 +129,8 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
 
     LogWriter logger = system.getLogWriter();
     createEntries();
-    server2.invoke(InterestListRecoveryDUnitTest.class, "createEntries");
-    server1.invoke(InterestListRecoveryDUnitTest.class, "createEntries");
+    server2.invoke(() -> InterestListRecoveryDUnitTest.createEntries());
+    server1.invoke(() -> InterestListRecoveryDUnitTest.createEntries());
 
     registerK1toK5();
     logger.fine("After registerK1toK5");
@@ -147,7 +147,7 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
       logger.fine("serverFirstRegistered is server2 and serverSecondRegistered is server1");
     }
     verifyDeadAndLiveServers(0,2);
-    serverFirstRegistered.invoke(InterestListRecoveryDUnitTest.class, "verifyRegionToProxyMapForFullRegistration");
+    serverFirstRegistered.invoke(() -> InterestListRecoveryDUnitTest.verifyRegionToProxyMapForFullRegistration());
     logger.fine("After verifyRegionToProxyMapForFullRegistration on serverFirstRegistered");
     logger.info("<ExpectedException action=add>"
         + SocketException.class.getName() + "</ExpectedException>");
@@ -155,17 +155,17 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
         + EOFException.class.getName() + "</ExpectedException>");
     killCurrentEndpoint();
     logger.fine("After killCurrentEndpoint1");
-    serverSecondRegistered.invoke(InterestListRecoveryDUnitTest.class, "verifyRegionToProxyMapForFullRegistrationRetry");
+    serverSecondRegistered.invoke(() -> InterestListRecoveryDUnitTest.verifyRegionToProxyMapForFullRegistrationRetry());
     logger.fine("After verifyRegionToProxyMapForFullRegistration on serverSecondRegistered");
     unregisterK1toK3();
-    serverSecondRegistered.invoke(InterestListRecoveryDUnitTest.class, "verifyRegisterK4toK5Retry");
+    serverSecondRegistered.invoke(() -> InterestListRecoveryDUnitTest.verifyRegisterK4toK5Retry());
     logger.fine("After verifyRegisterK4toK5Retry on serverSecondRegistered");
   }
 
   private boolean isInterestListRegisteredToServer1() {
     /*
     try {
-      server1.invoke(InterestListRecoveryDUnitTest.class, "verifyRegionToProxyMapForFullRegistration");
+      server1.invoke(() -> InterestListRecoveryDUnitTest.verifyRegionToProxyMapForFullRegistration());
     } catch (Throwable t) {
       // Means its registered on server2.
       return false;
@@ -484,10 +484,10 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
  @Override
  protected final void preTearDown() throws Exception {
     // close the clients first
-    server2.invoke(InterestListRecoveryDUnitTest.class, "closeCache");
+    server2.invoke(() -> InterestListRecoveryDUnitTest.closeCache());
     closeCache();
     // then close the servers
-    server1.invoke(InterestListRecoveryDUnitTest.class, "closeCache");
+    server1.invoke(() -> InterestListRecoveryDUnitTest.closeCache());
   }
 
   public static void closeCache()

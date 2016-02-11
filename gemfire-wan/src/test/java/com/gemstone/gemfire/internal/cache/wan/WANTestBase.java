@@ -5121,14 +5121,14 @@ public class WANTestBase extends DistributedTestCase{
  @Override
  protected final void preTearDown() throws Exception {
     cleanupVM();
-    vm0.invoke(WANTestBase.class, "cleanupVM");
-    vm1.invoke(WANTestBase.class, "cleanupVM");
-    vm2.invoke(WANTestBase.class, "cleanupVM");
-    vm3.invoke(WANTestBase.class, "cleanupVM");
-    vm4.invoke(WANTestBase.class, "cleanupVM");
-    vm5.invoke(WANTestBase.class, "cleanupVM");
-    vm6.invoke(WANTestBase.class, "cleanupVM");
-    vm7.invoke(WANTestBase.class, "cleanupVM");
+    vm0.invoke(() -> WANTestBase.cleanupVM());
+    vm1.invoke(() -> WANTestBase.cleanupVM());
+    vm2.invoke(() -> WANTestBase.cleanupVM());
+    vm3.invoke(() -> WANTestBase.cleanupVM());
+    vm4.invoke(() -> WANTestBase.cleanupVM());
+    vm5.invoke(() -> WANTestBase.cleanupVM());
+    vm6.invoke(() -> WANTestBase.cleanupVM());
+    vm7.invoke(() -> WANTestBase.cleanupVM());
   }
   
   public static void cleanupVM() throws IOException {

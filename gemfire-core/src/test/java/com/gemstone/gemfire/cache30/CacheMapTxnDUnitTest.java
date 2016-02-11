@@ -62,8 +62,8 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(CacheMapTxnDUnitTest.class, "createCache");
-      vm1.invoke(CacheMapTxnDUnitTest.class, "createCache");
+      vm0.invoke(() -> CacheMapTxnDUnitTest.createCache());
+      vm1.invoke(() -> CacheMapTxnDUnitTest.createCache());
     }
     
     @Override
@@ -71,8 +71,8 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(CacheMapTxnDUnitTest.class, "closeCache");
-      vm1.invoke(CacheMapTxnDUnitTest.class, "closeCache");
+      vm0.invoke(() -> CacheMapTxnDUnitTest.closeCache());
+      vm1.invoke(() -> CacheMapTxnDUnitTest.closeCache());
     }
     
     public static void createCache(){
@@ -105,14 +105,14 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
         //this is to test single VM region transactions
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
-        vm0.invoke(CacheMapTxnDUnitTest.class, "commitTxn");
+        vm0.invoke(() -> CacheMapTxnDUnitTest.commitTxn());
     }//end of testCommitTxn
     
     public void testRollbackTxn() {
         //this is to test single VM region transactions
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
-        vm0.invoke(CacheMapTxnDUnitTest.class, "rollbackTxn");
+        vm0.invoke(() -> CacheMapTxnDUnitTest.rollbackTxn());
     }//end of testRollbackTxn
     
     public void testRollbackTxnClear() {
@@ -129,7 +129,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
             vm1.invoke(CacheMapTxnDUnitTest.class, "putMethod", objArr);
         }
         
-        vm0.invoke(CacheMapTxnDUnitTest.class, "rollbackTxnClear");
+        vm0.invoke(() -> CacheMapTxnDUnitTest.rollbackTxnClear());
         
         i=3;
         objArr [0] = ""+i;
@@ -144,9 +144,9 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
         VM vm1 = host.getVM(1);
-        vm0.invoke(CacheMapTxnDUnitTest.class, "miscMethodsOwner");
-        AsyncInvocation o2 = vm0.invokeAsync(CacheMapTxnDUnitTest.class, "miscMethodsNotOwner");//invoke in same vm but in seperate thread
-        AsyncInvocation o3 = vm1.invokeAsync(CacheMapTxnDUnitTest.class, "miscMethodsNotOwner");//invoke in another vm
+        vm0.invoke(() -> CacheMapTxnDUnitTest.miscMethodsOwner());
+        AsyncInvocation o2 = vm0.invokeAsync(() -> CacheMapTxnDUnitTest.miscMethodsNotOwner());//invoke in same vm but in seperate thread
+        AsyncInvocation o3 = vm1.invokeAsync(() -> CacheMapTxnDUnitTest.miscMethodsNotOwner());//invoke in another vm
         ThreadUtils.join(o2, 30 * 1000);
         ThreadUtils.join(o3, 30 * 1000);
         

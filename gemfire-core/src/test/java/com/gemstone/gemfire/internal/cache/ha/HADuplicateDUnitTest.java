@@ -109,11 +109,11 @@ public class HADuplicateDUnitTest extends DistributedTestCase
 
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(HADuplicateDUnitTest.class, "closeCache");
+    client1.invoke(() -> HADuplicateDUnitTest.closeCache());
     // close server
-    server1.invoke(HADuplicateDUnitTest.class, "reSetQRMslow");
-    server1.invoke(HADuplicateDUnitTest.class, "closeCache");
-    server2.invoke(HADuplicateDUnitTest.class, "closeCache");
+    server1.invoke(() -> HADuplicateDUnitTest.reSetQRMslow());
+    server1.invoke(() -> HADuplicateDUnitTest.closeCache());
+    server2.invoke(() -> HADuplicateDUnitTest.closeCache());
   }
 
   public void _testDuplicate() throws Exception
@@ -153,7 +153,7 @@ public class HADuplicateDUnitTest extends DistributedTestCase
       }
     });
 
-    server1.invoke(HADuplicateDUnitTest.class, "reSetQRMslow");
+    server1.invoke(() -> HADuplicateDUnitTest.reSetQRMslow());
   }
 
 
@@ -219,13 +219,10 @@ public class HADuplicateDUnitTest extends DistributedTestCase
   // function to create 2servers and 1 clients
   private void createClientServerConfiguration()
   {
-    PORT1 = ((Integer)server1.invoke(HADuplicateDUnitTest.class,
-        "createServerCache")).intValue();
-    server1.invoke(HADuplicateDUnitTest.class, "setQRMslow");
-    PORT2 = ((Integer)server2.invoke(HADuplicateDUnitTest.class,
-        "createServerCache")).intValue();
-    client1.invoke(HADuplicateDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) });
+    PORT1 = ((Integer)server1.invoke(() -> HADuplicateDUnitTest.createServerCache())).intValue();
+    server1.invoke(() -> HADuplicateDUnitTest.setQRMslow());
+    PORT2 = ((Integer)server2.invoke(() -> HADuplicateDUnitTest.createServerCache())).intValue();
+    client1.invoke(() -> HADuplicateDUnitTest.createClientCache( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) ));
 
   }
 

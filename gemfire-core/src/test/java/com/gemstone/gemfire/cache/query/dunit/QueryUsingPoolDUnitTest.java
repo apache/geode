@@ -195,7 +195,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
     });
 
 
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     final String regionName = "/" + rootRegionName + "/" + name;
 
@@ -331,7 +331,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       }
     });
 
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = "/" + rootRegionName + "/" + name;
@@ -571,7 +571,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     vm1.invoke(new CacheSerializableRunnable("Create region") {
       public void run2() throws CacheException {
@@ -660,7 +660,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = "/" + rootRegionName + "/" + name;
@@ -841,7 +841,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = "/" + this.rootRegionName + "/" + this.regionName;
@@ -998,8 +998,8 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
     });
 
     // Create client region
-    final int port0 = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
-    final int port1 = vm1.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port0 = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port1 = vm1.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -1151,7 +1151,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       }
     });
 
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = "/" + this.rootRegionName + "/" + this.regionName;
@@ -1242,7 +1242,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       }
     });
 
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = "/" + this.rootRegionName + "/" + this.regionName;
@@ -1362,7 +1362,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       }
     });
 
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = "/" + this.rootRegionName + "/" + this.regionName;
@@ -1507,7 +1507,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
     });
 
     // Create client region
-    final int port0 = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port0 = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -1695,7 +1695,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     final String regionName1 = "/" + rootRegionName + "/" + name+"1";
     final String regionName2 = "/" + rootRegionName + "/" + name+"2";
@@ -1792,7 +1792,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       }
     });
 
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = "/" + rootRegionName + "/" + name;
@@ -1940,7 +1940,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       }
     });
 
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName1 = "/" + rootRegionName + "/" + name;
@@ -2035,7 +2035,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = "/" + rootRegionName + "/" + name;
@@ -2186,7 +2186,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       }
     });
 
-    final int port = vm0.invokeInt(QueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName1 = "/" + rootRegionName + "/" + name;

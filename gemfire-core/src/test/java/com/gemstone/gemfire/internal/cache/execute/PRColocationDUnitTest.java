@@ -275,25 +275,15 @@ public class PRColocationDUnitTest extends CacheTestCase {
         totalNumBuckets, colocatedWith, isPartitionResolver };
     createPartitionedRegion(attributeObjects);
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "A" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "A" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "D" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "D" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "H" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "H" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "B" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "B" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "K" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "K" ));
   }
   /*
    * Test for checking the colocation of the regions which forms the tree
@@ -408,25 +398,15 @@ public class PRColocationDUnitTest extends CacheTestCase {
         totalNumBuckets, colocatedWith, isPartitionResolver };
     createPartitionedRegion(attributeObjects);
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "A" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "A" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "D" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "D" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "H" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "H" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "B" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "B" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "K" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "K" ));
   }
   public void testColocatedSubPartitionedRegion() throws Throwable {
     createCacheInAllVms();
@@ -538,25 +518,15 @@ public class PRColocationDUnitTest extends CacheTestCase {
         totalNumBuckets, colocatedWith, isPartitionResolver };
     createSubPartitionedRegion(attributeObjects);
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "rootA/A" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootA/A" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "rootD/D" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootD/D" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "rootH/H" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootH/H" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "rootB/B" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootB/B" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "rootK/K" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootK/K" ));
   }
   
   public void testColocatedSubPartitionedRegion_NoFullPath() throws Throwable {
@@ -669,25 +639,15 @@ public class PRColocationDUnitTest extends CacheTestCase {
         totalNumBuckets, colocatedWith, isPartitionResolver };
     createSubPartitionedRegion(attributeObjects);
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "rootA/A" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootA/A" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "rootD/D" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootD/D" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "rootH/H" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootH/H" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "rootB/B" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootB/B" ));
     
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateColocatedRegions",
-        new Object[] { "rootK/K" });
+    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootK/K" ));
   }
   
   public void testColocatedPRWithAccessorOnDifferentNode1() throws Throwable {
@@ -994,12 +954,9 @@ public class PRColocationDUnitTest extends CacheTestCase {
 
     // Put the customer 1-10 in CustomerPartitionedRegion
 
-    accessor.invoke(PRColocationDUnitTest.class,
-        "putCustomerPartitionedRegion",
-        new Object[] { CustomerPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putCustomerPartitionedRegion( CustomerPartitionedRegionName ));
     // Put the order 1-10 for each Customer in OrderPartitionedRegion
-    accessor.invoke(PRColocationDUnitTest.class, "putOrderPartitionedRegion",
-        new Object[] { OrderPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putOrderPartitionedRegion( OrderPartitionedRegionName ));
 
     // add expected exception string
     final String expectedExMessage =
@@ -1072,12 +1029,9 @@ public class PRColocationDUnitTest extends CacheTestCase {
 
     // Put the customer 1-10 in CustomerPartitionedRegion
 
-    accessor.invoke(PRColocationDUnitTest.class,
-        "putCustomerPartitionedRegion",
-        new Object[] { CustomerPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putCustomerPartitionedRegion( CustomerPartitionedRegionName ));
     // Put the order 1-10 for each Customer in OrderPartitionedRegion
-    accessor.invoke(PRColocationDUnitTest.class, "putOrderPartitionedRegion",
-        new Object[] { OrderPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putOrderPartitionedRegion( OrderPartitionedRegionName ));
 
     // add expected exception string
     final String expectedExMessage = "colocation chain cannot be destroyed, "
@@ -1162,34 +1116,23 @@ public class PRColocationDUnitTest extends CacheTestCase {
 
     // Put the customer 1-10 in CustomerPartitionedRegion
 
-    accessor.invoke(PRColocationDUnitTest.class,
-        "putCustomerPartitionedRegion",
-        new Object[] { CustomerPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putCustomerPartitionedRegion( CustomerPartitionedRegionName ));
     // Put the order 1-10 for each Customer in OrderPartitionedRegion
-    accessor.invoke(PRColocationDUnitTest.class, "putOrderPartitionedRegion",
-        new Object[] { OrderPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putOrderPartitionedRegion( OrderPartitionedRegionName ));
 
     
     // Closing region with colocated regions will throw an exception 
     // and the region will not be closed.
-    accessor.invoke(PRColocationDUnitTest.class,
-        "closeRegionWithColocatedRegions",
-        new Object[] { CustomerPartitionedRegionName, false });
+    accessor.invoke(() -> PRColocationDUnitTest.closeRegionWithColocatedRegions( CustomerPartitionedRegionName, false ));
     
     // Destroying region with colocated regions will throw an exception 
     // and the region will not be closed.
-    accessor.invoke(PRColocationDUnitTest.class,
-        "closeRegionWithColocatedRegions",
-        new Object[] { CustomerPartitionedRegionName, true });
+    accessor.invoke(() -> PRColocationDUnitTest.closeRegionWithColocatedRegions( CustomerPartitionedRegionName, true ));
     
     
     // Closing the colocated regions in the right order should work
-    accessor.invoke(PRColocationDUnitTest.class,
-        "closeRegion",
-        new Object[] { OrderPartitionedRegionName});
-    accessor.invoke(PRColocationDUnitTest.class,
-        "closeRegion",
-        new Object[] { CustomerPartitionedRegionName});
+    accessor.invoke(() -> PRColocationDUnitTest.closeRegion( OrderPartitionedRegionName));
+    accessor.invoke(() -> PRColocationDUnitTest.closeRegion( CustomerPartitionedRegionName));
   }
   /*
    * Test For partition Region with Key Based Routing Resolver
@@ -1285,44 +1228,34 @@ public class PRColocationDUnitTest extends CacheTestCase {
     createPartitionedRegion(attributeObjects);
     
     // Initial Validation for the number of data stores and number of profiles
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateBeforePutCustomerPartitionedRegion",
-        new Object[] { CustomerPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.validateBeforePutCustomerPartitionedRegion( CustomerPartitionedRegionName ));
     
     // Put the customer 1-10 in CustomerPartitionedRegion
-    accessor.invoke(PRColocationDUnitTest.class,
-        "putCustomerPartitionedRegion",
-        new Object[] { CustomerPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putCustomerPartitionedRegion( CustomerPartitionedRegionName ));
     
     // Put the order 1-10 for each Customer in OrderPartitionedRegion
-    accessor.invoke(PRColocationDUnitTest.class, "putOrderPartitionedRegion",
-        new Object[] { OrderPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putOrderPartitionedRegion( OrderPartitionedRegionName ));
     
     // Put the shipment 1-10 for each order in ShipmentPartitionedRegion
-    accessor.invoke(PRColocationDUnitTest.class,
-        "putShipmentPartitionedRegion",
-        new Object[] { ShipmentPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putShipmentPartitionedRegion( ShipmentPartitionedRegionName ));
 
     // for VM0 DataStore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore1 = (Integer)dataStore1.invoke(
-        PRColocationDUnitTest.class, "validateDataStore", new Object[] {
+    Integer totalBucketsInDataStore1 = (Integer)dataStore1.invoke(() -> PRColocationDUnitTest.validateDataStore(
             CustomerPartitionedRegionName, OrderPartitionedRegionName,
-            ShipmentPartitionedRegionName });
+            ShipmentPartitionedRegionName ));
     
     // for VM1 DataStore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore2 = (Integer)dataStore2.invoke(
-        PRColocationDUnitTest.class, "validateDataStore", new Object[] {
+    Integer totalBucketsInDataStore2 = (Integer)dataStore2.invoke(() -> PRColocationDUnitTest.validateDataStore(
             CustomerPartitionedRegionName, OrderPartitionedRegionName,
-            ShipmentPartitionedRegionName });
+            ShipmentPartitionedRegionName ));
     
     // for VM3 Datastore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore3 = (Integer)dataStore3.invoke(
-        PRColocationDUnitTest.class, "validateDataStore", new Object[] {
+    Integer totalBucketsInDataStore3 = (Integer)dataStore3.invoke(() -> PRColocationDUnitTest.validateDataStore(
             CustomerPartitionedRegionName, OrderPartitionedRegionName,
-            ShipmentPartitionedRegionName });
+            ShipmentPartitionedRegionName ));
     
     // Check the total number of buckets created in all three Vms are equalto 30
     totalNumBucketsInTest = totalBucketsInDataStore1.intValue()
@@ -1333,10 +1266,9 @@ public class PRColocationDUnitTest extends CacheTestCase {
     // This is the importatnt check. Checks that the colocated Customer,Order
     // and Shipment are in the same VM
 
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateAfterPutPartitionedRegion", new Object[] {
+    accessor.invoke(() -> PRColocationDUnitTest.validateAfterPutPartitionedRegion(
             CustomerPartitionedRegionName, OrderPartitionedRegionName,
-            ShipmentPartitionedRegionName });
+            ShipmentPartitionedRegionName ));
   }
   
 
@@ -1432,70 +1364,56 @@ public class PRColocationDUnitTest extends CacheTestCase {
     createPartitionedRegion(attributeObjects);
 
     // Initial Validation for the number of data stores and number of profiles
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateBeforePutCustomerPartitionedRegion",
-        new Object[] { CustomerPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.validateBeforePutCustomerPartitionedRegion( CustomerPartitionedRegionName ));
 
     // Put the customer 1-10 in CustomerPartitionedRegion
-    accessor.invoke(PRColocationDUnitTest.class,
-        "putCustomerPartitionedRegion",
-        new Object[] { CustomerPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putCustomerPartitionedRegion( CustomerPartitionedRegionName ));
 
     // Put the order 1-10 for each Customer in OrderPartitionedRegion
-    accessor.invoke(PRColocationDUnitTest.class, "putOrderPartitionedRegion",
-        new Object[] { OrderPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putOrderPartitionedRegion( OrderPartitionedRegionName ));
 
     // Put the shipment 1-10 for each order in ShipmentPartitionedRegion
-    accessor.invoke(PRColocationDUnitTest.class,
-        "putShipmentPartitionedRegion",
-        new Object[] { ShipmentPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.putShipmentPartitionedRegion( ShipmentPartitionedRegionName ));
 
     //  This is the importatnt check. Checks that the colocated Customer,Order
     // and Shipment are in the same VM
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateAfterPutPartitionedRegion", new Object[] {
+    accessor.invoke(() -> PRColocationDUnitTest.validateAfterPutPartitionedRegion(
             CustomerPartitionedRegionName, OrderPartitionedRegionName,
-            ShipmentPartitionedRegionName });
+            ShipmentPartitionedRegionName ));
     
     // for VM0 DataStore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore1 = (Integer)dataStore1.invoke(
-        PRColocationDUnitTest.class, "validateDataStore", new Object[] {
+    Integer totalBucketsInDataStore1 = (Integer)dataStore1.invoke(() -> PRColocationDUnitTest.validateDataStore(
             CustomerPartitionedRegionName, OrderPartitionedRegionName,
-            ShipmentPartitionedRegionName });
+            ShipmentPartitionedRegionName ));
 
     // for VM1 DataStore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore2 = (Integer)dataStore2.invoke(
-        PRColocationDUnitTest.class, "validateDataStore", new Object[] {
+    Integer totalBucketsInDataStore2 = (Integer)dataStore2.invoke(() -> PRColocationDUnitTest.validateDataStore(
             CustomerPartitionedRegionName, OrderPartitionedRegionName,
-            ShipmentPartitionedRegionName });
+            ShipmentPartitionedRegionName ));
 
     // for VM3 Datastore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore3 = (Integer)dataStore3.invoke(
-        PRColocationDUnitTest.class, "validateDataStore", new Object[] {
+    Integer totalBucketsInDataStore3 = (Integer)dataStore3.invoke(() -> PRColocationDUnitTest.validateDataStore(
             CustomerPartitionedRegionName, OrderPartitionedRegionName,
-            ShipmentPartitionedRegionName });
+            ShipmentPartitionedRegionName ));
     
     if (redundancy.intValue() > 0) {
       // for VM0 DataStore check the number of buckets created and the size of
       // bucket for all partitionedRegion
-      dataStore1.invoke(PRColocationDUnitTest.class, "validateDataStoreForRedundancy",
-          new Object[] { CustomerPartitionedRegionName,
-              OrderPartitionedRegionName, ShipmentPartitionedRegionName });
+      dataStore1.invoke(() -> PRColocationDUnitTest.validateDataStoreForRedundancy( CustomerPartitionedRegionName,
+              OrderPartitionedRegionName, ShipmentPartitionedRegionName ));
 
       // for VM1 DataStore check the number of buckets created and the size of
       // bucket for all partitionedRegion
-      dataStore2.invoke(PRColocationDUnitTest.class, "validateDataStoreForRedundancy",
-          new Object[] { CustomerPartitionedRegionName,
-              OrderPartitionedRegionName, ShipmentPartitionedRegionName });
+      dataStore2.invoke(() -> PRColocationDUnitTest.validateDataStoreForRedundancy( CustomerPartitionedRegionName,
+              OrderPartitionedRegionName, ShipmentPartitionedRegionName ));
 
       // for VM3 Datastore check the number of buckets created and the size of
       // bucket for all partitionedRegion
-      dataStore3.invoke(PRColocationDUnitTest.class, "validateDataStoreForRedundancy",
-          new Object[] { CustomerPartitionedRegionName,
-              OrderPartitionedRegionName, ShipmentPartitionedRegionName });
+      dataStore3.invoke(() -> PRColocationDUnitTest.validateDataStoreForRedundancy( CustomerPartitionedRegionName,
+              OrderPartitionedRegionName, ShipmentPartitionedRegionName ));
     }
     
     // Check the total number of buckets created in all three Vms are equalto 60
@@ -1671,15 +1589,12 @@ public class PRColocationDUnitTest extends CacheTestCase {
     createPartitionedRegion(attributeObjects);
 
     // Initial Validation for the number of data stores and number of profiles
-    accessor.invoke(PRColocationDUnitTest.class,
-        "validateBeforePutCustomerPartitionedRegion",
-        new Object[] { CustomerPartitionedRegionName });
+    accessor.invoke(() -> PRColocationDUnitTest.validateBeforePutCustomerPartitionedRegion( CustomerPartitionedRegionName ));
 
     // Put the customer 1-10 in CustomerPartitionedRegion
-    accessor.invoke(PRColocationDUnitTest.class,
-        "putData_KeyBasedPartitionResolver");
+    accessor.invoke(() -> PRColocationDUnitTest.putData_KeyBasedPartitionResolver());
 
-    accessor.invoke(PRColocationDUnitTest.class, "executeFunction");
+    accessor.invoke(() -> PRColocationDUnitTest.executeFunction());
   }
 
   public void testColocatedPRRedundancyRecovery2() throws Throwable {
@@ -2387,10 +2302,10 @@ public class PRColocationDUnitTest extends CacheTestCase {
   }
 
   protected void createCacheInAllVms() {
-    dataStore1.invoke(PRColocationDUnitTest.class, "createCacheInVm");
-    dataStore2.invoke(PRColocationDUnitTest.class, "createCacheInVm");
-    dataStore3.invoke(PRColocationDUnitTest.class, "createCacheInVm");
-    accessor.invoke(PRColocationDUnitTest.class, "createCacheInVm");
+    dataStore1.invoke(() -> PRColocationDUnitTest.createCacheInVm());
+    dataStore2.invoke(() -> PRColocationDUnitTest.createCacheInVm());
+    dataStore3.invoke(() -> PRColocationDUnitTest.createCacheInVm());
+    accessor.invoke(() -> PRColocationDUnitTest.createCacheInVm());
 
   }
 

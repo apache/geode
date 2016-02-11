@@ -70,10 +70,8 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
     LogWriterUtils.getLogWriter()
         .info(
             "PRClientServerFunctionExecutionNoAckDUnitTest#testServerFunctionExecution_NoAck : Starting test");
-    client.invoke(PRClientServerFunctionExecutionNoAckDUnitTest.class,
-        "serverExecution", new Object[] { isByName, functionNoAck, functionAck , toRegister});
-    client.invoke(PRClientServerFunctionExecutionNoAckDUnitTest.class,
-        "allServerExecution", new Object[] { isByName, functionNoAck , toRegister});
+    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.serverExecution( isByName, functionNoAck, functionAck , toRegister));
+    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.allServerExecution( isByName, functionNoAck , toRegister));
   }
 
   public void testServerFunctionExecution_NoAck_WithoutRegister() {
@@ -88,10 +86,8 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
     LogWriterUtils.getLogWriter()
         .info(
             "PRClientServerFunctionExecutionNoAckDUnitTest#testServerFunctionExecution_NoAck : Starting test");
-    client.invoke(PRClientServerFunctionExecutionNoAckDUnitTest.class,
-        "serverExecution", new Object[] { isByName, functionNoAck, functionAck, toRegister });
-    client.invoke(PRClientServerFunctionExecutionNoAckDUnitTest.class,
-        "allServerExecution", new Object[] { isByName, functionNoAck, toRegister });
+    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.serverExecution( isByName, functionNoAck, functionAck, toRegister ));
+    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.allServerExecution( isByName, functionNoAck, toRegister ));
   }
   
   private void createScenario() {

@@ -91,26 +91,26 @@ public class HABugInPutDUnitTest extends DistributedTestCase
     client2 = host.getVM(3);
 
     //System.setProperty())
-    PORT1 = ((Integer)server1.invoke(HABugInPutDUnitTest.class, "createServerCache"))
+    PORT1 = ((Integer)server1.invoke(() -> HABugInPutDUnitTest.createServerCache()))
         .intValue();
-    PORT2 = ((Integer)server2.invoke(HABugInPutDUnitTest.class, "createServerCache"))
+    PORT2 = ((Integer)server2.invoke(() -> HABugInPutDUnitTest.createServerCache()))
         .intValue();
 
-    client1.invoke(HABugInPutDUnitTest.class, "createClientCache", new Object[] {
-        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2) });
-    client2.invoke(HABugInPutDUnitTest.class, "createClientCache", new Object[] {
-        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2) });
+    client1.invoke(() -> HABugInPutDUnitTest.createClientCache(
+        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2) ));
+    client2.invoke(() -> HABugInPutDUnitTest.createClientCache(
+        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2) ));
     //Boolean.getBoolean("")
 
   }
 
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(HABugInPutDUnitTest.class, "closeCache");
-    client2.invoke(HABugInPutDUnitTest.class, "closeCache");
+    client1.invoke(() -> HABugInPutDUnitTest.closeCache());
+    client2.invoke(() -> HABugInPutDUnitTest.closeCache());
     // close server
-    server1.invoke(HABugInPutDUnitTest.class, "closeCache");
-    server2.invoke(HABugInPutDUnitTest.class, "closeCache");
+    server1.invoke(() -> HABugInPutDUnitTest.closeCache());
+    server2.invoke(() -> HABugInPutDUnitTest.closeCache());
   }
 
   public static void closeCache()

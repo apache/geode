@@ -73,8 +73,8 @@ public class HARegionDUnitTest extends DistributedTestCase
    */
   @Override
   protected final void preTearDown() throws Exception {
-    vm0.invoke(HARegionDUnitTest.class, "closeCache");
-    vm1.invoke(HARegionDUnitTest.class, "closeCache");
+    vm0.invoke(() -> HARegionDUnitTest.closeCache());
+    vm1.invoke(() -> HARegionDUnitTest.closeCache());
   }
 
   /**
@@ -106,13 +106,13 @@ public class HARegionDUnitTest extends DistributedTestCase
    */
   public void testLocalPut()
   {
-    vm0.invoke(HARegionDUnitTest.class, "createRegion");
-    vm1.invoke(HARegionDUnitTest.class, "createRegion");
-    vm0.invoke(HARegionDUnitTest.class, "putValue1");
-    vm1.invoke(HARegionDUnitTest.class, "getNull");
-    vm1.invoke(HARegionDUnitTest.class, "putValue2");
-    vm0.invoke(HARegionDUnitTest.class, "getValue1");
-    vm1.invoke(HARegionDUnitTest.class, "getValue2");
+    vm0.invoke(() -> HARegionDUnitTest.createRegion());
+    vm1.invoke(() -> HARegionDUnitTest.createRegion());
+    vm0.invoke(() -> HARegionDUnitTest.putValue1());
+    vm1.invoke(() -> HARegionDUnitTest.getNull());
+    vm1.invoke(() -> HARegionDUnitTest.putValue2());
+    vm0.invoke(() -> HARegionDUnitTest.getValue1());
+    vm1.invoke(() -> HARegionDUnitTest.getValue2());
 
   }
 
@@ -127,16 +127,16 @@ public class HARegionDUnitTest extends DistributedTestCase
    */
   public void testLocalDestroy()
   {
-    vm0.invoke(HARegionDUnitTest.class, "createRegion");
-    vm1.invoke(HARegionDUnitTest.class, "createRegion");
-    vm0.invoke(HARegionDUnitTest.class, "putValue1");
-    vm1.invoke(HARegionDUnitTest.class, "getNull");
-    vm1.invoke(HARegionDUnitTest.class, "putValue2");
-    vm0.invoke(HARegionDUnitTest.class, "getValue1");
-    vm1.invoke(HARegionDUnitTest.class, "getValue2");
-    vm0.invoke(HARegionDUnitTest.class, "destroy");
-    vm0.invoke(HARegionDUnitTest.class, "getNull");
-    vm1.invoke(HARegionDUnitTest.class, "getValue2");
+    vm0.invoke(() -> HARegionDUnitTest.createRegion());
+    vm1.invoke(() -> HARegionDUnitTest.createRegion());
+    vm0.invoke(() -> HARegionDUnitTest.putValue1());
+    vm1.invoke(() -> HARegionDUnitTest.getNull());
+    vm1.invoke(() -> HARegionDUnitTest.putValue2());
+    vm0.invoke(() -> HARegionDUnitTest.getValue1());
+    vm1.invoke(() -> HARegionDUnitTest.getValue2());
+    vm0.invoke(() -> HARegionDUnitTest.destroy());
+    vm0.invoke(() -> HARegionDUnitTest.getNull());
+    vm1.invoke(() -> HARegionDUnitTest.getValue2());
   }
 
   /**
@@ -148,13 +148,13 @@ public class HARegionDUnitTest extends DistributedTestCase
    */
   public void testGII()
   {
-    vm0.invoke(HARegionDUnitTest.class, "createRegion");
-    vm0.invoke(HARegionDUnitTest.class, "putValue1");
-    vm0.invoke(HARegionDUnitTest.class, "getValue1");
-    vm1.invoke(HARegionDUnitTest.class, "createRegion");
-    vm1.invoke(HARegionDUnitTest.class, "getValue1");
-    vm1.invoke(HARegionDUnitTest.class, "putValue2");
-    vm1.invoke(HARegionDUnitTest.class, "getValue2");
+    vm0.invoke(() -> HARegionDUnitTest.createRegion());
+    vm0.invoke(() -> HARegionDUnitTest.putValue1());
+    vm0.invoke(() -> HARegionDUnitTest.getValue1());
+    vm1.invoke(() -> HARegionDUnitTest.createRegion());
+    vm1.invoke(() -> HARegionDUnitTest.getValue1());
+    vm1.invoke(() -> HARegionDUnitTest.putValue2());
+    vm1.invoke(() -> HARegionDUnitTest.getValue2());
 
   }
 
@@ -167,10 +167,10 @@ public class HARegionDUnitTest extends DistributedTestCase
    */
   public void testLocalDestroyRegion()
   {
-    vm0.invoke(HARegionDUnitTest.class, "createRegion");
-    vm1.invoke(HARegionDUnitTest.class, "createRegion");
-    vm0.invoke(HARegionDUnitTest.class, "destroyRegion");
-    vm1.invoke(HARegionDUnitTest.class, "verifyRegionNotDestroyed");
+    vm0.invoke(() -> HARegionDUnitTest.createRegion());
+    vm1.invoke(() -> HARegionDUnitTest.createRegion());
+    vm0.invoke(() -> HARegionDUnitTest.destroyRegion());
+    vm1.invoke(() -> HARegionDUnitTest.verifyRegionNotDestroyed());
   
   }
 
@@ -201,16 +201,16 @@ public class HARegionDUnitTest extends DistributedTestCase
    */
   public void testQRM()
   {
-    vm0.invoke(HARegionDUnitTest.class, "createRegionQueue");
-    vm1.invoke(HARegionDUnitTest.class, "createRegionQueue");
-    vm0.invoke(HARegionDUnitTest.class, "verifyAddingDispatchMesgs");
+    vm0.invoke(() -> HARegionDUnitTest.createRegionQueue());
+    vm1.invoke(() -> HARegionDUnitTest.createRegionQueue());
+    vm0.invoke(() -> HARegionDUnitTest.verifyAddingDispatchMesgs());
     try {
       Thread.sleep(5000);
     }
     catch (InterruptedException e) {
       fail("interrupted");
     }
-    vm1.invoke(HARegionDUnitTest.class, "verifyDispatchedMessagesRemoved");
+    vm1.invoke(() -> HARegionDUnitTest.verifyDispatchedMessagesRemoved());
   }
 
   /**

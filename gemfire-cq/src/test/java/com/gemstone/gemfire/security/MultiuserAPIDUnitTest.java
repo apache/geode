@@ -78,14 +78,10 @@ public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    server1.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] {serverExpectedExceptions});
-    server2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] {serverExpectedExceptions});
-    client1.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] {clientExpectedExceptions});
-    client2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] {clientExpectedExceptions});
+    server1.invoke(() -> SecurityTestUtil.registerExpectedExceptions(serverExpectedExceptions));
+    server2.invoke(() -> SecurityTestUtil.registerExpectedExceptions(serverExpectedExceptions));
+    client1.invoke(() -> SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions));
+    client2.invoke(() -> SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions));
   }
 
   public static Integer createCacheServer(Object dsPort, Object locatorString,
@@ -148,12 +144,10 @@ public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
     Integer locPort1 = SecurityTestUtil.getLocatorPort();
     Integer locPort2 = SecurityTestUtil.getLocatorPort();
     String locString = SecurityTestUtil.getLocatorString();
-    Integer port1 = (Integer)server1.invoke(MultiuserAPIDUnitTest.class,
-        "createCacheServer", new Object[] {locPort1, locString, authenticator,
-            extraProps, javaProps});
-    Integer port2 = (Integer)server2.invoke(MultiuserAPIDUnitTest.class,
-        "createCacheServer", new Object[] {locPort2, locString, authenticator,
-            extraProps, javaProps});
+    Integer port1 = (Integer)server1.invoke(() -> MultiuserAPIDUnitTest.createCacheServer(locPort1, locString, authenticator,
+            extraProps, javaProps));
+    Integer port2 = (Integer)server2.invoke(() -> MultiuserAPIDUnitTest.createCacheServer(locPort2, locString, authenticator,
+            extraProps, javaProps));
 
     // Start the clients with valid credentials
     Properties credentials1 = gen.getValidCredentials(1);
@@ -166,25 +160,22 @@ public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
     LogWriterUtils.getLogWriter().info(
         "testValidCredentials: For second client credentials: " + credentials2
             + " : " + javaProps2);
-    client1.invoke(MultiuserAPIDUnitTest.class, "createCacheClient",
-        new Object[] {authInit, credentials1, javaProps1, port1, port2, null,
-            multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION)});
+    client1.invoke(() -> MultiuserAPIDUnitTest.createCacheClient(authInit, credentials1, javaProps1, port1, port2, null,
+            multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION)));
   }
 
   public void testSingleUserUnsupportedAPIs() {
       // Start servers
       // Start clients with multiuser-authentication set to false
       setUpVMs(new DummyCredentialGenerator(), Boolean.FALSE);
-      client1.invoke(MultiuserAPIDUnitTest.class, "verifyDisallowedOps",
-          new Object[] {Boolean.FALSE});
+      client1.invoke(() -> MultiuserAPIDUnitTest.verifyDisallowedOps(Boolean.FALSE));
   }
 
   public void testMultiUserUnsupportedAPIs() {
       // Start servers.
       // Start clients with multiuser-authentication set to true.
       setUpVMs(new DummyCredentialGenerator(), Boolean.TRUE);
-      client1.invoke(MultiuserAPIDUnitTest.class, "verifyDisallowedOps",
-          new Object[] {Boolean.TRUE});
+      client1.invoke(() -> MultiuserAPIDUnitTest.verifyDisallowedOps(Boolean.TRUE));
   }
 
   public static void verifyDisallowedOps(Boolean multiuserMode) {
@@ -383,10 +374,10 @@ public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
   @Override
   protected final void preTearDown() throws Exception {
     // close the clients first
-    client1.invoke(SecurityTestUtil.class, "closeCache");
-    client2.invoke(SecurityTestUtil.class, "closeCache");
+    client1.invoke(() -> SecurityTestUtil.closeCache());
+    client2.invoke(() -> SecurityTestUtil.closeCache());
     // then close the servers
-    server1.invoke(SecurityTestUtil.class, "closeCache");
-    server2.invoke(SecurityTestUtil.class, "closeCache");
+    server1.invoke(() -> SecurityTestUtil.closeCache());
+    server2.invoke(() -> SecurityTestUtil.closeCache());
   }
 }

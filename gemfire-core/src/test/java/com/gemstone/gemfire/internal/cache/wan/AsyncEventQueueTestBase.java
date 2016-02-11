@@ -1574,14 +1574,14 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   @Override
   protected final void postTearDown() throws Exception {
     cleanupVM();
-    vm0.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm1.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm2.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm3.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm4.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm5.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm6.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm7.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
+    vm0.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm1.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm2.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm3.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm4.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm5.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm6.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm7.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
   }
 
   public static void cleanupVM() throws IOException {

@@ -106,24 +106,21 @@ public class DeltaClientAuthorizationDUnitTest extends
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    server1.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { serverExpectedExceptions });
-    server2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { serverExpectedExceptions });
-    client2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { clientExpectedExceptions });
+    server1.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
+    server2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
+    client2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( clientExpectedExceptions ));
     SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions);
   }
 
   @Override
   protected final void preTearDown() throws Exception {
     // close the clients first
-    client1.invoke(SecurityTestUtil.class, "closeCache");
-    client2.invoke(SecurityTestUtil.class, "closeCache");
+    client1.invoke(() -> SecurityTestUtil.closeCache());
+    client2.invoke(() -> SecurityTestUtil.closeCache());
     SecurityTestUtil.closeCache();
     // then close the servers
-    server1.invoke(SecurityTestUtil.class, "closeCache");
-    server2.invoke(SecurityTestUtil.class, "closeCache");
+    server1.invoke(() -> SecurityTestUtil.closeCache());
+    server2.invoke(() -> SecurityTestUtil.closeCache());
   }
 
   public void testAllowPutsGets() throws Exception {
@@ -144,12 +141,10 @@ public class DeltaClientAuthorizationDUnitTest extends
       // Start servers with all required properties
       Properties serverProps = buildProperties(authenticator, accessor, false,
           extraAuthProps, extraAuthzProps);
-      Integer port1 = ((Integer)server1.invoke(
-          ClientAuthorizationTestBase.class, "createCacheServer", new Object[] {
-              SecurityTestUtil.getLocatorPort(), serverProps, javaProps }));
-      Integer port2 = ((Integer)server2.invoke(
-          ClientAuthorizationTestBase.class, "createCacheServer", new Object[] {
-              SecurityTestUtil.getLocatorPort(), serverProps, javaProps }));
+      Integer port1 = ((Integer)server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+              SecurityTestUtil.getLocatorPort(), serverProps, javaProps )));
+      Integer port2 = ((Integer)server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+              SecurityTestUtil.getLocatorPort(), serverProps, javaProps )));
 
       // Start client1 with valid CREATE credentials
       Properties createCredentials = gen.getAllowedCredentials(
@@ -159,9 +154,8 @@ public class DeltaClientAuthorizationDUnitTest extends
       LogWriterUtils.getLogWriter().info(
           "testAllowPutsGets: For first client credentials: "
               + createCredentials);
-      client1.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, createCredentials, javaProps, port1, port2,
-              null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, createCredentials, javaProps, port1, port2,
+              null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Start client2 with valid GET credentials
       Properties getCredentials = gen.getAllowedCredentials(
@@ -172,19 +166,18 @@ public class DeltaClientAuthorizationDUnitTest extends
           .info(
               "testAllowPutsGets: For second client credentials: "
                   + getCredentials);
-      client2.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, getCredentials, javaProps, port1, port2,
-              null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, getCredentials, javaProps, port1, port2,
+              null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Perform some put operations from client1
-      client1.invoke(DeltaClientAuthorizationDUnitTest.class, "doPuts", new Object[] {
-          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION), Boolean.FALSE });
+      client1.invoke(() -> DeltaClientAuthorizationDUnitTest.doPuts(
+          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION), Boolean.FALSE ));
       Thread.sleep(5000);
-      assertTrue("Delta feature NOT used", (Boolean)client1.invoke(DeltaTestImpl.class, "toDeltaFeatureUsed"));
+      assertTrue("Delta feature NOT used", (Boolean)client1.invoke(() -> DeltaTestImpl.toDeltaFeatureUsed()));
 
       // Verify that the gets succeed
-      client2.invoke(DeltaClientAuthorizationDUnitTest.class, "doGets", new Object[] {
-          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION), Boolean.FALSE  });
+      client2.invoke(() -> DeltaClientAuthorizationDUnitTest.doGets(
+          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION), Boolean.FALSE  ));
   }
 
   public static void doPuts(Integer num, Integer expectedResult,

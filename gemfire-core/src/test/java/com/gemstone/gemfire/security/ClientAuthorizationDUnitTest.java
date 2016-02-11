@@ -66,14 +66,10 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    server1.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { serverExpectedExceptions });
-    server2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { serverExpectedExceptions });
-    client1.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { clientExpectedExceptions });
-    client2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { clientExpectedExceptions });
+    server1.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
+    server2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
+    client1.invoke(() -> SecurityTestUtil.registerExpectedExceptions( clientExpectedExceptions ));
+    client2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( clientExpectedExceptions ));
     SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions);
   }
 
@@ -194,10 +190,9 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
             opFlags), new Integer(expectedResult));
       }
       else {
-        clientVM.invoke(ClientAuthorizationTestBase.class, "doOp",
-            new Object[] { new Byte(opCode.toOrdinal()),
+        clientVM.invoke(() -> ClientAuthorizationTestBase.doOp( new Byte(opCode.toOrdinal()),
                 currentOp.getIndices(), new Integer(opFlags),
-                new Integer(expectedResult) });
+                new Integer(expectedResult) ));
       }
     }
   }
@@ -222,12 +217,10 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
       // Start servers with all required properties
       Properties serverProps = buildProperties(authenticator, accessor, false,
           extraAuthProps, extraAuthzProps);
-      Integer port1 = ((Integer)server1.invoke(
-          ClientAuthorizationTestBase.class, "createCacheServer", new Object[] {
-              SecurityTestUtil.getLocatorPort(), serverProps, javaProps }));
-      Integer port2 = ((Integer)server2.invoke(
-          ClientAuthorizationTestBase.class, "createCacheServer", new Object[] {
-              SecurityTestUtil.getLocatorPort(), serverProps, javaProps }));
+      Integer port1 = ((Integer)server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+              SecurityTestUtil.getLocatorPort(), serverProps, javaProps )));
+      Integer port2 = ((Integer)server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+              SecurityTestUtil.getLocatorPort(), serverProps, javaProps )));
 
       // Start client1 with valid CREATE credentials
       Properties createCredentials = gen.getAllowedCredentials(
@@ -237,9 +230,8 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
       LogWriterUtils.getLogWriter().info(
           "testAllowPutsGets: For first client credentials: "
               + createCredentials);
-      client1.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, createCredentials, javaProps, port1, port2,
-              null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, createCredentials, javaProps, port1, port2,
+              null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Start client2 with valid GET credentials
       Properties getCredentials = gen.getAllowedCredentials(
@@ -250,17 +242,16 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
           .info(
               "testAllowPutsGets: For second client credentials: "
                   + getCredentials);
-      client2.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, getCredentials, javaProps, port1, port2,
-              null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, getCredentials, javaProps, port1, port2,
+              null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Perform some put operations from client1
-      client1.invoke(SecurityTestUtil.class, "doPuts", new Object[] {
-          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> SecurityTestUtil.doPuts(
+          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Verify that the gets succeed
-      client2.invoke(SecurityTestUtil.class, "doGets", new Object[] {
-          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doGets(
+          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
   }
 
   public void testDisallowPutsGets() {
@@ -300,30 +291,26 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
       // Start servers with all required properties
       Properties serverProps = buildProperties(authenticator, accessor, false,
           extraAuthProps, extraAuthzProps);
-      Integer port1 = ((Integer)server1.invoke(
-          ClientAuthorizationTestBase.class, "createCacheServer", new Object[] {
-              SecurityTestUtil.getLocatorPort(), serverProps, javaProps }));
-      Integer port2 = ((Integer)server2.invoke(
-          ClientAuthorizationTestBase.class, "createCacheServer", new Object[] {
-              SecurityTestUtil.getLocatorPort(), serverProps, javaProps }));
+      Integer port1 = ((Integer)server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+              SecurityTestUtil.getLocatorPort(), serverProps, javaProps )));
+      Integer port2 = ((Integer)server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+              SecurityTestUtil.getLocatorPort(), serverProps, javaProps )));
 
       // Start client1 with valid CREATE credentials
-      client1.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, createCredentials, createJavaProps, port1,
-              port2, null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, createCredentials, createJavaProps, port1,
+              port2, null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Start client2 with invalid GET credentials
-      client2.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, getCredentials, getJavaProps, port1, port2,
-              null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, getCredentials, getJavaProps, port1, port2,
+              null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Perform some put operations from client1
-      client1.invoke(SecurityTestUtil.class, "doPuts", new Object[] {
-          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> SecurityTestUtil.doPuts(
+          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Gets as normal user should throw exception
-      client2.invoke(SecurityTestUtil.class, "doGets", new Object[] {
-          new Integer(2), new Integer(SecurityTestUtil.NOTAUTHZ_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doGets(
+          new Integer(2), new Integer(SecurityTestUtil.NOTAUTHZ_EXCEPTION) ));
 
       // Try to connect client2 with reader credentials
       getCredentials = gen.getAllowedCredentials(
@@ -333,17 +320,16 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
       LogWriterUtils.getLogWriter().info(
           "testDisallowPutsGets: For second client with GET credentials: "
               + getCredentials);
-      client2.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, getCredentials, getJavaProps, port1, port2,
-              null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, getCredentials, getJavaProps, port1, port2,
+              null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Verify that the gets succeed
-      client2.invoke(SecurityTestUtil.class, "doGets", new Object[] {
-          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doGets(
+          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Verify that the puts throw exception
-      client2.invoke(SecurityTestUtil.class, "doNPuts", new Object[] {
-          new Integer(2), new Integer(SecurityTestUtil.NOTAUTHZ_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doNPuts(
+          new Integer(2), new Integer(SecurityTestUtil.NOTAUTHZ_EXCEPTION) ));
   }
 
   public void testInvalidAccessor() {
@@ -363,9 +349,8 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
       // Start server1 with invalid accessor
       Properties serverProps = buildProperties(authenticator,
           "com.gemstone.none", false, extraAuthProps, extraAuthzProps);
-      Integer port1 = ((Integer)server1.invoke(
-          ClientAuthorizationTestBase.class, "createCacheServer", new Object[] {
-              SecurityTestUtil.getLocatorPort(), serverProps, javaProps }));
+      Integer port1 = ((Integer)server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+              SecurityTestUtil.getLocatorPort(), serverProps, javaProps )));
       Integer port2 = new Integer(AvailablePort
           .getRandomAvailablePort(AvailablePort.SOCKET));
 
@@ -384,43 +369,38 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
       LogWriterUtils.getLogWriter().info(
           "testInvalidAccessor: For second client GET credentials: "
               + getCredentials);
-      client1.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, createCredentials, createJavaProps, port1,
+      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, createCredentials, createJavaProps, port1,
               port2, null, Boolean.FALSE, Boolean.FALSE,
-              Integer.valueOf(SecurityTestUtil.NO_EXCEPTION) });
-      client1.invoke(SecurityTestUtil.class, "doPuts", new Object[] {
-          new Integer(1), new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) });
-      client2.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, getCredentials, getJavaProps, port1, port2,
+              Integer.valueOf(SecurityTestUtil.NO_EXCEPTION) ));
+      client1.invoke(() -> SecurityTestUtil.doPuts(
+          new Integer(1), new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) ));
+      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, getCredentials, getJavaProps, port1, port2,
               null, Boolean.FALSE, Boolean.FALSE,
-              Integer.valueOf(SecurityTestUtil.NO_EXCEPTION) });
-      client2.invoke(SecurityTestUtil.class, "doPuts", new Object[] {
-          new Integer(1), new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) });
+              Integer.valueOf(SecurityTestUtil.NO_EXCEPTION) ));
+      client2.invoke(() -> SecurityTestUtil.doPuts(
+          new Integer(1), new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) ));
 
       // Now start server2 that has valid accessor
       LogWriterUtils.getLogWriter().info("testInvalidAccessor: Using accessor: " + accessor);
       serverProps = buildProperties(authenticator, accessor, false,
           extraAuthProps, extraAuthzProps);
-      server2.invoke(ClientAuthorizationTestBase.class, "createCacheServer",
-          new Object[] { SecurityTestUtil.getLocatorPort(), port2, serverProps,
-              javaProps });
-      server1.invoke(SecurityTestUtil.class, "closeCache");
+      server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer( SecurityTestUtil.getLocatorPort(), port2, serverProps,
+              javaProps ));
+      server1.invoke(() -> SecurityTestUtil.closeCache());
 
       // Client creation should be successful now
-      client1.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, createCredentials, createJavaProps, port1,
-              port2, null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
-      client2.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, getCredentials, getJavaProps, port1, port2,
-              null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, createCredentials, createJavaProps, port1,
+              port2, null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, getCredentials, getJavaProps, port1, port2,
+              null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Now perform some put operations from client1
-      client1.invoke(SecurityTestUtil.class, "doPuts", new Object[] {
-          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> SecurityTestUtil.doPuts(
+          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Verify that the gets succeed
-      client2.invoke(SecurityTestUtil.class, "doGets", new Object[] {
-          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doGets(
+          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
   }
 
   public void testPutsGetsWithFailover() {
@@ -443,9 +423,8 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
       // Start servers with all required properties
       Properties serverProps = buildProperties(authenticator, accessor, false,
           extraAuthProps, extraAuthzProps);
-      Integer port1 = ((Integer)server1.invoke(
-          ClientAuthorizationTestBase.class, "createCacheServer", new Object[] {
-              SecurityTestUtil.getLocatorPort(), serverProps, javaProps }));
+      Integer port1 = ((Integer)server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+              SecurityTestUtil.getLocatorPort(), serverProps, javaProps )));
       // Get a port for second server but do not start it
       // This forces the clients to connect to the first server
       Integer port2 = new Integer(AvailablePort
@@ -459,9 +438,8 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
       LogWriterUtils.getLogWriter().info(
           "testPutsGetsWithFailover: For first client credentials: "
               + createCredentials);
-      client1.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, createCredentials, createJavaProps, port1,
-              port2, null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, createCredentials, createJavaProps, port1,
+              port2, null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Start client2 with valid GET credentials
       Properties getCredentials = gen.getAllowedCredentials(
@@ -471,29 +449,27 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
       LogWriterUtils.getLogWriter().info(
           "testPutsGetsWithFailover: For second client credentials: "
               + getCredentials);
-      client2.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, getCredentials, getJavaProps, port1, port2,
-              null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, getCredentials, getJavaProps, port1, port2,
+              null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Perform some put operations from client1
-      client1.invoke(SecurityTestUtil.class, "doPuts", new Object[] {
-          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> SecurityTestUtil.doPuts(
+          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
       // Verify that the puts succeeded
-      client2.invoke(SecurityTestUtil.class, "doGets", new Object[] {
-          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doGets(
+          new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // start the second one and stop the first server to force a failover
-      server2.invoke(ClientAuthorizationTestBase.class, "createCacheServer",
-          new Object[] { SecurityTestUtil.getLocatorPort(), port2, serverProps,
-              javaProps });
-      server1.invoke(SecurityTestUtil.class, "closeCache");
+      server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer( SecurityTestUtil.getLocatorPort(), port2, serverProps,
+              javaProps ));
+      server1.invoke(() -> SecurityTestUtil.closeCache());
 
       // Perform some put operations from client1
-      client1.invoke(SecurityTestUtil.class, "doNPuts", new Object[] {
-          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> SecurityTestUtil.doNPuts(
+          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
       // Verify that the puts succeeded
-      client2.invoke(SecurityTestUtil.class, "doNGets", new Object[] {
-          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doNGets(
+          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Now re-connect with credentials not allowed to do gets
       Properties noGetCredentials = gen.getDisallowedCredentials(
@@ -506,42 +482,39 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
               + noGetCredentials);
 
       // Re-connect client2 with invalid GET credentials
-      client2.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, noGetCredentials, getJavaProps, port1,
-              port2, null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, noGetCredentials, getJavaProps, port1,
+              port2, null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Perform some put operations from client1
-      client1.invoke(SecurityTestUtil.class, "doPuts", new Object[] {
-          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> SecurityTestUtil.doPuts(
+          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
       // Gets as normal user should throw exception
-      client2.invoke(SecurityTestUtil.class, "doGets", new Object[] {
-          new Integer(4), new Integer(SecurityTestUtil.NOTAUTHZ_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doGets(
+          new Integer(4), new Integer(SecurityTestUtil.NOTAUTHZ_EXCEPTION) ));
 
       // force a failover and do the drill again
-      server1.invoke(ClientAuthorizationTestBase.class, "createCacheServer",
-          new Object[] { SecurityTestUtil.getLocatorPort(), port1, serverProps,
-              javaProps });
-      server2.invoke(SecurityTestUtil.class, "closeCache");
+      server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer( SecurityTestUtil.getLocatorPort(), port1, serverProps,
+              javaProps ));
+      server2.invoke(() -> SecurityTestUtil.closeCache());
 
       // Perform some put operations from client1
-      client1.invoke(SecurityTestUtil.class, "doNPuts", new Object[] {
-          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client1.invoke(() -> SecurityTestUtil.doNPuts(
+          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
       // Gets as normal user should throw exception
-      client2.invoke(SecurityTestUtil.class, "doNGets", new Object[] {
-          new Integer(4), new Integer(SecurityTestUtil.NOTAUTHZ_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doNGets(
+          new Integer(4), new Integer(SecurityTestUtil.NOTAUTHZ_EXCEPTION) ));
 
       // Try to connect client2 with reader credentials
-      client2.invoke(ClientAuthenticationDUnitTest.class, "createCacheClient",
-          new Object[] { authInit, getCredentials, getJavaProps, port1, port2,
-              null, new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, getCredentials, getJavaProps, port1, port2,
+              null, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Verify that the gets succeed
-      client2.invoke(SecurityTestUtil.class, "doNGets", new Object[] {
-          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doNGets(
+          new Integer(4), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
 
       // Verify that the puts throw exception
-      client2.invoke(SecurityTestUtil.class, "doPuts", new Object[] {
-          new Integer(4), new Integer(SecurityTestUtil.NOTAUTHZ_EXCEPTION) });
+      client2.invoke(() -> SecurityTestUtil.doPuts(
+          new Integer(4), new Integer(SecurityTestUtil.NOTAUTHZ_EXCEPTION) ));
   }
 
   public void testUnregisterInterestWithFailover() {
@@ -652,20 +625,18 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
         // on the servers with/without failover
         if (opBlock.size() > 0) {
           // Start the first server and execute the operation block
-          server1.invoke(ClientAuthorizationTestBase.class,
-              "createCacheServer", new Object[] {
+          server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
                   SecurityTestUtil.getLocatorPort(), port1, serverProps,
-                  javaProps });
-          server2.invoke(SecurityTestUtil.class, "closeCache");
+                  javaProps ));
+          server2.invoke(() -> SecurityTestUtil.closeCache());
           executeRIOpBlock(opBlock, port1, port2, authInit, extraAuthProps,
               extraAuthzProps, javaProps);
           if (!currentOp.equals(OperationWithAction.OPBLOCK_NO_FAILOVER)) {
             // Failover to the second server and run the block again
-            server2.invoke(ClientAuthorizationTestBase.class,
-                "createCacheServer", new Object[] {
+            server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
                     SecurityTestUtil.getLocatorPort(), port2, serverProps,
-                    javaProps });
-            server1.invoke(SecurityTestUtil.class, "closeCache");
+                    javaProps ));
+            server1.invoke(() -> SecurityTestUtil.closeCache());
             executeRIOpBlock(opBlock, port1, port2, authInit, extraAuthProps,
                 extraAuthzProps, javaProps);
           }
@@ -787,11 +758,11 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
   @Override
   protected final void preTearDown() throws Exception {
     // close the clients first
-    client1.invoke(SecurityTestUtil.class, "closeCache");
-    client2.invoke(SecurityTestUtil.class, "closeCache");
+    client1.invoke(() -> SecurityTestUtil.closeCache());
+    client2.invoke(() -> SecurityTestUtil.closeCache());
     SecurityTestUtil.closeCache();
     // then close the servers
-    server1.invoke(SecurityTestUtil.class, "closeCache");
-    server2.invoke(SecurityTestUtil.class, "closeCache");
+    server1.invoke(() -> SecurityTestUtil.closeCache());
+    server2.invoke(() -> SecurityTestUtil.closeCache());
   }
 }

@@ -111,55 +111,45 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", 3));
 
-    datastoreServer.invoke(FixedPRSinglehopDUnitTest.class, "createServer",
-        new Object[] { false, fpaList });
+    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.createServer( false, fpaList ));
 
     fpaList.clear();
-    accessorServer.invoke(FixedPRSinglehopDUnitTest.class, "createServer",
-        new Object[] { true, fpaList });
+    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.createServer( true, fpaList ));
 
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", 3));
 
-    peer1.invoke(FixedPRSinglehopDUnitTest.class, "createPeer", new Object[] {
-        false, fpaList });
+    peer1.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(
+        false, fpaList ));
 
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", 3));
 
-    peer2.invoke(FixedPRSinglehopDUnitTest.class, "createPeer", new Object[] {
-        false, fpaList });
+    peer2.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(
+        false, fpaList ));
 
-    datastoreServer.invoke(FixedPRSinglehopDUnitTest.class,
-        "putIntoPartitionedRegions");
-    accessorServer.invoke(FixedPRSinglehopDUnitTest.class,
-        "putIntoPartitionedRegions");
-    peer1.invoke(FixedPRSinglehopDUnitTest.class, "putIntoPartitionedRegions");
-    peer2.invoke(FixedPRSinglehopDUnitTest.class, "putIntoPartitionedRegions");
+    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.putIntoPartitionedRegions());
+    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.putIntoPartitionedRegions());
+    peer1.invoke(() -> FixedPRSinglehopDUnitTest.putIntoPartitionedRegions());
+    peer2.invoke(() -> FixedPRSinglehopDUnitTest.putIntoPartitionedRegions());
 
-    datastoreServer.invoke(FixedPRSinglehopDUnitTest.class,
-        "getFromPartitionedRegions");
-    accessorServer.invoke(FixedPRSinglehopDUnitTest.class,
-        "getFromPartitionedRegions");
-    peer1.invoke(FixedPRSinglehopDUnitTest.class, "getFromPartitionedRegions");
-    peer2.invoke(FixedPRSinglehopDUnitTest.class, "getFromPartitionedRegions");
+    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.getFromPartitionedRegions());
+    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.getFromPartitionedRegions());
+    peer1.invoke(() -> FixedPRSinglehopDUnitTest.getFromPartitionedRegions());
+    peer2.invoke(() -> FixedPRSinglehopDUnitTest.getFromPartitionedRegions());
 
-    datastoreServer.invoke(FixedPRSinglehopDUnitTest.class,
-        "verifyEmptyMetadata");
-    accessorServer.invoke(FixedPRSinglehopDUnitTest.class,
-        "verifyEmptyMetadata");
-    peer1.invoke(FixedPRSinglehopDUnitTest.class, "verifyEmptyMetadata");
-    peer2.invoke(FixedPRSinglehopDUnitTest.class, "verifyEmptyMetadata");
+    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyMetadata());
+    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyMetadata());
+    peer1.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyMetadata());
+    peer2.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyMetadata());
 
-    datastoreServer.invoke(FixedPRSinglehopDUnitTest.class,
-        "verifyEmptyStaticData");
-    accessorServer.invoke(FixedPRSinglehopDUnitTest.class,
-        "verifyEmptyStaticData");
-    peer1.invoke(FixedPRSinglehopDUnitTest.class, "verifyEmptyStaticData");
-    peer2.invoke(FixedPRSinglehopDUnitTest.class, "verifyEmptyStaticData");
+    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyStaticData());
+    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyStaticData());
+    peer1.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyStaticData());
+    peer2.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyStaticData());
   }
 
   // 2 AccessorServers, 2 Peers
@@ -174,25 +164,23 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
 
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
 
-    Integer port0 = (Integer)accessorServer1.invoke(
-        FixedPRSinglehopDUnitTest.class, "createServer", new Object[] { true,
-            fpaList });
+    Integer port0 = (Integer)accessorServer1.invoke(() -> FixedPRSinglehopDUnitTest.createServer( true,
+            fpaList ));
 
-    Integer port1 = (Integer)accessorServer2.invoke(
-        FixedPRSinglehopDUnitTest.class, "createServer", new Object[] { true,
-            fpaList });
+    Integer port1 = (Integer)accessorServer2.invoke(() -> FixedPRSinglehopDUnitTest.createServer( true,
+            fpaList ));
 
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", true, 3));
 
-    peer1.invoke(FixedPRSinglehopDUnitTest.class, "createPeer", new Object[] {
-        false, fpaList });
+    peer1.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(
+        false, fpaList ));
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", true, 3));
 
-    peer2.invoke(FixedPRSinglehopDUnitTest.class, "createPeer", new Object[] {
-        false, fpaList });
+    peer2.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(
+        false, fpaList ));
 
     createClient(port0, port1);
 
@@ -221,30 +209,26 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", false, 3));
 
-    Integer port1 = (Integer)server1.invoke(
-        FixedPRSinglehopDUnitTest.class, "createServer", new Object[] { false,
-            fpaList });
+    Integer port1 = (Integer)server1.invoke(() -> FixedPRSinglehopDUnitTest.createServer( false,
+            fpaList ));
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", false, 3));
 
-    Integer port2 = (Integer)server2.invoke(
-        FixedPRSinglehopDUnitTest.class, "createServer", new Object[] { false,
-            fpaList });
+    Integer port2 = (Integer)server2.invoke(() -> FixedPRSinglehopDUnitTest.createServer( false,
+            fpaList ));
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", false, 3));
     
-    Integer port3 = (Integer)server3.invoke(
-        FixedPRSinglehopDUnitTest.class, "createServer", new Object[] { false,
-            fpaList });
+    Integer port3 = (Integer)server3.invoke(() -> FixedPRSinglehopDUnitTest.createServer( false,
+            fpaList ));
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", false, 3));
     
-    Integer port4 = (Integer)server4.invoke(
-        FixedPRSinglehopDUnitTest.class, "createServer", new Object[] { false,
-            fpaList });    
+    Integer port4 = (Integer)server4.invoke(() -> FixedPRSinglehopDUnitTest.createServer( false,
+            fpaList ));    
 
     createClient(port1, port2, port3, port4);
 
@@ -252,16 +236,16 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
 
     getFromPartitionedRegions();
 
-    server1.invoke(FixedPRSinglehopDUnitTest.class, "printView");
-    server2.invoke(FixedPRSinglehopDUnitTest.class, "printView");
-    server3.invoke(FixedPRSinglehopDUnitTest.class, "printView");
-    server4.invoke(FixedPRSinglehopDUnitTest.class, "printView");
+    server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
+    server2.invoke(() -> FixedPRSinglehopDUnitTest.printView());
+    server3.invoke(() -> FixedPRSinglehopDUnitTest.printView());
+    server4.invoke(() -> FixedPRSinglehopDUnitTest.printView());
     
     int totalBucketOnServer = 0;
-    totalBucketOnServer += (Integer)server1.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
-    totalBucketOnServer += (Integer)server2.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
-    totalBucketOnServer += (Integer)server3.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
-    totalBucketOnServer += (Integer)server4.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
+    totalBucketOnServer += (Integer)server1.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
+    totalBucketOnServer += (Integer)server2.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
+    totalBucketOnServer += (Integer)server3.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
+    totalBucketOnServer += (Integer)server4.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
     
     verifyMetadata(totalBucketOnServer,2);
     updateIntoSinglePR();
@@ -286,8 +270,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     final int portLocator = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String hostLocator = NetworkUtils.getServerHostName(server1.getHost());
     final String locator = hostLocator + "[" + portLocator + "]";
-    server3.invoke(FixedPRSinglehopDUnitTest.class,
-        "startLocatorInVM", new Object[] { portLocator });
+    server3.invoke(() -> FixedPRSinglehopDUnitTest.startLocatorInVM( portLocator ));
     try {
     
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
@@ -295,15 +278,13 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", false, 3));
 
-    Integer port1 = (Integer)server1.invoke(
-        FixedPRSinglehopDUnitTest.class, "createServerWithLocator", new Object[] { locator, false,
-            fpaList,  simpleFPR});
+    Integer port1 = (Integer)server1.invoke(() -> FixedPRSinglehopDUnitTest.createServerWithLocator( locator, false,
+            fpaList,  simpleFPR));
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", true, 3));
 
-    Integer port2 = (Integer)server2.invoke(
-        FixedPRSinglehopDUnitTest.class, "createServerWithLocator", new Object[] { locator, false,
-            fpaList , simpleFPR});
+    Integer port2 = (Integer)server2.invoke(() -> FixedPRSinglehopDUnitTest.createServerWithLocator( locator, false,
+            fpaList , simpleFPR));
     fpaList.clear();
     
     createClientWithLocator(hostLocator, portLocator);
@@ -313,12 +294,12 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     getFromPartitionedRegionsFor3Qs();
     Wait.pause(2000);
     // TODO: Verify that all the fpa's are in the map
-    server1.invoke(FixedPRSinglehopDUnitTest.class, "printView");
-    server2.invoke(FixedPRSinglehopDUnitTest.class, "printView");
+    server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
+    server2.invoke(() -> FixedPRSinglehopDUnitTest.printView());
     
     int totalBucketOnServer = 0;
-    totalBucketOnServer += (Integer)server1.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
-    totalBucketOnServer += (Integer)server2.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
+    totalBucketOnServer += (Integer)server1.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
+    totalBucketOnServer += (Integer)server2.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
     int currentRedundancy = 1;
     verifyMetadata(totalBucketOnServer,currentRedundancy);
     updateIntoSinglePRFor3Qs();
@@ -330,9 +311,8 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", false, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", false, 3));
   
-    Integer port4 = (Integer)server4.invoke(
-        FixedPRSinglehopDUnitTest.class, "createServerWithLocator", new Object[] { locator, false,
-            fpaList, simpleFPR });    
+    Integer port4 = (Integer)server4.invoke(() -> FixedPRSinglehopDUnitTest.createServerWithLocator( locator, false,
+            fpaList, simpleFPR ));    
     
     Wait.pause(2000);
     putIntoPartitionedRegions();
@@ -341,18 +321,18 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
 
     getFromPartitionedRegions();
     Wait.pause(2000);
-    server1.invoke(FixedPRSinglehopDUnitTest.class, "printView");
-    server2.invoke(FixedPRSinglehopDUnitTest.class, "printView");
-    server4.invoke(FixedPRSinglehopDUnitTest.class, "printView");
+    server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
+    server2.invoke(() -> FixedPRSinglehopDUnitTest.printView());
+    server4.invoke(() -> FixedPRSinglehopDUnitTest.printView());
     
     totalBucketOnServer = 0;
-    totalBucketOnServer += (Integer)server1.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
-    totalBucketOnServer += (Integer)server2.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
-    totalBucketOnServer += (Integer)server4.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
+    totalBucketOnServer += (Integer)server1.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
+    totalBucketOnServer += (Integer)server2.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
+    totalBucketOnServer += (Integer)server4.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
     
     updateIntoSinglePR();
     } finally {
-    server3.invoke(FixedPRSinglehopDUnitTest.class, "stopLocator"); 
+    server3.invoke(() -> FixedPRSinglehopDUnitTest.stopLocator()); 
     }
   }
   

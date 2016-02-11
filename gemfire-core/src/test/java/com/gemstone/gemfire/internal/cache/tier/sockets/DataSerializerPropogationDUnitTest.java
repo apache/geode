@@ -159,12 +159,12 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
   protected final void preTearDown() throws Exception {
     try {
       // close the clients first
-      client1.invoke(DataSerializerPropogationDUnitTest.class, "closeCache");
-      client2.invoke(DataSerializerPropogationDUnitTest.class, "closeCache");
+      client1.invoke(() -> DataSerializerPropogationDUnitTest.closeCache());
+      client2.invoke(() -> DataSerializerPropogationDUnitTest.closeCache());
       closeCache();
 
-      server1.invoke(DataSerializerPropogationDUnitTest.class, "closeCache");
-      server2.invoke(DataSerializerPropogationDUnitTest.class, "closeCache");
+      server1.invoke(() -> DataSerializerPropogationDUnitTest.closeCache());
+      server2.invoke(() -> DataSerializerPropogationDUnitTest.closeCache());
 
       client1 = null;
       client2 = null;
@@ -404,23 +404,18 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
 
     Wait.pause(3000);
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObject1");
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObject2");
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject1());
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject2());
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(2) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(2) ));
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
 
     // wait for client2 to come online
     Wait.pause(3000);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(2) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(2) ));
 
     // Put some entries from the client
     client1.invoke(new CacheSerializableRunnable("Put entries from client") {
@@ -470,31 +465,24 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) ));
 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObject3");
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject3());
     Wait.pause(4000);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
-    server2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
   }
 
   // this test is for bug 44112
@@ -502,61 +490,48 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) ));
 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObjectLocalOnly", new Object[] { });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObjectLocalOnly( ));
 
     Wait.pause(4000);
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
-    server2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(0) });
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(0) ));
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1), Boolean.TRUE });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1), Boolean.TRUE ));
 
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(0) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(0) ));
   }
 
   public void testDataSerializersWithServerKill() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) ));
 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObject4");
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject4());
 
     // wait for successful registration
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { Integer.valueOf(1) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( Integer.valueOf(1) ));
 
-    server2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { Integer.valueOf(1) });
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( Integer.valueOf(1) ));
 
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { Integer.valueOf(1) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( Integer.valueOf(1) ));
 
     // can get server connectivity exception
     final IgnoredException expectedEx = IgnoredException.addIgnoredException(
@@ -564,25 +539,19 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
 
     // stop the cache server
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class, "stopServer");
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.stopServer());
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObject5");
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObject6");
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject5());
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject6());
 
-    server2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(3) });
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(3) ));
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(3) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(3) ));
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(
-            instanceCountWithOnePut) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(
+            instanceCountWithOnePut) ));
 
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(3) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(3) ));
 
     expectedEx.remove();
   }
@@ -591,101 +560,80 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) ));
 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObject10");
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject10());
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObject11");
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject11());
     Wait.pause(4000);
 
-    server2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(2) });
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(2) ));
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(2) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(2) ));
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(2) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(2) ));
 
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(2) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(2) ));
   }
 
   public void testDataSerializersWithServerKillAndReInvoked() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) ));
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObject7");
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(
-            instanceCountWithOnePut) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject7());
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(
+            instanceCountWithOnePut) ));
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(
-            instanceCountWithOnePut) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(
+            instanceCountWithOnePut) ));
 
-    server2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(
-            instanceCountWithOnePut) });
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(
+            instanceCountWithOnePut) ));
 
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(
-            instanceCountWithOnePut) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(
+            instanceCountWithOnePut) ));
 
     // can get server connectivity exception
     final IgnoredException expectedEx = IgnoredException.addIgnoredException(
         "Server unreachable", client1);
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class, "stopServer");
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.stopServer());
 
     try {
-      client1.invoke(DataSerializerPropogationDUnitTest.class,
-          "registerDSObject8");
+      client1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject8());
     }
     catch (Exception e) {// we are putting in a client whose server is dead
 
     }
     try {
-      client1.invoke(DataSerializerPropogationDUnitTest.class,
-          "registerDSObject9");
+      client1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject9());
     }
     catch (Exception e) {// we are putting in a client whose server is
       // dead
     }
-    server1.invoke(DataSerializerPropogationDUnitTest.class, "startServer");
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.startServer());
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(
-            instanceCountWithAllPuts) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(
+            instanceCountWithAllPuts) ));
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(
-            instanceCountWithAllPuts) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(
+            instanceCountWithAllPuts) ));
 
-    server2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(
-            instanceCountWithAllPuts) });
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(
+            instanceCountWithAllPuts) ));
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(
-            instanceCountWithAllPuts) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(
+            instanceCountWithAllPuts) ));
 
     expectedEx.remove();
   }
@@ -694,32 +642,25 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
     createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2));
 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerDSObject12");
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.registerDSObject12());
     Wait.pause(4000);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
-    server2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
     verifyDataSerializers(1);
   }
@@ -737,19 +678,17 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
         new Integer(PORT1));
 
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2) ));
     setClientServerObserver1();
     client2
-        .invoke(DataSerializerPropogationDUnitTest.class, "setClientServerObserver2");
+        .invoke(() -> DataSerializerPropogationDUnitTest.setClientServerObserver2());
 
     registerDSObject13();
 
     Wait.pause(10000);
 
-    Boolean pass = (Boolean)client2.invoke(
-        DataSerializerPropogationDUnitTest.class, "verifyResult");
+    Boolean pass = (Boolean)client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyResult());
     assertTrue("EventId found Different", pass.booleanValue());
 
     PoolImpl.IS_INSTANTIATOR_CALLBACK = false;
@@ -760,67 +699,60 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2) ));
 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "registerTestDataSerializer");
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.registerTestDataSerializer());
     Wait.pause(4000);
 
-    client1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
     // Verify through InternalDataSerializer's map entries
-    client1.invoke(DataSerializerPropogationDUnitTest.class, "verifyLoadedDataSerializers", new Object[] { new Integer(1) });
-    client1.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerClassNamesMap", new Object[] { new Integer(0) });
-    client1.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerIDMap", new Object[] { new Integer(0) });
-    client1.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerSupportedClassNamesMap", new Object[] { new Integer(0) });
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyLoadedDataSerializers( new Integer(1) ));
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerClassNamesMap( new Integer(0) ));
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerIDMap( new Integer(0) ));
+    client1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerSupportedClassNamesMap( new Integer(0) ));
 
-    server1.invoke(DataSerializerPropogationDUnitTest.class, "verifyLoadedDataSerializers", new Object[] { new Integer(1) });
-    server1.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerClassNamesMap", new Object[] { new Integer(0) });
-    server1.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerIDMap", new Object[] { new Integer(0) });
-    server1.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerSupportedClassNamesMap", new Object[] { new Integer(0) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyLoadedDataSerializers( new Integer(1) ));
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerClassNamesMap( new Integer(0) ));
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerIDMap( new Integer(0) ));
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerSupportedClassNamesMap( new Integer(0) ));
 
-    server2.invoke(DataSerializerPropogationDUnitTest.class, "verifyLoadedDataSerializers", new Object[] { new Integer(1) });
-    server2.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerClassNamesMap", new Object[] { new Integer(0) });
-    server2.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerIDMap", new Object[] { new Integer(0) });
-    server2.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerSupportedClassNamesMap", new Object[] { new Integer(0) });
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyLoadedDataSerializers( new Integer(1) ));
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerClassNamesMap( new Integer(0) ));
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerIDMap( new Integer(0) ));
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerSupportedClassNamesMap( new Integer(0) ));
 
     // Verify by boolean flag in static initializer.
-    server1.invoke(DataSerializerPropogationDUnitTest.class, "verifyTestDataSerializerLoaded");
-    server2.invoke(DataSerializerPropogationDUnitTest.class, "verifyTestDataSerializerLoaded");
-    client2.invoke(DataSerializerPropogationDUnitTest.class, "verifyTestDataSerializerNotLoaded");
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyTestDataSerializerLoaded());
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyTestDataSerializerLoaded());
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyTestDataSerializerNotLoaded());
 
     // Verify through InternalDataSerializer.getSerializers()
-    server1.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
-    server2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    server1.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
+    server2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
     // Verify through InternalDataSerializer's map entries
-    client2.invoke(DataSerializerPropogationDUnitTest.class, "verifyLoadedDataSerializers", new Object[] { new Integer(0) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerClassNamesMap", new Object[] { new Integer(1) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerIDMap", new Object[] { new Integer(1) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerSupportedClassNamesMap", new Object[] { new Integer(3) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyLoadedDataSerializers( new Integer(0) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerClassNamesMap( new Integer(1) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerIDMap( new Integer(1) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerSupportedClassNamesMap( new Integer(3) ));
 
     // Force TestDataSerializer to be loaded into vm by invoking InternalDataSerialier.getSerializers()
-    client2.invoke(DataSerializerPropogationDUnitTest.class,
-        "verifyDataSerializers", new Object[] { new Integer(1) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(1) ));
 
     // Verify by boolean flag in static initializer.
-    client2.invoke(DataSerializerPropogationDUnitTest.class, "verifyTestDataSerializerLoaded");
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyTestDataSerializerLoaded());
     // Verify through InternalDataSerializer's map entries
-    client2.invoke(DataSerializerPropogationDUnitTest.class, "verifyLoadedDataSerializers", new Object[] { new Integer(1) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerClassNamesMap", new Object[] { new Integer(0) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerIDMap", new Object[] { new Integer(0) });
-    client2.invoke(DataSerializerPropogationDUnitTest.class, "verifyDataSerializerSupportedClassNamesMap", new Object[] { new Integer(0) });
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyLoadedDataSerializers( new Integer(1) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerClassNamesMap( new Integer(0) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerIDMap( new Integer(0) ));
+    client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializerSupportedClassNamesMap( new Integer(0) ));
   }
 
   public static void verifyTestDataSerializerNotLoaded() {
@@ -925,8 +857,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
       @Override
       public void beforeSendingToServer(EventID eventID) {
         eventId = eventID;
-        client2.invoke(DataSerializerPropogationDUnitTest.class, "setEventId",
-            new Object[] { eventId });
+        client2.invoke(() -> DataSerializerPropogationDUnitTest.setEventId( eventId ));
 
       }
 

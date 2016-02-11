@@ -52,8 +52,8 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   public void test_GatewaySender_Started_Before_Locator() {
     try {
       int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-      vm0.invoke(WANTestBase.class, "createCache", new Object[]{port});      
-      vm0.invoke(WANTestBase.class, "createSender", new Object[]{"ln",2,false,100,10,false,false, null, false});
+      vm0.invoke(() -> WANTestBase.createCache(port));      
+      vm0.invoke(() -> WANTestBase.createSender("ln",2,false,100,10,false,false, null, false));
       fail("Expected GemFireConfigException but not thrown");
     }
     catch (Exception e) {
@@ -74,13 +74,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    */
   public void __test_AllLocatorsinDSShouldHaveDistributedSystemId() throws Exception {
     try {
-      Integer lnLocPort1 = (Integer)vm0.invoke(
-          WANTestBase.class, "createFirstLocatorWithDSId",
-          new Object[] {1});
+      Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-      Integer lnLocPort2 = (Integer)vm1.invoke(
-          WANTestBase.class, "createSecondLocator", new Object[] { 2,
-              lnLocPort1 });
+      Integer lnLocPort2 = (Integer)vm1.invoke(() -> WANTestBase.createSecondLocator( 2,
+              lnLocPort1 ));
       fail("Expected IncompatibleSystemException but not thrown");
     }
     catch (Exception e) {
@@ -100,34 +97,25 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
     dsVsPort.put(1, locatorPorts);
 
-    Integer lnLocPort1 = (Integer)vm0.invoke(
-        WANTestBase.class, "createFirstLocatorWithDSId",
-        new Object[] {1});
+    Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     locatorPorts.add(lnLocPort1);
 
-    Integer lnLocPort2 = (Integer)vm1.invoke(WANTestBase.class,
-        "createSecondLocator", new Object[] { 1, lnLocPort1 });
+    Integer lnLocPort2 = (Integer)vm1.invoke(() -> WANTestBase.createSecondLocator( 1, lnLocPort1 ));
     locatorPorts.add(lnLocPort2);
     
     locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(2, locatorPorts);
-    Integer nyLocPort1 = (Integer)vm2.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnLocPort1 });
+    Integer nyLocPort1 = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnLocPort1 ));
     locatorPorts.add(nyLocPort1);
     
-    Integer nyLocPort2 = (Integer)vm3.invoke(
-        WANTestBase.class, "createSecondRemoteLocator", new Object[] {
-            2, nyLocPort1, lnLocPort1});
+    Integer nyLocPort2 = (Integer)vm3.invoke(() -> WANTestBase.createSecondRemoteLocator(
+            2, nyLocPort1, lnLocPort1));
     locatorPorts.add(nyLocPort2);
     
-    vm0.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm1.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm2.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm3.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
  
   /**
@@ -141,36 +129,28 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(1, locatorPorts);
     
-    Integer lnLocPort1 = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     locatorPorts.add(lnLocPort1);
 
     locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(2, locatorPorts);
-    Integer nyLocPort1 = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnLocPort1 });
+    Integer nyLocPort1 = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnLocPort1 ));
     locatorPorts.add(nyLocPort1);
 
     locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(3, locatorPorts);
-    Integer tkLocPort = (Integer)vm2.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 3, lnLocPort1 });
+    Integer tkLocPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, lnLocPort1 ));
     locatorPorts.add(tkLocPort);
 
     locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(4, locatorPorts);
-    Integer hkLocPort = (Integer)vm3.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 4, lnLocPort1 });
+    Integer hkLocPort = (Integer)vm3.invoke(() -> WANTestBase.createFirstRemoteLocator( 4, lnLocPort1 ));
     locatorPorts.add(hkLocPort);
 
-    vm0.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm1.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm2.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm3.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
 
   public void test_TK_Recognises_LN_AND_NY() {
@@ -180,29 +160,23 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(1, locatorPorts);
     
-    Integer lnLocPort1 = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     locatorPorts.add(lnLocPort1);
 
     locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(2, locatorPorts);
-    Integer nyLocPort1 = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnLocPort1 });
+    Integer nyLocPort1 = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnLocPort1 ));
     locatorPorts.add(nyLocPort1);
 
     locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(3, locatorPorts);
-    Integer tkLocPort = (Integer)vm2.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 3, nyLocPort1 });
+    Integer tkLocPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, nyLocPort1 ));
     locatorPorts.add(tkLocPort);
 
 
-    vm0.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm1.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm2.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
   
   public void test_NY_Recognises_TK_AND_HK_Simeltenously() {
@@ -210,14 +184,12 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
     ArrayList<Integer> locatorPortsln = new ArrayList<Integer>();
     dsVsPort.put(1, locatorPortsln);
-    Integer lnLocPort1 = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     locatorPortsln.add(lnLocPort1);
 
     ArrayList<Integer> locatorPortsny = new ArrayList<Integer>();
     dsVsPort.put(2, locatorPortsny);
-    Integer nyLocPort1 = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnLocPort1 });
+    Integer nyLocPort1 = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnLocPort1 ));
     locatorPortsny.add(nyLocPort1);
 
     int AsyncInvocationArrSize = 4;
@@ -225,21 +197,17 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
     ArrayList<Integer> locatorPortstk = new ArrayList<Integer>();
     dsVsPort.put(3, locatorPortstk);
-    async[0] = vm2.invokeAsync(WANTestBase.class, "createFirstRemoteLocator",
-        new Object[] { 3, lnLocPort1 });
+    async[0] = vm2.invokeAsync(() -> WANTestBase.createFirstRemoteLocator( 3, lnLocPort1 ));
 
     ArrayList<Integer> locatorPortshk = new ArrayList<Integer>();
     dsVsPort.put(4, locatorPortshk);
-    async[1] = vm3.invokeAsync(
-        WANTestBase.class, "createFirstRemoteLocator", new Object[] {4, nyLocPort1});
+    async[1] = vm3.invokeAsync(() -> WANTestBase.createFirstRemoteLocator(4, nyLocPort1));
 
     ArrayList<Integer> locatorPortsln2 = new ArrayList<Integer>();
-    async[2] = vm4.invokeAsync(WANTestBase.class,
-        "createSecondLocator", new Object[] { 1, lnLocPort1 });
+    async[2] = vm4.invokeAsync(() -> WANTestBase.createSecondLocator( 1, lnLocPort1 ));
     
     ArrayList<Integer> locatorPortsny2 = new ArrayList<Integer>();
-    async[3] = vm5.invokeAsync(WANTestBase.class,
-        "createSecondLocator", new Object[] { 2, nyLocPort1 });
+    async[3] = vm5.invokeAsync(() -> WANTestBase.createSecondLocator( 2, nyLocPort1 ));
 
     
     try {
@@ -257,61 +225,50 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     locatorPortsln.add((Integer)async[2].getReturnValue());
     locatorPortsny.add((Integer)async[3].getReturnValue());
     
-    vm0.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm1.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm2.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm3.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
   
   
   public void test_LN_Sender_recogises_ALL_NY_Locators() {
     
-    Integer lnLocPort1 = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     
-    Integer lnLocPort2 = (Integer)vm5.invoke(WANTestBase.class,
-        "createSecondLocator", new Object[] { 1, lnLocPort1 });
+    Integer lnLocPort2 = (Integer)vm5.invoke(() -> WANTestBase.createSecondLocator( 1, lnLocPort1 ));
     
-    vm2.invoke(WANTestBase.class, "createCache", new Object[]{lnLocPort1, lnLocPort2});
+    vm2.invoke(() -> WANTestBase.createCache(lnLocPort1, lnLocPort2));
     
-    vm2.invoke(WANTestBase.class, "createSender",
-        new Object[] {"ln",2,false,100,10,false,false, null, true});
+    vm2.invoke(() -> WANTestBase.createSender("ln",2,false,100,10,false,false, null, true));
     
-    Integer nyLocPort1 = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnLocPort1 });
+    Integer nyLocPort1 = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnLocPort1 ));
     
-    vm2.invoke(WANTestBase.class, "startSender",new Object[]{"ln"});
+    vm2.invoke(() -> WANTestBase.startSender("ln"));
 
     //Since to fix Bug#46289, we have moved call to initProxy in getConnection which will be called only when batch is getting dispatched.
     //So for locator discovery callback to work, its now expected that atleast try to send a batch so that proxy will be initialized
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", isOffHeap() });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap() ));
   
-     vm2.invoke(WANTestBase.class, "doPuts",
-      new Object[] { getTestMethodName() + "_RR", 10});
+     vm2.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR", 10));
 
     Integer nyLocPort2 = (Integer)vm3
-        .invoke(WANTestBase.class, "createSecondRemoteLocator", new Object[] {
-            2, nyLocPort1, lnLocPort1 });
+        .invoke(() -> WANTestBase.createSecondRemoteLocator(
+            2, nyLocPort1, lnLocPort1 ));
 
     InetSocketAddress locatorToWaitFor = new InetSocketAddress("localhost",
         nyLocPort2);
 
-    vm2.invoke(WANTestBase.class, "checkLocatorsinSender",
-        new Object[] {"ln", locatorToWaitFor });
+    vm2.invoke(() -> WANTestBase.checkLocatorsinSender("ln", locatorToWaitFor ));
 
     Integer nyLocPort3 = (Integer)vm4
-        .invoke(WANTestBase.class, "createSecondRemoteLocator", new Object[] {
-            2, nyLocPort1, lnLocPort1 });
+        .invoke(() -> WANTestBase.createSecondRemoteLocator(
+            2, nyLocPort1, lnLocPort1 ));
     
     locatorToWaitFor = new InetSocketAddress("localhost", nyLocPort3);
 
-    vm2.invoke(WANTestBase.class, "checkLocatorsinSender",
-        new Object[] {"ln", locatorToWaitFor });
+    vm2.invoke(() -> WANTestBase.checkLocatorsinSender("ln", locatorToWaitFor ));
 
   }
   
@@ -343,17 +300,13 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     int AsyncInvocationArrSize = 9;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
    
-    async[0] = vm0.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 1, site1Port1, site1LocatorsPort, site2LocatorsPort});
+    async[0] = vm0.invokeAsync(() -> WANTestBase.createLocator( 1, site1Port1, site1LocatorsPort, site2LocatorsPort));
    
-    async[1] = vm1.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 2, site2Port1, site2LocatorsPort, site3LocatorsPort});
+    async[1] = vm1.invokeAsync(() -> WANTestBase.createLocator( 2, site2Port1, site2LocatorsPort, site3LocatorsPort));
    
-    async[2] = vm2.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 3, site3Port1, site3LocatorsPort, site4LocatorsPort});
+    async[2] = vm2.invokeAsync(() -> WANTestBase.createLocator( 3, site3Port1, site3LocatorsPort, site4LocatorsPort));
    
-    async[3] = vm3.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 4, site4Port1, site4LocatorsPort, site1LocatorsPort});
+    async[3] = vm3.invokeAsync(() -> WANTestBase.createLocator( 4, site4Port1, site4LocatorsPort, site1LocatorsPort));
    
    // pause(5000);
     try {
@@ -366,14 +319,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
       fail("Could not join async operations");
     }
    
-    vm0.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
-    vm1.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
-    vm2.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
-    vm3.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
   }
   
   public void ___test_3Sites3Locators() {
@@ -409,28 +358,19 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     int AsyncInvocationArrSize = 9;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
     
-    async[0] = vm0.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 1, site1Port1, site1LocatorsPort, site2LocatorsPort});
+    async[0] = vm0.invokeAsync(() -> WANTestBase.createLocator( 1, site1Port1, site1LocatorsPort, site2LocatorsPort));
     
-    async[8] = vm0.invokeAsync(WANTestBase.class,
-        "checkAllSiteMetaDataFor3Sites", new Object[] {dsVsPort});
+    async[8] = vm0.invokeAsync(() -> WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort));
     
-    async[1] = vm1.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 1, site1Port2, site1LocatorsPort, site2LocatorsPort});
-    async[2] = vm2.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 1, site1Port3, site1LocatorsPort, site2LocatorsPort});
+    async[1] = vm1.invokeAsync(() -> WANTestBase.createLocator( 1, site1Port2, site1LocatorsPort, site2LocatorsPort));
+    async[2] = vm2.invokeAsync(() -> WANTestBase.createLocator( 1, site1Port3, site1LocatorsPort, site2LocatorsPort));
     
-    async[3] = vm3.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 2, site2Port1, site2LocatorsPort, site3LocatorsPort});
-    async[4] = vm4.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 2, site2Port2, site2LocatorsPort, site3LocatorsPort});
-    async[5] = vm5.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 2, site2Port3, site2LocatorsPort, site3LocatorsPort});
+    async[3] = vm3.invokeAsync(() -> WANTestBase.createLocator( 2, site2Port1, site2LocatorsPort, site3LocatorsPort));
+    async[4] = vm4.invokeAsync(() -> WANTestBase.createLocator( 2, site2Port2, site2LocatorsPort, site3LocatorsPort));
+    async[5] = vm5.invokeAsync(() -> WANTestBase.createLocator( 2, site2Port3, site2LocatorsPort, site3LocatorsPort));
     
-    async[6] = vm6.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 3, site3Port1, site3LocatorsPort, site1LocatorsPort});
-    async[7] = vm7.invokeAsync(WANTestBase.class,
-        "createLocator", new Object[] { 3, site3Port2, site3LocatorsPort, site1LocatorsPort});
+    async[6] = vm6.invokeAsync(() -> WANTestBase.createLocator( 3, site3Port1, site3LocatorsPort, site1LocatorsPort));
+    async[7] = vm7.invokeAsync(() -> WANTestBase.createLocator( 3, site3Port2, site3LocatorsPort, site1LocatorsPort));
     
     WANTestBase.createLocator(3, site3Port3, site3LocatorsPort, site1LocatorsPort);
     long startTime = System.currentTimeMillis();
@@ -460,22 +400,14 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     
     LogWriterUtils.getLogWriter().info("Time taken for all 9 locators discovery in 3 sites: " + (endTime.longValue() - startTime));
     
-    vm0.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
-    vm1.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
-    vm2.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
-    vm3.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
-    vm4.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
-    vm5.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
-    vm6.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
-    vm7.invoke(WANTestBase.class, "checkAllSiteMetaDataFor3Sites",
-        new Object[] { dsVsPort });
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
+    vm4.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
+    vm5.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
+    vm6.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
+    vm7.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
     WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort);
   }
   
@@ -485,19 +417,14 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
     dsVsPort.put(1, locatorPorts);
 
-    Integer lnLocPort1 = (Integer)vm0.invoke(
-        WANTestBase.class, "createFirstPeerLocator",
-        new Object[] {1});
+    Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
     locatorPorts.add(lnLocPort1);
 
-    Integer lnLocPort2 = (Integer)vm1.invoke(WANTestBase.class,
-        "createSecondPeerLocator", new Object[] { 1, lnLocPort1 });
+    Integer lnLocPort2 = (Integer)vm1.invoke(() -> WANTestBase.createSecondPeerLocator( 1, lnLocPort1 ));
     locatorPorts.add(lnLocPort2);
     
-    vm0.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm1.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
   
   public void test_LN_NY_TK_5_PeerLocators_1_ServerLocator() {
@@ -506,53 +433,36 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     
     ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(1, locatorPorts);
-    Integer lnLocPort1 = (Integer)vm0.invoke(
-        WANTestBase.class, "createFirstPeerLocator",
-        new Object[] {1});
+    Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
     locatorPorts.add(lnLocPort1);
-    Integer lnLocPort2 = (Integer)vm1.invoke(WANTestBase.class,
-        "createSecondPeerLocator", new Object[] { 1, lnLocPort1 });
+    Integer lnLocPort2 = (Integer)vm1.invoke(() -> WANTestBase.createSecondPeerLocator( 1, lnLocPort1 ));
     locatorPorts.add(lnLocPort2);
     
     locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(2, locatorPorts);
-    Integer nyLocPort1 = (Integer)vm2.invoke(
-        WANTestBase.class, "createFirstRemotePeerLocator",
-        new Object[] {2, lnLocPort1});
+    Integer nyLocPort1 = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemotePeerLocator(2, lnLocPort1));
     locatorPorts.add(nyLocPort1);
-    Integer nyLocPort2 = (Integer)vm3.invoke(WANTestBase.class,
-        "createSecondRemotePeerLocator", new Object[] { 2, nyLocPort1, lnLocPort2});
+    Integer nyLocPort2 = (Integer)vm3.invoke(() -> WANTestBase.createSecondRemotePeerLocator( 2, nyLocPort1, lnLocPort2));
     locatorPorts.add(nyLocPort2);
     
     locatorPorts = new ArrayList<Integer>();
     dsVsPort.put(3, locatorPorts);
-    Integer tkLocPort1 = (Integer)vm4.invoke(
-        WANTestBase.class, "createFirstRemotePeerLocator",
-        new Object[] {3, nyLocPort1});
+    Integer tkLocPort1 = (Integer)vm4.invoke(() -> WANTestBase.createFirstRemotePeerLocator(3, nyLocPort1));
     locatorPorts.add(tkLocPort1);
-    Integer tkLocPort2 = (Integer)vm5.invoke(WANTestBase.class,
-        "createSecondRemotePeerLocator", new Object[] { 3, tkLocPort1, nyLocPort1});
+    Integer tkLocPort2 = (Integer)vm5.invoke(() -> WANTestBase.createSecondRemotePeerLocator( 3, tkLocPort1, nyLocPort1));
     locatorPorts.add(tkLocPort2);
-    Integer tkLocPort3 = (Integer)vm6.invoke(WANTestBase.class,
-        "createSecondRemoteLocator", new Object[] { 3, tkLocPort1, nyLocPort2});
+    Integer tkLocPort3 = (Integer)vm6.invoke(() -> WANTestBase.createSecondRemoteLocator( 3, tkLocPort1, nyLocPort2));
     locatorPorts.add(tkLocPort3);
     
    // pause(5000);
     
-    vm0.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm1.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm2.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm3.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm4.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm5.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
-    vm6.invoke(WANTestBase.class, "checkAllSiteMetaData",
-        new Object[] { dsVsPort });
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm4.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm5.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm6.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
         
   }
   

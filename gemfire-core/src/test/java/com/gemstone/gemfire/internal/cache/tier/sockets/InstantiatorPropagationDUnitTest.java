@@ -154,11 +154,11 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
   protected final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
-    client1.invoke(InstantiatorPropagationDUnitTest.class, "closeCache");
-    client2.invoke(InstantiatorPropagationDUnitTest.class, "closeCache");
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.closeCache());
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.closeCache());
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class, "closeCache");
-    server1.invoke(InstantiatorPropagationDUnitTest.class, "closeCache");
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.closeCache());
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.closeCache());
   }
 
   public static void closeCache() {
@@ -471,24 +471,19 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     
     Wait.pause(3000);
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "registerTestObject1");
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "registerTestObject2");
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject1());
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject2());
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(2) });
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
 
     client1
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT1) ));
 
     // // wait for client2 to come online
     Wait.pause(3000);
     //
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(2) });
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
     //
     // // Put some entries from the client
     client1.invoke(new CacheSerializableRunnable("Put entries from client") {
@@ -545,13 +540,11 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     Wait.pause(3000);
 
     client1
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT1) ));
     client2
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT2) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT2) ));
 
     unregisterInstantiatorsInAllVMs();
 
@@ -559,21 +552,16 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     Wait.pause(2000);
 
 
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "registerTestObject3");
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject3());
     Wait.pause(4000);
 
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(1) });
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(1) });
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
 
-    server2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(1) });
+    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
 
-    client2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(1) });
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
 
     unregisterInstantiatorsInAllVMs();
   }
@@ -589,45 +577,36 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     PORT2 = initServerCache(server2);
 
     client1
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT1) ));
     client2
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT2) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT2) ));
 
     unregisterInstantiatorsInAllVMs();
 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "registerTestObject4");
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject4());
     Wait.pause(4000);
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class, "stopServer");
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.stopServer());
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "registerTestObject5");
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "registerTestObject6");
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject5());
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject6());
 
-    server2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithAllPuts) });
+    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithAllPuts) ));
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithAllPuts) });
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithAllPuts) ));
 
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithOnePut) });
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithOnePut) ));
 
-    client2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithAllPuts) });
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithAllPuts) ));
 
     unregisterInstantiatorsInAllVMs();
   }
@@ -644,38 +623,30 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     PORT2 = initServerCache(server2);
 
     client1
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT1) ));
     client2
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT2) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT2) ));
 
     unregisterInstantiatorsInAllVMs();
 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "registerTestObject10");
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject10());
     Wait.pause(4000);
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "registerTestObject11");
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject11());
     Wait.pause(4000);
 
-    server2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(2) });
+    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(2) });
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
 
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(2) });
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
 
-    client2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(2) });
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
 
     unregisterInstantiatorsInAllVMs();
   }
@@ -688,57 +659,46 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
     client1
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT1) ));
     client2
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT2) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT2) ));
 
     unregisterInstantiatorsInAllVMs();
 
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "registerTestObject7");
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithOnePut) });
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject7());
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithOnePut) ));
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithOnePut) });
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithOnePut) ));
 
-    server2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithOnePut) });
+    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithOnePut) ));
 
-    client2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithOnePut) });
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithOnePut) ));
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class, "stopServer");
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.stopServer());
 
     try {
-      client1.invoke(InstantiatorPropagationDUnitTest.class,
-          "registerTestObject8");
+      client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject8());
     }
     catch (Exception expected) {// we are putting in a client whose server is
       // dead
     }
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class, "startServer");
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.startServer());
 
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithAllPuts) });
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithAllPuts) ));
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithAllPuts) });
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithAllPuts) ));
 
-    server2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(
-            instanceCountWithAllPuts) });
+    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
+            instanceCountWithAllPuts) ));
 
     unregisterInstantiatorsInAllVMs();
   }
@@ -756,34 +716,27 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     PORT2 = initServerCache(server2);
 
     client1
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT1) ));
     client2
-        .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) });
+        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
+                new Integer(PORT1) ));
     createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2));
     unregisterInstantiatorsInAllVMs();
 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "registerTestObject12");
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject12());
     Wait.pause(4000);
 
-    client1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(1) });
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
 
-    server1.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(1) });
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
 
-    server2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(1) });
+    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
 
-    client2.invoke(InstantiatorPropagationDUnitTest.class,
-        "verifyInstantiators", new Object[] { new Integer(1) });
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
 
     verifyInstantiators(1);
 
@@ -820,19 +773,16 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
 
     unregisterInstantiatorsInAllVMs();
     
-    client2.invoke(InstantiatorPropagationDUnitTest.class,
-        "createClientCache_EventId", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2) });
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.createClientCache_EventId(
+            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2) ));
     setClientServerObserver1();
-    client2.invoke(InstantiatorPropagationDUnitTest.class,
-        "setClientServerObserver2");
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.setClientServerObserver2());
 
     registerTestObject19();
 
     Wait.pause(10000);
 
-    Boolean pass = (Boolean)client2.invoke(
-        InstantiatorPropagationDUnitTest.class, "verifyResult");
+    Boolean pass = (Boolean)client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyResult());
     assertTrue("EventId found Different", pass.booleanValue());
 
     PoolImpl.IS_INSTANTIATOR_CALLBACK = false;
@@ -853,24 +803,23 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
           new Integer(PORT1));
   
       client2
-          .invoke(InstantiatorPropagationDUnitTest.class, "createClientCache",
-              new Object[] {NetworkUtils.getServerHostName(server2.getHost()),
-                  new Integer(PORT2)});
+          .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache(NetworkUtils.getServerHostName(server2.getHost()),
+                  new Integer(PORT2)));
   
       Wait.pause(3000);
       unregisterInstantiatorsInAllVMs();
   
       assertTestObject20NotLoaded();
-      server1.invoke(InstantiatorPropagationDUnitTest.class, "assertTestObject20NotLoaded");
-      server2.invoke(InstantiatorPropagationDUnitTest.class, "assertTestObject20NotLoaded");
-      client2.invoke(InstantiatorPropagationDUnitTest.class, "assertTestObject20NotLoaded");
+      server1.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
+      server2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
+      client2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
   
       registerTestObject20();
       Wait.pause(5000);
       assertTestObject20Loaded();
-      server1.invoke(InstantiatorPropagationDUnitTest.class, "assertTestObject20Loaded");
-      //server2.invoke(InstantiatorPropagationDUnitTest.class, "assertTestObject20Loaded"); // classes are not initialized after loading in p2p path
-      client2.invoke(InstantiatorPropagationDUnitTest.class, "assertTestObject20NotLoaded");
+      server1.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20Loaded());
+      //server2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20Loaded()); // classes are not initialized after loading in p2p path
+      client2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
     } finally {
       unregisterInstantiatorsInAllVMs();
       disconnectAllFromDS();
@@ -976,8 +925,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
           {
             eventId = eventID;
             System.out.println("client2= "+client2 + " eventid= "+eventID);
-            client2.invoke(InstantiatorPropagationDUnitTest.class,
-                "setEventId", new Object[] { eventId });
+            client2.invoke(() -> InstantiatorPropagationDUnitTest.setEventId( eventId ));
 
           }
 

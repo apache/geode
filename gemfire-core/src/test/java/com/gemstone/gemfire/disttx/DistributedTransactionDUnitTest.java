@@ -1794,7 +1794,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
         return null;
       }
     }
-    server1.invokeAsync(Ops.class, "call");
+    server1.invokeAsync(() -> Ops.call());
     
     // Now create cache on the third server and let it join the distributed system.
     createPR(new VM[]{server3});

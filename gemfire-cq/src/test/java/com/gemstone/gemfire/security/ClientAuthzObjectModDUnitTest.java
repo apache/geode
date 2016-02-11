@@ -119,12 +119,9 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestBase {
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    server1.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { serverExpectedExceptions });
-    server2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { serverExpectedExceptions });
-    client2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { clientExpectedExceptions });
+    server1.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
+    server2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
+    client2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( clientExpectedExceptions ));
     SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions);
 
     //required by FilterPreAuthorization and FilterPostAuthorization. Normally,
@@ -373,20 +370,18 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestBase {
         // on the servers with failover
         if (opBlock.size() > 0) {
           // Start the first server and execute the operation block
-          server1.invoke(ClientAuthorizationTestBase.class,
-              "createCacheServer", new Object[] {
+          server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
                   SecurityTestUtil.getLocatorPort(), port1, serverProps,
-                  javaProps });
-          server2.invoke(SecurityTestUtil.class, "closeCache");
+                  javaProps ));
+          server2.invoke(() -> SecurityTestUtil.closeCache());
           executeOpBlock(opBlock, port1, port2, authInit, extraProps, null,
               tgen, rnd);
           if (!currentOp.equals(OperationWithAction.OPBLOCK_NO_FAILOVER)) {
             // Failover to the second server and run the block again
-            server2.invoke(ClientAuthorizationTestBase.class,
-                "createCacheServer", new Object[] {
+            server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
                     SecurityTestUtil.getLocatorPort(), port2, serverProps,
-                    javaProps });
-            server1.invoke(SecurityTestUtil.class, "closeCache");
+                    javaProps ));
+            server1.invoke(() -> SecurityTestUtil.closeCache());
             executeOpBlock(opBlock, port1, port2, authInit, extraProps, null,
                 tgen, rnd);
           }

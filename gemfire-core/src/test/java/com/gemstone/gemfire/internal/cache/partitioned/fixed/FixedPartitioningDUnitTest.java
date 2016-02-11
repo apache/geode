@@ -61,14 +61,13 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   public void testNullPartitionName() {
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa = FixedPartitionAttributes
           .createFixedPartition(null, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa);
-      member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 0, 40, 3,
-              new QuarterPartitionResolver(), null, false});
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 3,
+              new QuarterPartitionResolver(), null, false));
       fail("IllegalStateException Expected");
     }
     catch (Exception illegal) {
@@ -88,7 +87,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
   public void testSamePartitionNameTwice() {
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
           .createFixedPartition(Quarter1, true, 3);
       FixedPartitionAttributes fpa2 = FixedPartitionAttributes
@@ -96,9 +95,8 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 0, 40, 3,
-              new QuarterPartitionResolver(), null, false });
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 3,
+              new QuarterPartitionResolver(), null, false ));
       fail("IllegalStateException Expected");
     }
     catch (Exception illegal) {
@@ -116,7 +114,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   public void testFixedPartitionAttributes_Accessor() {
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
           .createFixedPartition(Quarter1, true, 3);
       FixedPartitionAttributes fpa2 = FixedPartitionAttributes
@@ -124,9 +122,8 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 0, 0, 3,
-              new QuarterPartitionResolver(), null, false});
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 0, 3,
+              new QuarterPartitionResolver(), null, false));
       fail("IllegalStateException Expected");
     }
     catch (Exception illegal) {
@@ -147,30 +144,27 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   public void testSamePartitionName_Primary_OnTwoMembers() {
     IgnoredException ex = IgnoredException.addIgnoredException("DuplicatePrimaryPartitionException");
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
           .createFixedPartition(Quarter1, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 0, 40, 9,
-              new QuarterPartitionResolver(), null, false});
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 9,
+              new QuarterPartitionResolver(), null, false));
 
-      member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
       fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 0, 40, 9,
-              new QuarterPartitionResolver(), null, false});
+      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 9,
+              new QuarterPartitionResolver(), null, false));
 
-      member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
       fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 0, 40, 9,
-              new QuarterPartitionResolver(), null, false});
+      member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 9,
+              new QuarterPartitionResolver(), null, false));
       fail("DuplicatePrimaryPartitionException Expected");
     }
     catch (Exception duplicate) {
@@ -192,7 +186,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   public void testSamePartitionName_DifferentNumBuckets() {
     IgnoredException ex = IgnoredException.addIgnoredException("IllegalStateException");
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
           .createFixedPartition(Quarter1, true, 3);
       FixedPartitionAttributes fpa2 = FixedPartitionAttributes
@@ -200,19 +194,17 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 9,
-              new QuarterPartitionResolver(), null, false});
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 9,
+              new QuarterPartitionResolver(), null, false));
 
-      member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
       fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 8);
       fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 9,
-              new QuarterPartitionResolver(), null, false});
+      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 9,
+              new QuarterPartitionResolver(), null, false));
       fail("IllegalStateException Expected");
     }
     catch (Exception illegal) {
@@ -235,12 +227,11 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   public void testNumberOfPartitions() {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-      member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", null, 1, 0, 9,
-              new QuarterPartitionResolver(), null, false});
+      member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 1, 0, 9,
+              new QuarterPartitionResolver(), null, false));
       
-      member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
           .createFixedPartition("Q11", true, 3);
       FixedPartitionAttributes fpa2 = FixedPartitionAttributes
@@ -248,11 +239,10 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 9,
-              new QuarterPartitionResolver(), null, false});
+      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 9,
+              new QuarterPartitionResolver(), null, false));
 
-      member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition("Q12", true, 3);
       fpa2 = FixedPartitionAttributes.createFixedPartition("Q13", false, 3);
       FixedPartitionAttributes fpa3 = FixedPartitionAttributes
@@ -261,19 +251,17 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
-      member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 9,
-              new QuarterPartitionResolver(), null, false});
+      member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 9,
+              new QuarterPartitionResolver(), null, false));
 
-      member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition("Q13", true, 3);
       fpa2 = FixedPartitionAttributes.createFixedPartition("Q11", false, 3);
       fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 9,
-              new QuarterPartitionResolver(), null, false});
+      member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 9,
+              new QuarterPartitionResolver(), null, false));
       fail("IllegalStateException expected");
     }
     catch (Exception ex) {
@@ -295,12 +283,11 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   public void testNumBuckets_totalNumBuckets() {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-      member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", null, 1, 0, 5,
-              new QuarterPartitionResolver(), null, false});
+      member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 1, 0, 5,
+              new QuarterPartitionResolver(), null, false));
       
-      member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
           .createFixedPartition(Quarter1, true, 3);
       FixedPartitionAttributes fpa2 = FixedPartitionAttributes
@@ -308,19 +295,17 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 5,
-              new QuarterPartitionResolver(), null, false});
+      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 5,
+              new QuarterPartitionResolver(), null, false));
 
-      member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
       fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3);
       fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 5,
-              new QuarterPartitionResolver(), null, false});
+      member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 5,
+              new QuarterPartitionResolver(), null, false));
 
       fail("IllegalStateException expected");
     }
@@ -342,30 +327,26 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   public void testPut_PartitionNotAvailableException() {
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-      member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", null, 1, 0, 12,
-              new QuarterPartitionResolver(), null, false});
+      member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 1, 0, 12,
+              new QuarterPartitionResolver(), null, false));
 
-      member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
           .createFixedPartition(Quarter1, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 12,
-              new QuarterPartitionResolver(), null, false});
+      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+              new QuarterPartitionResolver(), null, false));
 
-      member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
       fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 12,
-              new QuarterPartitionResolver(), null, false});
+      member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+              new QuarterPartitionResolver(), null, false));
 
-      member1.invoke(FixedPartitioningTestBase.class, "putThorughAccessor",
-          new Object[] { "Quarter" });
+      member1.invoke(() -> FixedPartitioningTestBase.putThorughAccessor( "Quarter" ));
       fail("PartitionNotAvailableException Expected");
     }
     catch (Exception ex) {
@@ -384,19 +365,17 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   public void test_DataStoreWithoutPartition_DataStoreWithPartition() {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-      member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", null, 1, 40, 12,
-              new QuarterPartitionResolver(), null, false});
+      member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 1, 40, 12,
+              new QuarterPartitionResolver(), null, false));
 
-      member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
           .createFixedPartition(Quarter1, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 12,
-              new QuarterPartitionResolver(), null, false});
+      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+              new QuarterPartitionResolver(), null, false));
     }
     catch (Exception ex) {
       if (!((ex.getCause() instanceof IllegalStateException))) {
@@ -416,19 +395,17 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   public void test_DataStoreWithPartition_DataStoreWithoutPartition() {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
-      member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+      member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
           .createFixedPartition(Quarter1, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", fpaList, 1, 40, 12,
-              new QuarterPartitionResolver(), null, false});
+      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+              new QuarterPartitionResolver(), null, false));
 
-      member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-      member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-          new Object[] { "Quarter", null, 1, 40, 12,
-              new QuarterPartitionResolver(), null, false});
+      member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 1, 40, 12,
+              new QuarterPartitionResolver(), null, false));
     }
     catch (Exception ex) {
       if (!((ex.getCause() instanceof IllegalStateException))) {
@@ -444,59 +421,51 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * primary FixedPartitionAttributes defined on datastores
    */
   public void testPut_ValidateDataOnMember_OnlyPrimary_Accessor() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", null, 0, 0, 12,
-            new QuarterPartitionResolver(), null, false});
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 0, 0, 12,
+            new QuarterPartitionResolver(), null, false));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            new QuarterPartitionResolver(), null, false});
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            new QuarterPartitionResolver(), null, false));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            new QuarterPartitionResolver(), null, false});
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            new QuarterPartitionResolver(), null, false));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            new QuarterPartitionResolver(), null, false});
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            new QuarterPartitionResolver(), null, false));
 
-    member1.invoke(FixedPartitioningTestBase.class, "putThorughAccessor",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putThorughAccessor( "Quarter" ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter1 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter2 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-    new Object[] { Quarter3 });
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter1 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter2 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter3 ));
     
   }
 
   
   public void testBug43283() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     
-    member1.invoke(FixedPartitioningTestBase.class, "setPRObserverBeforeCalculateStartingBucketId");
-    member2.invoke(FixedPartitioningTestBase.class, "setPRObserverBeforeCalculateStartingBucketId");
-    member3.invoke(FixedPartitioningTestBase.class, "setPRObserverBeforeCalculateStartingBucketId");
-    member4.invoke(FixedPartitioningTestBase.class, "setPRObserverBeforeCalculateStartingBucketId");
+    member1.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
+    member2.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
+    member3.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
+    member4.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
     try {
 
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -504,37 +473,32 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       AsyncInvocation inv1 = member1
-          .invokeAsync(FixedPartitioningTestBase.class,
-              "createRegionWithPartitionAttributes", new Object[] { "Quarter",
+          .invokeAsync(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
                   fpaList, 0, 40, 12, new QuarterPartitionResolver(), null,
-                  false });
+                  false ));
 
       FixedPartitionAttributes fpa2 = FixedPartitionAttributes
           .createFixedPartition(Quarter2, true, 3);
       fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa2);
       AsyncInvocation inv2 = member2
-          .invokeAsync(FixedPartitioningTestBase.class,
-              "createRegionWithPartitionAttributes", new Object[] { "Quarter",
+          .invokeAsync(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
                   fpaList, 0, 40, 12, new QuarterPartitionResolver(), null,
-                  false });
+                  false ));
 
       FixedPartitionAttributes fpa3 = FixedPartitionAttributes
           .createFixedPartition(Quarter3, true, 3);
       fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa3);
       AsyncInvocation inv3 = member3
-          .invokeAsync(FixedPartitioningTestBase.class,
-              "createRegionWithPartitionAttributes", new Object[] { "Quarter",
+          .invokeAsync(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
                   fpaList, 0, 40, 12, new QuarterPartitionResolver(), null,
-                  false });
+                  false ));
       
-      member4.invoke(FixedPartitioningTestBase.class,
-          "createRegionWithPartitionAttributes", new Object[] { "Quarter",
-              null, 0, 0, 12, new QuarterPartitionResolver(), null, false });
+      member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
+              null, 0, 0, 12, new QuarterPartitionResolver(), null, false ));
       try {
-        member4.invoke(FixedPartitioningTestBase.class,
-            "putThorughAccessor_Immediate", new Object[] { "Quarter" });
+        member4.invoke(() -> FixedPartitioningTestBase.putThorughAccessor_Immediate( "Quarter" ));
       }
       catch (Exception e) {
         e.printStackTrace();
@@ -552,10 +516,10 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
         fail("Unexpected Exception");
       }
     } finally {
-      member1.invoke(FixedPartitioningTestBase.class, "resetPRObserverBeforeCalculateStartingBucketId");
-      member2.invoke(FixedPartitioningTestBase.class, "resetPRObserverBeforeCalculateStartingBucketId");
-      member3.invoke(FixedPartitioningTestBase.class, "resetPRObserverBeforeCalculateStartingBucketId");
-      member4.invoke(FixedPartitioningTestBase.class, "resetPRObserverBeforeCalculateStartingBucketId");
+      member1.invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
+      member2.invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
+      member3.invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
+      member4.invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
     }
     
   }
@@ -566,59 +530,46 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   public void testPut_ValidateDataOnMember_OnlyPrimary_Datastore() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            new QuarterPartitionResolver(), null, false});
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            new QuarterPartitionResolver(), null, false));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            new QuarterPartitionResolver(), null, false});
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            new QuarterPartitionResolver(), null, false));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            new QuarterPartitionResolver(), null, false});
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            new QuarterPartitionResolver(), null, false));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            new QuarterPartitionResolver(), null, false});
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            new QuarterPartitionResolver(), null, false));
 
-    member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore( "Quarter" ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter1 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter2 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter4 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter1 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter2 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter4 ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
   }
   
   /**
@@ -626,42 +577,37 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * EntryNotFoundException
    */
   public void testDelete_WithoutPut() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false ));
 
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "deleteOperation",
-          new Object[] { "Quarter" });
+      member1.invoke(() -> FixedPartitioningTestBase.deleteOperation( "Quarter" ));
       fail("EntryNotFoundException expected");
     }
     catch (Exception ex) {
@@ -670,11 +616,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       }
     }
     
-    member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore( "Quarter" ));
     
-    member1.invoke(FixedPartitioningTestBase.class, "getThroughDataStore",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.getThroughDataStore( "Quarter" ));
     
   }
   
@@ -685,42 +629,37 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   public void testPut_NoResolver() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            null, null , false});
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            null, null , false));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
     try {
-      member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore_NoResolver",
-          new Object[] { "Quarter" });
+      member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore_NoResolver( "Quarter" ));
       fail("IllegalStateException expected");
     }
     catch (Exception ex) {
@@ -737,59 +676,46 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   public void testPut_CallBackWithResolver() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            null, null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            null, null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore_CallBackWithResolver",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore_CallBackWithResolver( "Quarter" ));
     
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter1 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter2 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter4 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter1 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter2 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter4 ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
   }
   
   /**
@@ -798,28 +724,23 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   public void testPut_WithResolver_NoFPAs() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", null, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false});
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", null, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false});
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", null, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false});
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", null, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false});
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false));
 
-    member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore( "Quarter" ));
     
   }
   
@@ -833,43 +754,37 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   
   
   public void testPut_FixedPartitionResolver_NoResolver() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            null, null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            null, null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
     try {
-      member1.invoke(FixedPartitioningTestBase.class,
-          "putThroughDataStore_FixedPartitionResolver_NoResolver",
-          new Object[] { "Quarter" });
+      member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore_FixedPartitionResolver_NoResolver( "Quarter" ));
       fail("IllegalStateException expected");
     }
     catch (Exception ex) {
@@ -888,43 +803,37 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   public void testPut_FixedPartitionResolver_PartitionResolver() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            null, null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            null, null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      null, null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      null, null, false ));
 
     try {
-      member1.invoke(FixedPartitioningTestBase.class,
-          "putThroughDataStore_FixedPartitionResolver_PartitionResolver",
-          new Object[] { "Quarter" });
+      member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore_FixedPartitionResolver_PartitionResolver( "Quarter" ));
       fail("IllegalStateException expected");
     }
     catch (Exception ex) {
@@ -941,59 +850,46 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
 
   public void testFPR_DefaultNumBuckets() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true);
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 0, 40, 12,
-      new QuarterPartitionResolver(), null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 0, 40, 12,
+      new QuarterPartitionResolver(), null, false ));
     
-    member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore( "Quarter" ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter1 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter2 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryData",
-        new Object[] { Quarter4 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter1 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter2 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryData( Quarter4 ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 1, 1 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 1, 1 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 1, 1 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 1, 1 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 1, 1 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 1, 1 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 1, 1 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 1, 1 ));
   }
   /**
    * This tests validate that accessor member does the put on datastores as per
@@ -1005,7 +901,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     createRegionWithPartitionAttributes("Quarter", null, 3, 0, 12,
         new QuarterPartitionResolver(), null, false);
 
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     FixedPartitionAttributes fpa2 = FixedPartitionAttributes
@@ -1016,11 +912,10 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     fpaList.add(fpa3);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3);
     fpa3 = FixedPartitionAttributes.createFixedPartition(Quarter4, false, 3);
@@ -1028,11 +923,10 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     fpaList.add(fpa3);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
     fpa3 = FixedPartitionAttributes.createFixedPartition(Quarter2, false, 3);
@@ -1040,11 +934,10 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     fpaList.add(fpa3);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
     fpa3 = FixedPartitionAttributes.createFixedPartition(Quarter2, false, 3);
@@ -1052,24 +945,19 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     fpaList.add(fpa3);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
     putThroughDataStore("Quarter");
 
-    member1.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter1,
-            false });
-    member2.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter2,
-            false });
-    member3.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter3,
-            false });
-    member4.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter4,
-            false });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter1,
+            false ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter2,
+            false ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter3,
+            false ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter4,
+            false ));
   }
   
   /**
@@ -1079,7 +967,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   public void testPut_ValidateDataOnMember_PrimarySecondary_Datastore() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     FixedPartitionAttributes fpa2 = FixedPartitionAttributes
@@ -1087,60 +975,47 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter4, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore( "Quarter" ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter1, false });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter2, false });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter3, false });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter4, false });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter1, false ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter2, false ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter3, false ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter4, false ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
   }
 
   /**
@@ -1154,50 +1029,41 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   public void testPut_ValidateDataOnMember_OnlySecondary_Datastore() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, false, 3);
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore( "Quarter" ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
 
     createCacheOnMember();
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
@@ -1208,14 +1074,10 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
     Wait.pause(1000);
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 0 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 3, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 0 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 3, 3 ));
     checkPrimaryBucketsForQuarter(3, 3);
 
   }
@@ -1250,7 +1112,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     createRegionWithPartitionAttributes("Quarter", null, 3, 0, 12,
         new QuarterPartitionResolver(), null, false);
 
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     FixedPartitionAttributes fpa2 = FixedPartitionAttributes
@@ -1261,11 +1123,10 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     fpaList.add(fpa3);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3);
     fpa3 = FixedPartitionAttributes.createFixedPartition(Quarter4, false, 3);
@@ -1273,11 +1134,10 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     fpaList.add(fpa3);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
     fpa3 = FixedPartitionAttributes.createFixedPartition(Quarter2, false, 3);
@@ -1285,11 +1145,10 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     fpaList.add(fpa3);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
     fpa3 = FixedPartitionAttributes.createFixedPartition(Quarter2, false, 3);
@@ -1297,53 +1156,38 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     fpaList.add(fpa3);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 3, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 3, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
     putThroughDataStore("Quarter");
 
-    member1.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter1,
-            false });
-    member2.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter2,
-            false });
-    member3.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter3,
-            false });
-    member4.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter4,
-            false });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter1,
+            false ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter2,
+            false ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter3,
+            false ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter4,
+            false ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 9, 3 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 9, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 9, 3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 9, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 9, 3 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 9, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 9, 3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 9, 3 ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "closeCache");
+    member4.invoke(() -> FixedPartitioningTestBase.closeCache());
     Wait.pause(1000);
 
-    member1.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter1,
-            false });
-    member2.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter2,
-            false });
-    member3.invoke(FixedPartitioningTestBase.class,
-        "checkPrimarySecondaryData_TwoSecondaries", new Object[] { Quarter3,
-            false });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter1,
+            false ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter2,
+            false ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData_TwoSecondaries( Quarter3,
+            false ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarterAfterCacheClosed",
-        new Object[] { 9, 3 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarterAfterCacheClosed",
-        new Object[] { 9, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarterAfterCacheClosed",
-        new Object[] { 9, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarterAfterCacheClosed( 9, 3 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarterAfterCacheClosed( 9, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarterAfterCacheClosed( 9, 3 ));
   }
   
   /**
@@ -1372,7 +1216,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   public void testPut_ValidateDataOnMember_PrimarySecondary_Datastore_CacheClosed() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     FixedPartitionAttributes fpa2 = FixedPartitionAttributes
@@ -1380,103 +1224,80 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter4, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore( "Quarter" ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter1, false });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter2, false });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter3, false });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter4, false });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter1, false ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter2, false ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter3, false ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter4, false ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "closeCache");
+    member4.invoke(() -> FixedPartitioningTestBase.closeCache());
     Wait.pause(1000);
 
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarterAfterCacheClosed",
-        new Object[] { 6, 6 });
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarterAfterCacheClosed( 6, 6 ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "putHAData", new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putHAData( "Quarter" ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
         
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
     Wait.pause(1000);
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter1, true });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter2, true });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter3, true });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter4, true });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter1, true ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter2, true ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter3, true ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter4, true ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
   }
   
   public void test_Bug46619_Put_ValidateDataOnMember_PrimarySecondary_Datastore_CacheClosed() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember_DisableMovePrimary");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember_DisableMovePrimary());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
         .createFixedPartition(Quarter1, true, 3);
     FixedPartitionAttributes fpa2 = FixedPartitionAttributes
@@ -1484,123 +1305,94 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember_DisableMovePrimary");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember_DisableMovePrimary());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember_DisableMovePrimary");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember_DisableMovePrimary());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter4, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember_DisableMovePrimary");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember_DisableMovePrimary());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore",
-        new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore( "Quarter" ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter1, false });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter2, false });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter3, false });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter4, false });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter1, false ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter2, false ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter3, false ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter4, false ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "closeCache");
-    member2.invoke(FixedPartitioningTestBase.class, "closeCache");
+    member4.invoke(() -> FixedPartitioningTestBase.closeCache());
+    member2.invoke(() -> FixedPartitioningTestBase.closeCache());
     Wait.pause(1000);
 
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarterAfterCacheClosed",
-        new Object[] { 6, 6 });
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarterAfterCacheClosed",
-        new Object[] { 6, 6 });
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarterAfterCacheClosed( 6, 6 ));
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarterAfterCacheClosed( 6, 6 ));
     
-    member1.invoke(FixedPartitioningTestBase.class, "putHAData", new Object[] { "Quarter" });
+    member1.invoke(() -> FixedPartitioningTestBase.putHAData( "Quarter" ));
 
-    member4.invoke(FixedPartitioningTestBase.class, "createCacheOnMember_DisableMovePrimary");
+    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember_DisableMovePrimary());
         
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member4.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember_DisableMovePrimary");
+    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember_DisableMovePrimary());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3);
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 1, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 1, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
     Wait.pause(1000);
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter1, true });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter2, true });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter3, true });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimarySecondaryData",
-        new Object[] { Quarter4, true });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter1, true ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter2, true ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter3, true ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimarySecondaryData( Quarter4, true ));
 
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 6 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 0 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 6 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 0 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 6 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 0 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 6 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 0 ));
     
-    member4.invoke(FixedPartitioningTestBase.class, "doRebalance");
+    member4.invoke(() -> FixedPartitioningTestBase.doRebalance());
     
     Wait.pause(2000);
-    member1.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member2.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member3.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
-    member4.invoke(FixedPartitioningTestBase.class, "checkPrimaryBucketsForQuarter",
-        new Object[] { 6, 3 });
+    member1.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
+    member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
   }
   
   /**
@@ -1627,7 +1419,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   public void testPut_ValidateDataOnMember_MultiplePrimaries_Datastore_CacheClosed() {
-    member1.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     
@@ -1636,22 +1428,20 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     fpaList.add(FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition(Quarter4, false, 3));
 
-    member1.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 2, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 2, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-     member2.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3));    
     fpaList.add(FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition(Quarter2, false, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition(Quarter4, false, 3));
     
-    member2.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 2, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 2, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3));
@@ -1659,35 +1449,32 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     fpaList.add(FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3));    
     
 
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 2, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 2, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
 
 
-    member1.invoke(FixedPartitioningTestBase.class, "putThroughDataStore",
-        new Object[] { "Quarter" });
-    member1.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs");
-    member2.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs");
-    member3.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs");
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughDataStore( "Quarter" ));
+    member1.invoke(() -> FixedPartitioningTestBase.checkStartingBucketIDs());
+    member2.invoke(() -> FixedPartitioningTestBase.checkStartingBucketIDs());
+    member3.invoke(() -> FixedPartitioningTestBase.checkStartingBucketIDs());
 
-    member3.invoke(FixedPartitioningTestBase.class, "closeCache");
+    member3.invoke(() -> FixedPartitioningTestBase.closeCache());
     
     Wait.pause(1000);  
     
-    member1.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs_Nodedown");
-    member2.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs_Nodedown");
+    member1.invoke(() -> FixedPartitioningTestBase.checkStartingBucketIDs_Nodedown());
+    member2.invoke(() -> FixedPartitioningTestBase.checkStartingBucketIDs_Nodedown());
     
-    member3.invoke(FixedPartitioningTestBase.class, "createCacheOnMember");    
+    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());    
 
-    member3.invoke(FixedPartitioningTestBase.class, "createRegionWithPartitionAttributes",
-        new Object[] { "Quarter", fpaList, 2, 40, 12,
-            new QuarterPartitionResolver(), null, false });
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", fpaList, 2, 40, 12,
+            new QuarterPartitionResolver(), null, false ));
     
     Wait.pause(3000);
     
-    member1.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs_Nodeup");
-    member2.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs_Nodeup");
-    member3.invoke(FixedPartitioningTestBase.class, "checkStartingBucketIDs_Nodeup");
+    member1.invoke(() -> FixedPartitioningTestBase.checkStartingBucketIDs_Nodeup());
+    member2.invoke(() -> FixedPartitioningTestBase.checkStartingBucketIDs_Nodeup());
+    member3.invoke(() -> FixedPartitioningTestBase.checkStartingBucketIDs_Nodeup());
 
     
   }

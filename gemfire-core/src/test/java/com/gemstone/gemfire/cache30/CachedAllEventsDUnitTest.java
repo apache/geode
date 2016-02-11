@@ -57,7 +57,7 @@ public class CachedAllEventsDUnitTest extends CacheTestCase {
           getCache();
         }
       });
-    vm.invoke(CachedAllEventsDUnitTest.class, "getVMDistributedMember");
+    vm.invoke(() -> CachedAllEventsDUnitTest.getVMDistributedMember());
   }
   private void doCreateOtherVm() {
     VM vm = getOtherVm();

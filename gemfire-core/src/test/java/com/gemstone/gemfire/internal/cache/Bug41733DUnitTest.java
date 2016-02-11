@@ -133,7 +133,7 @@ public class Bug41733DUnitTest extends CacheTestCase {
           public void beforeProcessMessage(DistributionManager dm,
               DistributionMessage message) {
             if(message instanceof ManageBucketMessage) {
-              vm0.invoke(DistributedTestCase.class, "disconnectFromDS");
+              vm0.invoke(() -> DistributedTestCase.disconnectFromDS());
             }
           }
         });

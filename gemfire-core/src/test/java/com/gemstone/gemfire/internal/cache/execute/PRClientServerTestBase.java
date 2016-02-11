@@ -464,35 +464,23 @@ public class PRClientServerTestBase extends CacheTestCase {
   protected void createClientServerScenarion(ArrayList commonAttributes , int localMaxMemoryServer1,
       int localMaxMemoryServer2, int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = (Integer)server1.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] {commonAttributes ,new Integer(localMaxMemoryServer1) });
-    Integer port2 = (Integer)server2.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] {commonAttributes, new Integer(localMaxMemoryServer2) });
-    Integer port3 = (Integer)server3.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] { commonAttributes, new Integer(localMaxMemoryServer3) });
+    Integer port1 = (Integer)server1.invoke(() -> PRClientServerTestBase.createCacheServer(commonAttributes ,new Integer(localMaxMemoryServer1) ));
+    Integer port2 = (Integer)server2.invoke(() -> PRClientServerTestBase.createCacheServer(commonAttributes, new Integer(localMaxMemoryServer2) ));
+    Integer port3 = (Integer)server3.invoke(() -> PRClientServerTestBase.createCacheServer( commonAttributes, new Integer(localMaxMemoryServer3) ));
     serverPort1 = port1;
     serverPort2 = port2;
     serverPort3 = port3;
-    client.invoke(PRClientServerTestBase.class, "createCacheClient",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
-            port3 });
+    client.invoke(() -> PRClientServerTestBase.createCacheClient( NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
+            port3 ));
   }
 
   protected void createClientServerScenarion_SingleConnection(ArrayList commonAttributes , int localMaxMemoryServer1,
       int localMaxMemoryServer2, int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = (Integer)server1.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] {commonAttributes ,new Integer(localMaxMemoryServer1) });
-    server2.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] {commonAttributes ,new Integer(localMaxMemoryServer2) });
+    Integer port1 = (Integer)server1.invoke(() -> PRClientServerTestBase.createCacheServer(commonAttributes ,new Integer(localMaxMemoryServer1) ));
+    server2.invoke(() -> PRClientServerTestBase.createCacheServer(commonAttributes ,new Integer(localMaxMemoryServer2) ));
     serverPort1 = port1;
-    client.invoke(PRClientServerTestBase.class, "createCacheClient_SingleConnection",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1});
+    client.invoke(() -> PRClientServerTestBase.createCacheClient_SingleConnection( NetworkUtils.getServerHostName(server1.getHost()), port1));
   }
   
   
@@ -500,46 +488,31 @@ public class PRClientServerTestBase extends CacheTestCase {
   protected void createClientServerScenarionWith2Regions(ArrayList commonAttributes , int localMaxMemoryServer1,
       int localMaxMemoryServer2, int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = (Integer)server1.invoke(PRClientServerTestBase.class,
-        "createCacheServerWith2Regions",
-        new Object[] {commonAttributes ,new Integer(localMaxMemoryServer1) });
-    Integer port2 = (Integer)server2.invoke(PRClientServerTestBase.class,
-        "createCacheServerWith2Regions",
-        new Object[] {commonAttributes, new Integer(localMaxMemoryServer2) });
-    Integer port3 = (Integer)server3.invoke(PRClientServerTestBase.class,
-        "createCacheServerWith2Regions",
-        new Object[] { commonAttributes, new Integer(localMaxMemoryServer3) });
+    Integer port1 = (Integer)server1.invoke(() -> PRClientServerTestBase.createCacheServerWith2Regions(commonAttributes ,new Integer(localMaxMemoryServer1) ));
+    Integer port2 = (Integer)server2.invoke(() -> PRClientServerTestBase.createCacheServerWith2Regions(commonAttributes, new Integer(localMaxMemoryServer2) ));
+    Integer port3 = (Integer)server3.invoke(() -> PRClientServerTestBase.createCacheServerWith2Regions( commonAttributes, new Integer(localMaxMemoryServer3) ));
     serverPort1 = port1;
     serverPort2 = port2;
     serverPort3 = port3;
-    client.invoke(PRClientServerTestBase.class, "createCacheClientWith2Regions",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
-            port3 });
+    client.invoke(() -> PRClientServerTestBase.createCacheClientWith2Regions( NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
+            port3 ));
   }
 
   protected void createClientServerScenarioSingleHop(ArrayList commonAttributes , int localMaxMemoryServer1,
       int localMaxMemoryServer2, int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = (Integer)server1.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] {commonAttributes ,new Integer(localMaxMemoryServer1) });
-    Integer port2 = (Integer)server2.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] {commonAttributes, new Integer(localMaxMemoryServer2) });
-    Integer port3 = (Integer)server3.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] { commonAttributes, new Integer(localMaxMemoryServer3) });
+    Integer port1 = (Integer)server1.invoke(() -> PRClientServerTestBase.createCacheServer(commonAttributes ,new Integer(localMaxMemoryServer1) ));
+    Integer port2 = (Integer)server2.invoke(() -> PRClientServerTestBase.createCacheServer(commonAttributes, new Integer(localMaxMemoryServer2) ));
+    Integer port3 = (Integer)server3.invoke(() -> PRClientServerTestBase.createCacheServer( commonAttributes, new Integer(localMaxMemoryServer3) ));
     serverPort1 = port1;
     serverPort2 = port2;
     serverPort3 = port3;
     //Workaround for the issue that hostnames returned by the client metadata may
     //not match those configured by the pool, leading to multiple copies 
     //of the endpoint in the client.
-    String hostname = (String) server1.invoke(PRClientServerTestBase.class,
-        "getHostname", new Object[] {});
-    client.invoke(PRClientServerTestBase.class, "createSingleHopCacheClient",
-        new Object[] { hostname, port1, port2,
-            port3 });
+    String hostname = (String) server1.invoke(() -> PRClientServerTestBase.getHostname());
+    client.invoke(() -> PRClientServerTestBase.createSingleHopCacheClient( hostname, port1, port2,
+            port3 ));
   }
   
   public static String getHostname() {
@@ -549,79 +522,57 @@ public class PRClientServerTestBase extends CacheTestCase {
   protected void createClientServerScenarioNoSingleHop(ArrayList commonAttributes , int localMaxMemoryServer1,
       int localMaxMemoryServer2, int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = (Integer)server1.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] {commonAttributes ,new Integer(localMaxMemoryServer1) });
-    Integer port2 = (Integer)server2.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] {commonAttributes, new Integer(localMaxMemoryServer2) });
-    Integer port3 = (Integer)server3.invoke(PRClientServerTestBase.class,
-        "createCacheServer",
-        new Object[] { commonAttributes, new Integer(localMaxMemoryServer3) });
+    Integer port1 = (Integer)server1.invoke(() -> PRClientServerTestBase.createCacheServer(commonAttributes ,new Integer(localMaxMemoryServer1) ));
+    Integer port2 = (Integer)server2.invoke(() -> PRClientServerTestBase.createCacheServer(commonAttributes, new Integer(localMaxMemoryServer2) ));
+    Integer port3 = (Integer)server3.invoke(() -> PRClientServerTestBase.createCacheServer( commonAttributes, new Integer(localMaxMemoryServer3) ));
     serverPort1 = port1;
     serverPort2 = port2;
     serverPort3 = port3;
-    client.invoke(PRClientServerTestBase.class, "createNoSingleHopCacheClient",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
-            port3 });
+    client.invoke(() -> PRClientServerTestBase.createNoSingleHopCacheClient( NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
+            port3 ));
   }
   
   protected void createClientServerScenarioSelectorNoSingleHop(ArrayList commonAttributes , int localMaxMemoryServer1,
       int localMaxMemoryServer2, int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = (Integer)server1.invoke(PRClientServerTestBase.class,
-        "createSelectorCacheServer",
-        new Object[] {commonAttributes ,new Integer(localMaxMemoryServer1) });
-    Integer port2 = (Integer)server2.invoke(PRClientServerTestBase.class,
-        "createSelectorCacheServer",
-        new Object[] {commonAttributes, new Integer(localMaxMemoryServer2) });
-    Integer port3 = (Integer)server3.invoke(PRClientServerTestBase.class,
-        "createSelectorCacheServer",
-        new Object[] { commonAttributes, new Integer(localMaxMemoryServer3) });
+    Integer port1 = (Integer)server1.invoke(() -> PRClientServerTestBase.createSelectorCacheServer(commonAttributes ,new Integer(localMaxMemoryServer1) ));
+    Integer port2 = (Integer)server2.invoke(() -> PRClientServerTestBase.createSelectorCacheServer(commonAttributes, new Integer(localMaxMemoryServer2) ));
+    Integer port3 = (Integer)server3.invoke(() -> PRClientServerTestBase.createSelectorCacheServer( commonAttributes, new Integer(localMaxMemoryServer3) ));
     serverPort1 = port1;
     serverPort2 = port2;
     serverPort3 = port3;
-    client.invoke(PRClientServerTestBase.class, "createNoSingleHopCacheClient",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
-            port3 });
+    client.invoke(() -> PRClientServerTestBase.createNoSingleHopCacheClient( NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
+            port3 ));
   }
 
   
   protected void createClientServerScenarionWithoutRegion () {
     LogWriterUtils.getLogWriter().info("PRClientServerTestBase#createClientServerScenarionWithoutRegion : creating client server");
     createCacheInClientServer();
-    Integer port1 = (Integer)server1.invoke(PRClientServerTestBase.class,
-        "createCacheServer");
-    Integer port2 = (Integer)server2.invoke(PRClientServerTestBase.class,
-        "createCacheServer");
-    Integer port3 = (Integer)server3.invoke(PRClientServerTestBase.class,
-        "createCacheServer");
+    Integer port1 = (Integer)server1.invoke(() -> PRClientServerTestBase.createCacheServer());
+    Integer port2 = (Integer)server2.invoke(() -> PRClientServerTestBase.createCacheServer());
+    Integer port3 = (Integer)server3.invoke(() -> PRClientServerTestBase.createCacheServer());
     serverPort1 = port1;
     serverPort2 = port2;
     serverPort3 = port3;
     
-    client.invoke(PRClientServerTestBase.class, "createCacheClientWithoutRegion",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
-            port3 });    
+    client.invoke(() -> PRClientServerTestBase.createCacheClientWithoutRegion( NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
+            port3 ));    
   }
   
   protected void createClientServerScenarionWithDistributedtRegion () {
     LogWriterUtils.getLogWriter().info("PRClientServerTestBase#createClientServerScenarionWithoutRegion : creating client server");
     createCacheInClientServer();
-    Integer port1 = (Integer)server1.invoke(PRClientServerTestBase.class,
-        "createCacheServerWithDR");
-    Integer port2 = (Integer)server2.invoke(PRClientServerTestBase.class,
-        "createCacheServerWithDR");
-    Integer port3 = (Integer)server3.invoke(PRClientServerTestBase.class,
-        "createCacheServerWithDR");
+    Integer port1 = (Integer)server1.invoke(() -> PRClientServerTestBase.createCacheServerWithDR());
+    Integer port2 = (Integer)server2.invoke(() -> PRClientServerTestBase.createCacheServerWithDR());
+    Integer port3 = (Integer)server3.invoke(() -> PRClientServerTestBase.createCacheServerWithDR());
     serverPort1 = port1;
     serverPort2 = port2;
     serverPort3 = port3;
     
     
-    client.invoke(PRClientServerTestBase.class, "createCacheClientWithDistributedRegion",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
-            port3 });    
+    client.invoke(() -> PRClientServerTestBase.createCacheClientWithDistributedRegion( NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
+            port3 ));    
   }
 
   protected void runOnAllServers(SerializableRunnable runnable) {
@@ -647,21 +598,17 @@ public class PRClientServerTestBase extends CacheTestCase {
   
   private void createCacheInClientServer() {
     Properties props = new Properties();
-    server1.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
+    server1.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
 
-    server2.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
+    server2.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
     
 
-    server3.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
+    server3.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
 
     props = new Properties();
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
-    client.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
+    client.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
   }
   
   public static void createCacheInVm(Properties props) {
@@ -737,10 +684,10 @@ public class PRClientServerTestBase extends CacheTestCase {
   @Override
   protected final void postTearDownCacheTestCase() throws Exception {
     closeCache();
-    client.invoke(PRClientServerTestBase.class, "closeCache");
-    server1.invoke(PRClientServerTestBase.class, "closeCache");
-    server2.invoke(PRClientServerTestBase.class, "closeCache");
-    server3.invoke(PRClientServerTestBase.class, "closeCache");
+    client.invoke(() -> PRClientServerTestBase.closeCache());
+    server1.invoke(() -> PRClientServerTestBase.closeCache());
+    server2.invoke(() -> PRClientServerTestBase.closeCache());
+    server3.invoke(() -> PRClientServerTestBase.closeCache());
   }
 
   public static void closeCache() {

@@ -135,8 +135,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
 
 
 
-      String log = (String) vm.invoke(CacheManagementDUnitTest.class,
-          "fetchLog");
+      String log = (String) vm.invoke(() -> CacheManagementDUnitTest.fetchLog());
       assertNotNull(log);
       LogWriterUtils.getLogWriter().info(
           "<ExpectedString> Log Of Member is " + log.toString()
@@ -144,11 +143,11 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
 
      
 
-      vm.invoke(CacheManagementDUnitTest.class, "fetchJVMMetrics");
+      vm.invoke(() -> CacheManagementDUnitTest.fetchJVMMetrics());
 
-      vm.invoke(CacheManagementDUnitTest.class, "fetchOSMetrics");
+      vm.invoke(() -> CacheManagementDUnitTest.fetchOSMetrics());
 
-      vm.invoke(CacheManagementDUnitTest.class, "shutDownMember");
+      vm.invoke(() -> CacheManagementDUnitTest.shutDownMember());
 
     }
     
@@ -166,8 +165,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
    */
   public void testMemberMBeanOpsRemote() throws Exception {
     initManagement(false);
-    getManagingNode().invoke(
-        CacheManagementDUnitTest.class, "invokeRemoteOps");
+    getManagingNode().invoke(() -> CacheManagementDUnitTest.invokeRemoteOps());
    }
 
   /**
@@ -191,7 +189,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     // Does not start the manager
     createManagementCache(managingNode);
     
-    node3.invoke(CacheManagementDUnitTest.class, "startManager");
+    node3.invoke(() -> CacheManagementDUnitTest.startManager());
 
     // Now start Managing node manager. System will have two Managers now which
     // should be OK
@@ -245,7 +243,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     // Does not start the manager
     createManagementCache(managingNode);
     
-    node3.invoke(CacheManagementDUnitTest.class, "startManager");
+    node3.invoke(() -> CacheManagementDUnitTest.startManager());
     
     closeCache(node3);
     validateServiceResource(node3);

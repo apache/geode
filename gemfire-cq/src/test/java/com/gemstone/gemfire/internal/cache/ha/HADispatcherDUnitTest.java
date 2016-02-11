@@ -135,38 +135,34 @@ public class HADispatcherDUnitTest extends DistributedTestCase
     // client 2 VM
     client2 = host.getVM(3);
 
-    PORT1 = ((Integer)server1.invoke(HADispatcherDUnitTest.class,
-        "createServerCache", new Object[] { new Boolean(false) })).intValue();
-    server1.invoke(ConflationDUnitTest.class, "setIsSlowStart");
-    server1.invoke(HADispatcherDUnitTest.class, "makeDispatcherSlow");
-    server1.invoke(HADispatcherDUnitTest.class, "setQRMslow");
-    PORT2 = ((Integer)server2.invoke(HADispatcherDUnitTest.class,
-        "createServerCache", new Object[] { new Boolean(true) })).intValue();
+    PORT1 = ((Integer)server1.invoke(() -> HADispatcherDUnitTest.createServerCache( new Boolean(false) ))).intValue();
+    server1.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+    server1.invoke(() -> HADispatcherDUnitTest.makeDispatcherSlow());
+    server1.invoke(() -> HADispatcherDUnitTest.setQRMslow());
+    PORT2 = ((Integer)server2.invoke(() -> HADispatcherDUnitTest.createServerCache( new Boolean(true) ))).intValue();
 
-    client1.invoke( CacheServerTestUtil.class, "disableShufflingOfEndpoints");
-    client2.invoke( CacheServerTestUtil.class, "disableShufflingOfEndpoints");
-    client1.invoke(HADispatcherDUnitTest.class, "createClientCache",
-        new Object[] {
+    client1.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
+    client2.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
+    client1.invoke(() -> HADispatcherDUnitTest.createClientCache(
             NetworkUtils.getServerHostName(Host.getHost(0)),
             new Integer(PORT1), new Integer(PORT2),
-            new Boolean(false) });
-    client2.invoke(HADispatcherDUnitTest.class, "createClientCache",
-        new Object[] {
+            new Boolean(false) ));
+    client2.invoke(() -> HADispatcherDUnitTest.createClientCache(
             NetworkUtils.getServerHostName(Host.getHost(0)),
             new Integer(PORT1), new Integer(PORT2),
-            new Boolean(true) });
+            new Boolean(true) ));
     //createClientCache(new Integer(PORT1), new Integer(PORT2), new Boolean(true) );
 
   }
 
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(HADispatcherDUnitTest.class, "closeCache");
-    client2.invoke(HADispatcherDUnitTest.class, "closeCache");
+    client1.invoke(() -> HADispatcherDUnitTest.closeCache());
+    client2.invoke(() -> HADispatcherDUnitTest.closeCache());
     // close server
-    server1.invoke(HADispatcherDUnitTest.class, "resetQRMslow");
-    server1.invoke(HADispatcherDUnitTest.class, "closeCache");
-    server2.invoke(HADispatcherDUnitTest.class, "closeCache");
+    server1.invoke(() -> HADispatcherDUnitTest.resetQRMslow());
+    server1.invoke(() -> HADispatcherDUnitTest.closeCache());
+    server2.invoke(() -> HADispatcherDUnitTest.closeCache());
   }
 
   public static void closeCache()

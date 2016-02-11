@@ -96,9 +96,9 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
 
   @Override
   protected final void preTearDown() throws Exception {
-    serverVM.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
-    client.invoke(HAOverflowMemObjectSizerDUnitTest.class, "closeCache");
-    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest.class, "closeCache");
+    serverVM.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    client.invoke(() -> HAOverflowMemObjectSizerDUnitTest.closeCache());
+    serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.closeCache());
   }
 
   public static void cleanUp(Long limit) {
@@ -181,22 +181,15 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
    */
   public void testSizerImplementationofMemCapacityControllerWhenNotificationBySubscriptionIsTrue() {
 
-    Integer port1 = (Integer)serverVM.invoke(
-        HAOverflowMemObjectSizerDUnitTest.class, "createCacheServer",
-        new Object[] { new Boolean(true) });
+    Integer port1 = (Integer)serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheServer( new Boolean(true) ));
     serverPort1 = port1;
-    serverVM.invoke(ConflationDUnitTest.class, "setIsSlowStart",
-        new Object[] { "15000" });
+    serverVM.invoke(() -> ConflationDUnitTest.setIsSlowStart( "15000" ));
 
-    client.invoke(HAOverflowMemObjectSizerDUnitTest.class,
-                  "createCacheClient",
-                  new Object[] { port1, 
-                  NetworkUtils.getServerHostName(client.getHost()) });
+    client.invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheClient( port1, 
+                  NetworkUtils.getServerHostName(client.getHost()) ));
 
-    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest.class, "performPut",
-        new Object[] { new Long(0L), new Long(100L) });
-    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest.class,
-        "sizerTestForMemCapacityController", new Object[] { serverPort1 });
+    serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.performPut( new Long(0L), new Long(100L) ));
+    serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.sizerTestForMemCapacityController( serverPort1 ));
   }
 
   /**
@@ -206,23 +199,16 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
    * equal to the size calculated by memCapacity controller <br>
    */
   public void testSizerImplementationofMemCapacityControllerWhenNotificationBySubscriptionIsFalse() {
-    Integer port2 = (Integer)serverVM.invoke(
-        HAOverflowMemObjectSizerDUnitTest.class, "createCacheServer",
-        new Object[] { new Boolean(false) });
+    Integer port2 = (Integer)serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheServer( new Boolean(false) ));
     serverPort2 = port2;
 
-    serverVM.invoke(ConflationDUnitTest.class, "setIsSlowStart",
-        new Object[] { "15000" });
+    serverVM.invoke(() -> ConflationDUnitTest.setIsSlowStart( "15000" ));
 
-    client.invoke(HAOverflowMemObjectSizerDUnitTest.class,
-                  "createCacheClient", 
-                  new Object[] { port2,
-                  NetworkUtils.getServerHostName(client.getHost()) });
+    client.invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheClient( port2,
+                  NetworkUtils.getServerHostName(client.getHost()) ));
 
-    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest.class, "performPut",
-        new Object[] { new Long(101L), new Long(200L) });
-    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest.class,
-        "sizerTestForMemCapacityController", new Object[] { serverPort2 });
+    serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.performPut( new Long(101L), new Long(200L) ));
+    serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.sizerTestForMemCapacityController( serverPort2 ));
   }
 
   /**

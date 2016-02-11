@@ -373,7 +373,7 @@ public class ConsoleDistributionManagerDUnitTest
   }
   
 //  private long getConId(VM vm) {
-//      return vm.invokeLong(this.getClass(), "remoteGetConId");
+//      return vm.invoke(() -> this.remoteGetConId());
 //  }
   /**
    * Accessed via reflection.  DO NOT REMOVE
@@ -384,8 +384,7 @@ public class ConsoleDistributionManagerDUnitTest
   }
 
   private boolean acquireDistLock(VM vm, String lockName) {
-    return vm.invokeBoolean(this.getClass(), "remoteAcquireDistLock",
-                            new Object[]{lockName});
+    return vm.invoke(() -> this.remoteAcquireDistLock(lockName));
   }
 
   /**
@@ -425,7 +424,7 @@ public class ConsoleDistributionManagerDUnitTest
   }
 
   private InternalDistributedMember getJavaGroupsIdForVM(VM vm) {
-    return (InternalDistributedMember)vm.invoke(this.getClass(), "remoteGetJavaGroupsIdForVM");
+    return (InternalDistributedMember)vm.invoke(() -> this.remoteGetJavaGroupsIdForVM());
   }
   
   /**

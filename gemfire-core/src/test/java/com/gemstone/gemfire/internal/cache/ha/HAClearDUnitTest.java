@@ -95,10 +95,10 @@ public class HAClearDUnitTest extends DistributedTestCase
     final Host host = Host.getHost(0);
 
     server1 = host.getVM(0);
-    server1.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
+    server1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
 
     server2 = host.getVM(1);
-    server2.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
+    server2.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
 
     client1 = host.getVM(2);
 
@@ -110,10 +110,10 @@ public class HAClearDUnitTest extends DistributedTestCase
 
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(HAClearDUnitTest.class, "closeCache");
-    client2.invoke(HAClearDUnitTest.class, "closeCache");
-    server1.invoke(HAClearDUnitTest.class, "closeCache");
-    server2.invoke(HAClearDUnitTest.class, "closeCache");
+    client1.invoke(() -> HAClearDUnitTest.closeCache());
+    client2.invoke(() -> HAClearDUnitTest.closeCache());
+    server1.invoke(() -> HAClearDUnitTest.closeCache());
+    server2.invoke(() -> HAClearDUnitTest.closeCache());
     closeCache();
   }
 
@@ -554,18 +554,16 @@ public class HAClearDUnitTest extends DistributedTestCase
   // function to create 2servers and 3 clients
   private void createClientServerConfigurationForClearTest() throws Exception
   {
-    PORT1 = ((Integer)server1.invoke(HAClearDUnitTest.class,
-        "createServerCache")).intValue();
-    PORT2 = ((Integer)server2.invoke(HAClearDUnitTest.class,
-        "createServerCache")).intValue();
-    client1.invoke(HAClearDUnitTest.class, "createClientCache", new Object[] {
+    PORT1 = ((Integer)server1.invoke(() -> HAClearDUnitTest.createServerCache())).intValue();
+    PORT2 = ((Integer)server2.invoke(() -> HAClearDUnitTest.createServerCache())).intValue();
+    client1.invoke(() -> HAClearDUnitTest.createClientCache(
         NetworkUtils.getServerHostName(Host.getHost(0)),
         new Integer(PORT1), new Integer(PORT2), new Boolean(true),
-        new Boolean(true) });
-    client2.invoke(HAClearDUnitTest.class, "createClientCache", new Object[] {
+        new Boolean(true) ));
+    client2.invoke(() -> HAClearDUnitTest.createClientCache(
         NetworkUtils.getServerHostName(Host.getHost(0)),
         new Integer(PORT1), new Integer(PORT2), new Boolean(true),
-        new Boolean(true) });
+        new Boolean(true) ));
     createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)),
         new Integer(PORT1), new Integer(PORT2),
         new Boolean(true), new Boolean(true));

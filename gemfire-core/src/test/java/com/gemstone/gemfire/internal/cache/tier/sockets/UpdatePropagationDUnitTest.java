@@ -124,13 +124,13 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
       host.getVM(i).invoke(getClass(), "createImpl", null);
     }
 
-    PORT1 =  ((Integer)server1.invoke(getClass(), "createServerCache" )).intValue();
-    PORT2 =  ((Integer)server2.invoke(getClass(), "createServerCache" )).intValue();
+    PORT1 =  ((Integer)server1.invoke(() -> createServerCache())).intValue();
+    PORT2 =  ((Integer)server2.invoke(() -> createServerCache())).intValue();
 
-    client1.invoke(getClass(), "createClientCache", new Object[] {
-      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)});
-    client2.invoke(getClass(), "createClientCache", new Object[] {
-      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)});
+    client1.invoke(() -> createClientCache(
+      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)));
+    client2.invoke(() -> createClientCache(
+      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)));
     
     IgnoredException.addIgnoredException("java.net.SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");
@@ -165,14 +165,13 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
 
     //First create entries on both servers via the two client
-    client1.invoke(impl.getClass(), "createEntriesK1andK2");
-    client2.invoke(impl.getClass(), "createEntriesK1andK2");
-    client1.invoke(impl.getClass(), "registerKeysK1andK2");
-    client2.invoke(impl.getClass(), "registerKeysK1andK2");
+    client1.invoke(() -> impl.createEntriesK1andK2());
+    client2.invoke(() -> impl.createEntriesK1andK2());
+    client1.invoke(() -> impl.registerKeysK1andK2());
+    client2.invoke(() -> impl.registerKeysK1andK2());
     //Induce fail over of InteretsList Endpoint to Server 2 by killing server1
     
-    server1.invoke(UpdatePropagationDUnitTest.class, "killServer",
-        new Object[] {new Integer(PORT1)});
+    server1.invoke(() -> UpdatePropagationDUnitTest.killServer(new Integer(PORT1)));
     //Wait for 10 seconds to allow fail over. This would mean that Interest
     // has failed over to Server2.
     client1.invoke(new CacheSerializableRunnable("Wait for server on port1 to be dead") {
@@ -226,7 +225,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     });
 
     //Start Server1 again so that both clients1 & Client 2 will establish connection to server1 too.
-    server1.invoke(UpdatePropagationDUnitTest.class, "startServer", new Object[] {new Integer(PORT1)});
+    server1.invoke(() -> UpdatePropagationDUnitTest.startServer(new Integer(PORT1)));
 
     client1.invoke(new CacheSerializableRunnable("Wait for server on port1 to be dead") {
       public void run2() throws CacheException
@@ -255,15 +254,13 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
 
     //Do a put on Server1 via Connection object from client1.
     // Client1 should not receive updated value while client2 should receive
-    client1.invoke(impl.getClass(),
-        "acquireConnectionsAndPutonK1andK2",
-        new Object[] { NetworkUtils.getServerHostName(client1.getHost())});
+    client1.invoke(() -> impl.acquireConnectionsAndPutonK1andK2( NetworkUtils.getServerHostName(client1.getHost())));
     //pause(5000);
     //Check if both the puts ( on key1 & key2 ) have reached the servers
-    server1.invoke(impl.getClass(), "verifyUpdates");
-    server2.invoke(impl.getClass(), "verifyUpdates");
+    server1.invoke(() -> impl.verifyUpdates());
+    server2.invoke(() -> impl.verifyUpdates());
     // verify no updates for update originator
-    client1.invoke(impl.getClass(), "verifyNoUpdates");
+    client1.invoke(() -> impl.verifyNoUpdates());
 
   }
 
@@ -277,12 +274,12 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
   {
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
     //  First create entries on both servers via the two client
-    client1.invoke(impl.getClass(), "createEntriesK1andK2");
-    client2.invoke(impl.getClass(), "createEntriesK1andK2");
-    client1.invoke(impl.getClass(), "registerKeysK1andK2");
-    client2.invoke(impl.getClass(), "registerKeysK1andK2");
+    client1.invoke(() -> impl.createEntriesK1andK2());
+    client2.invoke(() -> impl.createEntriesK1andK2());
+    client1.invoke(() -> impl.registerKeysK1andK2());
+    client2.invoke(() -> impl.registerKeysK1andK2());
     //Induce fail over of InteretsList Endpoint to Server 2 by killing server1
-    server1.invoke(UpdatePropagationDUnitTest.class, "killServer", new Object[] {new Integer(PORT1)});
+    server1.invoke(() -> UpdatePropagationDUnitTest.killServer(new Integer(PORT1)));
     //Wait for 10 seconds to allow fail over. This would mean that Interstist has failed
     // over to Server2.
     client1.invoke(new CacheSerializableRunnable("Wait for server on port1 to be dead") {
@@ -335,7 +332,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     });
 
     //Start Server1 again so that both clients1 & Client 2 will establish connection to server1 too.
-    server1.invoke(UpdatePropagationDUnitTest.class, "startServer", new Object[] {new Integer(PORT1)});
+    server1.invoke(() -> UpdatePropagationDUnitTest.startServer(new Integer(PORT1)));
 
     client1.invoke(new CacheSerializableRunnable("Wait for servers to be alive") {
       public void run2() throws CacheException
@@ -381,15 +378,13 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
 
     //Do a put on Server1 via Connection object from client1.
     // Client1 should not receive updated value while client2 should receive
-    client1.invoke(impl.getClass(),
-        "acquireConnectionsAndPutonK1andK2",
-        new Object[] { NetworkUtils.getServerHostName(client1.getHost())});
+    client1.invoke(() -> impl.acquireConnectionsAndPutonK1andK2( NetworkUtils.getServerHostName(client1.getHost())));
     Wait.pause(5000);
     //Check if both the puts ( on key1 & key2 ) have reached the servers
-    server1.invoke(impl.getClass(), "verifyUpdates");
-    server2.invoke(impl.getClass(), "verifyUpdates");
+    server1.invoke(() -> impl.verifyUpdates());
+    server2.invoke(() -> impl.verifyUpdates());
     // verify updates to other client
-    client2.invoke(impl.getClass(), "verifyUpdates");
+    client2.invoke(() -> impl.verifyUpdates());
   }
 
   public static void acquireConnectionsAndPutonK1andK2(String host)
@@ -591,11 +586,11 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     //close client
-    client1.invoke(getClass(), "closeCache");
-    client2.invoke(getClass(), "closeCache");
+    client1.invoke(() -> closeCache());
+    client2.invoke(() -> closeCache());
     //close server
-    server1.invoke(getClass(), "closeCache");
-    server2.invoke(getClass(), "closeCache");
+    server1.invoke(() -> closeCache());
+    server2.invoke(() -> closeCache());
   }
 }
 

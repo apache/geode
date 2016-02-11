@@ -33,31 +33,29 @@ public class WANSSLDUnitTest extends WANTestBase{
   }
  
   public void testSenderSSLReceiverSSL(){
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(WANTestBase.class, "createReceiverWithSSL", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiverWithSSL( nyPort ));
 
-    vm4.invoke(WANTestBase.class, "createCacheWithSSL", new Object[] { lnPort });
+    vm4.invoke(() -> WANTestBase.createCacheWithSSL( lnPort ));
 
-    vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-        false, 100, 10, false, false, null, true });
+    vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
+        false, 100, 10, false, false, null, true ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", null, isOffHeap() });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap() ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap() });
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
-        1000 });
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR",
+        1000 ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 1000 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 1000 ));
   }
   
   public void testSenderNoSSLReceiverSSL() {
@@ -65,32 +63,29 @@ public class WANSSLDUnitTest extends WANTestBase{
     IgnoredException.addIgnoredException("SSL Error");
     IgnoredException.addIgnoredException("Unrecognized SSL message");
     try {
-      Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-          "createFirstLocatorWithDSId", new Object[] { 1 });
-      Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-          "createFirstRemoteLocator", new Object[] { 2, lnPort });
+      Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+      Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-      vm2.invoke(WANTestBase.class, "createReceiverWithSSL",
-          new Object[] { nyPort });
+      vm2.invoke(() -> WANTestBase.createReceiverWithSSL( nyPort ));
 
-      vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+      vm4.invoke(() -> WANTestBase.createCache( lnPort ));
 
-      vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-          false, 100, 10, false, false, null, true });
+      vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
+          false, 100, 10, false, false, null, true ));
 
-      vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-          getTestMethodName() + "_RR", null, isOffHeap() });
+      vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+          getTestMethodName() + "_RR", null, isOffHeap() ));
 
-      vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+      vm4.invoke(() -> WANTestBase.startSender( "ln" ));
 
-      vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-          getTestMethodName() + "_RR", "ln", isOffHeap() });
+      vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+          getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
-      vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
-          1000 });
+      vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR",
+          1000 ));
 
-      vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-          getTestMethodName() + "_RR", 1000 });
+      vm2.invoke(() -> WANTestBase.validateRegionSize(
+          getTestMethodName() + "_RR", 1000 ));
       fail("Expected exception as only Receiver is SSL enabled. Not Sender");
     }
     catch (Exception e) {
@@ -101,32 +96,29 @@ public class WANSSLDUnitTest extends WANTestBase{
   public void testSenderSSLReceiverNoSSL(){
     IgnoredException.addIgnoredException("Acceptor received unknown");
     IgnoredException.addIgnoredException("failed accepting client");
-      Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-          "createFirstLocatorWithDSId", new Object[] { 1 });
-      Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-          "createFirstRemoteLocator", new Object[] { 2, lnPort });
+      Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+      Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-      vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+      vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-      vm4.invoke(WANTestBase.class, "createCacheWithSSL",
-          new Object[] { lnPort });
+      vm4.invoke(() -> WANTestBase.createCacheWithSSL( lnPort ));
 
-      vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-          false, 100, 10, false, false, null, true });
+      vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
+          false, 100, 10, false, false, null, true ));
 
-      vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-          getTestMethodName() + "_RR", null, isOffHeap() });
+      vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+          getTestMethodName() + "_RR", null, isOffHeap() ));
 
-      vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+      vm4.invoke(() -> WANTestBase.startSender( "ln" ));
 
-      vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-          getTestMethodName() + "_RR", "ln", isOffHeap() });
+      vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+          getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
-      vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
-          1 });
+      vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR",
+          1 ));
 
-      Boolean doesSizeMatch = (Boolean)vm2.invoke(WANSSLDUnitTest.class, "ValidateSSLRegionSize", new Object[] {
-          getTestMethodName() + "_RR", 1 });
+      Boolean doesSizeMatch = (Boolean)vm2.invoke(() -> WANSSLDUnitTest.ValidateSSLRegionSize(
+          getTestMethodName() + "_RR", 1 ));
       
       assertFalse(doesSizeMatch);
   }

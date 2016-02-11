@@ -46,7 +46,7 @@ public class VMDUnitTest extends DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     try {
-      vm.invoke(VMDUnitTest.class, "nonExistentMethod");
+      vm.invoke(() -> VMDUnitTest.nonExistentMethod());
       fail("Should have thrown an RMIException");
 
     } catch (RMIException ex) {
@@ -68,7 +68,7 @@ public class VMDUnitTest extends DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     assertEquals(BOOLEAN_VALUE,
-                 vm.invokeBoolean(VMDUnitTest.class, "remoteBooleanMethod")); 
+                 vm.invoke(() -> VMDUnitTest.remoteBooleanMethod())); 
   }
 
   /**
@@ -83,7 +83,7 @@ public class VMDUnitTest extends DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     try {
-      vm.invokeBoolean(VMDUnitTest.class, "remoteByteMethod");
+      vm.invoke(() -> VMDUnitTest.remoteByteMethod());
       fail("Should have thrown an IllegalArgumentException");
 
     } catch (IllegalArgumentException ex) {
@@ -95,7 +95,7 @@ public class VMDUnitTest extends DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     assertEquals(LONG_VALUE,
-                 vm.invokeLong(VMDUnitTest.class, "remoteLongMethod")); 
+                 vm.invoke(() -> VMDUnitTest.remoteLongMethod())); 
   }
 
   /**
@@ -110,7 +110,7 @@ public class VMDUnitTest extends DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     try {
-      vm.invokeLong(VMDUnitTest.class, "remoteByteMethod");
+      vm.invoke(() -> VMDUnitTest.remoteByteMethod());
       fail("Should have thrown an IllegalArgumentException");
 
     } catch (IllegalArgumentException ex) {
@@ -212,19 +212,19 @@ public class VMDUnitTest extends DistributedTestCase {
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(0);
     // Assert class static invocation works
-    AsyncInvocation a1 = vm.invokeAsync(getClass(), "getAndIncStaticCount");
+    AsyncInvocation a1 = vm.invokeAsync(() -> getAndIncStaticCount());
     a1.join();
     assertEquals(new Integer(0), a1.getReturnValue());
     // Assert class static invocation with args works
-    a1 = vm.invokeAsync(getClass(), "incrementStaticCount", new Object[] {new Integer(2)});
+    a1 = vm.invokeAsync(() -> incrementStaticCount(new Integer(2)));
     a1.join();
     assertEquals(new Integer(3), a1.getReturnValue());
     // Assert that previous values are not returned when invoking method w/ no return val
-    a1 = vm.invokeAsync(getClass(), "incStaticCount");
+    a1 = vm.invokeAsync(() -> incStaticCount());
     a1.join();
     assertNull(a1.getReturnValue());
     // Assert that previous null returns are over-written 
-    a1 = vm.invokeAsync(getClass(), "getAndIncStaticCount");
+    a1 = vm.invokeAsync(() -> getAndIncStaticCount());
     a1.join();
     assertEquals(new Integer(4), a1.getReturnValue());
 

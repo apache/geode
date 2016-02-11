@@ -72,8 +72,8 @@ public class Bug48571DUnitTest extends DistributedTestCase {
   @Override
   protected final void preTearDown() throws Exception {
     reset();
-    server.invoke(Bug48571DUnitTest.class, "reset");
-    client.invoke(Bug48571DUnitTest.class, "reset");
+    server.invoke(() -> Bug48571DUnitTest.reset());
+    client.invoke(() -> Bug48571DUnitTest.reset());
   }
 
   public static void reset() throws Exception {
@@ -90,21 +90,21 @@ public class Bug48571DUnitTest extends DistributedTestCase {
   public void testStatsMatchWithSize() throws Exception {
     IgnoredException.addIgnoredException("Unexpected IOException||Connection reset");
     // start a server
-    int port = (Integer) server.invoke(Bug48571DUnitTest.class, "createServerCache");
+    int port = (Integer) server.invoke(() -> Bug48571DUnitTest.createServerCache());
     // create durable client, with durable RI
-    client.invoke(Bug48571DUnitTest.class, "createClientCache", new Object[] {client.getHost(), port});
+    client.invoke(() -> Bug48571DUnitTest.createClientCache(client.getHost(), port));
     // do puts on server from three different threads, pause after 500 puts each.
-    server.invoke(Bug48571DUnitTest.class, "doPuts");
+    server.invoke(() -> Bug48571DUnitTest.doPuts());
     // close durable client
-    client.invoke(Bug48571DUnitTest.class, "closeClientCache");
+    client.invoke(() -> Bug48571DUnitTest.closeClientCache());
     // resume puts on server, add another 100.
-    server.invokeAsync(Bug48571DUnitTest.class, "resumePuts");
+    server.invokeAsync(() -> Bug48571DUnitTest.resumePuts());
     // start durable client
-    client.invoke(Bug48571DUnitTest.class, "createClientCache", new Object[] {client.getHost(), port});
+    client.invoke(() -> Bug48571DUnitTest.createClientCache(client.getHost(), port));
     // wait for full queue dispatch
-    client.invoke(Bug48571DUnitTest.class, "waitForLastKey");
+    client.invoke(() -> Bug48571DUnitTest.waitForLastKey());
     // verify the stats
-    server.invoke(Bug48571DUnitTest.class, "verifyStats");
+    server.invoke(() -> Bug48571DUnitTest.verifyStats());
   }
 
 

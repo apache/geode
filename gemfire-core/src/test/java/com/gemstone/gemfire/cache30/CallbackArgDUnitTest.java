@@ -68,7 +68,7 @@ public class CallbackArgDUnitTest extends CacheTestCase {
           getCache();
         }
       });
-    vm.invoke(CallbackArgDUnitTest.class, "getVMDistributedMember");
+    vm.invoke(() -> CallbackArgDUnitTest.getVMDistributedMember());
   }
   private void doCommitOtherVm() {
     VM vm = getOtherVm();

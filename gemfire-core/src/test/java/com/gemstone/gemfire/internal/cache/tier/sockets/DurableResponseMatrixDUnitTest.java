@@ -69,8 +69,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     // start servers first
-    PORT1 = ((Integer)server1.invoke(DurableResponseMatrixDUnitTest.class,
-        "createServerCache"));
+    PORT1 = ((Integer)server1.invoke(() -> DurableResponseMatrixDUnitTest.createServerCache()));
     createCacheClient(NetworkUtils.getServerHostName(server1.getHost()));
     //Disconnecting the client can cause this
     IgnoredException.addIgnoredException("Connection reset||Unexpected IOException");
@@ -79,8 +78,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
   public void testRegisterInterestResponse_NonExistent_Invalid()
       throws Exception
   {
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "invalidateEntry",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.invalidateEntry( KEY ));
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.registerInterest(KEY, InterestResultPolicy.KEYS_VALUES);
     assertFalse(r.containsValueForKey(KEY)); // invalidate
@@ -89,8 +87,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
 
   public void testRegisterInterestResponse_NonExistent_Valid() throws Exception
   {
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.registerInterest(KEY, InterestResultPolicy.KEYS_VALUES);
     assertEquals("ValueMatrix1", r.getEntry(KEY).getValue());
@@ -100,8 +97,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
   {
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.put(KEY, "ValueMatrix1");
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "invalidateEntry",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.invalidateEntry( KEY ));
     r.registerInterest(KEY, InterestResultPolicy.KEYS_VALUES);
     assertEquals("ValueMatrix1", r.getEntry(KEY).getValue());
   }
@@ -118,8 +114,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
   {
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     invalidateEntry(KEY);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "invalidateEntry",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.invalidateEntry( KEY ));
     r.registerInterest(KEY, InterestResultPolicy.KEYS_VALUES);
     assertEquals(null, r.getEntry(KEY).getValue());
   }
@@ -129,8 +124,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
   {
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     invalidateEntry(KEY);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     r.registerInterest(KEY, InterestResultPolicy.KEYS_VALUES);
     assertEquals("ValueMatrix1", r.getEntry(KEY).getValue());
   }
@@ -140,8 +134,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.put(KEY, "DummyValue");
     r.destroy(KEY);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "invalidateEntry",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.invalidateEntry( KEY ));
     r.registerInterest(KEY, InterestResultPolicy.KEYS_VALUES);
     assertFalse(r.containsValueForKey(KEY)); // invalidate
     assertEquals(null, r.getEntry(KEY).getValue()); // invalidate
@@ -152,8 +145,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.put(KEY, "DummyValue");
     r.destroy(KEY);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     r.registerInterest(KEY, InterestResultPolicy.KEYS_VALUES);
     assertEquals("ValueMatrix1", r.getEntry(KEY).getValue());
   }
@@ -172,8 +164,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
 		
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.put(KEY, "DummyValue");
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-          new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
 
     r.registerInterest(KEY, InterestResultPolicy.KEYS_VALUES);      
     assertEquals(null, r.getEntry(KEY));   
@@ -208,8 +199,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
   {
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     waitForValue(r, KEY, "ValueMatrix1");
   }
 
@@ -217,32 +207,26 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
   {
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix2" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix2" ));
     waitForValue(r, KEY, "ValueMatrix2");
   }
 
   public void testNotification_NonExistent_Invalid() throws Exception
   {
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "invalidateEntryOnly",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.invalidateEntryOnly( KEY ));
     waitForValue(r, KEY, null); // invalidate
   }
 
   public void testNotification_NonExistent_Destroy() throws Exception
   {
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "destroyEntry",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.destroyEntry( KEY ));
     waitForValue(r, KEY, null); // destroyed
   }
 
@@ -251,8 +235,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.put(KEY, "DummyValue");
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     waitForValue(r, KEY, "ValueMatrix1");
   }
 
@@ -261,8 +244,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.put(KEY, "DummyValue");
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix2" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix2" ));
     waitForValue(r, KEY, "ValueMatrix2");
   }
 
@@ -271,8 +253,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.put(KEY, "DummyValue");
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "invalidateEntryOnly",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.invalidateEntryOnly( KEY ));
     waitForValue(r, KEY, null); // invalidate
   }
 
@@ -281,8 +262,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     r.put(KEY, "DummyValue");
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "destroyEntry",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.destroyEntry( KEY ));
     waitForValue(r, KEY, null); // destroyed
   }
 
@@ -291,8 +271,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     invalidateEntry(KEY);
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     waitForValue(r, KEY, "ValueMatrix1");
   }
 
@@ -301,8 +280,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     invalidateEntry(KEY);
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     waitForValue(r, KEY, "ValueMatrix1");
   }
 
@@ -311,8 +289,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     invalidateEntry(KEY);
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "invalidateEntryOnly",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.invalidateEntryOnly( KEY ));
     waitForValue(r, KEY, null); // invalidate
   }
 
@@ -321,8 +298,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     invalidateEntry(KEY);
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "destroyEntry",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.destroyEntry( KEY ));
     waitForValue(r, KEY, null); // destroyed
   }
 
@@ -331,8 +307,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     localInvalidateEntry(KEY);
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     waitForValue(r, KEY, "ValueMatrix1");
   }
 
@@ -341,8 +316,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     localInvalidateEntry(KEY);
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "updateEntry",
-        new Object[] { KEY, "ValueMatrix1" });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.updateEntry( KEY, "ValueMatrix1" ));
     waitForValue(r, KEY, "ValueMatrix1");
   }
 
@@ -351,8 +325,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     localInvalidateEntry(KEY);
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "invalidateEntryOnly",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.invalidateEntryOnly( KEY ));
     waitForValue(r, KEY, null); // invalidate
   }
 
@@ -361,8 +334,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     invalidateEntry(KEY);
     r.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "destroyEntry",
-        new Object[] { KEY });
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.destroyEntry( KEY ));
     waitForValue(r, KEY, null); // destroyed
   }
 
@@ -513,7 +485,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     // close the clients first
     closeCache();
     // then close the servers
-    server1.invoke(DurableResponseMatrixDUnitTest.class, "closeCache");
+    server1.invoke(() -> DurableResponseMatrixDUnitTest.closeCache());
   }
 
   public static void closeCache()

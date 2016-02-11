@@ -91,13 +91,13 @@ public class RegisterInterestKeysDUnitTest extends DistributedTestCase
 
     LogWriterUtils.getLogWriter().info("implementation class is " + impl.getClass());
 
-    PORT1 =  ((Integer)server1.invoke(impl.getClass(), "createServerCache" )).intValue();
-    PORT2 =  ((Integer)server2.invoke(impl.getClass(), "createServerCache" )).intValue();
+    PORT1 =  ((Integer)server1.invoke(() -> impl.createServerCache())).intValue();
+    PORT2 =  ((Integer)server2.invoke(() -> impl.createServerCache())).intValue();
     
-    client1.invoke(impl.getClass(), "createClientCache", new Object[] { 
-      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)});
-    client2.invoke(impl.getClass(), "createClientCache", new Object[] {
-      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)});
+    client1.invoke(() -> impl.createClientCache( 
+      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)));
+    client2.invoke(() -> impl.createClientCache(
+      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)));
 
   }
 
@@ -122,8 +122,8 @@ public class RegisterInterestKeysDUnitTest extends DistributedTestCase
   public void testRegisterCreatesInvalidEntry()
   {
     //  First create entries on both servers via the two client
-    client1.invoke(impl.getClass(), "createEntriesK1");
-    client2.invoke(impl.getClass(), "registerKeysK1");
+    client1.invoke(() -> impl.createEntriesK1());
+    client2.invoke(() -> impl.registerKeysK1());
   }
 
 
@@ -239,10 +239,10 @@ public class RegisterInterestKeysDUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     //close client
-    client1.invoke(impl.getClass(), "closeCache");
-    client2.invoke(impl.getClass(), "closeCache");
+    client1.invoke(() -> impl.closeCache());
+    client2.invoke(() -> impl.closeCache());
     //close server
-    server1.invoke(impl.getClass(), "closeCache");
-    server2.invoke(impl.getClass(), "closeCache");
+    server1.invoke(() -> impl.closeCache());
+    server2.invoke(() -> impl.closeCache());
   }
 }

@@ -56,14 +56,14 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase
       createEntriesK1andK2();
       registerK1AndK2();
       assertEquals(3, pool.getRedundantNames().size());
-      server0.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server1.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsNotAlive");
-      server2.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsNotAlive");
-      server3.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsNotAlive");
-      server0.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
-      server1.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
-      server2.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
-      server3.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
+      server0.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server1.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsNotAlive());
+      server2.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsNotAlive());
+      server3.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsNotAlive());
+      server0.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
+      server1.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
+      server2.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
+      server3.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = true;
       PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = true;
       PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
@@ -84,11 +84,11 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase
           makePrimaryCalled = true;
         }
       });
-      server0.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server0.invoke(() -> RedundancyLevelTestBase.stopServer());
       doPuts();
-      server1.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server2.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsNotAlive");
-      server3.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsNotAlive");
+      server1.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server2.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsNotAlive());
+      server3.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsNotAlive());
       verifyLiveAndRedundantServers(3, 2);
       if(registerInterestCalled){
         fail("register interest should not have been called since we failed to a redundant server !");
@@ -98,10 +98,10 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase
       }
       assertEquals(2, pool.getRedundantNames().size());
       makePrimaryCalled = false;
-      server1.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server1.invoke(() -> RedundancyLevelTestBase.stopServer());
       doPuts();
-      server2.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server3.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsNotAlive");
+      server2.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server3.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsNotAlive());
       verifyLiveAndRedundantServers(2, 1);
       if(registerInterestCalled){
         fail("register interest should not have been called since we failed to a redundant server !");
@@ -111,9 +111,9 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase
       }
       assertEquals(1, pool.getRedundantNames().size());
       makePrimaryCalled = false;
-      server2.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
       doPuts();
-      server3.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
+      server3.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
       verifyLiveAndRedundantServers(1, 0);
       if(registerInterestCalled){
         fail("register interest should not have been called since we failed to a redundant server !");
@@ -122,11 +122,11 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase
         fail("make primary should have been called since primary did fail and a new primary was to be chosen ");
       }
       assertEquals(0, pool.getRedundantNames().size());
-      server3.invoke(RedundancyLevelTestBase.class, "stopServer");
-      server0.invoke(RedundancyLevelTestBase.class, "startServer");
+      server3.invoke(() -> RedundancyLevelTestBase.stopServer());
+      server0.invoke(() -> RedundancyLevelTestBase.startServer());
       doPuts();
-      server0.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server0.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
+      server0.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server0.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       verifyLiveAndRedundantServers(1, 0);
       if(!registerInterestCalled){
         fail("register interest should have been called since a recovered server came up!");
@@ -160,31 +160,31 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase
       createEntriesK1andK2();
       registerK1AndK2();
       assertEquals(0, pool.getRedundantNames().size());
-      server0.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server0.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
-      server0.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server0.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server0.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
+      server0.invoke(() -> RedundancyLevelTestBase.stopServer());
       doPuts();
-      server1.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server1.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
+      server1.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server1.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       verifyLiveAndRedundantServers(3, 0);
       assertEquals(0, pool.getRedundantNames().size());
-      server1.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server1.invoke(() -> RedundancyLevelTestBase.stopServer());
       doPuts();
-      server2.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server2.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
+      server2.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server2.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       verifyLiveAndRedundantServers(2, 0);
       assertEquals(0, pool.getRedundantNames().size());
-      server2.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
       doPuts();
-      server3.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server3.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
+      server3.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server3.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       verifyLiveAndRedundantServers(1, 0);
       assertEquals(0, pool.getRedundantNames().size());
-      server3.invoke(RedundancyLevelTestBase.class, "stopServer");
-      server0.invoke(RedundancyLevelTestBase.class, "startServer");
+      server3.invoke(() -> RedundancyLevelTestBase.stopServer());
+      server0.invoke(() -> RedundancyLevelTestBase.startServer());
       doPuts();
-      server0.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server0.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
+      server0.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server0.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       verifyLiveAndRedundantServers(1, 0);
       assertEquals(0, pool.getRedundantNames().size());
     }
@@ -212,28 +212,28 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase
       createEntriesK1andK2();
       registerK1AndK2();
       assertEquals(1, pool.getRedundantNames().size());
-      server0.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server0.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server0.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server0.invoke(() -> RedundancyLevelTestBase.stopServer());
       doPuts();
-      server1.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server2.invoke(RedundancyLevelTestBase.class, "verifyCCP");
-      server2.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
+      server1.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server2.invoke(() -> RedundancyLevelTestBase.verifyCCP());
+      server2.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       verifyLiveAndRedundantServers(3, 1);
       assertEquals(1, pool.getRedundantNames().size());
-      server1.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server1.invoke(() -> RedundancyLevelTestBase.stopServer());
       doPuts();
-      server2.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server2.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server2.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
       doPuts();
-      server3.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server3.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
+      server3.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server3.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       verifyLiveAndRedundantServers(1, 0);
       assertEquals(0, pool.getRedundantNames().size());
-      server3.invoke(RedundancyLevelTestBase.class, "stopServer");
-      server0.invoke(RedundancyLevelTestBase.class, "startServer");
+      server3.invoke(() -> RedundancyLevelTestBase.stopServer());
+      server0.invoke(() -> RedundancyLevelTestBase.startServer());
       doPuts();
-      server0.invoke(RedundancyLevelTestBase.class, "verifyDispatcherIsAlive");
-      server0.invoke(RedundancyLevelTestBase.class, "verifyInterestRegistration");
+      server0.invoke(() -> RedundancyLevelTestBase.verifyDispatcherIsAlive());
+      server0.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       verifyLiveAndRedundantServers(1, 0);
       assertEquals(0, pool.getRedundantNames().size());
      }

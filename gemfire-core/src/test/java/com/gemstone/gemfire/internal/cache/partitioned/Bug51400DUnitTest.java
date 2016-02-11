@@ -79,11 +79,11 @@ public class Bug51400DUnitTest extends DistributedTestCase {
   protected final void preTearDown() throws Exception {
     closeCache();
 
-    client0.invoke(Bug51400DUnitTest.class, "closeCache");
-    client1.invoke(Bug51400DUnitTest.class, "closeCache");
+    client0.invoke(() -> Bug51400DUnitTest.closeCache());
+    client1.invoke(() -> Bug51400DUnitTest.closeCache());
 
-    server0.invoke(Bug51400DUnitTest.class, "closeCache");
-    server1.invoke(Bug51400DUnitTest.class, "closeCache");
+    server0.invoke(() -> Bug51400DUnitTest.closeCache());
+    server1.invoke(() -> Bug51400DUnitTest.closeCache());
   }
 
   public static void closeCache() throws Exception {
@@ -174,22 +174,19 @@ public class Bug51400DUnitTest extends DistributedTestCase {
     // Set infinite ack interval so that the queue will not be drained.
     int ackInterval = Integer.MAX_VALUE;
 
-    int port1 = (Integer) server0.invoke(Bug51400DUnitTest.class,
-        "createServerCache", new Object[] { maxQSize });
+    int port1 = (Integer) server0.invoke(() -> Bug51400DUnitTest.createServerCache( maxQSize ));
 
     client1.invoke(Bug51400DUnitTest.class, "createClientCache",
         new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer[]{port1}, ackInterval});
 
     // Do puts from server as well as from client on the same key.
-    AsyncInvocation ai1 = server0.invokeAsync(Bug51400DUnitTest.class,
-        "updateKey", new Object[] { 2 * maxQSize });
-    AsyncInvocation ai2 = client1.invokeAsync(Bug51400DUnitTest.class,
-        "updateKey", new Object[] { 2 * maxQSize });
+    AsyncInvocation ai1 = server0.invokeAsync(() -> Bug51400DUnitTest.updateKey( 2 * maxQSize ));
+    AsyncInvocation ai2 = client1.invokeAsync(() -> Bug51400DUnitTest.updateKey( 2 * maxQSize ));
     ai1.getResult();
     ai2.getResult();
     // Verify that the queue has crossed its limit of maxQSize
-    server0.invoke(Bug51400DUnitTest.class, "verifyQueueSize", new Object[] {
-        true, 2 * maxQSize });
+    server0.invoke(() -> Bug51400DUnitTest.verifyQueueSize(
+        true, 2 * maxQSize ));
   }
 
   public static void updateKey(Integer num) {

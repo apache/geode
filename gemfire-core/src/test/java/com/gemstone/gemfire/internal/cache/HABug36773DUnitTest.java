@@ -108,16 +108,12 @@ public class HABug36773DUnitTest extends DistributedTestCase
     // client 2 VM
     client2 = host.getVM(3);
 
-    PORT1 = ((Integer)server1.invoke(HABug36773DUnitTest.class,
-        "createServerCache")).intValue();
-    PORT2 = ((Integer)server2.invoke(HABug36773DUnitTest.class,
-        "createServerCache")).intValue();
-    client1.invoke(HABug36773DUnitTest.class, "disableShufflingOfEndpoints");
-    client2.invoke(HABug36773DUnitTest.class, "disableShufflingOfEndpoints");
-    client1.invoke(HABug36773DUnitTest.class, "createClientCache",
-        new Object[] { new Integer(PORT1), new Integer(PORT2) });
-    client2.invoke(HABug36773DUnitTest.class, "createClientCache",
-        new Object[] { new Integer(PORT1), new Integer(PORT2) });
+    PORT1 = ((Integer)server1.invoke(() -> HABug36773DUnitTest.createServerCache())).intValue();
+    PORT2 = ((Integer)server2.invoke(() -> HABug36773DUnitTest.createServerCache())).intValue();
+    client1.invoke(() -> HABug36773DUnitTest.disableShufflingOfEndpoints());
+    client2.invoke(() -> HABug36773DUnitTest.disableShufflingOfEndpoints());
+    client1.invoke(() -> HABug36773DUnitTest.createClientCache( new Integer(PORT1), new Integer(PORT2) ));
+    client2.invoke(() -> HABug36773DUnitTest.createClientCache( new Integer(PORT1), new Integer(PORT2) ));
 
   }
 
@@ -136,24 +132,22 @@ public class HABug36773DUnitTest extends DistributedTestCase
   public void _testBug36773() throws Exception
   {
     //First create entries on both servers via the two client
-    client1.invoke(HABug36773DUnitTest.class, "createEntriesK1andK2");
-    client2.invoke(HABug36773DUnitTest.class, "createEntriesK1andK2");
-    client1.invoke(HABug36773DUnitTest.class, "registerKeysK1andK2");
-    client2.invoke(HABug36773DUnitTest.class, "registerKeysK1andK2");
+    client1.invoke(() -> HABug36773DUnitTest.createEntriesK1andK2());
+    client2.invoke(() -> HABug36773DUnitTest.createEntriesK1andK2());
+    client1.invoke(() -> HABug36773DUnitTest.registerKeysK1andK2());
+    client2.invoke(() -> HABug36773DUnitTest.registerKeysK1andK2());
 
     server1.invoke(checkSizeRegion(2));
     server2.invoke(checkSizeRegion(2));
     client1.invoke(checkSizeRegion(2));
     client2.invoke(checkSizeRegion(2));
 
-    server1.invoke(HABug36773DUnitTest.class, "waitOnTheKeyEntry");
-    client1.invoke(HABug36773DUnitTest.class,
-        "acquireConnectionsAndPut", new Object[] {new Integer(PORT2)});
-    client1.invoke(HABug36773DUnitTest.class,
-        "acquireConnectionsAndPut", new Object[] {new Integer(PORT1)});
-      client2.invoke(HABug36773DUnitTest.class, "verifyEntries", new Object[] {new String(KEY2), new String (VALUE2)});
-    server1.invoke(HABug36773DUnitTest.class, "notfiyThread");
-    client2.invoke(HABug36773DUnitTest.class, "verifyEntries", new Object[] {new String(KEY1), new String (VALUE1)});
+    server1.invoke(() -> HABug36773DUnitTest.waitOnTheKeyEntry());
+    client1.invoke(() -> HABug36773DUnitTest.acquireConnectionsAndPut(new Integer(PORT2)));
+    client1.invoke(() -> HABug36773DUnitTest.acquireConnectionsAndPut(new Integer(PORT1)));
+      client2.invoke(() -> HABug36773DUnitTest.verifyEntries(new String(KEY2), new String (VALUE2)));
+    server1.invoke(() -> HABug36773DUnitTest.notfiyThread());
+    client2.invoke(() -> HABug36773DUnitTest.verifyEntries(new String(KEY1), new String (VALUE1)));
   
   }
 
@@ -360,11 +354,11 @@ public class HABug36773DUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     //close client
-    client1.invoke(HABug36773DUnitTest.class, "closeCache");
-    client2.invoke(HABug36773DUnitTest.class, "closeCache");
+    client1.invoke(() -> HABug36773DUnitTest.closeCache());
+    client2.invoke(() -> HABug36773DUnitTest.closeCache());
     //close server
-    server1.invoke(HABug36773DUnitTest.class, "closeCache");
-    server2.invoke(HABug36773DUnitTest.class, "closeCache");
+    server1.invoke(() -> HABug36773DUnitTest.closeCache());
+    server2.invoke(() -> HABug36773DUnitTest.closeCache());
   }
 }
 
