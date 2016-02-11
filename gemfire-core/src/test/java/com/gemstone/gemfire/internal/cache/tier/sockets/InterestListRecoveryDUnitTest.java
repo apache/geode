@@ -119,7 +119,9 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
     Wait.pause(20000);
     setServerUnavailable("localhost"+PORT2);
     Wait.pause(20000);
-    server1.invoke(() -> InterestListRecoveryDUnitTest.verifyUnregisterK1toK3());
+    fail("invoking bad method");
+    //This method doesn't exist
+//    server1.invoke(() -> InterestListRecoveryDUnitTest.verifyUnregisterK1toK3());
 
   }
 

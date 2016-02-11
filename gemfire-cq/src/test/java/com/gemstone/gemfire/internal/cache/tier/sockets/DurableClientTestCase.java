@@ -1272,8 +1272,10 @@ public class DurableClientTestCase extends DistributedTestCase {
     final int mcastPort = ports[1].intValue();
     
     // Start server 2 using the same mcast port as server 1
-    final int server2Port = ((Integer) this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true), new Integer(mcastPort))))
-        .intValue();
+    fail("Trying to get a result from a void method");
+    final int server2Port=0;
+//    final int server2Port = ((Integer) this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true), new Integer(mcastPort))))
+//        .intValue();
     
     // Start a durable client
     final String durableClientId = getName() + "_client";

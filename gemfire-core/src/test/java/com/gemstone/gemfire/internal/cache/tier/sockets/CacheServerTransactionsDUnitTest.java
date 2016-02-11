@@ -373,10 +373,12 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
    *
    */
   public void YOGESH_testClientToServerCommits(){
-    Integer port1 = ((Integer)server1.invoke(() -> CacheServerTransactionsDUnitTest.createServerCache()));
-    Integer port2 = ((Integer)server2.invoke(() -> CacheServerTransactionsDUnitTest.createServerCache()));
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port2 ));
+    fail("Invoking bad method");
+    int port1 = 0;
+//    Integer port1 = ((Integer)server1.invoke(() -> CacheServerTransactionsDUnitTest.createServerCache()));
+//    Integer port2 = ((Integer)server2.invoke(() -> CacheServerTransactionsDUnitTest.createServerCache()));
+//    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+//    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port2 ));
     client1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnClient());
     Wait.pause(PAUSE);
     

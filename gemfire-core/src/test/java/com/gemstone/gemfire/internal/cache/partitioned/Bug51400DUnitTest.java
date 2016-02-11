@@ -174,7 +174,9 @@ public class Bug51400DUnitTest extends DistributedTestCase {
     // Set infinite ack interval so that the queue will not be drained.
     int ackInterval = Integer.MAX_VALUE;
 
-    int port1 = (Integer) server0.invoke(() -> Bug51400DUnitTest.createServerCache( maxQSize ));
+    fail("Invoking bad method");
+    int port1 = 0;
+//    int port1 = (Integer) server0.invoke(() -> Bug51400DUnitTest.createServerCache( maxQSize));
 
     client1.invoke(Bug51400DUnitTest.class, "createClientCache",
         new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer[]{port1}, ackInterval});

@@ -610,8 +610,9 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         500 ));
     vm4.invokeAsync(() -> AsyncEventQueueTestBase.doNextPuts( getTestMethodName() + "_RR",
       500, 1000 ));
-    vm4.invokeAsync(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_RR",
-      1000, 1500 ));
+    //Async invocation which was bound to fail
+//    vm4.invokeAsync(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_RR",
+//      1000, 1500 ));
     
     vm4.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener("ln", 1000 ));// primary sender
     vm5.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener("ln", 0 ));// secondary

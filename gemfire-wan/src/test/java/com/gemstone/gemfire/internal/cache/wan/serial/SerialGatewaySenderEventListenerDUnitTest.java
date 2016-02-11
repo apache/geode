@@ -91,8 +91,9 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     
     vm4.invoke(() -> WANTestBase.printEventListenerMap());
     vm5.invoke(() -> WANTestBase.printEventListenerMap());
-    
-    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener1("ln", keyValues ));
+
+    fail("tried to invoke missing method");
+//    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener1("ln", keyValues ));
   }
   
   /**
@@ -150,8 +151,9 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
         getTestMethodName() + "_RR", 0 ));
     vm3.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_RR", 0 ));
-    
-    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener1("ln", keyValues ));
+
+    fail("tried to invoke missing method");
+//    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener1("ln", keyValues ));
   }
 
   /**
@@ -206,7 +208,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_RR", 0 ));
     
-    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener2("ln", keyValues ));
+    fail("tried to invoke missing method");    
+//    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener2("ln", keyValues ));
   }
   
   /**
@@ -260,7 +263,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.putGivenKeyValue( getTestMethodName() + "_RR",
       initialKeyValues ));
 
-    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener1("ln", initialKeyValues ));
+    fail("tried to invoke missing method");
+//    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener1("ln", initialKeyValues ));
     
     vm4.invoke(() -> WANTestBase.stopSender( "ln" ));
     
@@ -272,7 +276,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.putGivenKeyValue( getTestMethodName() + "_RR",
       keyValues ));
     
-    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener1("ln", initialKeyValues ));
+    fail("tried to invoke missing method");
+//    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener1("ln", initialKeyValues ));
 
     vm4.invoke(() -> WANTestBase.startSender( "ln" ));
 
@@ -285,7 +290,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
       finalKeyValues ));
     
     finalKeyValues.putAll(initialKeyValues);
-    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener1("ln", finalKeyValues ));
+    fail("tried to invoke missing method");
+//    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener1("ln", finalKeyValues ));
     
   }
     
