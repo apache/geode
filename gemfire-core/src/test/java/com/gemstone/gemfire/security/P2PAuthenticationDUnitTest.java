@@ -173,9 +173,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
             authInit);
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
             authenticator);
-    locatorVM.invoke(() -> SecurityTestUtil.startLocator(
-            getUniqueName(), new Integer(port), props, javaProps,
-            expectedExceptions));
+    startLocator(props, javaProps, port);
 
     LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
     SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
@@ -190,6 +188,13 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
               new Integer(port), expectedExceptions));
     }
 
+  }
+
+  protected void startLocator(Properties props, Properties javaProps,
+      int port) {
+    locatorVM.invoke(() -> SecurityTestUtil.startLocator(
+            getUniqueName(), new Integer(port), props, javaProps,
+            expectedExceptions));
   }
 
   // Authenticator is incorrect
@@ -211,9 +216,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
             authInit);
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
             authenticator);
-    locatorVM.invoke(() -> SecurityTestUtil.startLocator(
-            getUniqueName(), new Integer(port), props, javaProps,
-            expectedExceptions ));
+    startLocator(props, javaProps, port);
 
     LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
     SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
@@ -251,9 +254,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
             authInit);
     setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
             authenticator);
-    locatorVM.invoke(() -> SecurityTestUtil.startLocator(
-            getUniqueName(), new Integer(port), props, javaProps,
-            expectedExceptions ));
+    startLocator(props, javaProps, port);
 
     LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
     SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
@@ -292,9 +293,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     Properties credentials = gen.getValidCredentials(1);
     Properties javaProps = gen.getJavaProperties();
     props.putAll(credentials);
-    locatorVM.invoke(() -> SecurityTestUtil.startLocator(
-            getUniqueName(), new Integer(port), props, javaProps,
-            expectedExceptions ));
+    startLocator(props, javaProps, port);
     try {
       createDS(props, javaProps);
       verifyMembers(new Integer(2));
@@ -331,9 +330,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     Properties credentials = gen.getValidCredentials(1);
     Properties javaProps = gen.getJavaProperties();
     props.putAll(credentials);
-    locatorVM.invoke(() -> SecurityTestUtil.startLocator(
-            getUniqueName(), new Integer(port), props, javaProps,
-            expectedExceptions ));
+    startLocator(props, javaProps, port);
     try {
       // invalid credentials for the peer
       credentials = gen.getInvalidCredentials(1);
@@ -411,9 +408,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     Properties javaProps = gen.getJavaProperties();
     props.putAll(credentials);
     props.putAll(extraProps);
-    locatorVM.invoke(() -> SecurityTestUtil.startLocator(
-        getUniqueName(), new Integer(port), props, javaProps,
-        expectedExceptions ));
+    startLocator(props, javaProps, port);
     try {
 
     // Start the first peer with different authenticator
@@ -442,12 +437,9 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     javaProps = gen.getJavaProperties();
     props.putAll(credentials);
     props.putAll(extraProps);
-    peer2.invoke(() -> P2PAuthenticationDUnitTest.createDS(
-        props, javaProps ));
+    createDS(peer2, props, javaProps);
 
-    // Start the third peer with the same authenticator as locator
-    peer3.invoke(() -> P2PAuthenticationDUnitTest.createDS(
-        props, javaProps ));
+    createDS(peer3, props, javaProps);
 
     // wait for view propagation
     Wait.pause(2000);
@@ -479,6 +471,12 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     locatorVM.invoke(() -> SecurityTestUtil.stopLocator(
         new Integer(port), expectedExceptions ));
     }
+  }
+
+  protected void createDS(final VM peer2, Properties props,
+      Properties javaProps) {
+    peer2.invoke(() -> P2PAuthenticationDUnitTest.createDS(
+        props, javaProps ));
   }
 
   /**
@@ -516,9 +514,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     Properties javaProps = gen.getJavaProperties();
     props.putAll(credentials);
     props.putAll(extraProps);
-    locatorVM.invoke(() -> SecurityTestUtil.startLocator(
-        getUniqueName(), new Integer(port), props, javaProps,
-        expectedExceptions ));
+    startLocator(props, javaProps, port);
     try {
 
     // Start the first peer with huge credentials
@@ -567,12 +563,9 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     javaProps = gen.getJavaProperties();
     props.putAll(credentials);
     props.putAll(extraProps);
-    peer2.invoke(() -> P2PAuthenticationDUnitTest.createDS(
-        props, javaProps ));
+    createDS(peer2, props, javaProps);
 
-    // Start the third peer with the same authenticator as locator
-    peer3.invoke(() -> P2PAuthenticationDUnitTest.createDS(
-        props, javaProps ));
+    createDS(peer3, props, javaProps);
 
     // wait for view propagation
     Wait.pause(2000);

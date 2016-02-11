@@ -543,7 +543,8 @@ public class StatisticsDUnitTest extends CacheTestCase {
     
     int puts = 0;
     for (int pubVM = 0; pubVM < NUM_PUBS; pubVM++) {
-      int vmPuts = (int)pubs[pubVM].invoke(() -> readIntStat(new File(pubArchives[pubVM]), "PubSubStats", "puts"));
+      int currentPubVM = pubVM;
+      int vmPuts = (int)pubs[pubVM].invoke(() -> readIntStat(new File(pubArchives[currentPubVM]), "PubSubStats", "puts"));
       assertTrue(vmPuts > 0);
       assertEquals(MAX_PUTS * NUM_PUB_THREADS, vmPuts);
       puts += vmPuts;

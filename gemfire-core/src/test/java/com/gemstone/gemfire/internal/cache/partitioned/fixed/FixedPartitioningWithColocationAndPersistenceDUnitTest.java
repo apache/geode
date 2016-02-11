@@ -61,7 +61,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
               fpaList, 0, 40, 8, null, null, false ));
 
       fpa1 = FixedPartitionAttributes.createFixedPartition("Order100", true, 2);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Order",
               fpaList, 0, 40, 8, null, "Customer", false ));
@@ -115,7 +115,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("20", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("30", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("40", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -126,7 +126,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("30", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("20", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -137,7 +137,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("40", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("20", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -228,7 +228,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("20", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("30", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("40", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -239,7 +239,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("30", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("20", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -250,7 +250,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("40", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("20", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -345,7 +345,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("20", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("30", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("40", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -358,7 +358,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa3 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
       FixedPartitionAttributes fpa4 = FixedPartitionAttributes
           .createFixedPartition("20", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -420,7 +420,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("30", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("20", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -446,7 +446,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("40", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("20", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -503,7 +503,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("20", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("30", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("40", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -516,7 +516,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa3 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
       FixedPartitionAttributes fpa4 = FixedPartitionAttributes
           .createFixedPartition("20", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -578,7 +578,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("30", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("20", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -604,7 +604,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       fpa1 = FixedPartitionAttributes.createFixedPartition("40", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
       fpa3 = FixedPartitionAttributes.createFixedPartition("20", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
@@ -653,7 +653,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
 
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
             fpaList, 0, 40, 12, new QuarterPartitionResolver(), null, true ));
@@ -667,7 +667,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
 
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
             fpaList, 0, 40, 12, new QuarterPartitionResolver(), null, true ));
@@ -676,14 +676,14 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
 
     member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
             fpaList, 0, 40, 12, new QuarterPartitionResolver(), null, true ));
 
     member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
             fpaList, 0, 40, 12, new QuarterPartitionResolver(), null, true ));
@@ -722,7 +722,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -743,7 +743,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -759,7 +759,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter2, false, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -799,7 +799,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
 
       fpa1 = FixedPartitionAttributes.createFixedPartition("20", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Customer",
@@ -851,7 +851,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition("20", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       AsyncInvocation[] async = new AsyncInvocation[2];
@@ -905,7 +905,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
 
       fpa1 = FixedPartitionAttributes.createFixedPartition("20", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Customer",
@@ -949,7 +949,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
       member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition("20", true, 5);
       fpa2 = FixedPartitionAttributes.createFixedPartition("10", false, 5);
-      fpaList = new ArrayList<FixedPartitionAttributes>();
+      fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Customer",
@@ -980,7 +980,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -1000,7 +1000,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member2.invokeAsync(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -1009,7 +1009,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member1.invokeAsync(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -1042,7 +1042,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -1051,7 +1051,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter4, false, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -1060,7 +1060,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -1086,7 +1086,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter4, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter1, false, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member4.invokeAsync(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -1095,7 +1095,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter4, false, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member3.invokeAsync(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -1104,7 +1104,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter3, false, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member2.invokeAsync(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",
@@ -1113,7 +1113,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
     fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter2, false, 3);
-    fpaList = new ArrayList<FixedPartitionAttributes>();
+    fpaList.clear();
     fpaList.add(fpa1);
     fpaList.add(fpa2);
     member1.invokeAsync(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter",

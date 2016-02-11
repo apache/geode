@@ -577,7 +577,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
         "ln", 2, false, 100, false, false, eventFiletrs,
         null, true, false  ));
     try {
-      eventFiletrs = new ArrayList<GatewayEventFilter>();
+      eventFiletrs.clear();
       eventFiletrs.add(new Filter70());
       vm2.invoke(() -> WANTestBase.createSenderForValidations(
           "ln", 2, false, 100, false, false,
@@ -605,7 +605,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
         "ln", 2, false, 100, false, false, eventFiletrs,
         null, true, false  ));
     try {
-      eventFiletrs = new ArrayList<GatewayEventFilter>();
+      eventFiletrs.clear();
       eventFiletrs.add(new MyGatewayEventFilter());
       eventFiletrs.add(new Filter70());
       vm2.invoke(() -> WANTestBase.createSenderForValidations(
@@ -635,7 +635,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
         "ln", 2, false, 100, false, false, null,
         transportFiletrs, true, false  ));
    try {
-      transportFiletrs = new ArrayList<GatewayTransportFilter>();
+      transportFiletrs.clear();
       transportFiletrs.add(new MyGatewayTransportFilter3());
       transportFiletrs.add(new MyGatewayTransportFilter4());
       vm2.invoke(() -> WANTestBase.createSenderForValidations(
@@ -665,7 +665,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
         "ln", 2, false, 100, false, false, null,
         transportFiletrs, true, false  ));
    try {
-      transportFiletrs = new ArrayList<GatewayTransportFilter>();
+      transportFiletrs.clear();
       transportFiletrs.add(new MyGatewayTransportFilter2());
       transportFiletrs.add(new MyGatewayTransportFilter1());
       vm2.invoke(() -> WANTestBase.createSenderForValidations(

@@ -83,10 +83,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
           extraAuthProps, extraAuthzProps);
       Integer port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
       Integer port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-      server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(SecurityTestUtil.getLocatorPort(), port1, serverProps,
-              javaProps));
-      server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(SecurityTestUtil.getLocatorPort(), port2, serverProps,
-              javaProps));
+      createCacheServers(javaProps, serverProps, port1, port2);
 
       if (!prepareClientsForOps(gen, cGen, new OperationCode[] {
           OperationCode.PUT, OperationCode.PUT}, new OperationCode[] {
@@ -359,10 +356,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
           extraAuthProps, extraAuthzProps);
       Integer port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
       Integer port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-      server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(SecurityTestUtil.getLocatorPort(), port1, serverProps,
-              javaProps));
-      server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(SecurityTestUtil.getLocatorPort(), port2, serverProps,
-              javaProps));
+      createCacheServers(javaProps, serverProps, port1, port2);
 
       // Start client1 with valid/invalid QUERY credentials
       Properties[] client1Credentials = new Properties[] {
@@ -466,6 +460,14 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
 
   }
 
+  protected void createCacheServers(Properties javaProps,
+      Properties serverProps, Integer port1, Integer port2) {
+    server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(SecurityTestUtil.getLocatorPort(), port1, serverProps,
+            javaProps));
+    server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(SecurityTestUtil.getLocatorPort(), port2, serverProps,
+            javaProps));
+  }
+
   public void testOpsWithClientsInDifferentModes() throws Exception {
     Iterator iter = getDummyGeneratorCombos().iterator();
     while (iter.hasNext()) {
@@ -488,10 +490,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
           extraAuthProps, extraAuthzProps);
       Integer port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
       Integer port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-      server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(SecurityTestUtil.getLocatorPort(), port1, serverProps,
-              javaProps));
-      server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(SecurityTestUtil.getLocatorPort(), port2, serverProps,
-              javaProps));
+      createCacheServers(javaProps, serverProps, port1, port2);
 
       if (!prepareClientsForOps(gen, cGen, new OperationCode[] {
           OperationCode.PUT, OperationCode.PUT}, new OperationCode[] {

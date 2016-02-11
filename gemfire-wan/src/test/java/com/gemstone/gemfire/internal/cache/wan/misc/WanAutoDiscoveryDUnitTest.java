@@ -266,9 +266,9 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
         .invoke(() -> WANTestBase.createSecondRemoteLocator(
             2, nyLocPort1, lnLocPort1 ));
     
-    locatorToWaitFor = new InetSocketAddress("localhost", nyLocPort3);
+    InetSocketAddress locatorToWaitFor2 = new InetSocketAddress("localhost", nyLocPort3);
 
-    vm2.invoke(() -> WANTestBase.checkLocatorsinSender("ln", locatorToWaitFor ));
+    vm2.invoke(() -> WANTestBase.checkLocatorsinSender("ln", locatorToWaitFor2 ));
 
   }
   

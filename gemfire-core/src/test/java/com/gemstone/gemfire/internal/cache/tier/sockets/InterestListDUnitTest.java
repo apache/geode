@@ -378,17 +378,14 @@ public class InterestListDUnitTest extends DistributedTestCase
      * create Entries in all the vms
      * register interest in various ways and ensure that registration listeners
      * are properly invoked
+     * @throws Exception 
      */
-    public void testInterestRegistrationListeners() {
-      int port2 = 0;
+    public void testInterestRegistrationListeners() throws Exception {
+      int port2;
 
-      try {
-        createCache();
-        server = addCacheServer();
-        port2 = server.getPort();
-      } catch (Exception ex) {
-        Assert.fail("Cache creation threw an exception", ex);
-      }
+      createCache();
+      server = addCacheServer();
+      port2 = server.getPort();
 
       addRegisterInterestListener();
       vm0.invoke(() -> InterestListDUnitTest.addRegisterInterestListener());

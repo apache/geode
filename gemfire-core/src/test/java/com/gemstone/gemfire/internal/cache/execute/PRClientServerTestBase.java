@@ -605,10 +605,10 @@ public class PRClientServerTestBase extends CacheTestCase {
 
     server3.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
 
-    props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    client.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
+    Properties props2 = new Properties();
+    props2.setProperty("mcast-port", "0");
+    props2.setProperty("locators", "");
+    client.invoke(() -> PRClientServerTestBase.createCacheInVm( props2 ));
   }
   
   public static void createCacheInVm(Properties props) {

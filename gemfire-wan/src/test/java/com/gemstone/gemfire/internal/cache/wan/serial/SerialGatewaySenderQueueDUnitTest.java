@@ -121,7 +121,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     primarySenderUpdates = (HashMap)vm4.invoke(() -> WANTestBase.checkQueue());
     secondarySenderUpdates = (HashMap)vm5.invoke(() -> WANTestBase.checkQueue());
     
-    vm5.invoke(() -> WANTestBase.checkQueueOnSecondary( primarySenderUpdates ));
+    checkPrimarySenderUpdatesOnVM5(primarySenderUpdates);
 //    assertEquals(primarySenderUpdates, secondarySenderUpdates);
     
     vm4.invoke(() -> WANTestBase.resumeSender( "ln"));
@@ -143,6 +143,10 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     // removing all the keys.
     secondarySenderUpdates = (HashMap)vm5.invoke(() -> WANTestBase.checkQueue());
     assertEquals(secondarySenderUpdates.get("Destroy"), receiverUpdates.get("Create"));
+  }
+
+  protected void checkPrimarySenderUpdatesOnVM5(HashMap primarySenderUpdates) {
+    vm5.invoke(() -> WANTestBase.checkQueueOnSecondary( primarySenderUpdates ));
   }
   
   public void testPrimarySecondaryQueueDrainInOrder_PR() throws Exception {
@@ -192,7 +196,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     Wait.pause(5000);
     HashMap primarySenderUpdates = (HashMap)vm4.invoke(() -> WANTestBase.checkQueue());
     HashMap secondarySenderUpdates = (HashMap)vm5.invoke(() -> WANTestBase.checkQueue());
-    vm5.invoke(() -> WANTestBase.checkQueueOnSecondary( primarySenderUpdates ));
+    checkPrimarySenderUpdatesOnVM5(primarySenderUpdates);
     
     vm4.invoke(() -> WANTestBase.resumeSender( "ln"));
     Wait.pause(4000);

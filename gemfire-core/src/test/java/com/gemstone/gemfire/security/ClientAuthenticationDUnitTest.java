@@ -237,10 +237,8 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       LogWriterUtils.getLogWriter().info(
           "testValidCredentials: For second client credentials: "
               + credentials2 + " : " + javaProps2);
-      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials1, javaProps1, port1, port2,
-              null, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
-      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2, javaProps2, port1, port2,
-              null, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+      createClientsNoException(multiUser, authInit, port1, port2, credentials1,
+          javaProps1, credentials2, javaProps2);
 
       // Perform some put operations from client1
       client1.invoke(() -> SecurityTestUtil.doPuts( new Integer(2) ));
@@ -277,8 +275,8 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       Integer locPort1 = SecurityTestUtil.getLocatorPort();
       Integer locPort2 = SecurityTestUtil.getLocatorPort();
       String locString = SecurityTestUtil.getLocatorString();
-      Integer port1 = ((Integer)server1.invoke(() -> ClientAuthenticationDUnitTest.createCacheServer( locPort1, locString, authenticator, extraProps,
-              javaProps )));
+      Integer port1 = createServer1(extraProps, javaProps, authenticator,
+          locPort1, locString);
       Integer port2 = ((Integer)server2.invoke(() -> ClientAuthenticationDUnitTest.createCacheServer( locPort2, locString, authenticator, extraProps,
               javaProps )));
 
@@ -288,8 +286,8 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       LogWriterUtils.getLogWriter().info(
           "testNoCredentials: For first client credentials: " + credentials1
               + " : " + javaProps1);
-      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials1, javaProps1, port1, port2,
-              null, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+      createClient1NoException(multiUser, authInit, port1, port2, credentials1,
+          javaProps1);
 
       // Perform some put operations from client1
       client1.invoke(() -> SecurityTestUtil.doPuts( new Integer(2) ));
@@ -335,8 +333,8 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       Integer locPort1 = SecurityTestUtil.getLocatorPort();
       Integer locPort2 = SecurityTestUtil.getLocatorPort();
       String locString = SecurityTestUtil.getLocatorString();
-      Integer port1 = ((Integer)server1.invoke(() -> ClientAuthenticationDUnitTest.createCacheServer( locPort1, locString, authenticator, extraProps,
-              javaProps )));
+      Integer port1 = createServer1(extraProps, javaProps, authenticator,
+          locPort1, locString);
       Integer port2 = ((Integer)server2.invoke(() -> ClientAuthenticationDUnitTest.createCacheServer( locPort2, locString, authenticator, extraProps,
               javaProps )));
 
@@ -346,8 +344,8 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       LogWriterUtils.getLogWriter().info(
           "testInvalidCredentials: For first client credentials: "
               + credentials1 + " : " + javaProps1);
-      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials1, javaProps1, port1, port2,
-              null, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+      createClient1NoException(multiUser, authInit, port1, port2, credentials1,
+          javaProps1);
 
       // Perform some put operations from client1
       client1.invoke(() -> SecurityTestUtil.doPuts( new Integer(2) ));
@@ -383,8 +381,8 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       // Start the server
       Integer locPort1 = SecurityTestUtil.getLocatorPort();
       String locString = SecurityTestUtil.getLocatorString();
-      Integer port1 = ((Integer)server1.invoke(() -> ClientAuthenticationDUnitTest.createCacheServer( locPort1, locString, authenticator, extraProps,
-              javaProps )));
+      Integer port1 = createServer1(extraProps, javaProps, authenticator,
+          locPort1, locString);
 
       Properties credentials = gen.getValidCredentials(1);
       javaProps = gen.getJavaProperties();
@@ -395,6 +393,13 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
           new Object[] { "com.gemstone.none", credentials, javaProps,
             new Integer[] { port1 }, null, multiUser,
             Integer.valueOf(SecurityTestUtil.AUTHREQ_EXCEPTION) });
+  }
+
+  protected Integer createServer1(Properties extraProps, Properties javaProps,
+      String authenticator, Integer locPort1, String locString) {
+    Integer port1 = ((Integer)server1.invoke(() -> ClientAuthenticationDUnitTest.createCacheServer( locPort1, locString, authenticator, extraProps,
+            javaProps )));
+    return port1;
   }
 
   public void testNoAuthInitWithCredentials() {
@@ -419,8 +424,8 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       Integer locPort1 = SecurityTestUtil.getLocatorPort();
       Integer locPort2 = SecurityTestUtil.getLocatorPort();
       String locString = SecurityTestUtil.getLocatorString();
-      Integer port1 = ((Integer)server1.invoke(() -> ClientAuthenticationDUnitTest.createCacheServer( locPort1, locString, authenticator, extraProps,
-              javaProps )));
+      Integer port1 = createServer1(extraProps, javaProps, authenticator,
+          locPort1, locString);
       Integer port2 = ((Integer)server2.invoke(() -> ClientAuthenticationDUnitTest.createCacheServer( locPort2, locString, authenticator, extraProps,
               javaProps )));
 
@@ -443,9 +448,9 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       
 
       // Now also try with invalid credentials
-      credentials2 = gen.getInvalidCredentials(5);
-      javaProps2 = gen.getJavaProperties();
-      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( null, credentials2, javaProps2, port1, port2, null,
+      Properties credentials3 = gen.getInvalidCredentials(5);
+      Properties javaProps3 = gen.getJavaProperties();
+      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( null, credentials3, javaProps3, port1, port2, null,
           multiUser, new Integer(SecurityTestUtil.AUTHREQ_EXCEPTION) ));
   }
 
@@ -472,23 +477,23 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
               extraProps, javaProps ));
 
       // Trying to create the region on client should throw a security exception
-      Properties credentials = gen.getValidCredentials(1);
-      javaProps = gen.getJavaProperties();
+      Properties credentials2 = gen.getValidCredentials(1);
+      Properties javaProps2 = gen.getJavaProperties();
       LogWriterUtils.getLogWriter().info(
           "testInvalidAuthenticator: For first client credentials: "
-              + credentials + " : " + javaProps);
-      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials, javaProps, port1, null,
+              + credentials2 + " : " + javaProps2);
+      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2, javaProps2, port1, null,
               new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) ));
       client1.invoke(() -> SecurityTestUtil.closeCache());
       
 
       // Also test with invalid credentials
-      credentials = gen.getInvalidCredentials(1);
-      javaProps = gen.getJavaProperties();
+      Properties credentials3 = gen.getInvalidCredentials(1);
+      Properties javaProps3 = gen.getJavaProperties();
       LogWriterUtils.getLogWriter().info(
           "testInvalidAuthenticator: For first client credentials: "
-              + credentials + " : " + javaProps);
-      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials, javaProps, port1, null,
+              + credentials3 + " : " + javaProps3);
+      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials3, javaProps3, port1, null,
               new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) ));
   }
 
@@ -529,10 +534,8 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       LogWriterUtils.getLogWriter().info(
           "testNoAuthenticatorWithCredentials: For second client credentials: "
               + credentials2 + " : " + javaProps2);
-      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials1, javaProps1, port1, port2,
-              null, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
-      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2, javaProps2, port1, port2,
-              null, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+      createClientsNoException(multiUser, authInit, port1, port2, credentials1,
+          javaProps1, credentials2, javaProps2);
 
       // Perform some put operations from client1
       client1.invoke(() -> SecurityTestUtil.doPuts( new Integer(2) ));
@@ -581,10 +584,8 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       LogWriterUtils.getLogWriter().info(
           "testCredentialsWithFailover: For second client credentials: "
               + credentials2 + " : " + javaProps2);
-      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials1, javaProps1, port1, port2,
-              null, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
-      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2, javaProps2, port1, port2,
-              null, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+      createClientsNoException(multiUser, authInit, port1, port2, credentials1,
+          javaProps1, credentials2, javaProps2);
 
       // Perform some put operations from client1
       client1.invoke(() -> SecurityTestUtil.doPuts( new Integer(2) ));
@@ -620,12 +621,12 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
 
       // Now try to connect client1 with invalid credentials
       // Verify that the creation of region throws security exception
-      credentials1 = gen.getInvalidCredentials(7);
-      javaProps1 = gen.getJavaProperties();
+      Properties credentials3 = gen.getInvalidCredentials(7);
+      Properties javaProps3 = gen.getJavaProperties();
       LogWriterUtils.getLogWriter().info(
           "testCredentialsWithFailover: For first client invalid credentials: "
-              + credentials1 + " : " + javaProps1);
-      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials1, javaProps1, port1, port2,
+              + credentials3 + " : " + javaProps3);
+      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials3, javaProps3, port1, port2,
               null, multiUser, new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) ));
 
       if (multiUser) {
@@ -634,6 +635,15 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
         client1.invoke(() -> SecurityTestUtil.doSimplePut("CacheClosedException"));
         client2.invoke(() -> SecurityTestUtil.doSimpleGet("CacheClosedException"));
       }
+  }
+
+  protected void createClientsNoException(Boolean multiUser, String authInit,
+      Integer port1, Integer port2, Properties credentials1,
+      Properties javaProps1, Properties credentials2, Properties javaProps2) {
+    createClient1NoException(multiUser, authInit, port1, port2, credentials1,
+        javaProps1);
+    client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2, javaProps2, port1, port2,
+            null, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
   }
 
   public void testCredentialsForNotifications() {
@@ -677,12 +687,12 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       LogWriterUtils.getLogWriter().info(
           "testCredentialsForNotifications: For second client credentials: "
               + credentials2 + " : " + javaProps2);
-      client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials1, javaProps1, port1, port2,
-              null, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+      createClient1NoException(multiUser, authInit, port1, port2, credentials1,
+          javaProps1);
       // Set up zero forward connections to check notification handshake only
       Object zeroConns = new Integer(0);
-      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2, javaProps2, port1, port2,
-              zeroConns, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+      createClient2NoException(multiUser, authInit, port1, port2, credentials2,
+          javaProps2, zeroConns);
 
       // Register interest on all keys on second client
       client2
@@ -733,8 +743,8 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
       LogWriterUtils.getLogWriter().info(
           "testCredentialsForNotifications: For second client invalid credentials: "
               + credentials2 + " : " + javaProps2);
-      client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2, javaProps2, port1, port2,
-              zeroConns, multiUser, new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) ));
+      createClient2WithException(multiUser, authInit, port1, port2,
+          credentials2, javaProps2, zeroConns);
 
       // Now try to connect client2 with invalid auth-init method
       // Trying to create the region on client with valid credentials should
@@ -754,14 +764,10 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
         server2.invoke(() -> ClientAuthenticationDUnitTest.createCacheServer( locPort2, locString, port2,
                 "com.gemstone.gemfire.none", extraProps, javaProps ));
 
-        // Trying to create the region on client with valid/invalid credentials
-        // should throw a security exception
-        client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials1,
-                javaProps1, port1, port2, zeroConns, multiUser,
-                new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) ));
-        client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2,
-                javaProps2, port1, port2, zeroConns, multiUser,
-                new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) ));
+        createClient2WithException(multiUser, authInit, port1, port2,
+            credentials1, javaProps1, zeroConns);
+        createClient1WithException(multiUser, authInit, port1, port2,
+            credentials2, javaProps2, zeroConns);
       }
       else {
         LogWriterUtils.getLogWriter().info(
@@ -780,14 +786,11 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
         client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( null, credentials1, javaProps1,
                 port1, port2, null, multiUser,
                 new Integer(SecurityTestUtil.AUTHREQ_EXCEPTION) ));
-        client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( null, credentials2, javaProps2,
-                port1, port2, zeroConns, multiUser,
-                new Integer(SecurityTestUtil.AUTHREQ_EXCEPTION) ));
+        createClient2AuthReqException(multiUser, port1, port2, credentials2,
+            javaProps2, zeroConns);
 
-        // Now also try with invalid credentials on client2
-        client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( null, credentials2, javaProps2,
-                port1, port2, zeroConns, multiUser,
-                new Integer(SecurityTestUtil.AUTHREQ_EXCEPTION) ));
+        createClient2AuthReqException(multiUser, port1, port2, credentials2,
+            javaProps2, zeroConns);
       }
       else {
         LogWriterUtils.getLogWriter().info(
@@ -804,12 +807,10 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
                 null, extraProps, javaProps ));
         server2.invoke(() -> ClientAuthenticationDUnitTest.createCacheServer( locPort2, locString, port2,
                 null, extraProps, javaProps ));
-        client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials1,
-                javaProps1, port1, port2, null, multiUser,
-                new Integer(SecurityTestUtil.NO_EXCEPTION) ));
-        client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2,
-                javaProps2, port1, port2, zeroConns, multiUser,
-                new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+        createClient1NoException(multiUser, authInit, port1, port2,
+            credentials1, javaProps1);
+        createClient2NoException(multiUser, authInit, port1, port2,
+            credentials2, javaProps2, zeroConns);
 
         // Register interest on all keys on second client
         client2.invoke(() -> ClientAuthenticationDUnitTest.registerAllInterest());
@@ -821,12 +822,10 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
         client2.invoke(() -> SecurityTestUtil.doLocalGets( new Integer(4) ));
 
         // Now also try with valid credentials on client2
-        client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2,
-                javaProps2, port1, port2, null, multiUser,
-                new Integer(SecurityTestUtil.NO_EXCEPTION) ));
-        client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials1,
-                javaProps1, port1, port2, zeroConns, multiUser,
-                new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+        createClient1NoException(multiUser, authInit, port1, port2,
+            credentials2, javaProps2);
+        createClient2NoException(multiUser, authInit, port1, port2,
+            credentials1, javaProps1, zeroConns);
 
         // Register interest on all keys on second client
         client2.invoke(() -> ClientAuthenticationDUnitTest.registerAllInterest());
@@ -842,6 +841,44 @@ public class ClientAuthenticationDUnitTest extends DistributedTestCase {
             "testCredentialsForNotifications: Skipping scheme ["
                 + gen.classCode() + "] which has no authenticator");
       }
+  }
+
+  protected void createClient1NoException(Boolean multiUser, String authInit,
+      Integer port1, Integer port2, Properties credentials2,
+      Properties javaProps2) {
+    client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2,
+            javaProps2, port1, port2, null, multiUser,
+            new Integer(SecurityTestUtil.NO_EXCEPTION) ));
+  }
+
+  protected void createClient2AuthReqException(Boolean multiUser, Integer port1,
+      Integer port2, Properties credentials2, Properties javaProps2,
+      Object zeroConns) {
+    client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( null, credentials2, javaProps2,
+            port1, port2, zeroConns, multiUser,
+            new Integer(SecurityTestUtil.AUTHREQ_EXCEPTION) ));
+  }
+
+  protected void createClient1WithException(Boolean multiUser, String authInit,
+      Integer port1, Integer port2, Properties credentials2,
+      Properties javaProps2, Object zeroConns) {
+    client1.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2,
+            javaProps2, port1, port2, zeroConns, multiUser,
+            new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) ));
+  }
+
+  protected void createClient2WithException(Boolean multiUser, String authInit,
+      Integer port1, Integer port2, Properties credentials2,
+      Properties javaProps2, Object zeroConns) {
+    client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2, javaProps2, port1, port2,
+            zeroConns, multiUser, new Integer(SecurityTestUtil.AUTHFAIL_EXCEPTION) ));
+  }
+
+  protected void createClient2NoException(Boolean multiUser, String authInit,
+      Integer port1, Integer port2, Properties credentials2,
+      Properties javaProps2, Object zeroConns) {
+    client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, credentials2, javaProps2, port1, port2,
+            zeroConns, multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION) ));
   }
 
   //////////////////////////////////////////////////////////////////////////////
