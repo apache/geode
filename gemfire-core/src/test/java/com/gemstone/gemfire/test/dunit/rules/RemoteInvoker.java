@@ -27,7 +27,11 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 public class RemoteInvoker implements Serializable {
 
   public void invokeEverywhere(final SerializableRunnable runnable) {
-    runnable.run();
+    try {
+      runnable.run();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     invokeInEveryVM(runnable);
     invokeInLocator(runnable);
   }

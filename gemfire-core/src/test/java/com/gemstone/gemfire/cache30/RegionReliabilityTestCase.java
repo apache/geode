@@ -1118,7 +1118,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     });
     
     // define the afterReleaseLocalLocks callback
-    Runnable removeRequiredRole = new SerializableRunnable() {
+    Runnable removeRequiredRole = new Runnable() {
       public void run() {
         Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
           public void run() {
@@ -1240,7 +1240,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     region.put("INVALIDATE_ME", "VAL");
       
     // define the afterReleaseLocalLocks callback
-    Runnable removeRequiredRole = new SerializableRunnable() {
+    Runnable removeRequiredRole = new Runnable() {
       public void run() {
         Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
           public void run() {
