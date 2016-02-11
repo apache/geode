@@ -191,7 +191,7 @@ public class DistAckMapMethodsDUnitTest extends DistributedTestCase{
         vm0.invoke(DistAckMapMethodsDUnitTest.class, "putMethod", objArr);
         vm0.invoke(DistAckMapMethodsDUnitTest.class, "removeMethod", objArr);
         //validate if vm0 has that key value entry
-        ret = vm0.invokeBoolean(DistAckMapMethodsDUnitTest.class, "containsKeyMethod", objArr);
+        ret = vm0.invoke(() -> containsKeyMethod("" + i));
         if( ret ){//if returned true means that the key is still there
             fail("region.remove failed with distributed ack scope");
         }
@@ -268,15 +268,13 @@ public class DistAckMapMethodsDUnitTest extends DistributedTestCase{
         //Integer in = new Integer(i);
         //objArr[0] = (Object) in;
         vm0.invoke(DistAckMapMethodsDUnitTest.class, "putMethod", objArr);
-        Object ob[] = new Object[1];
-        ob[0] = "first";
-        boolean val = vm1.invokeBoolean(DistAckMapMethodsDUnitTest.class, "containsValueMethod", ob);
+        boolean val = vm1.invoke(() -> containsValueMethod("first"));
         if (val){//val should be false.
             fail("Failed in region.ContainsValue");
         }
         
         vm1.invoke(DistAckMapMethodsDUnitTest.class, "getMethod", objArr);
-        boolean val1 = vm1.invokeBoolean(DistAckMapMethodsDUnitTest.class, "containsValueMethod", ob);
+        boolean val1 = vm1.invoke(() -> containsValueMethod("first"));
         if (!val1){//val1 should be true.
             fail("Failed in region.ContainsValue");
         }

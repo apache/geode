@@ -237,9 +237,7 @@ public class ClearMultiVmDUnitTest extends DistributedTestCase{
         objArr[0] = ""+i;
         vm1.invoke(ClearMultiVmDUnitTest.class, "getMethod", objArr);
         
-        Object ob[] = new Object[1];
-        ob[0] = "secondVM";
-        boolean val = vm1.invokeBoolean(ClearMultiVmDUnitTest.class, "containsValueMethod", ob);
+        boolean val = vm1.invoke(() -> containsValueMethod("secondVM"));
         assertEquals(true, val);
         
     }//end of testClearMultiVM
