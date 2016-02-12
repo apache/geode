@@ -16,8 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -38,26 +44,17 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
-import com.gemstone.gemfire.internal.cache.partitioned.fixed.FixedPartitioningTestBase.Q1_Months;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallableIF;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Map.Entry;
 
 public class FixedPRSinglehopDUnitTest extends CacheTestCase {
 
@@ -98,7 +95,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   public FixedPRSinglehopDUnitTest(String name) {
     super(name);
   }
-
+  
   public void testNoClientConnected() {
     final Host host = Host.getHost(0);
     VM accessorServer = host.getVM(0);
@@ -204,6 +201,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
 
     verifyEmptyStaticData();
   }
+  
   // 4 servers, 1 client connected to all 4 servers.
   // Put data, get data and make the metadata stable.
   // Now verify that metadata has all 8 buckets info.
@@ -252,16 +250,18 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
 
     getFromPartitionedRegions();
 
-    server1.invoke(FixedPRSinglehopDUnitTest.class, "printView");
-    server2.invoke(FixedPRSinglehopDUnitTest.class, "printView");
-    server3.invoke(FixedPRSinglehopDUnitTest.class, "printView");
-    server4.invoke(FixedPRSinglehopDUnitTest.class, "printView");
+    SerializableRunnableIF printView = () -> FixedPRSinglehopDUnitTest.printView(); 
+    server1.invoke(printView);
+    server2.invoke(printView);
+    server3.invoke(printView);
+    server4.invoke(printView);
     
     int totalBucketOnServer = 0;
-    totalBucketOnServer += (Integer)server1.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
-    totalBucketOnServer += (Integer)server2.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
-    totalBucketOnServer += (Integer)server3.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
-    totalBucketOnServer += (Integer)server4.invoke(FixedPRSinglehopDUnitTest.class, "totalNumBucketsCreated");
+    SerializableCallableIF<Integer> getBucketCount = () -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated();
+    totalBucketOnServer += server1.invoke(getBucketCount);
+    totalBucketOnServer += server2.invoke(getBucketCount);
+    totalBucketOnServer += server3.invoke(getBucketCount);
+    totalBucketOnServer += server4.invoke(getBucketCount);
     
     verifyMetadata(totalBucketOnServer,2);
     updateIntoSinglePR();
@@ -873,13 +873,16 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
       }
 
       public String description() {
-        return "expected no metadata to be refreshed";
+        return "expected no metadata to be refreshed.  Expected " + totalBuckets
+            + " entries but found " + prMetaData.getBucketServerLocationsMap_TEST_ONLY();
       }
     };
     Wait.waitForCriterion(wc, 60000, 1000, true);
-    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-        .entrySet()) {
-      assertEquals(currentRedundancy, ((List)entry.getValue()).size());
+    System.out.println("metadata is " + prMetaData);
+    System.out.println("metadata bucket locations map is " + prMetaData.getBucketServerLocationsMap_TEST_ONLY());
+    for (Map.Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      assertEquals("list has wrong contents: " + entry.getValue(),
+          currentRedundancy, ((List)entry.getValue()).size());
     }
   }
 
