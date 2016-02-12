@@ -401,8 +401,8 @@ public class JGroupsMessenger implements Messenger {
         }
       }
       if (recipient != null) {
-        services.getHealthMonitor().checkIfAvailable(recipient,
-            "Unable to send messages to this member via JGroups", true);
+        services.getHealthMonitor().suspect(recipient,
+            "Unable to send messages to this member via JGroups");
       }
     }
   }

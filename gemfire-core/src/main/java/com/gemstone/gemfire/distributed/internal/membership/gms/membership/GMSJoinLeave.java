@@ -132,6 +132,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /** the previous view **/
   private volatile NetView previousView;
 
+  /** members who we have been declared dead in the current view */
   private final Set<InternalDistributedMember> removedMembers = new HashSet<>();
 
   /** members who we've received a leave message from **/
@@ -390,6 +391,26 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
     return response;
   }
+  
+  @Override
+  public boolean isMemberLeaving(DistributedMember mbr) {
+    if (getPendingRequestIDs(LEAVE_REQUEST_MESSAGE).contains(mbr)
+        || getPendingRequestIDs(REMOVE_MEMBER_REQUEST).contains(mbr)
+        || !currentView.contains(mbr)) {
+      return true;
+    }
+    synchronized(removedMembers) {
+      if (removedMembers.contains(mbr)) {
+        return true;
+      }
+    }
+    synchronized(leftMembers) {
+      if (leftMembers.contains(mbr)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   /**
    * process a join request from another member. If this is the coordinator
@@ -465,8 +486,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
 
     if (incomingRequest.getMemberID().equals(this.localAddress)) {
-      logger.info("I am being told to leave the distributed system");
+      logger.info("I am being told to leave the distributed system by {}", incomingRequest.getSender());
       forceDisconnect(incomingRequest.getReason());
+      return;
     }
 
     if (!isCoordinator && !isStopping && !services.getCancelCriterion().isCancelInProgress()) {
@@ -504,6 +526,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    */
   private void processRemoveRequest(RemoveMemberMessage incomingRequest) {
     NetView v = currentView;
+    boolean fromMe = incomingRequest.getSender() == null ||
+        incomingRequest.getSender().equals(localAddress);
 
     InternalDistributedMember mbr = incomingRequest.getMemberID();
 
@@ -517,9 +541,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return;
     }
 
-    logger.info("Membership received a request to remove " + mbr
+    if (!fromMe) {
+      logger.info("Membership received a request to remove " + mbr
         + " from " + incomingRequest.getSender() 
         + " reason="+incomingRequest.getReason());
+    }
 
     if (mbr.equals(this.localAddress)) {
       // oops - I've been kicked out
@@ -528,7 +554,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
 
     if (getPendingRequestIDs(REMOVE_MEMBER_REQUEST).contains(mbr)) {
-      logger.debug("ignoring request as I already have a removal request for this member");
+      logger.debug("ignoring removal request as I already have a removal request for this member");
       return;
     }
 
@@ -805,6 +831,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
     } else { // !preparing
       if (isJoined && currentView != null && !view.contains(this.localAddress)) {
+        logger.fatal("This member is no longer in the membership view.  My ID is {} and the new view is {}", localAddress, view);
         forceDisconnect("This node is no longer in the membership view");
       } else {
         if (!m.isRebroadcast()) { // no need to ack a rebroadcast view
@@ -2066,6 +2093,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           }
         }
 
+        logger.debug("unresponsive members that could not be reached: {}", unresponsive);
+        
         List<InternalDistributedMember> failures = new ArrayList<>(currentView.getCrashedMembers().size() + unresponsive.size());
 
         if (conflictingView != null && !conflictingView.getCreator().equals(localAddress) && conflictingView.getViewId() > newView.getViewId()
@@ -2149,42 +2178,51 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      * performs health checks on the collection of members, removing any that
      * are found to be healthy
      * 
-     * @param mbrs
+     * @param suspects
      */
-    private void removeHealthyMembers(final Collection<InternalDistributedMember> mbrs) throws InterruptedException {
-      List<Callable<InternalDistributedMember>> checkers = new ArrayList<Callable<InternalDistributedMember>>(mbrs.size());
+    private void removeHealthyMembers(final Set<InternalDistributedMember> suspects) throws InterruptedException {
+      List<Callable<InternalDistributedMember>> checkers = new ArrayList<Callable<InternalDistributedMember>>(suspects.size());
 
       Set<InternalDistributedMember> newRemovals = new HashSet<>();
       Set<InternalDistributedMember> newLeaves = new HashSet<>();
 
-      filterMembers(mbrs, newRemovals, REMOVE_MEMBER_REQUEST);
-      filterMembers(mbrs, newLeaves, LEAVE_REQUEST_MESSAGE);   
+      filterMembers(suspects, newRemovals, REMOVE_MEMBER_REQUEST);
+      filterMembers(suspects, newLeaves, LEAVE_REQUEST_MESSAGE);
+      newRemovals.removeAll(newLeaves);  // if we received a Leave req the member is "healthy" 
       
-      for (InternalDistributedMember mbr : mbrs) {
+      suspects.removeAll(newLeaves);
+      
+      for (InternalDistributedMember mbr : suspects) {
+        if (newRemovals.contains(mbr) || newLeaves.contains(mbr)) {
+          continue; // no need to check this member - it's already been checked or is leaving
+        }
         checkers.add(new Callable<InternalDistributedMember>() {
           @Override
           public InternalDistributedMember call() throws Exception {
-            // return the member id if it fails health checks
             boolean available = GMSJoinLeave.this.checkIfAvailable(mbr);
             
             synchronized (viewRequests) {
               if (available) {
-                mbrs.remove(mbr);
+                suspects.remove(mbr);
               }
               viewRequests.notifyAll();
             }
             return mbr;
           }
+          @Override
+          public String toString() {
+            return mbr.toString();
+          }
         });
       }
-
-      mbrs.removeAll(newLeaves);
-
-      if (mbrs.isEmpty()) {
+      
+      if (checkers.isEmpty()) {
+        logger.debug("all unresponsive members are already scheduled to be removed");
         return;
       }
-      
-      ExecutorService svc = Executors.newFixedThreadPool(mbrs.size(), new ThreadFactory() {
+
+      logger.debug("checking availability of these members: {}", checkers);
+      ExecutorService svc = Executors.newFixedThreadPool(suspects.size(), new ThreadFactory() {
         AtomicInteger i = new AtomicInteger();
 
         @Override
@@ -2196,17 +2234,22 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
       try {
         long giveUpTime = System.currentTimeMillis() + viewAckTimeout;
-        List<Future<InternalDistributedMember>> futures;
-        futures = submitAll(svc, checkers);
+        // submit the tasks that will remove dead members from the suspects collection
+        submitAll(svc, checkers);
+        
+        // now wait for the tasks to do their work
         long waitTime = giveUpTime - System.currentTimeMillis();
         synchronized (viewRequests) {
-          while(waitTime>0 ) {
-            logger.debug("removeHealthyMembers: mbrs" + mbrs.size());
+          while ( waitTime > 0 ) {
+            logger.debug("removeHealthyMembers: mbrs" + suspects.size());
             
-            filterMembers(mbrs, newRemovals, REMOVE_MEMBER_REQUEST);
-            filterMembers(mbrs, newLeaves, LEAVE_REQUEST_MESSAGE);   
+            filterMembers(suspects, newRemovals, REMOVE_MEMBER_REQUEST);
+            filterMembers(suspects, newLeaves, LEAVE_REQUEST_MESSAGE);
+            newRemovals.removeAll(newLeaves);
             
-            if(mbrs.isEmpty()) {
+            suspects.removeAll(newLeaves);
+            
+            if(suspects.isEmpty() || newRemovals.containsAll(suspects)) {
               break;
             }
             
@@ -2214,31 +2257,28 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             waitTime = giveUpTime - System.currentTimeMillis();
           }
         }
-        
-        //we have waited for all members, now check if we considered any removeRequest;
-        //add them back to create new view
-        if(!newRemovals.isEmpty()) {
-          newRemovals.removeAll(newLeaves);
-          mbrs.addAll(newRemovals);
-        }
-        
       } finally {
         svc.shutdownNow();
       }
     }
 
-    protected void filterMembers(Collection<InternalDistributedMember> mbrs, Set<InternalDistributedMember> removalRequestForMembers, short requestType) {
-      Set<InternalDistributedMember> gotRemovalRequests = getPendingRequestIDs(requestType);
+    /**
+     * This gets pending requests and returns the IDs of any that are in the given collection
+     * @param mbrs collection of IDs to search for
+     * @param matchingMembers collection to store matching IDs in
+     * @param requestType leave/remove/join
+     */
+    protected void filterMembers(Collection<InternalDistributedMember> mbrs, Set<InternalDistributedMember> matchingMembers, short requestType) {
+      Set<InternalDistributedMember> requests = getPendingRequestIDs(requestType);
       
-      if(!gotRemovalRequests.isEmpty()) {
-        logger.debug("removeHealthyMembers: gotRemovalRequests " + gotRemovalRequests.size());
-        Iterator<InternalDistributedMember> itr = gotRemovalRequests.iterator();
+      if(!requests.isEmpty()) {
+        logger.debug("filterMembers: processing " + requests.size() + " requests for type " + requestType);
+        Iterator<InternalDistributedMember> itr = requests.iterator();
         while(itr.hasNext()) {
-          InternalDistributedMember removeMember = itr.next();
-          if(mbrs.contains(removeMember)) {
+          InternalDistributedMember memberID = itr.next();
+          if(mbrs.contains(memberID)) {
             testFlagForRemovalRequest = true;
-            removalRequestForMembers.add(removeMember);
-            mbrs.remove(removeMember);
+            matchingMembers.add(memberID);
           }
         }
       }

@@ -141,10 +141,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   final private ConcurrentHashMap<InternalDistributedMember, NetView> suspectedMemberInView = new ConcurrentHashMap<>();
   
-//  /**
-//   * Members undergoing final checks
-//   */
-//  final private List<InternalDistributedMember> membersInFinalCheck = Collections.synchronizedList(new ArrayList<>(30));
+  /**
+   * Members undergoing final checks
+   */
+  final private List<InternalDistributedMember> membersInFinalCheck = Collections.synchronizedList(new ArrayList<>(30));
 
   /**
    * Replies to messages
@@ -334,7 +334,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           }
         }
       } catch (IOException e) {
-        logger.debug("Unexpected exception", e);
+        // this is expected if it is a connection-timeout or other failure
+        // to connect
       } catch (RuntimeException e) {
         logger.debug("Unexpected runtime exception", e);
         throw e;
@@ -346,7 +347,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           try {
             socket.close();
           } catch (IOException e) {
-            logger.info("Unexpected exception", e);
+            // expected if the socket is already closed
           }
         }
       }
@@ -361,14 +362,22 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   /*
-   * It records the member activity for current time interval.
+   * Record the member activity for current time interval.
    */
   @Override
   public void contactedBy(InternalDistributedMember sender) {
-    TimeStamp cTS = new TimeStamp(currentTimeStamp);
+    contactedBy(sender, currentTimeStamp);
+  }
+  
+  
+  /**
+   * Record member activity at a specified time
+   */
+  private void contactedBy(InternalDistributedMember sender, long timeStamp) {
+    TimeStamp cTS = new TimeStamp(timeStamp);
     cTS = memberTimeStamps.putIfAbsent(sender, cTS);
     if (cTS != null) {
-      cTS.setTimeStamp(currentTimeStamp);
+      cTS.setTimeStamp(timeStamp);
     }
     if (suspectedMemberInView.remove(sender) != null) {
       logger.info("No longer suspecting {}", sender);
@@ -376,6 +385,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     setNextNeighbor(currentView, null);
   }
 
+  
   private HeartbeatRequestMessage constructHeartbeatRequestMessage(final InternalDistributedMember mbr) {
     final int reqId = requestId.getAndIncrement();
     final HeartbeatRequestMessage hrm = new HeartbeatRequestMessage(mbr, reqId);
@@ -413,6 +423,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private void initiateSuspicion(InternalDistributedMember mbr, String reason) {
+    if (services.getJoinLeave().isMemberLeaving(mbr)) {
+      return;
+    }
     SuspectRequest sr = new SuspectRequest(mbr, reason);
     List<SuspectRequest> sl = new ArrayList<SuspectRequest>();
     sl.add(sr);
@@ -432,6 +445,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       // messages by returning true.
       return true;
     }
+    long startTime = System.currentTimeMillis();
     logger.trace("Checking member {}", member);
     final HeartbeatRequestMessage hrm = constructHeartbeatRequestMessage(member);
     final Response pingResp = new Response();
@@ -448,6 +462,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             pingResp.wait(memberTimeout);
           }
           TimeStamp ts = memberTimeStamps.get(member);
+          if (ts != null && ts.getTime() > startTime) {
+            return true;
+          }
           if (pingResp.getResponseMsg() == null) {
             if (isStopping) {
               return true;
@@ -489,7 +506,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       return doTCPCheckMember(suspectMember, clientSocket);
     }
     catch (IOException e) {
-      logger.debug("Unexpected exception", e);
+      // this is expected if it is a connection-timeout or other failure
+      // to connect
     } 
     finally {
       try {
@@ -498,7 +516,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           clientSocket.close();
         }
       } catch (IOException e) {
-        logger.trace("Unexpected exception", e);
+        // expected
       }
     }
     return false;
@@ -518,9 +536,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         this.stats.incTcpFinalCheckRequestsSent();
         logger.debug("Connected - reading response from suspect member {}", suspectMember);
         int b = in.read();
-        this.stats.incFinalCheckResponsesReceived();
-        this.stats.incTcpFinalCheckResponsesReceived();
         logger.debug("Received {}", (b == OK ? "OK" : (b == ERROR ? "ERROR" : b)), suspectMember);
+        if (b >= 0) {
+          this.stats.incFinalCheckResponsesReceived();
+          this.stats.incTcpFinalCheckResponsesReceived();
+        }
         if (b == OK) {
           TimeStamp ts = memberTimeStamps.get(suspectMember);
           if (ts != null) {
@@ -1030,7 +1050,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     this.stats.incHeartbeatsReceived();
     if (m.getRequestId() < 0) {
       // a periodic heartbeat
-      contactedBy(m.getSender());
+      contactedBy(m.getSender(), System.currentTimeMillis());
     } else {
       Response resp = requestIdVsResponse.get(m.getRequestId());
       logger.trace("Got heartbeat from member {}. {}", m.getSender(), (resp != null ? "Check thread still waiting" : "Check thread is not waiting"));
@@ -1162,56 +1182,49 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private void checkIfAvailable(final InternalDistributedMember initiator,
       List<SuspectRequest> sMembers, final NetView cv) {
 
-//    List<InternalDistributedMember> membersChecked = new ArrayList<>(10);
-    try {
-      for (int i = 0; i < sMembers.size(); i++) {
-        final SuspectRequest sr = sMembers.get(i);
-        final InternalDistributedMember mbr = sr.getSuspectMember();
+    for (int i = 0; i < sMembers.size(); i++) {
+      final SuspectRequest sr = sMembers.get(i);
+      final InternalDistributedMember mbr = sr.getSuspectMember();
 
-        if (!cv.contains(mbr) /*|| membersInFinalCheck.contains(mbr)*/) {
-          continue;
-        }
-
-        if (mbr.equals(localAddress)) {
-          continue;// self
-        }
-        
-//        membersChecked.add(mbr);
-
-        // suspectMemberInView is now set by the heartbeat monitoring code
-        // to allow us to move on from watching members we've already
-        // suspected.  Since that code is updating this collection we
-        // cannot use it here as an indication that a member is currently
-        // undergoing a final check.
-        //      NetView view;
-        //      view = suspectedMemberInView.putIfAbsent(mbr, cv);
-
-        //      if (view == null || !view.equals(cv)) {
-        final String reason = sr.getReason();
-        logger.debug("Scheduling final check for member {}; reason={}", mbr, reason);
-        // its a coordinator
-        checkExecutor.execute(new Runnable() {
-
-          @Override
-          public void run() {
-            try {
-              inlineCheckIfAvailable(initiator, cv, true, mbr,
-                  reason);
-            } catch (DistributedSystemDisconnectedException e) {
-              return;
-            } catch (Exception e) {
-              logger.info("Unexpected exception while verifying member", e);
-            } finally {
-              GMSHealthMonitor.this.suspectedMemberInView.remove(mbr);
-            }
-          }
-
-          
-        });
-        //      }// scheduling for final check and removing it..
+      if (!cv.contains(mbr) || membersInFinalCheck.contains(mbr)) {
+        continue;
       }
-    } finally {
-//      membersInFinalCheck.removeAll(membersChecked);
+
+      if (mbr.equals(localAddress)) {
+        continue;// self
+      }
+
+      // suspectMemberInView is now set by the heartbeat monitoring code
+      // to allow us to move on from watching members we've already
+      // suspected.  Since that code is updating this collection we
+      // cannot use it here as an indication that a member is currently
+      // undergoing a final check.
+      //      NetView view;
+      //      view = suspectedMemberInView.putIfAbsent(mbr, cv);
+
+      //      if (view == null || !view.equals(cv)) {
+      final String reason = sr.getReason();
+      logger.debug("Scheduling final check for member {}; reason={}", mbr, reason);
+      // its a coordinator
+      checkExecutor.execute(new Runnable() {
+
+        @Override
+        public void run() {
+          try {
+            inlineCheckIfAvailable(initiator, cv, true, mbr,
+                reason);
+          } catch (DistributedSystemDisconnectedException e) {
+            return;
+          } catch (Exception e) {
+            logger.info("Unexpected exception while verifying member", e);
+          } finally {
+            GMSHealthMonitor.this.suspectedMemberInView.remove(mbr);
+          }
+        }
+
+
+      });
+      //      }// scheduling for final check and removing it..
     }
   }
 
@@ -1220,50 +1233,60 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       boolean initiateRemoval,
       final InternalDistributedMember mbr, final String reason) {
 
-    services.memberSuspected(initiator, mbr, reason);
-    long startTime = System.currentTimeMillis();
-    // for some reason we used to update the timestamp for the member
-    // with the startTime, but we don't want to do that because it looks
-    // like a heartbeat has been received
-
-    logger.info("Performing final check for suspect member {} reason={}", mbr, reason);
-    boolean pinged;
-    int port = cv.getFailureDetectionPort(mbr);
-    if (port <= 0) {
-      logger.info("Unable to locate failure detection port - requesting a heartbeat");
-      if (logger.isDebugEnabled()) {
-        logger.debug("\ncurrent view: {}\nports: {}", cv, Arrays.toString(cv.getFailureDetectionPorts()));
-      }
-      pinged = GMSHealthMonitor.this.doCheckMember(mbr);
-      GMSHealthMonitor.this.stats.incFinalCheckRequestsSent();
-      GMSHealthMonitor.this.stats.incUdpFinalCheckRequestsSent();
-      if (pinged) {
-        GMSHealthMonitor.this.stats.incFinalCheckResponsesReceived();
-        GMSHealthMonitor.this.stats.incUdpFinalCheckResponsesReceived();
-      }
-    } else {
-      pinged = GMSHealthMonitor.this.doTCPCheckMember(mbr, port);
+    if (services.getJoinLeave().isMemberLeaving(mbr)) {
+      return false;
     }
 
     boolean failed = false;
-    if (!pinged && !isStopping) {
-      TimeStamp ts = memberTimeStamps.get(mbr);
-      if (ts == null || ts.getTime() <= startTime) {
-        logger.info("Final check failed - requesting removal of suspect member " + mbr);
-        if (initiateRemoval) {
-          services.getJoinLeave().remove(mbr, reason);
+
+    membersInFinalCheck.add(mbr);
+    try {
+      services.memberSuspected(initiator, mbr, reason);
+      long startTime = System.currentTimeMillis();
+      // for some reason we used to update the timestamp for the member
+      // with the startTime, but we don't want to do that because it looks
+      // like a heartbeat has been received
+  
+      logger.info("Performing final check for suspect member {} reason={}", mbr, reason);
+      boolean pinged;
+      int port = cv.getFailureDetectionPort(mbr);
+      if (port <= 0) {
+        logger.info("Unable to locate failure detection port - requesting a heartbeat");
+        if (logger.isDebugEnabled()) {
+          logger.debug("\ncurrent view: {}\nports: {}", cv, Arrays.toString(cv.getFailureDetectionPorts()));
         }
-        failed = true;
+        pinged = GMSHealthMonitor.this.doCheckMember(mbr);
+        GMSHealthMonitor.this.stats.incFinalCheckRequestsSent();
+        GMSHealthMonitor.this.stats.incUdpFinalCheckRequestsSent();
+        if (pinged) {
+          GMSHealthMonitor.this.stats.incFinalCheckResponsesReceived();
+          GMSHealthMonitor.this.stats.incUdpFinalCheckResponsesReceived();
+        }
       } else {
-        logger.info("Final check failed but detected recent message traffic for suspect member " + mbr);
+        pinged = GMSHealthMonitor.this.doTCPCheckMember(mbr, port);
       }
+  
+      if (!pinged && !isStopping) {
+        TimeStamp ts = memberTimeStamps.get(mbr);
+        if (ts == null || ts.getTime() <= startTime) {
+          logger.info("Final check failed - requesting removal of suspect member " + mbr);
+          if (initiateRemoval) {
+            services.getJoinLeave().remove(mbr, reason);
+          }
+          failed = true;
+        } else {
+          logger.info("Final check failed but detected recent message traffic for suspect member " + mbr);
+        }
+      }
+      if (!failed) {
+        logger.info("Final check passed for suspect member " + mbr);
+      }
+      // whether it's alive or not, at this point we allow it to
+      // be watched again
+      suspectedMemberInView.remove(mbr);
+    } finally {
+      membersInFinalCheck.remove(mbr);
     }
-    if (!failed) {
-      logger.info("Final check passed for suspect member " + mbr);
-    }
-    // whether it's alive or not, at this point we allow it to
-    // be watched again
-    suspectedMemberInView.remove(mbr);
     return !failed;
   }
     

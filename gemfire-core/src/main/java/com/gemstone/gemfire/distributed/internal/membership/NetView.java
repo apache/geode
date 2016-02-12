@@ -32,6 +32,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
@@ -261,7 +262,7 @@ public class NetView implements DataSerializableFixedID {
     }
   }
 
-  public boolean contains(InternalDistributedMember mbr) {
+  public boolean contains(DistributedMember mbr) {
     return this.hashedMembers.contains(mbr);
   }
 

@@ -61,6 +61,12 @@ public interface JoinLeave extends Service {
   NetView getPreviousView();
   
   /**
+   * check to see if a member is already in the process of leaving or
+   * being removed (in the next view)
+   */
+  boolean isMemberLeaving(DistributedMember mbr);
+  
+  /**
    * test hook
    */
   void disableDisconnectOnQuorumLossForTesting();

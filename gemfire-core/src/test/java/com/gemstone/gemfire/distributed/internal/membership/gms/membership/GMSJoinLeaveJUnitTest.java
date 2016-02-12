@@ -303,6 +303,22 @@ public class GMSJoinLeaveJUnitTest {
   }
   
   @Test
+  public void testIsMemberLeaving() throws Exception {
+    initMocks();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], mockMembers[1], gmsJoinLeaveMemberId));
+    MethodExecuted removeMessageSent = new MethodExecuted();
+    when(messenger.send(any(RemoveMemberMessage.class))).thenAnswer(removeMessageSent);
+    assertFalse(gmsJoinLeave.isMemberLeaving(mockMembers[0]));
+    assertFalse(gmsJoinLeave.isMemberLeaving(mockMembers[1]));
+    gmsJoinLeave.remove(mockMembers[0], "removing for test");
+    assertTrue(gmsJoinLeave.isMemberLeaving(mockMembers[0]));
+    LeaveRequestMessage msg = new LeaveRequestMessage(gmsJoinLeave.getMemberID(), mockMembers[1], "leaving for test");
+    msg.setSender(mockMembers[1]);
+    gmsJoinLeave.processMessage(msg);
+    assertTrue(gmsJoinLeave.isMemberLeaving(mockMembers[1]));
+  }
+  
+  @Test
   public void testRemoveAndLeaveIsNotACrash() throws Exception {
     // simultaneous leave & remove requests for a member
     // should not result in it's being seen as a crashed member
