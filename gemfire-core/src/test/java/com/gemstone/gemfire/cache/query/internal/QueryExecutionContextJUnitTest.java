@@ -16,11 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.query.internal.QueryExecutionContext;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
+@Category(UnitTest.class)
 public class QueryExecutionContextJUnitTest {
 
   @Test
