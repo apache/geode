@@ -237,6 +237,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
 
+  Object getViewInstallationLock() {
+    return viewInstallationLock;
+  }
+
   /**
    * attempt to join the distributed system
    * loop
