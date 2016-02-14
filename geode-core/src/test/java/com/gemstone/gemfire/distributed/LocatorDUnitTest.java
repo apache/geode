@@ -39,14 +39,13 @@ import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipTestHook;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeaveHelper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeaveTestHelper;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.tcp.Connection;
-import com.gemstone.gemfire.test.dunit.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -1325,7 +1324,6 @@ public class LocatorDUnitTest extends DistributedTestCase {
     dsProps.setProperty("locators", locators);
     dsProps.setProperty("mcast-port", "0");
     dsProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    final String uniqueName = getUniqueName();
 
     vm0.invoke(new SerializableRunnable("Start locator on " + port1) {
       public void run() {
@@ -1443,7 +1441,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     final Properties dsProps = new Properties();
     dsProps.setProperty("locators", locators);
     dsProps.setProperty("mcast-port", "0");
-    dsProps.setProperty("log-level", "FINE");
+    dsProps.setProperty("log-level", LogWriterUtils.getDUnitLogLevel());
     dsProps.setProperty("enable-network-partition-detection", "true");
     dsProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
 
@@ -1459,7 +1457,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
                 Properties props = new Properties();
                 props.setProperty("mcast-port", "0");
                 props.setProperty("locators", locators);
-                props.setProperty("log-level", "FINE");
+                props.setProperty("log-level", LogWriterUtils.getDUnitLogLevel());
                 props.setProperty("enable-network-partition-detection", "true");
                 DistributedSystem.connect(props);
               }
@@ -1518,9 +1516,9 @@ public class LocatorDUnitTest extends DistributedTestCase {
             host0 + "[" + port3 + "]";
         dsProps.setProperty("locators", newLocators);
 
-        assertTrue(vm3.invoke(() -> GMSJoinLeaveHelper.isViewCreator()));
+        assertTrue(vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
         //Given the start up order of servers, this server is the elder server
-        assertTrue(vm3.invoke(() -> GMSJoinLeaveHelper.isViewCreator()));
+        assertTrue(vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
 
         startLocatorAsync(vm1, new Object[] { port2, dsProps });
         startLocatorAsync(vm2, new Object[] { port3, dsProps });
@@ -1542,17 +1540,17 @@ public class LocatorDUnitTest extends DistributedTestCase {
         };
         Wait.waitForCriterion(waitCriterion, 10 * 1000, 200, true);
 
-        int netviewId = vm1.invoke(() -> GMSJoinLeaveHelper.getViewId());
-        assertEquals(netviewId, (int) vm2.invoke(() -> GMSJoinLeaveHelper.getViewId()));
-        assertEquals(netviewId, (int) vm3.invoke(() -> GMSJoinLeaveHelper.getViewId()));
-        assertEquals(netviewId, (int) vm4.invoke(() -> GMSJoinLeaveHelper.getViewId()));
-        assertFalse(vm4.invoke(() -> GMSJoinLeaveHelper.isViewCreator()));
+        int netviewId = vm1.invoke(() -> GMSJoinLeaveTestHelper.getViewId());
+        assertEquals(netviewId, (int) vm2.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
+        assertEquals(netviewId, (int) vm3.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
+        assertEquals(netviewId, (int) vm4.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
+        assertFalse(vm4.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
         //Given the start up order of servers, this server is the elder server
-        assertFalse(vm3.invoke(() -> GMSJoinLeaveHelper.isViewCreator()));
-        if (vm1.invoke(() -> GMSJoinLeaveHelper.isViewCreator())) {
-          assertFalse(vm2.invoke(() -> GMSJoinLeaveHelper.isViewCreator()));
+        assertFalse(vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+        if (vm1.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator())) {
+          assertFalse(vm2.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
         } else {
-          assertTrue(vm2.invoke(() -> GMSJoinLeaveHelper.isViewCreator()));
+          assertTrue(vm2.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
         }
 
       } finally {

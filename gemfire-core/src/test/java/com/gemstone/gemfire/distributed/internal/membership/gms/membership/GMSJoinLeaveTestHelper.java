@@ -22,7 +22,14 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 
-public class GMSJoinLeaveHelper {
+public class GMSJoinLeaveTestHelper {
+
+  public static void becomeCoordinatorForTest(GMSJoinLeave gmsJoinLeave) {
+    synchronized (gmsJoinLeave.getViewInstallationLock()) {
+      gmsJoinLeave.becomeCoordinator();
+    }
+  }
+
   public static boolean isViewCreator() {
     GMSJoinLeave gmsJoinLeave = getGmsJoinLeave();
     if (gmsJoinLeave != null) {

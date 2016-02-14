@@ -152,6 +152,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /** the view where quorum was most recently lost */
   NetView quorumLostView;
 
+  /** a flag to mark a coordinator's viewCreator for shutdown */
+  private boolean markViewCreatorForShutdown = false;
+
   static class SearchState {
     Set<InternalDistributedMember> alreadyTried = new HashSet<>();
     Set<InternalDistributedMember> registrants = new HashSet<>();
@@ -170,6 +173,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         responses.clear();
       }
     }
+  }
+
+  Object getViewInstallationLock() {
+    return viewInstallationLock;
   }
 
   /**
@@ -581,12 +588,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     becomeCoordinator(null);
   }
 
-  public void becomeCoordinatorForTest() {
-    synchronized (viewInstallationLock) {
-      becomeCoordinator();
-    }
-  }
-
   /**
    * Test hook for delaying the creation of new views.
    * This should be invoked before this member becomes coordinator
@@ -640,6 +641,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         viewCreator.setInitialView(newView, newView.getNewMembers(), newView.getShutdownMembers(), newView.getCrashedMembers());
       }
       viewCreator.setDaemon(true);
+      logger.info("ViewCreator starting on:" + localAddress);
       viewCreator.start();
     }
   }
@@ -715,9 +717,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     } else {
       //Added a check in the view processor to turn off the ViewCreator
       //if another server is the coordinator - GEODE-870
-      if(!localAddress.equals(view.getCoordinator()) && getViewCreator() != null)
-      {
-        stopCoordinatorServices();
+      if (isCoordinator && !localAddress.equals(view.getCoordinator()) && getViewCreator() != null) {
+        markViewCreatorForShutdown = true;
+        this.isCoordinator = false;
       }
       installView(view);
     }
@@ -2077,7 +2079,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         }
 
         logger.debug("unresponsive members that could not be reached: {}", unresponsive);
-
         List<InternalDistributedMember> failures = new ArrayList<>(currentView.getCrashedMembers().size() + unresponsive.size());
 
         if (conflictingView != null && !conflictingView.getCreator().equals(localAddress) && conflictingView.getViewId() > newView.getViewId()
@@ -2149,6 +2150,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       lastConflictingView = null;
 
       sendView(newView, joinReqs);
+
+      if (markViewCreatorForShutdown && getViewCreator() != null) {
+        shutdown = true;
+      }
 
       // after sending a final view we need to stop this thread if
       // the GMS is shutting down
