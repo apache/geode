@@ -974,7 +974,7 @@ public class IndexManager  {
   public void setPopulateFlagForIndexes(Collection<Index> indexSet) {
     for (Object ind : indexSet) {
       AbstractIndex index = (AbstractIndex) ind;
-      if (!index.isPopulated() && index.getType() != IndexType.PRIMARY_KEY) {
+      if (!index.isPopulated()) {
         index.setPopulated(true);
       }
     }
@@ -1710,6 +1710,9 @@ public class IndexManager  {
         indexes.put(this, index);
         if (region instanceof BucketRegion && prIndex != null) {
           prIndex.addToBucketIndexes(region, index);
+        }
+        if (this.prIndex != null) {
+          ((AbstractIndex)this.prIndex).setPopulated(true);
         }
       }
       return index;
