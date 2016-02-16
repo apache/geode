@@ -48,8 +48,7 @@
 <script type="text/javascript" src='scripts/lib/common.js'></script>
 
 <!--Splitter-->
-<script src="scripts/lib/jquery.splitter-0.5.js"></script>
-<link href="css/jquery.splitter.css" rel="stylesheet" />
+<script src="scripts/lib/split.js"></script>
 
 <!--Custom Scroll Bar-->
 <!-- styles needed by jScrollPane - include in your own sites -->
@@ -74,8 +73,6 @@
 
 <!-- popups-->
 <link href="css/popup.css" rel="stylesheet" type="text/css" />
-<!-- Customize checkbox & radiobutton -->
-<script type="text/javascript" src="scripts/lib/checkBox-RadioButton.js"></script>
 <!-- Treeview JSON -->
 <script type="text/javascript" src="scripts/lib/jquery.ztree.core-3.5.js"></script>
 <script type="text/javascript" src="scripts/lib/jquery.ztree.excheck-3.5.js"></script>
@@ -199,12 +196,10 @@
 			<!--Middle Block 1-->
 			<div class="left leftBlockCanvas">
 				<!-- Splitter Master-->
-				<div class="splitterMaster">
-					<div class="splitterInnerBlock">
 						<div id="widget">
 							<!-- Left splitter-->
-							<div id="leftBlock">
-								<div class="leftTopSplitterSpacing">
+							<div id="leftBlock" class="split split-horizontal">
+								<div id="dataRegion" class="split split-vertical">
 								  <div class="rightInnerBlocks">
 								    <a class="active" href="#.">Data Regions</a>
 								  </div>
@@ -240,7 +235,7 @@
 									</div>
 								</div>
 								<!-- Members List Block-->
-								<div class="">
+								<div id="regionMember" class="split split-vertical">
 								  <div class="rightInnerBlocks btm_pnl">
 								    <a href="#." class="active">Region Members</a>
 								  </div>
@@ -254,7 +249,7 @@
 								</div>
 							</div>
 							<!--Right splitter -->
-							<div id="rightBlock">
+							<div id="rightBlock" class="split split-horizontal">
 								<!-- Tab links-->
 								<div class="rightInnerBlocks ">
 								  <a href="#." class="active">Queries</a>
@@ -303,8 +298,6 @@
 							</div>
 						</div>
 					</div>
-				</div>
-			</div>
 		</div>
 	</div>
 	<!--Popups Block-->

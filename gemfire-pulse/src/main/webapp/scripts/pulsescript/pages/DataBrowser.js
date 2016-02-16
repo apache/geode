@@ -81,10 +81,15 @@ $(document).ready(function() {
       //$('.ScrollPaneBlock').jScrollPane();
       
       /*splitter*/
-      $('#widget').width('1002').height('100%').split({orientation:'vertical', limit:250, position: '250'});
-      $('#rightBlock').width('748')/*.height('100%')*/;
-      $('#leftBlock').width('250')/*.height('100%')*/.split({orientation:'horizontal', limit:310, position: '380'});
-       //$('#leftBlock').width('29.7%').height('100%');
+      $('#widget').width('1002').height('810');
+      Split(['#leftBlock', '#rightBlock'], {
+        sizes: [25, 75]
+      });
+      Split(['#dataRegion', '#regionMember'], {
+        sizes: [40, 60],
+        direction: 'vertical'
+      });
+
       $('.ScrollPaneBlock').jScrollPane();
       
       /*History Overlay Toggle*/
