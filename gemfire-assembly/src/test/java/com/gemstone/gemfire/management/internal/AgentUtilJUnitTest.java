@@ -16,17 +16,10 @@
  */
 package com.gemstone.gemfire.management.internal;
 
-import com.gemstone.gemfire.management.internal.AgentUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
 import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.ClearSystemProperties;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TestRule;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,7 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 @Category(IntegrationTest.class)
 public class AgentUtilJUnitTest {
@@ -81,7 +74,7 @@ public class AgentUtilJUnitTest {
     if (inputStream != null) {
       try {
         prop.load(inputStream);
-        version = prop.getProperty("versionNumber")+"-"+prop.getProperty("releaseType");
+        version = prop.getProperty("versionNumber") + prop.getProperty("releaseType");
       } catch (FileNotFoundException e) {
       } catch (IOException e) {
       }

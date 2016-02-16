@@ -76,6 +76,9 @@ public class AgentUtil {
     // find in the classpath
     String[] possibleFiles = {
             warFilePrefix + "-" + gemfireVersion + ".war",
+            "tools/Pulse/" + warFilePrefix + "-" + gemfireVersion + ".war",
+            "tools/Extensions/" + warFilePrefix + "-" + gemfireVersion + ".war",
+            "lib/" + warFilePrefix + "-" + gemfireVersion + ".war",
             warFilePrefix + ".war"
     };
     for(String possibleFile:possibleFiles){
