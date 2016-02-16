@@ -14,13 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-//  ResultsBagJUnitTest.java
-//  gemfire
-//
-//  Created by Eric Zoerner on 2/13/08.
-//  Copyright 2008 __MyCompanyName__. All rights reserved.
-//
 package com.gemstone.gemfire.cache.query.internal;
 
 import java.util.*;
