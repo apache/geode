@@ -87,8 +87,8 @@ Geode applications can be written in a number of client technologies:
 * Java using the Geode client API or embedded using the Geode peer API
 * [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/) or [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
 * [Python](https://github.com/gemfire/py-gemfire-rest)
-* [REST](http://geode-docs.cfapps.io/docs/geode_rest/book_intro.html)
-* [[memcached|Moving from memcached to gemcached]]
+* [REST](http://geode.docs.pivotal.io/docs/rest_apps/book_intro.html)
+* [memcached](https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached)
 
 
 # Build environment in Docker
