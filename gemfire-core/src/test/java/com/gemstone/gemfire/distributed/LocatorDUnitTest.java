@@ -257,9 +257,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
     VM loc1 = host.getVM(1);
     VM loc2 = host.getVM(2);
     
-    final int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int port1 = ports[0];
     this.port1 = port1;
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port2 = ports[1];
     this.port2 = port2; // for cleanup in tearDown2
     DistributedTestUtils.deleteLocatorStateFile(port1);
     DistributedTestUtils.deleteLocatorStateFile(port2);
@@ -490,10 +491,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
     VM locvm = host.getVM(3);
     Locator locator = null;
     
-    final int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int port1 = ports[0];
     this.port1 = port1;
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    this.port2 = port2; // for cleanup in tearDown2()
+    final int port2 = ports[1];
     DistributedTestUtils.deleteLocatorStateFile(port1, port2);
     final String host0 = NetworkUtils.getServerHostName(host); 
     final String locators = host0 + "[" + port1 + "]," +
@@ -625,9 +626,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
     VM locvm = host.getVM(3);
     Locator locator = null;
     
-    final int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int port1 = ports[0];
     this.port1 = port1;
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port2 = ports[1];
     this.port2 = port2;
     DistributedTestUtils.deleteLocatorStateFile(port1, port2);
     final String host0 = NetworkUtils.getServerHostName(host);
@@ -772,10 +774,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
     VM locvm = host.getVM(3);
     Locator locator = null;
     
-    final int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int port1 = ports[0];
     this.port1 = port1;
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    this.port2 = port2;
+    final int port2 = ports[1];
     DistributedTestUtils.deleteLocatorStateFile(port1, port2);
     final String host0 = NetworkUtils.getServerHostName(host);
     final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
@@ -911,10 +913,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
     VM locvm = host.getVM(3);
     Locator locator = null;
     
-    final int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int port1 = ports[0];
     this.port1 = port1;
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    this.port2 = port2;
+    final int port2 = ports[1];
     DistributedTestUtils.deleteLocatorStateFile(port1, port2);
     final String host0 = NetworkUtils.getServerHostName(host);
     final String locators = host0 + "[" + port1 + "],"
@@ -1149,11 +1151,11 @@ public class LocatorDUnitTest extends DistributedTestCase {
         return !coord.equals(MembershipManagerHelper.getCoordinator(system));
       }
       public String description() {
-        return "expected the coordinator to be " + coord + " but it is " +
+        return "expected the coordinator to not be " + coord + " but it is " +
           MembershipManagerHelper.getCoordinator(system);
       }
     };
-    Wait.waitForCriterion(ev, 15 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 15 * 1000, 200, false);
     DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system); 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("coordinator after shutdown of locator was " +
         newCoord);
