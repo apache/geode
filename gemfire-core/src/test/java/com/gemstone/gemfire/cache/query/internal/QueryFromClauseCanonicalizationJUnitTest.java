@@ -48,13 +48,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class QueryFromClauseCanonicalizationJUnitTest
 {
-
-  /*
-   * ========================================================================
-   * Copyright (C) GemStone Systems, Inc. 2000-2004. All Rights Reserved.
-   * 
-   * ========================================================================
-   */
   Region region = null;
 
   QueryService qs = null;
