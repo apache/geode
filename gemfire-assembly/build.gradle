@@ -192,7 +192,7 @@ distributions {
       }
 
       into ('tools/jvsd') {
-      	from project(":geode-jvsd").installDist
+        from project(":geode-jvsd").installDist
       }
 
       into ('tools/Extensions') {
