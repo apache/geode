@@ -2583,6 +2583,8 @@ public class CacheClientProxy implements ClientSession {
               if (this._messageQueue.size() > 0) {
                 Thread.sleep(50);
               }
+              logger.info("available ids = " + this._messageQueue.size()+ " , isEmptyAckList =" + this._messageQueue.isEmptyAckList() 
+                            + ", peekInitialized = " + this._messageQueue.isPeekInitialized());
               while (!this._messageQueue.isEmptyAckList()&& this._messageQueue.isPeekInitialized()) {
                 this._messageQueue.remove();
               }
