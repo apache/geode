@@ -24,7 +24,7 @@ import static org.hamcrest.CoreMatchers.*;
 import java.util.Arrays;
 
 import org.assertj.core.api.JUnitSoftAssertions;
-//import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -53,8 +53,7 @@ public class FragmentJUnitTest {
     ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
   }
   
-  @Rule
-  public final ProvideSystemProperty provideSystemProperty = new ProvideSystemProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
+  @Rule public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -67,16 +66,15 @@ public class FragmentJUnitTest {
 
 
   @BeforeClass
-  public static void setUpBeforeClass() {
+  public static void setUpBeforeClass() throws Exception {
   }
 
   @AfterClass
-  public static void tearDownAfterClass() {
+  public static void tearDownAfterClass() throws Exception {
   }
 
   @Before
-  public void setUp() {
-    SimpleMemoryAllocatorImpl.resetForTesting();
+  public void setUp() throws Exception {
     ooohml = mock(OutOfOffHeapMemoryListener.class);
     stats = mock(OffHeapMemoryStats.class);
     lw = mock(LogWriter.class);
@@ -92,7 +90,7 @@ public class FragmentJUnitTest {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws Exception {
     SimpleMemoryAllocatorImpl.freeOffHeapMemory();
   }
   
@@ -108,7 +106,7 @@ public class FragmentJUnitTest {
       expectedException.expectMessage("address was not 8 byte aligned");
 
       Fragment fragment = new Fragment(slabs[0].getMemoryAddress() + 2, 0);
-      fail("Constructor failed to throw exception for non-8-byte alignment");
+      fail("Constructor failed to thorw exception for non-8-byte alignment");
   }
 
   @Test
@@ -118,7 +116,7 @@ public class FragmentJUnitTest {
 
     softly.assertThat(System.getProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION")).isEqualTo("true");
     Fragment fragment = new Fragment(1024L, 0);
-    fail("Constructor failed to throw exception non-slab memory address");
+    fail("Constructor failed to thorw exception non-slab memory address");
   }
 
   @Test
