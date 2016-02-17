@@ -2673,11 +2673,12 @@ public class Connection implements Runnable {
               }
             }
           }
-          if (sentAlert) {
+          List group = ackConnectionGroup;
+          if (sentAlert && group != null) {
             // since transmission and ack-receipt are performed serially, we don't
             // want to complain about all receivers out just because one was slow.  We therefore reset
             // the time stamps and give others more time
-            for (Iterator it=ackConnectionGroup.iterator(); it.hasNext(); ) {
+            for (Iterator it=group.iterator(); it.hasNext(); ) {
               Connection con = (Connection)it.next();
               if (con != Connection.this) {
                 con.transmissionStartTime += con.ackSATimeout;
