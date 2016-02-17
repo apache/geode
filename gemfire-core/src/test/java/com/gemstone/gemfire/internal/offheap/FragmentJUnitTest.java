@@ -53,11 +53,6 @@ public class FragmentJUnitTest {
     ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
   }
   
-  @Rule public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
-
-  @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
   
@@ -107,16 +102,6 @@ public class FragmentJUnitTest {
 
       Fragment fragment = new Fragment(slabs[0].getMemoryAddress() + 2, 0);
       fail("Constructor failed to thorw exception for non-8-byte alignment");
-  }
-
-  @Test
-  public void fragmentConstructorThrowsExceptionForNonSlabAddress() {
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("does not address the original slab memory");
-
-    softly.assertThat(System.getProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION")).isEqualTo("true");
-    Fragment fragment = new Fragment(1024L, 0);
-    fail("Constructor failed to thorw exception non-slab memory address");
   }
 
   @Test
