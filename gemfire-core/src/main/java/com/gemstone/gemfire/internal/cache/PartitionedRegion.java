@@ -3745,6 +3745,7 @@ public class PartitionedRegion extends LocalRegion implements
 
     if (localKeys != null) {
       final RegionFunctionContextImpl prContext = new RegionFunctionContextImpl(
+          cache,
           function.getId(),
           PartitionedRegion.this,
           execution.getArgumentsForMember(getMyId().getId()),
@@ -3895,8 +3896,8 @@ public class PartitionedRegion extends LocalRegion implements
       final DM dm = getDistributionManager();
       PartitionedRegionFunctionResultSender resultSender = new PartitionedRegionFunctionResultSender(
           dm, PartitionedRegion.this, 0, localRC, execution.getServerResultSender(), true, false, execution.isForwardExceptions(), function, buckets);
-      final FunctionContext context = new RegionFunctionContextImpl(function
-          .getId(), PartitionedRegion.this, execution
+      final FunctionContext context = new RegionFunctionContextImpl(
+          cache, function.getId(), PartitionedRegion.this, execution
           .getArgumentsForMember(localVm.getId()), routingKeys,
           ColocationHelper.constructAndGetAllColocatedLocalDataSet(
               PartitionedRegion.this, buckets), buckets, resultSender, execution.isReExecute()); 
@@ -4024,7 +4025,8 @@ public class PartitionedRegion extends LocalRegion implements
 
     // execute locally and collect the result
     if (isSelf && this.dataStore != null) {
-      final RegionFunctionContextImpl prContext = new RegionFunctionContextImpl(function.getId(), PartitionedRegion.this,
+      final RegionFunctionContextImpl prContext = new RegionFunctionContextImpl(
+          cache, function.getId(), PartitionedRegion.this,
           execution.getArgumentsForMember(getMyId().getId()), null,
           ColocationHelper.constructAndGetAllColocatedLocalDataSet(
               PartitionedRegion.this, localBucketSet), localBucketSet,
@@ -4127,6 +4129,7 @@ public class PartitionedRegion extends LocalRegion implements
     // execute locally and collect the result
     if (isSelf && this.dataStore != null) {
       final RegionFunctionContextImpl prContext = new RegionFunctionContextImpl(
+          cache,
           function.getId(), PartitionedRegion.this, execution
               .getArgumentsForMember(getMyId().getId()), null,
           ColocationHelper.constructAndGetAllColocatedLocalDataSet(

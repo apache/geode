@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.execute;
 
+import com.gemstone.gemfire.cache.Cache;
+
 /**
  * Defines the execution context of a {@link Function}. It is required
  * by the {@link Function#execute(FunctionContext)} to execute a {@link Function}
@@ -77,4 +79,6 @@ public interface FunctionContext {
    * @see Function#isHA()
    */
   public boolean isPossibleDuplicate();
+  
+  public Cache getCache();
 }

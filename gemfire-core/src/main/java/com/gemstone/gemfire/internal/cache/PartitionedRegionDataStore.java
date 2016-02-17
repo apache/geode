@@ -3133,7 +3133,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
         this.partitionedRegion, time, msg, function, bucketSet);  
 
     final RegionFunctionContextImpl prContext = new RegionFunctionContextImpl(
-        function.getId(), this.partitionedRegion, object, localKeys,
+        getPartitionedRegion().getCache(), function.getId(), this.partitionedRegion, object, localKeys,
         ColocationHelper.constructAndGetAllColocatedLocalDataSet(
             this.partitionedRegion, bucketSet), bucketSet, resultSender,
         isReExecute);

@@ -262,7 +262,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
         }
       }
       final FunctionContextImpl context = new MultiRegionFunctionContextImpl(
-          function.getId(), getArgumentsForMember(localVM.getId()),
+          cache, function.getId(), getArgumentsForMember(localVM.getId()),
           resultSender, regions, this.isReExecute);
       boolean isTx = cache.getTxManager().getTXState() == null ? false : true;
       executeFunctionOnLocalNode(function, context, resultSender, dm, isTx);
