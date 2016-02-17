@@ -33,6 +33,7 @@ import com.gemstone.gemfire.internal.cache.wan.MyGatewayTransportFilter4;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 
 public class WanValidationsDUnitTest extends WANTestBase {
 
@@ -62,8 +63,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
       
-      vm4.invoke(() -> WANTestBase.createCache(lnPort ));
-      vm5.invoke(() -> WANTestBase.createCache(lnPort ));
+      vm4.invoke(createCacheRunnable(lnPort));
+      vm5.invoke(createCacheRunnable(lnPort));
 
       vm4.invoke(() -> WANTestBase.createSender("ln1", 2, false, 10, 100, false, false, null, true));
       vm4.invoke(() -> WANTestBase.createSender("ln2", 2, false, 10, 100, false, false, null, true));
@@ -88,6 +89,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
     }
   }
 
+  protected SerializableRunnableIF createCacheRunnable(Integer lnPort) {
+    return () -> WANTestBase.createCache(lnPort );
+  }
+
   /**
    * Validate that ParallelGatewaySender can be added to Distributed region
    * 
@@ -106,8 +111,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-      vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-      vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+      vm4.invoke(createCacheRunnable(lnPort));
+      vm5.invoke(createCacheRunnable(lnPort));
 
       vm4.invoke(() -> WANTestBase.createSender( "ln1", 2,
           true, 10, 100, false, false, null, false ));
@@ -137,8 +142,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-      vm4.invoke(() -> WANTestBase.createCache(lnPort ));
-      vm5.invoke(() -> WANTestBase.createCache(lnPort ));
+      vm4.invoke(createCacheRunnable(lnPort));
+      vm5.invoke(createCacheRunnable(lnPort));
       
       vm4.invoke(() -> WANTestBase.createSender("ln1", 2, false, 10, 100, false, false, null, true));
       vm4.invoke(() -> WANTestBase.createSender("ln2", 2, false, 10, 100, false, false, null, true));
@@ -168,8 +173,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-      vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-      vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+      vm4.invoke(createCacheRunnable(lnPort));
+      vm5.invoke(createCacheRunnable(lnPort));
 
       vm4.invoke(() -> WANTestBase.createReplicatedRegionWithAsyncEventQueue(
               getTestMethodName() + "_RR", "ln1", isOffHeap()  ));
@@ -197,8 +202,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-      vm4.invoke(() -> WANTestBase.createCache(lnPort ));
-      vm5.invoke(() -> WANTestBase.createCache(lnPort ));
+      vm4.invoke(createCacheRunnable(lnPort));
+      vm5.invoke(createCacheRunnable(lnPort));
       
       vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
       vm4.invoke(() -> WANTestBase.createSender("ln2", 2, true, 10, 100, false, false, null, true));
@@ -234,7 +239,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-      vm1.invoke(() -> WANTestBase.createCache( lnPort ));
+      vm1.invoke(createCacheRunnable(lnPort));
       
       vm1.invoke(() -> WANTestBase.createSender("ln1_Parallel", 2, true, 10, 100, false, false, null, true));
       vm1.invoke(() -> WANTestBase.createSender("ln2_Parallel", 2, true, 10, 100, false, false, null, true));
@@ -260,7 +265,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-      vm1.invoke(() -> WANTestBase.createCache( lnPort ));
+      vm1.invoke(createCacheRunnable(lnPort));
       
       vm1.invoke(() -> WANTestBase.createSender("ln1_Parallel", 2, true, 10, 100, false, false, null, true));
       vm1.invoke(() -> WANTestBase.createSender("ln2_Parallel", 2, true, 10, 100, false, false, null, true));
@@ -294,7 +299,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-      vm1.invoke(() -> WANTestBase.createCache( lnPort ));
+      vm1.invoke(createCacheRunnable(lnPort));
       
       vm1.invoke(() -> WANTestBase.createSender("ln1_Parallel", 2, true, 10, 100, false, false, null, true));
       vm1.invoke(() -> WANTestBase.createSender("ln2_Parallel", 2, true, 10, 100, false, false, null, true));
@@ -321,7 +326,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-      vm1.invoke(() -> WANTestBase.createCache( lnPort ));
+      vm1.invoke(createCacheRunnable(lnPort));
 
       vm1.invoke(() -> WANTestBase.createSender(
           "ln1_Parallel", 2, true, 10, 100, false, false, null, true ));
@@ -349,7 +354,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-      vm1.invoke(() -> WANTestBase.createCache( lnPort ));
+      vm1.invoke(createCacheRunnable(lnPort));
 
       vm1.invoke(() -> WANTestBase.createSender("ln1_Parallel", 2, true, 10, 100, false, false, null, true));
       vm1.invoke(() -> WANTestBase.createSender("ln2_Parallel", 2, true, 10, 100, false, false, null, true));
@@ -378,7 +383,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testSerialGatewaySenderAndParallelGatewaySenderWithSameName() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createSenderForValidations(
         "ln", 2, false, 100, false, false, null, null, true, false ));
@@ -399,8 +404,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testSameRemoteDSAcrossSameSender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createSenderForValidations(
         "ln", 2, false, 100, false, false, null, null,
@@ -425,8 +430,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testSerialSenderOnBothCache() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createSenderForValidations(
         "ln", 2, false, 100, false, false, null, null,
@@ -450,8 +455,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testParallelSenderOnBothCache(){
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createSenderForValidations( "ln", 2,
         true, 100,false, false,
@@ -476,8 +481,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testBatchConflation() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createSenderForValidations( "ln", 2,
         false, 100, false, false,
@@ -502,8 +507,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testisPersistentEnabled() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createSenderForValidations( "ln", 2,
         false, 100, false, false,
@@ -524,8 +529,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testAlertThreshold() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createSenderForValidations( "ln", 2,
         false, 100, false, false,
@@ -546,8 +551,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testManualStart() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createSenderForValidations( "ln", 2,
         false, 100, false, false,
@@ -568,8 +573,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testGatewayEventFilters() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     ArrayList<GatewayEventFilter> eventFiletrs = new ArrayList<GatewayEventFilter>();
     eventFiletrs.add(new MyGatewayEventFilter());
@@ -596,8 +601,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testGatewayEventFilters2() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     ArrayList<GatewayEventFilter> eventFiletrs = new ArrayList<GatewayEventFilter>();
     eventFiletrs.add(new MyGatewayEventFilter());
@@ -625,8 +630,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testGatewayTransportFilters() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     ArrayList<GatewayTransportFilter> transportFiletrs = new ArrayList<GatewayTransportFilter>();
     transportFiletrs.add(new MyGatewayTransportFilter1());
@@ -655,8 +660,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testGatewayTransportFiltersOrder() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     ArrayList<GatewayTransportFilter> transportFiletrs = new ArrayList<GatewayTransportFilter>();
     transportFiletrs.add(new MyGatewayTransportFilter1());
@@ -711,8 +716,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testIsDiskSynchronous() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createSenderForValidations(
         "ln", 2, false, 100, false, false, null,
@@ -761,7 +766,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     
     vm4.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(createCacheRunnable(lnPort));
     
     vm5.invoke(() -> WANTestBase.createCacheServer( ));
     
@@ -785,8 +790,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void DISABLED_testDispatcherThreadsForParallelGatewaySender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createConcurrentSender( "ln", 2,
       true, 100, 10, false, false, null, true, 5, OrderPolicy.KEY ));
@@ -815,8 +820,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void DISABLED_testOrderPolicyForParallelGatewaySender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
 
     vm1.invoke(() -> WANTestBase.createConcurrentSender( "ln", 2,
       true, 100, 10, false, false, null, true, 5, OrderPolicy.KEY ));
@@ -840,27 +845,22 @@ public class WanValidationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
-      getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm2.invoke(createReceiverReplicatedRegion());
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false, null, true ));
 
     vm4.invoke(() -> WANTestBase.startSender( "ln" ));
     
-    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
-      getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
-      getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
-      getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm4.invoke(createReceiverReplicatedRegion());
+    vm5.invoke(createReceiverReplicatedRegion());
+    vm6.invoke(createReceiverReplicatedRegion());
+    vm7.invoke(createReceiverReplicatedRegion());
 
     vm4.invoke(() -> WANTestBase.addSenderThroughAttributesMutator(
       getTestMethodName() + "_RR", "ln"));
@@ -885,10 +885,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testBug50434_RR_SerialAsyncEventQueue() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createAsyncEventQueue( "ln",
         false, 100, 100, false, false, null, false ));
@@ -899,14 +899,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.createAsyncEventQueue( "ln",
         false, 100, 100, false, false, null, false ));
 
-    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm4.invoke(createReceiverReplicatedRegion());
+    vm5.invoke(createReceiverReplicatedRegion());
+    vm6.invoke(createReceiverReplicatedRegion());
+    vm7.invoke(createReceiverReplicatedRegion());
 
     vm4.invoke(() -> WANTestBase.addAsyncEventQueueThroughAttributesMutator( getTestMethodName() + "_RR", "ln" ));
 
@@ -925,33 +921,33 @@ public class WanValidationsDUnitTest extends WANTestBase {
       }
     }
   }
+
+  protected SerializableRunnableIF createReceiverReplicatedRegion() {
+    return () -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap() );
+  }
   
   public void testBug50434_RR_Serial_Pass() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
-      getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm2.invoke(createReceiverReplicatedRegion());
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false, null, true ));
 
     vm4.invoke(() -> WANTestBase.startSender( "ln" ));
     
-    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
-      getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
-      getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
-      getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm4.invoke(createReceiverReplicatedRegion());
+    vm5.invoke(createReceiverReplicatedRegion());
+    vm6.invoke(createReceiverReplicatedRegion());
+    vm7.invoke(createReceiverReplicatedRegion());
 
     vm4.invoke(() -> WANTestBase.addSenderThroughAttributesMutator(
       getTestMethodName() + "_RR", "ln"));
@@ -977,10 +973,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testBug50434_RR_SerialAsyncEventQueue_Pass() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createAsyncEventQueue( "ln",
         false, 100, 100, false, false, null, false ));
@@ -991,14 +987,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.createAsyncEventQueue( "ln",
         false, 100, 100, false, false, null, false ));
 
-    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm4.invoke(createReceiverReplicatedRegion());
+    vm5.invoke(createReceiverReplicatedRegion());
+    vm6.invoke(createReceiverReplicatedRegion());
+    vm7.invoke(createReceiverReplicatedRegion());
 
     vm4.invoke(() -> WANTestBase.addAsyncEventQueueThroughAttributesMutator( getTestMethodName() + "_RR", "ln" ));
     vm5.invoke(() -> WANTestBase.addAsyncEventQueueThroughAttributesMutator( getTestMethodName() + "_RR", "ln" ));
@@ -1026,10 +1018,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_RR", null, 1, 100, isOffHeap() ));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false, null, true ));
@@ -1079,10 +1071,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testBug50434_PR_SerialAsyncEventQueue() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createAsyncEventQueue( "ln",
         false, 100, 100, false, false, null, false ));
@@ -1127,10 +1119,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false, null, true ));
@@ -1179,10 +1171,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testBug50434_PR_SerialAsyncEventQueue_Pass() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createAsyncEventQueue( "ln",
         false, 100, 100, false, false, null, false ));
@@ -1228,10 +1220,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 10, isOffHeap()));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         true, 100, 10, false, false, null, true ));
@@ -1273,10 +1265,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testBug50434_PR_ParallelAsyncEventQueue() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createAsyncEventQueue( "ln",
         true, 100, 100, false, false, null, false ));
@@ -1321,10 +1313,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 10, isOffHeap()));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         true, 100, 10, false, false, null, true ));
@@ -1368,10 +1360,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void testBug50434_PR_ParallelAsyncEventQueue_Pass() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createAsyncEventQueue( "ln",
         true, 100, 100, false, false, null, false ));
@@ -1424,8 +1416,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException("could not get remote locator information");
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
     
     try {
       vm4.invoke(() -> WANTestBase.createSender( "ln1", 2,
@@ -1471,10 +1463,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     // ------------ START - CREATE CACHE, REGION ON LOCAL SITE ------------//
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(createCacheRunnable(lnPort));
+    vm5.invoke(createCacheRunnable(lnPort));
+    vm6.invoke(createCacheRunnable(lnPort));
+    vm7.invoke(createCacheRunnable(lnPort));
 
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false, null, true ));
