@@ -16,11 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.asyncqueue;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.gemstone.gemfire.cache.Declarable;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
 import org.junit.Ignore;
 
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -1068,7 +1072,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
       }
     }
   }
-  
+
   public void testParallelAsyncEventQueue() {
     Integer lnPort = (Integer)vm0.invoke(AsyncEventQueueTestBase.class,
         "createFirstLocatorWithDSId", new Object[] { 1 });
@@ -1098,7 +1102,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
     vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
         256 });
-    
+
     vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",
         new Object[] { "ln" });
     vm5.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",
@@ -1107,7 +1111,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         new Object[] { "ln" });
     vm7.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",
         new Object[] { "ln" });
-    
+
     int vm4size = (Integer)vm4.invoke(AsyncEventQueueTestBase.class, "getAsyncEventListenerMapSize",
         new Object[] { "ln"});
     int vm5size = (Integer)vm5.invoke(AsyncEventQueueTestBase.class, "getAsyncEventListenerMapSize",
@@ -1116,10 +1120,33 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         new Object[] { "ln"});
     int vm7size = (Integer)vm7.invoke(AsyncEventQueueTestBase.class, "getAsyncEventListenerMapSize",
         new Object[] { "ln"});
-    
+
     assertEquals(vm4size + vm5size + vm6size + vm7size, 256);
   }
-  
+
+  public void testParallelAsyncEventQueueWithSubstitutionFilter() {
+    Integer lnPort = (Integer)vm0.invoke(AsyncEventQueueTestBase.class,
+        "createFirstLocatorWithDSId", new Object[] { 1 });
+
+    vm4.invoke(AsyncEventQueueTestBase.class, "createCache", new Object[] { lnPort });
+
+    vm4.invoke(AsyncEventQueueTestBase.class, "createAsyncEventQueue", new Object[] { "ln",
+        true, 100, 100, false, false, null, false, "MyAsyncEventListener", "MyGatewayEventSubstitutionFilter" });
+
+    String regionName = getTestMethodName() + "_PR";
+    vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
+        new Object[] { regionName, "ln", isOffHeap() });
+
+    int numPuts = 10;
+    vm4.invoke(AsyncEventQueueTestBase.class, "doPuts", new Object[] { regionName, numPuts });
+
+    vm4.invoke(AsyncEventQueueTestBase.class, "waitForAsyncQueueToGetEmpty",
+        new Object[] { "ln" });
+
+    vm4.invoke(AsyncEventQueueTestBase.class, "verifySubstitutionFilterInvocations",
+        new Object[] { "ln" , numPuts });
+  }
+
   /**
    * Verify that the events reaching the AsyncEventListener have correct operation detail.
    * (added for defect #50237).
@@ -1918,5 +1945,4 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         "getAsyncEventListenerMapSize", new Object[] { "ln" });
     assertEquals(vm3size, 1000);
   }
-  
 }
