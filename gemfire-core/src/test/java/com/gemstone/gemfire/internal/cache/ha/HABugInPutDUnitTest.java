@@ -58,10 +58,6 @@ public class HABugInPutDUnitTest extends DistributedTestCase
 
   VM client2 = null;
 
-  public static int PORT1;
-
-  public static int PORT2;
-
   private static final String REGION_NAME = "HABugInPutDUnitTest_region";
 
   final static String KEY1 = "KEY1";
@@ -91,9 +87,9 @@ public class HABugInPutDUnitTest extends DistributedTestCase
     client2 = host.getVM(3);
 
     //System.setProperty())
-    PORT1 = ((Integer)server1.invoke(() -> HABugInPutDUnitTest.createServerCache()))
+    int PORT1 = ((Integer)server1.invoke(() -> HABugInPutDUnitTest.createServerCache()))
         .intValue();
-    PORT2 = ((Integer)server2.invoke(() -> HABugInPutDUnitTest.createServerCache()))
+    int PORT2 = ((Integer)server2.invoke(() -> HABugInPutDUnitTest.createServerCache()))
         .intValue();
 
     client1.invoke(() -> HABugInPutDUnitTest.createClientCache(
@@ -151,8 +147,8 @@ public class HABugInPutDUnitTest extends DistributedTestCase
   public static void createClientCache(String hostName, Integer port1, Integer port2)
       throws Exception
   {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue();
+    int PORT2 = port2.intValue();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");

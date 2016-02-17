@@ -70,12 +70,12 @@ public class OperationsPropagationDUnitTest extends DistributedTestCase
   /**
    * Port of server1
    */
-  public static int PORT1;
+  public int PORT1;
 
   /**
    * Port of server2
    */
-  public static int PORT2;
+  public int PORT2;
 
   /**
    * Name of the region
@@ -195,7 +195,7 @@ public class OperationsPropagationDUnitTest extends DistributedTestCase
    */
   public static void createClientCache(String host, Integer port2) throws Exception
   {
-    PORT2 = port2.intValue();
+    int PORT2 = port2.intValue();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");

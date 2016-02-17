@@ -51,9 +51,9 @@ public class RegisterInterestKeysDUnitTest extends DistributedTestCase
 
   VM client2 = null;
 
-  private static  int PORT1 ;
+  private int PORT1 ;
 
-  private static  int PORT2 ;
+  private int PORT2 ;
 
   private static final String REGION_NAME = "RegisterInterestKeysDUnitTest_region";
 
@@ -146,8 +146,8 @@ public class RegisterInterestKeysDUnitTest extends DistributedTestCase
 
   public static void createClientCache(String host, Integer port1 , Integer port2 ) throws Exception
   {
-    PORT1 = port1.intValue() ;
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue() ;
+    int PORT2 = port2.intValue();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");

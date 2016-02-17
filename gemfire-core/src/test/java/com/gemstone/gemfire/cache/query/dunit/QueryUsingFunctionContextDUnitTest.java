@@ -78,7 +78,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
   private static final int cntDest = 100;
 
-  static VM server1 = null;
+  VM server1 = null;
 
   static VM server2 = null;
 

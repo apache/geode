@@ -61,7 +61,7 @@ public class Bug37210DUnitTest extends DistributedTestCase
   private static Cache cache = null;
 
   /** port for the cache server */
-  private static int PORT;
+  private int PORT;
 
   /** name of the test region */
   private static final String REGION_NAME = "Bug37210DUnitTest_Region";
@@ -146,10 +146,11 @@ public class Bug37210DUnitTest extends DistributedTestCase
    */
   public void testHAStatsCleanup() throws Exception
   {
+    Host host = Host.getHost(0);
     LogWriterUtils.getLogWriter().info("testHAStatsCleanup : BEGIN");
     IgnoredException.addIgnoredException("java.net.SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");
-    client.invoke(() -> Bug37210DUnitTest.createClientCache( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT) ));
+    client.invoke(() -> Bug37210DUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT) ));
     server.invoke(() -> Bug37210DUnitTest.doEntryOperations());
     
     server.invoke(() -> Bug37210DUnitTest.closeCacheClientProxyAndVerifyStats());

@@ -66,9 +66,9 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   
   VM client2 = null;
  
-  private static  int PORT1 ;
+  private int PORT1 ;
   
-  private static  int PORT2 ;
+  private int PORT2 ;
   
   private static PoolImpl p = null; 
   /*

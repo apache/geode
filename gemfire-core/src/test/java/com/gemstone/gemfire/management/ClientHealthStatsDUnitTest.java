@@ -75,7 +75,7 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
   /** name of the test region */
   private static final String REGION_NAME = "ClientHealthStatsDUnitTest_Region";
 
-  private static VM server = null;
+  private VM server = null;
 
   private static VM client = null;
   

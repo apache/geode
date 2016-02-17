@@ -62,7 +62,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class PRClientServerTestBase extends CacheTestCase {
 
-  protected static VM server1 = null;
+  protected VM server1 = null;
 
   protected static VM server2 = null;
 

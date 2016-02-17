@@ -84,9 +84,9 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
 
   protected static VM VM3 = null;
 
-  private static int PORT1;
+  private int PORT1;
 
-  private static int PORT2;
+  private int PORT2;
 
   private static final String regionName = "DeltaPropagationDUnitTest";
 

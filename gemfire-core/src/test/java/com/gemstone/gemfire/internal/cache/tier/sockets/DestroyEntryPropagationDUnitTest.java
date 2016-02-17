@@ -72,8 +72,8 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
 
   VM vm3 = null;
 
-  private static  int PORT1 ;
-  private static  int PORT2;
+  private int PORT1 ;
+  private int PORT2;
   protected static Cache cache = null;
 
   private static final String REGION_NAME = "DestroyEntryPropagationDUnitTest_region";
@@ -104,8 +104,8 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
     PORT1 =  ((Integer)vm0.invoke(() -> DestroyEntryPropagationDUnitTest.createServerCache())).intValue();
     PORT2 =  ((Integer)vm1.invoke(() -> DestroyEntryPropagationDUnitTest.createServerCache())).intValue();
 
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1),new Integer(PORT2)));
-    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1),new Integer(PORT2)));
+    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT1),new Integer(PORT2)));
+    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT1),new Integer(PORT2)));
 
   }
 
@@ -246,7 +246,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
 
     //Do a destroy on Server1 via Connection object from client1.
     // Client1 should not receive updated value while client2 should receive
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.acquireConnectionsAndDestroyEntriesK1andK2());
+    vm2.invoke(() -> acquireConnectionsAndDestroyEntriesK1andK2());
    // pause(10000);
     //  Check if both the puts ( on key1 & key2 ) have reached the servers
     vm0.invoke(() -> DestroyEntryPropagationDUnitTest.verifyEntriesAreDestroyed());
@@ -256,7 +256,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
 
   }
 
-  public static void acquireConnectionsAndDestroyEntriesK1andK2()
+  public void acquireConnectionsAndDestroyEntriesK1andK2()
   {
     try {
       Region r1 = cache.getRegion(Region.SEPARATOR+REGION_NAME);
@@ -411,8 +411,8 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
 
   public static void createClientCache(String host, Integer port1, Integer port2) throws Exception
   {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue();
+    int PORT2 = port2.intValue();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");

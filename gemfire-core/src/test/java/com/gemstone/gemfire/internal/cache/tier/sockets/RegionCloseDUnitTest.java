@@ -55,7 +55,7 @@ public class RegionCloseDUnitTest extends DistributedTestCase
 
   VM client1 = null;
 
-  private static  int PORT1 ;
+  private int PORT1 ;
 
   private static final String REGION_NAME = "RegionCloseDUnitTest_region";
 
@@ -104,7 +104,7 @@ public class RegionCloseDUnitTest extends DistributedTestCase
 
   public static void createClientCache(String host, Integer port1) throws Exception
   {
-    PORT1 = port1.intValue() ;
+    int PORT1 = port1.intValue() ;
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");

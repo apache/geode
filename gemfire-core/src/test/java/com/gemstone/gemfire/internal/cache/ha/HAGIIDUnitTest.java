@@ -118,12 +118,10 @@ public class HAGIIDUnitTest extends DistributedTestCase
   private static VM server1 = null;
   private static VM client0 = null;
 
-  private static int PORT1;
-  private static int PORT2;
-
   private static final String REGION_NAME = "HAGIIDUnitTest_region";
   
   protected static GIIChecker checker = new GIIChecker();
+  private int PORT2;
 
   /** constructor */
   public HAGIIDUnitTest(String name) {
@@ -143,7 +141,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
     client0 = host.getVM(2);
 
     //start server1
-    PORT1 = ((Integer)server0.invoke(() -> HAGIIDUnitTest.createServer1Cache())).intValue();
+    int PORT1 = ((Integer)server0.invoke(() -> HAGIIDUnitTest.createServer1Cache())).intValue();
     server0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
     server0.invoke(() -> HAGIIDUnitTest.setSystemProperty());
 
@@ -181,8 +179,8 @@ public class HAGIIDUnitTest extends DistributedTestCase
 
   public static void createClientCache(String host, Integer port1 , Integer port2) throws Exception
   {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue();
+    int PORT2 = port2.intValue();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");

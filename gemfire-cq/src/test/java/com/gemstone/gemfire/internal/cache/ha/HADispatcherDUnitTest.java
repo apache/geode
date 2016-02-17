@@ -91,9 +91,9 @@ public class HADispatcherDUnitTest extends DistributedTestCase
 
   VM client2 = null;
 
-  public static int PORT1;
+  public int PORT1;
 
-  public static int PORT2;
+  public int PORT2;
 
   private static final String REGION_NAME = "HADispatcherDUnitTest_region";
 
@@ -144,11 +144,11 @@ public class HADispatcherDUnitTest extends DistributedTestCase
     client1.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
     client2.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
     client1.invoke(() -> HADispatcherDUnitTest.createClientCache(
-            NetworkUtils.getServerHostName(Host.getHost(0)),
+            NetworkUtils.getServerHostName(host),
             new Integer(PORT1), new Integer(PORT2),
             new Boolean(false) ));
     client2.invoke(() -> HADispatcherDUnitTest.createClientCache(
-            NetworkUtils.getServerHostName(Host.getHost(0)),
+            NetworkUtils.getServerHostName(host),
             new Integer(PORT1), new Integer(PORT2),
             new Boolean(true) ));
     //createClientCache(new Integer(PORT1), new Integer(PORT2), new Boolean(true) );
@@ -380,8 +380,8 @@ public class HADispatcherDUnitTest extends DistributedTestCase
   public static void createClientCache(String hostName, Integer port1, Integer port2,
       Boolean isListenerPresent) throws Exception
   {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue();
+    int PORT2 = port2.intValue();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");

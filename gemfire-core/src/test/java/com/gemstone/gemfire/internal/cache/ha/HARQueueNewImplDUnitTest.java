@@ -81,9 +81,9 @@ public class HARQueueNewImplDUnitTest extends DistributedTestCase {
 
   protected static VM clientVM2 = null;
 
-  private static int PORT1;
+  private int PORT1;
 
-  private static int PORT2;
+  private int PORT2;
 
   private static final String regionName = "HARQueueNewImplDUnitTest";
 

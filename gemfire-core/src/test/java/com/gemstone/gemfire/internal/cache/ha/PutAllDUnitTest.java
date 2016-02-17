@@ -73,10 +73,10 @@ public class PutAllDUnitTest extends DistributedTestCase
   VM client2 = null;
 
   /** port of server1**/
-  public static int PORT1;
+  public int PORT1;
 
   /** port of server2**/
-  public static int PORT2;
+  public int PORT2;
 
   /** region name**/
   private static final String REGION_NAME = "PutAllDUnitTest_Region";
@@ -178,7 +178,7 @@ public class PutAllDUnitTest extends DistributedTestCase
   /** function to create client cache with HAEventIdPropagationListenerForClient2 as the listener  **/
   public static void createClientCache2(String host, Integer port1) throws Exception
   {
-    PORT1 = port1.intValue();
+    int PORT1 = port1.intValue();
     Properties props = new Properties();
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -209,7 +209,7 @@ public class PutAllDUnitTest extends DistributedTestCase
   /** function to create client cache **/
   public static void createClientCache1(String host, Integer port1) throws Exception
   {
-    PORT1 = port1.intValue();
+    int PORT1 = port1.intValue();
     Properties props = new Properties();
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");

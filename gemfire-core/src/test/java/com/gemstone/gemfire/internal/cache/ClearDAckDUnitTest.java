@@ -63,7 +63,7 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
     static CacheTransactionManager cacheTxnMgr;
     static boolean IsAfterClear=false;
     static boolean flag = false;
-    static DistributedMember vm0ID, vm1ID;
+    DistributedMember vm0ID, vm1ID;
     
     @Override
     public void setUp() throws Exception {

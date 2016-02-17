@@ -57,9 +57,9 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
 
   private static int PORT0;
 
-  private static int PORT1;
+  private int PORT1;
 
-  private static int PORT2;
+  private int PORT2;
 
   private static final String regionName = "HASlowReceiverDUnitTest";
 

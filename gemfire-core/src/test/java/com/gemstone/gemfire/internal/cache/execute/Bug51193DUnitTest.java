@@ -59,7 +59,7 @@ public class Bug51193DUnitTest extends DistributedTestCase {
   
   private static VM server0;
   
-  private static VM client0;
+  private VM client0;
   
   @Override
   public void setUp() throws Exception {

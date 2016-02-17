@@ -284,8 +284,10 @@ public class DeltaClientPostAuthorizationDUnitTest extends
             opFlags), new Integer(expectedResult));
       }
       else {
-        clientVM.invoke(() -> DeltaClientPostAuthorizationDUnitTest.doOp( new Byte(opCode.toOrdinal()),
-                currentOp.getIndices(), new Integer(opFlags),
+        byte ordinal = opCode.toOrdinal();
+        int[] indices = currentOp.getIndices();
+        clientVM.invoke(() -> DeltaClientPostAuthorizationDUnitTest.doOp( new Byte(ordinal),
+                indices, new Integer(opFlags),
                 new Integer(expectedResult) ));
       }
     }

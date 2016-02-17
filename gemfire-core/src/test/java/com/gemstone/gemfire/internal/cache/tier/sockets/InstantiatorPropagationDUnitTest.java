@@ -63,13 +63,13 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
 
   private static VM client2 = null;
 
-  private static VM server1 = null;
+  private VM server1 = null;
 
   private static VM server2 = null;
 
-  private static int PORT1 = -1;
+  private int PORT1 = -1;
 
-  private static int PORT2 = -1;
+  private int PORT2 = -1;
 
   private static int instanceCountWithAllPuts = 3;
 
@@ -803,7 +803,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
           new Integer(PORT1));
   
       client2
-          .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache(NetworkUtils.getServerHostName(server2.getHost()),
+          .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
                   new Integer(PORT2)));
   
       Wait.pause(3000);

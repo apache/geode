@@ -112,7 +112,7 @@ public class InterestListDUnitTest extends DistributedTestCase
   VM vm2 = null;
 
   /** the server cache's port number */
-  static  int PORT1;
+  int PORT1;
 
   // using a Integer instead of String to make sure ALL_KEYS works
   // on non-String keys
@@ -223,8 +223,9 @@ public class InterestListDUnitTest extends DistributedTestCase
   {
 
     // Initialization
-    vm1.invoke(() -> InterestListDUnitTest.createClientCache( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1)));
-    vm2.invoke(() -> InterestListDUnitTest.createClientCache( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1)));
+    Host host = Host.getHost(0);
+    vm1.invoke(() -> InterestListDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT1)));
+    vm2.invoke(() -> InterestListDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT1)));
 
     vm1.invoke(() -> InterestListDUnitTest.createEntriesK1andK2());
     vm2.invoke(() -> InterestListDUnitTest.createEntriesK1andK2());

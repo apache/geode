@@ -290,20 +290,23 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
   public static void verifyOperations()
   {
     createEntry();
-    Boolean pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
-    assertTrue(pass.booleanValue());
+    Boolean pass;
+    verifyEventID();
     put();
-    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
-    assertTrue(pass.booleanValue());
+    verifyEventID();
     invalidateRegion();
-    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
-    assertTrue(pass.booleanValue());
+    verifyEventID();
     destroy();
+    verifyEventID();
+    destroyRegion();
+    verifyEventID();   
+  }
+
+  protected static void verifyEventID() {
+    Boolean pass;
+    EventID eventId = EventIDVerificationInP2PDUnitTest.eventId;
     pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertTrue(pass.booleanValue());
-    destroyRegion();
-    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
-    assertTrue(pass.booleanValue());   
   }
 
   @Override

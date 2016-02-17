@@ -66,13 +66,13 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
   /* handler for LRU capacity controller */
   private static EnableLRU cc = null;
 
-  static VM client = null;
+  VM client = null;
 
   static VM serverVM = null;
 
-  static Integer serverPort1 = null;
+  Integer serverPort1 = null;
 
-  static Integer serverPort2 = null;
+  Integer serverPort2 = null;
 
   static String ePolicy = "mem";
 

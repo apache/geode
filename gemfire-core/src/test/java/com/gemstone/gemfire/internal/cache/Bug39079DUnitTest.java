@@ -62,7 +62,7 @@ public class Bug39079DUnitTest extends CacheTestCase {
   static Properties props = new Properties();
   
 
-  private static VM vm0 = null;
+  private VM vm0 = null;
 
   private static VM vm1 = null;
 

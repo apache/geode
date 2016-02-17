@@ -58,7 +58,7 @@ public class Bug36805DUnitTest extends DistributedTestCase
 {
   private static Cache cache = null;
 
-  private static VM server1 = null;
+  private VM server1 = null;
 
   private static VM server2 = null;
 

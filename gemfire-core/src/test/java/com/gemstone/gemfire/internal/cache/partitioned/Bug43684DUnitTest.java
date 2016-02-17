@@ -55,7 +55,7 @@ public class Bug43684DUnitTest extends DistributedTestCase {
 
   private static GemFireCacheImpl cache;
 
-  private static Host host;
+  private Host host;
 
   private static VM server1;
 

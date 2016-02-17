@@ -49,7 +49,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 public class Bug48571DUnitTest extends DistributedTestCase {
 
   private static VM server = null;
-  private static VM client = null;
+  private VM client = null;
   private static GemFireCacheImpl cache = null;
   
   private static final String region = "Bug48571DUnitTest_region";

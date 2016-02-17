@@ -87,16 +87,14 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
 
   VM client2 = null;
 
-  private static  int PORT1 ;
+  private int PORT1 ;
 
-  private static  int PORT2 ;
+  private int PORT2 ;
 
   private static final String REGION_NAME = "UpdatePropagationDUnitTest_region";
 
   protected static Cache cache = null;
   
-  static UpdatePropagationDUnitTest impl;
-
   /** constructor */
   public UpdatePropagationDUnitTest(String name) {
     super(name);
@@ -119,11 +117,6 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     //client 2 VM
     client2 = host.getVM(3);
     
-    createImpl();
-    for (int i=0; i<4; i++) {
-      host.getVM(i).invoke(getClass(), "createImpl", null);
-    }
-
     PORT1 =  ((Integer)server1.invoke(() -> createServerCache())).intValue();
     PORT2 =  ((Integer)server2.invoke(() -> createServerCache())).intValue();
 
@@ -135,11 +128,6 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     IgnoredException.addIgnoredException("java.net.SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");
 
-  }
-  
-  /** subclass support */
-  public static void createImpl() {
-    impl = new UpdatePropagationDUnitTest("temp");
   }
 
   private void createCache(Properties props) throws Exception
@@ -165,10 +153,10 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
 
     //First create entries on both servers via the two client
-    client1.invoke(() -> impl.createEntriesK1andK2());
-    client2.invoke(() -> impl.createEntriesK1andK2());
-    client1.invoke(() -> impl.registerKeysK1andK2());
-    client2.invoke(() -> impl.registerKeysK1andK2());
+    client1.invoke(() -> createEntriesK1andK2());
+    client2.invoke(() -> createEntriesK1andK2());
+    client1.invoke(() -> registerKeysK1andK2());
+    client2.invoke(() -> registerKeysK1andK2());
     //Induce fail over of InteretsList Endpoint to Server 2 by killing server1
     
     server1.invoke(() -> UpdatePropagationDUnitTest.killServer(new Integer(PORT1)));
@@ -254,13 +242,13 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
 
     //Do a put on Server1 via Connection object from client1.
     // Client1 should not receive updated value while client2 should receive
-    client1.invoke(() -> impl.acquireConnectionsAndPutonK1andK2( NetworkUtils.getServerHostName(client1.getHost())));
+    client1.invoke(() -> acquireConnectionsAndPutonK1andK2( NetworkUtils.getServerHostName(client1.getHost())));
     //pause(5000);
     //Check if both the puts ( on key1 & key2 ) have reached the servers
-    server1.invoke(() -> impl.verifyUpdates());
-    server2.invoke(() -> impl.verifyUpdates());
+    server1.invoke(() -> verifyUpdates());
+    server2.invoke(() -> verifyUpdates());
     // verify no updates for update originator
-    client1.invoke(() -> impl.verifyNoUpdates());
+    client1.invoke(() -> verifyNoUpdates());
 
   }
 
@@ -274,10 +262,10 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
   {
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
     //  First create entries on both servers via the two client
-    client1.invoke(() -> impl.createEntriesK1andK2());
-    client2.invoke(() -> impl.createEntriesK1andK2());
-    client1.invoke(() -> impl.registerKeysK1andK2());
-    client2.invoke(() -> impl.registerKeysK1andK2());
+    client1.invoke(() -> createEntriesK1andK2());
+    client2.invoke(() -> createEntriesK1andK2());
+    client1.invoke(() -> registerKeysK1andK2());
+    client2.invoke(() -> registerKeysK1andK2());
     //Induce fail over of InteretsList Endpoint to Server 2 by killing server1
     server1.invoke(() -> UpdatePropagationDUnitTest.killServer(new Integer(PORT1)));
     //Wait for 10 seconds to allow fail over. This would mean that Interstist has failed
@@ -378,16 +366,16 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
 
     //Do a put on Server1 via Connection object from client1.
     // Client1 should not receive updated value while client2 should receive
-    client1.invoke(() -> impl.acquireConnectionsAndPutonK1andK2( NetworkUtils.getServerHostName(client1.getHost())));
+    client1.invoke(() -> acquireConnectionsAndPutonK1andK2( NetworkUtils.getServerHostName(client1.getHost())));
     Wait.pause(5000);
     //Check if both the puts ( on key1 & key2 ) have reached the servers
-    server1.invoke(() -> impl.verifyUpdates());
-    server2.invoke(() -> impl.verifyUpdates());
+    server1.invoke(() -> verifyUpdates());
+    server2.invoke(() -> verifyUpdates());
     // verify updates to other client
-    client2.invoke(() -> impl.verifyUpdates());
+    client2.invoke(() -> verifyUpdates());
   }
 
-  public static void acquireConnectionsAndPutonK1andK2(String host)
+  public void acquireConnectionsAndPutonK1andK2(String host)
   {
     try {
       Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
@@ -471,8 +459,8 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
 
   public static void createClientCache(String host, Integer port1 , Integer port2 ) throws Exception
   {
-    PORT1 = port1.intValue() ;
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue() ;
+    int PORT2 = port2.intValue();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");
@@ -503,10 +491,10 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
 
   }
 
-  public static Integer createServerCache() throws Exception
+  public Integer createServerCache() throws Exception
   {
     new UpdatePropagationDUnitTest("temp").createCache(new Properties());
-    RegionAttributes attrs = impl.createCacheServerAttributes(); 
+    RegionAttributes attrs = createCacheServerAttributes(); 
     cache.createRegion(REGION_NAME, attrs);
     CacheServer server = cache.addCacheServer();
     assertNotNull(server);

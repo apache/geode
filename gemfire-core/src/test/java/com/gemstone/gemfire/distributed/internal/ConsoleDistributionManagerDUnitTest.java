@@ -384,7 +384,7 @@ public class ConsoleDistributionManagerDUnitTest
   }
 
   private boolean acquireDistLock(VM vm, String lockName) {
-    return vm.invoke(() -> this.remoteAcquireDistLock(lockName));
+    return vm.invoke(() -> remoteAcquireDistLock(lockName));
   }
 
   /**
@@ -424,7 +424,7 @@ public class ConsoleDistributionManagerDUnitTest
   }
 
   private InternalDistributedMember getJavaGroupsIdForVM(VM vm) {
-    return (InternalDistributedMember)vm.invoke(() -> this.remoteGetJavaGroupsIdForVM());
+    return (InternalDistributedMember)vm.invoke(() -> remoteGetJavaGroupsIdForVM());
   }
   
   /**

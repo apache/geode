@@ -63,7 +63,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
   private static Cache cacheClient = null;
   private static Cache cacheFeeder = null;
   private static Cache cacheServer = null;
-  private static int PORT ;
+  private int PORT ;
   private static int poolNameCounter = 0;
   private static final String REGION_NAME1 = "ClientConflationDUnitTest_region1" ;
   private static final String REGION_NAME2 = "ClientConflationDUnitTest_region2" ;

@@ -63,6 +63,9 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 /**
  *
  *
@@ -95,9 +98,9 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
 
   protected static VM clientVM2 = null;
 
-  private static int PORT1;
+  private int PORT1;
 
-  private static int PORT2;
+  private int PORT2;
 
   private static final String regionName = "CQListGIIDUnitTest";
 
@@ -183,6 +186,18 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
     serverVM1.invoke(() -> CQListGIIDUnitTest.closeCache());
     disconnectAllFromDS();
   }
+  
+  public static Test suite() {
+    Class[] classes = new Class[] {com.gemstone.gemfire.internal.cache.ha.CQListGIIDUnitTest.class,
+ com.gemstone.gemfire.internal.cache.tier.sockets.DataSerializerPropogationDUnitTest.class,
+ com.gemstone.gemfire.internal.cache.tier.sockets.EventIDVerificationDUnitTest.class,
+ com.gemstone.gemfire.internal.cache.tier.sockets.EventIDVerificationInP2PDUnitTest.class,
+ com.gemstone.gemfire.internal.cache.tier.sockets.UpdatePropagationDUnitTest.class,
+ com.gemstone.gemfire.internal.cache.tier.sockets.UpdatePropagationPRDUnitTest.class,
+ com.gemstone.gemfire.security.DeltaClientPostAuthorizationDUnitTest.class};
+    return new TestSuite(classes);
+  }
+
 
   private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);

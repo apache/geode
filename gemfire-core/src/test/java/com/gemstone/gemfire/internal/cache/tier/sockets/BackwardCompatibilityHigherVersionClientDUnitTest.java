@@ -50,7 +50,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends
   /** the cache */
   private static Cache cache = null;
 
-  private static VM server1 = null;
+  private VM server1 = null;
 
   private static VM client1 = null;
 

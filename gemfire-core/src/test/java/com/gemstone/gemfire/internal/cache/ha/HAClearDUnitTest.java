@@ -63,10 +63,6 @@ public class HAClearDUnitTest extends DistributedTestCase
 
   static VM client2 = null;
 
-  public static int PORT1;
-
-  public static int PORT2;
-
   private static final String REGION_NAME = "HAClearDUnitTest_Region";
 
   protected static Cache cache = null;
@@ -554,17 +550,18 @@ public class HAClearDUnitTest extends DistributedTestCase
   // function to create 2servers and 3 clients
   private void createClientServerConfigurationForClearTest() throws Exception
   {
-    PORT1 = ((Integer)server1.invoke(() -> HAClearDUnitTest.createServerCache())).intValue();
-    PORT2 = ((Integer)server2.invoke(() -> HAClearDUnitTest.createServerCache())).intValue();
+    int PORT1 = ((Integer)server1.invoke(() -> HAClearDUnitTest.createServerCache())).intValue();
+    int PORT2 = ((Integer)server2.invoke(() -> HAClearDUnitTest.createServerCache())).intValue();
+    String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
     client1.invoke(() -> HAClearDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(Host.getHost(0)),
+        hostname,
         new Integer(PORT1), new Integer(PORT2), new Boolean(true),
         new Boolean(true) ));
     client2.invoke(() -> HAClearDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(Host.getHost(0)),
+        hostname,
         new Integer(PORT1), new Integer(PORT2), new Boolean(true),
         new Boolean(true) ));
-    createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)),
+    createClientCache(hostname,
         new Integer(PORT1), new Integer(PORT2),
         new Boolean(true), new Boolean(true));
   }
@@ -599,8 +596,8 @@ public class HAClearDUnitTest extends DistributedTestCase
   public static void createClientCache(String hostName, Integer port1, Integer port2,
       Boolean listenerAttached, Boolean registerInterest) throws Exception
   {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue();
+    int PORT2 = port2.intValue();
     boolean isListenerAttached = listenerAttached.booleanValue();
     boolean isRegisterInterest = registerInterest.booleanValue();
     Properties props = new Properties();

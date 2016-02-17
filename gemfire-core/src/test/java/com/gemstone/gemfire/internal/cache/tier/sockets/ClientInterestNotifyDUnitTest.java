@@ -125,7 +125,7 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
   VM vm3 = null; // client3
   */
   private static Cache cacheServer = null;
-  private static int PORT ;
+  private int PORT ;
   private static int poolNameCounter = 0;
   // Region 1 only does interest registrations with receiveValues flag set to true
   private static final String REGION_NAME1 = "ClientInterestNotifyDUnitTest_region1" ;
@@ -184,14 +184,15 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
     // Server is created with notify-by-subscription (NBS) set to false.
     PORT =  createServerCache();
     
+    Host host = Host.getHost(0);
     // Create a feeder.
-    vm0.invoke(() -> ClientInterestNotifyDUnitTest.createClientCacheFeeder(NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)));
+    vm0.invoke(() -> ClientInterestNotifyDUnitTest.createClientCacheFeeder(NetworkUtils.getServerHostName(host), new Integer(PORT)));
     
     // Client 1 overrides NBS to true.
     // Client 2 "overrides" NSB to false.
     // Client 3 uses the default NBS which is false on the server.
     
-    vm1.invoke(() -> ClientInterestNotifyDUnitTest.createClientCache( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT), "ClientOn"));
+    vm1.invoke(() -> ClientInterestNotifyDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT), "ClientOn"));
     /*
     vm2.invoke(() -> ClientInterestNotifyDUnitTest.createClientCache( getServerHostName(Host.getHost(0)), new Integer(PORT), 
       DistributionConfig.NOTIFY_BY_SUBSCRIPTION_OVERRIDE_PROP_VALUE_OFF, "ClientOff"));

@@ -62,15 +62,15 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 public class InterestListEndpointDUnitTest extends DistributedTestCase
 {
 
-  static VM server1 = null;
+  VM server1 = null;
 
   static VM server2 = null;
 
   static VM client1 = null;
 
   protected static Cache cache = null;
-  private static int PORT1;
-  private static int PORT2;
+  private int PORT1;
+  private int PORT2;
 
   private static Connection conn1 ;
   private static PoolImpl pool;
@@ -148,30 +148,30 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
   */
   public void testInterestListEndpoint()
   {
-    client1.invoke(() -> impl.createEntriesK1andK2());
-    server2.invoke(() -> impl.createEntriesK1andK2()); // server
-    server1.invoke(() -> impl.createEntriesK1andK2()); // server
+    client1.invoke(() -> createEntriesK1andK2());
+    server2.invoke(() -> createEntriesK1andK2()); // server
+    server1.invoke(() -> createEntriesK1andK2()); // server
 
-    client1.invoke(() -> impl.registerKey1());
+    client1.invoke(() -> registerKey1());
 
-    server1.invoke(() -> impl.verifyIfNotInterestListEndpointAndThenPut());
-    server2.invoke(() -> impl.verifyIfNotInterestListEndpointAndThenPut());
-    client1.invoke(() -> impl.verifyPut());
+    server1.invoke(() -> verifyIfNotInterestListEndpointAndThenPut());
+    server2.invoke(() -> verifyIfNotInterestListEndpointAndThenPut());
+    client1.invoke(() -> verifyPut());
   }
 
   public void testInterestListEndpointAfterFailover() throws Exception
   {
     final long maxWaitTime = 20000;
-    client1.invoke(() -> impl.createEntriesK1andK2());
-    server2.invoke(() -> impl.createEntriesK1andK2());
-    server1.invoke(() -> impl.createEntriesK1andK2());
+    client1.invoke(() -> createEntriesK1andK2());
+    server2.invoke(() -> createEntriesK1andK2());
+    server1.invoke(() -> createEntriesK1andK2());
 
-    client1.invoke(() -> impl.registerKey1());
+    client1.invoke(() -> registerKey1());
 
     boolean firstIsPrimary = isVm0Primary();
     VM primary = firstIsPrimary? server1 : server2;
 
-    primary.invoke(() -> impl.stopILEndpointServer());
+    primary.invoke(() -> stopILEndpointServer());
     Wait.pause(5000);
 
     //Since the loadbalancing policy is roundrobin & there are two servers so
@@ -210,12 +210,12 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
     });
 
     //put on stopped server
-    primary.invoke(() -> impl.put());
-    client1.invoke(() -> impl.verifyPut());
+    primary.invoke(() -> put());
+    client1.invoke(() -> verifyPut());
   }
 
 
-  public static boolean isVm0Primary() throws Exception {
+  public boolean isVm0Primary() throws Exception {
     int port = ((Integer)client1.invoke(() -> impl.getPrimaryPort())).intValue();
     return port == PORT1;
   }
@@ -232,9 +232,9 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
 
 
  public void testUpdaterThreadIsAliveForFailedEndPoint(){
-      client1.invoke(() -> impl.acquirePoolConnection());
-      client1.invoke(() -> impl.processException());
-      client1.invoke(() -> impl.verifyUpdaterThreadIsAlive());
+      client1.invoke(() -> acquirePoolConnection());
+      client1.invoke(() -> processException());
+      client1.invoke(() -> verifyUpdaterThreadIsAlive());
  }
 
  public static void acquirePoolConnection()

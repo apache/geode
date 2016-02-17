@@ -81,7 +81,7 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   
   private static Host host = null;
 
-  private static VM server1 = null;
+  private VM server1 = null;
 
   private static VM server2 = null;
 

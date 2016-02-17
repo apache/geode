@@ -67,8 +67,6 @@ public class HAConflationDUnitTest extends CacheTestCase
 
   VM client1 = null;
 
-  public static int PORT1;
-
   private static final String regionName = "HAConflationDUnitTest_region";
 
   final static String KEY1 = "KEY1";
@@ -109,7 +107,7 @@ public class HAConflationDUnitTest extends CacheTestCase
     // Client 1 VM
     client1 = host.getVM(2);
 
-    PORT1 = ((Integer)server1.invoke(() -> HAConflationDUnitTest.createServerCache( new Boolean(false) ))).intValue();
+    int PORT1 = ((Integer)server1.invoke(() -> HAConflationDUnitTest.createServerCache( new Boolean(false) ))).intValue();
     server1.invoke(() -> ConflationDUnitTest.setIsSlowStart());
     server1.invoke(() -> HAConflationDUnitTest.makeDispatcherSlow());
     client1.invoke(() -> HAConflationDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT1), new Boolean(true) ));
@@ -311,7 +309,7 @@ public class HAConflationDUnitTest extends CacheTestCase
   public static void createClientCache(String host, Integer port1, Boolean isListenerPresent)
       throws Exception
   {
-    PORT1 = port1.intValue();
+    int PORT1 = port1.intValue();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");

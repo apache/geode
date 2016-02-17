@@ -52,9 +52,9 @@ import java.util.concurrent.Callable;
 public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBase {
   private static final String TEST_FUNCTION1 = TestFunction.TEST_FUNCTION1;
 
-  static Boolean isByName = null;
-  static Function function = null;
-  static Boolean toRegister = null;
+  Boolean isByName = null;
+  Function function = null;
+  Boolean toRegister = null;
   static final String retryRegionName = "RetryDataRegion";
   static Region metaDataRegion;
   

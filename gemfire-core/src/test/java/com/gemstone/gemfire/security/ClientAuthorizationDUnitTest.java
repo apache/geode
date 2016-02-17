@@ -190,8 +190,10 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
             opFlags), new Integer(expectedResult));
       }
       else {
-        clientVM.invoke(() -> ClientAuthorizationTestBase.doOp( new Byte(opCode.toOrdinal()),
-                currentOp.getIndices(), new Integer(opFlags),
+        byte ordinal = opCode.toOrdinal();
+        int[] indices = currentOp.getIndices();
+        clientVM.invoke(() -> ClientAuthorizationTestBase.doOp( new Byte(ordinal),
+                indices, new Integer(opFlags),
                 new Integer(expectedResult) ));
       }
     }
