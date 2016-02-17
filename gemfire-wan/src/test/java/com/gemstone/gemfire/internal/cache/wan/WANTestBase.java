@@ -113,6 +113,7 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderEve
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import com.gemstone.gemfire.pdx.SimpleClass;
 import com.gemstone.gemfire.pdx.SimpleClass1;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
@@ -5120,15 +5121,16 @@ public class WANTestBase extends DistributedTestCase{
   
  @Override
  protected final void preTearDown() throws Exception {
-    cleanupVM();
-    vm0.invoke(WANTestBase.class, "cleanupVM");
-    vm1.invoke(WANTestBase.class, "cleanupVM");
-    vm2.invoke(WANTestBase.class, "cleanupVM");
-    vm3.invoke(WANTestBase.class, "cleanupVM");
-    vm4.invoke(WANTestBase.class, "cleanupVM");
-    vm5.invoke(WANTestBase.class, "cleanupVM");
-    vm6.invoke(WANTestBase.class, "cleanupVM");
-    vm7.invoke(WANTestBase.class, "cleanupVM");
+   cleanupVM();
+   List<AsyncInvocation> invocations = new ArrayList<AsyncInvocation>();
+   final Host host = Host.getHost(0);
+   for (int i=0; i< host.getVMCount(); i++) {
+     invocations.add(host.getVM(i).invokeAsync(WANTestBase.class, "cleanupVM"));
+   }
+   for (AsyncInvocation invocation : invocations) {
+     invocation.join();
+     assertFalse(invocation.exceptionOccurred());
+   }
   }
   
   public static void cleanupVM() throws IOException {
