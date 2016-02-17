@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.redis.executor.hll;
+package com.gemstone.gemfire.internal.hll;
 
 /*
  * Copyright (C) 2012 Clearspring Technologies, Inc.
@@ -31,6 +31,8 @@ package com.gemstone.gemfire.internal.redis.executor.hll;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import com.gemstone.gemfire.internal.redis.executor.hll.HllExecutor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
