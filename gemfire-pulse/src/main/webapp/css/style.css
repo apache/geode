@@ -203,11 +203,17 @@ body {
 
 /*----------------------------Header ends---------------------------------------*/
 .logoBlock {
-	background: url(../images/pivotal-logo.png) no-repeat center center;
-	width: 198px;
+	background: url(../images/pivotal-logo.png) no-repeat right;
+	width: 185px;
 	height: 36px;
 	cursor: pointer;
 	margin: 6px 0px
+}
+
+.logoBlock img {
+    width: 100px;
+    vertical-align: middle;
+    padding-top: 2px;
 }
 
 .logoBlock a {
