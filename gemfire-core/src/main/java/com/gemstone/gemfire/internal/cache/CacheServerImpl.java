@@ -114,6 +114,9 @@ public class CacheServerImpl
   
   private List<GatewayTransportFilter> gatewayTransportFilters = Collections.EMPTY_LIST;
   
+  /** is this a server created by a launcher as opposed to by an application or XML? */
+  private boolean isDefaultServer;
+  
   /**
    * Needed because this guy is an advisee
    * @since 5.7
@@ -259,6 +262,14 @@ public class CacheServerImpl
 
   public ClientSubscriptionConfig getClientSubscriptionConfig(){
     return this.clientSubscriptionConfig;
+  }
+
+  public boolean isDefaultServer() {
+    return isDefaultServer;
+  }
+
+  public void setIsDefaultServer() {
+    this.isDefaultServer = true;
   }
 
   /**
