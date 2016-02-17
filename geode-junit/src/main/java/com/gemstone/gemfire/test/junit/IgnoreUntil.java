@@ -29,7 +29,6 @@ import com.gemstone.gemfire.test.junit.support.DefaultIgnoreCondition;
  * conditionally ignore the test case for a fixed amount of time, or based on a predetermined condition provided by
  * the IgnoreCondition interface.
  *
- * @author John Blum
  * @see java.lang.annotation.Annotation
  * @see com.gemstone.gemfire.test.junit.IgnoreCondition
  * @see com.gemstone.gemfire.test.junit.support.DefaultIgnoreCondition

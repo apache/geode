@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache.operations;
 /**
  * Enumeration for various interest types supported by GemFire.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public final class InterestType {

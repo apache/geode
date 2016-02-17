@@ -21,7 +21,6 @@ import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegi
 /**
  * A director to move primaries to improve the load balance of a
  * PR. This is most commonly used as an element of the composite director.
- * @author dsmith
  *
  */
 public class MovePrimaries extends RebalanceDirectorAdapter {

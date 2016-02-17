@@ -44,7 +44,6 @@ import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
  * This class contains implementations of getting Cluster's selected region's member specific details
  * for all members in that region
  *
- * @author Riya Bhandekar
  * @since version 7.5 cedar 2014-03-01
  */
 

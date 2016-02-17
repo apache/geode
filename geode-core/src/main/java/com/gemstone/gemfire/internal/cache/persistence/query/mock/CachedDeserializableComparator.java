@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.CachedDeserializable;
  * 
  * If either object is not a cached deserializable, just use
  * the object directly.
- * @author dsmith
  *
  */
 class CachedDeserializableComparator implements Comparator<Object> {

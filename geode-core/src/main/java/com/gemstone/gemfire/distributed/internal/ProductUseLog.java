@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.logging.PureLogWriter;
  * default and can be adjusted with the system property <b>gemfire.max_product_use_file_size</b>,
  * though the size is not allowed to be less than 1mb.
  * 
- * @author Bruce Schuchardt
  * @since 2013
  */
 public final class ProductUseLog implements MembershipListener {

@@ -20,8 +20,6 @@ package com.gemstone.gemfire.internal.admin;
 /**
  * Interface to represent a single statistic of a <code>StatResource</code>
  *
- * @author Darrel Schneider
- * @author Kirk Lund
  */
 public interface Stat extends GfObject {
     

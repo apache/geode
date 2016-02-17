@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.Assert;
  * {@link com.gemstone.gemfire.cache.AttributesFactory}.  Its initial usage was to validate
  * when a user set a value which should not be set (for PartitionedRegions).
  * 
- * @author Mitch Thomas
  * @since 5.1
  *
  */

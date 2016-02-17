@@ -35,7 +35,6 @@ import java.nio.ByteBuffer;
  * These classes are Serializable and implement readResolve to support
  * canonicalization in the face of copysharing.
  *
- * @author Eric Zoerner
  */
 public abstract class Token {
 

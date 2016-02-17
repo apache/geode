@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecor
  * to the client.  The client uses a custom {@link ResultCollector} to write
  * entries immediately into the snapshot file.
  * 
- * @author bakera
  *
  * @param <K> the key type
  * @param <V> the value type

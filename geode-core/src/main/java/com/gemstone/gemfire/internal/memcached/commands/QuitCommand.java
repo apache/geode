@@ -33,7 +33,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
  * connection. However, the client may also simply close the connection
  * when it no longer needs it, without issuing this command.
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class QuitCommand extends AbstractCommand {

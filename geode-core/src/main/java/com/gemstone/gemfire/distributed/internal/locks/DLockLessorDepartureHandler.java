@@ -25,7 +25,6 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
  * Implementation is optional and will be called from 
  * <code>DLockGrantor.handlehandleDepartureOf(Serializable)</code>
  *
- * @author Kirk Lund
  */
 public interface DLockLessorDepartureHandler {
 

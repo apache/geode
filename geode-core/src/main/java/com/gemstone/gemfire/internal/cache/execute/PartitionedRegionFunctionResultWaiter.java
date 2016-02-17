@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.cache.partitioned.PRFunctionStreamingResult
  * It takes a set of nodes to which functionExecution message has to be sent. Creates one message for each and sends
  * it to each of them. Then it gets result in processData where it adds them to the resultCollector.
  * 
- * @author skumar
  *
  */
 public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOperation {

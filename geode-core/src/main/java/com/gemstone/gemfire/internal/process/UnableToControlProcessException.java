@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.process;
  * Exception indicating that an attempt to control a {@link ControllableProcess}
  * has failed for some reason.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 public final class UnableToControlProcessException extends Exception {

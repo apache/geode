@@ -42,7 +42,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Creates Locator and tests logging behavior at a high level.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class LocatorLogFileJUnitTest {

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.hdfs.StoreExistsException;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author ashvina
  */
 public class HDFSStoreCreation implements HDFSStoreFactory {
   protected HDFSStoreConfigHolder configHolder;

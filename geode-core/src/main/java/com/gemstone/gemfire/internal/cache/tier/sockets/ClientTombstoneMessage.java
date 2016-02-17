@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 /**
  * 
- * @author bruce schuchardt
  *
  */
 public class ClientTombstoneMessage  extends ClientUpdateMessageImpl{

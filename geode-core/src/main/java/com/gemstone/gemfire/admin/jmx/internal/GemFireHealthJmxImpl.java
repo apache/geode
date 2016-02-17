@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  *
  * @see AdminDistributedSystemJmxImpl#createGemFireHealth
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

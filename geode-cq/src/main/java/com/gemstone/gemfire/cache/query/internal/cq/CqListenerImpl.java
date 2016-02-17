@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * CqListener class, implements CqListener interface methods. 
  * Offers callback methods for the CqQuery.
  *
- * @author anil 
  * @since 5.5
  */
 public class CqListenerImpl implements CqListener {

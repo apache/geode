@@ -77,7 +77,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  *
  * @see LRUCapacityController
  *
- * @author Matthew Splett
  *
  * @since 2.0.2
  */

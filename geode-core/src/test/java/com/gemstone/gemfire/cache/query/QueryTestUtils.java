@@ -49,7 +49,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Utility class for testing supported queries
  * 
- * @author Tejas Nomulwar
  * 
  */
 public class QueryTestUtils implements Serializable {

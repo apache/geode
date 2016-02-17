@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegionQueryEvaluator.TestH
  * Verbose Index information
  *
  * @see DefaultQuery
- * @author Eric Zoerner, Shobhit Agarwal
  */
 public class IndexTrackingQueryObserver extends QueryObserverAdapter {
   
@@ -155,7 +154,6 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
   /**
    * This class contains information related to buckets and results found in
    * the index on those buckets.
-   * @author Shobhit Agarwal
    *
    */
   public class IndexInfo{

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.internal.Assert;
 
 /**
- * @author dsmith
  *
  */
 public class Buffers {

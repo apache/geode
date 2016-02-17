@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 
  * Extracted from ProcessStreamReader.
  * 
- * @author Kirk Lund
  * @since 8.2
  */
 public final class BlockingProcessStreamReader extends ProcessStreamReader {

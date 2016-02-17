@@ -31,7 +31,6 @@ import java.util.*;
  * Parses an XML file and configures a {@link DistributedSystemConfig}
  * from it.
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class ManagedEntityConfigXmlParser

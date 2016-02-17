@@ -61,7 +61,6 @@ import junit.framework.AssertionFailedError;
 /**
  * Tests client server corner cases between Region and Pool
  *
- * @author Yogesh Mahajan
  *
  */
 public class ClientServerMiscDUnitTest extends CacheTestCase

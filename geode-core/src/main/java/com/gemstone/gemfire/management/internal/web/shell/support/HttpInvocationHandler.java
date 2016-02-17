@@ -28,7 +28,6 @@ import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
  * The HttpInvocationHandler class is an implementation of InvocationHandler serving as a proxy that uses HTTP remoting
  * for the actual method invocation on the target resource.
  * <p/>
- * @author John Blum
  * @see java.lang.reflect.InvocationHandler
  * @see javax.management.ObjectName
  * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker

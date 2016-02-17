@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * create disk regions. The creation of the DWA object should
  * throw a relevant exception if the arguements specified are incorrect.
  * 
- * @author mbid
  *
  */
 @Category(IntegrationTest.class)

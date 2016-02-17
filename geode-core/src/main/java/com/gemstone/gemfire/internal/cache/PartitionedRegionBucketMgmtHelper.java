@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
 /**
  * This class encapsulates the Bucket Related heuristics/algos for a PR.
  * 
- * @author rreja, modified by tnegi
  *  
  */
 public class PartitionedRegionBucketMgmtHelper

@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
  * A response from locator to client indicating the servers
  * to use to host the clients queue. The servers already
  * contain the queue if the durableQueueFound flag is true.
- * @author dsmith
  *
  */
 public class QueueConnectionResponse extends ServerLocationResponse {

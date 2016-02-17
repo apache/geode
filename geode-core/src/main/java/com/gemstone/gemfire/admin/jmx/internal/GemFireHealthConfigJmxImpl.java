@@ -42,7 +42,6 @@ import com.gemstone.gemfire.admin.internal.GemFireHealthConfigImpl;
  *
  * @see GemFireHealthJmxImpl#createDistributedSystemHealthConfig
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

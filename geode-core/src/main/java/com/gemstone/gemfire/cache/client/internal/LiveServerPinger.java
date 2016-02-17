@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Responsible for pinging live
  * servers to make sure they
  * are still alive.
- * @author dsmith
  *
  */
 public class LiveServerPinger  extends EndpointListenerAdapter {

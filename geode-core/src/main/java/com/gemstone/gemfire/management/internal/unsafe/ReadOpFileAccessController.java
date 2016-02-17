@@ -33,7 +33,6 @@ import com.sun.jmx.remote.security.MBeanServerFileAccessController;
  * payloads of those attribute. These attributes are exposed as operations but require
  * readOnly access. This class filter those methods for read access.
  * 
- * @author tushark
  */
 
 

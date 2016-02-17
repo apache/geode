@@ -25,7 +25,6 @@ import com.gemstone.gemfire.DataSerializable;
  * use the corresponding toDataPreXXX/fromDataPreXXX methods when serializing
  * for a particular version of the product.
  * 
- * @author bruces
  *
  */
 public interface VersionedDataSerializable extends DataSerializable, SerializationVersions {

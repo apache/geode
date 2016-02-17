@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.query.internal.cq;
  * Interface for CqEvent. Offers methods to get information from
  * CqEvent.
  *
- * @author anil
  * @since 5.5
  */
 

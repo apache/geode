@@ -24,7 +24,6 @@ import com.gemstone.gemfire.management.internal.ManagementConstants;
 /**
  * This is a utility class to calculate various type of Metrics out of raw stats
  * 
- * @author rishim
  * 
  */
 public class MetricsCalculator {

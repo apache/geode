@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Test for accessing query bind parameters from authorization callbacks
  * 
- * @author tnomulwar
  * 
  */
 public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {

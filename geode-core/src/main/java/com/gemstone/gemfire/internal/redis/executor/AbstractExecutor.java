@@ -30,7 +30,6 @@ import com.gemstone.gemfire.redis.GemFireRedisServer;
  * The AbstractExecutor is the base of all {@link Executor} types for the 
  * {@link GemFireRedisServer}. 
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public abstract class AbstractExecutor implements Executor {

@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.jta.CacheUtils;
 *This is to test the concurrent execution of the run method and see if transaction manager handles it properly
 *
 *
-*@author Prafulla Chaudhari
 *
 */
 

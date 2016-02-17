@@ -39,8 +39,6 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWrite
  * Also used on pool regions to track register interest.
  * Note that currently a region will never have both a GII and RI in progress
  * at the same time.
- * @author Eric Zoerner
- * @author darrel
  */
 public class UnsharedImageState implements ImageState {
   private static final Logger logger = LogService.getLogger();

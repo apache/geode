@@ -48,7 +48,6 @@ import com.gemstone.gemfire.cache.Region;
  * This is the Dunit test to verify clear and destroyRegion operation in
  * Client-Server configuration.
  *
- * @author Girish Thombare
  *
  */
 

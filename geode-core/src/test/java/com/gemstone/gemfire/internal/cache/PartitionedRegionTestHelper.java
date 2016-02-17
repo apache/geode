@@ -43,7 +43,6 @@ import com.gemstone.gemfire.cache.query.types.ObjectType;
 /**
  * This helper class is used by other test. This has functions to create region.
  * 
- * @author tnegi, modified by tapshank, modified by gthombar
  *  
  */
 

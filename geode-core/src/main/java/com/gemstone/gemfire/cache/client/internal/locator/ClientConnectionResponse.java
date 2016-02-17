@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
 /**
  * A response from a locator to a client
  * Indicating which server to connect to for client to server traffic.
- * @author dsmith
  *
  */
 public class ClientConnectionResponse extends ServerLocationResponse {

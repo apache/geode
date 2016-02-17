@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * not to check WAN functionality , but to verify ManagementServices running
  * properly and reflecting WAN behaviour and data properly
  * 
- * @author rishim
  * 
  */
 public class WANManagementDUnitTest extends ManagementTestBase {

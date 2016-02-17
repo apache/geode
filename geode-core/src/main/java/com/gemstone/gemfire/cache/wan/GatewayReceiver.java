@@ -28,7 +28,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
  * events originating in distributed-systems that has a
  * <code>GatewaySender<code> connected to this distributed-system.
  * 
- * @author Suranjan Kumar
  * 
  */
 public interface GatewayReceiver {

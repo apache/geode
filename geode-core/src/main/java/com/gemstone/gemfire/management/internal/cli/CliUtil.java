@@ -73,7 +73,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
  * This class contains utility methods used by classes used to build the Command
  * Line Interface (CLI).
  *
- * @author Abhishek Chaudhari
  *
  * @since 7.0
  */
@@ -661,7 +660,6 @@ public class CliUtil {
    *          a String value specifying the file system pathname to resolve.
    * @return a String specifying a path relative to Gfsh.
    */
-  // Moved form LauncherLifeCycleCommands @author jblum
   public static String resolvePathname(final String pathname) {
     return (StringUtils.isBlank(pathname) ? pathname : IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(pathname)));
   }

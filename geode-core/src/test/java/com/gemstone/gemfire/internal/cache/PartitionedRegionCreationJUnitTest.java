@@ -61,7 +61,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * 4) testpartionedRegionBucketToNodeCreate - Tests the PR's BUCKET_2_NODE region creation
  * </p>
  * 
- * @author tnegi
  * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

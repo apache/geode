@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.size.WellKnownClassSizer;
  * Tests the basic functionality of the memory lru eviction controller
  * and its statistics.
  * 
- * @author David Whitlock
  * 
  * @since 3.2
  */
@@ -209,7 +208,6 @@ public class MemLRUEvictionControllerDUnitTest extends CacheTestCase
 
   /** Class used in testCustomObjectSizer
    * 
-   * @author mthomas
    * @since 5.0
    */
   class CustomObjectSizer implements ObjectSizer

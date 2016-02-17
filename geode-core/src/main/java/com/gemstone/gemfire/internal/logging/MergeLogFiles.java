@@ -94,8 +94,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @see SortLogFile
  * @see LogFileParser
  *
- * @author David Whitlock
- * @author Bruce Schuchardt
  *
  *
  * @since 2.0 (-pids, -threads, -align, and -noblanks added in 5.1)

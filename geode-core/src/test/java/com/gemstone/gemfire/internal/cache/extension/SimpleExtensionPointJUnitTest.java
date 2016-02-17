@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link SimpleExtensionPoint}.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

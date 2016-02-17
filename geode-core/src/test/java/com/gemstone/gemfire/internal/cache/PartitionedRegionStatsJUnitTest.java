@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author tapshank, Created on Apr 13, 2006
  *  
  */
 @Category(IntegrationTest.class)

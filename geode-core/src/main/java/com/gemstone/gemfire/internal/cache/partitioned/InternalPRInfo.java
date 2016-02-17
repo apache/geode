@@ -24,7 +24,6 @@ import java.util.Set;
 /**
  * Extends <code>PartitionRegionInfo</code> with internal-only methods.
  * 
- * @author Kirk Lund
  */
 public interface InternalPRInfo 
 extends PartitionRegionInfo, Comparable<InternalPRInfo> {

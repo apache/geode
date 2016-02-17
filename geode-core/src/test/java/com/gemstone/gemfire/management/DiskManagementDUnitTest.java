@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * Test cases to cover all test cases which pertains to disk from Management
  * layer
  * 
- * @author rishim
  * 
  */
 public class DiskManagementDUnitTest extends ManagementTestBase {

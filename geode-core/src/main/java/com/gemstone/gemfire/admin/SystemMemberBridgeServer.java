@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.server.ServerLoadProbe;
  *
  * @see SystemMemberCache#addCacheServer
  *
- * @author David Whitlock
  * @since 4.0
  * @deprecated as of 5.7 use {@link SystemMemberCacheServer} instead.
  */

@@ -41,7 +41,6 @@ import com.gemstone.gemfire.management.ManagementException;
  * It also maintains a proxy repository {@link MBeanProxyInfoRepository} for
  * quick access to the proxy instances
  * 
- * @author rishim
  * 
  */
 public class MBeanProxyFactory {

@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @author ymahajan
  *
  */
 public class FunctionStreamingOrderedReplyMessage extends

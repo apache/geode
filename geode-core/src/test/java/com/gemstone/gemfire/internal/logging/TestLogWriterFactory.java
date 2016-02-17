@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.util.LogFileUtils;
 /**
  * Creates LogWriter instances for testing.
  * 
- * @author Kirk Lund
  */
 public class TestLogWriterFactory extends Assert {
 

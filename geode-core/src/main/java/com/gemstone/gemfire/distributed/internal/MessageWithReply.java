@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
  * require a reply.  Messages that do not implement this interface can
  * be sent asynchronously through the transport layer.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

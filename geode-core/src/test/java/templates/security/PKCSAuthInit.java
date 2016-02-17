@@ -39,7 +39,6 @@ import java.util.Properties;
  * set to the fully qualified name the static <code>create</code> function
  * viz. <code>templates.security.PKCSAuthInit.create</code>
  * 
- * @author Kumar Neeraj
  * @since 5.5
  */
 public class PKCSAuthInit implements AuthInitialize {

@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * the members will suspend bucket destroys to make sure
  * buckets aren't missed during the backup.
  * 
- * @author dsmith
  *
  */
 public class PrepareBackupRequest  extends CliLegacyMessage {

@@ -46,8 +46,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * 
  * For filters see https://logging.apache.org/log4j/2.0/manual/filters.html
  * 
- * @author Kirk Lund
- * @author David Hoots
  */
 @Category(IntegrationTest.class)
 public class FastLoggerIntegrationJUnitTest {

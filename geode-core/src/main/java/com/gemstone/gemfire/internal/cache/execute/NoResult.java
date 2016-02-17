@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * {@link FunctionException}
  * 
  * 
- * @author Yogesh Mahajan
  * 
  * @since 5.8 Beta
  * 

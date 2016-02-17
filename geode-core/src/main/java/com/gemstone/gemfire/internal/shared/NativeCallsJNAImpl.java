@@ -60,7 +60,6 @@ import java.util.HashMap;
  * yet and its not a mature library yet, so not using it. Can revisit once this
  * changes.
  * 
- * @author swale
  * @since 8.0
  */
 public final class NativeCallsJNAImpl {

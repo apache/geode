@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /***
  * Tests the starting up of shared configuration, installation of {@link ConfigurationRequestHandler}
  * 
- * @author bansods
  *
  */
 public class SharedConfigurationDUnitTest extends CacheTestCase {

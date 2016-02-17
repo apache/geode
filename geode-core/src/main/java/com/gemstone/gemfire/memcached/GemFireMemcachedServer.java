@@ -55,7 +55,6 @@ import com.gemstone.gemfire.internal.memcached.ConnectionHandler;
  * This class has a Main method that can be used to
  * start the server.
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class GemFireMemcachedServer {

@@ -21,7 +21,6 @@ package com.gemstone.gemfire.security;
  * Thrown if the distributed system is in secure mode and this client/peer has
  * not set the security credentials.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class AuthenticationRequiredException extends GemFireSecurityException {

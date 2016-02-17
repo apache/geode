@@ -53,7 +53,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * functionality along with register interest new receiveValues flag.
  * Taken from the existing ClientConflationDUnitTest.java and modified.
  *
- * @author Vishal Rao
  * @since 6.0.3
  */
 public class ClientInterestNotifyDUnitTest extends DistributedTestCase

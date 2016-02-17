@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * Class Description
  *
  * @version     $Revision: 1.2 $
- * @author      ericz
  */
 
 

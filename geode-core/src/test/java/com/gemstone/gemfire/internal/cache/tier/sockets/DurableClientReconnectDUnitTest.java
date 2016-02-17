@@ -57,7 +57,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**      
  * Tests for durable reconnect issue
  * 
- * @author Yogesh
  * @since 5.2   
  */
 

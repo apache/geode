@@ -53,7 +53,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Tests the basic functionality of the lru eviction 
  * controller and its statistics.
  *
- * @author David Whitlock
  *
  * @since 3.2
  */

@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.query;
  * Thrown when an attribute or method name could not be resolved during query
  * execution because no matching method or field could be found.
  *
- * @author      Eric Zoerner
  * @since 4.0
  */
 

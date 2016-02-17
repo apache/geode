@@ -71,8 +71,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * The DiskStoreCommandsDUnitTest class is a distributed test suite of test cases for testing the disk store commands
  * that are part of Gfsh. </p>
  *
- * @author John Blum
- * @author David Hoots
  * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
  * @see org.junit.Assert
  * @see org.junit.Test

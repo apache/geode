@@ -25,7 +25,6 @@ package com.gemstone.gemfire;
  * <p> Note: if user code catches this error (or its subclasses) then it <em>must</em>
  * be rethrown.
  * 
- * @author darrel
  * @since 5.7
  */
 public class GemFireRethrowable extends Error {

@@ -46,7 +46,6 @@ import templates.security.UserPasswordAuthInit;
  * pre-operation callbacks. It also checks for authorization in case of
  * failover.
  * 
- * @author sumedh
  * @since 5.5
  */
 public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {

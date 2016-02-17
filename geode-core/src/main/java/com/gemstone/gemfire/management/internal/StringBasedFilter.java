@@ -28,7 +28,6 @@ import com.gemstone.gemfire.management.ManagementException;
  * This is a string pattern based Filter
  * with some limitations.
  * 
- * @author rishim
  *
  */
 

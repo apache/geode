@@ -38,8 +38,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
  * The ListDurableCqs class is a GemFire function used to collect all the durable client names
  * on the server
  * </p>
- * @author jhuynh
- * @author bansods
  * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.execute.Function
  * @see com.gemstone.gemfire.cache.execute.FunctionAdapter

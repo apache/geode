@@ -36,7 +36,6 @@ import com.gemstone.gemfire.cache.client.*;
  * Test code copied from UpdatePropagationDUnitTest
  * Tests that registering interest KEYS works correctly.
  *
- * @author Darrel
  *
  */
 

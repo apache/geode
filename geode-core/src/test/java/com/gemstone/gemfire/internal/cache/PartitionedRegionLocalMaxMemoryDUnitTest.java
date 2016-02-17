@@ -42,7 +42,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * This class is to test localMaxMemory property of partition region while
  * creation of bucket.
  * 
- * @author gthombar, modified by Tushar (for bug#35713)
  */
 public class PartitionedRegionLocalMaxMemoryDUnitTest extends
     PartitionedRegionDUnitTestCase
@@ -264,7 +263,6 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends
   
   /** 
    * Object used for the put() operation as key and object
-   * @author gthombar
    */
   static public class TestObject1 implements DataSerializable, Sizeable
   {

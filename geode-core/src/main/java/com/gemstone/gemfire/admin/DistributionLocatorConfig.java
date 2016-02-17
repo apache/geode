@@ -38,7 +38,6 @@ import java.util.Properties;
  * @see AdminDistributedSystem#addDistributionLocator
  * @see com.gemstone.gemfire.distributed.Locator
  *
- * @author David Whitlock
  * @since 4.0
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */

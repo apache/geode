@@ -29,7 +29,6 @@ import org.junit.runners.model.Statement;
 /**
  * Expect an Exception within a specified timeout.
  * 
- * @author Kirk Lund
  * @since 8.2
  */
 public class ExpectedTimeoutRule implements TestRule {

@@ -25,7 +25,6 @@ package com.gemstone.gemfire;
  * <em>ought</em> to be called <code>GemFireRuntimeException</code>;
  * however, the current name is retained for compatibility's sake.
  * 
- * @author David Whitlock
  * @see com.gemstone.gemfire.GemFireCheckedException
  * @see com.gemstone.gemfire.cache.CacheRuntimeException
  */

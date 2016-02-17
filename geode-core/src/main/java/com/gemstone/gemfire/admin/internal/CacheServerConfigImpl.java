@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.admin.GemFireVM;
 /**
  * An implementation of <code>CacheVmConfig</code>
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class CacheServerConfigImpl extends ManagedEntityConfigImpl 

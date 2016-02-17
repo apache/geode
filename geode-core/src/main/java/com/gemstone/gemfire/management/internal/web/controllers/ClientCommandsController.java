@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.ClientCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

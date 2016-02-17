@@ -44,7 +44,6 @@ import com.gemstone.gemfire.cache.query.types.ObjectType;
  * toSet, toList, toArray and toArray(Object[] a) will create new structures that will iterate through
  * the results using a SelectResultsCopyOnReadIterator.  The new structures will then have a copy of the values.
  * 
- * @author jhuynh
  * @since 8.0
  */
 public class ResultsCollectionCopyOnReadWrapper implements SelectResults {

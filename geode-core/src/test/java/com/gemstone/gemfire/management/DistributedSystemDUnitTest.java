@@ -83,7 +83,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * e ) Statistics
  * 
  * 
- * @author rishim
  * 
  */
 public class DistributedSystemDUnitTest extends ManagementTestBase {
@@ -829,7 +828,6 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
   /**
    * Notification handler
    * 
-   * @author rishim
    * 
    */
   private static class TestDistributedSystemNotif implements
@@ -845,7 +843,6 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
   /**
    * Notification handler
    * 
-   * @author rishim
    * 
    */
   private static class AlertNotifListener implements NotificationListener {

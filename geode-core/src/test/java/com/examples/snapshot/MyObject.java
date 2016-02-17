@@ -23,7 +23,6 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 /**
  * Data class for testing snapshots, cannot be located in com.gemstone.*.
  * 
- * @author bakera
  */
 public class MyObject implements Serializable {
   protected long f1;

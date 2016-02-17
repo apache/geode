@@ -19,7 +19,6 @@ package com.gemstone.gemfire.test.golden;
 /**
  * Compares test output to golden text file using string equality
  * 
- * @author Kirk Lund
  */
 public class StringGoldenComparator extends GoldenComparator {
 

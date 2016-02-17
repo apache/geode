@@ -18,7 +18,6 @@ package com.gemstone.gemfire.cache.query;
 /**
  * This class is used to represent any partitioned index creation exceptions.
  * 
- * @author rdubey
  */
 public class IndexCreationException extends QueryException
 {

@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * A reply sender which replies back directly to a dedicated socket
  * socket.
- * @author dsmith
  *
  */
 class DirectReplySender implements ReplySender {

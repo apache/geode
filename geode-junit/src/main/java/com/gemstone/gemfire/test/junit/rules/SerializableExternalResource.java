@@ -26,7 +26,6 @@ import org.junit.runners.model.Statement;
  * 
  * Implementation copied from <tt>org.junit.rules.ExternalResource</tt>.
  * 
- * @author Kirk Lund
  */
 @SuppressWarnings("serial")
 public abstract class SerializableExternalResource implements SerializableTestRule {

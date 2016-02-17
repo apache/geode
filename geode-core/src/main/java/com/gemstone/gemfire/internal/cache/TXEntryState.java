@@ -63,7 +63,6 @@ import com.gemstone.gemfire.pdx.PdxSerializationException;
  * TXEntryState is the entity that tracks transactional changes, except for
  * those tracked by {@link TXEntryUserAttrState}, to an entry.
  * 
- * @author Darrel Schneider
  * 
  * @since 4.0
  *  
@@ -2198,7 +2197,6 @@ public class TXEntryState implements Releasable
    * Whereas @see DistTxEntryEvent is used forstoring entry event information on
    * TxCordinator and carry same to replicates.
    * 
-   * @author vivekb
    */
   public static class DistTxThinEntryState implements DataSerializableFixedID {
 

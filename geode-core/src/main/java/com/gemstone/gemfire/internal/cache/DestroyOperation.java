@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Handles distribution messaging for destroying an entry in a region.
  * 
- * @author Eric Zoerner
  *  
  */
 public class DestroyOperation extends DistributedCacheOperation

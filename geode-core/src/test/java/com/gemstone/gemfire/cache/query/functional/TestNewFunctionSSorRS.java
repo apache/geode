@@ -37,7 +37,6 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author Ketand
  */
 public class TestNewFunctionSSorRS extends TestCase {
     

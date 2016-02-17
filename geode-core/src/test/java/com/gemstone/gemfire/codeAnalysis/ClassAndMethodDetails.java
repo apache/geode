@@ -34,7 +34,6 @@ import com.gemstone.gemfire.codeAnalysis.decode.CompiledMethod;
  * A class used to store the names of dataserializable classes and the sizes
  * of their toData/fromData methods.
  * 
- * @author bruces
  *
  */
 public class ClassAndMethodDetails implements Comparable {

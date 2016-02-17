@@ -34,9 +34,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Identifies the host, port, and bindAddress a distribution locator is 
  * listening on.
  *
- * @author    Darrel Schneider
- * @author    Pete Matern
- * @author    Kirk Lund
  *
  */
 public class DistributionLocatorId implements java.io.Serializable {

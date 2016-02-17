@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.cache;
 /**
  * Interprets a one-byte bit field used for entry properties.
  *
- * @author Eric Zoerner
  */
 public abstract class EntryBits {
   private static final byte SERIALIZED = 0x1; // persistent bit

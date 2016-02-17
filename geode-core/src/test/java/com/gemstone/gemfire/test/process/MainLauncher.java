@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
  * for one input. The purpose is to prevent race condition in which a process
  * may send output before the reader has started listening for that output. 
  * 
- * @author Kirk Lund
  */
 public class MainLauncher {
   public static void main(String... args) throws Exception {

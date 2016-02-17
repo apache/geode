@@ -51,8 +51,6 @@ import com.gemstone.gemfire.internal.statistics.StatArchiveDescriptor;
  * StatArchiveWriter provides APIs to write statistic snapshots to an archive
  * file.
  *
- * @author Darrel Schneider
- * @author Kirk Lund
  */
 public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
 

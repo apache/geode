@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author tapshank, Created on Jan 17, 2006
  *  
  */
 public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase

@@ -37,7 +37,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * This class contains implementations of getting Cluster's overall current
  * memory usage details and its trend over the time.
  * 
- * @author Anchal G
  * @since version 7.5
  */
 

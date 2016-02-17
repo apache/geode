@@ -29,7 +29,6 @@ import javax.security.auth.Subject;
 import com.gemstone.gemfire.internal.ra.GFConnectionFactoryImpl;
 /**
  * 
- * @author asif
  *
  */
 public class JCAManagedConnectionFactory implements ManagedConnectionFactory

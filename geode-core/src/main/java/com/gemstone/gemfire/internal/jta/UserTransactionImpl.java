@@ -23,8 +23,6 @@ package com.gemstone.gemfire.internal.jta;
  * </code>.
  * </p>
  * 
- * @author Mitul Bid
- * @author Asif
  * 
  * @since 4.0
  */

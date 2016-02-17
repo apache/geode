@@ -35,7 +35,6 @@ import com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails;
  * The ListDiskStoresFunction class is an implementation of GemFire Function interface used to determine all the
  * disk stores that exist for the entire cache, distributed across the GemFire distributed system.
  * </p>
- * @author jblum
  * @see com.gemstone.gemfire.cache.DiskStore
  * @see com.gemstone.gemfire.cache.execute.Function
  * @see com.gemstone.gemfire.cache.execute.FunctionAdapter

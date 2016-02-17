@@ -25,7 +25,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Verifies that test output containing an unexpected WARN message
  * will fail with that WARN message as the failure message.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class FailWithLoggerWarnInOutputJUnitTest extends FailWithProblemInOutputTestCase {

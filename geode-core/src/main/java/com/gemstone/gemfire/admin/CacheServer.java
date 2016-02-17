@@ -20,7 +20,6 @@ package com.gemstone.gemfire.admin;
  * A dedicated cache server VM that is managed by the administration
  * API.
  *
- * @author David Whitlock
  * @since 4.0
  * @deprecated as of 5.7 use {@link CacheVm} instead.
  */

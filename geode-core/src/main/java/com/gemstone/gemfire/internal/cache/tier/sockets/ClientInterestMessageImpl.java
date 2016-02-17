@@ -31,7 +31,6 @@ import java.io.*;
  * a client's interest registrations made by the server on behalf of the
  * client.
  *
- * @author Barry Oglesby
  *
  * @since 5.6
  */

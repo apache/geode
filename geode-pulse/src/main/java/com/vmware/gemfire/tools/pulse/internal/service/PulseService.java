@@ -28,7 +28,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * 
  * This is a base class for all services in pulse.
  * 
- * @author azambare
  * @since version 7.5
  */
 public interface PulseService {

@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import junit.framework.TestCase;
 
 /**
- * @author dsmith
  *
  */
 @SuppressWarnings("synthetic-access")

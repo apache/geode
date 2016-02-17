@@ -30,7 +30,6 @@ import com.gemstone.gemfire.distributed.internal.DM;
  * Interface for accessing extended features of a ConcurrentMap used for
  * the entries of a Region.
  *
- * @author Eric Zoerner
  *
  */
 public interface EntriesMap extends ConcurrentMap {

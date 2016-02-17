@@ -32,7 +32,6 @@ import java.util.List;
  * Describes options that an option parser recognizes, in ways that might be useful to {@linkplain HelpFormatter
  * help screens}.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public interface OptionDescriptor {
     /**

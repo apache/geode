@@ -34,7 +34,6 @@ import org.junit.experimental.categories.Category;
  * NOTE: these tests using a loner DistributedSystem and local scope regions
  *   so all the listener features tested are for local listeners being invoked
  *   for local operations.
- * @author Darrel Schneider
  * @since 5.0
  */
 @Category(IntegrationTest.class)

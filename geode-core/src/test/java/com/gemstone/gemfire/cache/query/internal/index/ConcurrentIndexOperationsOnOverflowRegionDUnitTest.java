@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * taking early locks on compact indexes and remove the requirement of the
  * system property gemfire.index.acquireCompactIndexLocksWithRegionEntryLocks.
  *
- * @author shobhit
  *
  */
 public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends

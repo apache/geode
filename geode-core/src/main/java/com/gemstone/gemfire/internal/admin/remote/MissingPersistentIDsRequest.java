@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
 /**
  * A request to all members for any persistent members that
  * they are waiting for.
- * @author dsmith
  * TODO prpersist - This extends AdminRequest, but it doesn't
  * work with most of the admin paradigm, which is a request response
  * to a single member. Maybe we need to a new base class.

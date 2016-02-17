@@ -53,7 +53,6 @@ import com.gemstone.gemfire.internal.util.Breadcrumbs;
  * DistributedMembershipID 2) ThreadID 3) SequenceID This helps in sequencing
  * the events belonging to a unique producer.
  * 
- * @author Asif
  *  
  */
 public final class EventID

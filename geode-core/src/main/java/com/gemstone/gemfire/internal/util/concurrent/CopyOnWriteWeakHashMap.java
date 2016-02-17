@@ -25,7 +25,6 @@ import java.util.WeakHashMap;
 /**
  * A copy on write hash map that uses weak references for keys.
  * 
- * @author dsmith
  *
  */
 public class CopyOnWriteWeakHashMap<K,V> extends AbstractMap<K, V> {

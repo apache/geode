@@ -26,7 +26,6 @@ import com.gemstone.gemfire.GemFireCheckedException;
 /**
  * Exception thrown from the connection provider.
  * 
- * @author tnegi
  */
 public class ConnectionProviderException extends GemFireCheckedException  {
 private static final long serialVersionUID = -7406652144153958227L;

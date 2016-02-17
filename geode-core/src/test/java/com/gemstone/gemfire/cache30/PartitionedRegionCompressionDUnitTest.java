@@ -24,7 +24,6 @@ import com.gemstone.gemfire.compression.SnappyCompressor;
 /**
  * Tests Partitioned Region with compression.
  * 
- * @author rholmes
  * @since 8.0
  */
 public class PartitionedRegionCompressionDUnitTest extends

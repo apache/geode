@@ -57,7 +57,6 @@ import com.gemstone.gemfire.pdx.WritablePdxInstance;
  * We do not use this normal java io serialization
  * when serializing this class in GemFire because Sendable takes precedence over Serializable.
  * 
- * @author darrel
  *
  */
 public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Sendable, ConvertableToBytes {

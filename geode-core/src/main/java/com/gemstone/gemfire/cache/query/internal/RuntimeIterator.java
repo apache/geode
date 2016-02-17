@@ -36,7 +36,6 @@ import com.gemstone.gemfire.cache.query.types.*;
  * 
  * A RuntimeIterator can also be named or anonymous (name is null).
  * 
- * @author ericz
  */
 public class RuntimeIterator extends AbstractCompiledValue  {
 

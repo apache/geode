@@ -44,7 +44,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
   * &lt;data block&gt;\r\n
   * </code>
   * 
-  * @author Swapnil Bawaskar
   */
 
 public abstract class StorageCommand extends AbstractCommand {

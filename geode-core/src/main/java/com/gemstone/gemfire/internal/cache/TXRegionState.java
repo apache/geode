@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 /** TXRegionState is the entity that tracks all the changes a transaction
  * has made to a region.
  *
- * @author Darrel Schneider
  * 
  * @since 4.0
  * 

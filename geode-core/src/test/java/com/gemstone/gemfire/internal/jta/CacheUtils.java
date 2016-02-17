@@ -43,7 +43,6 @@ import javax.sql.DataSource;
 
 /**
  * 
- * @author Nand Kishor
  */
 public class CacheUtils {
   public static DistributedSystem ds;

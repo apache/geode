@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache.query.internal.aggregate;
  * Computes the final non distinct average for a partitioned region based query.
  * This aggregator is instantiated on the PR query node.
  * 
- * @author ashahid
  *
  */
 public class AvgPRQueryNode extends Sum {

@@ -23,7 +23,6 @@ import com.gemstone.gemfire.management.internal.SystemManagementService;
 
 /**
  * Bridge for ManagerMBean
- * @author rishim
  *
  */
 public class ManagerMBeanBridge {

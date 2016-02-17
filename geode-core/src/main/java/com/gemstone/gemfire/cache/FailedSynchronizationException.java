@@ -27,7 +27,6 @@ import javax.transaction.UserTransaction;
  * <code>javax.transaction.Status#STATUS_MARKED_ROLLBACK</code>
  * status.
  *
- * @author Mitch Thomas
  *
  * @see UserTransaction#setRollbackOnly
  * @see Transaction#registerSynchronization

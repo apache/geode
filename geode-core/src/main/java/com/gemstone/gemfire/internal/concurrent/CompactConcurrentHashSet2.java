@@ -69,7 +69,6 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  *
  * @since 9.0
- * @author Originally Doug Lea
  * @param <V> the type of values held in the set
  */
 public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<V>, Serializable {

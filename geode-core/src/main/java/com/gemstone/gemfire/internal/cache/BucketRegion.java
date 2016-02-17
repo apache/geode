@@ -109,7 +109,6 @@ import com.gemstone.gemfire.internal.concurrent.AtomicLong5;
  * Primary election for a BucketRegion can be found in the 
  * {@link com.gemstone.gemfire.internal.cache.BucketAdvisor} class
  * 
- * @author Mitch Thomas
  * @since 5.1
  *
  */

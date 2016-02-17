@@ -53,8 +53,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  *
  *
- * @author Mitul Bid
- * @author Asif
  *
  *
  */
@@ -655,7 +653,6 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * take/remove occuring in all the VMs. This test is targetted to test for
    * hang or exceptions in non blocking queue.
    *
-   * @author Asif
    *
    */
   public void testConcurrentOperationsDunitTestOnNonBlockingQueue()
@@ -669,7 +666,6 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * take/remove occuring in all the VMs. This test is targetted to test for
    * hang or exceptions in non blocking queue.
    *
-   * @author Asif
    *
    */
   public void testConcurrentOperationsDunitTestOnNonBlockingQueueWithDNoAckRegion()
@@ -683,7 +679,6 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * take/remove occuring in all the VMs. This test is targetted to test for
    * hang or exceptions in blocking queue.
    *
-   * @author Asif
    *
    */
   public void testConcurrentOperationsDunitTestOnBlockingQueue()
@@ -870,7 +865,6 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * been fully constructed but as the HARegion has got constructed , it gets
    * visible to QRM Message Thread.
    *
-   * @author Asif
    *
    */
   public void testNPEDueToHARegionQueueEscapeInConstructor()

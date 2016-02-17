@@ -50,7 +50,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 /****
  * Commands for the shared configuration
- * @author bansods
  *
  */
 @SuppressWarnings("unused")

@@ -46,7 +46,6 @@ com.gemstone.gemfire.internal.cache.DiskRegionJUnitTest > testAssertionErrorIfMi
  * 
  * Tests for the BackupInspector.
  * 
- * @author rholmes
  */
 @Category(UnitTest.class)
 public class BackupInspectorJUnitTest {

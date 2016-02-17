@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.operations;
 /**
  * Encapsulates registration/unregistration of interest in a region.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public abstract class InterestOperationContext extends OperationContext {

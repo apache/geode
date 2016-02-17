@@ -25,7 +25,6 @@ import com.gemstone.gemfire.DataSerializable;
 
 /**
  * A request to the TCP server to shutdown
- * @author dsmith
  * @since 5.7
  */
 public class ShutdownRequest implements DataSerializable {

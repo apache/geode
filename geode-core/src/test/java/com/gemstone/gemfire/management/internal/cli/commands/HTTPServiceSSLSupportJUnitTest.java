@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * 
- * @author rishim
  * @since 8.1
  */
 @Category(IntegrationTest.class)

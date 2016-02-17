@@ -86,7 +86,6 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {

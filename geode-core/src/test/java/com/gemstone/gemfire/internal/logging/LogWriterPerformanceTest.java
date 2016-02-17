@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 /**
  * Tests performance of logging when level is OFF.
  * 
- * @author Kirk Lund
  */
 @Category(PerformanceTest.class)
 @Ignore("Tests have no assertions")

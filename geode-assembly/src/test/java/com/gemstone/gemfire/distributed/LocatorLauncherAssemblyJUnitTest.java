@@ -39,7 +39,6 @@ import static org.junit.Assert.*;
 /**
  * These tests are part of assembly as they require the REST war file to be present.
  *
- * @author Jens Deppe
  */
 @Category(IntegrationTest.class)
 public class LocatorLauncherAssemblyJUnitTest extends AbstractLocatorLauncherJUnitTestCase {

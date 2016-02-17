@@ -27,7 +27,6 @@ import java.util.Properties;
  * Among other things, this is used to test bug 31573.
  *
  * @since 3.5
- * @author David Whitlock
  */
 public class PutDataSerializables {
 

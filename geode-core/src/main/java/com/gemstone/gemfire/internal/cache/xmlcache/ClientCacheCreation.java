@@ -56,7 +56,6 @@ import java.util.Set;
  * must be updated when {@link ClientCache} is modified.  This class is
  * public for testing purposes.
  *
- * @author darrel
  *
  * @since 6.5
  */

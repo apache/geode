@@ -56,7 +56,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * RegionVersionVector tracks the highest region-level version number of
  * operations applied to a region for each member that has the region.<p>
  *
- * @author Bruce Schuchardt
  */
 public abstract class RegionVersionVector<T extends VersionSource<?>> implements DataSerializableFixedID, MembershipListener {
   
@@ -1473,7 +1472,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
 //   * This class will wrap DM member IDs to provide integers that can be stored
 //   * on disk and be timed out in the vector.
 //   * 
-//   * @author bruce
 //   *
 //   */
 //  static class RVVMember implements Comparable {

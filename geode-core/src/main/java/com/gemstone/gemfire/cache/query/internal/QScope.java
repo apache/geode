@@ -23,7 +23,6 @@ import java.util.*;
  * scope, and can be known by zero or one identifier
  * 
  * @version $Revision: 1.1 $
- * @author ericz
  *  
  */
 class QScope  {

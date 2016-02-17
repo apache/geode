@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *
  * Test to verify correct propagation of EventID from server to client
  *
- * @author Mitul Bid
  * @since 5.1
  */
 

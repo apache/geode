@@ -25,7 +25,6 @@ import javax.management.openmbean.OpenType;
  * data. This is true for any of the SimpleType types, and for an
  * any-dimension array of those
  * 
- * @author rishim
  *
  */
 public final class IdentityConverter extends OpenTypeConverter {

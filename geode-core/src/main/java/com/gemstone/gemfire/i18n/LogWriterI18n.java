@@ -85,7 +85,6 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
   * if messages at that level will currently be logged. The names
   * of these methods are of the form: <em>level</em><code>Enabled</code>.
   *
-  * @author kbanks
   */
 public interface LogWriterI18n {
     /**

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Tests Redundancy Level Functionality
  * 
- * @author Suyog Bhokare
  * 
  */
 public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase

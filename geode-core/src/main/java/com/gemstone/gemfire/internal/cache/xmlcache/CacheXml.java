@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * com.gemstone.gemfire.cache.Cache} and vice versa. It provides helper methods
  * and constants.
  *
- * @author David Whitlock
  * @since 3.0
  */
 public abstract class CacheXml implements EntityResolver2, ErrorHandler {

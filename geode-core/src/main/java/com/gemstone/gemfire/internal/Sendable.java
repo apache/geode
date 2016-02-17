@@ -25,7 +25,6 @@ import java.io.IOException;
  * Note that you are responsible for sending all the bytes that represent your instance,
  * even bytes describing your class name if those are required.
  * 
- * @author darrel
  * @since 6.6
  */
 public interface Sendable {

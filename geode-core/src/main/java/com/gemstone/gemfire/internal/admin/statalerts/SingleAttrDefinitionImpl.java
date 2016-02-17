@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
  * Implementation of {@link StatAlertDefinition} This provides the definition
  * for single statistic
  * 
- * @author hgadre
  */
 public final class SingleAttrDefinitionImpl implements StatAlertDefinition {
   private static final long serialVersionUID = 3292417185742697896L;

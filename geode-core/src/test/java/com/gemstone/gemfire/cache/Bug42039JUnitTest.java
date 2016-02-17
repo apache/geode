@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * with a locator configured. Since the locator is not running
  * expect the connect to fail.
  * See if threads leak because of the repeated calls
- * @author Darrel Schneider
  * @since 5.0
  */
 @Category(IntegrationTest.class)

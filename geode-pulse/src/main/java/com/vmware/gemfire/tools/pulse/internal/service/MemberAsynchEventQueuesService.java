@@ -38,7 +38,6 @@ import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
  * This class contains implementations of getting Asynchronous Event Queues
  * details of Cluster Member.
  * 
- * @author Sachin K
  * @since version 7.5
  */
 @Component

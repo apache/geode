@@ -52,7 +52,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * Operation R4 and R5 are applied locally, but never distributed to P. So P's RVV for R is still 3.
  * After R GIIed from P, R's RVV becomes R5(3-6), i.e. Exception's nextVersion is currentVersion+1. 
  * 
- * @author Bruce Schuchardt
  */
 public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   

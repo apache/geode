@@ -40,7 +40,6 @@ import java.util.List;
  * 
  * This class contains implementations of getting Cluster Member's details
  * 
- * @author Anchal G
  * @since version 7.5
  */
 @Component

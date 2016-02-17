@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.memcached.ValueWrapper;
 /**
  * "append" means "add this data to an existing key after existing data".
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class AppendCommand extends StorageCommand {

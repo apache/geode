@@ -59,10 +59,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * Implementation of ResourceManager with additional internal-only methods.
  * TODO: cleanup raw and typed collections
  * 
- * @author Kirk Lund
- * @author Mitch Thomas
- * @author Swapnil Bawaskar
- * @author David Hoots
  */
 public class InternalResourceManager implements ResourceManager {
   private static final Logger logger = LogService.getLogger();
@@ -411,7 +407,6 @@ public class InternalResourceManager implements ResourceManager {
   
   /**
    * For testing only. Receives callbacks for resource related events.
-   * @author dsmith
    */
   public static interface ResourceObserver {
     /**

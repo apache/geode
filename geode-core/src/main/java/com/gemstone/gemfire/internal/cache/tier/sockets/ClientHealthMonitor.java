@@ -53,7 +53,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * time elapses between heartbeats, the monitor determines that the client is
  * dead and interrupts its threads.
  * 
- * @author Barry Oglesby
  * 
  * @since 4.2.3
  */

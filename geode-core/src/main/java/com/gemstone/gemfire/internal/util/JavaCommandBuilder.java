@@ -23,7 +23,6 @@ import java.util.Properties;
 
 /**
  * A utility class for building up arguments used in spawning another VM
- * @author kbanks
  **/
 public class JavaCommandBuilder {
 

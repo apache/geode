@@ -27,7 +27,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests the functionality of the {@link StatisticsType} class.
  *
- * @author David Whitlock
  *
  */
 @Category(IntegrationTest.class)

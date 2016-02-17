@@ -26,7 +26,6 @@ import java.util.*;
 /***
  * Gives the most basic common information of a region
  * Used by the GetRegionsFunction for 'list region' command
- * @author bansods
  *	since 7.0
  */
 public class RegionInformation implements Serializable {

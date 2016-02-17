@@ -27,7 +27,6 @@ import java.util.*;
  *
  * @see #wasInvoked
  *
- * @author David Whitlock
  * @since 3.0
  */
 public abstract class TestCacheListener extends TestCacheCallback

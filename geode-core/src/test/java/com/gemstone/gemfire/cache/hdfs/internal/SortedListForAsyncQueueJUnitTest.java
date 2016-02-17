@@ -55,7 +55,6 @@ import junit.framework.TestCase;
 /**
  * A test class for testing whether the functionalities of sorted Aysync Queue.
  * 
- * @author Hemant Bhanawat
  */
 @Category({IntegrationTest.class})
 public class SortedListForAsyncQueueJUnitTest extends TestCase {

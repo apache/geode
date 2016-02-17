@@ -52,7 +52,6 @@ import com.gemstone.gemfire.internal.size.ReflectionSingleObjectSizer;
  *
  * @since 3.5.1
  *
- * @author Darrel Schneider
  *
  */
 public abstract class AbstractLRURegionMap extends AbstractRegionMap {

@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import junit.framework.TestCase;
 
 /**
- * @author skumar
  *
  */
 @Category(IntegrationTest.class)

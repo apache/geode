@@ -29,7 +29,6 @@ import com.gemstone.gemfire.cache.query.types.StructType;
  *
  * @see SelectResults
  *
- * @author Eric Zoerner
  * @since 4.0
  */
 public interface Struct {

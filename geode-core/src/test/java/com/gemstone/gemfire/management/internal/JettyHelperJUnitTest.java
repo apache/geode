@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * contract and functionality of the JettyHelper
  * class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.JettyHelper
  * @see org.jmock.Mockery
  * @see org.junit.Assert

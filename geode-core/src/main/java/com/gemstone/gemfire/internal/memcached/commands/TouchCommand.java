@@ -28,7 +28,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * 
- * @author Swapnil Bawaskar
  */
 public class TouchCommand extends AbstractCommand {
 

@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 /**
  * Represents a storage or meta-data container for a 
  * <code>PartitionedRegion</code>.
- * @author Kirk Lund
  */
 public interface Bucket extends CacheDistributionAdvisee {
   

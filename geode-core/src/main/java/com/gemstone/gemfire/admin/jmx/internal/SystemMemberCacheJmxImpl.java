@@ -44,8 +44,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 /**
  * MBean representation of {@link com.gemstone.gemfire.admin.SystemMemberCache}.
  *
- * @author    Darrel Schneider
- * @author    Kirk Lund
  * @since     3.5
  */
 public class SystemMemberCacheJmxImpl 

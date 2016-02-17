@@ -42,7 +42,6 @@ import org.junit.experimental.categories.Category;
 /**
  * Tests marshaling of ServiceStatus to and from JSON.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 @Category(UnitTest.class)

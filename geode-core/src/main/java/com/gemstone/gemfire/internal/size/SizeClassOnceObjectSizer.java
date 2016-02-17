@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
  * and performance. It should work well for objects that are fairly constant
  * in size. For completely accurate sizing, use {@link ReflectionObjectSizer}
  * 
- * @author dsmith
  * 
  */
 public class SizeClassOnceObjectSizer implements ObjectSizer, Serializable, Declarable {

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache.wan;
 /**
  * This interface is for Jayesh's use case for WAN BootStrapping and will not be part of the product release.
  * 
- * @author kbachhav
  *
  */
 public interface DistributedSystemListener {

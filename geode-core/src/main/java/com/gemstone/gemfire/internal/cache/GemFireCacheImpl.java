@@ -245,7 +245,6 @@ import com.sun.jna.Platform;
 /**
  * GemFire's implementation of a distributed {@link com.gemstone.gemfire.cache.Cache}.
  *
- * @author Darrel Schneider
  */
 @SuppressWarnings("deprecation")
 public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePerfStats, DistributionAdvisee {

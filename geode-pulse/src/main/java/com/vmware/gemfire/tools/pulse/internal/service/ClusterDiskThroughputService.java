@@ -35,7 +35,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * Class ClusterDiskThroughput This class contains implementations for getting
  * cluster's current disk throughput details and its trend over time
  * 
- * @author Sachin K.
  * @since version 7.0.Beta
  */
 

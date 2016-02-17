@@ -24,8 +24,6 @@ import com.gemstone.gemfire.cache.Region;
  * Takes delta to be evicted and tries to evict the least no of LRU entry which
  * would make evictedBytes more than or equal to the delta
  * 
- * @author Suranjan Kumar
- * @author Amardeep Rajpal
  * @since 6.0
  * 
  */

@@ -48,7 +48,6 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
  * PdxReader will return a default value for the added field even though version 1
  * has no knowledge of it.
  * 
- * @author darrel
  * @since 6.6
  */
 public interface PdxInstance extends java.io.Serializable {

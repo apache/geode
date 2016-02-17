@@ -30,7 +30,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * exported on a specific member.
  * 
  * @see SnapshotOptionsImpl#setMapper(SnapshotFileMapper)
- * @author bakera
  *
  */
 public interface SnapshotFileMapper extends Serializable {

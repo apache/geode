@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.SocketCreator;
  * preferable to InetSocketAddress because it doesn't do
  * any name resolution.
  * 
- * @author dsmith
  *
  */
 public class ServerLocation implements DataSerializable, Comparable {

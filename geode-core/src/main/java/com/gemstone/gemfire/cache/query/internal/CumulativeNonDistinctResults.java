@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.Version;
  * This is used as a wrapper over all the results of PR which are of non
  * distinct type
  * 
- * @author asif
  *
  */
 public class CumulativeNonDistinctResults<E> implements SelectResults<E>,

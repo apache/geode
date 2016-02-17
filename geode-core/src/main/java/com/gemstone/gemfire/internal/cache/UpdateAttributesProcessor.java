@@ -52,7 +52,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * a DistributionAdvisee's profile out to others and,
  * optionally if <code>profileExchange</code>,
  * fetching the profile of anyone who excepts the pushed profile.
- * @author Eric Zoerner
  *
  */
 public class UpdateAttributesProcessor {

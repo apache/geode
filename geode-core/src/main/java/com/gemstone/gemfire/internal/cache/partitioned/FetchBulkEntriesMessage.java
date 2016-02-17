@@ -64,7 +64,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 
 /**
  * 
- * @author ashetkar
  * @since 8.0
  */
 public final class FetchBulkEntriesMessage extends PartitionMessage
@@ -478,7 +477,6 @@ public final class FetchBulkEntriesMessage extends PartitionMessage
   /**
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.partitioned.FetchBulkEntriesMessage}
-   * @author ashetkar
    * @since 8.0
    */
   public static class FetchBulkEntriesResponse extends ReplyProcessor21  {

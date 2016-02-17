@@ -24,7 +24,6 @@ package com.gemstone.gemfire.internal.cache.xmlcache;
 import java.util.*;
 
 /**
- * @author asifs This class represents the data given for binding a DataSource
  *         to JNDI tree. It encapsulates to Map objects , one for gemfire jndi
  *         tree specific data & another for vendor specific data. This object
  *         will get created for every <jndi-binding></jndi-binding>

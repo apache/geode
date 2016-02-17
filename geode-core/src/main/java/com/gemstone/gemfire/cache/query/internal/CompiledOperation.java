@@ -45,7 +45,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
  * Class Description
  *
  * @version     $Revision: 1.1 $
- * @author      ericz
  */
 
 

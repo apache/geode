@@ -23,7 +23,6 @@ import com.gemstone.gemfire.management.DistributedLockServiceMXBean;
 /**
  * It represents a distributed view of a LockService
  * 
- * @author rishim
  * 
  */
 public class DistributedLockServiceMBean implements

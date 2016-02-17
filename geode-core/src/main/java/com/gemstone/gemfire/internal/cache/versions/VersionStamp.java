@@ -22,7 +22,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 
 /**
- * @author bruce
  *
  */
 public interface VersionStamp<T extends VersionSource> extends VersionHolder<T> {

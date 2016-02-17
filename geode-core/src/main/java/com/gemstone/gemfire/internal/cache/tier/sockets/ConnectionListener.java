@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
  * A listener which can be registered on {@link AcceptorImpl} 
  * in order to receive events about connections created
  * or destroyed for this acceptor.
- * @author dsmith
  * @since 5.7
  *
  */

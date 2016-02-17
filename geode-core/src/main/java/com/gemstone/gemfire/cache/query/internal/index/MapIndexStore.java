@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.persistence.query.IndexMap;
 
 /**
  * Implementation of IndexStorage that is backed by an IndexMap
- * @author jhuynh
  *
  */
 public class MapIndexStore implements IndexStore {
@@ -274,7 +273,6 @@ public class MapIndexStore implements IndexStore {
   
   /**
    * A helper class that wraps and deserializes IndexEntry values for indexes
-   * @author jhuynh
    *
    */
   private class MapIndexStoreEntry implements IndexStoreEntry {

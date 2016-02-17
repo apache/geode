@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache;
 
 /**
  * 
- * @author sbawaska
  */
 public class RemoteTransactionCCEDUnitTest extends RemoteTransactionDUnitTest {
 

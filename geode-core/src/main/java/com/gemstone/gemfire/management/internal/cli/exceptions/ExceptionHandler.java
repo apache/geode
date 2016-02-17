@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 import com.gemstone.gemfire.management.internal.cli.util.CLIConsoleBufferUtil;
 /**
- * @author njadhav
  * 
  *         Prints the warning according the CliException
  * 

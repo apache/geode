@@ -75,7 +75,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * Manages the client side of client to server connections
  * and client queues. 
  * 
- * @author dsmith
  * @since 5.7
  */
 public class PoolImpl implements InternalPool {

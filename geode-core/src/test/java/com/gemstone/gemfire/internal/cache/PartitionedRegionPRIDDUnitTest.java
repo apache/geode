@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * 
- * @author gthombar This class tests PRID generation in multiple partiton
  *         regions on 4 VMs
  */
 public class PartitionedRegionPRIDDUnitTest extends

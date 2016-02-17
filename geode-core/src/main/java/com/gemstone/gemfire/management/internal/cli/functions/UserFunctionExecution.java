@@ -37,7 +37,6 @@ import com.gemstone.gemfire.management.internal.cli.GfshParser;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 
 /**
- * @author Ajay Pande
  * 
  * @since 7.0
  */

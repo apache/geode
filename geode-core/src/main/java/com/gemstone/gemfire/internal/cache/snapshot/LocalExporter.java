@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecor
  * is assumed to be local so snapshot data is obtained directly by iterating
  * over the {@link Region#entrySet()}.
  * 
- * @author bakera
  *
  * @param <K> the key type
  * @param <V> the value type

@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 
  *  The clientToServerConnection should not
  *  be used outside of this class.
- * @author dsmith
  *
  */
 public class QueueConnectionImpl implements Connection {

@@ -35,7 +35,6 @@ import com.gemstone.gemfire.pdx.PdxUnreadFields;
  * The way it defines a PdxType is expensive since it can never figure out it is
  * already defined without doing an expensive check in the type registry.
  * We should optimize this before making this a public feature.
- * @author darrel
  *
  */
 public class PdxInstanceFactoryImpl implements

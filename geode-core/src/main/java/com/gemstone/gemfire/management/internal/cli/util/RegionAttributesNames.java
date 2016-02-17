@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.cli.util;
 /***
  * Contains the names for the region attributes
  * used by describe region command
- * @author bansods
  *
  */
 public class RegionAttributesNames {

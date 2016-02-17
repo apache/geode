@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.tcp;
 import com.gemstone.gemfire.GemFireException;
 
 /**
-    @author Bruce Schuchardt
     @since 3.0
    
  */

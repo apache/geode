@@ -45,7 +45,6 @@ import com.gemstone.gemfire.cache.client.*;
  * Test to verify that client side region.close() should unregister the client with the server.
  * It also checks that client region queue also gets removed properly.
  *
- * @author Suyog Bhoakre
  */
 
 public class RegionCloseDUnitTest extends DistributedTestCase

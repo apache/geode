@@ -22,7 +22,6 @@ import java.util.EventObject;
 /**
  * The SignalEvent class...
  * </p>
- * @author John Blum
  * @see java.util.EventObject
  * @since 7.0
  */

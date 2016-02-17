@@ -57,7 +57,6 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
  *
  * <p>A cache can have multiple root regions, each with a different name.
  *
- * @author Darrel Schneider
  *
  * @since 2.0
  */

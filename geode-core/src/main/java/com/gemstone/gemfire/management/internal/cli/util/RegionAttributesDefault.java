@@ -30,7 +30,6 @@ import com.gemstone.gemfire.management.internal.cli.domain.PartitionAttributesIn
 
 /***
  * Contains the default values for the region attributes
- * @author bansods
  *
  */
 public final class RegionAttributesDefault {

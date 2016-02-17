@@ -62,7 +62,6 @@ import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
  * Class <code>ClientUpdateMessageImpl</code> is a message representing a cache
  * operation that is sent from a server to an interested client.
  *
- * @author Barry Oglesby
  *
  * @since 4.2
  */

@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Class Description
  *
- * @author      ericz
  */
 
 

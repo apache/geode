@@ -25,7 +25,6 @@ import org.springframework.shell.core.MethodTarget;
 /**
  * {@link Converter} for {@link Enum}.
  *
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 /*

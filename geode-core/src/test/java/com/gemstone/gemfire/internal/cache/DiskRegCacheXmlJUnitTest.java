@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * A cache and region are created using an xml. The regions are then verified to make sure
  * that all the attributes have been correctly set
  * 
- * @author Vikram Jadhav
  * @since 5.1
  */
 @Category(IntegrationTest.class)

@@ -26,7 +26,6 @@ package com.gemstone.gemfire.cache.util;
  * that is attempting to modify the entry.  It is not invoked if the event has the same
  * distributed system ID as the event that last changed the entry.
  * @since 7.0
- * @author Bruce Schuchardt
  */
 public interface GatewayConflictResolver {
   /**

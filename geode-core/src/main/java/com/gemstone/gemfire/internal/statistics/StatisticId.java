@@ -26,7 +26,6 @@ import com.gemstone.gemfire.Statistics;
  * StatisticsType may describe one or more Statistics instances, while a 
  * StatisticDescriptor may describe one or more StatisticId instances.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public interface StatisticId {

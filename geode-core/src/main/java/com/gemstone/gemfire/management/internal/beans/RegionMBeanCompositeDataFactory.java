@@ -37,7 +37,6 @@ import com.gemstone.gemfire.management.internal.ManagementConstants;
 /**
  * Utility class to create CompositeDataTypes for RegionMXBean
  * 
- * @author rishim
  *
  */
 public class RegionMBeanCompositeDataFactory {

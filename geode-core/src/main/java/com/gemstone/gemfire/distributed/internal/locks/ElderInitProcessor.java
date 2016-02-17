@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * a message to every existing member to discover what services they have.
  *
  * @since 4.0
- * @author Darrel Schneider
  */
 public class ElderInitProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();

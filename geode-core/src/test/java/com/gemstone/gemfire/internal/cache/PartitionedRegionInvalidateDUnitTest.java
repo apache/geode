@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This tests invalidateRegion functionality on partitioned regions
- * @author sbawaska
  *
  */
 public class PartitionedRegionInvalidateDUnitTest extends

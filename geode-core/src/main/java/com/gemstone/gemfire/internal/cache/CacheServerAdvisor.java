@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 /**
  * Used to give advice to a cache server.
  * Cache server currently need to know about controller's
- * @author darrel
  *
  */
 public class CacheServerAdvisor extends GridAdvisor {

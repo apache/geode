@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache.query;
  * The methods allow you to retrieve CQ related information, operate on CQ
  * like execute, stop, close and get the state of the CQ.
  *
- * @author      Rao Madduri
  * @since 5.5
  */
 

@@ -50,7 +50,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * An oplog used for overflow-only regions.
  * For regions that are persistent (i.e. they can be recovered) see {@link Oplog}.
  * 
- * @author Darrel Schneider
  * 
  * @since prPersistSprint2
  */

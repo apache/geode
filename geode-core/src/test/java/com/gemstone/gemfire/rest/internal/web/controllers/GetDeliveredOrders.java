@@ -35,7 +35,6 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
 /**
 * The GetDeliveredOrders class is a gemfire function that gives details about delivered orders.
 * <p/>
-* @author Nilkanth Patel
 * @since 8.0
 */
 

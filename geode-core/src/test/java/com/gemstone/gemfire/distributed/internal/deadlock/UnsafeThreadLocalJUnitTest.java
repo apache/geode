@@ -25,7 +25,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import junit.framework.TestCase;
 
 /**
- * @author dsmith
  * 
  */
 @Category(UnitTest.class)

@@ -43,7 +43,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * 
- * @author darrel
  * @since 7.0
  */
 public class JmxManagerAdvisor extends DistributionAdvisor {

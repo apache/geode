@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  * compare them. It may contain the region version vector for the bucket as well
  * as all of the entries.
  * 
- * @author dsmith
  * 
  */
 public class BucketDump {

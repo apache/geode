@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.internal.ManagementConstants;
 /**
  * This class acts as a Bridge between JMX layer and GemFire layer
  * 
- * @author rishim
  * 
  */
 public class LockServiceMBeanBridge {

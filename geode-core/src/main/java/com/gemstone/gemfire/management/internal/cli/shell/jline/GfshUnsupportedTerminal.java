@@ -22,7 +22,6 @@ import jline.UnsupportedTerminal;
  * Used when gfsh is run in Head Less mode. 
  * Doesn't support ANSI.
  * 
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 public class GfshUnsupportedTerminal extends UnsupportedTerminal {

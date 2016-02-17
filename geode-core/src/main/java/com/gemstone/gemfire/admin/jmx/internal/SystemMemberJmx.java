@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * Defines methods that all <code>SystemMember</code> MBeans should
  * implement.
  *
- * @author David Whitlock
  * @since 4.0
  */
 public interface SystemMemberJmx

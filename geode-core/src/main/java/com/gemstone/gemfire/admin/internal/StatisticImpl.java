@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.admin.Stat;
 /**
  * Implementation of a single statistic in a <code>StatisticResource</code>
  *
- * @author    Kirk Lund
  * @since     3.5
  *
  */

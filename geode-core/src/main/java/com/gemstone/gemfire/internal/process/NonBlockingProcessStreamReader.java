@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.util.StopWatch;
  * continue reading after the Process terminates in order to fully read the last
  * of that Process' output (such as a stack trace).
  * 
- * @author Kirk Lund
  * @since 8.2
  */
 public final class NonBlockingProcessStreamReader extends ProcessStreamReader {

@@ -53,7 +53,6 @@ import java.net.UnknownHostException;
 /**
  * Tests 6.1 cache.xml features.
  * 
- * @author aingle, skumar
  * @since 6.1
  */
 

@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * Fields, Enums, Enum Constants, Public and Protected Methods, Packages,
  * and Constructors.
  * 
- * @author Kirk Lund
  */
 @Category(UnitTest.class)
 public class ExperimentalJUnitTest {

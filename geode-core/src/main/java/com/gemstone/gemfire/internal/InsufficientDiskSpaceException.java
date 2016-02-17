@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.internal.Sendable;
 
 /**
- * @author kneeraj
  * @since gfxd 1.0.1
  */
 public class InsufficientDiskSpaceException extends DiskAccessException implements Sendable {

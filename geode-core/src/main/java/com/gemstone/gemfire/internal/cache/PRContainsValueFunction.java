@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.internal.InternalEntity;
 
 /**
- * @author Suranjan Kumar
  *
  */
 public class PRContainsValueFunction extends FunctionAdapter implements InternalEntity {

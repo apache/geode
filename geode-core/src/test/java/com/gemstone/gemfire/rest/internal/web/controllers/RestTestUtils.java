@@ -34,7 +34,6 @@ import org.springframework.web.util.UriComponentsBuilder;
  * The RestTestUtils class contains core functionality for Spring REST Template
  * <p/>
  * 
- * @author Nilkanth Patel
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @since 8.0

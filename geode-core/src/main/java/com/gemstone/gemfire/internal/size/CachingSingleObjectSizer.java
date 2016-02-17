@@ -22,7 +22,6 @@ import java.util.Map;
 import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
 
 /**
- * @author dsmith
  *
  */
 public class CachingSingleObjectSizer implements SingleObjectSizer {

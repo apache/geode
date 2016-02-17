@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * in a random order.
  * 
  * This test also contains some other non deterministic RVV junit tests
- * @author dsmith
  *
  */
 @Category(UnitTest.class)

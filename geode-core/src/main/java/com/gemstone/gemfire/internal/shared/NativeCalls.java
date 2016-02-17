@@ -41,7 +41,6 @@ import com.gemstone.gemfire.SystemFailure;
  * This class is also referenced by ODBC/.NET drivers so it should not refer to
  * any classes other than standard JDK or those within the same package.
  * 
- * @author swale
  * @since 8.0
  */
 public abstract class NativeCalls {
@@ -486,7 +485,6 @@ public abstract class NativeCalls {
    * for re-reading configuration files or any other appropriate actions on
    * receiving HUP signal as is the convention in other servers.
    * 
-   * @author swale
    * @since 8.0
    */
   public static interface RehashServerOnSIGHUP {
@@ -535,7 +533,6 @@ public abstract class NativeCalls {
    * implementation could be initialized (e.g. if JNA itself does not provide an
    * implementation for the platform, or JNA is not found).
    * 
-   * @author swale
    * @since 8.0
    */
   public static class NativeCallsGeneric extends NativeCalls {

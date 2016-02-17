@@ -25,7 +25,6 @@ import com.gemstone.gemfire.pdx.PdxInitializationException;
 /**
  * A type registration that does nothing. Used if the user
  * explicity disables the type registry
- * @author dsmith
  *
  */
 public class NullTypeRegistration implements TypeRegistration {

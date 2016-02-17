@@ -22,7 +22,6 @@ import java.io.*;
 /**
  * Enumerated type for region mirroring.
  *
- * @author Eric Zoerner
  *
  *
  * @see AttributesFactory#setMirrorType

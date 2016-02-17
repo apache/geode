@@ -53,7 +53,6 @@ import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifie
 /**
  * Handles distribution messaging for updating an entry in a region.
  *
- * @author Eric Zoerner
  */
 public class UpdateOperation extends AbstractUpdateOperation
 {

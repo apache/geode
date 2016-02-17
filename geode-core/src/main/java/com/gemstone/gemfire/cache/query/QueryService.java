@@ -38,7 +38,6 @@ import com.gemstone.gemfire.cache.query.internal.Undefined;
  * using {@link Cache#getQueryService}.
  *
  * 
- * @author Eric Zoerner
  * @since 4.0
  */
 public interface QueryService {

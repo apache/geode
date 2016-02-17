@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
  * Interface for query objects. Supports execution of queries with optional
  * parameters.
  *
- * @author      Eric Zoerner
  * @since 4.0
  */
 

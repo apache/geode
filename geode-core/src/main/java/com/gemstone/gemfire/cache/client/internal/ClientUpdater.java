@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.cache.client.internal;
 
 /**
- * @author dsmith
  *
  */
 public interface ClientUpdater {

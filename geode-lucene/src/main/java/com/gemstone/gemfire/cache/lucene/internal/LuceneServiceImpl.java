@@ -59,7 +59,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Implementation of LuceneService to create lucene index and query.
  * 
- * @author Xiaojian Zhou
  * 
  * @since 8.5
  */

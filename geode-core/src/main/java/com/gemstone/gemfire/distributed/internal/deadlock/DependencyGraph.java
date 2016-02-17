@@ -38,8 +38,6 @@ import com.gemstone.gemfire.internal.util.PluckStacks;
  * graph.
  * 
  * 
- * @author dsmith
- * @author bschuchardt
  * 
  */
 public class DependencyGraph implements Serializable {

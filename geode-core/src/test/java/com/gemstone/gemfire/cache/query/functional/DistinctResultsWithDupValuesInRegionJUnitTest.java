@@ -44,7 +44,6 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author shobhit
  *
  */
 @Category(IntegrationTest.class)

@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 /**
  * Tests Redundancy Level Functionality
  * 
- * @author Suyog Bhokare
  * 
  */
 public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase

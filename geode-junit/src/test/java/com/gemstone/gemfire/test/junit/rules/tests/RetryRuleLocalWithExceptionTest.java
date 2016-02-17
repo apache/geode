@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.junit.rules.RetryRule;
  * Unit tests for Retry JUnit Rule involving local scope (ie Rule affects 
  * test methods annotated with @Retry) with failures due to an Exception.
  * 
- * @author Kirk Lund
  */
 @Category(UnitTest.class)
 public class RetryRuleLocalWithExceptionTest {

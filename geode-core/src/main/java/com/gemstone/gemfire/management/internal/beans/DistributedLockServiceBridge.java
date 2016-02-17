@@ -39,7 +39,6 @@ import com.gemstone.gemfire.management.internal.ManagementConstants;
  * Iterator. Iterates over them and gather data. Creating multiple iterator on
  * each method call is a concern and a better way needs to be introduced.
  * 
- * @author rishim
  * 
  */
 public class DistributedLockServiceBridge {

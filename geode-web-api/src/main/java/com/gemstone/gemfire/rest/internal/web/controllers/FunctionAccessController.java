@@ -55,7 +55,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 /**
  * The FunctionsController class serving REST Requests related to the function execution
  * <p/>
- * @author Nilkanth Patel, john blum
  * @see org.springframework.stereotype.Controller
  * @since 8.0
  */

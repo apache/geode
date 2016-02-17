@@ -22,7 +22,6 @@ import java.util.Set;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * @author dsmith
  *
  */
 public class FilterByPath implements RegionFilter {

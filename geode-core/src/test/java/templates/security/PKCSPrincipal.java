@@ -20,7 +20,6 @@ package templates.security;
 import java.security.Principal;
 
 /**
- * @author kneeraj
  * 
  */
 public class PKCSPrincipal implements Principal {

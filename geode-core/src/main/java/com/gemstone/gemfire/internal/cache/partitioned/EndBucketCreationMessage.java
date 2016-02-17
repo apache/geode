@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * .createBucketAtomically, because the buckets created during that
  * time do not volunteer for primary until receiving this message.
  * 
- * @author Dan Smith
  */
 public class EndBucketCreationMessage extends PartitionMessage {
 

@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentMap;
  * <p>
  * Now also has a bunch of callbacks including for replace/remove etc.
  * 
- * @author swale
  * @since 7.0
  * 
  * @param <K>

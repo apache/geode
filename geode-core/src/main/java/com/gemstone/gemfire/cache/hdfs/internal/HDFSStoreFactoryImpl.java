@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 /**
  * Implementation of HDFSStoreFactory 
  * 
- * @author Hemant Bhanawat
  */
 public class HDFSStoreFactoryImpl extends HDFSStoreCreation {
   public static final String DEFAULT_ASYNC_QUEUE_ID_FOR_HDFS= "HDFS_QUEUE";

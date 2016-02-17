@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.Token;
 /**
  * The StringUtils is an abstract utility class for working with and invoking operations on String literals.
  * <p/>
- * @author John J. Blum
  * @see java.lang.String
  * @since 7.0
  */

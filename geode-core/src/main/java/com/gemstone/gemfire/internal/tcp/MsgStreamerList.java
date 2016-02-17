@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * requiring possibly different serializations for different versions of
  * product.
  * 
- * @author swale
  * @since 7.1
  */
 public final class MsgStreamerList implements BaseMsgStreamer {

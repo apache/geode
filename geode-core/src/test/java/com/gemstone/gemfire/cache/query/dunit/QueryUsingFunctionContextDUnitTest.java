@@ -69,7 +69,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * (routing keys) to run the query on subset of buckets "locally". If query
  * includes buckets
  *
- * @author shobhit
  *
  */
 public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {

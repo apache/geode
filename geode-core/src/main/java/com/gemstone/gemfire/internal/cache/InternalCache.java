@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.cache.extension.Extensible;
  * The InternalCache interface is contract for implementing classes for defining internal cache operations that should
  * not be part of the "public" API of the implementing class.
  * </p>
- * @author jblum
  * @see com.gemstone.gemfire.cache.Cache
  * @since 7.0
  */

@@ -62,7 +62,6 @@ import com.gemstone.gemfire.internal.util.SingletonValue.SingletonBuilder;
 /**
  * Represents a HDFS based persistent store for region data.
  * 
- * @author Ashvin Agrawal
  */
 public class HDFSStoreImpl implements HDFSStore {
   

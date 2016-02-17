@@ -22,7 +22,6 @@ package com.gemstone.gemfire.internal.offheap;
  * To increment the count call {@link #retain()}.
  * To decrement the count call {@link #release()}.
  * 
- * @author darrel
  * @since 9.0
  */
 public interface MemoryChunkWithRefCount extends MemoryChunk, StoredObject {

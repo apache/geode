@@ -25,7 +25,6 @@ import com.gemstone.gemfire.admin.GemFireHealth;
  *
  * @see com.gemstone.gemfire.admin.GemFireHealthConfig
  *
- * @author Darrel Schneider
  * @since 3.5
  */
 public interface HealthListener {

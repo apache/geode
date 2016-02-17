@@ -52,7 +52,6 @@ import org.junit.experimental.categories.Category;
  *
  * <b>Sub-classes should ensure that they call doLogin() in @BeforeClass and doLogout() in @AfterClass otherwise tests will fail.</b>
  *
- * @author rbhandekar
  *
  */
 @Ignore
@@ -99,7 +98,6 @@ public abstract class BaseServiceTest {
     }
   /**
   *
-  * @author rbhandekar
   * @throws java.lang.Exception
   */
   @Before
@@ -110,7 +108,6 @@ public abstract class BaseServiceTest {
 
   /**
   *
-  * @author rbhandekar
   * @throws java.lang.Exception
   */
   @After

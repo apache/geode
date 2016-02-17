@@ -22,7 +22,6 @@ package com.gemstone.gemfire.internal.cache.partitioned.rebalance;
  * 
  * This is the most commonly used director.
  * 
- * @author dsmith
  * 
  */
 public class CompositeDirector extends RebalanceDirectorAdapter {

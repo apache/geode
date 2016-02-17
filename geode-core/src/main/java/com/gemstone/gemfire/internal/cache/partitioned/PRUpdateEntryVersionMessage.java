@@ -56,7 +56,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * This message is generated based on event received on GatewayReceiver for
  * updating the time-stamp in a version tag for a RegionEntry.
  * 
- * @author Shobhit Agarwal
  * 
  */
 public class PRUpdateEntryVersionMessage extends

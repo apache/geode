@@ -34,8 +34,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
  * is a bit heavt-weight context whose life is longer in JVM than
  * {@link ExecutionContext} which will be used ONLY for index updates.
  *
- * @author shobhit
- * @author jhuynh
  * @since 7.0
  */
 public class QueryExecutionContext extends ExecutionContext {

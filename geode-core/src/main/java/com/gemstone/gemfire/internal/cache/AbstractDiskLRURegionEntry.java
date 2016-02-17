@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.lru.LRUEntry;
  *
  * @since 3.5.1
  *
- * @author Darrel Schneider
  *
  */
 public abstract class AbstractDiskLRURegionEntry

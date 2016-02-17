@@ -22,7 +22,6 @@ import com.gemstone.gemfire.distributed.internal.*;
 /**
  * Defines the interface used to access and modify distributed lock statistics.
  *
- * @author Kirk Lund
  *
  */
 public interface DistributedLockStats {

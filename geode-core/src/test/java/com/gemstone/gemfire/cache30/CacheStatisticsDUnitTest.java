@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * Tests the {@link CacheStatistics} that are maintained by a {@link
  * Region} and a {@link com.gemstone.gemfire.cache.Region.Entry}.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

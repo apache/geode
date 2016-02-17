@@ -20,7 +20,6 @@ import com.gemstone.gemfire.GemFireIOException;
 
 /**
  * An exception indicating that a serialization or deserialization failed.
- * @author darrel
  * @since 5.7
  */
 public class SerializationException extends GemFireIOException {

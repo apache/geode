@@ -43,7 +43,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * This class contains implementations of getting List of Cluster members and
  * their details
  * 
- * @author Anchal G
  * @since version 7.5
  */
 @Component

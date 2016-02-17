@@ -35,7 +35,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * }
  * </code> 
  * 
- * @author rholmes
  *
  * @since 9.0
  */

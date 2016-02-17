@@ -145,7 +145,6 @@ public final class IdentityUpdateMessage extends DistributionMessage implements 
   
   /**
    * A processor that ignores exceptions, silently removing those nodes that reply with problems
-   * @author mthomas
    * @since 5.0
    */
   public static class IdentityUpdateResponse extends ReplyProcessor21 {

@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.RegionEntry;
 
 /**
  * 
- * @author vaibhav
  */
 public interface IndexedExpressionEvaluator {
 

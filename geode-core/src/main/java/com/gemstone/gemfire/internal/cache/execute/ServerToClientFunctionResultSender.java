@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 
 /**
- * @author ymahajan
  */
 public class ServerToClientFunctionResultSender implements ResultSender {
   private static final Logger logger = LogService.getLogger();

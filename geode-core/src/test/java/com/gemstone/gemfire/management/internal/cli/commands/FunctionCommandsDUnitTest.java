@@ -45,8 +45,6 @@ import java.util.Properties;
 /**
  * Dunit class for testing gemfire function commands : execute function, destroy function, list function
  *
- * @author apande
- * @author David Hoots
  */
 public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   private static final long serialVersionUID = 1L;

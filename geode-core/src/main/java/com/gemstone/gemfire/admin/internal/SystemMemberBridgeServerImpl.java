@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Implementation of an object used for managing cache servers.
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class SystemMemberBridgeServerImpl

@@ -57,8 +57,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @author Eric Zoerner
- * @author Asif
  */
 public class QueryUtils {
   private static final Logger logger = LogService.getLogger();
@@ -1775,7 +1773,6 @@ public class QueryUtils {
 }
 /**
  * 
- * @author asif This is a helper class which provides information on how an
  *         index data be used so as to make it compatible with the query.
  *  
  */
@@ -2018,7 +2015,6 @@ class IndexConditioningHelper {
 }
 /**
  * 
- * @author asif This is a helper class which contains informaion on how to
  *         expand / cutdown index results for making it compatible with the
  *         query.
  *  

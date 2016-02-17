@@ -40,7 +40,6 @@ import static joptsimple.internal.Classes.*;
 /**
  * Helper methods for reflection.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public final class Reflection {
     private Reflection() {

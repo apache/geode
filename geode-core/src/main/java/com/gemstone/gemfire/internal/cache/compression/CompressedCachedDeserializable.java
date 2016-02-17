@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * An abstract implementation of {@link CachedDeserializable} that prefers serialization and compresses
  * the internal serialized value.
  * 
- * @author rholmes
  */
 public abstract class CompressedCachedDeserializable implements
     CachedDeserializable, DataSerializableFixedID {

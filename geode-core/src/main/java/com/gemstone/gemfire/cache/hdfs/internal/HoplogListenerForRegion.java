@@ -29,7 +29,6 @@ import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogListener;
  * Objects of this class needs to be created for every region. These objects 
  * listen to the oplog events and take appropriate action.   
  *
- * @author Hemant Bhanawat
  */
 public class HoplogListenerForRegion implements HoplogListener {
 

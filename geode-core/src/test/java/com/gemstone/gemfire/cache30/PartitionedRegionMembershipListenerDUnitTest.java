@@ -34,7 +34,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author Mitch Thomas
  * @since 6.0
  */
 public class PartitionedRegionMembershipListenerDUnitTest extends

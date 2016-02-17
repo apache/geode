@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.util.StopWatch;
 /**
  * Functional tests for ProcessStreamReader.
  * 
- * @author Kirk Lund
  */
 public abstract class ProcessStreamReaderTestCase {
   

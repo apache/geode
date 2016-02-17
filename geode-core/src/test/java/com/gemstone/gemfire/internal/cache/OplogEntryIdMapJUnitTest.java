@@ -26,7 +26,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests DiskStoreImpl.OplogEntryIdMap
  * 
- * @author darrel
  *  
  */
 @Category(UnitTest.class)

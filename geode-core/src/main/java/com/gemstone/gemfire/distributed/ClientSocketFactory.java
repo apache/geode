@@ -26,7 +26,6 @@ import java.net.Socket;
  * full name of your factory implementation, and GemFire will use your
  * factory to manufacture sockets when it connects to server caches.
  * 
- * @author Barry Oglesby
  * 
  * @since 6.5
  * 

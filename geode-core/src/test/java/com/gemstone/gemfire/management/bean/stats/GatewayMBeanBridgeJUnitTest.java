@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import io.codearte.catchexception.shade.mockito.Mockito;
 
 /**
- * @author rishim
  */
 @Category(IntegrationTest.class)
 public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {

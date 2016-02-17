@@ -21,7 +21,6 @@ package com.gemstone.gemfire.distributed;
  * A <code>LockServiceDestroyedException</code> is thrown when attempting
  * use a distributed lock service that has been destroyed.
  *
- * @author    Kirk Lund
  * @since     4.0
  */
 public class LockServiceDestroyedException extends IllegalStateException {

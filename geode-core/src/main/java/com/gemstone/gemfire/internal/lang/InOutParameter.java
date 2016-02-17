@@ -22,7 +22,6 @@ package com.gemstone.gemfire.internal.lang;
  * constitutes a wrapper around the value it encapsulates.  In essence, an instance of this class is the same thing
  * as it's value, as determined by the equals method and so this class just serves as a kind of holder for it's value.
  * <p/>
- * @author John Blum
  * @param <T> the expected Class type of the parameter's value.
  * @since 6.8
  */

@@ -54,7 +54,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * 
- * @author Eric Zoerner
  */
 public class DestroyRegionOperation extends DistributedCacheOperation {
 

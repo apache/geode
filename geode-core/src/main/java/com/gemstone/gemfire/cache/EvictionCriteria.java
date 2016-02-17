@@ -25,7 +25,6 @@ import java.util.Map;
  * task that will get the keys to be evicted using this and then destroy from
  * the region to which this is attached.
  * 
- * @author swale
  * @since gfxd 1.0
  */
 public interface EvictionCriteria<K, V> {

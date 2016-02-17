@@ -77,7 +77,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * PR removeAll
  *
- * @author dschneider
  * @since 8.1
  */
 public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
@@ -767,7 +766,6 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
   
   /**
    * A processor to capture the value returned by {@link RemoveAllPRMessage}
-   * @author Darrel Schneider
    * @since 8.1
    */
   public static class RemoveAllResponse extends PartitionResponse {

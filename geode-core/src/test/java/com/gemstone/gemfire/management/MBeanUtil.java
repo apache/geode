@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Utility test class to get various proxies
  * 
- * @author rishim
  * 
  */
 public class MBeanUtil {

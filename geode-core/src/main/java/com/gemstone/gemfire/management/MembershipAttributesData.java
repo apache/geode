@@ -26,7 +26,6 @@ import com.gemstone.gemfire.distributed.Role;
  * Composite data type used to distribute the membership attributes for
  * a {@link Region}.
  * 
- * @author rishim
  * @since 7.0
  * 
  */

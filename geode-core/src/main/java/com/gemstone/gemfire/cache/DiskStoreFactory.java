@@ -27,7 +27,6 @@ import java.io.File;
  * To use this factory configure it with the <code>set</code> methods and then
  * call {@link #create} to produce a disk store instance.
  * 
- * @author Gester
  * @since 6.5
  */
 public interface DiskStoreFactory

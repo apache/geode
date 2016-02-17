@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * Creates ManagedEntityController for administration (starting, stopping, etc.) 
  * of GemFire {@link ManagedEntity}s.
  * 
- * @author Kirk Lund
  */
 public class ManagedEntityControllerFactory {
 

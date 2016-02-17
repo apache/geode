@@ -36,7 +36,6 @@ import com.vmware.gemfire.tools.pulse.internal.log.MessageFormatter;
  * 
  * PulseLogWriter is the implementation of LogWriter.
  * 
- * @author Sachin K
  * @since 7.0.1
  * 
  */

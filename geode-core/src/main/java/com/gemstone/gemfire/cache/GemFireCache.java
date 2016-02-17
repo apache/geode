@@ -43,7 +43,6 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * </ul>
  *
  * @since 6.5
- * @author darrel
  */
 public interface GemFireCache extends RegionService {
   /** Returns the name of this cache.

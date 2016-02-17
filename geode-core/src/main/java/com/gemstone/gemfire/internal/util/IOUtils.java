@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 /**
  * Reusable Input/Output operation utility methods.
  * <p/>
- * @author John Blum
  * @since 6.6
  */
 @SuppressWarnings("unused")

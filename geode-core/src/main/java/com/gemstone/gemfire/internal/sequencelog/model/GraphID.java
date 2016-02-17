@@ -21,7 +21,6 @@ import java.io.Serializable;
 import com.gemstone.gemfire.internal.sequencelog.GraphType;
 
 /**
- * @author dsmith
  *
  */
 public class GraphID implements Comparable<GraphID>, Serializable {

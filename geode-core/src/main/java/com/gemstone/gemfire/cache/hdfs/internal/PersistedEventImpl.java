@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.Version;
  *  queue, which need to hold the region key.
  *   
  *
- * @author Hemant Bhanawat
  */
 public abstract class PersistedEventImpl {
   protected Operation op = Operation.UPDATE;

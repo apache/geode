@@ -78,7 +78,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author sbawaska
  *
  */
 public class RemoteCQTransactionDUnitTest extends CacheTestCase {

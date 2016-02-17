@@ -31,7 +31,6 @@ import com.gemstone.gemfire.management.internal.beans.stats.MBeanStatsMonitor.De
 
 /**
  * 
- * @author rishim
  *
  */
 public class AggregateRegionStatsMonitor extends MBeanStatsMonitor{

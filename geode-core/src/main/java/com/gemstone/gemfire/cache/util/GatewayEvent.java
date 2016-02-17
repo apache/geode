@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.Region;
  * Interface <code>GatewayEvent</code> represents <code>Cache</code> events
  * delivered to <code>Gateway</code>s.
  *
- * @author Barry Oglesby
  * @since 5.1
  * 
  * @deprecated as of GemFire 8.0. Use {@link com.gemstone.gemfire.cache.wan.GatewayQueueEvent} instead

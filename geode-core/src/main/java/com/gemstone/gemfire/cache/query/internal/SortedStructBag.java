@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
- * @author ashahid
  *
  */
 public class SortedStructBag extends SortedResultsBag<Object[]> implements StructFields{

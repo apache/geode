@@ -30,8 +30,6 @@ import com.gemstone.gemfire.cache.Cache;
  * <li> call {@link #create} to produce a HDFSStore instance.
  * </ol>
  * 
- * @author Hemant Bhanawat
- * @author Ashvin Agrawal
  */
 public interface HDFSStoreFactory {
 

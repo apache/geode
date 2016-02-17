@@ -49,7 +49,6 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 /**
  * The QueueCommands class encapsulates all GemFire Queue commands in Gfsh.
  * </p>
- * @author David Hoots
  * 
  * @since 8.0
  */

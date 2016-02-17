@@ -25,7 +25,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 /**
  * Used for checking availability of a command
  *
- * @author Nikhil Jadhav
  * @since 7.0
  */
 public class AvailabilityTarget {

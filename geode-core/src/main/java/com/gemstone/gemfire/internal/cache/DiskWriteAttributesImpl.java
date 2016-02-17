@@ -36,8 +36,6 @@ import java.util.Properties;
  * @see RegionAttributes#getDiskWriteAttributes
  * @see Region#writeToDisk
  * 
- * @author David Whitlock
- * @author Mitul Bid
  * 
  * @since 5.1
  */

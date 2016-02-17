@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * updates. This acts as an aggregator interface for Manager. Its used only on
  * Manager's side.
  * 
- * @author rishim
  * 
  */
 public class MonitoringRegionCacheListener extends

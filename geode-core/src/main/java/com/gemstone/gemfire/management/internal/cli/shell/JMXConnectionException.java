@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.cli.shell;
 /**
  * RuntimeException to wrap JMX Connection Error/Exception.
  * 
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 public class JMXConnectionException extends RuntimeException {

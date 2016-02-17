@@ -24,7 +24,6 @@ import java.util.Collection;
 /**
  * A LinkedBlockingQueue that supports stats.
  * Named OverflowQueue for historical reasons.
- * @author darrel
  *
  */
 public class OverflowQueueWithDMStats extends LinkedBlockingQueue {

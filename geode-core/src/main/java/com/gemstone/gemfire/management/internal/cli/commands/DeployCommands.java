@@ -52,7 +52,6 @@ import org.springframework.shell.core.annotation.CliOption;
 /**
  * Commands for deploying, un-deploying and listing files deployed using the command line shell.
  * <p/>
- * @author David Hoots
  * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
  * @since 7.0
  */

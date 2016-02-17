@@ -57,7 +57,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * that this class must be updated when {@link RegionAttributes} is
  * modified.  This class is public for testing purposes.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

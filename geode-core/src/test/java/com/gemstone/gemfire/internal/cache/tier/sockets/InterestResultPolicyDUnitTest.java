@@ -45,7 +45,6 @@ import com.gemstone.gemfire.cache.client.*;
 /**
  * DUnit Test for use-cases of various {@link InterestResultPolicy} types.
  *
- * @author Dinesh Patel
  *
  */
 public class InterestResultPolicyDUnitTest extends DistributedTestCase

@@ -51,7 +51,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
- * @author mthomas
  *
  */
 public class TXStateProxyImpl implements TXStateProxy {

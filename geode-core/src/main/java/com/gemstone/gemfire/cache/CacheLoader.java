@@ -28,7 +28,6 @@ package com.gemstone.gemfire.cache;
  * that will look for the value in a cache instance hosted by
  * another member of the distributed system.</p>
  *
- * @author Dave Monnie
  *
  *
  * @see AttributesFactory#setCacheLoader

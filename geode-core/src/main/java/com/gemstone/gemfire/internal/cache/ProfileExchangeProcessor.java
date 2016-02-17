@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.InitialImage
  * implementation will wait for members to come online that may have a later
  * copies of the region.
  * 
- * @author dsmith
  * 
  */
 public interface ProfileExchangeProcessor {

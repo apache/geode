@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.Assert;
  * Customers should never see a callback arg that is an instance of this class.
  * It is for internal purposes only.
  *
- * @author darrel
  *
  * @since 5.7 
  */

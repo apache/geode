@@ -43,7 +43,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * instantiators. As it is, the window is not very large.
  * 
  * 
- * @author dsmith
  * 
  */
 public class InstantiatorRecoveryListener extends EndpointManager.EndpointListenerAdapter {

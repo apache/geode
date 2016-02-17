@@ -25,7 +25,6 @@ import java.lang.Thread.State;
 /**
  * The ThreadUtils class is an abstract utility class for working with and invoking methods on Threads.
  * <p/>
- * @author John Blum
  * @see java.lang.Thread
  * @since 7.0
  */

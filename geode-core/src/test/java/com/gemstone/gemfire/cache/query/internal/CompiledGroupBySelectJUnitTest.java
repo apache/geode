@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * 
- * @author ashahid
  *
  */
 @Category(IntegrationTest.class)

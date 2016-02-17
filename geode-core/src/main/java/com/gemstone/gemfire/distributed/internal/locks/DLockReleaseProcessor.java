@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * Synchronously releases a lock.
  *
- * @author Kirk Lund
  */
 public class DLockReleaseProcessor
 extends ReplyProcessor21 {

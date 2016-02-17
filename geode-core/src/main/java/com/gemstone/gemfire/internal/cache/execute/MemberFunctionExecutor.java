@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author ymahajan
  */
 public class MemberFunctionExecutor extends AbstractExecution {
 

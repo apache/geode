@@ -70,7 +70,6 @@ import junit.framework.TestCase;
  * 
  * public static void caseTearDown() -- comparable to JUnit's AfterClass annotation
  *
- * @author David Whitlock
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")

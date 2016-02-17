@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
  * to interpret those in hashCode/equals/compareTo methods that have no region
  * context information.
  * 
- * @author swale
  */
 public interface KeyWithRegionContext extends DataSerializableFixedID {
 

@@ -29,7 +29,6 @@ import com.gemstone.gemfire.cache.DiskStoreFactory;
 /**
  * Creates an attribute object for DiskStore.
  * </p>
- * @author Gester
  * @since prPersistSprint2
  */
 public class DiskStoreAttributes implements Serializable, DiskStore {

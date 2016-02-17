@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.tcp.ConnectionTable;
  * 
  * Class for Shutdown function
  * 
- * @author apande
  *  
  * 
  */

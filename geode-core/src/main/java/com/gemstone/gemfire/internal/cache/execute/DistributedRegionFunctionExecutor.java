@@ -43,7 +43,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * For DistributedRegions with DataPolicy.REPLICATE, execute the function
  * locally.
  * 
- * @author Yogesh Mahajan
  * 
  * @since 5.8 LA
  * 

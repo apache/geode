@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
  * {@link DeadlockDetector} will be able to query them for dependencies when finding
  * deadlocks.
  * 
- * @author dsmith
  * 
  */
 public class DependencyMonitorManager {

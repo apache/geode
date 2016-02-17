@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 /**
  * The in-memory index storage
  * 
- * @author Tejas Nomulwar
  * @since 8.0 
  */
 public class MemoryIndexStore implements IndexStore {

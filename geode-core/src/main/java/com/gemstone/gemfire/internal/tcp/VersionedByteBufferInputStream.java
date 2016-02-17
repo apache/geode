@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.VersionedDataStream;
  * {@link VersionedDataStream} for a stream coming from a different product
  * version.
  * 
- * @author swale
  * @since 7.1
  */
 public class VersionedByteBufferInputStream extends ByteBufferInputStream

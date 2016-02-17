@@ -35,7 +35,6 @@ import java.util.List;
  * TODO A lot of this functionality is probably duplicating apache commons io,
  * maybe we should switch to that.
  * 
- * @author dsmith
  * 
  */
 public class FileUtil {

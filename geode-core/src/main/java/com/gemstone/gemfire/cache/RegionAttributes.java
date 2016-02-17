@@ -36,7 +36,6 @@ import com.gemstone.gemfire.compression.Compressor;
  *
  * <p>Note that the <code>RegionAttributes</code> are not distributed with the region.
  *
- * @author Eric Zoerner
  *
  * @see AttributesFactory
  * @see AttributesMutator

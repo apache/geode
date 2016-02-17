@@ -57,7 +57,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * The base PartitionedRegion message type upon which other messages should be
  * based.
  * 
- * @author gregp
  * @since 6.5
  */
 public abstract class RemoteOperationMessage extends DistributionMessage implements 
@@ -507,7 +506,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
    * recipient, capturing any CacheException thrown by the recipient and handle
    * it as an expected exception.
    * 
-   * @author Greg Passmore
    * @since 6.5
    * @see #waitForCacheException()
    */

@@ -20,7 +20,6 @@ package com.gemstone.gemfire.rest.internal.web.util;
 /**
  * The ValidationUtils class is a utility class for performing validations.
  * <p/>
- * @author John Blum, Nilkanth Patel.
  * @since 8.0
  */
 

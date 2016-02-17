@@ -27,7 +27,6 @@ import java.util.Map;
  * This reply processor collects all of the exceptions/results from the
  * ReplyMessages it receives
  * 
- * @author bruces
  *
  */
 public class CollectingReplyProcessor<T> extends ReplyProcessor21 {

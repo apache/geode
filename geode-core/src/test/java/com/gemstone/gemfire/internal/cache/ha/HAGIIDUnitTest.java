@@ -62,7 +62,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * and made available for the client. After that , S1 's  server is stopped. The client fails over to
  * S2. The client should receive all the puts . These puts have arrived on S2 via GII of HARegion.
  *
- *  @author Suyog Bhokare
  *
  */
 

@@ -33,7 +33,6 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
  * follows same route as MBeanProxyInvocationHandler Only difference is after
  * obtaining the result it transforms the open type to the actual java type
  * 
- * @author rishim
  * 
  */
 public class MXBeanProxyInvocationHandler {
@@ -164,7 +163,6 @@ public class MXBeanProxyInvocationHandler {
   /**
    * Hanlder for MXBean Proxy
    * 
-   * @author rishim
    * 
    */
   private abstract class MethodHandler {

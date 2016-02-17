@@ -51,7 +51,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
  * 
- * @author apande
  */
 @Category(UnitTest.class)
 public class CommandManagerJUnitTest {

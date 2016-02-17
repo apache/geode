@@ -33,7 +33,6 @@ import static joptsimple.ParserRules.*;
 /**
  * Tokenizes a short option specification string.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 class OptionSpecTokenizer {
     private static final char POSIXLY_CORRECT_MARKER = '+';

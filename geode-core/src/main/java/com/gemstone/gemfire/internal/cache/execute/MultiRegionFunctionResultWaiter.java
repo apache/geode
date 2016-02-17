@@ -29,7 +29,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.cache.MemberFunctionStreamingMessage;
 /**
  * 
- * @author ymahajan
  *
  */
 public class MultiRegionFunctionResultWaiter extends

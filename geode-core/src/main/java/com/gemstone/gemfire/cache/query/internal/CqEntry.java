@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * This represents the CQ key value pair for the CQ query results.
  *  
- * @author anil
  * @since 6.5
  */
 

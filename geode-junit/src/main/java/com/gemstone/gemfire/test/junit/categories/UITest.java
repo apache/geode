@@ -18,7 +18,6 @@ package com.gemstone.gemfire.test.junit.categories;
 /**
  * JUnit Test Category that specifies a test involving a browser present to test the UI
  *  
- * @author Jinmei Liao
  */
 public interface UITest {
 }

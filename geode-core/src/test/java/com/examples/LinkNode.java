@@ -21,7 +21,6 @@ package com.examples;
  * non-<code>Serializable</code> objects handle back references
  * correctly. 
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

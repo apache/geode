@@ -30,7 +30,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
  * 
  * TODO - Abhishek: Investigate if stty settings can avoid this?
  * 
- * @author Abhishek Chaudhari
  * @since 7.0.1
  */
 public class GfshConsoleReader extends GfeConsoleReader {

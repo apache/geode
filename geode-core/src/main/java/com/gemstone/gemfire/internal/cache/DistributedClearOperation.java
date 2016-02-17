@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 
 /**
  * 
- * @author Asif
  * 
  */
 public class DistributedClearOperation extends DistributedCacheOperation

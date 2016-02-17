@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * 
- * @author Suyog Bhokare
  * 
  * Tests the reliable messaging functionality - Client sends a periodic
  * ack to the primary server for the messages received.

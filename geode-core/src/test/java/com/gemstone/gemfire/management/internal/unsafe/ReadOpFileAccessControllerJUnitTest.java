@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Test ReadOnly operations are accesible from RMI Connector with readOnly user
- * @author tushark
  *
  */
 @Category(IntegrationTest.class)

@@ -87,8 +87,6 @@ import com.gemstone.gemfire.management.internal.cli.util.CommentSkipHelper;
  * Additionally, this class is used to maintain GemFire SHell (gfsh) specific
  * information like: environment TODO
  *
- * @author Abhishek Chaudhari
- * @author Nikhil Jadhav
  *
  * @since 7.0
  */

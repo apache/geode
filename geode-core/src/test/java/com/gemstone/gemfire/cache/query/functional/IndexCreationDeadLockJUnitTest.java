@@ -51,8 +51,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
 *
-* @author prafulla
-* @author Asif
 */
 @Category(IntegrationTest.class)
 public class IndexCreationDeadLockJUnitTest
@@ -98,7 +96,6 @@ public class IndexCreationDeadLockJUnitTest
 
   /**
    * Tests Index creation and maintenance deadlock scenario for in memory region
-   * @author ashahid
    *
    */
   @Test
@@ -112,7 +109,6 @@ public class IndexCreationDeadLockJUnitTest
 
   /**
    * Tests  Index creation and maintenance deadlock scenario for Persistent only disk region
-   * @author ashahid
    */
   @Test
   public void testIndexCreationDeadLockForDiskOnlyRegion()
@@ -140,7 +136,6 @@ public class IndexCreationDeadLockJUnitTest
   /**
    * Tests  Index creation and maintenance deadlock scenario for a region with stats enabled
    *
-   * @author Asif
    */
   @Test
   public void testIndexCreationDeadLockForStatsEnabledRegion()
@@ -160,7 +155,6 @@ public class IndexCreationDeadLockJUnitTest
 
   /**
    * Tests inability to create index on a region which overflows to disk   *
-   * @author Asif
    */
   @Test
   public void testIndexCreationDeadLockForOverflowToDiskRegion()

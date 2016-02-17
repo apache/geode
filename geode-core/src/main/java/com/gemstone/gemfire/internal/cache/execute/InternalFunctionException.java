@@ -31,7 +31,6 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * The exception string provides details on the cause of failure.
  * </p>
  * 
- * @author Kishor Bachhav
  * 
  * @since 6.6
  * @see FunctionService

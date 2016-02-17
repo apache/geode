@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.query;
  * 
  * Enumerated type for types of {@linkplain Index indexes}
  *
- * @author Eric Zoerner
  * @since 4.0
  */
 public class IndexType {

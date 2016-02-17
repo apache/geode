@@ -39,7 +39,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * This service class has implementation for providing cluster's basic
  * statistical data.
  * 
- * @author azambare
  * @since version 7.5
  */
 

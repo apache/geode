@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Test to make sure message queuing works.
  *
- * @author Darrel Schneider
  * @since 5.0
  */
 public class QueueMsgDUnitTest extends ReliabilityTestCase {

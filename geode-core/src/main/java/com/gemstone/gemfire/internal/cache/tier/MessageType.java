@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache.tier;
 /**
  * Pre-defined message types supported by the system
  *
- * @author Sudhir Menon
  * @since 2.0.2
  */
 public class MessageType {

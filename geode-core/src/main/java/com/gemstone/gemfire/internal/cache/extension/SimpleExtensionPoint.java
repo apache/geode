@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.util.CollectionUtils;
  * Simple implementation of {@link ExtensionPoint} for easy integration with
  * existing objects.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

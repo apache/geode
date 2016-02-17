@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache.client;
 /**
  * Indicates that the connection pool is at its maximum size and
  * all connections are in use.
- * @author dsmith
  * @since 5.7
  */
 public class AllConnectionsInUseException extends ServerConnectivityException {

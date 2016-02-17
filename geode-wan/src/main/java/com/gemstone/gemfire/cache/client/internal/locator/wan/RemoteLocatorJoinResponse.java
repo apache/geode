@@ -33,9 +33,6 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 /**
  * List of remote locators as a response
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
- * @author Kishor Bachhav
  * 
  * 
  */

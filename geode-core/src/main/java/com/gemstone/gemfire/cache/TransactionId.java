@@ -22,7 +22,6 @@ import java.io.Externalizable;
 /** The TransactionId interface is a "marker" interface that
  * represents a unique GemFire transaction.
  *
- * @author Mitch Thomas
  * 
  * @since 4.0
  * 

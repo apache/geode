@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * 1. Multiple oplogs are being rolled at once <br>
  * 2. The Number of entries getting logged to the HTree are taking care of creation 
  * 
- * @author Pratik Batra
  */
 @Category(IntegrationTest.class)
 public class MultipleOplogsRollingFeatureJUnitTest extends

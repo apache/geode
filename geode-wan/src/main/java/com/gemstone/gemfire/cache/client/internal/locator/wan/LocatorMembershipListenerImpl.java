@@ -55,7 +55,6 @@ import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
  * An implementation of
  * {@link com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener}
  * 
- * @author kbachhav
  * 
  */
 public class LocatorMembershipListenerImpl implements LocatorMembershipListener {

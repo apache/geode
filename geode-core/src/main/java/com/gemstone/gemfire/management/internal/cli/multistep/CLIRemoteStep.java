@@ -28,7 +28,6 @@ import java.io.Serializable;
  * are iterating through the result(the state) to and fro, first
  * step has to create the state on the manager.
  * 
- * @author tushark
  */
 public interface CLIRemoteStep extends CLIStep, Serializable{
 

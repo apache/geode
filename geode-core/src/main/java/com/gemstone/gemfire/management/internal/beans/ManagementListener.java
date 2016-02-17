@@ -37,7 +37,6 @@ import com.gemstone.gemfire.management.internal.AlertDetails;
  * This Listener listens on various resource creation in GemFire and
  * create/destroys GemFire specific MBeans accordingly
  * 
- * @author rishim
  * 
  */
 public class ManagementListener implements ResourceEventsListener{

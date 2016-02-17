@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author Asif
  * 
  *  
  */

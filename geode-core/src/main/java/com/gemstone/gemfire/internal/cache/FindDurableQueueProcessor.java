@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Asks each bridge server if they have the durable id and builds a list of matching servers.
  *
  * @since 5.7
- * @author Greg Passmore
  */
 public class FindDurableQueueProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();

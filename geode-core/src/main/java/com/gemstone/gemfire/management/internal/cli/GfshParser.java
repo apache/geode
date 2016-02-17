@@ -67,8 +67,6 @@ import com.gemstone.gemfire.management.internal.cli.util.CLIConsoleBufferUtil;
  * Implementation of the {@link Parser} interface for GemFire SHell (gfsh)
  * requirements.
  *
- * @author Nikhil Jadhav
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 public class GfshParser implements Parser {

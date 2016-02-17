@@ -338,7 +338,6 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
    * At this point if entry version is greater than the once received from GII
    * then it must not get applied. Which is Bug #45921.
    *
-   * @author shobhit
    */
   public void testConflictChecksDuringConcurrentDeltaGIIAndOtherOp() {
     Host host = Host.getHost(0);

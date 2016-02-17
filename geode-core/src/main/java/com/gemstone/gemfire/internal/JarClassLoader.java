@@ -58,7 +58,6 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
 /**
  * ClassLoader for a single JAR file.
  * 
- * @author David Hoots
  * @since 7.0
  */
 public class JarClassLoader extends ClassLoader {
@@ -670,7 +669,6 @@ public class JarClassLoader extends ClassLoader {
    * that the lock will be obtained in all cases (it's reentrant), and then the channel position will be modified by
    * both instances causing arbitrary values being returned from the read() method.
    * 
-   * @author David Hoots
    * @since 7.0
    */
   private class ChannelInputStream extends InputStream {

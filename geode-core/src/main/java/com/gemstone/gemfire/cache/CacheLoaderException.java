@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache;
  * occurred when a CacheLoader was attempting to load a value. This
  * exception is propagated back to the caller of <code>Region.get</code>.
  *
- * @author Eric Zoerner
  *
  *
  * @see com.gemstone.gemfire.cache.Region#get(Object)

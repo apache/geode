@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for ProcessLauncher.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 @Category(UnitTest.class)

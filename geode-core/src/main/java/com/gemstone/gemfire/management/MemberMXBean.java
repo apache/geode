@@ -134,7 +134,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * </tr>
  * </table>
  * 
- * @author rishim
  * @since 7.0
  */
 public interface MemberMXBean {

@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * Computes the count of the non distinct rows for replicated & PR based
  * queries.
  * 
- * @author ashahid
  *
  */
 public class Count implements Aggregator {

@@ -37,7 +37,6 @@ import java.util.Map;
  * map, it will include the query string as an argument. When it is sent to a
  * member that is in the map, will not include the query string as an argument.
  * 
- * @author Yogesh Mahajan
  * @since 6.0
  * 
  */

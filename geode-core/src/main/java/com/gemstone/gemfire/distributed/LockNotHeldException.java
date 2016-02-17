@@ -21,7 +21,6 @@ package com.gemstone.gemfire.distributed;
  * A <code>LockNotHeldException</code> is thrown when attempting
  * unlock a lock that is not held by the thread performing the unlock.
  *
- * @author    Kirk Lund
  * @since     4.0
  */
 public class LockNotHeldException extends IllegalStateException {

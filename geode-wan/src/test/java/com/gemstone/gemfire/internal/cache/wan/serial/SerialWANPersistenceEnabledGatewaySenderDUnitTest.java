@@ -23,7 +23,6 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
- * @author skumar
  * 
  */
 public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends

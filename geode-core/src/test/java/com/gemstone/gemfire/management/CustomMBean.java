@@ -21,7 +21,6 @@ import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 /**
  * A simple MBean to test various aspects of federation
- * @author rishim
  *
  */
 public class CustomMBean extends NotificationBroadcasterSupport implements

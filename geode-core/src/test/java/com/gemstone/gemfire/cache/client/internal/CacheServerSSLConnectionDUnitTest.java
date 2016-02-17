@@ -41,7 +41,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for details
- * @author tushark
  *
  */
 public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {

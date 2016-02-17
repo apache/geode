@@ -41,8 +41,6 @@ import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Server;
 import com.vmware.gemfire.tools.pulse.testbed.TestBed;
 
 /**
- * @author Sushant Rawal
- * @author tushark
  *
  */
 @Ignore

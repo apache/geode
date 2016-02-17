@@ -32,7 +32,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
  * the logging output.
  * 
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class VerbosityCommand extends AbstractCommand {

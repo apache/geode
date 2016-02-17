@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import java.io.IOException;
 
 /**
- * @author bruces
  *
  */
 public class Invalidate70 extends Invalidate {

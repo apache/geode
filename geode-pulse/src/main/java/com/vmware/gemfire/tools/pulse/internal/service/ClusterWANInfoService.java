@@ -39,7 +39,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * This class contains implementations of getting Cluster's WAN Informations
  * (connected clusters)
  * 
- * @author Sachin K
  * @since version 7.5
  */
 @Component

@@ -23,7 +23,6 @@
 * 3. 
 * 
 *
-* @author  Smita Phad
 * @version 1.0
 * @since   2014-04-02
 */

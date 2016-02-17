@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
  * Implementation of {@link StatAlertDefinition} This provides the definition
  * for multiple statistic
  * 
- * @author hgadre
  */
 public final class MultiAttrDefinitionImpl implements StatAlertDefinition {
   private static final long serialVersionUID = 2508805676076940969L;

@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.wan.GatewayReceiver;
  * MBean that provides access to information and management functionality for a
  * {@link GatewayReceiver}.
  * 
- * @author rishim
  * @since 7.0
  * 
  */

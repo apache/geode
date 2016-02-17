@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.*;
 
 /**
  *
- * @author Eric Zoerner
  */
 class RegionTTLExpiryTask  extends RegionExpiryTask {
   

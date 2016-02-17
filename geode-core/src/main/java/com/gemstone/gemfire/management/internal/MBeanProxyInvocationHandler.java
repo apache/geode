@@ -53,7 +53,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * delegated to the federation components.
  * All method calls are routed to specified members via Function service
  * 
- * @author rishim
  * 
  */
 
@@ -459,7 +458,6 @@ public class MBeanProxyInvocationHandler implements InvocationHandler {
   /**
    * Internal implementation of all the generic proxy methods
    * 
-   * @author rishim
    * 
    */
   private class ProxyInterfaceImpl implements ProxyInterface {

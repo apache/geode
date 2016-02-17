@@ -31,7 +31,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * @author dsmith
  */
 public class GemfireSequenceDisplay {
 

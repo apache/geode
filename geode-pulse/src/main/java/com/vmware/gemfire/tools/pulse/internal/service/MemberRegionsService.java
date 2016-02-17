@@ -41,7 +41,6 @@ import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
  * 
  * This class contains implementations of getting Memeber's Regions details.
  * 
- * @author Sachin K
  * @since version 7.5
  */
 

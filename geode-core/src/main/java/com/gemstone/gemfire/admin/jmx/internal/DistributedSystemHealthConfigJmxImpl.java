@@ -31,7 +31,6 @@ import javax.management.modelmbean.*;
  *
  * @see GemFireHealthJmxImpl#createDistributedSystemHealthConfig
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

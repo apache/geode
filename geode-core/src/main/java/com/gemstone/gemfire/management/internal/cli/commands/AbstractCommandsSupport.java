@@ -40,7 +40,6 @@ import org.springframework.shell.core.CommandMarker;
  * The AbstractCommandsSupport class is an abstract base class encapsulating common functionality for implementing
  * command classes with command for the GemFire shell (gfsh).
  * <p>
- * @author John Blum
  * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.execute.FunctionService
  * @see com.gemstone.gemfire.distributed.DistributedMember

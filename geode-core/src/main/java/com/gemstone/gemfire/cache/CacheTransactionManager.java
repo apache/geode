@@ -95,7 +95,6 @@ import java.util.concurrent.TimeUnit;
  * transaction must be colocated together on one data node. See the GemFire 
  * Developer Guide for details on using transactions with Partitioned Regions.
  * 
- * @author Mitch Thomas
  * 
  * @since 4.0
  * 

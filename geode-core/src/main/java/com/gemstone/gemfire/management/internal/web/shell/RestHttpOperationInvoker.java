@@ -50,7 +50,6 @@ import org.springframework.web.util.UriTemplate;
  * GemFire shell command invocations into HTTP requests to a corresponding REST API call hosted by the GemFire Manager's
  * HTTP service using the Spring RestTemplate.
  * 
- * @author John Blum
  * @see com.gemstone.gemfire.internal.lang.Initable
  * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
  * @see com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker

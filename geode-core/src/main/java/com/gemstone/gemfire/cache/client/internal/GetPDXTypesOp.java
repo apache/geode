@@ -28,7 +28,6 @@ import com.gemstone.gemfire.pdx.internal.PdxType;
 /**
  * Retrieve all known PDX types.
  * 
- * @author bakera
  * @since 7.0
  */
 public class GetPDXTypesOp {

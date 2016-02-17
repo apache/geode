@@ -33,7 +33,6 @@ import com.gemstone.gemfire.management.internal.cli.util.ClasspathScanLoadHelper
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * @author tushark
  */
 @Category(UnitTest.class)
 public class ClasspathScanLoadHelperJUnitTest  extends TestCase{

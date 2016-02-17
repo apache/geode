@@ -26,7 +26,6 @@ import com.gemstone.gemfire.management.cli.ConverterHint;
 
 /***
  * Added converter to enable auto-completion for index-type
- * @author Sourabh Bansod
  *
  */
 public class IndexTypeConverter implements Converter<String>{

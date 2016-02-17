@@ -112,7 +112,6 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * The concrete implementation of {@link DistributedSystem} that
  * provides internal-only functionality.
  *
- * @author David Whitlock
  * @since 3.0
  *
  */
@@ -843,7 +842,6 @@ public class InternalDistributedSystem
   
   /**
    * This class defers to the DM.  If we don't have a DM, we're dead.
-   * @author jpenney
    */
   protected class Stopper extends CancelCriterion {
     @Override
@@ -2362,7 +2360,6 @@ public class InternalDistributedSystem
   /**
    * A listener that gets invoked after this connection to the
    * distributed system is disconnected
-   * @author jpenney
    *
    */
   public interface ShutdownListener extends DisconnectListener {
@@ -3071,7 +3068,6 @@ public class InternalDistributedSystem
    * Fortify will complain about.
    * </p>
    * 
-   * @author Kirk Lund
    */
   public static interface CreationStackGenerator {
     public Throwable generateCreationStack(final DistributionConfig config);

@@ -29,7 +29,6 @@ import javax.management.openmbean.OpenDataException;
 /**
  * Open type converter for Composite type
  * 
- * @author rishim
  * 
  */
 

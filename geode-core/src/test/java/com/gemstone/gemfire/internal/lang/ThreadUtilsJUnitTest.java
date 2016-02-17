@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * The ThreadUtilsJUnitTest class is a test suite of test cases for testing the contract and functionality of the ThreadUtils
  * class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.lang.ThreadUtils
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery

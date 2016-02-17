@@ -29,7 +29,6 @@ import java.util.Properties;
  * Provides an implementation of
  * <code>DistributionLocatorConfig</code>.
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class DistributionLocatorConfigImpl 

@@ -40,8 +40,6 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
  * HostStatSampler implements a thread which will monitor, sample, and archive
  * statistics. It only has the common functionality that any sampler needs.
 
- * @author Darrel Schneider
- * @author Kirk Lund
  */
 public abstract class HostStatSampler 
     implements Runnable, StatisticsSampler, StatArchiveHandlerConfig {

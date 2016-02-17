@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.EventID;
  * Breadcrumbs establishes traces in thread names that are useful in figuring
  * out what is going on in a distributed system given only stack traces.
  * 
- * @author Bruce Schuchardt
  * @since 20 May 2014
  *
  */

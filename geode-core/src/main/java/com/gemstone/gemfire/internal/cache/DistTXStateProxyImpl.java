@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @author shirishd
  *
  */
 public abstract class DistTXStateProxyImpl extends TXStateProxyImpl {

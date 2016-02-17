@@ -47,7 +47,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  *
- * @author vikramj
  */
 @Category(IntegrationTest.class)
 public class INOperatorJUnitTest {
@@ -79,7 +78,6 @@ public class INOperatorJUnitTest {
   /**
    * Test the decomposition of IN SET(..) that gets decomposed
    * into ORs so an index can be used
-   * @author Eric Zoerner
    */
   public void _testInDecompositionWithFunctionalIndex() throws Exception {
  

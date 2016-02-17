@@ -24,7 +24,6 @@ import java.io.Serializable;
  * notification mechanism to conflate messages being sent from the server to the
  * client.
  * 
- * @author Barry Oglesby
  * 
  * @since 4.2
  */

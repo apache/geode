@@ -23,7 +23,6 @@ import com.gemstone.gemfire.GemFireCheckedException;
  * when our assumption about where the data lives is incorrect.
  * @see ForceReattemptException
  * @see PrimaryBucketException
- * @author sbawaska
  */
 public abstract class DataLocationException extends GemFireCheckedException {
   public DataLocationException() {

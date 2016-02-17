@@ -35,7 +35,6 @@ package com.gemstone.gemfire.cache;
  * clientSession.registerInterest(event.getRegion().getFullPath(), event.getKey(), InterestResultPolicy.KEYS_VALUES, true);
  * </pre>
  * 
- * @author Barry Oglesby
  * @since 6.0
  * @see com.gemstone.gemfire.cache.server.CacheServer#getClientSession(String)
  *      getClientSession

@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.cache;
  * Class <code>PartitionedRegionStatus</code> provides information about
  * <code>PartitionedRegion</code>s. This class is used by the monitoring tool.
  *
- * @author Barry Oglesby
  *
  * @since 5.1
  */

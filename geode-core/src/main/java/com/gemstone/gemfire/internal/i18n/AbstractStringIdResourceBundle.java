@@ -34,7 +34,6 @@ import java.util.Locale;
  * Baseclass for all {@link StringId} based ResourceBundles
  * @see java.util.ResourceBundle 
  *
- * @author kbanks 
  * @since 5.7 
  */
 public class AbstractStringIdResourceBundle {

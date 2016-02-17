@@ -38,7 +38,6 @@ import java.text.DecimalFormat;
  * 
  * This class contains implementations of getting Memeber's Statistics.
  * 
- * @author Sachin K
  * @since version 7.5
  */
 @Component

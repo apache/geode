@@ -31,7 +31,6 @@ import com.gemstone.gemfire.management.internal.web.domain.Link;
  * The AbstractWebDomainTests class is abstract base class containing functionality common to a test suite classes
  * in the com.gemstone.gemfire.management.internal.web.domain package.
  * <p/>
- * @author John Blum
  * @see java.net.URI
  * @see java.net.URLDecoder
  * @see java.net.URLEncoder

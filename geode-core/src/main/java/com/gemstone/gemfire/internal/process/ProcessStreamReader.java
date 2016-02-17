@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Reads the output stream of a Process.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public abstract class ProcessStreamReader implements Runnable {
@@ -209,7 +208,6 @@ public abstract class ProcessStreamReader implements Runnable {
   /**
    * Builds a ProcessStreamReader.
    * 
-   * @author Kirk Lund
    * @since 8.2
    */
   public static class Builder {

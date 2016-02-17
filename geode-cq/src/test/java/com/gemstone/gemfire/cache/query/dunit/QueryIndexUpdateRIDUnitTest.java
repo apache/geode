@@ -57,7 +57,6 @@ import com.gemstone.gemfire.cache30.CertifiableTestCacheListener;
  * Then client run a query on region in local cache (Not on server) using the
  * Index.
  * 
- * @author shoagarwal
  *
  */
 public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{

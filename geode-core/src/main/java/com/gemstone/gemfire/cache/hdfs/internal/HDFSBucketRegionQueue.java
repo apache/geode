@@ -67,7 +67,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 /**
  * This class holds the sorted list required for HDFS. 
  * 
- * @author Hemant Bhanawat
  * 
  */
 public class HDFSBucketRegionQueue extends AbstractBucketRegionQueue {

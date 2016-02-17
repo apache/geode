@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * proxy ops. It will also be used while filter addition/ removal if dynamic
  * filters are going to be supported.
  * 
- * @author rishim
  * 
  */
 

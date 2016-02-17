@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Test runs all tests of HARegionQueueJUnitTest using BlockingHARegionQueue
  * instead of HARegionQueue.
  * 
- * @author Suyog Bhokare
  *  
  */
 @Category(IntegrationTest.class)
@@ -80,7 +79,6 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest
    * Tests the effect of a put which is blocked because of capacity constraint &
    * subsequent passage because of take operation
    * 
-   * @author ashahid
    */
   @Test
   public void testBlockingPutAndTake()

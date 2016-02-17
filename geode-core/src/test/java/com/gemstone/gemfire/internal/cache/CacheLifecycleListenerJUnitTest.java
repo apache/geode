@@ -36,7 +36,6 @@ import junit.framework.TestCase;
 /**
  * Tests notifications of CacheLifecycleListener from GemFireCacheImpl.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class CacheLifecycleListenerJUnitTest  {

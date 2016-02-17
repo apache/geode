@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.operations.OperationContext;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#KEY_SET} operation for both the
  * pre-operation and post-operation cases.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class KeySetOperationContext extends OperationContext {

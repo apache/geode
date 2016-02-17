@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
  * A wrapper around the graph logger that logs entry level events.
- * @author dsmith
  *
  *
  *TODO 

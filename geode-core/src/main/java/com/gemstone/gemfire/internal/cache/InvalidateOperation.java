@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Handles distribution messaging for invalidating an entry in a region.
  * 
- * @author Eric Zoerner
  *  
  */
 public class InvalidateOperation extends DistributedCacheOperation

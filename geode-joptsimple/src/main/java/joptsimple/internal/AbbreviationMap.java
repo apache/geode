@@ -53,7 +53,6 @@ import java.util.TreeMap;
  * <p>The data structure is much like a "trie".</p>
  *
  * @param <V> a constraint on the types of the values in the map
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public class AbbreviationMap<V> {
     private String key;

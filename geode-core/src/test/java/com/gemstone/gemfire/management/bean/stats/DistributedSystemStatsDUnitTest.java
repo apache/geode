@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author rishim
  */
 public class DistributedSystemStatsDUnitTest extends ManagementTestBase{
   

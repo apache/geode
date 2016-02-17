@@ -37,7 +37,6 @@ import com.gemstone.gemfire.management.internal.cli.CliUtil;
 /**
  * Various Utility Functions to be used by MBeans
  * 
- * @author rishim
  * 
  */
 public class BeanUtilFuncs {

@@ -73,7 +73,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * This class tests the ContiunousQuery mechanism in GemFire.
  * This includes the test with different data activities.
  *
- * @author anil
  */
 public class CqDataUsingPoolDUnitTest extends CacheTestCase {
 
@@ -344,7 +343,6 @@ public class CqDataUsingPoolDUnitTest extends CacheTestCase {
    * events then there should be. This will test the fix for 
    * bug 37295.
    * 
-   * @author rdubey
    */
   public void testCQWithMultipleClients() throws Exception {
     

@@ -41,8 +41,6 @@ import com.gemstone.gemfire.internal.Assert;
  * <p>The exception string provides details on the cause of failure.
  * </p>
  * 
- * @author Yogesh Mahajan
- * @author Mitch Thomas
  * 
  * @since 6.0
  * @see FunctionService

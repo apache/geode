@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 /**
  * This class tracks GemFire statistics related to a {@link HARegionQueue}.
  * 
- * @author Dinesh Patel
  *  
  */
 public class HARegionQueueStats

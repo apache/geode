@@ -31,7 +31,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * @see ResourceManager#setCriticalHeapPercentage(float)
  * @see Region#put(Object, Object)
  * 
- * @author sbawaska
  * @since 6.0
  */
 public class LowMemoryException extends ResourceException {

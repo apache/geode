@@ -100,7 +100,6 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * not be used for post-operation authorization since it does nothing useful for
  * post-operation case.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class XmlAuthorization implements AccessControl {

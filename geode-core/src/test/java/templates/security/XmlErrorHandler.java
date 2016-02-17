@@ -31,7 +31,6 @@ import com.gemstone.gemfire.LogWriter;
  * <code>fatalError</code> cases while a {@link LogWriter#warning(String)} level
  * logging is done for the <code>warning</code> case.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class XmlErrorHandler implements ErrorHandler {

@@ -39,7 +39,6 @@ import static joptsimple.internal.Objects.*;
 /**
  * Representation of a group of detected command line options, their arguments, and non-option arguments.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public class OptionSet {
     private final List<OptionSpec<?>> detectedSpecs;

@@ -45,7 +45,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * on the client regions that will use this pool by calling
  * {@link RegionFactory#setPoolName}.
  *
- * @author darrel
  * @since 5.7
  *
  */

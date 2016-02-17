@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.logging;
 /**
  * Prints messages formatted like GemFire log messages to stderr.
  * 
- * @author Kirk Lund
  */
 public class StandardOutputPrinter extends LocalLogWriter {
 

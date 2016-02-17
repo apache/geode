@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  * A message that is sent to a particular distribution manager to get its
  * current {@link com.gemstone.gemfire.admin.GemFireMemberStatus}.
  * 
- * @author Harsh Khanna
  */
 public class RefreshMemberSnapshotResponse extends AdminResponse {
   // instance variables

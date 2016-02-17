@@ -57,7 +57,6 @@ import java.util.Properties;
  * entries are transfered from the server to the client, they are then 
  * stored in new files in these directories.
  * 
- * @author bruce
  * @since 6.0.1
  *
  */

@@ -32,10 +32,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Tranport config for RemoteGfManagerAgent.
  * 
- * @author    Darrel Schneider
- * @author    Pete Matern
- * @author    David Whitlock
- * @author    Kirk Lund
  *
  */
 public class RemoteTransportConfig implements TransportConfig {

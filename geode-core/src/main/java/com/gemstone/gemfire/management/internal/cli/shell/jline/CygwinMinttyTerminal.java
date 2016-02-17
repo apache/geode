@@ -32,7 +32,6 @@ import jline.UnixTerminal;
  * 
  * To know exact changed please see UnixTerminal code.
  * 
- * @author tushark
  *
  */
 public class CygwinMinttyTerminal extends UnixTerminal {

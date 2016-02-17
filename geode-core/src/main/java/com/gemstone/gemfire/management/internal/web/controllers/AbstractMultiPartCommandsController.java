@@ -29,7 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
  * The AbstractMultiPartCommandsController class is a abstract base class encapsulating all common functionality for
  * handling multi-part (file upload) HTTP requests.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @since 8.0
  */

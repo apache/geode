@@ -37,7 +37,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 /**
  * JUnit Tests for MemberGatewayHubService in the back-end server for region detail page
  *
- * @author rbhandekar
  *
  */
 @Ignore
@@ -45,7 +44,6 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
 
   /**
    *
-   * @author rbhandekar
    * @throws java.lang.Exception
    */
   @BeforeClass
@@ -56,7 +54,6 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
 
   /**
    *
-   * @author rbhandekar
    * @throws java.lang.Exception
    */
   @AfterClass
@@ -67,7 +64,6 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
 
   /**
    *
-   * @author rbhandekar
    * @throws java.lang.Exception
    */
   @Override
@@ -77,7 +73,6 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
 
   /**
    *
-   * @author rbhandekar
    * @throws java.lang.Exception
    */
   @Override
@@ -88,7 +83,6 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
   /**
    * Tests that service returns json object
    *
-   * @author rbhandekar
    */
   @Test
   public void testResponseNotNull() {
@@ -136,7 +130,6 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
   *
   * Test method for {@link com.vmware.gemfire.tools.pulse.internal.service.MemberGatewayHubService#execute(javax.servlet.http.HttpServletRequest)}.
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseIsGatewaySender() {
@@ -190,7 +183,6 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
   *
   * Test method for {@link com.vmware.gemfire.tools.pulse.internal.service.MemberGatewayHubService#execute(javax.servlet.http.HttpServletRequest)}.
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseGatewaySenderCount() {
@@ -247,7 +239,6 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
   *
   * Test method for {@link com.vmware.gemfire.tools.pulse.internal.service.MemberGatewayHubService#execute(javax.servlet.http.HttpServletRequest)}.
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseGatewaySenderProperties() {
@@ -307,7 +298,6 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
   *
   * Test method for {@link com.vmware.gemfire.tools.pulse.internal.service.MemberGatewayHubService#execute(javax.servlet.http.HttpServletRequest)}.
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseAsyncEventQueueProperties() {
@@ -370,7 +360,6 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
   *
   * Test method for {@link com.vmware.gemfire.tools.pulse.internal.service.MemberGatewayHubService#execute(javax.servlet.http.HttpServletRequest)}.
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseNoAsyncEventQueues() {

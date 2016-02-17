@@ -56,7 +56,6 @@ package com.gemstone.gemfire.management.internal.cli.result;
  *     
  * </literal>
  * 
- * @author David Hoots
  * 
  * @since 7.0
  */
@@ -173,7 +172,6 @@ public class TableBuilder {
    * when built will automatically be set to the length of the longest value in
    * the column.
    * 
-   * @author David Hoots
    * @since 7.0
    */
   public static class RowGroup {

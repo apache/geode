@@ -64,7 +64,6 @@ import junit.framework.Assert;
 /**
  * Tests 5.7 cache.xml features.
  * 
- * @author darrel
  * @since 5.7
  */
 

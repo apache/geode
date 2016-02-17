@@ -26,7 +26,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * with empty implementations. Applications can subclass this class and only
  * override the methods for the events of interest.
  * 
- * @author Darrel Schneider
  * 
  * @since 5.0
  */

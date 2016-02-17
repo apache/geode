@@ -37,7 +37,6 @@ import com.gemstone.gemfire.cache.partition.PartitionListener;
  *
  * Also see {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}.
  * 
- * @author rreja
  * @since 5.0
  * 
  */

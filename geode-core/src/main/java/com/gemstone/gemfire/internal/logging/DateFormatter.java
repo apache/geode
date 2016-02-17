@@ -23,7 +23,6 @@ import java.util.Date;
 /**
  * Defines the common date format for GemFire and provides DateFormat instances.
  * 
- * @author Kirk Lund
  */
 public final class DateFormatter {
 

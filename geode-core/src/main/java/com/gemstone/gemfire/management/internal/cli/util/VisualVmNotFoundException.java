@@ -23,7 +23,6 @@ import com.gemstone.gemfire.GemFireException;
  * The VisualVmNotFoundException class is a GemFireException (RuntimeException) indicating that the JDK jvisualvm
  * tool could not be found on the system.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.GemFireException
  * @since 7.0
  */

@@ -41,7 +41,6 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
  * Tests that the Matris defined in <code>ServerResponseMatrix</code> is
  * applied or not
  * 
- * @author Yogesh Mahajan
  * @since 5.1
  * 
  */

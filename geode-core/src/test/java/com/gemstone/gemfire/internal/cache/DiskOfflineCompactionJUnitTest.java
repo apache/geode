@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests offline compaction
  * 
- * @author darrel
  *  
  */
 @Category(IntegrationTest.class)

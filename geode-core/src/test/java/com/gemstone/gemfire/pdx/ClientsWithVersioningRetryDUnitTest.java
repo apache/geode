@@ -67,7 +67,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
- * @author dsmith
  *
  */
 public class ClientsWithVersioningRetryDUnitTest extends CacheTestCase {

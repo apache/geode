@@ -31,7 +31,6 @@ import templates.security.PKCSAuthInit;
 import templates.security.PKCSAuthenticator;
 
 /**
- * @author kneeraj
  * 
  */
 public class PKCSCredentialGenerator extends CredentialGenerator {

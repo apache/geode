@@ -75,7 +75,6 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * @author Xiaojian Zhou (Gester)
  *
  */
 public class GIIDeltaDUnitTest extends CacheTestCase {

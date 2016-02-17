@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache;
  * for both region and entries. All of these methods may throw a
  * CacheClosedException, RegionDestroyedException or an EntryDestroyedException.
  *
- * @author Eric Zoerner
  *
  *
  * @see Region#getStatistics

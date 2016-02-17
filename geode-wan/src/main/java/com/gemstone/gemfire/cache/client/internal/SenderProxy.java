@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 
 /**
  * Used to send operations from a sender to a receiver.
- * @author skumar
  * @since 8.1
  */
 public class SenderProxy extends ServerProxy{

@@ -59,7 +59,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * results in Arraylist. There is no need to provide a synchronization mechanism
  * in the user implementations of ResultCollector
  * 
- * @author Yogesh Mahajan
  * @since 6.0
  * 
  */

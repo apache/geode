@@ -29,7 +29,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Tests faulting in from current oplog, old oplog
  * and htree for different modes (overflow only, persist+overflow : Sync/Async)
  * 
- * @author Mitul Bid
  *
  */
 @Category(IntegrationTest.class)

@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * test client initiated transactions with concurrency checks enabled.
- * @author sbawaska
  */
 public class ClientServerTransactionCCEDUnitTest extends
     ClientServerTransactionDUnitTest {

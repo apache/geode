@@ -20,7 +20,6 @@ package com.gemstone.gemfire.management.internal.configuration.utils;
 import javax.xml.XMLConstants;
 
 /**
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

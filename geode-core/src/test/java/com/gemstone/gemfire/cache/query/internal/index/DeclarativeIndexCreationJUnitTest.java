@@ -40,7 +40,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author asifs
  * 
  *         To change the template for this generated type comment go to Window -
  *         Preferences - Java - Code Generation - Code and Comments

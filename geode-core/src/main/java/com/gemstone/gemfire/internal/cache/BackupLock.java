@@ -30,7 +30,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * and in the second phase we actually do the backup. During
  * the second phase we need to reenter the lock and release
  * it with a different thread.
- * @author dsmith
  *
  */
 public class BackupLock extends ReentrantLock {

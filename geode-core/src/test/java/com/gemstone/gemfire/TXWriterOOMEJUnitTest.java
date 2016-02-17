@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * test suite to fail due to suspect strings from SystemFailure Watchdog sending
  * output to STDERR.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class TXWriterOOMEJUnitTest extends TXWriterTestCase {

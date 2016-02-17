@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Test cases for {@link CacheXmlParser}.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

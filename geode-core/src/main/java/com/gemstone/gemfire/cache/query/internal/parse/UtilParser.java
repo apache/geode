@@ -29,7 +29,6 @@ import java.io.*;
 
 /**
  *
- * @author ericz
  */
 public class UtilParser extends LLkParser {    
     

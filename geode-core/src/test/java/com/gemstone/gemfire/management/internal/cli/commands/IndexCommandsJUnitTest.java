@@ -48,7 +48,6 @@ import org.junit.experimental.categories.Category;
  * The IndexCommandsJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * IndexCommands class.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.IndexCommands
  * @see com.gemstone.gemfire.management.internal.cli.domain.IndexDetails
  * @see com.gemstone.gemfire.management.internal.cli.functions.ListIndexFunction

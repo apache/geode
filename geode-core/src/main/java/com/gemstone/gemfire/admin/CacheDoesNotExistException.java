@@ -21,7 +21,6 @@ package com.gemstone.gemfire.admin;
  * An <code>CacheDoesNotExistException</code> is thrown when an attempt
  * is made to get a cache and one does not exist.
  *
- * @author    Darrel Schneider
  * @since     3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */

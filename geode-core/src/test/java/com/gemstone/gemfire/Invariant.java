@@ -18,7 +18,6 @@ package com.gemstone.gemfire;
 
 /**
  * Interface used for testing an invariant
- * @author  ericz
  *
  */
 public interface Invariant {

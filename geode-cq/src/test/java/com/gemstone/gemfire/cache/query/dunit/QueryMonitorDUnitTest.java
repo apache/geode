@@ -61,7 +61,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Tests for QueryMonitoring service.
- * @author agingade
  * @since 6.0
  */
 public class QueryMonitorDUnitTest extends CacheTestCase {

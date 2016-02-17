@@ -29,7 +29,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing continuous query.
- * @author ajayp
  * 
  */
 

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
 /**
  * The HttpMBeanProxyFactory class is an abstract factory for creating
  * <p/>
- * @author John Blum
  * @see java.lang.reflect.Proxy
  * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker
  * @since 8.0

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 
 /**
- * @author dsmith
  * @since 5.7
  *
  * Test reconnecting a durable client that is using

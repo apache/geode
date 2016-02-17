@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Does a region get on a server
- * @author darrel
  * @since 5.7
  */
 public class GetOp {

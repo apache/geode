@@ -30,7 +30,6 @@ import com.gemstone.gemfire.management.internal.cli.domain.RegionInformation;
 
 /**
  * Function that retrieves regions hosted on every member
- * @author bansods
  *
  */
 public class GetRegionsFunction extends FunctionAdapter implements InternalEntity {

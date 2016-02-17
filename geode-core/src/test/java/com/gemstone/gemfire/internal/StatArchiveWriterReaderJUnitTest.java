@@ -62,7 +62,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Integration tests for StatArchiveWriter and StatArchiveReader. The tests
  * are very redundant and desperately need refactoring.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 @Category(IntegrationTest.class)

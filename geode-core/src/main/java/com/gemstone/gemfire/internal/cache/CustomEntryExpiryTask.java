@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.ExpirationAttributes;
  * Remembers the expiration attributes returned from
  * the customer's CustomExpiry callback, if any.
  * 
- * @author dschneider
  * @since 8.0
  *
  */

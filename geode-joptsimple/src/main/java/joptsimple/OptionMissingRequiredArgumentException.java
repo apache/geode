@@ -30,8 +30,6 @@ import java.util.Collection;
 /**
  * Thrown when the option parser discovers an option that requires an argument, but that argument is missing.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @author Nikhil Jadhav
  */
 public class OptionMissingRequiredArgumentException extends OptionException {
     private static final long serialVersionUID = -1L;

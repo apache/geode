@@ -38,7 +38,6 @@ import com.gemstone.gemfire.management.ManagementException;
  * Central component for federation It consists of an Object State as well as
  * some meta data for the Object being federated.
  * 
- * @author rishim
  * 
  */
 

@@ -22,7 +22,6 @@ import com.gemstone.gemfire.pdx.internal.EnumInfo;
 
 /**
  * Push a PDX Enum id to other servers.
- * @author darrel
  * @since 6.6.2
  */
 public class AddPDXEnumOp {

@@ -46,7 +46,6 @@ import com.gemstone.gemfire.internal.Version;
  * The n - way merge results returns a sorted results on the cumulative sorted
  * results for partitioned region based query
  * 
- * @author asif
  *
  */
 public class NWayMergeResults<E> implements SelectResults<E>, Ordered,

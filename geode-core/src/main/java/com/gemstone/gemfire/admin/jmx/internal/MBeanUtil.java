@@ -55,7 +55,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Common support for MBeans and {@link ManagedResource}s.  Static loading of
  * this class creates the MBeanServer and Modeler Registry.
  *
- * @author    Kirk Lund
  * @since     3.5
  *
  */

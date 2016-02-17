@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * {@link SharedConfiguration} method of extracting {@link XmlEntity} from the
  * new config and applying it to the current shared config.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

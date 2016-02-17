@@ -34,7 +34,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * The internal implementation of the {@link TransactionEvent}interface used by
  * the remote commit code.
  * 
- * @author Darrel Schneider
  * 
  * @since 4.0
  *  

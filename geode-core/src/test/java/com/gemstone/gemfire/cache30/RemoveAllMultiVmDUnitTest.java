@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  *
- * @author  darrel
  */
 public class RemoveAllMultiVmDUnitTest extends DistributedTestCase {
     

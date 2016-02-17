@@ -22,7 +22,6 @@ import com.gemstone.gemfire.annotations.Experimental;
  * <p>
  * Abstract data structure for one item in query result.
  * 
- * @author Xiaojian Zhou
  */
 @Experimental
 public interface LuceneResultStruct<K, V> {

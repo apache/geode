@@ -21,7 +21,6 @@ import java.io.Serializable;
 /***
  * Data class used to pass index related information to 
  * functions that create or destroy indexes
- * @author bansods
  *
  */
 public class IndexInfo implements Serializable {

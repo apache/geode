@@ -48,7 +48,6 @@ import com.gemstone.gemfire.cache.query.types.StructType;
  * multiple filter evaluatable equi join conditions of different regions as well
  * as their GroupJunctions if any.
  * 
- * @author asif
  *  
  */
 public class CompositeGroupJunction extends AbstractCompiledValue implements 

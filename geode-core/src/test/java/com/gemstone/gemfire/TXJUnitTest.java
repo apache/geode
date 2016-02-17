@@ -104,7 +104,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests basic transaction functionality
  *
- * @author Darrel Schneider
  * @since 4.0
  *
  */

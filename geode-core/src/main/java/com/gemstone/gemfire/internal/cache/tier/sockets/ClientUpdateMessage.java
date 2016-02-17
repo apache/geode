@@ -27,7 +27,6 @@ import java.util.HashMap;
  * Interface <code>ClientUpdateMessage</code> is a message representing a cache
  * operation that is sent from a server to an interested client.
  *
- * @author Barry Oglesby
  *
  * @since 5.5
  */

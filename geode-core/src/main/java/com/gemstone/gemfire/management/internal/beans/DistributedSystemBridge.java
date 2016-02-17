@@ -102,7 +102,6 @@ import com.gemstone.gemfire.management.internal.cli.json.TypedJson;
  *
  *
  *
- * @author rishim
  *
  */
 public class DistributedSystemBridge {
@@ -1707,7 +1706,6 @@ public class DistributedSystemBridge {
   /**
    * User defined notification handler
    *
-   * @author rishim
    *
    */
   private class DistributedSystemNotifListener implements NotificationListener {

@@ -28,7 +28,6 @@ import java.util.Queue;
  * </p>
  * Extracted from ProcessWrapper.
  * 
- * @author Kirk Lund
  */
 public class ProcessStreamReader extends Thread {
   

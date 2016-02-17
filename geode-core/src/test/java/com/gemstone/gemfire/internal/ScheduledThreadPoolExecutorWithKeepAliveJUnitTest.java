@@ -37,7 +37,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author dsmith
  *
  */
 @Category(IntegrationTest.class)

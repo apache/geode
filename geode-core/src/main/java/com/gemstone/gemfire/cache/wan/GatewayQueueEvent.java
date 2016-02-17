@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
  * Represents <code>Cache</code> events going through 
  * <code>GatewaySender</code>s.
  * 
- * @author Pushkar Deole
  * 
  * @since 7.0
  */

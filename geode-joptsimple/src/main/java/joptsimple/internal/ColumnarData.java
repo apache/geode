@@ -40,7 +40,6 @@ import static joptsimple.internal.Strings.*;
 /**
  * A means to display data in a text grid.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public class ColumnarData {
     private static final String LINE_SEPARATOR = getProperty( "line.separator" );

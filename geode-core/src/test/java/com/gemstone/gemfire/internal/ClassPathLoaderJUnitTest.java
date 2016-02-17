@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Test the {@link ClassPathLoader}.
  * 
- * @author Kirk Lund
  * @since 6.5.1.4
  */
 @Category(UnitTest.class)

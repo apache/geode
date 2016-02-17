@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Confirm that bug 34583 is fixed. Cause of bug is recursion is
  * entries iterator that causes stack overflow.
- * @author darrel
  */
 @Category(IntegrationTest.class)
 public class Bug34583JUnitTest {

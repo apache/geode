@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 
 /**
- * @author dsmith
  *
  */
 public class LocatorListResponse extends ServerLocationResponse {

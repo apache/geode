@@ -58,7 +58,6 @@ import com.gemstone.gemfire.internal.util.JavaCommandBuilder;
  * A command line utility inspired by the <code>CacheServerLauncher</code> that is responsible for administering
  * a stand-along GemFire JMX {@link Agent}.
  * <p/>
- * @author David Whitlock
  * @since 3.5
  */
 public class AgentLauncher {

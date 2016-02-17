@@ -49,7 +49,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests the off-heap additions to the RegionMXBean and MemberMXBean JMX interfaces.
- * @author rholmes
  */
 @SuppressWarnings("serial")
 public class OffHeapManagementDUnitTest extends CacheTestCase {

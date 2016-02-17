@@ -22,7 +22,6 @@ import java.util.EventListener;
 /**
  * The SignalListener class...
  * </p>
- * @author John Blum
  * @see java.util.EventListener
  * @since 7.0
  */

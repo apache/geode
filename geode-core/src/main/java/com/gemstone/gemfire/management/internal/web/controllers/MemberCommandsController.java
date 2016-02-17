@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * The MemberCommandsController class implements GemFire Management REST API web service endpoints for the
  * Gfsh Member Commands.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.MemberCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

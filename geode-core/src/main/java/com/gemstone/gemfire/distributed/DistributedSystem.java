@@ -1478,8 +1478,6 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *   <dd><U>Since</U>: 8.0</dd>
  * </dl>
  * 
- * @author Darrel Schneider
- * @author Bruce Schuchardt
  *
  * @since 3.0
  */

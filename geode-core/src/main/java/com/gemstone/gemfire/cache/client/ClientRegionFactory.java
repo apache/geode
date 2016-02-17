@@ -60,7 +60,6 @@ import com.gemstone.gemfire.compression.Compressor;
  *     myListener).create(&quot;customers&quot;);
  * </PRE>
  * 
- * @author darrel
  * @since 6.5
  */
 

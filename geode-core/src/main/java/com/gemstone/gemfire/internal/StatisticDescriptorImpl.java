@@ -26,8 +26,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  *
  * @see Statistics
  *
- * @author David Whitlock
- * @author Darrel Schneider
  *
  * @since 3.0
  */

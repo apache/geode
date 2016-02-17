@@ -38,7 +38,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * This class returns top N queries based on pagination and filtering criteria
  * if any
  * 
- * @author Riya Bhandekar
  * @since version 7.5
  */
 @Component

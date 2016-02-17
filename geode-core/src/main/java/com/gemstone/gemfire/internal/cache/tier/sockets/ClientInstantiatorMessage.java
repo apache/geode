@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
  * object is registerd on Server. This message contains array of serailized
  * instantiators along with the unique <code>EventID</code>
  * 
- * @author Yogesh Mahajan
  * 
  * @since 5.0
  */

@@ -47,7 +47,6 @@ import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author Asif
  * 
  *  
  */

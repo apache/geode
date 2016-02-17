@@ -82,7 +82,6 @@ import java.util.concurrent.TimeUnit;
  * The LauncherLifecycleCommandsDUnitTest class is a test suite of integration tests testing the contract and
  * functionality of the GemFire launcher lifecycle commands inside Gfsh.
  *
- * @author John Blum
  * @see javax.management.MBeanServerConnection
  * @see javax.management.remote.JMXConnector
  * @see com.gemstone.gemfire.distributed.AbstractLauncher

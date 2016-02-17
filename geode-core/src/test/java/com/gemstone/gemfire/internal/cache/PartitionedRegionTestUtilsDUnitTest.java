@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Confirm that the utils used for testing work as advertised
  * @since 5.0 
- * @author mthomas
  *
  */
 public class PartitionedRegionTestUtilsDUnitTest extends

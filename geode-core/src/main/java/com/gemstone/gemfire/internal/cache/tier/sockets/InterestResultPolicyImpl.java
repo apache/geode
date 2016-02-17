@@ -27,7 +27,6 @@ import java.io.*;
 /**
  * Used to make InterestResultPolicy implement DataSerializableFixedID
  *
- * @author Darrel Schneider
  *
  * @since 5.7 
  */

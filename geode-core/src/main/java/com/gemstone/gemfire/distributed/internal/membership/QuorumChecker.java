@@ -22,7 +22,6 @@ package com.gemstone.gemfire.distributed.internal.membership;
  * to probe the network to see if there is a quorum of members
  * that can be contacted.
  * 
- * @author bschuchardt
  *
  */
 public interface QuorumChecker {

@@ -34,8 +34,6 @@ import com.gemstone.gemfire.internal.util.Breadcrumbs;
  * This class maintains statistics in GemFire about the distribution
  * manager and distribution in general.
  *
- * @author Darrel Schneider
- * @author Bruce Schuchardt
  *
  */
 public class DistributionStats implements DMStats {

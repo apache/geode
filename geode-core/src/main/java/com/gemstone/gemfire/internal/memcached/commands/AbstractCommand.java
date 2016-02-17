@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.memcached.ValueWrapper;
 /**
  * Abstract class with utility methods for all Command classes.
  * 
- * @author Swapnil Bawaskar
  *
  */
 public abstract class AbstractCommand implements CommandProcessor {

@@ -32,7 +32,6 @@ import com.gemstone.gemfire.annotations.Experimental;
  * The index name and region name together uniquely identifies the lucene index.
  * <p>
  * 
- * @author Xiaojian Zhou
  */
 @Experimental
 public interface LuceneIndex {

@@ -59,7 +59,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Handles distribution of a Region.removeAll operation.
  * 
- * @author Darrel Schneider
  * @since 8.1
  */
 public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TODO extend DistributedCacheOperation instead

@@ -31,8 +31,6 @@ import java.util.Collection;
  * Specification of an option that accepts a required argument.
  *
  * @param <V> represents the type of the arguments this option accepts
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @author Nikhil Jadhav
  */
 class RequiredArgumentOptionSpec<V> extends ArgumentAcceptingOptionSpec<V> {
     RequiredArgumentOptionSpec( String option ) {

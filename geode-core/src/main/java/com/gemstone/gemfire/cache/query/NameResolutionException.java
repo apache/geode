@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown if an attribute or method name in a query cannot be resolved.
  *
- * @author      Eric Zoerner
  * @since 4.0
  */
 

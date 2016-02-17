@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache;
  * would have otherwise affected the cache has been aborted.
  * Only subclasses are instantiated.
  *
- * @author Eric Zoerner
  *
  *
  * @since 3.0

@@ -25,7 +25,6 @@ import java.net.InetAddress;
  * <code>Gateway</code> client from the server's perspective. This class is
  * used by the monitoring tool.
  *
- * @author Barry Oglesby
  *
  * @since 4.3
  */

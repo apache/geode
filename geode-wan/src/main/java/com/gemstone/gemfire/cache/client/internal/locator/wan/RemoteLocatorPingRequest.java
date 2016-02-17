@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.Version;
 
 /**
  * 
- * @author Kishor Bachhav
  *
  */
 

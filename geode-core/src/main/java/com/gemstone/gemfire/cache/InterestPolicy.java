@@ -24,7 +24,6 @@ import java.io.*;
  * The interest policy specifies what data a subscriber is interested in having
  * in it's region.
  *
- * @author Darrel Schneider
  *
  *
  * @see SubscriptionAttributes

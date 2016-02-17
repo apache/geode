@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  * This test is trying to cover all of the possible access paths.
  * 
- * @author dsmith
  *
  */
 public class PdxDeserializationDUnitTest extends CacheTestCase {

@@ -55,8 +55,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  *
- * @author Yogesh Mahajan
- * @author Suyog Bhokare
  *
  */
 public class InterestListEndpointDUnitTest extends DistributedTestCase

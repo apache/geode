@@ -35,7 +35,6 @@ import java.util.List;
  * then those calls should come through setAttributeObject and it will
  * set the attSourceMap to the correct source after these methods return.
  *
- * @author Darrel Schneider
  *
  * @since 3.0
  */

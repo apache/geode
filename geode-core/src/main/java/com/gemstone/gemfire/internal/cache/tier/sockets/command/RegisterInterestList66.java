@@ -44,7 +44,6 @@ import java.util.List;
  * {@link RegisterInterestList61} number of keys & each individual key was sent 
  * as a separate part.
  * 
- * @author sbhokare
  * 
  * @since 6.6
  */

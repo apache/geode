@@ -66,7 +66,6 @@ public class MyPdxSerializer implements PdxSerializer {
 }
  * </PRE>
  * 
- * @author darrel
  * @since 6.6
  */
 public interface PdxSerializer {

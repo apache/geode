@@ -40,8 +40,6 @@ import com.gemstone.gemfire.cache.query.types.StructType;
  * more than one CompositeGroupJunction or a combination of one or more
  * GroupJunctions & one or more CompositeGroupJunctions
  * 
- * @author Asif
- * @author kdeshpan
  */
 public class AllGroupJunction extends AbstractCompiledValue implements Filter,
     OQLLexerTokenTypes {

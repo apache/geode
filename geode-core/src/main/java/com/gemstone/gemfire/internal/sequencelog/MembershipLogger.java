@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 
 /**
- * @author dsmith
  *
  */
 public class MembershipLogger {

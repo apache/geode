@@ -39,8 +39,6 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author vaibhav
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class IndexJUnitTest {

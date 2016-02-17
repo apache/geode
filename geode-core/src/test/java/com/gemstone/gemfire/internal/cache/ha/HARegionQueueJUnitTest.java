@@ -61,9 +61,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * This is a test for the APIs of a HARegionQueue and verifies that the head,
  * tail and size counters are updated properly.
  * 
- * @author Dinesh Patel
- * @author Mitul Bid
- * @author Asif
  * 
  *  
  */
@@ -485,7 +482,6 @@ public class HARegionQueueJUnitTest
   /**
    * Thread to perform PUTs into the queue
    * 
-   * @author Dinesh Patel
    *  
    */
   class Producer extends Thread
@@ -1080,7 +1076,6 @@ public class HARegionQueueJUnitTest
    * Conflation Map. The events which are of ID greater than that contained in
    * QRM should stay
    * 
-   * @author Asif
    */
   @Test
   public void testQRM()
@@ -1880,7 +1875,6 @@ public class HARegionQueueJUnitTest
    * removing from availabel IDs , there is a potential violation. This test
    * will validate that behaviour
    * 
-   * @author Asif
    *  
    */
   @Test
@@ -1976,7 +1970,6 @@ public class HARegionQueueJUnitTest
    * This test validates that if sequence violation occurs without GII,the put
    * will throw an exception
    * 
-   * @author Asif
    * 
    * Test is commented as assertion for sequence violation is removed in the
    * source(HARegionQueue.putObject) is removed. - Suyog
@@ -2032,7 +2025,6 @@ public class HARegionQueueJUnitTest
    * Tests the functionality of batch peek & remove with blocking & non blocking
    * HARegionQueue
    * 
-   * @author Asif
    */
   @Test
   public void testBatchPeekWithRemoveForNonBlockingQueue()
@@ -2045,7 +2037,6 @@ public class HARegionQueueJUnitTest
    * Tests the functionality of batch peek & remove with blocking & non blocking
    * HARegionQueue
    * 
-   * @author Asif
    */
   @Test
   public void testBatchPeekWithRemoveForBlockingQueue()

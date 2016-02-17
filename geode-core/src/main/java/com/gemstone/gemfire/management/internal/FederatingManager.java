@@ -60,7 +60,6 @@ import com.gemstone.gemfire.management.ManagementException;
  * The FederatingManager is only appropriate for a peer or server in a GemFire
  * distributed system.
  * 
- * @author VMware, Inc.
  * @since 7.0
  */
 public class FederatingManager extends Manager {
@@ -389,7 +388,6 @@ public class FederatingManager extends Manager {
    * This task can be cancelled from the calling thread if a timeout happens. In
    * that case we have to handle the thread interrupt
    * 
-   * @author rishim
    * 
    */
 

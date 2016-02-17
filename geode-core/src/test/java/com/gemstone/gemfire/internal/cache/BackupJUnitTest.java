@@ -55,7 +55,6 @@ import com.gemstone.gemfire.internal.cache.persistence.RestoreScript;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author dsmith
  *
  */
 @Category(IntegrationTest.class)

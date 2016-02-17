@@ -21,7 +21,6 @@
  */
 /*
  * 
- * @author vikramj
  */
 package com.gemstone.gemfire.cache.query.functional;
 

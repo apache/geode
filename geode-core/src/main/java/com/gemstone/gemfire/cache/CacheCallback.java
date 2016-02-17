@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache;
  * User-defined objects that can be plugged into caching to receive callback
  * notifications.
  *
- * @author Eric Zoerner
  *
  * @since 3.0
  */

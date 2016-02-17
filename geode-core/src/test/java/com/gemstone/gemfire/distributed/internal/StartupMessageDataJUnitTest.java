@@ -38,7 +38,6 @@ import junit.framework.TestCase;
 /**
  * Tests {@link StartupMessageData}.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 @Category(UnitTest.class)

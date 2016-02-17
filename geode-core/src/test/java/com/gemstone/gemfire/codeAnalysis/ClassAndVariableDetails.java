@@ -31,7 +31,6 @@ import com.gemstone.gemfire.codeAnalysis.decode.CompiledField;
  * A class used to store the names of dataserializable classes and the sizes
  * of their toData/fromData methods.
  * 
- * @author bruces
  *
  */
 public class ClassAndVariableDetails implements Comparable {

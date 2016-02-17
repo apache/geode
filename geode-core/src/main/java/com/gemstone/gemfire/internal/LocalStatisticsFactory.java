@@ -32,8 +32,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * It can be used in contexts that do not have the GemFire product
  * or in vm's that do not have a distributed system nor a gemfire connection.
  *
- * @author Darrel Schneider
- * @author Kirk Lund
  */
 public class LocalStatisticsFactory extends AbstractStatisticsFactory
     implements StatisticsFactory, StatisticsManager {

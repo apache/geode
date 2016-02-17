@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.AbstractRegionEntry;
  * NewLIFOClockHand holds the behavior for LIFO logic , Overwriting
  * getLRUEntry() to return most recently added Entry
  * 
- * @author aingle
  * @since 5.7
  */
 

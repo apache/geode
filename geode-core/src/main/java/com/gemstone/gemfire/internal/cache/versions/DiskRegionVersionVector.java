@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * A region version vector for regions with persistent data. This region
  * version vector uses the persistent disk store UUID as the member id.
- * @author dsmith
  *
  */
 public class DiskRegionVersionVector extends RegionVersionVector<DiskStoreID> {

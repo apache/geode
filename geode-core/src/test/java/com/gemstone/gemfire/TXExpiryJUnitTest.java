@@ -58,7 +58,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests transaction expiration functionality
  *
- * @author Mitch Thomas
  * @since 4.0
  *
  */

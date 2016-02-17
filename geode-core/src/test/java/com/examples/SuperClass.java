@@ -22,7 +22,6 @@ import java.util.*;
  * The super class of another class.  Neither is
  * <code>Serializable</code>. 
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

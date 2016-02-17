@@ -26,7 +26,6 @@ import com.gemstone.gemfire.management.OSMetrics;
 /**
  * The MemberMXBeanAdapter class is an abstract adapter class to the MemberMXBean interface.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.MemberMXBean
  * @since 8.0
  */

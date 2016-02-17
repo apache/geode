@@ -37,7 +37,6 @@ import org.junit.experimental.categories.Category;
  * Tests the functionality of the {@link CopyHelper#copy} method
  * and the builtin copy-on-get Cache functions.
  *
- * @author Darrel Schneider
  * @since 4.0
  *
  */

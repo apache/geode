@@ -88,7 +88,6 @@ import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
 import com.gemstone.gemfire.management.internal.web.shell.RestHttpOperationInvoker;
 
 /**
- * @author Abhishek Chaudhari
  *
  * @since 7.0
  */

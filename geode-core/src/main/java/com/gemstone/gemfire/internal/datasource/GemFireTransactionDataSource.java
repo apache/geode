@@ -45,8 +45,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * participate in the transaction. The objects of these class are
  * ConnectionEventListener for connection close and error events.
  * 
- * @author tnegi
- * @author Asif : Modified the exception handling & changed the name of some
  *         functions.
  */
 public class GemFireTransactionDataSource extends AbstractDataSource implements 

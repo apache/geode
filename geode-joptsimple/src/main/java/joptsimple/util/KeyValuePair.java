@@ -33,7 +33,6 @@ import static joptsimple.internal.Strings.*;
  * <p>This is useful as an argument type for options whose values take on the form <kbd>key=value</kbd>, such as JVM
  * command line system properties.</p>
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public final class KeyValuePair {
     public final String key;

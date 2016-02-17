@@ -37,7 +37,6 @@ import org.apache.logging.log4j.Logger;
  * It also has got an extra responsibility of fixing the file sizes of the files 
  * that weren't closed properly last time. 
  *
- * @author hemantb
  *
  */
 class CloseTmpHoplogsTimerTask extends SystemTimerTask {

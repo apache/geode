@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.size.ReflectionSingleObjectSizer;
  * This class implements java.io.Serializable for dunit testing.  It should
  * not otherwise be serialized with that mechanism.
  *
- * @author bruce
  */
 public abstract class VersionTag<T extends VersionSource> implements DataSerializableFixedID, java.io.Serializable, VersionHolder<T> {
   private static final Logger logger = LogService.getLogger();

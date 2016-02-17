@@ -22,7 +22,6 @@ package com.gemstone.gemfire.internal.lang;
  * of ordered data structure, such as an array or List, or exist in a context where order relative to other
  * peer instances matter.
  * <p/>
- * @author John Blum
  * @since 6.8
  */
 public interface Ordered {

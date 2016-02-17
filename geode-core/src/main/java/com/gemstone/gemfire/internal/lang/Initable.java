@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.lang;
  * The Initable interface defines a contract for implementing classes who's Object instances can be initialized after
  * construction.
  * <p/>
- * @author John Blum
  * @since 6.8
  */
 public interface Initable {

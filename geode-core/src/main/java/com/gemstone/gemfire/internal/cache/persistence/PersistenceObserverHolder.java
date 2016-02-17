@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * Used for test hooks to during the
  * persistence process.
- * @author dsmith
  *
  */
 

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.admin.*;
  * <code>Serializable</code> and is not part of the {@link
  * GemFireHealthConfigImpl} class hierarchy.
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

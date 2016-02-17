@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
  * TXSynchronizationOp sends JTA beforeCompletion and afterCompletion
  * messages to the server pool.
  * 
- * @author bruce
  *
  */
 public class TXSynchronizationOp {

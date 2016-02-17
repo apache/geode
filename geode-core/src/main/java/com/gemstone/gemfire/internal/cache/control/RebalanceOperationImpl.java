@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Implements <code>RebalanceOperation</code> for rebalancing Cache resources.
  * 
- * @author Kirk Lund
  */
 @SuppressWarnings("synthetic-access")
 public class RebalanceOperationImpl implements RebalanceOperation {

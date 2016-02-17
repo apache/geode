@@ -27,7 +27,6 @@ import com.gemstone.gemfire.DataSerializer;
 /**
  * A response from the TCP server with information
  * about the server
- * @author dsmith
  * @since 5.7
  */
 public class InfoResponse implements DataSerializable {

@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author bruce
  *
  */
 public class FindVersionTagOperation {
@@ -104,7 +103,6 @@ public class FindVersionTagOperation {
    * operation.  If we don't have version information the op may be applied by
    * this cache as a new event.  When the event is then propagated to other servers
    * that have already seen the event it will be ignored, causing an inconsistency.
-   * @author bruce
    */
   public static class FindVersionTagMessage extends HighPriorityDistributionMessage 
      implements MessageWithReply {

@@ -28,7 +28,6 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 
 /**
- * @author ymahajan
  */
 public abstract class StreamingFunctionOperation {
 

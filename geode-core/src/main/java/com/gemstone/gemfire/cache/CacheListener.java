@@ -59,7 +59,6 @@ package com.gemstone.gemfire.cache;
  * {@link Declarable}
  * </p>
  * 
- * @author Eric Zoerner
  * 
  * @see AttributesFactory#addCacheListener
  * @see AttributesFactory#initCacheListeners

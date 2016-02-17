@@ -62,8 +62,6 @@ import java.util.Properties;
  * for additional details on the format of the parameter string.
  * 
  * @since 6.6
- * @author jens
- * @author darrel
  */
 public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable {
 

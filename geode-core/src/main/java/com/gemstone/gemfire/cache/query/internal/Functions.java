@@ -29,7 +29,6 @@ import java.text.*;
  * Class Description
  *
  * @version     $Revision: 1.1 $
- * @author      ericz
  */
 
 public class Functions

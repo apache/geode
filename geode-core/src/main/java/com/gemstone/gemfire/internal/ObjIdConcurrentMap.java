@@ -84,7 +84,6 @@ import java.io.IOException;
  * Java Collections Framework</a>.
  *
  * @since 1.5
- * @author Doug Lea
  * @param <V> the type of mapped values
  * 
  * Keys on this map are a primitive "int".

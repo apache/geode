@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
 /**
  * Mock Extension for {@link Region}.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

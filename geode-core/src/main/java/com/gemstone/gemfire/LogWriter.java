@@ -86,7 +86,6 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
   * if messages at that level will currently be logged. The names
   * of these methods are of the form: <em>level</em><code>Enabled</code>.
   *
-  * @author      darrel
   */
 public interface LogWriter {
   

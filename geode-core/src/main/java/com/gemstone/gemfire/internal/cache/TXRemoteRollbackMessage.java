@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @author sbawaska
  *
  */
 public class TXRemoteRollbackMessage extends TXMessage {

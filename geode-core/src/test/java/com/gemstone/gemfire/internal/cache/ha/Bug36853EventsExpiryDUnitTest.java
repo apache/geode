@@ -54,7 +54,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * expire before dispatcher can start picking them up for delivery to the
  * client.
  * 
- * @author Dinesh Patel
  * 
  */
 public class Bug36853EventsExpiryDUnitTest extends CacheTestCase

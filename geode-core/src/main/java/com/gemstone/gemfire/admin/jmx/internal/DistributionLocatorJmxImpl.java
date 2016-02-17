@@ -45,7 +45,6 @@ import javax.management.modelmbean.ModelMBean;
 /**
  * Provides MBean support for managing a distribution locator.
  *
- * @author    Kirk Lund
  */
 public class DistributionLocatorJmxImpl 
 extends com.gemstone.gemfire.admin.internal.DistributionLocatorImpl

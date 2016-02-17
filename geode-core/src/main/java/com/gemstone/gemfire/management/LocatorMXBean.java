@@ -22,7 +22,6 @@ import com.gemstone.gemfire.distributed.Locator;
  * MBean that provides access to information and management functionality for a
  * {@link Locator}.
  * 
- * @author rishim
  * @since 7.0
  */
 public interface LocatorMXBean {

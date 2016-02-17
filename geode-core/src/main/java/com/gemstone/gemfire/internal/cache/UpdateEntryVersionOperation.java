@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * This operation updates Version stamp of an entry if entry is available and
  * entry version stamp has same DSID as in event's version tag.
  * 
- * @author Shobhit Agarwal
  * 
  */
 public class UpdateEntryVersionOperation extends DistributedCacheOperation {

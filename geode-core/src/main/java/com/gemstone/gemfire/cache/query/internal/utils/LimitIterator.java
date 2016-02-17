@@ -21,7 +21,6 @@ import java.util.NoSuchElementException;
 
 /**
  * Utility Iterator which provides limit functionality on a given iterator
- * @author asif
  *
  * @param <E>
  */

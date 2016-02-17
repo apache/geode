@@ -22,8 +22,6 @@ import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.Resou
 import com.gemstone.gemfire.internal.cache.control.MemoryThresholds.MemoryState;
 
 /**
- * @author sbawaska
- * @author David Hoots
  */
 public class MemoryEvent implements ResourceEvent {
   private final ResourceType type;

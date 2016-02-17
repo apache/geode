@@ -29,7 +29,6 @@ import org.apache.hadoop.hbase.regionserver.metrics.SchemaMetrics;
 
 /**
  * An iterator that iterates over a split in a read/write hoplog
- * @author dsmith
  */
 public class RWSplitIterator extends HDFSSplitIterator {
 

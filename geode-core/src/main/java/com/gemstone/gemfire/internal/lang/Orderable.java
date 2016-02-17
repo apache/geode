@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.lang;
  * The Orderable interface defines a contract for classes whose Objects can be sorted, or ordered according to the
  * order property of a Comparable type.
  * <p/>
- * @author John Blum
  * @see java.lang.Comparable
  * @since 6.8
  */

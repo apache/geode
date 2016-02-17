@@ -21,7 +21,6 @@ import java.io.Serializable;
 /**
  * Describes where the value of a configuration attribute came from.
  * 
- * @author darrel
  * @since 7.0
  */
 public class ConfigSource implements Serializable {

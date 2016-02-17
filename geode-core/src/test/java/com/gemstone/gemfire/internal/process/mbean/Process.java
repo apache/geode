@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.process.mbean;
 /**
  * Extracted from LocalProcessControllerDUnitTest.
  * 
- * @author Kirk Lund
  */
 public class Process implements ProcessMBean {
   

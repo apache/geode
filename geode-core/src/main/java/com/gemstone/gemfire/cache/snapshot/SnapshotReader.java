@@ -27,7 +27,6 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 /**
  * Provides utilities for reading cache data.
  * 
- * @author bakera
  * @since 7.0
  */
 public class SnapshotReader {

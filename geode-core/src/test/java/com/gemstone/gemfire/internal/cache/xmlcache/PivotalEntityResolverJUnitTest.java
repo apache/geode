@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * Unit test for {@link PivotalEntityResolver} and
  * {@link DefaultEntityResolver2}.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * just been rolled and the region operation is verified to have been correctly
  * executed.
  * 
- * @author Mitul Bid
  *  
  */
 @Category(IntegrationTest.class)
@@ -784,7 +783,6 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends
    * destroyed & the get operation sees the file length zero or it may encounter
    * null pointer exception while retrieving the oplog.
    * 
-   * @author Asif
    *  
    */
   @Test

@@ -27,7 +27,6 @@ import org.junit.rules.TestRule;
  * The simplest way to satisfy this interface is to apply <tt>transient</tt>
  * to every instance field.
  * 
- * @author Kirk Lund
  */
 public interface SerializableTestRule extends Serializable, TestRule {
 }

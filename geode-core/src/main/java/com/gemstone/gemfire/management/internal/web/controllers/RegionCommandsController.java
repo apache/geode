@@ -31,7 +31,6 @@ import org.springframework.web.context.request.WebRequest;
 /**
  * The RegionCommands class implements GemFire Management REST API web service endpoints for the Gfsh Region Commands.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.RegionCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

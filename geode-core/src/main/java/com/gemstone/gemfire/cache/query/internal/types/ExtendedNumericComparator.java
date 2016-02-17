@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.query.internal.Undefined;
 /**
  * A general comparator that will let us compare different numeric types for equality
  * 
- * @author jhuynh
  */
 
 public class ExtendedNumericComparator extends NumericComparator implements Comparator {

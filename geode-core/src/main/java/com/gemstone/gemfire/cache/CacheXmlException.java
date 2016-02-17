@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache;
  *
  * @see CacheFactory#create
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

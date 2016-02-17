@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.query.internal.parse;
 import com.gemstone.gemfire.cache.query.internal.QCompiler;
 
 /**
- * @author shobhit
  * 
  * @since 6.6.2
  *

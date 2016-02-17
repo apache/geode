@@ -26,7 +26,6 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 import com.gemstone.gemfire.pdx.PdxWriter;
 
 /**
- * @author dsmith
  *
  */
 public class TestPdxSerializer implements PdxSerializer, Declarable2 {

@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache;
 /**
  * This is utility class for hydra tests.
  * This class is used to set the values of parameters of internal classes which have local visibility. 
- * @author prafulla
  *
  */
 

@@ -46,7 +46,6 @@ import org.junit.experimental.categories.Category;
  * The CollectionUtilsJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * CollectionUtils class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.util.CollectionUtils
  * @see org.junit.Assert
  * @see org.junit.Test

@@ -46,7 +46,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
  * Utility class to abstract CompositeResultData for Multi-step commands
  * Also contain execution strategy for multi-step commands
  * 
- * @author tushark
  * 
  */
 public class CLIMultiStepHelper {

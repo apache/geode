@@ -47,7 +47,6 @@ import com.vmware.gemfire.tools.pulse.internal.util.TimeUtils;
  *
  * This class contains implementations of getting Cluster's selected region details
  *
- * @author Riya Bhandekar
  * @since version 7.5 cedar  2014-03-01
  */
 

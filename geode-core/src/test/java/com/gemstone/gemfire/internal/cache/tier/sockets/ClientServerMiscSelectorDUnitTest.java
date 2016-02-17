@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
  * Just like parent but enables server thread pool
  * (ie. selector)
  *
- * @author darrel
  *
  */
 public class ClientServerMiscSelectorDUnitTest extends ClientServerMiscDUnitTest

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 /**
  * The UriUtils is a utility class for processing URIs and URLs.
  * <p/>
- * @author John Blum
  * @see java.net.URLDecoder
  * @see java.net.URLEncoder
  * @since 8.0

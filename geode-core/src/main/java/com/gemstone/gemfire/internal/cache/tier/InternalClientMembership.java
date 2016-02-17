@@ -56,7 +56,6 @@ import com.gemstone.gemfire.management.membership.ClientMembershipListener;
  * <code>ClientMembershipListener</code>s. The public counterpart for this
  * class is {@link com.gemstone.gemfire.management.membership.ClientMembership}.
  *
- * @author Kirk Lund
  * @since 4.2.1
  */
 public final class InternalClientMembership  {

@@ -27,7 +27,6 @@ import java.io.*;
  * A message that is sent to a VM that hosts a cache to perform an
  * administrative operation on one of its bridge servers.
  *
- * @author David Whitlock
  * @since 4.0
  */
 public final class BridgeServerRequest extends AdminRequest {

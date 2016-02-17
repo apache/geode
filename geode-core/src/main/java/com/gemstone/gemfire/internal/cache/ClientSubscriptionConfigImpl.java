@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * 
  * Configuration parameters for client subscription
- * @author aingle
  */
 public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   

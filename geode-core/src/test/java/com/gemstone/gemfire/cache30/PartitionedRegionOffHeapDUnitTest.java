@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Tests Partitioned Region with OffHeap memory.
  * 
- * @author Kirk Lund
  * @since 9.0
  */
 public class PartitionedRegionOffHeapDUnitTest extends PartitionedRegionDUnitTest {

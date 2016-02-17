@@ -50,7 +50,6 @@ import org.springframework.util.StringUtils;
 /**
  * The RegionData class is a container for data fetched from a GemFire Cache Region.
  * <p/>
- * @author NIlkanth Patel, John Blum
  * @see com.fasterxml.jackson.databind.JsonSerializable
  * @see java.lang.Iterable
  * @since 8.0

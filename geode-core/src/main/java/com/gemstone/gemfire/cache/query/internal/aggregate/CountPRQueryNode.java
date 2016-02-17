@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.query.Aggregator;
 /**
  * Computes the count of the rows on the PR query node
  * 
- * @author ashahid
  *
  */
 public class CountPRQueryNode implements Aggregator {

@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache;
 /** Thrown if a <code>netSearch</code> times out without getting a response back from a cache,
  * or when attempting to acquire a distributed lock.
  *
- * @author Eric Zoerner
  *
  *
  * @see LoaderHelper#netSearch

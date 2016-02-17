@@ -37,7 +37,6 @@ import com.gemstone.gemfire.security.AccessControl;
  * operation in a region. Implementations will be for different kinds of
  * authorization scheme and authentication scheme combos.
  * 
- * @author sumedh
  * @since 5.5
  */
 public abstract class AuthzCredentialGenerator {
@@ -74,7 +73,6 @@ public abstract class AuthzCredentialGenerator {
    * All dunit tests will automagically start testing the new implementation
    * after this.
    * 
-   * @author sumedh
    * @since 5.5
    */
   public static final class ClassCode {

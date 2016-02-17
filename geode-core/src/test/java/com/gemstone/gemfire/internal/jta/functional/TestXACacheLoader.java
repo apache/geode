@@ -29,7 +29,6 @@ import javax.transaction.*;
  * A <code>CacheLoader</code> used in testing.  Users should override
  * the "2" method.
  *
- * @author GemStone Systems, Inc.
  *
  * @since 3.0
  */

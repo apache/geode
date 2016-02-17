@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.util.CollectionUtils;
 
 /**
  * Domain object for all the configuration related data. 
- * @author bansods
  *
  */
 public class Configuration implements DataSerializable{

@@ -26,7 +26,6 @@ import org.junit.rules.TestName;
  * Serializable version of TestName JUnit Rule. JUnit lifecycle is not
  * executed in remote JVMs.
  * 
- * @author Kirk Lund
  */
 @SuppressWarnings("serial")
 public class SerializableTestName extends TestName implements SerializableTestRule {

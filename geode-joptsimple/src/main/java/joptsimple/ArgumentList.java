@@ -30,7 +30,6 @@ import static joptsimple.ParserRules.*;
 /**
  * <p>Wrapper for an array of command line arguments.</p>
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 class ArgumentList {
     private final String[] arguments;

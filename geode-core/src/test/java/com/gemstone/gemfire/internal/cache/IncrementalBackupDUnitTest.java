@@ -60,7 +60,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests for the incremental backup feature.
- * @author rholmes
  */
 @SuppressWarnings("serial")
 public class IncrementalBackupDUnitTest extends CacheTestCase {

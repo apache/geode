@@ -38,8 +38,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Check if the correct expectations are being thrown when they are supposed to.
  * 
- * @author Mitul bid
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class ExceptionJUnitTest {

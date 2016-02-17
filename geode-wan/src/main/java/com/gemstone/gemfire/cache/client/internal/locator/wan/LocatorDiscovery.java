@@ -36,7 +36,6 @@ import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipL
  * with local locators(within the site) as well as remote locators (across the
  * site)
  * 
- * @author kbachhav
  * @since 7.0
  */
 public class LocatorDiscovery{

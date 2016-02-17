@@ -56,7 +56,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * This class also implements Externalizable so that it can be serialized as
  * part of a PutAllPartialResultException.
  * 
- * @author Bruce Schuchardt
  * @since 7.0
  */
 
@@ -698,7 +697,6 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
    * It works by pretending to be a VersionedObjectList during serialization
    * and writing only a portion of the list in each invocation of toData().
    * 
-   * @author bruces
    *
    */
   public static class Chunker implements DataSerializableFixedID {

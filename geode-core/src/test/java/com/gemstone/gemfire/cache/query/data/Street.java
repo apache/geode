@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache.query.data;
 
 /**
  *
- * @author vjadhav
  */
 public class Street {
     public String street;

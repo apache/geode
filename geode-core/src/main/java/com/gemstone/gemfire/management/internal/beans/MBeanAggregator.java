@@ -41,7 +41,6 @@ import com.gemstone.gemfire.management.internal.SystemManagementService;
  * acts as a ProxyListener and add/remove/update the corresponding MBean
  * aggregates accordingly.
  * 
- * @author rishim
  * 
  */
 public class MBeanAggregator implements ProxyListener {
@@ -195,7 +194,6 @@ public class MBeanAggregator implements ProxyListener {
    * System MBean As of today there wont be any Distributed counterpart of Cache
    * Server MBean
    * 
-   * @author rishim
    * 
    */
   private class CacheServerHandler implements AggregateHandler {
@@ -232,7 +230,6 @@ public class MBeanAggregator implements ProxyListener {
    * Distributed System MBean As of today there wont be any Distributed
    * counterpart of GatewayReceiverHandler MBean
    * 
-   * @author rishim
    * 
    */
   private class GatewayReceiverHandler implements AggregateHandler {
@@ -271,7 +268,6 @@ public class MBeanAggregator implements ProxyListener {
    * Handler class for GatewayReceiverHandler MBeans only to provide data to Distributed System MBean
    * As of today there wont be any Distributed counterpart of GatewayReceiverHandler MBean
    * 
-   * @author rishim
    * 
    */
   private class GatewaySenderHandler implements AggregateHandler {
@@ -305,7 +301,6 @@ public class MBeanAggregator implements ProxyListener {
   /**
    * Handler class for DistributedRegion
    * 
-   * @author rishim
    * 
    */
   private class RegionHandler implements AggregateHandler {
@@ -339,7 +334,6 @@ public class MBeanAggregator implements ProxyListener {
   /**
    * Handler class for Distributed System
    * 
-   * @author rishim
    * 
    */
   private class MemberHandler implements AggregateHandler {
@@ -374,7 +368,6 @@ public class MBeanAggregator implements ProxyListener {
   /**
    * Handler class for Distributed Lock Service
    * 
-   * @author rishim
    * 
    */
   private class LockServiceHandler implements AggregateHandler {

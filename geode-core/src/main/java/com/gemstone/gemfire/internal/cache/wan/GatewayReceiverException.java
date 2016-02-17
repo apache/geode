@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.OperationAbortedException;
 /**
  * Exception observed during GatewayReceiver operations.
  * 
- * @author kbachhav
  * @since 8.1
  */
 public class GatewayReceiverException extends OperationAbortedException {

@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * the Attach API which is in the JDK tools.jar.  As a result LocatorLauncher
  * ends up using the FileProcessController implementation.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 @Category(IntegrationTest.class)

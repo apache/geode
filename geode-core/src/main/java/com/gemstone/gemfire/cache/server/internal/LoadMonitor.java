@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * A class which monitors the load on a bridge server and 
  * periodically sends updates to the locator.
  * 
- * @author dsmith
  * @since 5.7
  *
  */

@@ -38,8 +38,6 @@ import static joptsimple.internal.Strings.*;
 /**
  * Thrown when a problem occurs during option parsing.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @author Nikhil Jadhav
  */
 public abstract class OptionException extends RuntimeException {
     private static final long serialVersionUID = -1L;

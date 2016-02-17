@@ -46,7 +46,6 @@ import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
  *
  * This class contains implementations of getting Cluster's regions details
  *
- * @author Anchal G
  * @since version 7.5
  */
 

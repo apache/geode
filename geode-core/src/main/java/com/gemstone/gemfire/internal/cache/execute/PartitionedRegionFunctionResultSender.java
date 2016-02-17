@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * in the ResultReciever.
  * ResultSender will be instantiated in executeOnDatastore and set in FunctionContext.
  * 
- * @author skumar
  */
 
 public final class PartitionedRegionFunctionResultSender implements

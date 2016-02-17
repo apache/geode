@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * JUnit test for verifying the proper functioning of HARegionQueue related
  * statistics.
  * 
- * @author Dinesh Patel
  * 
  */
 @Category(IntegrationTest.class)

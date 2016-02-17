@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 1)put() on a mirrored HARegion does not propagate 2)localDestroy() allowed on
  * a mirrored region 3) GII happens normally
  * 
- * @author Mitul Bid
  * 
  */
 public class HARegionDUnitTest extends DistributedTestCase

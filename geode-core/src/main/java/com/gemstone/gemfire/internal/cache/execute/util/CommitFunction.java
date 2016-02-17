@@ -66,7 +66,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * {@link FunctionService#registerFunction(Function)}
  * 
  * @since 6.6.1
- * @author sbawaska
  */
 public class CommitFunction implements Function {
   private static final Logger logger = LogService.getLogger();

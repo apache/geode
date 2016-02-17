@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.process;
  * Enumeration of GemFire {@link ControllableProcess} types and the file names
  * associated with controlling its lifecycle.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 public enum ProcessType {

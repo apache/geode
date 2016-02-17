@@ -52,7 +52,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Member of a GemFire system.
  *
- * @author    Kirk Lund
  * @since     3.5
  */
 public class SystemMemberImpl 

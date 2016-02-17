@@ -76,7 +76,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * Manages Client Queues. Responsible for creating callback connections and
  * satisfying redundancy requirements.
  * 
- * @author dsmith
  * @since 5.7
  * 
  */
@@ -1234,7 +1233,6 @@ public class QueueManagerImpl implements QueueManager {
    * A comparator which sorts queue elements in the order of primary first
    * redundant with smallest queue size ... redundant with largest queue size
    * 
-   * @author dsmith
    * 
    */
   protected static class QSizeComparator implements java.util.Comparator {

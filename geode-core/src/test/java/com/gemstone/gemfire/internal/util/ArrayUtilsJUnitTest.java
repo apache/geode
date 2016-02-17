@@ -27,7 +27,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * The ArrayUtilsJUnitTest class... </p>
  *
- * @author jblum
  * @since 7.x
  */
 @Category(UnitTest.class)

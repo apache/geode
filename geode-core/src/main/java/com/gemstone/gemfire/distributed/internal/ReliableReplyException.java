@@ -22,7 +22,6 @@ package com.gemstone.gemfire.distributed.internal;
 /**
  * thrown by {@linkplain ReliableReplyProcessor21} when a message has not been delivered
  * to at least one member in the original recipient list.
- * @author sbawaska
  */
 public class ReliableReplyException extends ReplyException {
   private static final long serialVersionUID = 472566058783450438L;

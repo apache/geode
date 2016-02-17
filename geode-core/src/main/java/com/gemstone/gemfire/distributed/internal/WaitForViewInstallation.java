@@ -29,7 +29,6 @@ import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author bruces
  *
  */
 public class WaitForViewInstallation extends HighPriorityDistributionMessage

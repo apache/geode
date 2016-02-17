@@ -23,7 +23,6 @@ package com.gemstone.gemfire.cache.operations;
  * object for the pre-operation case and both key, value objects for the
  * post-operation case.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class GetOperationContext extends KeyValueOperationContext {

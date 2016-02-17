@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 
 /**
  * A CacheEvent, but the isGenerateCallbacks() is hidden from public consumption
- * @author jpenney
  *
  */
 public interface InternalCacheEvent extends CacheEvent

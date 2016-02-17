@@ -27,7 +27,6 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
  * listeners that will be notified about when endpoints are created
  * or died. For example the connection manager registers a listener
  * to be notified if a server dies and closes all of it's connections.
- * @author dsmith
  *
  */
 public interface EndpointManager {

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache.control;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * @author dsmith
  *
  */
 public interface RegionFilter {

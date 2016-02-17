@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.util;
 /**
  * Provides hexadecimal conversion and display utilities.
  * 
- * @author bakera
  */
 public class Hex {
   /** hex chars */

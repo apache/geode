@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache;
 import javax.print.attribute.EnumSyntax;
 /**
  * The action that an {@link com.gemstone.gemfire.cache.EvictionAlgorithm} takes.
- * @author Mitch Thomas
  * @since 5.0
  * @see com.gemstone.gemfire.cache.EvictionAlgorithm
  * @see com.gemstone.gemfire.internal.cache.EvictionAttributesImpl

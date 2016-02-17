@@ -51,7 +51,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * This message class sends tombstone GC information to other PR holders
  * @since 7.0
- * @author Bruce Schuchardt
  */
 public final class PRTombstoneMessage extends PartitionMessageWithDirectReply
   implements SerializationVersions {

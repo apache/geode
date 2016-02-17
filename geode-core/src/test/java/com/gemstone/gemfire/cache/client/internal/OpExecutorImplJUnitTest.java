@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * @author dsmith
  *
  */
 @Category(UnitTest.class)

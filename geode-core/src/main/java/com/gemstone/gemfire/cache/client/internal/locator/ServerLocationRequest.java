@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
 
 /**
- * @author dsmith
  *
  */
 public abstract class ServerLocationRequest implements DataSerializableFixedID {

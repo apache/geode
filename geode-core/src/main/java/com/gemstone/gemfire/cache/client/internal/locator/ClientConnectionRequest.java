@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
 /**
  * A request from a client to the locator asking for a
  * server to connect to for client to server traffic.
- * @author dsmith
  *
  */
 public class ClientConnectionRequest extends ServerLocationRequest {

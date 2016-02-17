@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
 /**
  * The version tag class for version tags for persistent regions. The VersionSource
  * held in these tags is a disk store id.
- * @author dsmith
  *
  */
 public class DiskVersionTag extends VersionTag<DiskStoreID> {

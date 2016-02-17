@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.query.internal.QCompiler;
 
 /**
  *
- * @author Yogesh Mahajan
  */
 public class ASTSortCriterion extends GemFireAST {
   private static final long serialVersionUID = -3654854374157753771L;

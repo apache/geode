@@ -41,7 +41,6 @@ import java.util.*;
  * DistributionConfigImpl#DistributionConfigImpl(DistributionConfig)
  * copy constructor}.
  *
- * @author Darrel Schneider
  *
  */
 @SuppressWarnings("deprecation")

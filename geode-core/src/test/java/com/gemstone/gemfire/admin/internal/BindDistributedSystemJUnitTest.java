@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests {@link com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl}.
  *
- * @author    Kirk Lund
  * @created   August 30, 2004
  * @since     3.5
  */

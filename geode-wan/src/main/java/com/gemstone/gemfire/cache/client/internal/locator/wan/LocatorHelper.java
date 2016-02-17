@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 /**
  * This is a helper class which helps to add the locator information to the allLocatorInfoMap.
  * 
- * @author Kishor Bachhav
  *
  */
 public class LocatorHelper {

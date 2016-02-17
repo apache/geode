@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache;
 /**
  * This Exception is thrown in presence of node failures, when GemFire cannot
  * know with certainty about the outcome of the transaction.
- * @author sbawaska
  * @since 6.5
  */
 public class TransactionInDoubtException extends TransactionException {

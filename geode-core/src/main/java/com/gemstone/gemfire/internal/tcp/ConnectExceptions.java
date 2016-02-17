@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * This exception is thrown as a result of one or more failed attempts
  * to connect to a remote conduit.
  *
- * @author David Whitlock
  *
  *
  * @since 3.0

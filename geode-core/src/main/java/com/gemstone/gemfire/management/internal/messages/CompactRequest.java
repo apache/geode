@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * An instruction to all members with cache that they should 
  * compact their disk stores.
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

@@ -25,7 +25,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing locators from MBean
- * @author ajayp
  * 
  */
 

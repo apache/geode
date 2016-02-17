@@ -18,8 +18,6 @@ package com.gemstone.gemfire.internal.cache.wan;
 
 import java.util.List;
 /**
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * @since 7.0
  *
  */

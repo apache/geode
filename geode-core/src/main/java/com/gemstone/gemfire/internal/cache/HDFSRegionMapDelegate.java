@@ -59,7 +59,6 @@ import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
  * This class encapsulates all the functionality of HDFSRegionMap, so
  * that it can be provided to HDFSLRURegionMap. 
  * 
- * @author sbawaska
  */
 public class HDFSRegionMapDelegate {
 

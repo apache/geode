@@ -23,7 +23,6 @@ package com.gemstone.gemfire;
  * the user. The message often contains an operating system
  * error code.
  *
- * @author David Whitlock
  *
  */
 public class InternalGemFireException extends GemFireException {

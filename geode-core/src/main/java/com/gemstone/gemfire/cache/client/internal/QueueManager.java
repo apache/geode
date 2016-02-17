@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 
 /**
- * @author dsmith
  * @since 5.7
  * 
  */

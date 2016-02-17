@@ -28,7 +28,6 @@ import junit.framework.TestCase;
 
 /**
  * 
- * @author ashahid
  *
  */
 @Category(UnitTest.class)

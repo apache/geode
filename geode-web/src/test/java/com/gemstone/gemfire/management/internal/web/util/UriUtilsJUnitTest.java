@@ -29,7 +29,6 @@ import org.junit.experimental.categories.Category;
 /**
  * The UriUtilsJUnitTest class is a test suite of test cases testing the contract and functionality of the UriUtils class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.web.AbstractWebTestCase
  * @see com.gemstone.gemfire.management.internal.web.util.UriUtils
  * @see org.junit.Assert

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * response of Handshake to server. This wrapper object is used to hold the
  * various info retrurned from Handshake. such as endpoint type and queue size.
  * 
- * @author Yogesh Mahajan
  * @since 5.5
  * 
  */

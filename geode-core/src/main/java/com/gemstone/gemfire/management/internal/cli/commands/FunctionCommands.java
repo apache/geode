@@ -65,7 +65,6 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 
 /**
- * @author David Hoots
  * 
  * @since 7.0
  */

@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * 
- * @author Asif
  *
  */
 @Category(IntegrationTest.class)
@@ -598,7 +597,6 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
    * Delete some entries. 3) Recreate the deleted entries Close the Cache * 3:
    * Again Create cache. 4) check if the region creation is successful
    * 
-   * @author Asif
    */
   public int  startOperations( final int startKey, final Object value)
       throws Exception  {

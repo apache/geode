@@ -34,7 +34,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.Option;
 import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 
 /**
- * @author Nikhil Jadhav
  * @since 7.0
  */
 public class HelpUtils {

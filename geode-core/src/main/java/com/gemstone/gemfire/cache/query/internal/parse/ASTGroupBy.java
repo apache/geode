@@ -20,7 +20,6 @@ import antlr.*;
 import com.gemstone.gemfire.cache.query.internal.QCompiler;
 /**
  * 
- * @author Yogesh Mahajan
  *
  */
 public class ASTGroupBy extends GemFireAST {

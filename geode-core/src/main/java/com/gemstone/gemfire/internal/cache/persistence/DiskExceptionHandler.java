@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
  * by the {@link DiskRegion} class. The exception handler is expected to close
  * the region. This interface exists so that ProxyBucketRegions can handle
  * disk access exceptions by passing them on to the parent partition region.
- * @author dsmith
  *
  */
 public interface DiskExceptionHandler {

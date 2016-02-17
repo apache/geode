@@ -22,7 +22,6 @@ import java.util.concurrent.TimeoutException;
 /**
  * Defines the operations for controlling a running process.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 public interface ProcessController {

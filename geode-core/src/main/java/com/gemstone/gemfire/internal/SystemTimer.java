@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * 
  * @see Timer
  * @see TimerTask
- * @author jpenney
  *
  * TODO -- with Java 1.5, this will be a template type so that the swarm's
  * class can be specified.
@@ -423,7 +422,6 @@ public final class SystemTimer {
    * Cover class to track behavior of scheduled tasks
    * 
    * @see TimerTask
-   * @author jpenney
    */
   public abstract static class SystemTimerTask extends TimerTask {
     protected static final Logger logger = LogService.getLogger();

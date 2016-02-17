@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * @see MemberHealthEvaluator
  * @see CacheHealthEvaluator
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

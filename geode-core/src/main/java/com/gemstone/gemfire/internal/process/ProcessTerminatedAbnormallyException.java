@@ -23,7 +23,6 @@ import com.gemstone.gemfire.GemFireException;
  * The ProcessTerminatedAbnormallyException class is a GemFireException (or RuntimeException) indicating that a process
  * terminated abnormally, and it's exit code is captured along with this RuntimeException.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.GemFireException
  * @since 7.0
  */

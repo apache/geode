@@ -44,7 +44,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author David Hoots
  */
 @Category(IntegrationTest.class)
 public class MemoryMonitorOffHeapJUnitTest {

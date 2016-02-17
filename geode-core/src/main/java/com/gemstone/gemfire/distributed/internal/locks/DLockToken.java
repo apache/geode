@@ -35,8 +35,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * name is currently locked, and which distribution manager and thread owns 
  * the lock.
  *
- * @author Dave Monnie
- * @author Kirk Lund
  */
 public class DLockToken {
   private static final Logger logger = LogService.getLogger();

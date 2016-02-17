@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * that has a scope of {@link Scope#DISTRIBUTED_NO_ACK distributed no
  * ACK}.
  *
- * @author David Whitlock
  * @since 3.0
  */
 public class DistributedNoAckRegionDUnitTest

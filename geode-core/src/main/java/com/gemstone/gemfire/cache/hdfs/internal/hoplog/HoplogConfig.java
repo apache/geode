@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.hdfs.internal.hoplog;
  * This interface defines all the hoplog configuration related constants. One
  * location simplifies searching for a constant
  * 
- * @author ashvina
  */
 public interface HoplogConfig {
   // max number of open files per bucket. by default each region has 113

@@ -32,7 +32,6 @@ import com.gemstone.gemfire.management.RegionMXBean;
  * It extends NotificationBroadcasterSupport for any future implementation of
  * notification.
  * 
- * @author rishim
  * 
  */
 public class RegionMBean<K, V> extends NotificationBroadcasterSupport implements

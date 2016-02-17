@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * 
- * @author ymahajan
  *
  */
 public final class DistributedRegionFunctionResultSender implements

@@ -40,8 +40,6 @@ package com.gemstone.gemfire.internal;
    }
  * </pre>
  * 
- * @author Darrel Schneider
- * @author Kirk Lund
  */
 public final class NanoTimer {
 

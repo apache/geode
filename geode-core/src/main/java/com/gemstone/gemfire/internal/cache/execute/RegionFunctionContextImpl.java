@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
  * type casted to RegionFunctionContext. Methods provided to retrieve the Region
  * and filter passed to the function execution
  * 
- * @author Yogesh Mahajan
  * 
  * @since 6.0
  * 

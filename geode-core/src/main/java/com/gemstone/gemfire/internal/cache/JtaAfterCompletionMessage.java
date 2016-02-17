@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.cache.TXRemoteCommitMessage.TXRemoteCommitR
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author sbawaska
  *
  */
 public class JtaAfterCompletionMessage extends TXMessage {

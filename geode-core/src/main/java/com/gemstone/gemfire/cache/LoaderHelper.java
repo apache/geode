@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache;
  * is only valid within the {@link CacheLoader#load(LoaderHelper) load}
  * method.
  *
- * @author Dave Monnie
  *
  * @see CacheLoader#load(LoaderHelper) load
  * @since 2.0

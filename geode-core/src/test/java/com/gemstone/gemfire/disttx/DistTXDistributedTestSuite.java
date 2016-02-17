@@ -35,7 +35,6 @@ import org.junit.runners.Suite;
 
 /**
  * Suite of tests for distributed transactions dunit tests
- * @author shirishd
  */
 public class DistTXDistributedTestSuite {
 

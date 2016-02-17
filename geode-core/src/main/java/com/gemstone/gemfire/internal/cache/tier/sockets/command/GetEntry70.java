@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  * getEntry(key) operation performed on server.
  * Extends Request, and overrides getValueAndIsObject() in Request
  * so as to not invoke loader.
- * @author sbawaska
  * @since 6.6
  */
 public class GetEntry70 extends Get70 {

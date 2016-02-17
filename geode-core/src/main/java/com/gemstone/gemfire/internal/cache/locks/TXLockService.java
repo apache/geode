@@ -28,7 +28,6 @@ import java.util.*;
  * This is an abstract class defining the public facade for the transaction
  * locking service. 
  *
- * @author Kirk Lund 
  */
 public abstract class TXLockService {
   

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.management.internal.cli.util.CommentSkipHelper;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

@@ -22,7 +22,6 @@ import com.gemstone.gemfire.management.GatewayReceiverMXBean;
 
 /**
  * 
- * @author rishim
  * 
  */
 public class GatewayReceiverMBean extends NotificationBroadcasterSupport

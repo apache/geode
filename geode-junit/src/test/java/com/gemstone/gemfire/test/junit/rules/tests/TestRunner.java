@@ -23,7 +23,6 @@ import org.junit.runner.Result;
 /**
  * Used by Rule Unit Tests to execute Test Cases.
  * 
- * @author Kirk Lund
  */
 public class TestRunner {
 

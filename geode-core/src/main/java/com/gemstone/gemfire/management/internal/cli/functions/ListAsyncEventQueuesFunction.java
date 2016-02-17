@@ -41,7 +41,6 @@ import com.gemstone.gemfire.management.internal.cli.domain.AsyncEventQueueDetail
  * async event queues that exist for the entire cache, distributed across the
  * GemFire distributed system. </p>
  * 
- * @author David Hoots
  * @since 8.0
  */
 public class ListAsyncEventQueuesFunction extends FunctionAdapter implements InternalEntity {

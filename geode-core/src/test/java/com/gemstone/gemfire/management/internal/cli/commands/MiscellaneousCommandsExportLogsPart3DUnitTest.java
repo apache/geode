@@ -39,7 +39,6 @@ import java.util.Properties;
 /**
  * Dunit class for testing gemfire function commands : export logs
  *
- * @author apande
  */
 
 public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTestBase {

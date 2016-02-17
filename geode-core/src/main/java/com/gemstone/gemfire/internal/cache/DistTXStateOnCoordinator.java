@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * TxState on TX coordinator, created when coordinator is also a data node
  * 
- * @author shirishd
  * 
  */
 public final class DistTXStateOnCoordinator extends DistTXState implements

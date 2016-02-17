@@ -38,7 +38,6 @@ import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
  * This class contains implementations of getting Memeber's current Heap Usage
  * and its trend over the time.
  * 
- * @author Sachin K
  * @since version 7.5
  */
 @Component

@@ -25,7 +25,6 @@ package com.gemstone.gemfire.cache;
  * the {@link com.gemstone.gemfire.cache.util.RegionRoleListenerAdapter} 
  * class.
  * 
- * @author Kirk Lund
  * 
  * @see AttributesFactory#setCacheListener
  * @see RegionAttributes#getCacheListener

@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes;
 /**
  * The distributed system will always default to a loner on a client.
  * 
- * @author darrel
  * @since 6.5
  */
 

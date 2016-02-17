@@ -35,7 +35,6 @@ import com.gemstone.gemfire.cache.DataPolicy;
  * members are waiting for. See
  * {@link AdminDistributedSystem#getMissingPersistentMembers()}
  * 
- * @author dsmith
  * @since 6.5
  *
  */

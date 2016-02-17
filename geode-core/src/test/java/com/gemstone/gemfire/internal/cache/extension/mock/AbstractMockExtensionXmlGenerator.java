@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
 /**
  * Base class for Mock Extension XML Generators.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

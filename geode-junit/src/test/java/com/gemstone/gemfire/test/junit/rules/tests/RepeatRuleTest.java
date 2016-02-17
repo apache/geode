@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.junit.rules.RepeatRule;
 /**
  * Unit tests for Repeat JUnit Rule.
  * 
- * @author Kirk Lund
  */
 @Category(UnitTest.class)
 public class RepeatRuleTest {

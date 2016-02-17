@@ -18,7 +18,6 @@ package com.gemstone.gemfire.management;
 
 /**
  * 
- * @author rishim
  * @since  8.0
  */
 public class ClientQueueDetail {

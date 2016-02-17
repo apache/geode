@@ -26,7 +26,6 @@ import com.gemstone.gemfire.Statistics;
  * <p/>
  * Extracted from {@link com.gemstone.gemfire.internal.StatArchiveWriter}.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public class ResourceInstance {

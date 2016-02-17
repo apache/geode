@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.cache.DataLocationException;
 /**
  * An exception indicating that a PartitionedRegion was found to be Locally
  * Destroyed
- * @author bruce
  * @since 5.1
  *
  */

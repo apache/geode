@@ -44,7 +44,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 /**
  * Extracted from TXWriterJUnitTest to share with TXWriterOOMEJUnitTest.
  * 
- * @author Kirk Lund
  */
 @SuppressWarnings("deprecation")
 public class TXWriterTestCase {

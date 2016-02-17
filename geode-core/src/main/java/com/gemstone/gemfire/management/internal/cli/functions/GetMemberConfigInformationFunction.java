@@ -44,7 +44,6 @@ import com.gemstone.gemfire.management.internal.cli.domain.MemberConfigurationIn
 
 /****
  * 
- * @author bansods
  *
  */
 public class GetMemberConfigInformationFunction extends FunctionAdapter implements InternalEntity {

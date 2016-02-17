@@ -27,7 +27,6 @@ import org.apache.hadoop.io.RawComparator;
  * 
  * @param <V> type of value returned by the sorted reader
  * 
- * @author bakera
  */
 public interface SortedReader<V> extends Closeable {
   /**

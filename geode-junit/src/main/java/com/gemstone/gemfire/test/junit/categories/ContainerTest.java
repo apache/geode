@@ -19,7 +19,6 @@ package com.gemstone.gemfire.test.junit.categories;
  * JUnit Test Category that specifies a test executes within a container
  * environment such as an OSGi server.
  *  
- * @author Kirk Lund
  */
 public interface ContainerTest {
 }

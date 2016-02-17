@@ -71,7 +71,6 @@ import com.gemstone.gemfire.internal.util.ArrayUtils;
  * kept to a minimum as the number of instances grows across a growing number
  * of members in the distributed system.
  *
- * @author Eric Zoerner
  *
  * @since 3.0
  */

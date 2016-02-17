@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.query.partitioned;
  * one of the VM executes Queries both on Local Region & PR's & compare
  * ResultSets
  *
- * @author pbatra
  */
 
 import java.util.ArrayList;

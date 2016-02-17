@@ -53,7 +53,6 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 
 /**
  * 
- * @author skumar
  *  @since 6.5
  */
 public class ExecuteRegionFunctionSingleHop extends BaseCommand {

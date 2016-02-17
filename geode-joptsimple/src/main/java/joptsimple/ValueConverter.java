@@ -29,7 +29,6 @@ package joptsimple;
  * Instances of this interface are used to convert arguments of options into specific Java types.
  *
  * @param <V> constraint on the type of values being converted to
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public interface ValueConverter<V> {
     /**

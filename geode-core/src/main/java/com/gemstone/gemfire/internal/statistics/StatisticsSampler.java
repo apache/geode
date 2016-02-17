@@ -22,7 +22,6 @@ import com.gemstone.gemfire.Statistics;
  * Defines the minimal contract for a StatisticsSampler. This is used by
  * classes that need to interact with the sampler.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public interface StatisticsSampler {

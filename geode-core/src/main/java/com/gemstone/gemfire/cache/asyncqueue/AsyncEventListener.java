@@ -56,7 +56,6 @@ import com.gemstone.gemfire.cache.CacheCallback;
  * }
  * </pre>
  * 
- * @author pdeole
  * @since 7.0
  */
 public interface AsyncEventListener extends CacheCallback {

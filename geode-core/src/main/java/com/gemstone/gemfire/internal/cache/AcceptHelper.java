@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache;
 
 
 /**
- * @author Sudhir Menon
  *
  *
  * Helper class that holds values needed by the search optimizer to do its work.

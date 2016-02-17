@@ -49,7 +49,6 @@ import org.apache.logging.log4j.Logger;
  * The DescribeDiskStoreFunction class is an implementation of a GemFire Function used to collect information
  * and details about a particular disk store for a particular GemFire distributed system member.
  *
- * @author jblum
  * @see com.gemstone.gemfire.cache.DiskStore
  * @see com.gemstone.gemfire.cache.execute.Function
  * @see com.gemstone.gemfire.cache.execute.FunctionAdapter

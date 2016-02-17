@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * encompassing various permutations of the PR attributes
  * like Redundancy / No. of D.S / No. of Accessors etc 
  *
- * @author pbatra
  */
 
 public class PRQueryPerfDUnitTest extends PartitionedRegionDUnitTestCase {

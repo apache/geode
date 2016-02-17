@@ -57,7 +57,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 /**
  * Tests propagation of destroy entry operation across the vms
  *
- * @author Yogesh Mahajan
  *
  */
 

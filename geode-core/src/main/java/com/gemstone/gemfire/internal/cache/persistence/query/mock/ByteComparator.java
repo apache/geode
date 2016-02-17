@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
  * any useful order. It's only guaranteed to return 0
  * if the bytes are equal, and satisfy all the transitivity
  * and communitivity properties of compare.
- * @author dsmith
  *
  */
 public class ByteComparator implements Comparator<Object> {

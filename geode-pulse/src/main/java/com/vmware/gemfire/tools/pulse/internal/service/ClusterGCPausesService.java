@@ -37,7 +37,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * This class contains implementations of getting Cluster's GC Pauses (JVM
  * Pauses) Details and its trend over the time.
  * 
- * @author Anchal G
  * @since version 7.5
  */
 

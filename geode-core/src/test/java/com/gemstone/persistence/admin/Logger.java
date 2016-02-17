@@ -25,7 +25,6 @@ import java.text.*;
   * Currently this class only supports static methods and always
   * writes to stdout.
   *
-  * @author      darrel
   */
 public class Logger
 {

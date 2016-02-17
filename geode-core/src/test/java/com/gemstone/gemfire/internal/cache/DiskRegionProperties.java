@@ -31,7 +31,6 @@ import java.util.Arrays;
  * A properties object used to create persistent/overflow regions for
  * testing objects
  *  
- * @author Mitul
  * @since 5.1
  *
  */

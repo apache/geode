@@ -40,7 +40,6 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
  * <code>public static Authenticator [method-name]();</code> i.e. it should be
  * a zero argument function.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public interface Authenticator extends CacheCallback {
