@@ -17,6 +17,10 @@
 
 package com.gemstone.gemfire.cache;
 
+import javax.transaction.Status;
+import javax.transaction.Transaction;
+import javax.transaction.UserTransaction;
+
 /** Thrown when a cache transaction fails to register with the
  * <code>UserTransaction</code> (aka JTA transaction), most likely the
  * cause of the <code>UserTransaction</code>'s
@@ -25,9 +29,9 @@ package com.gemstone.gemfire.cache;
  *
  * @author Mitch Thomas
  *
- * @see javax.transaction.UserTransaction#setRollbackOnly
- * @see javax.transaction.Transaction#registerSynchronization
- * @see javax.transaction.Status
+ * @see UserTransaction#setRollbackOnly
+ * @see Transaction#registerSynchronization
+ * @see Status
  * @since 4.0
  */
 public class FailedSynchronizationException extends CacheRuntimeException {
