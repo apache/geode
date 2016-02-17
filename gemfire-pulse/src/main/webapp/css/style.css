@@ -3060,8 +3060,40 @@ input[type="text"].searchBoxRegion {
   background: url(../images/ui-anim_basic_16x16.gif) no-repeat center center;
   display: none;
 }
+/* loading symbol */
+
 /* For Data Browser */
 #loaderSymbolWrapper .loader{
   top: 6px;
 }
-/* loading symbol */
+
+.split {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.gutter {
+  background-color: #0f1c25;
+
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+
+.gutter.gutter-horizontal {
+  background-image: url('grips/vertical.png');
+  cursor: ew-resize;
+}
+
+.gutter.gutter-vertical {
+  background-image: url('grips/horizontal.png');
+  cursor: ns-resize;
+}
+
+.split.split-horizontal, .gutter.gutter-horizontal {
+  height: 100%;
+  float: left;
+}
+/* End For Data Browser */

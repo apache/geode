@@ -19,16 +19,6 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
 import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
 import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
@@ -36,6 +26,14 @@ import com.vmware.gemfire.tools.pulse.internal.data.Repository;
 import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
 import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 import com.vmware.gemfire.tools.pulse.internal.util.TimeUtils;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class ClusterMemberService
@@ -73,6 +71,7 @@ public class ClusterMemberService implements PulseService {
         memberJSON.put("memberId", clusterMember.getId());
         memberJSON.put("name", clusterMember.getName());
         memberJSON.put("host", clusterMember.getHost());
+        memberJSON.put("hostnameForClients", clusterMember.getHostnameForClients());
 
         List<String> serverGroups = clusterMember.getServerGroups();
         if(serverGroups.size() == 0){

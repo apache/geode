@@ -407,7 +407,7 @@ public class PulseTest {
     for (int i = 1; i <= 3; i++) {
       Float HeapUsage = Float.parseFloat(driver
           .findElement(
-              By.xpath("//table[@id='memberList']/tbody/tr[" + (i + 1) + "]/td[4]")).getText());
+              By.xpath("//table[@id='memberList']/tbody/tr[" + (i + 1) + "]/td[5]")).getText());
       Float gridHeapUsagestring = Float.parseFloat(JMXProperties.getInstance()
           .getProperty("member.M" + i + ".UsedMemory"));
      Assert.assertEquals(gridHeapUsagestring, HeapUsage);
@@ -418,7 +418,7 @@ public class PulseTest {
   public void testClusterGridViewCPUUsage() {
 	searchByIdAndClick("default_grid_button"); 
     for (int i = 1; i <= 3; i++) {
-      String CPUUsage = driver.findElement(By.xpath("//table[@id='memberList']/tbody/tr[" + (i + 1) + "]/td[5]")).getText();
+      String CPUUsage = driver.findElement(By.xpath("//table[@id='memberList']/tbody/tr[" + (i + 1) + "]/td[6]")).getText();
       String gridCPUUsage = JMXProperties.getInstance().getProperty("member.M" + i + ".cpuUsage");
       gridCPUUsage = gridCPUUsage.trim();
       Assert.assertEquals(gridCPUUsage, CPUUsage);

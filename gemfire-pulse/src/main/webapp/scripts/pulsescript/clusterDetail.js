@@ -764,26 +764,26 @@ function createMemberGridDefault() {
         width : 740,
         rowNum : 200,
         shrinkToFit : false,
-        colNames : [ 'ID', 'Name', 'Host', 'Heap Usage (MB)', 'CPU Usage (%)',
+        colNames : [ 'ID', 'Name', 'Host', 'Hostname For Clients', 'Heap Usage (MB)', 'CPU Usage (%)',
             'Uptime', 'Clients', 'CurrentHeapSize', 'Load Avg', 'Threads',
             'Sockets'],
         colModel : [
             {
               name : 'memberId',
               index : 'memberId',
-              width : 170,
+              width : 150,
               sorttype : "string",
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject) ;
               },
               sortable : true
             },
             {
               name : 'name',
               index : 'name',
-              width : 150,
+              width : 120,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "string"
@@ -791,9 +791,19 @@ function createMemberGridDefault() {
             {
               name : 'host',
               index : 'host',
-              width : 100,
+              width : 80,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
+              },
+              sortable : true,
+              sorttype : "string"
+            },
+            {
+              name : 'hostnameForClients',
+              index : 'hostnameForClients',
+              width : 90,
+              cellattr : function(rowId, val, rawObject, cm, rdata) {
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "string"
@@ -801,10 +811,10 @@ function createMemberGridDefault() {
             {
               name : 'currentHeapUsage',
               index : 'currentHeapUsage',
-              width : 110,
+              width : 100,
               align : 'right',
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "float"
@@ -815,7 +825,7 @@ function createMemberGridDefault() {
               align : 'right',
               width : 100,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "float"
@@ -825,7 +835,7 @@ function createMemberGridDefault() {
               index : 'uptime',
               width : 100,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "int"
@@ -836,7 +846,7 @@ function createMemberGridDefault() {
               width : 100,
               align : 'right',
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "int"
@@ -948,7 +958,7 @@ function createMemberGridSG() {
               width : 170,
               sorttype : "string",
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true
             },
@@ -958,7 +968,7 @@ function createMemberGridSG() {
               width : 170,
               sorttype : "string",
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true
             },
@@ -967,7 +977,7 @@ function createMemberGridSG() {
               index : 'name',
               width : 150,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "string"
@@ -977,7 +987,7 @@ function createMemberGridSG() {
               index : 'host',
               width : 100,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "string"
@@ -988,7 +998,7 @@ function createMemberGridSG() {
               width : 110,
               align : 'right',
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "float"
@@ -999,7 +1009,7 @@ function createMemberGridSG() {
               align : 'right',
               width : 100,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "float"
@@ -1009,7 +1019,7 @@ function createMemberGridSG() {
               index : 'uptime',
               width : 100,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "int"
@@ -1020,7 +1030,7 @@ function createMemberGridSG() {
               width : 100,
               align : 'right',
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "int"
@@ -1132,7 +1142,7 @@ function createMemberGridRZ() {
               width : 170,
               sorttype : "string",
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true
             },
@@ -1142,7 +1152,7 @@ function createMemberGridRZ() {
               width : 170,
               sorttype : "string",
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true
             },
@@ -1151,7 +1161,7 @@ function createMemberGridRZ() {
               index : 'name',
               width : 150,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "string"
@@ -1161,7 +1171,7 @@ function createMemberGridRZ() {
               index : 'host',
               width : 100,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "string"
@@ -1172,7 +1182,7 @@ function createMemberGridRZ() {
               width : 110,
               align : 'right',
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "float"
@@ -1183,7 +1193,7 @@ function createMemberGridRZ() {
               align : 'right',
               width : 100,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "float"
@@ -1193,7 +1203,7 @@ function createMemberGridRZ() {
               index : 'uptime',
               width : 100,
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "int"
@@ -1204,7 +1214,7 @@ function createMemberGridRZ() {
               width : 100,
               align : 'right',
               cellattr : function(rowId, val, rawObject, cm, rdata) {
-                return formMemberGridToolTip(rawObject);
+                return formMemberGridToolTip(val, rawObject);
               },
               sortable : true,
               sorttype : "int"
@@ -1943,8 +1953,8 @@ function buildRZMembersGridData(members) {
 }
 
 // Tool tip for members in grid
-function formMemberGridToolTip(rawObject) {
-  return 'title="Name: ' + rawObject.name + ' , CPU Usage: '
+function formMemberGridToolTip(detail, rawObject) {
+  return 'title="'+detail+ ', CPU Usage: '
   + rawObject.cpuUsage + '% , Heap Usage: '
   + rawObject.currentHeapUsage + 'MB , Load Avg.: '
   + rawObject.loadAvg + ' , Threads: ' + rawObject.threads

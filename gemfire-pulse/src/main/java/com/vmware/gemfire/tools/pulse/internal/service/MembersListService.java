@@ -19,17 +19,16 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
 import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
 import com.vmware.gemfire.tools.pulse.internal.data.Repository;
 import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
 import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
 import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class MembersListService
@@ -62,7 +61,7 @@ public class MembersListService implements PulseService {
         memberJSON.put("memberId", member.getId());
         memberJSON.put("name", member.getName());
         memberJSON.put("host", member.getHost());
-
+        memberJSON.put("hostnameForClients", member.getHostnameForClients());
         memberListJson.put(memberJSON);
       }
 

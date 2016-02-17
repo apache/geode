@@ -221,10 +221,10 @@ public class PulseBaseTest extends PulseTest {
 	public void validateTopologyGridData() {
 		List<WebElement> rzGridRows = driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
 		int rowsCount = rzGridRows.size();
-		String[][] gridDataFromUI = new String[rowsCount][7];
+		String[][] gridDataFromUI = new String[rowsCount][8];
 
 		for (int j = 2, x = 0; j <= rzGridRows.size(); j++, x++) {
-			for (int i = 0; i <= 6; i++) {
+			for (int i = 0; i <= 7; i++) {
 				gridDataFromUI[x][i] = driver.findElement(
 						By.xpath("//table[@id='memberList']/tbody/tr[" + j + "]/td[" + (i + 1) + "]")).getText();
 			}
@@ -248,7 +248,7 @@ public class PulseBaseTest extends PulseTest {
 			Assert.assertEquals(m.getMember(), gridDataFromUI[i][1]);
 			Assert.assertEquals(m.getHost(), gridDataFromUI[i][2]);
 			String cupUsage = String.valueOf(m.getCpuUsage());
-			Assert.assertEquals(cupUsage, gridDataFromUI[i][4]);
+			Assert.assertEquals(cupUsage, gridDataFromUI[i][5]);
 		}
 	}
 

@@ -19,25 +19,12 @@
 
 package com.vmware.gemfire.tools.pulse.internal.data;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.ResourceBundle;
-import java.util.Set;
+import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
+import com.vmware.gemfire.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
+import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
+import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -58,13 +45,25 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
-
-import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
-import com.vmware.gemfire.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
-import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
-import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.ResourceBundle;
+import java.util.Set;
 
 /**
  * Class JMXDataUpdater Class used for creating JMX connection and getting all
@@ -499,12 +498,14 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       Set<ObjectName> memberMBeans = this.mbs.queryNames(
           this.MBEAN_OBJECT_NAME_MEMBER, null);
       for (ObjectName memMBean : memberMBeans) {
-        // member regions
-        if (memMBean.getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE) != null) {
-          if (memMBean
-              .getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE)
-              .equals(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_REGION)) {
-
+        String service = memMBean.getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE);
+        if(service==null){
+          // Cluster Member
+          updateClusterMember(memMBean);
+        }
+        else {
+          switch (service) {
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_REGION:
             if (PulseConstants.PRODUCT_NAME_SQLFIRE
                 .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
               // For SQLfire
@@ -522,31 +523,23 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               // For Gemfire
               updateMemberRegion(memMBean);
             }
-
-          } else if (memMBean.getKeyProperty(
-              PulseConstants.MBEAN_KEY_PROPERTY_SERVICE).equals(
-              PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_CACHESERVER)) {
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_CACHESERVER:
             updateMemberClient(memMBean);
-          }
-          // Gateway Receiver Attributes
-          else if (memMBean.getKeyProperty(
-              PulseConstants.MBEAN_KEY_PROPERTY_SERVICE).equals(
-              PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYRECEIVER)) {
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYRECEIVER:
             updateGatewayReceiver(memMBean);
-          } else if (memMBean.getKeyProperty(
-              PulseConstants.MBEAN_KEY_PROPERTY_SERVICE).equals(
-              PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYSENDER)) {
-              updateGatewaySender(memMBean);
-          } else if(memMBean.getKeyProperty(
-              PulseConstants.MBEAN_KEY_PROPERTY_SERVICE).equals(
-              PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_ASYNCEVENTQUEUE)){
-
-              // AsyncEventQueue
-              updateAsyncEventQueue(memMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYSENDER:
+            updateGatewaySender(memMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_ASYNCEVENTQUEUE:
+            updateAsyncEventQueue(memMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_LOCATOR:
+            updateClusterMember(memMBean);
+            break;
           }
-        } else {
-          // Cluster Member
-          updateClusterMember(memMBean);
         }
       }
 
@@ -650,25 +643,25 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       for (int i = 0; i < attributeList.size(); i++) {
 
         Attribute attribute = (Attribute) attributeList.get(i);
-
-        if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_MEMBERCOUNT)) {
+        String name = attribute.getName();
+        switch (name){
+        case PulseConstants.MBEAN_ATTRIBUTE_MEMBERCOUNT:
           cluster.setMemberCount(getIntegerAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NUMCLIENTS)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NUMCLIENTS:
           cluster.setClientConnectionCount(getIntegerAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_DISTRIBUTEDSYSTEMID)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_DISTRIBUTEDSYSTEMID:
           cluster.setClusterId(getIntegerAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_LOCATORCOUNT)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_LOCATORCOUNT:
           cluster.setLocatorCount(getIntegerAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NUMRUNNIGFUNCTION)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NUMRUNNIGFUNCTION:
           try {
             cluster.setRunningFunctionCount(getIntegerAttribute(
                 attribute.getValue(), attribute.getName()));
@@ -676,28 +669,28 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             cluster.setRunningFunctionCount(0);
             continue;
           }
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_REGISTEREDCQCOUNT)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_REGISTEREDCQCOUNT:
           cluster.setRegisteredCQCount(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NUMSUBSCRIPTIONS)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NUMSUBSCRIPTIONS:
           cluster.setSubscriptionCount(getIntegerAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NUMTXNCOMMITTED)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NUMTXNCOMMITTED:
           cluster.setTxnCommittedCount(getIntegerAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NUMTXNROLLBACK)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NUMTXNROLLBACK:
           cluster.setTxnRollbackCount(getIntegerAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_TOTALHEAPSIZE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_TOTALHEAPSIZE:
           cluster.setTotalHeapSize(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_USEDHEAPSIZE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_USEDHEAPSIZE:
           try {
             cluster.setUsedHeapSize(getLongAttribute(attribute.getValue(),
                 attribute.getName()));
@@ -706,16 +699,16 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             continue;
           }
           cluster.getMemoryUsageTrend().add(cluster.getUsedHeapSize());
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_TOTALREGIONENTRYCOUNT)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_TOTALREGIONENTRYCOUNT:
           cluster.setTotalRegionEntryCount(getLongAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_CURRENTENTRYCOUNT)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_CURRENTENTRYCOUNT:
           cluster.setCurrentQueryCount(getIntegerAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_TOTALDISKUSAGE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_TOTALDISKUSAGE:
           try {
             cluster.setTotalBytesOnDisk(getLongAttribute(attribute.getValue(),
                 attribute.getName()));
@@ -724,13 +717,13 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             continue;
           }
           cluster.getTotalBytesOnDiskTrend().add(cluster.getTotalBytesOnDisk());
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
           cluster.setDiskWritesRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
           cluster.getThroughoutWritesTrend().add(cluster.getDiskWritesRate());
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_AVERAGEWRITES)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_AVERAGEWRITES:
           try {
             cluster.setWritePerSec(getFloatAttribute(attribute.getValue(),
                 attribute.getName()));
@@ -739,8 +732,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             continue;
           }
           cluster.getWritePerSecTrend().add(cluster.getWritePerSec());
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_AVERAGEREADS)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_AVERAGEREADS:
           try {
             cluster.setReadPerSec(getFloatAttribute(attribute.getValue(),
                 attribute.getName()));
@@ -749,43 +742,34 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             continue;
           }
           cluster.getReadPerSecTrend().add(cluster.getReadPerSec());
-
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_QUERYREQUESTRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_QUERYREQUESTRATE:
           cluster.setQueriesPerSec(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
           cluster.getQueriesPerSecTrend().add(cluster.getQueriesPerSec());
-
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
           cluster.setDiskReadsRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
           cluster.getThroughoutReadsTrend().add(cluster.getDiskReadsRate());
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_JVMPAUSES)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_JVMPAUSES:
           long trendVal = determineCurrentJVMPauses(
               PulseConstants.JVM_PAUSES_TYPE_CLUSTER, "",
               getLongAttribute(attribute.getValue(), attribute.getName()));
           cluster.setGarbageCollectionCount(trendVal);
           cluster.getGarbageCollectionTrend().add(
               cluster.getGarbageCollectionCount());
-
-        }
-
-        // For SQLfire or Gemfire
-        if (PulseConstants.PRODUCT_NAME_SQLFIRE
-            .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-          // For SQLfire
-          // Do nothing
-        } else {
-          // For Gemfire
-          if (attribute.getName().equals(
-              PulseConstants.MBEAN_ATTRIBUTE_TOTALREGIONCOUNT)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_TOTALREGIONCOUNT:
+          if (!PulseConstants.PRODUCT_NAME_SQLFIRE
+              .equalsIgnoreCase(PulseController.getPulseProductSupport())){
+            // for Gemfire
             cluster.setTotalRegionCount(getIntegerAttribute(
                 attribute.getValue(), attribute.getName()));
           }
+          break;
         }
-
       }
 
       // SQLFIRE attributes
@@ -923,46 +907,48 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     for (int i = 0; i < attributeList.size(); i++) {
       Attribute attribute = (Attribute) attributeList.get(i);
-      if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE)) {
+      String name = attribute.getName();
+      switch (name){
+      case PulseConstants.MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE:
         gatewaySender.setLinkThroughput(getFloatAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_BATCHSIZE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_BATCHSIZE:
         gatewaySender.setBatchSize(getIntegerAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_SENDERID)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_SENDERID:
         gatewaySender.setId(getStringAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_EVENTQUEUESIZE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_EVENTQUEUESIZE:
         gatewaySender.setQueueSize(getIntegerAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_RUNNING)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_RUNNING:
         gatewaySender.setStatus(getBooleanAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_PRIMARY)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_PRIMARY:
         gatewaySender.setPrimary(getBooleanAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_PERSISTENCEENABLED)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_PERSISTENCEENABLED:
         gatewaySender.setPersistenceEnabled(getBooleanAttribute(
             attribute.getValue(), attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_PARALLEL)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_PARALLEL:
         gatewaySender.setSenderType(getBooleanAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_REMOTE_DS_ID)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_REMOTE_DS_ID:
         gatewaySender.setRemoteDSId(getIntegerAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_EVENTS_EXCEEDING_ALERT_THRESHOLD)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_EVENTS_EXCEEDING_ALERT_THRESHOLD:
         gatewaySender.setEventsExceedingAlertThreshold(getIntegerAttribute(attribute.getValue(),
             attribute.getName()));
+        break;
       }
     }
     return gatewaySender;
@@ -1039,38 +1025,40 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     for (int i = 0; i < attributeList.size(); i++) {
       Attribute attribute = (Attribute) attributeList.get(i);
-      if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_AEQ_ASYNCEVENTID)) {
+      String name = attribute.getName();
+      switch (name){
+      case PulseConstants.MBEAN_ATTRIBUTE_AEQ_ASYNCEVENTID:
         asyncEventQueue.setId(getStringAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_AEQ_ASYNC_EVENT_LISTENER)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_AEQ_ASYNC_EVENT_LISTENER:
         asyncEventQueue.setAsyncEventListener(getStringAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_AEQ_BATCH_CONFLATION_ENABLED)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_AEQ_BATCH_CONFLATION_ENABLED:
         asyncEventQueue.setBatchConflationEnabled(getBooleanAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_AEQ_BATCH_TIME_INTERVAL)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_AEQ_BATCH_TIME_INTERVAL:
         asyncEventQueue.setBatchTimeInterval(getLongAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_AEQ_BATCH_SIZE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_AEQ_BATCH_SIZE:
         asyncEventQueue.setBatchSize(getIntegerAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_AEQ_EVENT_QUEUE_SIZE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_AEQ_EVENT_QUEUE_SIZE:
         asyncEventQueue.setEventQueueSize(getIntegerAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_AEQ_PARALLEL)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_AEQ_PARALLEL:
         asyncEventQueue.setParallel(getBooleanAttribute(
             attribute.getValue(), attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_AEQ_PRIMARY)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_AEQ_PRIMARY:
         asyncEventQueue.setPrimary(getBooleanAttribute(attribute.getValue(),
             attribute.getName()));
+        break;
       }
     }
     return asyncEventQueue;
@@ -1176,6 +1164,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         existingMember.setMemberPort(""
             + this.mbs.getAttribute(mbeanName,
                 PulseConstants.MBEAN_ATTRIBUTE_PORT));
+
+        this.mbs.getAttribute(mbeanName, PulseConstants.MBEAN_ATTRIBUTE_HOSTNAMEFORCLIENTS_ALT);
+        existingMember.setHostnameForClients((String)this.mbs.getAttribute(mbeanName, PulseConstants.MBEAN_ATTRIBUTE_HOSTNAMEFORCLIENTS_ALT));
+        existingMember.setBindAddress((String)this.mbs.getAttribute(mbeanName, PulseConstants.MBEAN_ATTRIBUTE_BINDADDRESS));
 
         CompositeData[] compositeData = (CompositeData[]) (this.mbs.invoke(
             mbeanName, PulseConstants.MBEAN_OPERATION_SHOWALLCLIENTS, null,
@@ -1285,42 +1277,44 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               AttributeList attributeList = this.mbs.getAttributes(regionOnMemberMBean, PulseConstants.REGION_ON_MEMBER_MBEAN_ATTRIBUTES);
               for (int i = 0; i < attributeList.size(); i++) {
                 Attribute attribute = (Attribute) attributeList.get(i);
-                  if (attribute.getName().equals(
-                      PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE)) {
-                    anRom.setEntrySize(getLongAttribute(attribute.getValue(),
-                        attribute.getName()));
-                    LOGGER.fine("updateRegionOnMembers : anRom.getEntrySize() = " + anRom.getEntrySize());
-                  } else if (attribute.getName().equals(
-                      PulseConstants.MBEAN_ATTRIBUTE_ENTRYCOUNT)) {
-                    anRom.setEntryCount(getLongAttribute(attribute.getValue(),
-                        attribute.getName()));
-                    LOGGER.fine("updateRegionOnMembers : anRom.getEntryCount() = " + anRom.getEntryCount());
-                  } else if (attribute.getName().equals(
-                      PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE)) {
-                    anRom.setPutsRate(getFloatAttribute(attribute.getValue(),
-                        attribute.getName()));
-                    LOGGER.fine("updateRegionOnMembers : anRom.getPutsRate() = " + anRom.getPutsRate());
-                  } else if (attribute.getName().equals(
-                      PulseConstants.MBEAN_ATTRIBUTE_GETSRATE)) {
-                    anRom.setGetsRate(getFloatAttribute(attribute.getValue(),
-                        attribute.getName()));
-                    LOGGER.fine("updateRegionOnMembers : anRom.getGetsRate() = " + anRom.getGetsRate());
-                  } else if (attribute.getName().equals(
-                      PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE)) {
-                    anRom.setDiskGetsRate(getFloatAttribute(attribute.getValue(),
-                        attribute.getName()));
-                    LOGGER.fine("updateRegionOnMembers : anRom.getDiskGetsRate() = " + anRom.getDiskGetsRate());
-                  } else if (attribute.getName().equals(
-                      PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE)) {
-                    anRom.setDiskPutsRate(getFloatAttribute(attribute.getValue(),
-                        attribute.getName()));
-                    LOGGER.fine("updateRegionOnMembers : anRom.getDiskPutsRate() = " + anRom.getDiskPutsRate());
-                  } else if (attribute.getName().equals(
-                      PulseConstants.MBEAN_ATTRIBUTE_LOCALMAXMEMORY)) {
-                    anRom.setLocalMaxMemory(getIntegerAttribute(attribute.getValue(),
-                        attribute.getName()));
-                    LOGGER.fine("updateRegionOnMembers : anRom.getLocalMaxMemory() = " + anRom.getLocalMaxMemory());
-                  }
+                String name = attribute.getName();
+                switch(name){
+                case PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE:
+                  anRom.setEntrySize(getLongAttribute(attribute.getValue(),
+                      attribute.getName()));
+                  LOGGER.fine("updateRegionOnMembers : anRom.getEntrySize() = " + anRom.getEntrySize());
+                  break;
+                case PulseConstants.MBEAN_ATTRIBUTE_ENTRYCOUNT:
+                  anRom.setEntryCount(getLongAttribute(attribute.getValue(),
+                      attribute.getName()));
+                  LOGGER.fine("updateRegionOnMembers : anRom.getEntryCount() = " + anRom.getEntryCount());
+                  break;
+                case PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE:
+                  anRom.setPutsRate(getFloatAttribute(attribute.getValue(),
+                      attribute.getName()));
+                  LOGGER.fine("updateRegionOnMembers : anRom.getPutsRate() = " + anRom.getPutsRate());
+                  break;
+                case PulseConstants.MBEAN_ATTRIBUTE_GETSRATE:
+                  anRom.setGetsRate(getFloatAttribute(attribute.getValue(),
+                      attribute.getName()));
+                  LOGGER.fine("updateRegionOnMembers : anRom.getGetsRate() = " + anRom.getGetsRate());
+                  break;
+                case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
+                  anRom.setDiskGetsRate(getFloatAttribute(attribute.getValue(),
+                      attribute.getName()));
+                  LOGGER.fine("updateRegionOnMembers : anRom.getDiskGetsRate() = " + anRom.getDiskGetsRate());
+                  break;
+                case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
+                  anRom.setDiskPutsRate(getFloatAttribute(attribute.getValue(),
+                      attribute.getName()));
+                  LOGGER.fine("updateRegionOnMembers : anRom.getDiskPutsRate() = " + anRom.getDiskPutsRate());
+                  break;
+                case PulseConstants.MBEAN_ATTRIBUTE_LOCALMAXMEMORY:
+                  anRom.setLocalMaxMemory(getIntegerAttribute(attribute.getValue(),
+                      attribute.getName()));
+                  LOGGER.fine("updateRegionOnMembers : anRom.getLocalMaxMemory() = " + anRom.getLocalMaxMemory());
+                  break;
+                }
               }
 
               anRom.getGetsPerSecTrend().add(anRom.getGetsRate());
@@ -1351,35 +1345,37 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           AttributeList attributeList = this.mbs.getAttributes(regionOnMemberMBean, PulseConstants.REGION_ON_MEMBER_MBEAN_ATTRIBUTES);
           for (int i = 0; i < attributeList.size(); i++) {
             Attribute attribute = (Attribute) attributeList.get(i);
-              if (attribute.getName().equals(
-                  PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE)) {
-                regionOnMember.setEntrySize(getLongAttribute(attribute.getValue(),
-                    attribute.getName()));
-              } else if (attribute.getName().equals(
-                  PulseConstants.MBEAN_ATTRIBUTE_ENTRYCOUNT)) {
-                regionOnMember.setEntryCount(getLongAttribute(attribute.getValue(),
-                    attribute.getName()));
-              } else if (attribute.getName().equals(
-                  PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE)) {
-                regionOnMember.setPutsRate(getFloatAttribute(attribute.getValue(),
-                    attribute.getName()));
-              } else if (attribute.getName().equals(
-                  PulseConstants.MBEAN_ATTRIBUTE_GETSRATE)) {
-                regionOnMember.setGetsRate(getFloatAttribute(attribute.getValue(),
-                    attribute.getName()));
-              } else if (attribute.getName().equals(
-                  PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE)) {
-                regionOnMember.setDiskGetsRate(getFloatAttribute(attribute.getValue(),
-                    attribute.getName()));
-              } else if (attribute.getName().equals(
-                  PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE)) {
-                regionOnMember.setDiskPutsRate(getFloatAttribute(attribute.getValue(),
-                    attribute.getName()));
-              } else if (attribute.getName().equals(
-                  PulseConstants.MBEAN_ATTRIBUTE_LOCALMAXMEMORY)) {
-                regionOnMember.setLocalMaxMemory(getIntegerAttribute(attribute.getValue(),
-                    attribute.getName()));
-              }
+            String name=attribute.getName();
+            switch (name){
+            case PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE:
+              regionOnMember.setEntrySize(getLongAttribute(attribute.getValue(),
+                  attribute.getName()));
+              break;
+            case PulseConstants.MBEAN_ATTRIBUTE_ENTRYCOUNT:
+              regionOnMember.setEntryCount(getLongAttribute(attribute.getValue(),
+                  attribute.getName()));
+              break;
+            case PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE:
+              regionOnMember.setPutsRate(getFloatAttribute(attribute.getValue(),
+                  attribute.getName()));
+              break;
+            case PulseConstants.MBEAN_ATTRIBUTE_GETSRATE:
+              regionOnMember.setGetsRate(getFloatAttribute(attribute.getValue(),
+                  attribute.getName()));
+              break;
+            case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
+              regionOnMember.setDiskGetsRate(getFloatAttribute(attribute.getValue(),
+                  attribute.getName()));
+              break;
+            case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
+              regionOnMember.setDiskPutsRate(getFloatAttribute(attribute.getValue(),
+                  attribute.getName()));
+              break;
+            case PulseConstants.MBEAN_ATTRIBUTE_LOCALMAXMEMORY:
+              regionOnMember.setLocalMaxMemory(getIntegerAttribute(attribute.getValue(),
+                  attribute.getName()));
+              break;
+            }
           }
 
           regionOnMember.getGetsPerSecTrend().add(regionOnMember.getGetsRate());
@@ -1442,72 +1438,75 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
         Attribute attribute = (Attribute) attributeList.get(i);
 
-        if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_MEMBERS)) {
+        String name = attribute.getName();
+        switch (name){
+        case PulseConstants.MBEAN_ATTRIBUTE_MEMBERS:
           String memName[] = (String[]) attribute.getValue();
           region.getMemberName().clear();
           for (int k = 0; k < memName.length; k++) {
             region.getMemberName().add(memName[k]);
           }
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_FULLPATH)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_FULLPATH:
           region.setFullPath(getStringAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
           region.setDiskReadsRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
           region.setDiskWritesRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_EMPTYNODES)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_EMPTYNODES:
           region.setEmptyNode(getIntegerAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_GETSRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_GETSRATE:
           region.setGetsRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_LRUEVICTIONRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_LRUEVICTIONRATE:
           region.setLruEvictionRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE:
           region.setPutsRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_REGIONTYPE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_REGIONTYPE:
           region.setRegionType(getStringAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE:
           region.setEntrySize(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_SYSTEMREGIONENTRYCOUNT)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_SYSTEMREGIONENTRYCOUNT:
           region.setSystemRegionEntryCount(getLongAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_MEMBERCOUNT)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_MEMBERCOUNT:
           region.setMemberCount(getIntegerAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_PERSISTENTENABLED)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_PERSISTENTENABLED:
           region.setPersistentEnabled(getBooleanAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NAME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NAME:
           region.setName(getStringAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_GATEWAYENABLED)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_GATEWAYENABLED:
           region.setWanEnabled(getBooleanAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_DISKUSAGE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_DISKUSAGE:
           region.setDiskUsage(getLongAttribute(attribute.getValue(),
               attribute.getName()));
+          break;
         }
       }
 
@@ -1635,86 +1634,85 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       }
 
       for (int i = 0; i < attributeList.size(); i++) {
-
         Attribute attribute = (Attribute) attributeList.get(i);
-
-        if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NUMTIMESCOMPILED)) {
+        String name = attribute.getName();
+        switch (name){
+        case PulseConstants.MBEAN_ATTRIBUTE_NUMTIMESCOMPILED:
           statement.setNumTimesCompiled(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NUMEXECUTION)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NUMEXECUTION:
           statement.setNumExecution(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NUMEXECUTIONSINPROGRESS)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NUMEXECUTIONSINPROGRESS:
           statement.setNumExecutionsInProgress(getLongAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NUMTIMESGLOBALINDEXLOOKUP)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NUMTIMESGLOBALINDEXLOOKUP:
           statement.setNumTimesGlobalIndexLookup(getLongAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NUMROWSMODIFIED)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NUMROWSMODIFIED:
           statement.setNumRowsModified(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_PARSETIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_PARSETIME:
           statement.setParseTime(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_BINDTIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_BINDTIME:
           statement.setBindTime(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_OPTIMIZETIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_OPTIMIZETIME:
           statement.setOptimizeTime(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_ROUTINGINFOTIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_ROUTINGINFOTIME:
           statement.setRoutingInfoTime(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_GENERATETIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_GENERATETIME:
           statement.setGenerateTime(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_TOTALCOMPILATIONTIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_TOTALCOMPILATIONTIME:
           statement.setTotalCompilationTime(getLongAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_EXECUTIONTIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_EXECUTIONTIME:
           statement.setExecutionTime(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_PROJECTIONTIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_PROJECTIONTIME:
           statement.setProjectionTime(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_TOTALEXECUTIONTIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_TOTALEXECUTIONTIME:
           statement.setTotalExecutionTime(getLongAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_ROWSMODIFICATIONTIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_ROWSMODIFICATIONTIME:
           statement.setRowsModificationTime(getLongAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_QNNUMROWSSEEN)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_QNNUMROWSSEEN:
           statement.setqNNumRowsSeen(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_QNMSGSENDTIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_QNMSGSENDTIME:
           statement.setqNMsgSendTime(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_QNMSGSERTIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_QNMSGSERTIME:
           statement.setqNMsgSerTime(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        }
-        if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_QNRESPDESERTIME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_QNRESPDESERTIME:
           statement.setqNRespDeSerTime(getLongAttribute(attribute.getValue(),
               attribute.getName()));
+          break;
         }
       }
 
@@ -1737,7 +1735,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    */
   private Cluster.Member initializeMember(ObjectName mbeanName,
       Cluster.Member member) throws InstanceNotFoundException,
-      ReflectionException, IOException {
+                                    ReflectionException, IOException {
 
     AttributeList attributeList = this.mbs.getAttributes(mbeanName,
         PulseConstants.MEMBER_MBEAN_ATTRIBUTES);
@@ -1745,53 +1743,55 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
     for (int i = 0; i < attributeList.size(); i++) {
 
       Attribute attribute = (Attribute) attributeList.get(i);
-
-      if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_GEMFIREVERSION)) {
+      String name = attribute.getName();
+      switch (name) {
+      case PulseConstants.MBEAN_ATTRIBUTE_GEMFIREVERSION:
         if (member.getGemfireVersion() == null) {
           // Set Member's GemFire Version if not set already
           String gemfireVersion = obtainGemfireVersion(getStringAttribute(
               attribute.getValue(), attribute.getName()));
           member.setGemfireVersion(gemfireVersion);
         }
-      } else if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_MANAGER)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_MANAGER:
         member.setManager(getBooleanAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_TOTALREGIONCOUNT)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_TOTALREGIONCOUNT:
         member.setTotalRegionCount(getIntegerAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_LOCATOR)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_LOCATOR:
         member.setLocator(getBooleanAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_TOTALDISKUSAGE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_TOTALDISKUSAGE:
         member.setTotalDiskUsage(getLongAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_SERVER)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_SERVER:
         member.setServer(getBooleanAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_TOTALFILEDESCRIPTOROPEN)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_TOTALFILEDESCRIPTOROPEN:
         member.setTotalFileDescriptorOpen(getLongAttribute(
             attribute.getValue(), attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_LOADAVERAGE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_LOADAVERAGE:
         member.setLoadAverage(getDoubleAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
         member.setThroughputWrites(getFloatAttribute(attribute.getValue(),
             attribute.getName()));
         member.getThroughputWritesTrend().add(member.getThroughputWrites());
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
         member.setThroughputReads(getFloatAttribute(attribute.getValue(),
             attribute.getName()));
         member.getThroughputReadsTrend().add(member.getThroughputReads());
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_JVMPAUSES)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_JVMPAUSES:
         long trendVal = determineCurrentJVMPauses(
             PulseConstants.JVM_PAUSES_TYPE_MEMBER, member.getName(),
             getLongAttribute(attribute.getValue(),
@@ -1799,83 +1799,86 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         member.setGarbageCollectionCount(trendVal);
         member.getGarbageCollectionSamples().add(
             member.getGarbageCollectionCount());
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_USEDMEMORY)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_USEDMEMORY:
         member.setCurrentHeapSize(getLongAttribute(attribute.getValue(),
             attribute.getName()));
         member.getHeapUsageSamples().add(member.getCurrentHeapSize());
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_MAXMEMORY)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_MAXMEMORY:
         member.setMaxHeapSize(getLongAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_NUMTHREADS)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_NUMTHREADS:
         member.setNumThreads(getIntegerAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_MEMBERUPTIME)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_MEMBERUPTIME:
         member.setUptime(getLongAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName()
-          .equals(PulseConstants.MBEAN_ATTRIBUTE_HOST)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_HOST:
         member.setHost(getStringAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_TOTALBYTESONDISK)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_HOSTNAMEFORCLIENTS:
+        member.setHostnameForClients(getStringAttribute(attribute.getValue(),
+                attribute.getName()));
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_BINDADDRESS:
+        member.setBindAddress(getStringAttribute(attribute.getValue(),
+            attribute.getName()));
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_TOTALBYTESONDISK:
         member.setTotalBytesOnDisk(getLongAttribute(attribute.getValue(),
             attribute.getName()));
         member.getTotalBytesOnDiskSamples().add(member.getTotalBytesOnDisk());
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_CPUUSAGE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_CPUUSAGE:
         member.setCpuUsage(getFloatAttribute(attribute.getValue(),
             attribute.getName()));
         member.getCpuUsageSamples().add(member.getCpuUsage());
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_HOSTCPUUSAGE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_HOSTCPUUSAGE:
         // Float value is expected for host cpu usage.
         // TODO Remove Float.valueOf() when float value is provided in mbean
         member.setHostCpuUsage(Float.valueOf(getIntegerAttribute(
             attribute.getValue(), attribute.getName())));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_MEMBER)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_MEMBER:
         member.setName(getStringAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_ID)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_ID:
         member.setId(getStringAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_AVERAGEREADS)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_AVERAGEREADS:
         member.setGetsRate(getFloatAttribute(attribute.getValue(),
             attribute.getName()));
         member.getGetsPerSecond().add(member.getGetsRate());
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_AVERAGEWRITES)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_AVERAGEWRITES:
         member.setPutsRate(getFloatAttribute(attribute.getValue(),
             attribute.getName()));
         member.getPutsPerSecond().add(member.getPutsRate());
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_OFFHEAPFREESIZE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_OFFHEAPFREESIZE:
         member.setOffHeapFreeSize(getLongAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_OFFHEAPUSEDSIZE)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_OFFHEAPUSEDSIZE:
         member.setOffHeapUsedSize(getLongAttribute(attribute.getValue(),
             attribute.getName()));
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_SERVERGROUPS)) {
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_SERVERGROUPS:
         String sgValues[] = (String[]) attribute.getValue();
         member.getServerGroups().clear();
         for (int k = 0; k < sgValues.length; k++) {
           member.getServerGroups().add(sgValues[k]);
         }
-      } else if (attribute.getName().equals(
-          PulseConstants.MBEAN_ATTRIBUTE_REDUNDANCYZONES)) {
-        /*String rzValues[] = (String[]) attribute.getValue();
-        member.getRedundancyZones().clear();
-        for (int k = 0; k < rzValues.length; k++) {
-          member.getRedundancyZones().add(rzValues[k]);
-        }*/
-
+        break;
+      case PulseConstants.MBEAN_ATTRIBUTE_REDUNDANCYZONES:
         String rzValue = "";
         if(null != attribute.getValue()){
           rzValue = getStringAttribute(attribute.getValue(),
@@ -1885,6 +1888,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         if(!rzValue.isEmpty()){
           member.getRedundancyZones().add(rzValue);
         }
+        break;
       }
     }
 
@@ -2212,58 +2216,60 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       // update the existing or new region
       for (int i = 0; i < attributeList.size(); i++) {
         Attribute attribute = (Attribute) attributeList.get(i);
-
-        if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_FULLPATH)) {
+        String name = attribute.getName();
+        switch (name){
+        case PulseConstants.MBEAN_ATTRIBUTE_FULLPATH:
           region.setFullPath(getStringAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
           region.setDiskReadsRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
           region.setDiskWritesRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_GETSRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_GETSRATE:
           region.setGetsRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_LRUEVICTIONRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_LRUEVICTIONRATE:
           region.setLruEvictionRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE:
           region.setPutsRate(getFloatAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_REGIONTYPE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_REGIONTYPE:
           region.setRegionType(getStringAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_MEMBERCOUNT)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_MEMBERCOUNT:
           region.setMemberCount(getIntegerAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE:
           region.setEntrySize(getLongAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_ENTRYCOUNT)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_ENTRYCOUNT:
           region.setSystemRegionEntryCount(getLongAttribute(
               attribute.getValue(), attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_NAME)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_NAME:
           region.setName(getStringAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_PERSISTENTENABLED)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_PERSISTENTENABLED:
           region.setPersistentEnabled(getBooleanAttribute(attribute.getValue(),
               attribute.getName()));
-        } else if (attribute.getName().equals(
-            PulseConstants.MBEAN_ATTRIBUTE_GATEWAYENABLED)) {
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_GATEWAYENABLED:
           region.setWanEnabled(getBooleanAttribute(attribute.getValue(),
               attribute.getName()));
+          break;
         }
       }
       /* GemfireXD related code

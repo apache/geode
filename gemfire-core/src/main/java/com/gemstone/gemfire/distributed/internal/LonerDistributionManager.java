@@ -363,6 +363,8 @@ public class LonerDistributionManager implements DM {
     @Override
     public void incMessageChannelTime(long val) {}
     @Override
+    public void incUDPDispachRequestTime(long val) {};
+    @Override
     public long getReplyMessageTime() {return 0;}
     @Override
     public void incReplyMessageTime(long val) {}

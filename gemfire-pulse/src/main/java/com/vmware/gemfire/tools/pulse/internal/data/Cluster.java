@@ -20,14 +20,21 @@
 package com.vmware.gemfire.tools.pulse.internal.data;
 
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
+import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
+import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.net.URL;
 import java.text.DateFormat;
@@ -36,23 +43,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
-
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
-import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
 
 /**
  * Class Cluster This class is the Data Model for the data used for the Pulse
@@ -235,6 +235,8 @@ public class Cluster extends Thread {
     private boolean manager;
     private int totalRegionCount;
     private String host;
+    private String hostnameForClients;
+    private String bindAddress;
     private long currentHeapSize;
     private long maxHeapSize;
     private int avgHeapUsage;
@@ -448,6 +450,14 @@ public class Cluster extends Thread {
       return this.host;
     }
 
+    public String getHostnameForClients() {
+      if(StringUtils.isNotNullNotEmptyNotWhiteSpace(hostnameForClients))
+        return this.hostnameForClients;
+      else if(StringUtils.isNotNullNotEmptyNotWhiteSpace(bindAddress))
+        return this.bindAddress;
+      return null;
+    }
+
     public Long getUptime() {
       return this.uptime;
     }
@@ -522,6 +532,14 @@ public class Cluster extends Thread {
 
     public void setHost(String host) {
       this.host = host;
+    }
+
+    public void setHostnameForClients(String hostnameForClients) {
+      this.hostnameForClients = hostnameForClients;
+    }
+
+    public void setBindAddress(String bindAddress){
+      this.bindAddress = bindAddress;
     }
 
     public void setUptime(Long uptime) {
