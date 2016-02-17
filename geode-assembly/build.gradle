@@ -254,6 +254,8 @@ distributions {
       exclude '*-sources.jar'
       exclude '*-javadoc.jar'
 
+      from rootProject.file( 'README.md' )
+
       into ('config') {
         from defaultCacheConfig
         from defaultDistributionConfig

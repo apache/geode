@@ -90,11 +90,3 @@ Geode applications can be written in a number of client technologies:
 * [REST](http://geode.docs.pivotal.io/docs/rest_apps/book_intro.html)
 * [memcached](https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached)
 
-
-# Build environment in Docker
-```
-dev-tools/docker/compile/start-compile-docker.sh
-
-```
-
-
