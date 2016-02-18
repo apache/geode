@@ -438,8 +438,10 @@ public class DistributedRegion extends LocalRegion implements
          * local AbstractRegionMap, and so will never be flipped to a 'create'
          */
         event.makeCreate();
-        distributeUpdate(event, lastModified, ifNew, ifOld, expectedOldValue, requireOldValue);
-        event.invokeCallbacks(this,true, true);
+        if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          distributeUpdate(event, lastModified, ifNew, ifOld, expectedOldValue, requireOldValue);
+          event.invokeCallbacks(this,true, true);
+        }
         return true;
       }
     }
@@ -1826,8 +1828,10 @@ public class DistributedRegion extends LocalRegion implements
         if (event.isBulkOpInProgress() && !event.isOriginRemote()) {
           event.getRemoveAllOperation().addEntry(event, true);
         }
-        distributeDestroy(event, expectedOldValue);
-        event.invokeCallbacks(this,true, false);
+        if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          distributeDestroy(event, expectedOldValue);
+          event.invokeCallbacks(this,true, false);
+        }
       }
     }
   }
@@ -2008,8 +2012,10 @@ public class DistributedRegion extends LocalRegion implements
       return;
     } finally {
       if (hasSeen) {
-        distributeInvalidate(event);
-        event.invokeCallbacks(this,true, false);
+    	if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          distributeInvalidate(event);
+          event.invokeCallbacks(this,true, false);
+    	}
       }
     }
   }
@@ -2045,7 +2051,9 @@ public class DistributedRegion extends LocalRegion implements
       }
       return;
     } finally {
-      distributeUpdateEntryVersion(event);
+      if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+        distributeUpdateEntryVersion(event);
+      }
     }
   }
 

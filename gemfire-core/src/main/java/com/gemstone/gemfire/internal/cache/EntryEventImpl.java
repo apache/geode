@@ -2838,6 +2838,13 @@ public class EntryEventImpl
   }
   
   /**
+   * @return if there's no valid version tag for this event
+   */
+  public boolean hasValidVersionTag() {
+    return this.versionTag != null && this.versionTag.hasValidVersion();
+  }
+  
+  /**
    * this method joins together version tag timestamps and the "lastModified"
    * timestamps generated and stored in entries.  If a change does not already
    * carry a lastModified timestamp 

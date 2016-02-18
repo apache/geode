@@ -53,7 +53,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * This is the fundamental representation of a member of a GemFire distributed
  * system.
  */
-public final class InternalDistributedMember
+public class InternalDistributedMember
  implements DistributedMember,
     Externalizable, DataSerializableFixedID, ProfileId,
     VersionSource<DistributedMember>

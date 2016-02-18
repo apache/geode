@@ -536,7 +536,9 @@ implements Bucket
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM, "BR.virtualPut: this cache has already seen this event {}", event);
       }
-      distributeUpdateOperation(event, lastModified);
+      if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+        distributeUpdateOperation(event, lastModified);
+      }
       return true;
     } finally {
       endLocalWrite(event);
@@ -919,13 +921,15 @@ implements Bucket
         if (logger.isTraceEnabled(LogMarker.DM)) {
           logger.trace(LogMarker.DM, "LR.basicInvalidate: this cache has already seen this event {}", event);
         }
-        if (!event.isOriginRemote()
-            && getBucketAdvisor().isPrimary()) {
-          // This cache has processed the event, forward operation
-          // and event messages to backup buckets
-          new InvalidateOperation(event).distribute();
+        if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          if (!event.isOriginRemote()
+              && getBucketAdvisor().isPrimary()) {
+            // This cache has processed the event, forward operation
+            // and event messages to backup buckets
+            new InvalidateOperation(event).distribute();
+          }
+          event.invokeCallbacks(this,true, false);
         }
-        event.invokeCallbacks(this,true, false);
         return;
       }
     } finally {
@@ -1179,7 +1183,9 @@ implements Bucket
         return;
       }
       else {
-        distributeDestroyOperation(event);
+    	if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          distributeDestroyOperation(event);
+    	}
         return;
       }
     } finally {
@@ -1305,7 +1311,9 @@ implements Bucket
       if (!event.isOriginRemote() && getBucketAdvisor().isPrimary()) {
         // This cache has processed the event, forward operation
         // and event messages to backup buckets
-        new UpdateEntryVersionOperation(event).distribute();
+    	if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          new UpdateEntryVersionOperation(event).distribute();
+    	}
       }
       return;
     } finally {
