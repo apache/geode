@@ -53,6 +53,9 @@ public class PulseConfig {
   // Flag for appending log messages
   private Boolean logAppend;
 
+  // Query history log file
+  private String queryHistoryFileName;
+
   public PulseConfig() {
     this.setLogFileName(PulseConstants.PULSE_LOG_FILE_NAME);
     this.LogFileLocation = PulseConstants.PULSE_LOG_FILE_LOCATION;
@@ -61,6 +64,10 @@ public class PulseConfig {
     this.logDatePattern = PulseConstants.PULSE_LOG_MESSAGE_DATE_PATTERN;
     this.logLevel = PulseConstants.PULSE_LOG_LEVEL;
     this.logAppend = PulseConstants.PULSE_LOG_APPEND;
+    this.queryHistoryFileName = PulseConstants.PULSE_QUERY_HISTORY_FILE_LOCATION
+      + System.getProperty("file.separator")
+      + PulseConstants.PULSE_QUERY_HISTORY_FILE_NAME;
+
   }
 
   public String getLogFileName() {
@@ -123,4 +130,11 @@ public class PulseConfig {
     this.logAppend = logAppend;
   }
 
+  public String getQueryHistoryFileName() {
+    return queryHistoryFileName;
+  }
+
+  public void setQueryHistoryFileName(String queryHistoryFileName) {
+    this.queryHistoryFileName = queryHistoryFileName;
+  }
 }

@@ -49,10 +49,6 @@ public class DataBrowser {
   private final ResourceBundle resourceBundle = Repository.get()
       .getResourceBundle();
 
-  private final String queryHistoryFile = PulseConstants.PULSE_QUERY_HISTORY_FILE_LOCATION
-      + System.getProperty("file.separator")
-      + PulseConstants.PULSE_QUERY_HISTORY_FILE_NAME;
-
   private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
       PulseConstants.PULSE_QUERY_HISTORY_DATE_PATTERN);
 
@@ -198,7 +194,7 @@ public class DataBrowser {
     JSONObject queriesJSON = new JSONObject();
 
     try {
-      inputStream = new FileInputStream(queryHistoryFile);
+      inputStream = new FileInputStream(Repository.get().getPulseConfig().getQueryHistoryFileName());
       String inputStreamString = new Scanner(inputStream, "UTF-8")
           .useDelimiter("\\A").next();
       queriesJSON = new JSONObject(inputStreamString);
@@ -237,7 +233,7 @@ public class DataBrowser {
     boolean operationStatus = false;
     FileOutputStream fileOut = null;
 
-    File file = new File(queryHistoryFile);
+    File file = new File(Repository.get().getPulseConfig().getQueryHistoryFileName());
     try {
       fileOut = new FileOutputStream(file);
 

@@ -117,7 +117,7 @@ public class PulseController {
               + ((requestMap == null) ? "" : requestMap) });
     } catch (Exception e) {
       if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occured : " + e.getMessage());
+        LOGGER.fine("Exception Occurred : " + e.getMessage());
       }
     }
 
@@ -140,7 +140,7 @@ public class PulseController {
       LOGGER.logJSONError(eJSON, null);
     } catch (Exception e) {
       if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occured : " + e.getMessage());
+        LOGGER.fine("Exception Occurred : " + e.getMessage());
       }
     }
   }
@@ -253,7 +253,7 @@ public class PulseController {
       LOGGER.logJSONError(eJSON, null);
     } catch (Exception e) {
       if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occured : " + e.getMessage());
+        LOGGER.fine("Exception Occurred : " + e.getMessage());
       }
     }
 
