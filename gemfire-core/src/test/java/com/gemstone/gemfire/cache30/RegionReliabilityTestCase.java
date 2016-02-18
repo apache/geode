@@ -1247,7 +1247,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     region.put("INVALIDATE_ME", "VAL");
       
     // define the afterReleaseLocalLocks callback
-    Runnable removeRequiredRole = new Runnable() {
+    SerializableRunnable removeRequiredRole = new SerializableRunnable() {
       public void run() {
         Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
           public void run() {
@@ -1264,7 +1264,13 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 //        catch (InterruptedException e) {}
       }
     };
-    DistributedCacheOperation.setBeforePutOutgoing(removeRequiredRole);
+    DistributedCacheOperation.setBeforePutOutgoing(() -> {
+     try {
+       removeRequiredRole.run();
+     } catch(Exception e) {
+       throw new RuntimeException(e);
+     }
+    });
 
     Runnable reset = new Runnable() {
       public void run() {

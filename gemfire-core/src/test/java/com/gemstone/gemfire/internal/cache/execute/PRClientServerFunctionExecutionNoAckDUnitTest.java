@@ -39,11 +39,11 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
    */
   private static final String TEST_FUNCTION1 = TestFunction.TEST_FUNCTION1;
 
-  static Boolean isByName = null;
+  Boolean isByName = null;
 
-  static Function functionNoAck = null;
-  static Function functionAck = null;
-  static Boolean toRegister = null;
+  Function functionNoAck = null;
+  Function functionAck = null;
+  Boolean toRegister = null;
   
   private static final int NUM_ITERATION=1;
   

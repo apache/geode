@@ -207,8 +207,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_RR", 0 ));
     
-    fail("tried to invoke missing method");    
-//    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener2("ln", keyValues ));
+    vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener2("ln", keyValues ));
   }
   
   /**
@@ -338,7 +337,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     }
   }
   
-  public static void validateReceivedEventsMapSizeListener2(final String senderId, final HashMap map) {
+  public static void validateReceivedEventsMapSizeListener2(final String senderId, final Map map) {
 
     Set<GatewaySender> senders = cache.getGatewaySenders();
     GatewaySender sender = null;

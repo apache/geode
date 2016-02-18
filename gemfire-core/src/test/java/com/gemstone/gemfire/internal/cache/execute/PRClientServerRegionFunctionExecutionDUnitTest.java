@@ -68,10 +68,10 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
   private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
 
   private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;
-  static Boolean isByName = null;
+  Boolean isByName = null;
   
   private static int retryCount = 0;
-  static Boolean toRegister = null;
+  Boolean toRegister = null;
 
   private static Region metaDataRegion;
 
@@ -270,6 +270,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     Function function = new TestFunction(true,TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = new Boolean(false);
+    toRegister = true;
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverSingleKeyExecution( isByName , toRegister));
   } 
   

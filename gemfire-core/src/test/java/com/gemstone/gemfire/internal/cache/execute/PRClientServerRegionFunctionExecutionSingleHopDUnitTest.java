@@ -58,7 +58,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
     private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
 
     private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;
-    static Boolean isByName = null;
+    Boolean isByName = null;
     
     private static int retryCount = 0;
     

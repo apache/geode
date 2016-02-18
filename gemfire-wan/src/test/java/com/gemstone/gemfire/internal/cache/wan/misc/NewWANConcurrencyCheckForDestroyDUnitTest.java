@@ -46,10 +46,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  */
 public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
 
-  //These fields are used as BlackBoard for test data verification.
-  static long destroyTimeStamp;
-  static int destroyingMember;
-  
   public NewWANConcurrencyCheckForDestroyDUnitTest(String name) {
     super(name);
   }
@@ -128,7 +124,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     //wait for vm1 to propagate put to vm3 and vm5
     Wait.pause(2000); 
 
-    destroyTimeStamp = (Long) vm3.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterOp());
+    long destroyTimeStamp = (Long) vm3.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterOp());
     
     //wait for vm1 to propagate destroyed entry's new version tag to vm5
     Wait.pause(2000); 

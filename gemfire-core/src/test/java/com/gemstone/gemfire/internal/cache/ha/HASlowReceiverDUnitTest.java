@@ -55,7 +55,7 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
 
   protected static VM clientVM = null;
 
-  private static int PORT0;
+  private int PORT0;
 
   private int PORT1;
 
@@ -247,7 +247,8 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
   // Test slow client
   public void testSlowClient() throws Exception {
     setBridgeObeserverForAfterQueueDestroyMessage();
-    clientVM.invoke(() -> HASlowReceiverDUnitTest.createClientCache( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT0),
+    Host host = Host.getHost(0);
+    clientVM.invoke(() -> HASlowReceiverDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT0),
             new Integer(PORT1), new Integer(PORT2), new Integer(2) ));
     clientVM.invoke(() -> HASlowReceiverDUnitTest.registerInterest());
     // add expected socket exception string
