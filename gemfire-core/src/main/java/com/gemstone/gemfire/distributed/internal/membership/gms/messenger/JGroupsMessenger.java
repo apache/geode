@@ -1082,7 +1082,7 @@ public class JGroupsMessenger implements Messenger {
         }
       }finally {
         long delta = DistributionStats.getStatTime() - startTime ;
-        JGroupsMessenger.this.services.getStatistics().incUDPDispachRequestTime(delta);
+        JGroupsMessenger.this.services.getStatistics().incUDPDispatchRequestTime(delta);
       }
     }
     
