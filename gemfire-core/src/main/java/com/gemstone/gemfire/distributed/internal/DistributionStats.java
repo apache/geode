@@ -61,7 +61,7 @@ public class DistributionStats implements DMStats {
   private final static int processedMessagesTimeId;
   private final static int messageProcessingScheduleTimeId;
   private final static int messageChannelTimeId;
-  private final static int udpDispachRequestTimeId;
+  private final static int udpDispatchRequestTimeId;
   private final static int replyMessageTimeId;
   private final static int distributeMessageTimeId;
   private final static int nodesId;
@@ -273,7 +273,7 @@ public class DistributionStats implements DMStats {
     final String functionExecutionThreadsDesc = "The number of threads currently processing function execution messages.";
     final String waitingThreadsDesc = "The number of threads currently processing messages that had to wait for a resource.";
     final String messageChannelTimeDesc = "The total amount of time received messages spent in the distribution channel";
-    final String udpDispachRequestTimeDesc = "The total amount of time spent deserializing and dispatching UDP messages in the message-reader thread.";
+    final String udpDispatchRequestTimeDesc = "The total amount of time spent deserializing and dispatching UDP messages in the message-reader thread.";
     final String replyMessageTimeDesc = "The amount of time spent processing reply messages. This includes both processedMessagesTime and messageProcessingScheduleTime.";
     final String distributeMessageTimeDesc = "The amount of time it takes to prepare a message and send it on the network.  This includes sentMessagesTime.";
     final String nodesDesc = "The current number of nodes in this distributed system.";
@@ -411,7 +411,7 @@ public class DistributionStats implements DMStats {
         f.createIntGauge("functionExecutionThreads", functionExecutionThreadsDesc, "threads"),
         f.createIntGauge("waitingThreads", waitingThreadsDesc, "threads"),
         f.createLongCounter("messageChannelTime", messageChannelTimeDesc, "nanoseconds", false),
-        f.createLongCounter("udpDispachRequestTime", udpDispachRequestTimeDesc, "nanoseconds", false),
+        f.createLongCounter("udpDispatchRequestTime", udpDispatchRequestTimeDesc, "nanoseconds", false),
         f.createLongCounter("replyMessageTime", replyMessageTimeDesc, "nanoseconds", false),
         f.createLongCounter("distributeMessageTime", distributeMessageTimeDesc, "nanoseconds", false),
         f.createIntGauge("nodes", nodesDesc, "nodes"),
@@ -575,7 +575,7 @@ public class DistributionStats implements DMStats {
     messageProcessingScheduleTimeId =
       type.nameToId("messageProcessingScheduleTime");
     messageChannelTimeId = type.nameToId("messageChannelTime");
-    udpDispachRequestTimeId = type.nameToId("udpDispachRequestTime");
+    udpDispatchRequestTimeId = type.nameToId("udpDispatchRequestTime");
     replyMessageTimeId = type.nameToId("replyMessageTime");
     distributeMessageTimeId = type.nameToId("distributeMessageTime");
     nodesId = type.nameToId("nodes");
@@ -1083,12 +1083,16 @@ public class DistributionStats implements DMStats {
     }
   }
   
-  public void incUDPDispachRequestTime(long delta) {
+  public void incUDPDispatchRequestTime(long delta) {
     if (enableClockStats) {
-      this.stats.incLong(udpDispachRequestTimeId, delta);
+      this.stats.incLong(udpDispatchRequestTimeId, delta);
     }
   }
 
+  public long getUDPDispatchRequestTime() {
+    return this.stats.getLong(udpDispatchRequestTimeId);
+  }
+  
   public long getReplyMessageTime() {
     return this.stats.getLong(replyMessageTimeId);
   }

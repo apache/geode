@@ -23,13 +23,12 @@ import java.util.Set;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.internal.ExecuteFunctionHelper;
-import com.gemstone.gemfire.cache.client.internal.Op;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.operations.ExecuteFunctionOperationContext;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -299,9 +298,9 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       }
       catch (FunctionException fe) {
         String message = fe.getMessage();
-
-        if (fe.getCause() instanceof FunctionInvocationTargetException) {
-          if (fe.getCause() instanceof InternalFunctionInvocationTargetException) {
+        Object cause = fe.getCause();
+        if (cause instanceof FunctionInvocationTargetException || cause instanceof QueryInvocationTargetException) {
+          if (cause instanceof InternalFunctionInvocationTargetException) {
             // Fix for #44709: User should not be aware of
             // InternalFunctionInvocationTargetException. No instance of
             // InternalFunctionInvocationTargetException is giving useful

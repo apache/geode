@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.gemstone.gemfire.internal.hll;
+
 /*
  * Copyright (C) 2011 Clearspring Technologies, Inc. 
  *
@@ -30,13 +32,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.hdfs.internal.cardinality;
 
 import java.io.IOException;
 
 
-public interface ICardinality
-{
+public interface ICardinality {
+
     /**
      * @param o stream element
      * @return false if the value returned by cardinality() is unaffected by the appearance of o in the stream.
@@ -70,6 +71,7 @@ public interface ICardinality
     int sizeof();
 
     /**
+     * @return byte[]
      * @throws IOException
      */
     byte[] getBytes() throws IOException;
@@ -77,7 +79,7 @@ public interface ICardinality
     /**
      * Merges estimators to produce a new estimator for the combined streams
      * of this estimator and those passed as arguments.
-     * 
+     * <p/>
      * Nor this estimator nor the one passed as parameters are modified.
      *
      * @param estimators Zero or more compatible estimators

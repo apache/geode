@@ -172,7 +172,8 @@ public interface DMStats {
 
   public void incMessageChannelTime(long val);
 
-  public void incUDPDispachRequestTime(long val);
+  public void incUDPDispatchRequestTime(long val);
+  public long getUDPDispatchRequestTime();
   
   public long getReplyMessageTime();
   public void incReplyMessageTime(long val);

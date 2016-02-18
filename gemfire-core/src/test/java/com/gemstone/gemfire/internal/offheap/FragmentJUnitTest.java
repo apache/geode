@@ -24,14 +24,12 @@ import static org.hamcrest.CoreMatchers.*;
 import java.util.Arrays;
 
 import org.assertj.core.api.JUnitSoftAssertions;
-//import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.*;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
@@ -100,7 +98,7 @@ public class FragmentJUnitTest {
       expectedException.expect(IllegalStateException.class);
       expectedException.expectMessage("address was not 8 byte aligned");
 
-      Fragment fragment = new Fragment(slabs[0].getMemoryAddress() + 2, 0);
+      new Fragment(slabs[0].getMemoryAddress() + 2, 0);
       fail("Constructor failed to throw exception for non-8-byte alignment");
   }
 
@@ -158,7 +156,8 @@ public class FragmentJUnitTest {
 
   @Test
   public void getFreeListIdIsAlwaysMinus1() {
-    slabs = allocateMemorySlabs();    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    slabs = allocateMemorySlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     softly.assertThat(fragment.getFreeListId()).isEqualTo(-1);
     fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
     softly.assertThat(fragment.getFreeListId()).isEqualTo(-1);

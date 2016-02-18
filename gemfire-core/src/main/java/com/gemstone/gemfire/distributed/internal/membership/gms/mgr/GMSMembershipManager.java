@@ -84,6 +84,7 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheServerCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
@@ -1615,9 +1616,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
         // we need to retain a cache-server description if this JVM was started by gfsh
         List<CacheServerCreation> list = new ArrayList<CacheServerCreation>(cache.getCacheServers().size());
         for (Iterator it = cache.getCacheServers().iterator(); it.hasNext(); ) {
-          CacheServer cs = (CacheServer)it.next();
-          CacheServerCreation bsc = new CacheServerCreation(cache, cs);
-          list.add(bsc);
+          CacheServerImpl cs = (CacheServerImpl)it.next();
+          if (cs.isDefaultServer()) {
+            CacheServerCreation bsc = new CacheServerCreation(cache, cs);
+            list.add(bsc);
+          }
         }
         cache.getCacheConfig().setCacheServerCreation(list);
         logger.info("CacheServer configuration saved");
