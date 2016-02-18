@@ -307,11 +307,6 @@ public class EventTracker
         }
       }
     }
-    EventSeqnoHolder newEvh = new EventSeqnoHolder(eventID.getSequenceID(), tag);
-    if (logger.isTraceEnabled()){
-      logger.trace("region event tracker recording {}", event);
-    }
-    recordSeqno(membershipID, newEvh);
     
     //If this is a bulkOp, and concurrency checks are enabled, we need to
     //save the version tag in case we retry.
@@ -319,6 +314,12 @@ public class EventTracker
         && (event.getOperation().isPutAll() || event.getOperation().isRemoveAll()) && lr.getServerProxy() == null) {
       recordBulkOpEvent(event, membershipID);
     }
+
+    EventSeqnoHolder newEvh = new EventSeqnoHolder(eventID.getSequenceID(), tag);
+    if (logger.isTraceEnabled()){
+      logger.trace("region event tracker recording {}", event);
+    }
+    recordSeqno(membershipID, newEvh);
   }
 
   /**
