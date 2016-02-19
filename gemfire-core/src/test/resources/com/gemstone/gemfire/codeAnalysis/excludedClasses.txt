@@ -113,3 +113,6 @@ com/gemstone/gemfire/internal/datasource/FacetsJCAConnectionManagerImpl
 com/gemstone/gemfire/internal/process/ClusterConfigurationNotAvailableException
 com/gemstone/org/apache/logging/log4j/core/config/xml/GemFireXmlConfiguration
 com/gemstone/org/apache/logging/log4j/core/config/xml/GemFireXmlConfiguration$ErrorType
+com/gemstone/gemfire/internal/ra/GFConnectionFactoryImpl
+com/gemstone/gemfire/internal/ra/GFConnectionImpl
+com/gemstone/gemfire/internal/ra/spi/JCAManagedConnectionFactory
