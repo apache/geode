@@ -187,21 +187,6 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
     disconnectAllFromDS();
   }
   
-  public static Test suite() {
-    Class[] classes = new Class[] {com.gemstone.gemfire.internal.cache.ha.CQListGIIDUnitTest.class,
-        com.gemstone.gemfire.cache30.RegionReliabilityDistAckDUnitTest.class,
-        com.gemstone.gemfire.cache30.RegionReliabilityGlobalDUnitTest.class,
-        com.gemstone.gemfire.internal.cache.execute.PRClientServerFunctionExecutionNoAckDUnitTest.class,
-        com.gemstone.gemfire.internal.cache.execute.PRClientServerRegionFunctionExecutionDUnitTest.class,
-        com.gemstone.gemfire.internal.cache.execute.PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        com.gemstone.gemfire.internal.cache.execute.PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest.class,
-        com.gemstone.gemfire.internal.cache.execute.PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
-        com.gemstone.gemfire.internal.cache.ha.HASlowReceiverDUnitTest.class};
-    
-    return new TestSuite(classes);
-  }
-
-
   private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     ds.disconnect();
