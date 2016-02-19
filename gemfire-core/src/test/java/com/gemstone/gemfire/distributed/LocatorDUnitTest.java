@@ -1091,6 +1091,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * members of the distributed system join it.  This ensures that
    * members start up okay, and that handling of a stopped locator
    * is correct.
+   * <p>The locator is then restarted and is shown to take over the
+   * role of membership coordinator.
    */
   public void testOneLocator() throws Exception {
     disconnectAllFromDS();

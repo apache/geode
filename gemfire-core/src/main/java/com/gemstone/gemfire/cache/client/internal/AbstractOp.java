@@ -114,7 +114,7 @@ public abstract class AbstractOp implements Op {
   protected void sendMessage(Connection cnx) throws Exception {
     if (cnx.getServer().getRequiresCredentials()) {
       // Security is enabled on client as well as on server
-      getMessage().setEarlyAck(Message.MESSAGE_HAS_SECURE_PART);
+      getMessage().setMessageHasSecurePartFlag();
       HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
       long userId = -1;
 

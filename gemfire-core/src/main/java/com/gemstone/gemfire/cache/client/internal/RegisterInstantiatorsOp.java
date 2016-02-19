@@ -173,7 +173,7 @@ public class RegisterInstantiatorsOp {
     }
     @Override
     protected void sendMessage(Connection cnx) throws Exception {
-      getMessage().setEarlyAck((byte)(getMessage().getEarlyAckByte() & Message.MESSAGE_HAS_SECURE_PART));
+      getMessage().clearMessageHasSecurePartFlag();
       getMessage().send(false);
     }
   }

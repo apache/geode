@@ -45,7 +45,7 @@ public class ProxyCacheCloseOp {
     public ProxyCacheCloseOpImpl(ExecutablePool pool, Properties securityProps,
         boolean keepAlive) {
       super(MessageType.REMOVE_USER_AUTH, 1);
-      getMessage().setEarlyAck(Message.MESSAGE_HAS_SECURE_PART);
+      getMessage().setMessageHasSecurePartFlag();
       getMessage().addBytesPart(keepAlive ? new byte[] {1} : new byte[] {0});
     }
 

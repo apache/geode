@@ -69,10 +69,6 @@ public class Part {
     this.typeCode = tc;
   }
 
-//   public void init(HeapDataOutputStream os, byte typeCode) {
-//     this.part = os;
-//     this.typeCode = typeCode;
-//   }
 
   public void clear() {
     this.part = null;
@@ -97,9 +93,7 @@ public class Part {
   public boolean isBytes() {
     return this.typeCode == BYTE_CODE || this.typeCode == EMPTY_BYTEARRAY_CODE;
   }
-//   public boolean isString() {
-//     return this.typeCode == STRING_CODE;
-//   }
+
   public void setPartState(byte[] b, boolean isObject) {
     if (isObject) {
       this.typeCode = OBJECT_CODE;
@@ -111,6 +105,7 @@ public class Part {
     }
     this.part = b;
   }
+  
   public void setPartState(HeapDataOutputStream os, boolean isObject) {
     if (isObject) {
       this.typeCode = OBJECT_CODE;
