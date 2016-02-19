@@ -97,15 +97,15 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
   @Override
   protected final void preTearDown() throws Exception {
     lastKeyReceived = false;
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "resetLastKeyReceived");
-    vm1.invoke(DeltaPropagationStatsDUnitTest.class, "resetLastKeyReceived");
-    vm2.invoke(DeltaPropagationStatsDUnitTest.class, "resetLastKeyReceived");
-    vm3.invoke(DeltaPropagationStatsDUnitTest.class, "resetLastKeyReceived");
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.resetLastKeyReceived());
+    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.resetLastKeyReceived());
+    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.resetLastKeyReceived());
+    vm3.invoke(() -> DeltaPropagationStatsDUnitTest.resetLastKeyReceived());
     closeCache();
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "closeCache");
-    vm1.invoke(DeltaPropagationStatsDUnitTest.class, "closeCache");
-    vm2.invoke(DeltaPropagationStatsDUnitTest.class, "closeCache");
-    vm3.invoke(DeltaPropagationStatsDUnitTest.class, "closeCache");
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.closeCache());
+    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.closeCache());
+    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.closeCache());
+    vm3.invoke(() -> DeltaPropagationStatsDUnitTest.closeCache());
   }
 
   public static void resetLastKeyReceived() {
@@ -134,15 +134,13 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
 
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "putCleanDelta",
-        new Object[] {Integer.valueOf(numOfKeys), Long.valueOf(updates)});
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "putLastKey");
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(Integer.valueOf(numOfKeys), Long.valueOf(updates)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
 
     waitForLastKey();
 
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "verifyDeltaSenderStats",
-        new Object[] {Integer.valueOf(SERVER_TO_CLIENT),
-            Long.valueOf(numOfKeys * updates)});
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(Integer.valueOf(SERVER_TO_CLIENT),
+            Long.valueOf(numOfKeys * updates)));
     verifyDeltaReceiverStats(SERVER_TO_CLIENT, numOfKeys * updates, 0L);
   }
 
@@ -162,19 +160,16 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
 
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class,
-        "putErrorDeltaForReceiver", new Object[] {Integer.valueOf(numOfKeys),
-            Long.valueOf(updates), Long.valueOf(errors)});
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "putErrorDeltaForSender",
-        new Object[] {Integer.valueOf(numOfKeys), Long.valueOf(updates),
-            Long.valueOf(errors2), Boolean.FALSE});
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "putLastKey");
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForReceiver(Integer.valueOf(numOfKeys),
+            Long.valueOf(updates), Long.valueOf(errors)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForSender(Integer.valueOf(numOfKeys), Long.valueOf(updates),
+            Long.valueOf(errors2), Boolean.FALSE));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
 
     waitForLastKey();
 
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "verifyDeltaSenderStats",
-        new Object[] {Integer.valueOf(SERVER_TO_CLIENT),
-            Long.valueOf(2 * numOfKeys * updates - errors2)});
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(Integer.valueOf(SERVER_TO_CLIENT),
+            Long.valueOf(2 * numOfKeys * updates - errors2)));
     verifyDeltaReceiverStats(SERVER_TO_CLIENT, 2 * numOfKeys * updates - errors
         - errors2, errors);
   }
@@ -201,22 +196,18 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
     vm1.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     vm2.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     // Only delta should get sent to vm1 and vm2
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "putCleanDelta",
-        new Object[] {Integer.valueOf(numOfKeys), Long.valueOf(updates)});
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "putLastKey");
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(Integer.valueOf(numOfKeys), Long.valueOf(updates)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
 
-    vm1.invoke(DeltaPropagationStatsDUnitTest.class, "waitForLastKey");
-    vm2.invoke(DeltaPropagationStatsDUnitTest.class, "waitForLastKey");
+    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
+    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
 
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "verifyDeltaSenderStats",
-        new Object[] {Integer.valueOf(PEER_TO_PEER),
-            Long.valueOf(numOfKeys * updates)});
-    vm1.invoke(DeltaPropagationStatsDUnitTest.class,
-        "verifyDeltaReceiverStats", new Object[] {Integer.valueOf(PEER_TO_PEER),
-            Long.valueOf(numOfKeys * updates), Long.valueOf(0)});
-    vm2.invoke(DeltaPropagationStatsDUnitTest.class,
-        "verifyDeltaReceiverStats", new Object[] {Integer.valueOf(PEER_TO_PEER),
-            Long.valueOf(numOfKeys * updates), Long.valueOf(0)});
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(Integer.valueOf(PEER_TO_PEER),
+            Long.valueOf(numOfKeys * updates)));
+    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(Integer.valueOf(PEER_TO_PEER),
+            Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
+    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(Integer.valueOf(PEER_TO_PEER),
+            Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
   }
 
   /**
@@ -234,30 +225,25 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
     vm1.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     vm2.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     // Only delta should get sent to vm1 and vm2
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class,
-        "putErrorDeltaForReceiver", new Object[] {Integer.valueOf(numOfKeys),
-            Long.valueOf(updates), Long.valueOf(errors)});
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "putErrorDeltaForSender",
-        new Object[] {Integer.valueOf(numOfkeys2), Long.valueOf(updates2),
-            Long.valueOf(errors2), Boolean.FALSE});
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "putLastKey");
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForReceiver(Integer.valueOf(numOfKeys),
+            Long.valueOf(updates), Long.valueOf(errors)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForSender(Integer.valueOf(numOfkeys2), Long.valueOf(updates2),
+            Long.valueOf(errors2), Boolean.FALSE));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
 
-    vm1.invoke(DeltaPropagationStatsDUnitTest.class, "waitForLastKey");
-    vm2.invoke(DeltaPropagationStatsDUnitTest.class, "waitForLastKey");
+    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
+    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
 
     long deltasSent = (numOfKeys * updates) + (numOfkeys2 * updates2) - errors2;
     long deltasProcessed = deltasSent - errors;
 
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "verifyDeltaSenderStats",
-        new Object[] {Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasSent)});
-    vm1.invoke(DeltaPropagationStatsDUnitTest.class,
-        "verifyDeltaReceiverStats", new Object[] {
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasSent)));
+    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
             Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasProcessed),
-            Long.valueOf(errors)});
-    vm2.invoke(DeltaPropagationStatsDUnitTest.class,
-        "verifyDeltaReceiverStats", new Object[] {
+            Long.valueOf(errors)));
+    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
             Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasProcessed),
-            Long.valueOf(errors)});
+            Long.valueOf(errors)));
   }
 
   /**
@@ -286,21 +272,18 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
     putCleanDelta(numOfKeys, updates);
     putLastKey();
 
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "waitForLastKey");
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
 
     verifyDeltaSenderStats(CLIENT_TO_SERVER, numOfKeys * updates);
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class,
-        "verifyDeltaReceiverStats", new Object[] {
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
             Integer.valueOf(CLIENT_TO_SERVER),
-            Long.valueOf(numOfKeys * updates), Long.valueOf(0)});
+            Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
 
     // Unrelated to Delta feature. Piggy-backing on existing test code
     // to validate fix for #49539.
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "doPuts",
-        new Object[] { numOfKeys });
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.doPuts( numOfKeys ));
     long clientOriginatedEvents = numOfKeys * updates + numOfKeys + 1;
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "verifyCCPStatsBug49539",
-        new Object[] { clientOriginatedEvents });
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyCCPStatsBug49539( clientOriginatedEvents ));
   }
 
   /**
@@ -326,13 +309,12 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
     long deltasSent = 2 * (numOfKeys * updates) - errors2;
     long deltasProcessed = deltasSent - errors;
 
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class, "waitForLastKey");
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
 
     verifyDeltaSenderStats(CLIENT_TO_SERVER, deltasSent);
-    vm0.invoke(DeltaPropagationStatsDUnitTest.class,
-        "verifyDeltaReceiverStats", new Object[] {
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
             Integer.valueOf(CLIENT_TO_SERVER), Long.valueOf(deltasProcessed),
-            Long.valueOf(errors)});
+            Long.valueOf(errors)));
   }
 
   /**

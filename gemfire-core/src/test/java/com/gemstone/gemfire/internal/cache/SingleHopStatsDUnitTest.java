@@ -114,10 +114,10 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
   @Override
   protected final void preTearDownCacheTestCase() throws Exception {
     // close the clients first
-    member0.invoke(SingleHopStatsDUnitTest.class, "closeCache");
-    member1.invoke(SingleHopStatsDUnitTest.class, "closeCache");
-    member2.invoke(SingleHopStatsDUnitTest.class, "closeCache");
-    member3.invoke(SingleHopStatsDUnitTest.class, "closeCache");
+    member0.invoke(() -> SingleHopStatsDUnitTest.closeCache());
+    member1.invoke(() -> SingleHopStatsDUnitTest.closeCache());
+    member2.invoke(() -> SingleHopStatsDUnitTest.closeCache());
+    member3.invoke(() -> SingleHopStatsDUnitTest.closeCache());
     closeCache();
   }
   
@@ -150,34 +150,20 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
     VM server3 = member2;
     VM client1 = member3;
     
-    Integer port0 = (Integer)member0.invoke(
-        SingleHopStatsDUnitTest.class, "createServerForStats",
-        new Object[] { 0, 113,"No_Colocation"});
-    Integer port1 = (Integer)member1.invoke(
-        SingleHopStatsDUnitTest.class, "createServerForStats",
-        new Object[] { 0, 113,"No_Colocation"});
-    Integer port2 = (Integer)member2.invoke(
-        SingleHopStatsDUnitTest.class, "createServerForStats",
-        new Object[] { 0, 113,"No_Colocation"});
-     client1.invoke(
-        SingleHopStatsDUnitTest.class, "createClient",
-        new Object[] {port0, port1, port2,"No_Colocation"});
+    Integer port0 = (Integer)member0.invoke(() -> SingleHopStatsDUnitTest.createServerForStats( 0, 113,"No_Colocation"));
+    Integer port1 = (Integer)member1.invoke(() -> SingleHopStatsDUnitTest.createServerForStats( 0, 113,"No_Colocation"));
+    Integer port2 = (Integer)member2.invoke(() -> SingleHopStatsDUnitTest.createServerForStats( 0, 113,"No_Colocation"));
+     client1.invoke(() -> SingleHopStatsDUnitTest.createClient(port0, port1, port2,"No_Colocation"));
      
     createClient(port0, port1, port2, "No_Colocation");
 
-    client1.invoke(
-        SingleHopStatsDUnitTest.class, "createPR",
-        new Object[] {"FirstClient", "No_Colocation"});
+    client1.invoke(() -> SingleHopStatsDUnitTest.createPR("FirstClient", "No_Colocation"));
     createPR("SecondClient", "No_Colocation");
     
-    client1.invoke(
-        SingleHopStatsDUnitTest.class, "getPR",
-        new Object[] {"FirstClient", "No_Colocation"});
+    client1.invoke(() -> SingleHopStatsDUnitTest.getPR("FirstClient", "No_Colocation"));
     getPR("SecondClient", "No_Colocation");
     
-    client1.invoke(
-        SingleHopStatsDUnitTest.class, "updatePR",
-        new Object[] {"FirstClient", "No_Colocation"});
+    client1.invoke(() -> SingleHopStatsDUnitTest.updatePR("FirstClient", "No_Colocation"));
   }
   
   public void testClientStatsColocationPR(){
@@ -186,27 +172,15 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
     VM server3 = member2;
     VM client1 = member3;
     
-    Integer port0 = (Integer)member0.invoke(
-        SingleHopStatsDUnitTest.class, "createServerForStats",
-        new Object[] { 0, 4, "Colocation" });
-    Integer port1 = (Integer)member1.invoke(
-        SingleHopStatsDUnitTest.class, "createServerForStats",
-        new Object[] { 0, 4, "Colocation" });
-    Integer port2 = (Integer)member2.invoke(
-        SingleHopStatsDUnitTest.class, "createServerForStats",
-        new Object[] { 0, 4, "Colocation"});
-     client1.invoke(
-        SingleHopStatsDUnitTest.class, "createClient",
-        new Object[] {port0, port1, port2, "Colocation"});
+    Integer port0 = (Integer)member0.invoke(() -> SingleHopStatsDUnitTest.createServerForStats( 0, 4, "Colocation" ));
+    Integer port1 = (Integer)member1.invoke(() -> SingleHopStatsDUnitTest.createServerForStats( 0, 4, "Colocation" ));
+    Integer port2 = (Integer)member2.invoke(() -> SingleHopStatsDUnitTest.createServerForStats( 0, 4, "Colocation"));
+     client1.invoke(() -> SingleHopStatsDUnitTest.createClient(port0, port1, port2, "Colocation"));
     createClient(port0, port1, port2, "Colocation");
 
-    client1.invoke(
-        SingleHopStatsDUnitTest.class, "createPR",
-        new Object[] {"FirstClient", "Colocation"});
+    client1.invoke(() -> SingleHopStatsDUnitTest.createPR("FirstClient", "Colocation"));
     
-    client1.invoke(
-        SingleHopStatsDUnitTest.class, "getPR",
-        new Object[] {"FirstClient", "Colocation"});
+    client1.invoke(() -> SingleHopStatsDUnitTest.getPR("FirstClient", "Colocation"));
   }
 
   

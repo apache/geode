@@ -82,10 +82,8 @@ public class Bug36269DUnitTest extends DistributedTestCase
     // Server2 VM
     server2 = host.getVM(1);
 
-    PORT1 = ((Integer)server1.invoke(Bug36269DUnitTest.class,
-        "createServerCache")).intValue();
-    PORT2 = ((Integer)server2.invoke(Bug36269DUnitTest.class,
-        "createServerCache")).intValue();
+    PORT1 = ((Integer)server1.invoke(() -> Bug36269DUnitTest.createServerCache())).intValue();
+    PORT2 = ((Integer)server2.invoke(() -> Bug36269DUnitTest.createServerCache())).intValue();
 
   }
 
@@ -109,8 +107,8 @@ public class Bug36269DUnitTest extends DistributedTestCase
     try {
       createClientCache();
       acquireConnectionsAndDestroyRegion(NetworkUtils.getServerHostName(Host.getHost(0)));
-      server1.invoke(Bug36269DUnitTest.class, "verifyRegionDestroy");
-      server2.invoke(Bug36269DUnitTest.class, "verifyRegionDestroy");
+      server1.invoke(() -> Bug36269DUnitTest.verifyRegionDestroy());
+      server2.invoke(() -> Bug36269DUnitTest.verifyRegionDestroy());
       Wait.pause(5000);
       verifyNoRegionDestroyOnOriginator();
     }
@@ -222,7 +220,7 @@ public class Bug36269DUnitTest extends DistributedTestCase
   protected final void preTearDown() throws Exception {
     closeCache();
     // close server
-    server1.invoke(Bug36269DUnitTest.class, "closeCache");
-    server2.invoke(Bug36269DUnitTest.class, "closeCache");
+    server1.invoke(() -> Bug36269DUnitTest.closeCache());
+    server2.invoke(() -> Bug36269DUnitTest.closeCache());
   }
 }

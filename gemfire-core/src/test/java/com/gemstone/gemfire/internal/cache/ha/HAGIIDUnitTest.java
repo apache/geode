@@ -118,12 +118,10 @@ public class HAGIIDUnitTest extends DistributedTestCase
   private static VM server1 = null;
   private static VM client0 = null;
 
-  private static int PORT1;
-  private static int PORT2;
-
   private static final String REGION_NAME = "HAGIIDUnitTest_region";
   
   protected static GIIChecker checker = new GIIChecker();
+  private int PORT2;
 
   /** constructor */
   public HAGIIDUnitTest(String name) {
@@ -143,31 +141,30 @@ public class HAGIIDUnitTest extends DistributedTestCase
     client0 = host.getVM(2);
 
     //start server1
-    PORT1 = ((Integer)server0.invoke(HAGIIDUnitTest.class, "createServer1Cache" )).intValue();
-    server0.invoke(ConflationDUnitTest.class, "setIsSlowStart");
-    server0.invoke(HAGIIDUnitTest.class, "setSystemProperty");
+    int PORT1 = ((Integer)server0.invoke(() -> HAGIIDUnitTest.createServer1Cache())).intValue();
+    server0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+    server0.invoke(() -> HAGIIDUnitTest.setSystemProperty());
 
 
     PORT2 =  AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     //Start the client
-    client0.invoke(HAGIIDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(host), new Integer(PORT1),new Integer(PORT2)});
+    client0.invoke(() -> HAGIIDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT1),new Integer(PORT2)));
   }
   
   public void testGIIRegionQueue()
   {
-    client0.invoke(HAGIIDUnitTest.class, "createEntries");
-    client0.invoke(HAGIIDUnitTest.class, "registerInterestList");
-    server0.invoke(HAGIIDUnitTest.class, "put");
+    client0.invoke(() -> HAGIIDUnitTest.createEntries());
+    client0.invoke(() -> HAGIIDUnitTest.registerInterestList());
+    server0.invoke(() -> HAGIIDUnitTest.put());
     
-    server0.invoke(HAGIIDUnitTest.class, "tombstonegc");
+    server0.invoke(() -> HAGIIDUnitTest.tombstonegc());
 
-    client0.invoke(HAGIIDUnitTest.class, "verifyEntries");
+    client0.invoke(() -> HAGIIDUnitTest.verifyEntries());
     server1.invoke(HAGIIDUnitTest.class, "createServer2Cache" ,new Object[] {new Integer(PORT2)});
     Wait.pause(6000);
-    server0.invoke(HAGIIDUnitTest.class, "stopServer");
+    server0.invoke(() -> HAGIIDUnitTest.stopServer());
     //pause(10000);
-    client0.invoke(HAGIIDUnitTest.class, "verifyEntriesAfterGiiViaListener");
+    client0.invoke(() -> HAGIIDUnitTest.verifyEntriesAfterGiiViaListener());
   }
 
   public void createCache(Properties props) throws Exception
@@ -182,8 +179,8 @@ public class HAGIIDUnitTest extends DistributedTestCase
 
   public static void createClientCache(String host, Integer port1 , Integer port2) throws Exception
   {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue();
+    int PORT2 = port2.intValue();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");
@@ -457,10 +454,10 @@ public class HAGIIDUnitTest extends DistributedTestCase
     ConflationDUnitTest.unsetIsSlowStart();
     Invoke.invokeInEveryVM(ConflationDUnitTest.class, "unsetIsSlowStart");
     // close the clients first
-    client0.invoke(HAGIIDUnitTest.class, "closeCache");
+    client0.invoke(() -> HAGIIDUnitTest.closeCache());
     // then close the servers
-    server0.invoke(HAGIIDUnitTest.class, "closeCache");
-    server1.invoke(HAGIIDUnitTest.class, "closeCache");
+    server0.invoke(() -> HAGIIDUnitTest.closeCache());
+    server1.invoke(() -> HAGIIDUnitTest.closeCache());
   }
 
   public static void closeCache()

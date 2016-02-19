@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ChunkValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.Flushable;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
@@ -40,13 +40,13 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class ChunkValueWrapperJUnitTest {
 
   private static ChunkValueWrapper createChunkValueWrapper(byte[] bytes, boolean isSerialized) {
-    Chunk c = (Chunk)SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, isSerialized, false, null);
+    ObjectChunk c = (ObjectChunk)SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, isSerialized, false);
     return new ChunkValueWrapper(c);
   }
 
   @Before
   public void setUp() throws Exception {
-    SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
+    SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
   }
 
   @After

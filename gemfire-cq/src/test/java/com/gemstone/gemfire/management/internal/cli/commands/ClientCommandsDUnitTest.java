@@ -1438,9 +1438,9 @@ private void setUpNonSubscribedClient() throws Exception {
   
   @Override
   protected final void postTearDownCacheTestCase() throws Exception {
-    Host.getHost(0).getVM(0).invoke(CacheServerTestUtil.class, "closeCache");
-    Host.getHost(0).getVM(1).invoke(CacheServerTestUtil.class, "closeCache");
-    Host.getHost(0).getVM(2).invoke(CacheServerTestUtil.class, "closeCache");
-    Host.getHost(0).getVM(3).invoke(CacheServerTestUtil.class, "closeCache");
+    Host.getHost(0).getVM(0).invoke(() -> CacheServerTestUtil.closeCache());
+    Host.getHost(0).getVM(1).invoke(() -> CacheServerTestUtil.closeCache());
+    Host.getHost(0).getVM(2).invoke(() -> CacheServerTestUtil.closeCache());
+    Host.getHost(0).getVM(3).invoke(() -> CacheServerTestUtil.closeCache());
   }
 }

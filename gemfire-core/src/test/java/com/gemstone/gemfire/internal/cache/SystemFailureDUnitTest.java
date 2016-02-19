@@ -392,7 +392,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   private boolean doVerifyConnected() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    Object o = vm.invoke(this.getClass(), "verifyConnected");
+    Object o = vm.invoke(() -> this.verifyConnected());
     return ((Boolean)o).booleanValue();
   }
   
@@ -424,7 +424,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   private boolean doVerifyDisconnected() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    return ((Boolean)vm.invoke(this.getClass(), "verifyDisconnected"))
+    return ((Boolean)vm.invoke(() -> this.verifyDisconnected()))
         .booleanValue();
   }
   

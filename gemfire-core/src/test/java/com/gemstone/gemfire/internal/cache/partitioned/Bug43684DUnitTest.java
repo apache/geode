@@ -55,7 +55,7 @@ public class Bug43684DUnitTest extends DistributedTestCase {
 
   private static GemFireCacheImpl cache;
 
-  private static Host host;
+  private Host host;
 
   private static VM server1;
 
@@ -84,10 +84,10 @@ public class Bug43684DUnitTest extends DistributedTestCase {
   @Override
   protected final void preTearDown() throws Exception {
     closeCache();
-    client1.invoke(Bug43684DUnitTest.class, "closeCache");
-    server1.invoke(Bug43684DUnitTest.class, "closeCache");
-    server2.invoke(Bug43684DUnitTest.class, "closeCache");
-    server3.invoke(Bug43684DUnitTest.class, "closeCache");
+    client1.invoke(() -> Bug43684DUnitTest.closeCache());
+    server1.invoke(() -> Bug43684DUnitTest.closeCache());
+    server2.invoke(() -> Bug43684DUnitTest.closeCache());
+    server3.invoke(() -> Bug43684DUnitTest.closeCache());
   }
 
   public static void closeCache() {
@@ -201,33 +201,33 @@ public class Bug43684DUnitTest extends DistributedTestCase {
 
   @SuppressWarnings("rawtypes")
   private void doRegisterInterest(Object keys, String regEx, Integer numOfPuts, Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
-    int port1 = (Integer)server1.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, isPrimaryEmpty});
-    server2.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, false});
-    server3.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, false});
+    int port1 = (Integer)server1.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, isPrimaryEmpty));
+    server2.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, false));
+    server3.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, false));
 
     int regexNum = 20;
-    server1.invoke(Bug43684DUnitTest.class, "doPuts", new Object[]{numOfPuts, regEx, regexNum});
+    server1.invoke(() -> Bug43684DUnitTest.doPuts(numOfPuts, regEx, regexNum));
 
-    client1.invoke(Bug43684DUnitTest.class, "createClientCache", new Object[] {host, port1});
-    client1.invoke(Bug43684DUnitTest.class, "registerInterest", new Object[] {keys, regEx});
+    client1.invoke(() -> Bug43684DUnitTest.createClientCache(host, port1));
+    client1.invoke(() -> Bug43684DUnitTest.registerInterest(keys, regEx));
 
-    server1.invoke(Bug43684DUnitTest.class, "closeCache");
+    server1.invoke(() -> Bug43684DUnitTest.closeCache());
     int size = keys != null ? (keys instanceof List ? ((List)keys).size() : 1) : regEx == null ? numOfPuts : regexNum;
-    client1.invoke(Bug43684DUnitTest.class, "verifyResponse", new Object[]{size});
+    client1.invoke(() -> Bug43684DUnitTest.verifyResponse(size));
   }
 
   @SuppressWarnings("rawtypes")
   private void doRegisterInterest2(Object keys, Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
-    int port1 = (Integer)server1.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, isPrimaryEmpty});
-    server2.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, false});
-    server3.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, false});
+    int port1 = (Integer)server1.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, isPrimaryEmpty));
+    server2.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, false));
+    server3.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, false));
 
-    client1.invoke(Bug43684DUnitTest.class, "createClientCache", new Object[] {host, port1});
+    client1.invoke(() -> Bug43684DUnitTest.createClientCache(host, port1));
     createClientCache(host, port1);
     doOps();
 
-    client1.invoke(Bug43684DUnitTest.class, "registerInterest", new Object[] {keys, null});
-    client1.invoke(Bug43684DUnitTest.class, "verifyResponse2");
+    client1.invoke(() -> Bug43684DUnitTest.registerInterest(keys, null));
+    client1.invoke(() -> Bug43684DUnitTest.verifyResponse2());
   }
 
   public static Integer createServerCache() throws Exception {

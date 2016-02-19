@@ -43,7 +43,7 @@ public class OffHeapWriteObjectAsByteArrayJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
+    SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
   }
 
   @After
@@ -52,7 +52,7 @@ public class OffHeapWriteObjectAsByteArrayJUnitTest {
   }
   
   private StoredObject createStoredObject(byte[] bytes, boolean isSerialized, boolean isCompressed) {
-    return SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, isSerialized, isCompressed, null);
+    return SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, isSerialized, isCompressed);
   }
   
   private DataInputStream createInput(HeapDataOutputStream hdos) {
@@ -64,7 +64,7 @@ public class OffHeapWriteObjectAsByteArrayJUnitTest {
   public void testByteArrayChunk() throws IOException, ClassNotFoundException {
     byte[] expected = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
     StoredObject so = createStoredObject(expected, false, false);
-    assertTrue(so instanceof Chunk);
+    assertTrue(so instanceof ObjectChunk);
     HeapDataOutputStream hdos = new HeapDataOutputStream(new byte[1024]);
     DataSerializer.writeObjectAsByteArray(so, hdos);
     DataInputStream in = createInput(hdos);
@@ -88,7 +88,7 @@ public class OffHeapWriteObjectAsByteArrayJUnitTest {
   public void testStringChunk() throws IOException, ClassNotFoundException {
     byte[] expected = EntryEventImpl.serialize("1234567890");
     StoredObject so = createStoredObject(expected, true, false);
-    assertTrue(so instanceof Chunk);
+    assertTrue(so instanceof ObjectChunk);
     HeapDataOutputStream hdos = new HeapDataOutputStream(new byte[1024]);
     DataSerializer.writeObjectAsByteArray(so, hdos);
     DataInputStream in = createInput(hdos);

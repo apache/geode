@@ -74,17 +74,15 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends DistributedTestCase
     vm0 = host.getVM(0);
     createServerCache();
     vm0
-        .invoke(VerifyEventIDGenerationInP2PDUnitTest.class,
-            "createServerCache");
+        .invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.createServerCache());
     receiver = false;
   }
 
   public void _testEventIDGeneration() throws Exception
   {
     createEntry();
-    vm0.invoke(VerifyEventIDGenerationInP2PDUnitTest.class, "get");
-    Boolean pass = (Boolean)vm0.invoke(
-        VerifyEventIDGenerationInP2PDUnitTest.class, "verifyResult");
+    vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.get());
+    Boolean pass = (Boolean)vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.verifyResult());
     assertFalse(pass.booleanValue());
   }
 
@@ -120,8 +118,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends DistributedTestCase
       public void afterCreate(EntryEvent event)
       {
         if (!receiver) {
-          vm0.invoke(EventIDVerificationInP2PDUnitTest.class, "setEventIDData",
-              new Object[] { ((EntryEventImpl)event).getEventId() });
+          vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.setEventIDData( ((EntryEventImpl)event).getEventId() ));
         }
         else {
           testEventIDResult = ((EntryEventImpl)event).getEventId().equals(
@@ -175,7 +172,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     closeCache();
-    vm0.invoke(VerifyEventIDGenerationInP2PDUnitTest.class, "closeCache");
+    vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.closeCache());
   }
 
   public static void closeCache()

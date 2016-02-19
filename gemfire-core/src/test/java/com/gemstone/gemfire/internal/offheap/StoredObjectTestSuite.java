@@ -22,10 +22,9 @@ import org.junit.runners.Suite;
 
 @Suite.SuiteClasses({
 	DataAsAddressJUnitTest.class,
-	GemFireChunkJUnitTest.class,
-	ChunkWithHeapFormJUnitTest.class,
-	GemFireChunkSliceJUnitTest.class,
-	GemFireChunkFactoryJUnitTest.class
+	ObjectChunkJUnitTest.class,
+	ObjectChunkWithHeapFormJUnitTest.class,
+	ObjectChunkSliceJUnitTest.class,
 })
 @RunWith(Suite.class)
 public class StoredObjectTestSuite {

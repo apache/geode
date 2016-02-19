@@ -68,28 +68,26 @@ public class Bug37805DUnitTest extends DistributedTestCase{
   @Override
   protected final void preTearDown() throws Exception {
     // Stop server 1
-    this.server1VM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
   
   public void testFunctionality() {
  // Step 1: Starting the servers
 
-    PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-            })).intValue();
+    PORT1 = ((Integer)this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true)
+            ))).intValue();
     final int durableClientTimeout = 600; 
     
     
     // Step 2: Starting Client and creating durableRegion
     final String durableClientId = getName() + "_client";
 
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
-        new Object[] {
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
             getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, true, 0),
             regionName,
             getDurableClientDistributedSystemProperties(durableClientId,
-                durableClientTimeout), Boolean.TRUE });
+                durableClientTimeout), Boolean.TRUE ));
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable(
@@ -99,10 +97,10 @@ public class Bug37805DUnitTest extends DistributedTestCase{
       }
     });
     
-    this.server1VM.invoke(Bug37805DUnitTest.class, "checkRootRegions");
+    this.server1VM.invoke(() -> Bug37805DUnitTest.checkRootRegions());
     
     
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
   }
   
   public static void checkRootRegions() {

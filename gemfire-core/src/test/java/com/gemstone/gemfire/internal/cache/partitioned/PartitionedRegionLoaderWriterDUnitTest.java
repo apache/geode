@@ -66,30 +66,24 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     host = Host.getHost(0);
     accessor = host.getVM(0);
     datastore1 = host.getVM(1);
-    accessor.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {new CacheLoader2(), null, 0});
-    datastore1.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {null, null, 10});
+    accessor.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(new CacheLoader2(), null, 0));
+    datastore1.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, null, 10));
   }
   
   public void testWriter_NotOnAccessor_OnDataStore(){
     host = Host.getHost(0);
     accessor = host.getVM(1);
     datastore1 = host.getVM(2);
-    accessor.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {null, null, 0});
-    datastore1.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {null, new CacheWriter2(), 10});
+    accessor.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, null, 0));
+    datastore1.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, new CacheWriter2(), 10));
   }
   
   public void testWriter_OnDataStore_NotOnAccessor(){
     host = Host.getHost(0);
     accessor = host.getVM(1);
     datastore1 = host.getVM(2);
-    datastore1.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {null, new CacheWriter2(), 10});
-    accessor.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {null, null, 0});
+    datastore1.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, new CacheWriter2(), 10));
+    accessor.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, null, 0));
   }
   
   public void testLoader_OnAccessor_NotOnFirstDataStore_OnSecondDataStore(){
@@ -97,12 +91,9 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     accessor = host.getVM(1);
     datastore1 = host.getVM(2);
     datastore2 = host.getVM(3);
-    accessor.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {new CacheLoader2(), null, 0});
-    datastore1.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {null, null, 10});
-    datastore2.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegionWithPossibleFail", new Object[] {new CacheLoader2(),null, 10});
+    accessor.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(new CacheLoader2(), null, 0));
+    datastore1.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, null, 10));
+    datastore2.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegionWithPossibleFail(new CacheLoader2(),null, 10));
   }
   
   public void testLoader_NotOnFirstDataStore_OnAccessor_OnSecondDataStore(){
@@ -110,12 +101,9 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     accessor = host.getVM(1);
     datastore1 = host.getVM(2);
     datastore2 = host.getVM(3);
-    datastore1.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {null, null, 10});
-    accessor.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {new CacheLoader2(), null, 0});
-    datastore2.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegionWithPossibleFail", new Object[] {new CacheLoader2(),null, 10});
+    datastore1.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, null, 10));
+    accessor.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(new CacheLoader2(), null, 0));
+    datastore2.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegionWithPossibleFail(new CacheLoader2(),null, 10));
   }
   
   public void testLoader_OnFirstDataStore_OnSecondDataStore_OnAccessor(){
@@ -123,12 +111,9 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     accessor = host.getVM(1);
     datastore1 = host.getVM(2);
     datastore2 = host.getVM(3);
-    datastore1.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {new CacheLoader2(), null, 10});
-    datastore2.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {new CacheLoader2(),null, 10});
-    accessor.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {new CacheLoader2(), null, 0});
+    datastore1.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(new CacheLoader2(), null, 10));
+    datastore2.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(new CacheLoader2(),null, 10));
+    accessor.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(new CacheLoader2(), null, 0));
   }
   
   public void testLoader_OnFirstDataStore_OnSecondDataStore_NotOnAccessor(){
@@ -136,12 +121,9 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     accessor = host.getVM(1);
     datastore1 = host.getVM(2);
     datastore2 = host.getVM(3);
-    datastore1.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {new CacheLoader2(), null, 10});
-    datastore2.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {new CacheLoader2(),null, 10});
-    accessor.invoke(PartitionedRegionLoaderWriterDUnitTest.class,
-        "createRegion", new Object[] {null, null, 0});
+    datastore1.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(new CacheLoader2(), null, 10));
+    datastore2.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(new CacheLoader2(),null, 10));
+    accessor.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, null, 0));
     
   }
   

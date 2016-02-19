@@ -119,14 +119,14 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
     super.setUp();
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TxnTimeOutDUnitTest.class, "init");
+    vm0.invoke(() -> TxnTimeOutDUnitTest.init());
   }
 
   @Override
   protected final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TxnTimeOutDUnitTest.class, "closeCache");
+    vm0.invoke(() -> TxnTimeOutDUnitTest.closeCache());
   }
 
   public void testMultiThreaded() throws NamingException, SQLException,Throwable {
@@ -193,9 +193,8 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
   public static void testLoginTimeOut() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation asyncObj1 =  vm0.invokeAsync(TxnTimeOutDUnitTest.class,
-        "runTest2");
-    AsyncInvocation asyncObj2 =    vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest1");
+    AsyncInvocation asyncObj1 =  vm0.invokeAsync(() -> TxnTimeOutDUnitTest.runTest2());
+    AsyncInvocation asyncObj2 =    vm0.invokeAsync(() -> TxnTimeOutDUnitTest.runTest1());
 
     ThreadUtils.join(asyncObj1, 5 * 60 * 1000);
     if(asyncObj1.exceptionOccurred()){

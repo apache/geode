@@ -32,6 +32,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -61,12 +62,8 @@ import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.persistence.PartitionOfflineException;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.cache.wan.*;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -190,13 +187,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
         .getName());
     try {
       AttributesFactory fact = new AttributesFactory();
-      if (asyncQueueIds != null) {
-        StringTokenizer tokenizer = new StringTokenizer(asyncQueueIds, ",");
-        while (tokenizer.hasMoreTokens()) {
-          String asyncQueueId = tokenizer.nextToken();
-          fact.addAsyncEventQueueId(asyncQueueId);
-        }
-      }
+      addAsyncEventQueueIds(fact, asyncQueueIds);
       fact.setDataPolicy(DataPolicy.REPLICATE);
       fact.setOffHeap(offHeap);
       RegionFactory regionFactory = cache.createRegionFactory(fact.create());
@@ -212,6 +203,16 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
       String regionName, String asyncQueueIds) {
 
     AttributesFactory fact = new AttributesFactory();
+    addAsyncEventQueueIds(fact, asyncQueueIds);
+    fact.setDataPolicy(DataPolicy.REPLICATE);
+    // set the CacheLoader
+    fact.setCacheLoader(new MyCacheLoader());
+    RegionFactory regionFactory = cache.createRegionFactory(fact.create());
+    Region r = regionFactory.create(regionName);
+    assertNotNull(r);
+  }
+
+  private static void addAsyncEventQueueIds(AttributesFactory fact, String asyncQueueIds) {
     if (asyncQueueIds != null) {
       StringTokenizer tokenizer = new StringTokenizer(asyncQueueIds, ",");
       while (tokenizer.hasMoreTokens()) {
@@ -219,12 +220,6 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
         fact.addAsyncEventQueueId(asyncQueueId);
       }
     }
-    fact.setDataPolicy(DataPolicy.REPLICATE);
-    // set the CacheLoader
-    fact.setCacheLoader(new MyCacheLoader());
-    RegionFactory regionFactory = cache.createRegionFactory(fact.create());
-    Region r = regionFactory.create(regionName);
-    assertNotNull(r);
   }
 
   public static void createReplicatedRegionWithSenderAndAsyncEventQueue(
@@ -258,7 +253,21 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
       boolean isParallel, Integer maxMemory, Integer batchSize,
       boolean isConflation, boolean isPersistent, String diskStoreName,
       boolean isDiskSynchronous) {
+    createDiskStore(asyncChannelId, diskStoreName);
 
+    AsyncEventListener asyncEventListener = new MyAsyncEventListener();
+
+    AsyncEventQueueFactory factory = getInitialAsyncEventQueueFactory(isParallel, maxMemory, batchSize, isPersistent, diskStoreName);
+    factory.setDiskSynchronous(isDiskSynchronous);
+    factory.setBatchConflationEnabled(isConflation);
+    // set dispatcher threads
+    factory.setDispatcherThreads(numDispatcherThreadsForTheRun);
+    // Set GatewayEventSubstitutionFilter
+    AsyncEventQueue asyncChannel = factory.create(asyncChannelId,
+        asyncEventListener);
+  }
+
+  private static void createDiskStore(String asyncChannelId, String diskStoreName) {
     if (diskStoreName != null) {
       File directory = new File(asyncChannelId + "_disk_"
           + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
@@ -268,45 +277,17 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
       dsf.setDiskDirs(dirs1);
       DiskStore ds = dsf.create(diskStoreName);
     }
-
-    AsyncEventListener asyncEventListener = new MyAsyncEventListener();
-
-    AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
-    factory.setBatchSize(batchSize);
-    factory.setPersistent(isPersistent);
-    factory.setDiskStoreName(diskStoreName);
-    factory.setDiskSynchronous(isDiskSynchronous);
-    factory.setBatchConflationEnabled(isConflation);
-    factory.setMaximumQueueMemory(maxMemory);
-    factory.setParallel(isParallel);
-    // set dispatcher threads
-    factory.setDispatcherThreads(numDispatcherThreadsForTheRun);
-    AsyncEventQueue asyncChannel = factory.create(asyncChannelId,
-        asyncEventListener);
   }
 
   public static void createAsyncEventQueueWithListener2(String asyncChannelId,
       boolean isParallel, Integer maxMemory, Integer batchSize,
       boolean isPersistent, String diskStoreName) {
 
-    if (diskStoreName != null) {
-      File directory = new File(asyncChannelId + "_disk_"
-          + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
-      directory.mkdir();
-      File[] dirs1 = new File[] { directory };
-      DiskStoreFactory dsf = cache.createDiskStoreFactory();
-      dsf.setDiskDirs(dirs1);
-      DiskStore ds = dsf.create(diskStoreName);
-    }
+    createDiskStore(asyncChannelId, diskStoreName);
 
     AsyncEventListener asyncEventListener = new MyAsyncEventListener2();
 
-    AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
-    factory.setBatchSize(batchSize);
-    factory.setPersistent(isPersistent);
-    factory.setDiskStoreName(diskStoreName);
-    factory.setMaximumQueueMemory(maxMemory);
-    factory.setParallel(isParallel);
+    AsyncEventQueueFactory factory = getInitialAsyncEventQueueFactory(isParallel, maxMemory, batchSize, isPersistent, diskStoreName);
     // set dispatcher threads
     factory.setDispatcherThreads(numDispatcherThreadsForTheRun);
     AsyncEventQueue asyncChannel = factory.create(asyncChannelId,
@@ -317,46 +298,40 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
       boolean isParallel, Integer maxMemory, Integer batchSize,
       boolean isConflation, boolean isPersistent, String diskStoreName,
       boolean isDiskSynchronous, String asyncListenerClass) throws Exception {
+    createAsyncEventQueue(asyncChannelId, isParallel, maxMemory, batchSize, isConflation, isPersistent,
+        diskStoreName, isDiskSynchronous, asyncListenerClass, null);
+  }
 
-    if (diskStoreName != null) {
-      File directory = new File(asyncChannelId + "_disk_"
-          + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
-      directory.mkdir();
-      File[] dirs1 = new File[] { directory };
-      DiskStoreFactory dsf = cache.createDiskStoreFactory();
-      dsf.setDiskDirs(dirs1);
-      DiskStore ds = dsf.create(diskStoreName);
-    }
+  public static void createAsyncEventQueue(String asyncChannelId,
+      boolean isParallel, Integer maxMemory, Integer batchSize,
+      boolean isConflation, boolean isPersistent, String diskStoreName,
+      boolean isDiskSynchronous, String asyncListenerClass,
+      String substitutionFilterClass) throws Exception {
 
-    String packagePrefix = "com.gemstone.gemfire.internal.cache.wan.";
-    String className = packagePrefix + asyncListenerClass;
-    AsyncEventListener asyncEventListener = null;
-    try {
-      Class clazz = Class.forName(className);
-      asyncEventListener = (AsyncEventListener)clazz.newInstance();
-    }
-    catch (ClassNotFoundException e) {
-      throw e;
-    }
-    catch (InstantiationException e) {
-      throw e;
-    }
-    catch (IllegalAccessException e) {
-      throw e;
-    }
+    createDiskStore(asyncChannelId, diskStoreName);
 
-    AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
-    factory.setBatchSize(batchSize);
-    factory.setPersistent(isPersistent);
-    factory.setDiskStoreName(diskStoreName);
+    AsyncEventQueueFactory factory = getInitialAsyncEventQueueFactory(isParallel, maxMemory, batchSize, isPersistent, diskStoreName);
     factory.setDiskSynchronous(isDiskSynchronous);
     factory.setBatchConflationEnabled(isConflation);
-    factory.setMaximumQueueMemory(maxMemory);
-    factory.setParallel(isParallel);
+    if (substitutionFilterClass != null) {
+      factory.setGatewayEventSubstitutionListener((GatewayEventSubstitutionFilter)getClass(substitutionFilterClass).newInstance());
+    }
     // set dispatcher threads
     factory.setDispatcherThreads(numDispatcherThreadsForTheRun);
-    AsyncEventQueue asyncChannel = factory.create(asyncChannelId,
-        asyncEventListener);
+    AsyncEventQueue asyncChannel = factory.create(asyncChannelId, (AsyncEventListener)getClass(asyncListenerClass).newInstance());
+  }
+
+  private static Class getClass(String simpleClassName) throws Exception {
+    String packagePrefix = "com.gemstone.gemfire.internal.cache.wan.";
+    String className = packagePrefix + simpleClassName;
+    Class clazz = null;
+    try {
+      clazz = Class.forName(className);
+    }
+    catch (Exception e) {
+      throw e;
+    }
+    return clazz;
   }
 
   public static void createAsyncEventQueueWithCustomListener(
@@ -377,24 +352,11 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
         .getName());
 
     try {
-      if (diskStoreName != null) {
-        File directory = new File(asyncChannelId + "_disk_"
-            + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
-        directory.mkdir();
-        File[] dirs1 = new File[] { directory };
-        DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        dsf.setDiskDirs(dirs1);
-        DiskStore ds = dsf.create(diskStoreName);
-      }
+      createDiskStore(asyncChannelId, diskStoreName);
 
       AsyncEventListener asyncEventListener = new CustomAsyncEventListener();
 
-      AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
-      factory.setBatchSize(batchSize);
-      factory.setPersistent(isPersistent);
-      factory.setDiskStoreName(diskStoreName);
-      factory.setMaximumQueueMemory(maxMemory);
-      factory.setParallel(isParallel);
+      AsyncEventQueueFactory factory = getInitialAsyncEventQueueFactory(isParallel, maxMemory, batchSize, isPersistent, diskStoreName);
       factory.setDispatcherThreads(nDispatchers);
       AsyncEventQueue asyncChannel = factory.create(asyncChannelId,
           asyncEventListener);
@@ -404,32 +366,29 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     }
   }
 
+  private static AsyncEventQueueFactory getInitialAsyncEventQueueFactory(boolean isParallel, Integer maxMemory, Integer batchSize,
+      boolean isPersistent, String diskStoreName) {
+    AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
+    factory.setBatchSize(batchSize);
+    factory.setPersistent(isPersistent);
+    factory.setDiskStoreName(diskStoreName);
+    factory.setMaximumQueueMemory(maxMemory);
+    factory.setParallel(isParallel);
+    return factory;
+  }
+
   public static void createConcurrentAsyncEventQueue(String asyncChannelId,
       boolean isParallel, Integer maxMemory, Integer batchSize,
       boolean isConflation, boolean isPersistent, String diskStoreName,
       boolean isDiskSynchronous, int dispatcherThreads, OrderPolicy policy) {
 
-    if (diskStoreName != null) {
-      File directory = new File(asyncChannelId + "_disk_"
-          + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
-      directory.mkdir();
-      File[] dirs1 = new File[] { directory };
-      DiskStoreFactory dsf = cache.createDiskStoreFactory();
-      dsf.setDiskDirs(dirs1);
-      DiskStore ds = dsf.create(diskStoreName);
-    }
+    createDiskStore(asyncChannelId, diskStoreName);
 
     AsyncEventListener asyncEventListener = new MyAsyncEventListener();
 
-    AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
-    factory.setBatchSize(batchSize);
-    factory.setPersistent(isPersistent);
-    factory.setDiskStoreName(diskStoreName);
+    AsyncEventQueueFactory factory = getInitialAsyncEventQueueFactory(isParallel, maxMemory, batchSize, isPersistent, diskStoreName);
     factory.setDiskSynchronous(isDiskSynchronous);
     factory.setBatchConflationEnabled(isConflation);
-    factory.setMaximumQueueMemory(maxMemory);
-    factory.setParallel(isParallel);
-    factory.setDispatcherThreads(dispatcherThreads);
     factory.setOrderPolicy(policy);
     AsyncEventQueue asyncChannel = factory.create(asyncChannelId,
         asyncEventListener);
@@ -1416,6 +1375,27 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     }
   }
 
+  public static void verifySubstitutionFilterInvocations(String asyncEventQueueId, int numInvocations) {
+    AsyncEventQueue queue = cache.getAsyncEventQueue(asyncEventQueueId);
+    assertNotNull(queue);
+
+    // Verify the GatewayEventSubstitutionFilter has been invoked the appropriate number of times
+    MyGatewayEventSubstitutionFilter filter = (MyGatewayEventSubstitutionFilter) queue.getGatewayEventSubstitutionFilter();
+    assertNotNull(filter);
+    assertEquals(numInvocations, filter.getNumInvocations());
+
+    // Verify the AsyncEventListener has received the substituted values
+    MyAsyncEventListener listener = (MyAsyncEventListener) queue.getAsyncEventListener();
+    final Map eventsMap = listener.getEventsMap();
+    assertNotNull(eventsMap);
+    assertEquals(numInvocations, eventsMap.size());
+
+    for (Iterator i = eventsMap.entrySet().iterator(); i.hasNext();) {
+      Map.Entry<Integer,String> entry = (Map.Entry<Integer,String>) i.next();
+      assertEquals(MyGatewayEventSubstitutionFilter.SUBSTITUTION_PREFIX + entry.getKey(), entry.getValue());
+    }
+  }
+
   public static int getAsyncEventListenerMapSize(String asyncEventQueueId) {
     AsyncEventListener theListener = null;
 
@@ -1574,14 +1554,14 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   @Override
   protected final void postTearDown() throws Exception {
     cleanupVM();
-    vm0.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm1.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm2.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm3.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm4.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm5.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm6.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
-    vm7.invoke(AsyncEventQueueTestBase.class, "cleanupVM");
+    vm0.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm1.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm2.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm3.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm4.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm5.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm6.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm7.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
   }
 
   public static void cleanupVM() throws IOException {
@@ -1630,7 +1610,6 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   public boolean isOffHeap() {
     return false;
   }
-
 }
 
 class MyAsyncEventListener_CacheLoader implements AsyncEventListener {
@@ -1668,4 +1647,26 @@ class MyCacheLoader implements CacheLoader, Declarable {
   public void init(Properties props) {
   }
 
+}
+
+class MyGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter, Declarable {
+
+  private AtomicInteger numInvocations = new AtomicInteger();
+
+  protected static final String SUBSTITUTION_PREFIX = "substituted_";
+
+  public Object getSubstituteValue(EntryEvent event) {
+    this.numInvocations.incrementAndGet();
+    return SUBSTITUTION_PREFIX + event.getKey();
+  }
+
+  public void close() {
+  }
+
+  public void init(Properties properties) {
+  }
+
+  protected int getNumInvocations() {
+    return this.numInvocations.get();
+  }
 }

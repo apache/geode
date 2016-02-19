@@ -1959,8 +1959,13 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       else {
         try {
           this.serverBindAddress = InetAddress.getByName(serverBindAddress);
-          this.serverBindAddressSetByUser = true;
-          return this;
+          if (SocketCreator.isLocalHost(this.serverBindAddress)) {
+            this.serverBindAddressSetByUser = true;
+            return this;
+          }
+          else {
+            throw new IllegalArgumentException(serverBindAddress + " is not an address for this machine.");
+          }
         }
         catch (UnknownHostException e) {
           throw new IllegalArgumentException(LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE

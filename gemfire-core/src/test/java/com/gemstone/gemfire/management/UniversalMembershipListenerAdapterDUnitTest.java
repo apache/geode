@@ -429,10 +429,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     // create bridge client in vm0...
     vm0.invoke(createBridgeClient);
-    String clientMemberId = (String) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getMemberId");
-    DistributedMember clientMember = (DistributedMember) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getDistributedMember");
+    String clientMemberId = (String) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getMemberId());
+    DistributedMember clientMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
                                                 
     // should trigger both adapter and bridge listener but not system listener
     synchronized(adapter) {
@@ -565,10 +563,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     // reconnect bridge client to test for crashed event
     vm0.invoke(createBridgeClient);
-    clientMemberId = (String) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getMemberId");
-    clientMember = (DistributedMember) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getDistributedMember");
+    clientMemberId = (String) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getMemberId());
+    clientMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
                                                 
     synchronized(adapter) {
       if (!firedAdapter[JOINED]) {
@@ -888,10 +884,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     // create bridge client in vm0...
     vm0.invoke(createBridgeClient);
-    String clientMemberId = (String) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getMemberId");
-    DistributedMember clientMember = (DistributedMember) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getDistributedMember");
+    String clientMemberId = (String) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getMemberId());
+    DistributedMember clientMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
                                                 
     // should trigger both adapter and bridge listener but not system listener
     synchronized(adapter) {
@@ -1036,10 +1030,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     // reconnect bridge client
     vm0.invoke(createBridgeClient);
-    clientMemberId = (String) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getMemberId");
-    clientMember = (DistributedMember) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getDistributedMember");
+    clientMemberId = (String) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getMemberId());
+    clientMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
                                                 
     synchronized(adapter) {
       if (!firedAdapter[JOINED]) {
@@ -1183,10 +1175,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     // reconnect bridge client
     vm0.invoke(createBridgeClient);
-    clientMemberId = (String) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getMemberId");
-    clientMember = (DistributedMember) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getDistributedMember");
+    clientMemberId = (String) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getMemberId());
+    clientMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
                                                 
     synchronized(adapter) {
       if (!firedAdapter[JOINED]) {
@@ -1584,10 +1574,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     vm0.invoke(createPeerCache);
     
-    String peerMemberId = (String) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getMemberId");
-    DistributedMember peerMember = (DistributedMember) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getDistributedMember");
+    String peerMemberId = (String) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getMemberId());
+    DistributedMember peerMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] peerMemberId=" + peerMemberId);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] peerMember=" + peerMember);
@@ -1873,12 +1861,9 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     // gather details for later creation of pool...
     assertEquals(ports[0],
-                 vm0.invokeInt(UniversalMembershipListenerAdapterDUnitTest.class, 
-                               "getTestServerEventsInLonerClient_port"));
-    String serverMemberId = (String) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getMemberId");
-    DistributedMember serverMember = (DistributedMember) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getDistributedMember");
+                 (int) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getTestServerEventsInLonerClient_port()));
+    String serverMemberId = (String) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getMemberId());
+    DistributedMember serverMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] ports[0]=" + ports[0]);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] serverMemberId=" + serverMemberId);
@@ -2044,12 +2029,9 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     // gather details for later creation of pool...
     assertEquals(ports[0],
-                 vm0.invokeInt(UniversalMembershipListenerAdapterDUnitTest.class, 
-                               "getTestServerEventsInLonerClient_port"));
-    serverMemberId = (String) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getMemberId");
-    serverMember = (DistributedMember) vm0.invoke(
-      UniversalMembershipListenerAdapterDUnitTest.class, "getDistributedMember");
+        (int) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getTestServerEventsInLonerClient_port()));
+    serverMemberId = (String) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getMemberId());
+    serverMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] ports[0]=" + ports[0]);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] serverMemberId=" + serverMemberId);

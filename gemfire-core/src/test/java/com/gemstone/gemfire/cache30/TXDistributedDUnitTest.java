@@ -1158,14 +1158,14 @@ public class TXDistributedDUnitTest extends CacheTestCase {
     // Build sets of System Ids and set them up on VM0 for future batch member checks
     HashSet txMembers = new HashSet(4);
     txMembers.add(getSystemId());
-    txMembers.add(vm0.invoke(TXDistributedDUnitTest.class, "getSystemId"));
-    vm0.invoke(TXDistributedDUnitTest.class, "setPreTXSystemIds", new Object[] {txMembers});
-    txMembers.add(vm2.invoke(TXDistributedDUnitTest.class, "getSystemId"));
-    vm0.invoke(TXDistributedDUnitTest.class, "setPostTXSystemIds", new Object[] {txMembers});
+    txMembers.add(vm0.invoke(() -> TXDistributedDUnitTest.getSystemId()));
+    vm0.invoke(() -> TXDistributedDUnitTest.setPreTXSystemIds(txMembers));
+    txMembers.add(vm2.invoke(() -> TXDistributedDUnitTest.getSystemId()));
+    vm0.invoke(() -> TXDistributedDUnitTest.setPostTXSystemIds(txMembers));
 
     // Don't include the tx host in the batch member set(s)
-    Serializable vm1HostId = (Serializable) vm1.invoke(TXDistributedDUnitTest.class, "getSystemId");
-    vm0.invoke(TXDistributedDUnitTest.class, "setTXHostSystemId", new Object[] {vm1HostId});
+    Serializable vm1HostId = (Serializable) vm1.invoke(() -> TXDistributedDUnitTest.getSystemId());
+    vm0.invoke(() -> TXDistributedDUnitTest.setTXHostSystemId(vm1HostId));
 
     // Create a TX on VM1 (such that it will ask for locks on VM0) that uses the callbacks
     // to pause and give us time to start a GII process on another VM

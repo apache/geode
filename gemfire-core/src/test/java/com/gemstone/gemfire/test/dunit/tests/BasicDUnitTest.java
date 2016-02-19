@@ -44,14 +44,14 @@ public class BasicDUnitTest extends DistributedTestCase {
   public void _testDontCatchRemoteException() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    vm.invoke(this.getClass(), "remoteThrowException");
+    vm.invoke(() -> this.remoteThrowException());
   }
 
   public void testRemoteInvocationWithException() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     try {
-      vm.invoke(this.getClass(), "remoteThrowException");
+      vm.invoke(() -> this.remoteThrowException());
       fail("Should have thrown a BasicTestException");
 
     } catch (RMIException ex) {
@@ -113,16 +113,14 @@ public class BasicDUnitTest extends DistributedTestCase {
     String value = "Hello";
 
     AsyncInvocation ai =
-      vm.invokeAsync(this.getClass(), "remoteBind", 
-                     new Object[] { name, value });
+      vm.invokeAsync(() -> this.remoteBind( name, value ));
     ai.join();
     // TODO shouldn't we call fail() here?
     if (ai.exceptionOccurred()) {
       Assert.fail("remoteBind failed", ai.getException());
     }
 
-    ai = vm.invokeAsync(this.getClass(), "remoteValidateBind",
-                        new Object[] {name, value });
+    ai = vm.invokeAsync(() -> this.remoteValidateBind(name, value ));
     ai.join();
     if (ai.exceptionOccurred()) {
       Assert.fail("remoteValidateBind failed", ai.getException());
@@ -149,7 +147,7 @@ public class BasicDUnitTest extends DistributedTestCase {
 //    String value = "Hello";
 
     AsyncInvocation ai =
-      vm.invokeAsync(this.getClass(), "remoteThrowException");
+      vm.invokeAsync(() -> this.remoteThrowException());
     ai.join();
     assertTrue(ai.exceptionOccurred());
     Throwable ex = ai.getException();

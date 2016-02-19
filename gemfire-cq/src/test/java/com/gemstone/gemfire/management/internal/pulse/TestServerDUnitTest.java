@@ -80,8 +80,7 @@ public class TestServerDUnitTest extends ManagementTestBase {
     VM server = managedNodeList.get(1);    
     int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cqDUnitTest.createServer(server, serverPort);    
-    int serverCount = ((Number) managingNode.invoke(TestServerDUnitTest.class,
-        "getNumOfServersFromMBean")).intValue();
+    int serverCount = ((Number) managingNode.invoke(() -> TestServerDUnitTest.getNumOfServersFromMBean())).intValue();
     LogWriterUtils.getLogWriter().info("TestServerDUnitTest serverCount =" + serverCount);
     cqDUnitTest.closeServer(server);
     assertEquals(1, serverCount);

@@ -504,11 +504,9 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     final long ONE_MEG = 1024L * 1024L;
     long sizeOfPR = 0;
     sizeOfPR = sizeOfPR
-        + (Long)dataStore1.invoke(EvictionStatsDUnitTest.class,
-            "getPartionRegionCounter", new Object[] { prRegionName });
+        + (Long)dataStore1.invoke(() -> EvictionStatsDUnitTest.getPartionRegionCounter( prRegionName ));
     sizeOfPR = sizeOfPR
-        + (Long)dataStore2.invoke(EvictionStatsDUnitTest.class,
-            "getPartionRegionCounter", new Object[] { prRegionName });
+        + (Long)dataStore2.invoke(() -> EvictionStatsDUnitTest.getPartionRegionCounter( prRegionName ));
     return sizeOfPR / ONE_MEG;
   }
 
@@ -523,11 +521,9 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     final long ONE_MEG = 1024L * 1024L;
     long totalBucketSize = 0;
     totalBucketSize = totalBucketSize
-        + (Long)dataStore1.invoke(EvictionStatsDUnitTest.class,
-            "getCounterForBuckets", new Object[] { prRegionName });
+        + (Long)dataStore1.invoke(() -> EvictionStatsDUnitTest.getCounterForBuckets( prRegionName ));
     totalBucketSize = totalBucketSize
-        + (Long)dataStore2.invoke(EvictionStatsDUnitTest.class,
-            "getCounterForBuckets", new Object[] { prRegionName });
+        + (Long)dataStore2.invoke(() -> EvictionStatsDUnitTest.getCounterForBuckets( prRegionName ));
     return totalBucketSize / ONE_MEG;
 
   }

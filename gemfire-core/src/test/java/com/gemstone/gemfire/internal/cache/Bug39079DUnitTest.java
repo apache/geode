@@ -62,7 +62,7 @@ public class Bug39079DUnitTest extends CacheTestCase {
   static Properties props = new Properties();
   
 
-  private static VM vm0 = null;
+  private VM vm0 = null;
 
   private static VM vm1 = null;
 
@@ -100,8 +100,8 @@ public class Bug39079DUnitTest extends CacheTestCase {
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
 
-    vm0.invoke(Bug39079DUnitTest.class, "ignorePreAllocate", new Object[] { Boolean.TRUE });
-    vm1.invoke(Bug39079DUnitTest.class, "ignorePreAllocate", new Object[] { Boolean.TRUE });
+    vm0.invoke(() -> Bug39079DUnitTest.ignorePreAllocate( Boolean.TRUE ));
+    vm1.invoke(() -> Bug39079DUnitTest.ignorePreAllocate( Boolean.TRUE ));
   }
  
 
@@ -182,8 +182,8 @@ public class Bug39079DUnitTest extends CacheTestCase {
   protected final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
 
-    vm0.invoke(Bug39079DUnitTest.class, "ignorePreAllocate", new Object[] { Boolean.FALSE });
-    vm1.invoke(Bug39079DUnitTest.class, "ignorePreAllocate", new Object[] { Boolean.FALSE });
+    vm0.invoke(() -> Bug39079DUnitTest.ignorePreAllocate( Boolean.FALSE ));
+    vm1.invoke(() -> Bug39079DUnitTest.ignorePreAllocate( Boolean.FALSE ));
   }
   
   static void ignorePreAllocate(boolean flag) throws Exception {
@@ -303,18 +303,17 @@ public class Bug39079DUnitTest extends CacheTestCase {
   public void testBridgeServerStoppingInSynchPersistOnlyForIOExceptionCase()
       throws Exception {    
    // create server cache 
-   Integer port = (Integer)vm0.invoke(Bug39079DUnitTest.class, "createServerCache");
+   Integer port = (Integer)vm0.invoke(() -> Bug39079DUnitTest.createServerCache());
    //create cache client
-   vm1.invoke(Bug39079DUnitTest.class, "createClientCache",
-       new Object[] { NetworkUtils.getServerHostName(vm0.getHost()), port});
+   vm1.invoke(() -> Bug39079DUnitTest.createClientCache( NetworkUtils.getServerHostName(vm0.getHost()), port));
    
    // validate 
-   vm0.invoke(Bug39079DUnitTest.class, "validateRuningBridgeServerList");
+   vm0.invoke(() -> Bug39079DUnitTest.validateRuningBridgeServerList());
    
    // close server cache
-   vm0.invoke(Bug39079DUnitTest.class, "closeCache");
+   vm0.invoke(() -> Bug39079DUnitTest.closeCache());
    // close client cache
-   vm1.invoke(Bug39079DUnitTest.class, "closeCache");
+   vm1.invoke(() -> Bug39079DUnitTest.closeCache());
   }
   
   public static Integer createServerCache() throws Exception

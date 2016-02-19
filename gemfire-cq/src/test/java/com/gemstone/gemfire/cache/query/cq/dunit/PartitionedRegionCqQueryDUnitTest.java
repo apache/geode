@@ -128,7 +128,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     // create client 
     
-    final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
@@ -158,8 +158,8 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* totalEvents: */ size);
     
     
-    int cc1 = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCqCountFromRegionProfile");
-    int cc2 = server2.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCqCountFromRegionProfile");
+    int cc1 = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCqCountFromRegionProfile());
+    int cc2 = server2.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCqCountFromRegionProfile());
     assertEquals("Should have one", 1, cc1);
     assertEquals("Should have one", 1, cc2);
     
@@ -167,8 +167,8 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     cqHelper.closeClient(client);
     Wait.pause(10 * 1000);
-    //cc1 = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCqCountFromRegionProfile");
-    cc2 = server2.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCqCountFromRegionProfile");
+    //cc1 = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCqCountFromRegionProfile());
+    cc2 = server2.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCqCountFromRegionProfile());
     
     //assertEquals("Should have one", 0, cc1);
     assertEquals("Should have one", 0, cc2);
@@ -190,7 +190,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     // create client 
     
-    final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
@@ -303,7 +303,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     // create client 
     
-    final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
@@ -394,7 +394,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     // creating an accessor vm with Bridge Server installed.
     createServer(server1);
-    final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
@@ -492,7 +492,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     // create client 
     
-    final int port = server2.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server2.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server2.getHost());
     
     createClient(client, port, host0);
@@ -587,7 +587,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     createServer(server2);
     
     
-    final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
@@ -683,7 +683,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     createServer(server2);
     
     
-    final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
@@ -779,7 +779,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     createServer(server2, false , 1);
     
     
-    final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
@@ -881,7 +881,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     // Wait for server to initialize.
     Wait.pause(2000);
     
-    final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
@@ -1022,7 +1022,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     createServer(server2, false , 1);
     
     
-    final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     createClient(client, port, host0);
@@ -1240,7 +1240,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     createServer(server1);
     createServer(server2);
     
-    final int port = server1.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
     // Initialize Client.
@@ -1373,7 +1373,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     createServerWithoutRootRegion(server, 0, false, 0);
     
-    final int port = server.invokeInt(PartitionedRegionCqQueryDUnitTest.class, "getCacheServerPort");
+    final int port = server.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     // Initialize Client.
@@ -1691,7 +1691,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   } 
   
   /* Returs Cache Server Port */
-  private static int getCacheServerPort() {
+  protected static int getCacheServerPort() {
     return bridgeServerPort;
   }
   

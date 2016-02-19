@@ -17,14 +17,11 @@
 package com.gemstone.gemfire.internal.offheap;
 
 /**
- * Describes the type of data stored in a chunk.
+ * Used to create AddressableMemoryChunk instances.
  */
-public interface ChunkType {
-  /**
-   * Returns an int that describes that type of
-   * data stored in the chunk.
-   * Currently the only supported type is
-   * Chunk.SRC_TYPE_GFE.
+public interface AddressableMemoryChunkFactory {
+  /** Create and return an AddressableMemoryChunk.
+   * @throws OutOfMemoryError if the create fails
    */
-  public int getSrcType();
+  public AddressableMemoryChunk create(int size);
 }

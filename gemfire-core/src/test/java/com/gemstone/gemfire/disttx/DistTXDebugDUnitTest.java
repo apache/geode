@@ -84,10 +84,10 @@ public class DistTXDebugDUnitTest extends CacheTestCase {
   }
 
   protected void createCacheInAllVms() {
-    dataStore1.invoke(DistTXDebugDUnitTest.class, "createCacheInVm");
-    dataStore2.invoke(DistTXDebugDUnitTest.class, "createCacheInVm");
-    dataStore3.invoke(DistTXDebugDUnitTest.class, "createCacheInVm");
-    accessor.invoke(DistTXDebugDUnitTest.class, "createCacheInVm");
+    dataStore1.invoke(() -> DistTXDebugDUnitTest.createCacheInVm());
+    dataStore2.invoke(() -> DistTXDebugDUnitTest.createCacheInVm());
+    dataStore3.invoke(() -> DistTXDebugDUnitTest.createCacheInVm());
+    accessor.invoke(() -> DistTXDebugDUnitTest.createCacheInVm());
   }
 
   public static void createPR(String partitionedRegionName, Integer redundancy,
@@ -280,8 +280,7 @@ public class DistTXDebugDUnitTest extends CacheTestCase {
 
     accessor.invoke(TxOps);
 
-    accessor.invoke(DistTXDebugDUnitTest.class, "destroyPR",
-        new Object[] { "pregion1" });
+    accessor.invoke(() -> DistTXDebugDUnitTest.destroyPR( "pregion1" ));
   }
 
   public void testTXDestroy_invalidate() throws Exception {
@@ -365,8 +364,7 @@ public class DistTXDebugDUnitTest extends CacheTestCase {
     dataStore2.invoke(verifySize);
     dataStore3.invoke(verifySize);
 
-    accessor.invoke(DistTXDebugDUnitTest.class, "destroyPR",
-        new Object[] { "pregion1" });
+    accessor.invoke(() -> DistTXDebugDUnitTest.destroyPR( "pregion1" ));
   }
 
   public void testTXPR_RR() throws Exception {
@@ -448,8 +446,7 @@ public class DistTXDebugDUnitTest extends CacheTestCase {
     dataStore2.invoke(verifySize);
     dataStore3.invoke(verifySize);
 
-    accessor.invoke(DistTXDebugDUnitTest.class, "destroyPR",
-        new Object[] { "pregion1" });
+    accessor.invoke(() -> DistTXDebugDUnitTest.destroyPR( "pregion1" ));
   }
 
   public void testTXPR2() throws Exception {
@@ -546,8 +543,7 @@ public class DistTXDebugDUnitTest extends CacheTestCase {
 
     accessor.invoke(TxRollbackOps);
 
-    accessor.invoke(DistTXDebugDUnitTest.class, "destroyPR",
-        new Object[] { "pregion1" });
+    accessor.invoke(() -> DistTXDebugDUnitTest.destroyPR( "pregion1" ));
   }
   
   public void testTXPRRR2_create() throws Exception {

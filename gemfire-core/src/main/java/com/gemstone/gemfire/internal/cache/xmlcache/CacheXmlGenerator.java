@@ -44,6 +44,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import com.gemstone.gemfire.cache.wan.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -104,10 +105,6 @@ import com.gemstone.gemfire.cache.query.internal.index.PrimaryKeyIndex;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.AbstractRegion;
@@ -1468,6 +1465,12 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
          generateGatewayEventFilter(gef);
       }
 
+      if (this.version.compareTo(CacheXmlVersion.VERSION_8_0) >= 0) {
+        if (sender.getGatewayEventSubstitutionFilter() != null) {
+          generateGatewayEventSubstitutionFilter(sender.getGatewayEventSubstitutionFilter());
+        }
+      }
+
       for (GatewayTransportFilter gsf : sender.getGatewayTransportFilters()) {
         generateGatewayTransportFilter(gsf);
      }
@@ -1532,7 +1535,13 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     		generateGatewayEventFilter(eventFilter);
     	  }
       }
-      
+
+      if (this.version.compareTo(CacheXmlVersion.VERSION_8_0) >= 0) {
+        if (asyncEventQueue.getGatewayEventSubstitutionFilter() != null) {
+          generateGatewayEventSubstitutionFilter(asyncEventQueue.getGatewayEventSubstitutionFilter());
+        }
+      }
+
       AsyncEventListener asyncListener = asyncEventQueue.getAsyncEventListener();
       if (asyncListener != null) {
         generate(ASYNC_EVENT_LISTENER, asyncListener);
@@ -1627,6 +1636,24 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       generate(props, null);
     }
     handler.endElement("", GATEWAY_TRANSPORT_FILTER, GATEWAY_TRANSPORT_FILTER);
+  }
+
+  private void generateGatewayEventSubstitutionFilter(GatewayEventSubstitutionFilter filter)
+      throws SAXException {
+
+    handler.startElement("", GATEWAY_EVENT_SUBSTITUTION_FILTER, GATEWAY_EVENT_SUBSTITUTION_FILTER,
+        EMPTY);
+    String className = filter.getClass().getName();
+
+    handler.startElement("", CLASS_NAME, CLASS_NAME, EMPTY);
+    handler.characters(className.toCharArray(), 0, className.length());
+    handler.endElement("", CLASS_NAME, CLASS_NAME);
+    Properties props = null;
+    if (filter instanceof Declarable2) {
+      props = ((Declarable2)filter).getConfig();
+      generate(props, null);
+    }
+    handler.endElement("", GATEWAY_EVENT_SUBSTITUTION_FILTER, GATEWAY_EVENT_SUBSTITUTION_FILTER);
   }
 //
 //  private void generateGatewayEventListener(GatewayEventListener gef)

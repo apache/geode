@@ -63,6 +63,9 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 /**
  *
  *
@@ -95,9 +98,9 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
 
   protected static VM clientVM2 = null;
 
-  private static int PORT1;
+  private int PORT1;
 
-  private static int PORT2;
+  private int PORT2;
 
   private static final String regionName = "CQListGIIDUnitTest";
 
@@ -164,12 +167,8 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
     clientVM1 = host.getVM(2);
     clientVM2 = host.getVM(3);
 
-    PORT1 = ((Integer)serverVM0.invoke(CQListGIIDUnitTest.class,
-        "createServerCache",
-        new Object[] { HARegionQueue.HA_EVICTION_POLICY_MEMORY })).intValue();
-    PORT2 = ((Integer)serverVM1.invoke(CQListGIIDUnitTest.class,
-        "createServerCache",
-        new Object[] { HARegionQueue.HA_EVICTION_POLICY_ENTRY })).intValue();
+    PORT1 = ((Integer)serverVM0.invoke(() -> CQListGIIDUnitTest.createServerCache( HARegionQueue.HA_EVICTION_POLICY_MEMORY ))).intValue();
+    PORT2 = ((Integer)serverVM1.invoke(() -> CQListGIIDUnitTest.createServerCache( HARegionQueue.HA_EVICTION_POLICY_ENTRY ))).intValue();
   }
 
   /**
@@ -177,17 +176,17 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
    */
   @Override
   protected final void preTearDown() throws Exception {
-    serverVM0.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
-    serverVM1.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
+    serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    serverVM1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
     closeCache();
-    clientVM1.invoke(CQListGIIDUnitTest.class, "closeCache");
-    clientVM2.invoke(CQListGIIDUnitTest.class, "closeCache");
+    clientVM1.invoke(() -> CQListGIIDUnitTest.closeCache());
+    clientVM2.invoke(() -> CQListGIIDUnitTest.closeCache());
     // then close the servers
-    serverVM0.invoke(CQListGIIDUnitTest.class, "closeCache");
-    serverVM1.invoke(CQListGIIDUnitTest.class, "closeCache");
+    serverVM0.invoke(() -> CQListGIIDUnitTest.closeCache());
+    serverVM1.invoke(() -> CQListGIIDUnitTest.closeCache());
     disconnectAllFromDS();
   }
-
+  
   private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     ds.disconnect();
@@ -610,40 +609,36 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
   public void _testSpecificClientCQIsGIIedPart1() throws Exception {
     Integer size = Integer.valueOf(10);
     // slow start for dispatcher
-    serverVM0.invoke(ConflationDUnitTest.class, "setIsSlowStart",
-        new Object[] { "30000" });
-    serverVM1.invoke(ConflationDUnitTest.class, "setIsSlowStart",
-        new Object[] { "30000" });
+    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart( "30000" ));
+    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart( "30000" ));
 
     // createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1");
-    clientVM1.invoke(CQListGIIDUnitTest.class, "createClientCache",
-        new Object[] { Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1" });
-    clientVM2.invoke(CQListGIIDUnitTest.class, "createClientCache",
-        new Object[] { Integer.valueOf(PORT1), Integer.valueOf(PORT2), "0" });
+    clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache( Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1" ));
+    clientVM2.invoke(() -> CQListGIIDUnitTest.createClientCache( Integer.valueOf(PORT1), Integer.valueOf(PORT2), "0" ));
 
-    clientVM1.invoke(CQListGIIDUnitTest.class, "createCQ", new Object[] {
-        "testSpecificClientCQIsGIIed_0", cqs[0] });
-    clientVM1.invoke(CQListGIIDUnitTest.class, "executeCQ", new Object[] {
-        "testSpecificClientCQIsGIIed_0", Boolean.FALSE });
-    clientVM2.invoke(CQListGIIDUnitTest.class, "createCQ", new Object[] {
-        "testSpecificClientCQIsGIIed_0", cqs[0] });
-    clientVM2.invoke(CQListGIIDUnitTest.class, "executeCQ", new Object[] {
-        "testSpecificClientCQIsGIIed_0", Boolean.FALSE });
+    clientVM1.invoke(() -> CQListGIIDUnitTest.createCQ(
+        "testSpecificClientCQIsGIIed_0", cqs[0] ));
+    clientVM1.invoke(() -> CQListGIIDUnitTest.executeCQ(
+        "testSpecificClientCQIsGIIed_0", Boolean.FALSE ));
+    clientVM2.invoke(() -> CQListGIIDUnitTest.createCQ(
+        "testSpecificClientCQIsGIIed_0", cqs[0] ));
+    clientVM2.invoke(() -> CQListGIIDUnitTest.executeCQ(
+        "testSpecificClientCQIsGIIed_0", Boolean.FALSE ));
 
-    serverVM1.invoke(CQListGIIDUnitTest.class, "stopServer");
+    serverVM1.invoke(() -> CQListGIIDUnitTest.stopServer());
 
-    serverVM0.invoke(CQListGIIDUnitTest.class, "putEntries", new Object[] {
-        regions[0], size });
+    serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(
+        regions[0], size ));
 
-    serverVM1.invoke(CQListGIIDUnitTest.class, "startServer");
+    serverVM1.invoke(() -> CQListGIIDUnitTest.startServer());
     Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
 
-    serverVM0.invoke(CQListGIIDUnitTest.class, "VerifyCUMCQList", new Object[] {
-        size, Integer.valueOf(2) });
-    serverVM1.invoke(CQListGIIDUnitTest.class, "VerifyCUMCQList", new Object[] {
-        size, Integer.valueOf(1) });
-    serverVM0.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
-    serverVM1.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
+    serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(
+        size, Integer.valueOf(2) ));
+    serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(
+        size, Integer.valueOf(1) ));
+    serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    serverVM1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
   }
 
   /**
@@ -657,44 +652,40 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
     Integer size = Integer.valueOf(10);
     VM serverVM2 = clientVM2;
 
-    int port3 = ((Integer)serverVM2.invoke(CQListGIIDUnitTest.class,
-        "createServerCache",
-        new Object[] { HARegionQueue.HA_EVICTION_POLICY_MEMORY })).intValue();
+    int port3 = ((Integer)serverVM2.invoke(() -> CQListGIIDUnitTest.createServerCache( HARegionQueue.HA_EVICTION_POLICY_MEMORY ))).intValue();
 
     // slow start for dispatcher
-    serverVM0.invoke(ConflationDUnitTest.class, "setIsSlowStart",
-        new Object[] { "45000" });
+    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart( "45000" ));
 
     // createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1");
     createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2),
         Integer.valueOf(port3), "1");
     try {
-    clientVM1.invoke(CQListGIIDUnitTest.class, "createClientCache",
-        new Object[] { Integer.valueOf(PORT1), Integer.valueOf(port3),
-            Integer.valueOf(PORT2), "1" });
+    clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache( Integer.valueOf(PORT1), Integer.valueOf(port3),
+            Integer.valueOf(PORT2), "1" ));
     try {
     createCQ("testSpecificClientCQIsGIIed_0", cqs[0]);
     executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE);
-    clientVM1.invoke(CQListGIIDUnitTest.class, "createCQ", new Object[] {
-        "testSpecificClientCQIsGIIed_0", cqs[0] });
-    clientVM1.invoke(CQListGIIDUnitTest.class, "executeCQ", new Object[] {
-        "testSpecificClientCQIsGIIed_0", Boolean.FALSE });
+    clientVM1.invoke(() -> CQListGIIDUnitTest.createCQ(
+        "testSpecificClientCQIsGIIed_0", cqs[0] ));
+    clientVM1.invoke(() -> CQListGIIDUnitTest.executeCQ(
+        "testSpecificClientCQIsGIIed_0", Boolean.FALSE ));
 
-    serverVM0.invoke(CQListGIIDUnitTest.class, "putEntries", new Object[] {
-        regions[0], size });
+    serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(
+        regions[0], size ));
 
-    serverVM1.invoke(CQListGIIDUnitTest.class, "VerifyCUMCQList", new Object[] {
-        size, Integer.valueOf(1) });
+    serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(
+        size, Integer.valueOf(1) ));
 
-    serverVM2.invoke(CQListGIIDUnitTest.class, "stopServer");
+    serverVM2.invoke(() -> CQListGIIDUnitTest.stopServer());
     Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
 
-    serverVM0.invoke(CQListGIIDUnitTest.class, "VerifyCUMCQList", new Object[] {
-      size, Integer.valueOf(2) });
-    serverVM1.invoke(CQListGIIDUnitTest.class, "VerifyCUMCQList", new Object[] {
-        size, Integer.valueOf(2) });
+    serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(
+      size, Integer.valueOf(2) ));
+    serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(
+        size, Integer.valueOf(2) ));
     } finally {
-      clientVM1.invoke(CQListGIIDUnitTest.class, "destroyClientPool");
+      clientVM1.invoke(() -> CQListGIIDUnitTest.destroyClientPool());
     }
 
     } finally {

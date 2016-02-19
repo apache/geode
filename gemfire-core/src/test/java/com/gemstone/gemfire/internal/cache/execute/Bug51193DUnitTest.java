@@ -59,7 +59,7 @@ public class Bug51193DUnitTest extends DistributedTestCase {
   
   private static VM server0;
   
-  private static VM client0;
+  private VM client0;
   
   @Override
   public void setUp() throws Exception {
@@ -73,8 +73,8 @@ public class Bug51193DUnitTest extends DistributedTestCase {
   @Override
   protected final void preTearDown() throws Exception {
     closeCache();
-    server0.invoke(Bug51193DUnitTest.class, "closeCache");
-    client0.invoke(Bug51193DUnitTest.class, "closeCache");
+    server0.invoke(() -> Bug51193DUnitTest.closeCache());
+    client0.invoke(() -> Bug51193DUnitTest.closeCache());
   }
 
   public static void closeCache() {
@@ -172,17 +172,15 @@ public class Bug51193DUnitTest extends DistributedTestCase {
   public void doTest(boolean createPR, int timeout, String mode)
       throws Throwable {
     // start server
-    int port = (Integer) server0.invoke(Bug51193DUnitTest.class,
-        "createServerCache", new Object[] { createPR });
+    int port = (Integer) server0.invoke(() -> Bug51193DUnitTest.createServerCache( createPR ));
     // start client
-    client0.invoke(Bug51193DUnitTest.class, "createClientCache", new Object[] {
-        client0.getHost().getHostName(), port, timeout });
+    client0.invoke(() -> Bug51193DUnitTest.createClientCache(
+        client0.getHost().getHostName(), port, timeout ));
     // do puts and get
     server0
-        .invoke(Bug51193DUnitTest.class, "doPutsAndGet", new Object[] { 10 });
+        .invoke(() -> Bug51193DUnitTest.doPutsAndGet( 10 ));
     // execute function & verify timeout has been received at server.
-    client0.invoke(Bug51193DUnitTest.class,
-        "executeFunction", new Object[] { mode, timeout });
+    client0.invoke(() -> Bug51193DUnitTest.executeFunction( mode, timeout ));
   }
 
   public void testExecuteFunctionReadsDefaultTimeout() throws Throwable {

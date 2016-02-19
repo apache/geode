@@ -112,16 +112,16 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
 
     vm3 = host.getVM(3);
 
-    vm0.invoke(HAGIIBugDUnitTest.class, "createRegionQueue");
+    vm0.invoke(() -> HAGIIBugDUnitTest.createRegionQueue());
 
   }
 
   @Override
   protected final void preTearDown() throws Exception {
-    vm0.invoke(HAGIIBugDUnitTest.class, "closeCache");
-    vm1.invoke(HAGIIBugDUnitTest.class, "closeCache");
-    vm2.invoke(HAGIIBugDUnitTest.class, "closeCache");
-    vm3.invoke(HAGIIBugDUnitTest.class, "closeCache");
+    vm0.invoke(() -> HAGIIBugDUnitTest.closeCache());
+    vm1.invoke(() -> HAGIIBugDUnitTest.closeCache());
+    vm2.invoke(() -> HAGIIBugDUnitTest.closeCache());
+    vm3.invoke(() -> HAGIIBugDUnitTest.closeCache());
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
   }
@@ -197,7 +197,7 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
       }
     }
 
-    total_no_puts[0] = vm0.invoke(HAGIIBugDUnitTest.class, "getTotalNoPuts");
+    total_no_puts[0] = vm0.invoke(() -> HAGIIBugDUnitTest.getTotalNoPuts());
     populate_keys_after_gii();
 
     boolean validationFlag = false;

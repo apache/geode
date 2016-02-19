@@ -66,7 +66,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
   public void setUp() throws Exception {
     System.setProperty("gemfire.validateOffHeapWithFill", "true");
     this.slab = new UnsafeMemoryChunk(SLAB_SIZE);
-    this.allocator = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{this.slab});
+    this.allocator = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{this.slab});
   }
 
   /**
@@ -101,7 +101,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
      * Pull a chunk off the fragment.  This will have no fill because
      * it is a "fresh" chunk.
      */
-    Chunk chunk = (Chunk) this.allocator.allocate(chunkSize, null);
+    ObjectChunk chunk = (ObjectChunk) this.allocator.allocate(chunkSize);
 
     /*
      * Chunk should have valid fill from initial fragment allocation.
@@ -109,7 +109,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
     chunk.validateFill();
          
     // "Dirty" the chunk so the release has something to fill over
-    chunk.writeBytes(Chunk.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
+    chunk.writeBytes(ObjectChunk.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
 
     // This should free the Chunk (ref count == 1)
     chunk.release();
@@ -118,20 +118,20 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
      * This chunk should have a fill because it was reused from the
      * free list (assuming no fragmentation at this point...)
      */
-    chunk = (Chunk) this.allocator.allocate(chunkSize, null);
+    chunk = (ObjectChunk) this.allocator.allocate(chunkSize);
     
     // Make sure we have a fill this time
     chunk.validateFill();
     
     // Give the fill code something to write over during the release
-    chunk.writeBytes(Chunk.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
+    chunk.writeBytes(ObjectChunk.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
     chunk.release();
 
     // Again, make sure the release implemented the fill
     chunk.validateFill();
 
     // "Dirty up" the free chunk
-    chunk.writeBytes(Chunk.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
+    chunk.writeBytes(ObjectChunk.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
     
     catchException(chunk).validateFill();
     assertTrue(caughtException() instanceof IllegalStateException);
@@ -149,14 +149,14 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
     /*
      * Stores our allocated memory.
      */
-    Chunk[] allocatedChunks = new Chunk[COMPACTION_CHUNKS];
+    ObjectChunk[] allocatedChunks = new ObjectChunk[COMPACTION_CHUNKS];
     
     /*
      * Use up most of our memory
      * Our memory looks like [      ][      ][      ]
      */
     for(int i =0;i < allocatedChunks.length;++i) {
-      allocatedChunks[i] = (Chunk) this.allocator.allocate(COMPACTION_CHUNK_SIZE, null);
+      allocatedChunks[i] = (ObjectChunk) this.allocator.allocate(COMPACTION_CHUNK_SIZE);
       allocatedChunks[i].validateFill();
     }
 
@@ -173,7 +173,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
      * our initial chunks.  This should force a compaction causing our
      * memory to look like [            ][      ].
      */
-    Chunk slightlyLargerChunk = (Chunk) this.allocator.allocate(FORCE_COMPACTION_CHUNK_SIZE, null);
+    ObjectChunk slightlyLargerChunk = (ObjectChunk) this.allocator.allocate(FORCE_COMPACTION_CHUNK_SIZE);
     
     /*
      * Make sure the compacted memory has the fill validation.

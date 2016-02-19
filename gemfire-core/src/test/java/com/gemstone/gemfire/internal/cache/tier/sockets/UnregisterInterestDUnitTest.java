@@ -77,17 +77,17 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
     client1 = host.getVM(1);
     client2 = host.getVM(2);
     
-    int port = (Integer)server0.invoke(UnregisterInterestDUnitTest.class, "createCacheAndStartServer");
-    client1.invoke(UnregisterInterestDUnitTest.class, "createClientCache", new Object[]{client1.getHost(), port});
-    client2.invoke(UnregisterInterestDUnitTest.class, "createClientCache", new Object[]{client2.getHost(), port});
+    int port = (Integer)server0.invoke(() -> UnregisterInterestDUnitTest.createCacheAndStartServer());
+    client1.invoke(() -> UnregisterInterestDUnitTest.createClientCache(client1.getHost(), port));
+    client2.invoke(() -> UnregisterInterestDUnitTest.createClientCache(client2.getHost(), port));
   }
 
   @Override
   protected final void preTearDown() throws Exception {
     closeCache();
-    server0.invoke(UnregisterInterestDUnitTest.class, "closeCache");
-    client1.invoke(UnregisterInterestDUnitTest.class, "closeCache");
-    client2.invoke(UnregisterInterestDUnitTest.class, "closeCache");
+    server0.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    client1.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    client2.invoke(() -> UnregisterInterestDUnitTest.closeCache());
   }
 
   public static void closeCache() {
@@ -107,13 +107,13 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
    * @throws Exception
    */
   public void testUnregisterInterestAllKeys() throws Exception {
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {all_keys, 0, 0});
-    client1.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {all_keys, receiveValuesConstant, null});
-    client2.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {all_keys, !receiveValuesConstant, null});
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {all_keys, 1, 1});
-    client1.invoke(UnregisterInterestDUnitTest.class, "closeCache");
-    client2.invoke(UnregisterInterestDUnitTest.class, "closeCache");
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {all_keys, 0, 0});
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(all_keys, 0, 0));
+    client1.invoke(() -> UnregisterInterestDUnitTest.registerInterest(all_keys, receiveValuesConstant, null));
+    client2.invoke(() -> UnregisterInterestDUnitTest.registerInterest(all_keys, !receiveValuesConstant, null));
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(all_keys, 1, 1));
+    client1.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    client2.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(all_keys, 0, 0));
   }
 
   /**
@@ -126,13 +126,13 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
    * @throws Exception
    */
   public void testUnregisterInterestKeys() throws Exception {
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {list, 0, 0});
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(list, 0, 0));
     client1.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {list, receiveValuesConstant, new String[]{"key_1", "key_2", "key_3", "key_4", "key_5"}});
     client2.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {list, !receiveValuesConstant, new String[]{"key_1", "key_2", "key_3", "key_4", "key_5"}});
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {list, 1, 1});
-    client1.invoke(UnregisterInterestDUnitTest.class, "closeCache");
-    client2.invoke(UnregisterInterestDUnitTest.class, "closeCache");
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {list, 0, 0});
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(list, 1, 1));
+    client1.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    client2.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(list, 0, 0));
   }
 
   /**
@@ -146,13 +146,13 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
    * @throws Exception
    */
   public void testUnregisterInterestPatterns() throws Exception {
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {regex, 0, 0});
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(regex, 0, 0));
     client1.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {regex, receiveValuesConstant, new String[] {"[a-z]*[0-9]"}});
     client2.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {regex, !receiveValuesConstant, new String[] {"[a-z]*[0-9]"}});
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {regex, 1, 1});
-    client1.invoke(UnregisterInterestDUnitTest.class, "closeCache");
-    client2.invoke(UnregisterInterestDUnitTest.class, "closeCache");
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {regex, 0, 0});
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(regex, 1, 1));
+    client1.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    client2.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(regex, 0, 0));
   }
 
   /**
@@ -167,14 +167,14 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
    * @throws Exception
    */
   public void testUnregisterInterestKeysInvForOneClientDoesNotAffectOtherClient() throws Exception {
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {list, 0, 0});
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(list, 0, 0));
     client1.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {list, !receiveValuesConstant, new String[] {"key_1", "key_2", "key_3", "key_4", "key_5"}});
     client2.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {list, !receiveValuesConstant, new String[] {"key_1", "key_2", "key_3", "key_4", "key_5"}});
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {list, 0, 2});
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(list, 0, 2));
     client1.invoke(UnregisterInterestDUnitTest.class, "unregisterInterest", new Object[] {new String[] {"key_1", "key_2", "key_3"}});
     server0.invoke(UnregisterInterestDUnitTest.class, "updateKeys",  new Object[] {new String[] {"key_1", "key_2", "key_3", "key_4", "key_5"}});
-    client1.invoke(UnregisterInterestDUnitTest.class, "timedWaitForInvalidates", new Object[] {2});
-    client2.invoke(UnregisterInterestDUnitTest.class, "timedWaitForInvalidates", new Object[] {5});
+    client1.invoke(() -> UnregisterInterestDUnitTest.timedWaitForInvalidates(2));
+    client2.invoke(() -> UnregisterInterestDUnitTest.timedWaitForInvalidates(5));
   }
 
   /**
@@ -190,14 +190,14 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
    * @throws Exception
    */
   public void testUnregisterInterestRegexInvForOneClientDoesNotAffectOtherClient() throws Exception {
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {regex, 0, 0});
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(regex, 0, 0));
     client1.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {regex, !receiveValuesConstant, new String[] {"[a-z]*[0-9]"}});
     client2.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {regex, !receiveValuesConstant, new String[] {"[a-z]*[0-9]"}});
-    server0.invoke(UnregisterInterestDUnitTest.class, "checkRIArtifacts", new Object[] {regex, 0, 2});
+    server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(regex, 0, 2));
     client1.invoke(UnregisterInterestDUnitTest.class, "unregisterInterestRegex", new Object[] {new String[] {"[a-z]*[0-9]"}});
     server0.invoke(UnregisterInterestDUnitTest.class, "updateKeys",  new Object[] {new String[] {"key1", "key2", "key3", "key4", "key5"}});
-    client1.invoke(UnregisterInterestDUnitTest.class, "timedWaitForInvalidates", new Object[] {0});
-    client2.invoke(UnregisterInterestDUnitTest.class, "timedWaitForInvalidates", new Object[] {5});
+    client1.invoke(() -> UnregisterInterestDUnitTest.timedWaitForInvalidates(0));
+    client2.invoke(() -> UnregisterInterestDUnitTest.timedWaitForInvalidates(5));
   }
 
   public void _testUnregisterInterestFilters() throws Exception {

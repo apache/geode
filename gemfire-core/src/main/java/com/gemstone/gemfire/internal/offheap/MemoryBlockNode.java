@@ -65,15 +65,15 @@ public class MemoryBlockNode implements MemoryBlock {
     if (!isSerialized()) {
       // byte array
       if (isCompressed()) {
-        return "compressed byte[" + ((Chunk)this.block).getDataSize() + "]";
+        return "compressed byte[" + ((ObjectChunk)this.block).getDataSize() + "]";
       } else {
-        return "byte[" + ((Chunk)this.block).getDataSize() + "]";
+        return "byte[" + ((ObjectChunk)this.block).getDataSize() + "]";
       }
     } else if (isCompressed()) {
-      return "compressed object of size " + ((Chunk)this.block).getDataSize();
+      return "compressed object of size " + ((ObjectChunk)this.block).getDataSize();
     }
     //Object obj = EntryEventImpl.deserialize(((Chunk)this.block).getRawBytes());
-    byte[] bytes = ((Chunk)this.block).getRawBytes();
+    byte[] bytes = ((ObjectChunk)this.block).getRawBytes();
     return DataType.getDataType(bytes);
   }
   public boolean isSerialized() {
@@ -88,14 +88,14 @@ public class MemoryBlockNode implements MemoryBlock {
     if (dataType == null || dataType.equals("N/A")) {
       return null;
     } else if (isCompressed()) {
-      return ((Chunk)this.block).getCompressedBytes();
+      return ((ObjectChunk)this.block).getCompressedBytes();
     } else if (!isSerialized()) {
       // byte array
       //return "byte[" + ((Chunk)this.block).getDataSize() + "]";
-      return ((Chunk)this.block).getRawBytes();
+      return ((ObjectChunk)this.block).getRawBytes();
     } else {
       try {
-        byte[] bytes = ((Chunk)this.block).getRawBytes();
+        byte[] bytes = ((ObjectChunk)this.block).getRawBytes();
         return DataSerializer.readObject(DataType.getDataInput(bytes));
       } catch (IOException e) {
         e.printStackTrace();
@@ -126,10 +126,6 @@ public class MemoryBlockNode implements MemoryBlock {
       sb.append(getFreeListId());
     }
     sb.append(", RefCount=").append(getRefCount());
-    ChunkType ct = this.getChunkType();
-    if (ct != null) {
-      sb.append(", " + ct);
-    }
     sb.append(", isSerialized=").append(isSerialized());
     sb.append(", isCompressed=").append(isCompressed());
     sb.append(", DataType=").append(getDataType());
@@ -149,10 +145,6 @@ public class MemoryBlockNode implements MemoryBlock {
     }
     sb.append("}");
     return sb.toString();
-  }
-  @Override
-  public ChunkType getChunkType() {
-    return this.block.getChunkType();
   }
   
   @Override

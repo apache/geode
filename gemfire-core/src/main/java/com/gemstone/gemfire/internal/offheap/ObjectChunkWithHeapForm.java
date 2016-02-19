@@ -16,32 +16,25 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-
 /**
- * A chunk that stores a GemFire object.
- * Currently the object stored in this chunk
- * is always an entry value of a Region.
+ * Used to keep the heapForm around while an operation is still in progress.
+ * This allows the operation to access the serialized heap form instead of copying
+ * it from offheap. See bug 48135.
  */
-public class GemFireChunk extends Chunk {
-  public static final ChunkType TYPE = new ChunkType() {
-    @Override
-    public int getSrcType() {
-      return Chunk.SRC_TYPE_GFE;
-    }
-  };
-  public GemFireChunk(long memoryAddress, int chunkSize) {
-    super(memoryAddress, chunkSize, TYPE);
+public class ObjectChunkWithHeapForm extends ObjectChunk {
+  private final byte[] heapForm;
+  
+  public ObjectChunkWithHeapForm(ObjectChunk chunk, byte[] heapForm) {
+    super(chunk);
+    this.heapForm = heapForm;
   }
 
-  public GemFireChunk(long memoryAddress) {
-    super(memoryAddress);
-    // chunkType may be set by caller when it calls readyForAllocation
-  }
-  public GemFireChunk(GemFireChunk chunk) {
-    super(chunk);
-  }
   @Override
-  public Chunk slice(int position, int limit) {
-    return new GemFireChunkSlice(this, position, limit);
+  protected byte[] getRawBytes() {
+    return this.heapForm;
+  }
+  
+  public ObjectChunk getChunkWithoutHeapForm() {
+    return new ObjectChunk(this);
   }
 }

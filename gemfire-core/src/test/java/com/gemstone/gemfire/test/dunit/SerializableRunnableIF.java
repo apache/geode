@@ -21,5 +21,6 @@ import java.io.Serializable;
 /**
  * Interface for {@link SerializableRunnable} to enable use with lambdas.
  */
-public interface SerializableRunnableIF extends Serializable, Runnable {
+public interface SerializableRunnableIF extends Serializable {
+  public void run() throws Exception;
 }

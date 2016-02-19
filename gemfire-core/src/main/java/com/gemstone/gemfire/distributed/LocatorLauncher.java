@@ -1481,7 +1481,12 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
       else {
         try {
           this.bindAddress = InetAddress.getByName(bindAddress);
-          return this;
+          if (SocketCreator.isLocalHost(this.bindAddress)) {
+            return this;
+          }
+          else {
+            throw new IllegalArgumentException(bindAddress + " is not an address for this machine.");
+          }
         }
         catch (UnknownHostException e) {
           throw new IllegalArgumentException(LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE

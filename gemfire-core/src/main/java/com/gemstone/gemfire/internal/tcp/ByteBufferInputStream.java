@@ -31,7 +31,7 @@ import java.nio.ByteOrder;
 
 import com.gemstone.gemfire.internal.ByteBufferWriter;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
 
 /**
@@ -109,7 +109,7 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
     public static ByteSource create(ByteBuffer bb) {
       return new ByteBufferByteSource(bb);
     }
-    public static ByteSource create(Chunk chunk) {
+    public static ByteSource create(ObjectChunk chunk) {
       // Since I found a way to create a DirectByteBuffer (using reflection) from a Chunk
       // we might not even need the ByteSource abstraction any more.
       // But it is possible that createByteBuffer will not work on a different jdk so keep it for now.
@@ -323,9 +323,9 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
   public static class OffHeapByteSource implements ByteSource {
     private int position;
     private int limit;
-    private final Chunk chunk;
+    private final ObjectChunk chunk;
 
-    public OffHeapByteSource(Chunk c) {
+    public OffHeapByteSource(ObjectChunk c) {
       this.chunk = c;
       this.position = 0;
       this.limit = capacity();
@@ -724,7 +724,7 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
     this.buffer = copy.buffer.duplicate();
   }
 
-  public ByteBufferInputStream(Chunk blob) {
+  public ByteBufferInputStream(ObjectChunk blob) {
     this.buffer = ByteSourceFactory.create(blob);
   }
 

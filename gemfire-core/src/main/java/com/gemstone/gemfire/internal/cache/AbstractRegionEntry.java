@@ -61,9 +61,9 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.Chunk;
-import com.gemstone.gemfire.internal.offheap.ChunkWithHeapForm;
-import com.gemstone.gemfire.internal.offheap.GemFireChunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunkWithHeapForm;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
 import com.gemstone.gemfire.internal.offheap.OffHeapCachedDeserializable;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
@@ -1311,9 +1311,9 @@ public abstract class AbstractRegionEntry implements RegionEntry,
           }
           return prepareValueForCache(r, heapValue, event, isEntryUpdate);
         }
-        if (val instanceof Chunk) {
+        if (val instanceof ObjectChunk) {
           // if the reused guy has a refcount then need to inc it
-          if (!((Chunk)val).retain()) {
+          if (!((ObjectChunk)val).retain()) {
             throw new IllegalStateException("Could not use an off heap value because it was freed");
           }
         }
@@ -1346,10 +1346,10 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         boolean isCompressed = compressedData != data;
         ReferenceCountHelper.setReferenceCountOwner(this);
         MemoryAllocator ma = SimpleMemoryAllocatorImpl.getAllocator(); // fix for bug 47875
-        val = ma.allocateAndInitialize(compressedData, isSerialized, isCompressed, GemFireChunk.TYPE); // TODO:KIRK:48068 race happens right after this line
+        val = ma.allocateAndInitialize(compressedData, isSerialized, isCompressed); // TODO:KIRK:48068 race happens right after this line
         ReferenceCountHelper.setReferenceCountOwner(null);
-        if (val instanceof GemFireChunk) {
-          val = new com.gemstone.gemfire.internal.offheap.ChunkWithHeapForm((GemFireChunk)val, data);
+        if (val instanceof ObjectChunk) {
+          val = new ObjectChunkWithHeapForm((ObjectChunk)val, data);
         }
 //        if (val instanceof Chunk && r instanceof LocalRegion) {
 //          Chunk c = (Chunk) val;

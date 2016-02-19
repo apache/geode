@@ -80,14 +80,14 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
     super.setUp();
     Host host = Host.getHost(0);
     server1 = host.getVM(0);    
-    server1.invoke(ClearGlobalDUnitTest.class, "createCacheServer1");
+    server1.invoke(() -> ClearGlobalDUnitTest.createCacheServer1());
     createCacheServer2();
     LogWriterUtils.getLogWriter().fine("Cache created in successfully");
   }
 
   @Override
   protected final void preTearDown() throws Exception {
-    server1.invoke(ClearGlobalDUnitTest.class, "closeCache");
+    server1.invoke(() -> ClearGlobalDUnitTest.closeCache());
     resetClearCallBack();
     closeCache();
   }
@@ -113,7 +113,7 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
       objArr[0] = "" + i;
       server1.invoke(ClearGlobalDUnitTest.class, "putMethod", objArr);
     }    
-    server1.invoke(ClearGlobalDUnitTest.class,"clearMethod");
+    server1.invoke(() -> ClearGlobalDUnitTest.clearMethod());
     checkTestResults();
     
   }// end of test case

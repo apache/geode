@@ -80,8 +80,7 @@ public abstract class DistributedCacheTestCase
 
       for (int v = 0; v < host.getVMCount(); v++) {
         VM vm = host.getVM(v);
-        vm.invoke(this.getClass(), "remoteCreateCache",
-                  new Object[] {});
+        vm.invoke(() -> this.remoteCreateCache());
       }
     }
   }
@@ -129,7 +128,7 @@ public abstract class DistributedCacheTestCase
       for (int v = 0; v < host.getVMCount(); v++) {
         VM vm = host.getVM(v);
         boolean exceptionInThreads = 
-          vm.invokeBoolean(this.getClass(), "remoteCloseCache");
+          vm.invoke(() -> this.remoteCloseCache());
         if (exceptionInThreads) {
           String s = "An exception occurred in GemFire system";
           problems.append(s);

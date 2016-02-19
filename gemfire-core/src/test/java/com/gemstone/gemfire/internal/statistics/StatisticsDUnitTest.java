@@ -375,7 +375,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
     });
     
     // validate pub values against sub values
-    final int totalUpdateEvents = sub.invokeInt(getClass(), "getUpdateEvents");
+    final int totalUpdateEvents = sub.invoke(() -> getUpdateEvents());
     
     // validate pub values against pub statistics against pub archive
     for (int i = 0; i < NUM_PUBS; i++) {
@@ -462,7 +462,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
     int totalCombinedPuts = 0;
     for (int i = 0; i < NUM_PUBS; i++) {
       final int pubIdx = i;
-      final int totalPuts = pubs[pubIdx].invokeInt(getClass(), "getPuts");
+      final int totalPuts = pubs[pubIdx].invoke(() -> getPuts());
       assertEquals(MAX_PUTS * NUM_PUB_THREADS, totalPuts);
       totalCombinedPuts += totalPuts;
     }
@@ -537,15 +537,14 @@ public class StatisticsDUnitTest extends CacheTestCase {
       }
     });
     
-    final int updateEvents = sub.invokeInt(getClass(), "readIntStat", 
-        new Object[] {new File(subArchive), "PubSubStats", "updateEvents"});
+    final int updateEvents = sub.invoke(() -> readIntStat(new File(subArchive), "PubSubStats", "updateEvents"));
     assertTrue(updateEvents > 0);
     assertEquals(MAX_PUTS * NUM_PUB_THREADS * NUM_PUBS, updateEvents);
     
     int puts = 0;
     for (int pubVM = 0; pubVM < NUM_PUBS; pubVM++) {
-      int vmPuts = (int)pubs[pubVM].invokeInt(getClass(), "readIntStat", 
-          new Object[] {new File(pubArchives[pubVM]), "PubSubStats", "puts"});
+      int currentPubVM = pubVM;
+      int vmPuts = (int)pubs[pubVM].invoke(() -> readIntStat(new File(pubArchives[currentPubVM]), "PubSubStats", "puts"));
       assertTrue(vmPuts > 0);
       assertEquals(MAX_PUTS * NUM_PUB_THREADS, vmPuts);
       puts += vmPuts;

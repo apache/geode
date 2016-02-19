@@ -62,8 +62,8 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
 
   VM vm3 = null;
 
-  private static int PORT1;
-  private static int PORT2;
+  private int PORT1;
+  private int PORT2;
 
   private static final String REGION_NAME = "InterestListFailoverDUnitTest_region";
 
@@ -86,22 +86,18 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
   public void createServersAndClients(int redundancyLevel) {
     final Host host = Host.getHost(0);
     // start servers first
-    PORT1 = ((Integer)vm0.invoke(CacheServerTestUtil.class,
-                                 "createCacheServer",
-                                 new Object[] {REGION_NAME, new Boolean(true)}))
+    PORT1 = ((Integer)vm0.invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true))))
         .intValue();
 
-    PORT2 = ((Integer)vm3.invoke(CacheServerTestUtil.class,
-                                 "createCacheServer",
-                                 new Object[] {REGION_NAME, new Boolean(true)}))
+    PORT2 = ((Integer)vm3.invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true))))
         .intValue();
 
-    vm1.invoke(CacheServerTestUtil.class, "disableShufflingOfEndpoints");
-    vm2.invoke(CacheServerTestUtil.class, "disableShufflingOfEndpoints");
-    vm1.invoke(CacheServerTestUtil.class, "createCacheClient", new Object[] {
-        getClientPool(NetworkUtils.getServerHostName(host),redundancyLevel), REGION_NAME });
-    vm2.invoke(CacheServerTestUtil.class, "createCacheClient", new Object[] {
-        getClientPool(NetworkUtils.getServerHostName(host),0), REGION_NAME });
+    vm1.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
+    vm2.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
+    vm1.invoke(() -> CacheServerTestUtil.createCacheClient(
+        getClientPool(NetworkUtils.getServerHostName(host),redundancyLevel), REGION_NAME ));
+    vm2.invoke(() -> CacheServerTestUtil.createCacheClient(
+        getClientPool(NetworkUtils.getServerHostName(host),0), REGION_NAME ));
   }
 
 /**
@@ -132,24 +128,24 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
   public void doTestInterestListRecovery(int redundancyLevel)
   {
     createServersAndClients(redundancyLevel);
-    vm1.invoke(InterestListFailoverDUnitTest.class, "createEntries");
-    vm2.invoke(InterestListFailoverDUnitTest.class, "createEntries");
-    vm0.invoke(InterestListFailoverDUnitTest.class, "createEntries");
-    Integer primaryPort = (Integer)vm1.invoke(InterestListFailoverDUnitTest.class, "registerInterestList");
+    vm1.invoke(() -> InterestListFailoverDUnitTest.createEntries());
+    vm2.invoke(() -> InterestListFailoverDUnitTest.createEntries());
+    vm0.invoke(() -> InterestListFailoverDUnitTest.createEntries());
+    Integer primaryPort = (Integer)vm1.invoke(() -> InterestListFailoverDUnitTest.registerInterestList());
     VM primaryVM;
     if (primaryPort.intValue() == PORT1) {
       primaryVM = vm0;
     } else {
       primaryVM = vm3;
     }
-    vm2.invoke(InterestListFailoverDUnitTest.class, "putA");
+    vm2.invoke(() -> InterestListFailoverDUnitTest.putA());
    // pause(10000);
-    vm1.invoke(InterestListFailoverDUnitTest.class, "validateEntriesA");
-    primaryVM.invoke(InterestListFailoverDUnitTest.class, "stopServer");
+    vm1.invoke(() -> InterestListFailoverDUnitTest.validateEntriesA());
+    primaryVM.invoke(() -> InterestListFailoverDUnitTest.stopServer());
     //pause(10000);
-    vm2.invoke(InterestListFailoverDUnitTest.class, "putB");
+    vm2.invoke(() -> InterestListFailoverDUnitTest.putB());
     //(10000);
-    vm1.invoke(InterestListFailoverDUnitTest.class, "validateEntriesB");
+    vm1.invoke(() -> InterestListFailoverDUnitTest.validateEntriesB());
   }
 
   public static void createEntries()
@@ -309,11 +305,11 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
 
   public void closeAll() {
     // close the clients first
-    vm1.invoke(CacheServerTestUtil.class, "closeCache");
-    vm2.invoke(CacheServerTestUtil.class, "closeCache");
+    vm1.invoke(() -> CacheServerTestUtil.closeCache());
+    vm2.invoke(() -> CacheServerTestUtil.closeCache());
     // then close the servers
-    vm0.invoke(CacheServerTestUtil.class, "closeCache");
-    vm3.invoke(CacheServerTestUtil.class, "closeCache");
+    vm0.invoke(() -> CacheServerTestUtil.closeCache());
+    vm3.invoke(() -> CacheServerTestUtil.closeCache());
     CacheServerTestUtil.closeCache();
   }
 

@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
@@ -36,7 +36,7 @@ public class BytesAndBitsForCompactor {
    * The dataChunk field is unretained so it can only be used while the RegionEntry is still synced.
    * When done with the dataChunk, null it out if you want to reuse the byte[] later.
    */
-  private @Unretained Chunk dataChunk;
+  private @Unretained ObjectChunk dataChunk;
   private  byte[] data;
   private  byte userBits=0;
   // length of the data present in the byte array 
@@ -56,7 +56,7 @@ public class BytesAndBitsForCompactor {
   }
 
   
-  public final Chunk getDataChunk() {
+  public final ObjectChunk getDataChunk() {
     return this.dataChunk;
   }
   public final byte[] getBytes() {
@@ -87,7 +87,7 @@ public class BytesAndBitsForCompactor {
     this.validLength = validLength;    
     this.isReusable = isReusable;
   }
-  public void setChunkData(Chunk c, byte userBits) {
+  public void setChunkData(ObjectChunk c, byte userBits) {
     this.dataChunk = c;
     this.userBits = userBits;
   }

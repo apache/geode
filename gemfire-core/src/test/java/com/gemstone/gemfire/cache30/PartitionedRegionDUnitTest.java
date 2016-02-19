@@ -547,7 +547,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
       }
     });
     
-    boolean success = vm0.invokeBoolean(PoisonedKey.class, "poisonFound");
+    boolean success = vm0.invoke(() -> PoisonedKey.poisonFound());
     assertTrue("Hash mismatch not found", success);
   }
 }

@@ -27,7 +27,7 @@ import com.gemstone.gemfire.GemFireException;
  * <PRE>
  *     VM vm0 = host0.getVM(0);
  *     try {
- *       vm.invoke(this.getClass(), "getUnknownObject");
+ *       vm.invoke(() -> this.getUnknownObject());
  *
  *     } catch (RMIException ex) {
  *       assertEquals(ex.getCause() instanceof ObjectException);

@@ -330,10 +330,10 @@ public class PRPerformanceTestDUnitTest extends
     //final VM accessor = vm3;
     //create cache in all vms
     
-    accessor.invoke(PRPerformanceTestDUnitTest.class, "createCacheInVm");
-    vm1.invoke(PRPerformanceTestDUnitTest.class, "createCacheInVm");
-    vm2.invoke(PRPerformanceTestDUnitTest.class, "createCacheInVm");
-    vm3.invoke(PRPerformanceTestDUnitTest.class, "createCacheInVm");
+    accessor.invoke(() -> PRPerformanceTestDUnitTest.createCacheInVm());
+    vm1.invoke(() -> PRPerformanceTestDUnitTest.createCacheInVm());
+    vm2.invoke(() -> PRPerformanceTestDUnitTest.createCacheInVm());
+    vm3.invoke(() -> PRPerformanceTestDUnitTest.createCacheInVm());
 
     
 

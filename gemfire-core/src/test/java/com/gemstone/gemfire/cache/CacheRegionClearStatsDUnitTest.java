@@ -39,7 +39,7 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
   /** the cache */
   private static GemFireCacheImpl cache = null;
 
-  private static VM server1 = null;
+  private VM server1 = null;
 
   private static VM client1 = null;
 
@@ -148,13 +148,11 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
    * 1)Verifies that clear operation count matches with stats count<br>
    */
   public void testClearStatsWithNormalRegion(){
-    Integer port1 = ((Integer)server1.invoke(
-        CacheRegionClearStatsDUnitTest.class, "createServerCache"));
+    Integer port1 = ((Integer)server1.invoke(() -> CacheRegionClearStatsDUnitTest.createServerCache()));
 
-    client1.invoke(CacheRegionClearStatsDUnitTest.class,
-        "createClientCache", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), port1 });
-    client1.invoke(CacheRegionClearStatsDUnitTest.class, "put");
+    client1.invoke(() -> CacheRegionClearStatsDUnitTest.createClientCache(
+            NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+    client1.invoke(() -> CacheRegionClearStatsDUnitTest.put());
     
     try{
       Thread.sleep(10000);
@@ -162,24 +160,20 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
       // sleep 
     }
     
-    client1.invoke(CacheRegionClearStatsDUnitTest.class,
-        "validationClearStat");
+    client1.invoke(() -> CacheRegionClearStatsDUnitTest.validationClearStat());
     
-    server1.invoke(CacheRegionClearStatsDUnitTest.class,
-    "validationClearStat");
+    server1.invoke(() -> CacheRegionClearStatsDUnitTest.validationClearStat());
   }
   /**
    * This test does the following (<b> clear stats counter when disk involved </b>):<br>
    * 1)Verifies that clear operation count matches with stats count <br>
    */
   public void testClearStatsWithDiskRegion(){
-    Integer port1 = ((Integer)server1.invoke(
-        CacheRegionClearStatsDUnitTest.class, "createServerCacheDisk"));
+    Integer port1 = ((Integer)server1.invoke(() -> CacheRegionClearStatsDUnitTest.createServerCacheDisk()));
 
-    client1.invoke(CacheRegionClearStatsDUnitTest.class,
-        "createClientCacheDisk", new Object[] {
-            NetworkUtils.getServerHostName(server1.getHost()), port1 });
-    client1.invoke(CacheRegionClearStatsDUnitTest.class, "put");
+    client1.invoke(() -> CacheRegionClearStatsDUnitTest.createClientCacheDisk(
+            NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+    client1.invoke(() -> CacheRegionClearStatsDUnitTest.put());
     
     try{
       Thread.sleep(10000);
@@ -187,18 +181,16 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
       // sleep 
     }
     
-    client1.invoke(CacheRegionClearStatsDUnitTest.class,
-        "validationClearStat");
+    client1.invoke(() -> CacheRegionClearStatsDUnitTest.validationClearStat());
     
-    server1.invoke(CacheRegionClearStatsDUnitTest.class,
-    "validationClearStat");
+    server1.invoke(() -> CacheRegionClearStatsDUnitTest.validationClearStat());
   }
   
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(CacheRegionClearStatsDUnitTest.class, "closeCache");
+    client1.invoke(() -> CacheRegionClearStatsDUnitTest.closeCache());
     // then close the servers
-    server1.invoke(CacheRegionClearStatsDUnitTest.class, "closeCache");
+    server1.invoke(() -> CacheRegionClearStatsDUnitTest.closeCache());
   }
 
   public static void closeCache() {

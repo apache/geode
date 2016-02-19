@@ -92,16 +92,16 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
     super.setUp();
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
-    server1.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
+    server1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
     client1 = host.getVM(2);
   }
 
   /** close the caches* */
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(HAEventIdPropagationDUnitTest.class, "closeCache");
+    client1.invoke(() -> HAEventIdPropagationDUnitTest.closeCache());
     // close server
-    server1.invoke(HAEventIdPropagationDUnitTest.class, "closeCache");
+    server1.invoke(() -> HAEventIdPropagationDUnitTest.closeCache());
   }
 
   /** stops the server * */
@@ -124,10 +124,8 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
   private void createClientServerConfiguration()
   {
 
-    int PORT1 = ((Integer)server1.invoke(HAEventIdPropagationDUnitTest.class,
-        "createServerCache")).intValue();
-    client1.invoke(HAEventIdPropagationDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) });
+    int PORT1 = ((Integer)server1.invoke(() -> HAEventIdPropagationDUnitTest.createServerCache())).intValue();
+    client1.invoke(() -> HAEventIdPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1) ));
   }
 
   /** create the server * */
@@ -319,64 +317,50 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
   {
     try {
       createClientServerConfiguration();
-      client1.invoke(HAEventIdPropagationDUnitTest.class,"setReceivedOperationToFalse");
-      client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "assertThreadIdToSequenceIdMapisNotNullButEmpty");
-      Object eventId1 = server1.invoke(HAEventIdPropagationDUnitTest.class,
-          "putKey1Val1");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.setReceivedOperationToFalse());
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.assertThreadIdToSequenceIdMapisNotNullButEmpty());
+      Object eventId1 = server1.invoke(() -> HAEventIdPropagationDUnitTest.putKey1Val1());
       assertNotNull(eventId1);
       // wait for key to propagate till client
       // assert map not null on client
-      client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "waitTillOperationReceived");
-      Object eventId2 = client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "assertThreadIdToSequenceIdMapHasEntryId");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.waitTillOperationReceived());
+      Object eventId2 = client1.invoke(() -> HAEventIdPropagationDUnitTest.assertThreadIdToSequenceIdMapHasEntryId());
       assertNotNull(eventId2);
       if (!eventId1.equals(eventId2)) {
         fail("Test failed as the eventIds are not equal");
       }
 
-      client1.invoke(HAEventIdPropagationDUnitTest.class,"setReceivedOperationToFalse");
-      eventId1 = server1.invoke(HAEventIdPropagationDUnitTest.class,
-          "updateKey1");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.setReceivedOperationToFalse());
+      eventId1 = server1.invoke(() -> HAEventIdPropagationDUnitTest.updateKey1());
       assertNotNull(eventId1);
       // wait for key to propagate till client
       // assert map not null on client
-      client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "waitTillOperationReceived");
-      eventId2 = client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "assertThreadIdToSequenceIdMapHasEntryId");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.waitTillOperationReceived());
+      eventId2 = client1.invoke(() -> HAEventIdPropagationDUnitTest.assertThreadIdToSequenceIdMapHasEntryId());
       assertNotNull(eventId2);
       if (!eventId1.equals(eventId2)) {
         fail("Test failed as the eventIds are not equal");
       }
 
-      client1.invoke(HAEventIdPropagationDUnitTest.class,"setReceivedOperationToFalse");
-      eventId1 = server1.invoke(HAEventIdPropagationDUnitTest.class,
-          "invalidateKey1");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.setReceivedOperationToFalse());
+      eventId1 = server1.invoke(() -> HAEventIdPropagationDUnitTest.invalidateKey1());
       assertNotNull(eventId1);
       // wait for key to propagate till client
       // assert map not null on client
-      client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "waitTillOperationReceived");
-      eventId2 = client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "assertThreadIdToSequenceIdMapHasEntryId");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.waitTillOperationReceived());
+      eventId2 = client1.invoke(() -> HAEventIdPropagationDUnitTest.assertThreadIdToSequenceIdMapHasEntryId());
       assertNotNull(eventId2);
       if (!eventId1.equals(eventId2)) {
         fail("Test failed as the eventIds are not equal");
       }
 
-      client1.invoke(HAEventIdPropagationDUnitTest.class,"setReceivedOperationToFalse");
-      EventID[] eventIds1 = (EventID[])server1.invoke(
-          HAEventIdPropagationDUnitTest.class, "putAll");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.setReceivedOperationToFalse());
+      EventID[] eventIds1 = (EventID[])server1.invoke(() -> HAEventIdPropagationDUnitTest.putAll());
       assertNotNull(eventIds1);
       // wait for key to propagate till client
       // assert map not null on client
-      client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "waitTillOperationReceived");
-      EventID[] eventIds2 = (EventID[])client1.invoke(
-          HAEventIdPropagationDUnitTest.class,
-          "assertThreadIdToSequenceIdMapHasEntryIds");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.waitTillOperationReceived());
+      EventID[] eventIds2 = (EventID[])client1.invoke(() -> HAEventIdPropagationDUnitTest.assertThreadIdToSequenceIdMapHasEntryIds());
       assertNotNull(eventIds2);
       for (int i = 0; i < 5; i++) {
         assertNotNull(eventIds1[i]);
@@ -387,31 +371,25 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
       }
 
 
-      client1.invoke(HAEventIdPropagationDUnitTest.class,"setReceivedOperationToFalse");
-      eventId1 = server1.invoke(HAEventIdPropagationDUnitTest.class,
-          "removePUTALL_KEY1");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.setReceivedOperationToFalse());
+      eventId1 = server1.invoke(() -> HAEventIdPropagationDUnitTest.removePUTALL_KEY1());
       assertNotNull(eventId1);
       // wait for key to propagate till client
       // assert map not null on client
-      client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "waitTillOperationReceived");
-      eventId2 = client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "assertThreadIdToSequenceIdMapHasEntryId");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.waitTillOperationReceived());
+      eventId2 = client1.invoke(() -> HAEventIdPropagationDUnitTest.assertThreadIdToSequenceIdMapHasEntryId());
       assertNotNull(eventId2);
       if (!eventId1.equals(eventId2)) {
         fail("Test failed as the eventIds are not equal");
       }
 
-      client1.invoke(HAEventIdPropagationDUnitTest.class,"setReceivedOperationToFalse");
-      eventId1 = server1.invoke(HAEventIdPropagationDUnitTest.class,
-          "destroyKey1");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.setReceivedOperationToFalse());
+      eventId1 = server1.invoke(() -> HAEventIdPropagationDUnitTest.destroyKey1());
       assertNotNull(eventId1);
       // wait for key to propagate till client
       // assert map not null on client
-      client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "waitTillOperationReceived");
-      eventId2 = client1.invoke(HAEventIdPropagationDUnitTest.class,
-          "assertThreadIdToSequenceIdMapHasEntryId");
+      client1.invoke(() -> HAEventIdPropagationDUnitTest.waitTillOperationReceived());
+      eventId2 = client1.invoke(() -> HAEventIdPropagationDUnitTest.assertThreadIdToSequenceIdMapHasEntryId());
       assertNotNull(eventId2);
       if (!eventId1.equals(eventId2)) {
         fail("Test failed as the eventIds are not equal");
@@ -427,18 +405,14 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
   public void testEventIDPropagationForClear() throws Exception
   {
     createClientServerConfiguration();
-    client1.invoke(HAEventIdPropagationDUnitTest.class,"setReceivedOperationToFalse");
-    client1.invoke(HAEventIdPropagationDUnitTest.class,
-        "assertThreadIdToSequenceIdMapisNotNullButEmpty");
-    Object eventId1 = server1.invoke(HAEventIdPropagationDUnitTest.class,
-    "clearRg");
+    client1.invoke(() -> HAEventIdPropagationDUnitTest.setReceivedOperationToFalse());
+    client1.invoke(() -> HAEventIdPropagationDUnitTest.assertThreadIdToSequenceIdMapisNotNullButEmpty());
+    Object eventId1 = server1.invoke(() -> HAEventIdPropagationDUnitTest.clearRg());
     assertNotNull(eventId1);
     // wait for key to propagate till client
     // assert map not null on client
-    client1.invoke(HAEventIdPropagationDUnitTest.class,
-        "waitTillOperationReceived");
-    Object eventId2 = client1.invoke(HAEventIdPropagationDUnitTest.class,
-        "assertThreadIdToSequenceIdMapHasEntryId");
+    client1.invoke(() -> HAEventIdPropagationDUnitTest.waitTillOperationReceived());
+    Object eventId2 = client1.invoke(() -> HAEventIdPropagationDUnitTest.assertThreadIdToSequenceIdMapHasEntryId());
     assertNotNull(eventId2);
     if (!eventId1.equals(eventId2)) {
       fail("Test failed as the clear eventIds are not equal");
@@ -450,16 +424,13 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
   public void _testEventIDPropagationForDestroyRegion() throws Exception
   {
     createClientServerConfiguration();
-    client1.invoke(HAEventIdPropagationDUnitTest.class,"setReceivedOperationToFalse");
-    Object eventId1 = server1.invoke(HAEventIdPropagationDUnitTest.class,
-        "destroyRegion");
+    client1.invoke(() -> HAEventIdPropagationDUnitTest.setReceivedOperationToFalse());
+    Object eventId1 = server1.invoke(() -> HAEventIdPropagationDUnitTest.destroyRegion());
     assertNotNull(eventId1);
     // wait for key to propagate till client
     // assert map not null on client
-    client1.invoke(HAEventIdPropagationDUnitTest.class,
-        "waitTillOperationReceived");
-    Object eventId2 = client1.invoke(HAEventIdPropagationDUnitTest.class,
-        "assertThreadIdToSequenceIdMapHasEntryId");
+    client1.invoke(() -> HAEventIdPropagationDUnitTest.waitTillOperationReceived());
+    Object eventId2 = client1.invoke(() -> HAEventIdPropagationDUnitTest.assertThreadIdToSequenceIdMapHasEntryId());
     assertNotNull(eventId2);
     if (!eventId1.equals(eventId2)) {
       fail("Test failed as the eventIds are not equal");

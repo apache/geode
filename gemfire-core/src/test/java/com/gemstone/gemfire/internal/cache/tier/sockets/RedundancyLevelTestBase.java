@@ -115,14 +115,10 @@ public class RedundancyLevelTestBase extends DistributedTestCase
     IgnoredException.addIgnoredException("java.net.SocketException||java.net.ConnectException");
 
     // start servers first
-    PORT1 = ((Integer)server0.invoke(RedundancyLevelTestBase.class,
-        "createServerCache")).intValue();
-    PORT2 = ((Integer)server1.invoke(RedundancyLevelTestBase.class,
-        "createServerCache")).intValue();
-    PORT3 = ((Integer)server2.invoke(RedundancyLevelTestBase.class,
-        "createServerCache")).intValue();
-    PORT4 = ((Integer)server3.invoke(RedundancyLevelTestBase.class,
-        "createServerCache")).intValue();
+    PORT1 = ((Integer)server0.invoke(() -> RedundancyLevelTestBase.createServerCache())).intValue();
+    PORT2 = ((Integer)server1.invoke(() -> RedundancyLevelTestBase.createServerCache())).intValue();
+    PORT3 = ((Integer)server2.invoke(() -> RedundancyLevelTestBase.createServerCache())).intValue();
+    PORT4 = ((Integer)server3.invoke(() -> RedundancyLevelTestBase.createServerCache())).intValue();
 
     String hostName = NetworkUtils.getServerHostName(Host.getHost(0));
     SERVER1 = hostName + PORT1;
@@ -636,10 +632,10 @@ public class RedundancyLevelTestBase extends DistributedTestCase
       closeCache();
 
       // then close the servers
-      server0.invoke(RedundancyLevelTestBase.class, "closeCache");
-      server1.invoke(RedundancyLevelTestBase.class, "closeCache");
-      server2.invoke(RedundancyLevelTestBase.class, "closeCache");
-      server3.invoke(RedundancyLevelTestBase.class, "closeCache");
+      server0.invoke(() -> RedundancyLevelTestBase.closeCache());
+      server1.invoke(() -> RedundancyLevelTestBase.closeCache());
+      server2.invoke(() -> RedundancyLevelTestBase.closeCache());
+      server3.invoke(() -> RedundancyLevelTestBase.closeCache());
     } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }

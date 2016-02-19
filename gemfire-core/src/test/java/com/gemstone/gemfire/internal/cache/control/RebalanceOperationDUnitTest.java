@@ -2393,11 +2393,9 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
   /** 
    * Test to ensure that we wait for
    * in progress write operations before moving a primary.
-   * @throws InterruptedException 
-   * @throws CancellationException 
-   * @throws TimeoutException 
+   * @throws Exception 
    */
-  public void runTestWaitForOperation(final Operation op) throws CancellationException, InterruptedException, TimeoutException {
+  public void runTestWaitForOperation(final Operation op) throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);

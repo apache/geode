@@ -31,8 +31,8 @@ import com.gemstone.gemfire.SystemFailure;
  * <code>AsyncInvocation</code> can be used as follows:</P>
  *
  * <PRE>
- *   AsyncInvocation ai1 = vm.invokeAsync(Test.class, "method1");
- *   AsyncInvocation ai2 = vm.invokeAsync(Test.class, "method2");
+ *   AsyncInvocation ai1 = vm.invokeAsync(() -> Test.method1());
+ *   AsyncInvocation ai2 = vm.invokeAsync(() -> Test.method2());
  *
  *   ai1.join();
  *   ai2.join();

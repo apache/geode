@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
  *
  */
 public class Fragment implements MemoryBlock {
-  private static final byte FILL_BYTE = Chunk.FILL_BYTE;
+  private static final byte FILL_BYTE = ObjectChunk.FILL_BYTE;
   private final long baseAddr;
   private final int size;
   @SuppressWarnings("unused")
@@ -119,11 +119,6 @@ public class Fragment implements MemoryBlock {
   }
 
   @Override
-  public ChunkType getChunkType() {
-    return null;
-  }
-  
-  @Override
   public boolean equals(Object o) {
     if (o instanceof Fragment) {
       return getMemoryAddress() == ((Fragment) o).getMemoryAddress();
@@ -136,4 +131,9 @@ public class Fragment implements MemoryBlock {
     long value = this.getMemoryAddress();
     return (int)(value ^ (value >>> 32));
   }
+  @Override
+  public String toString() {
+    return "Fragment [baseAddr=" + baseAddr + ", size=" + size + ", freeIdx=" + freeIdx + "]";
+  }
+
 }

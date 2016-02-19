@@ -90,37 +90,32 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   public void testRemoteMultiKeyExecution()
       throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers",new Object[]{new Integer(5)});
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers(new Integer(5)));
   }
   
   public void testRemoteMultiKeyExecution_SendException1() throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers_SendException",
-        new Object[] { new Integer(1) });
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers_SendException( new Integer(1) ));
   }
   
   public void testRemoteMultiKeyExecution_SendException2() throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers_SendException",
-        new Object[] { new Integer(4) });
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers_SendException( new Integer(4) ));
   }
   
   public void testRemoteMultiKeyExecution_SendException3() throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers_SendException",
-        new Object[] { new Integer(5) });
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers_SendException( new Integer(5) ));
   }
   
   public void testRemoteMultiKeyExecution_NoLastResult() throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers_NoLastResult",
-        new Object[] { new Integer(5) });
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers_NoLastResult( new Integer(5) ));
   }
   
   public void testLocalMultiKeyExecution_NoLastResult() throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers_NoLastResult",
-        new Object[] { new Integer(1) });
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers_NoLastResult( new Integer(1) ));
   }
   
   /**
@@ -131,7 +126,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   public void testRemoteMultiKeyExecution_InlineFunction()
       throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers_InlineFunction",new Object[]{new Integer(5)});
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers_InlineFunction(new Integer(5)));
   }
 
   public void testBug45328() throws Exception {
@@ -175,21 +170,20 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
 
   public void testBug40714() throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "registerFunction");
-    member2.invoke(MemberFunctionExecutionDUnitTest.class, "registerFunction");
-    member3.invoke(MemberFunctionExecutionDUnitTest.class, "registerFunction");
-    member4.invoke(MemberFunctionExecutionDUnitTest.class, "registerFunction");
-    member1.invoke(MemberFunctionExecutionDUnitTest.class,
-        "excuteOnMembers_InlineFunction", new Object[] { new Integer(5) });
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.registerFunction());
+    member2.invoke(() -> MemberFunctionExecutionDUnitTest.registerFunction());
+    member3.invoke(() -> MemberFunctionExecutionDUnitTest.registerFunction());
+    member4.invoke(() -> MemberFunctionExecutionDUnitTest.registerFunction());
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers_InlineFunction( new Integer(5) ));
   }
 
   
   public void testBug46129() throws Exception {
     Properties props = new Properties();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "connectToDistributedSystem",  new Object[] { props });
-    member2.invoke(MemberFunctionExecutionDUnitTest.class, "connectToDistributedSystem",  new Object[] { props });
-    member3.invoke(MemberFunctionExecutionDUnitTest.class, "connectToDistributedSystem",  new Object[] { props });
-    member4.invoke(MemberFunctionExecutionDUnitTest.class, "connectToDistributedSystem",  new Object[] { props });
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.connectToDistributedSystem( props ));
+    member2.invoke(() -> MemberFunctionExecutionDUnitTest.connectToDistributedSystem( props ));
+    member3.invoke(() -> MemberFunctionExecutionDUnitTest.connectToDistributedSystem( props ));
+    member4.invoke(() -> MemberFunctionExecutionDUnitTest.connectToDistributedSystem( props ));
     connectToDistributedSystem(props);
     AbstractExecution exe = (AbstractExecution)FunctionService.onMembers(getSystem());
     exe.setIgnoreDepartedMembers(true);
@@ -252,7 +246,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   public void testRemoteMultiKeyExecutionNoResult()
       throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembersNoResult");
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembersNoResult());
   }
   /**
    * Test the execution of function on local memebers
@@ -262,7 +256,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   public void testRemoteMultiKeyExecutiononLocalMember()
       throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers",new Object[]{new Integer(1)});
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers(new Integer(1)));
   }
   
   /**
@@ -273,7 +267,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   public void testRemoteMultiKeyExecutiononLocalMember_InlineFunction()
       throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers_InlineFunction",new Object[]{new Integer(1)});
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers_InlineFunction(new Integer(1)));
   }
   
   /**
@@ -284,7 +278,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   public void testRemoteMultiKeyExecutiononOtherMembers()
       throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers",new Object[]{new Integer(4)});
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers(new Integer(4)));
   }
   
   /**
@@ -295,7 +289,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   public void testRemoteMultiKeyExecutiononOtherMembers_InlineFunction()
       throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "excuteOnMembers_InlineFunction",new Object[]{new Integer(4)});
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers_InlineFunction(new Integer(4)));
   }
   
   /**
@@ -304,7 +298,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
    */
   public void testBug41118()
       throws Exception {
-    member1.invoke(MemberFunctionExecutionDUnitTest.class, "bug41118");
+    member1.invoke(() -> MemberFunctionExecutionDUnitTest.bug41118());
   }
   
   public void testOnMembersWithoutCache()
@@ -630,10 +624,8 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
     List<VM> members = new ArrayList<VM>(4);
     members.add(member1); members.add(member2); members.add(member3); members.add(member4);
     for (VM member: members) {
-      member.invoke(MemberFunctionExecutionDUnitTest.class, "connectToDistributedSystem",
-        new Object[] { props });
-      member.invoke(MemberFunctionExecutionDUnitTest.class, "registerExpectedExceptions",
-          new Object[] { Boolean.TRUE });
+      member.invoke(() -> MemberFunctionExecutionDUnitTest.connectToDistributedSystem( props ));
+      member.invoke(() -> MemberFunctionExecutionDUnitTest.registerExpectedExceptions( Boolean.TRUE ));
     }
   }
   
@@ -670,8 +662,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
     List<VM> members = new ArrayList<VM>(4);
     members.add(member1); members.add(member2); members.add(member3); members.add(member4);
     for (VM member: members) {
-      member.invoke(MemberFunctionExecutionDUnitTest.class, "registerExpectedExceptions",
-          new Object[] { Boolean.FALSE });
+      member.invoke(() -> MemberFunctionExecutionDUnitTest.registerExpectedExceptions( Boolean.FALSE ));
     }
   }
   

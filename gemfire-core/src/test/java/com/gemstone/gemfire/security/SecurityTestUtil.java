@@ -341,7 +341,7 @@ public class SecurityTestUtil extends DistributedTestCase {
     cache.createRegion(regionName, attrs);
     int port;
     if (serverPort == null || serverPort.intValue() <= 0) {
-      port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+      port = 0;
     }
     else {
       port = serverPort.intValue();

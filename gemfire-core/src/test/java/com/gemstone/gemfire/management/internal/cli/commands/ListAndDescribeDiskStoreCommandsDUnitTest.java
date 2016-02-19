@@ -97,7 +97,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     return distributedSystemProperties;
   }
 
-  protected void createPersistentRegion(final Peer peer, final String regionName, final String diskStoreName) {
+  protected void createPersistentRegion(final Peer peer, final String regionName, final String diskStoreName) throws Exception {
     peer.run(new SerializableRunnable("Creating Persistent Region for Member " + peer.getName()) {
       @Override
       public void run() {
@@ -183,7 +183,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
       return vm;
     }
 
-    public void run(final SerializableRunnableIF runnable) {
+    public void run(final SerializableRunnableIF runnable) throws Exception {
       if (getVm() == null) {
         runnable.run();
       } else {

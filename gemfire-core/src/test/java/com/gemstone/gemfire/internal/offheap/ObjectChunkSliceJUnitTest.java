@@ -26,18 +26,18 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class GemFireChunkSliceJUnitTest extends GemFireChunkJUnitTest {
+public class ObjectChunkSliceJUnitTest extends ObjectChunkJUnitTest {
 
   @Test
   public void sliceShouldHaveAValidDataSize() {
     int position = 1;
     int end = 2;
 
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    GemFireChunkSlice slice = (GemFireChunkSlice) chunk.slice(position, end);
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunkSlice slice = (ObjectChunkSlice) chunk.slice(position, end);
 
     assertNotNull(slice);
-    assertEquals(GemFireChunkSlice.class, slice.getClass());
+    assertEquals(ObjectChunkSlice.class, slice.getClass());
 
     assertEquals(end - position, slice.getDataSize());
   }
@@ -47,11 +47,11 @@ public class GemFireChunkSliceJUnitTest extends GemFireChunkJUnitTest {
     int position = 1;
     int end = 2;
 
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    GemFireChunkSlice slice = (GemFireChunkSlice) chunk.slice(position, end);
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunkSlice slice = (ObjectChunkSlice) chunk.slice(position, end);
 
     assertNotNull(slice);
-    assertEquals(GemFireChunkSlice.class, slice.getClass());
+    assertEquals(ObjectChunkSlice.class, slice.getClass());
 
     assertEquals(chunk.getBaseDataAddress() + position, slice.getBaseDataAddress());
   }
@@ -61,11 +61,11 @@ public class GemFireChunkSliceJUnitTest extends GemFireChunkJUnitTest {
     int position = 1;
     int end = 2;
 
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    GemFireChunkSlice slice = (GemFireChunkSlice) chunk.slice(position, end);
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunkSlice slice = (ObjectChunkSlice) chunk.slice(position, end);
 
     assertNotNull(slice);
-    assertEquals(GemFireChunkSlice.class, slice.getClass());
+    assertEquals(ObjectChunkSlice.class, slice.getClass());
 
     assertEquals(chunk.getBaseDataOffset() + position, slice.getBaseDataOffset());
   }

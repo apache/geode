@@ -63,7 +63,7 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
     static CacheTransactionManager cacheTxnMgr;
     static boolean IsAfterClear=false;
     static boolean flag = false;
-    static DistributedMember vm0ID, vm1ID;
+    DistributedMember vm0ID, vm1ID;
     
     @Override
     public void setUp() throws Exception {
@@ -71,8 +71,8 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0ID = (DistributedMember)vm0.invoke(ClearDAckDUnitTest.class, "createCacheVM0");
-      vm1ID = (DistributedMember)vm1.invoke(ClearDAckDUnitTest.class, "createCacheVM1");
+      vm0ID = (DistributedMember)vm0.invoke(() -> ClearDAckDUnitTest.createCacheVM0());
+      vm1ID = (DistributedMember)vm1.invoke(() -> ClearDAckDUnitTest.createCacheVM1());
       LogWriterUtils.getLogWriter().info("Cache created in successfully");
     }
     
@@ -82,10 +82,10 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
       VM vm2 = host.getVM(2);
-      vm0.invoke(ClearDAckDUnitTest.class, "closeCache");
-      vm1.invoke(ClearDAckDUnitTest.class, "resetClearCallBack");
-      vm1.invoke(ClearDAckDUnitTest.class, "closeCache");
-      vm2.invoke(ClearDAckDUnitTest.class, "closeCache");
+      vm0.invoke(() -> ClearDAckDUnitTest.closeCache());
+      vm1.invoke(() -> ClearDAckDUnitTest.resetClearCallBack());
+      vm1.invoke(() -> ClearDAckDUnitTest.closeCache());
+      vm2.invoke(() -> ClearDAckDUnitTest.closeCache());
       cache = null;
       Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
     }
@@ -212,23 +212,23 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
         }
         LogWriterUtils.getLogWriter().info("Did all puts successfully");
         
-        long regionVersion = (Long)vm1.invoke(ClearDAckDUnitTest.class, "getRegionVersion", new Object[]{vm0ID});
+        long regionVersion = (Long)vm1.invoke(() -> ClearDAckDUnitTest.getRegionVersion(vm0ID));
         
-        vm0.invoke(ClearDAckDUnitTest.class,"clearMethod");
+        vm0.invoke(() -> ClearDAckDUnitTest.clearMethod());
         
-        boolean flag = vm1.invokeBoolean(ClearDAckDUnitTest.class,"getVM1Flag");
+        boolean flag = vm1.invoke(() -> ClearDAckDUnitTest.getVM1Flag());
         LogWriterUtils.getLogWriter().fine("Flag in VM1="+ flag);
         
         assertTrue(flag);
         
-        long newRegionVersion = (Long)vm1.invoke(ClearDAckDUnitTest.class, "getRegionVersion", new Object[]{vm0ID});
+        long newRegionVersion = (Long)vm1.invoke(() -> ClearDAckDUnitTest.getRegionVersion(vm0ID));
         assertEquals("expected clear() to increment region version by 1 for " + vm0ID, regionVersion+1, newRegionVersion);
         
         // test that localClear does not distribute
         VM vm2 = host.getVM(2);
-        vm2.invoke(ClearDAckDUnitTest.class, "createCacheVM2AndLocalClear");
+        vm2.invoke(() -> ClearDAckDUnitTest.createCacheVM2AndLocalClear());
         
-        flag = vm1.invokeBoolean(ClearDAckDUnitTest.class,"getVM1Flag");
+        flag = vm1.invoke(() -> ClearDAckDUnitTest.getVM1Flag());
         LogWriterUtils.getLogWriter().fine("Flag in VM1="+ flag);
         assertFalse(flag);
         

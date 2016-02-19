@@ -66,8 +66,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends Partition
     // Create values.
     createValues(server, regions[0], numOfEntries);
 
-    final int thePort = server.invokeInt(PartitionedRegionCqQueryOptimizedExecuteDUnitTest.class,
-        "getCacheServerPort");
+    final int thePort = server.invoke(() -> PartitionedRegionCqQueryOptimizedExecuteDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
@@ -164,8 +163,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends Partition
     // Create values.
     createValues(server, regions[0], numOfEntries);
 
-    final int thePort = server.invokeInt(PartitionedRegionCqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int thePort = server.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.

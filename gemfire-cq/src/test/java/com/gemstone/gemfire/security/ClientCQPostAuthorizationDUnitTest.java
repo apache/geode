@@ -86,21 +86,18 @@ public class ClientCQPostAuthorizationDUnitTest extends
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    server1.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { serverExpectedExceptions });
-    server2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { serverExpectedExceptions });
-    client2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { clientExpectedExceptions });
+    server1.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
+    server2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
+    client2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( clientExpectedExceptions ));
     SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions);
   }
 
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(SecurityTestUtil.class, "closeCache");
-    client2.invoke(SecurityTestUtil.class, "closeCache");
-    server1.invoke(SecurityTestUtil.class, "closeCache");
-    server2.invoke(SecurityTestUtil.class, "closeCache");
+    client1.invoke(() -> SecurityTestUtil.closeCache());
+    client2.invoke(() -> SecurityTestUtil.closeCache());
+    server1.invoke(() -> SecurityTestUtil.closeCache());
+    server2.invoke(() -> SecurityTestUtil.closeCache());
   }
 
   public void testAllowCQForAllMultiusers() throws Exception {
@@ -218,11 +215,10 @@ public class ClientCQPostAuthorizationDUnitTest extends
       Integer locatorPort = Integer.valueOf(AvailablePort
           .getRandomAvailablePort(AvailablePort.SOCKET));
       // Close down any running servers
-      server1.invoke(SecurityTestUtil.class, "closeCache");
-      server2.invoke(SecurityTestUtil.class, "closeCache");
+      server1.invoke(() -> SecurityTestUtil.closeCache());
+      server2.invoke(() -> SecurityTestUtil.closeCache());
 
-      server1.invoke(ClientCQPostAuthorizationDUnitTest.class,
-          "createServerCache", new Object[] {serverProps, javaProps, locatorPort, port1});
+      server1.invoke(() -> ClientCQPostAuthorizationDUnitTest.createServerCache(serverProps, javaProps, locatorPort, port1));
       client1.invoke(ClientCQPostAuthorizationDUnitTest.class,
           "createClientCache", new Object[] {javaProps2, authInit, authProps,
               new Integer[] {port1, port2}, numOfUsers, postAuthzAllowed});
@@ -230,45 +226,35 @@ public class ClientCQPostAuthorizationDUnitTest extends
           "createClientCache", new Object[] {javaProps2, authInit, authProps,
               new Integer[] {port1, port2}, numOfUsers, postAuthzAllowed});
 
-      client1.invoke(ClientCQPostAuthorizationDUnitTest.class, "createCQ",
-          new Object[] {numOfUsers});
+      client1.invoke(() -> ClientCQPostAuthorizationDUnitTest.createCQ(numOfUsers));
       client1.invoke(ClientCQPostAuthorizationDUnitTest.class, "executeCQ",
           new Object[] {numOfUsers, new Boolean[] {false, false}, numOfPuts,
               new String[numOfUsers], postAuthzAllowed});
 
-      client2.invoke(ClientCQPostAuthorizationDUnitTest.class, "doPuts",
-          new Object[] {numOfPuts, Boolean.TRUE/* put last key */});
+      client2.invoke(() -> ClientCQPostAuthorizationDUnitTest.doPuts(numOfPuts, Boolean.TRUE/* put last key */));
       if (!postAuthzAllowed[0]) {
         // There is no point waiting as no user is authorized to receive cq events.
         try {Thread.sleep(1000);} catch (InterruptedException ie) {}
       } else {
-        client1.invoke(ClientCQPostAuthorizationDUnitTest.class,
-            "waitForLastKey", new Object[] {Integer.valueOf(0)});
+        client1.invoke(() -> ClientCQPostAuthorizationDUnitTest.waitForLastKey(Integer.valueOf(0)));
         if (postAuthzAllowed[1]) {
-          client1.invoke(ClientCQPostAuthorizationDUnitTest.class,
-              "waitForLastKey", new Object[] {Integer.valueOf(1)});
+          client1.invoke(() -> ClientCQPostAuthorizationDUnitTest.waitForLastKey(Integer.valueOf(1)));
         }
       }
-      client1.invoke(ClientCQPostAuthorizationDUnitTest.class,
-          "checkCQListeners", new Object[] {numOfUsers, postAuthzAllowed,
-              numOfPuts + 1/* last key */, 0, !failover});
+      client1.invoke(() -> ClientCQPostAuthorizationDUnitTest.checkCQListeners(numOfUsers, postAuthzAllowed,
+              numOfPuts + 1/* last key */, 0, !failover));
       if (failover) {
-        server2.invoke(ClientCQPostAuthorizationDUnitTest.class,
-            "createServerCache", new Object[] {serverProps, javaProps, locatorPort, port2});
-        server1.invoke(SecurityTestUtil.class, "closeCache");
+        server2.invoke(() -> ClientCQPostAuthorizationDUnitTest.createServerCache(serverProps, javaProps, locatorPort, port2));
+        server1.invoke(() -> SecurityTestUtil.closeCache());
 
         // Allow time for client1 to register its CQs on server2
-        server2.invoke(ClientCQPostAuthorizationDUnitTest.class,
-            "allowCQsToRegister", new Object[] {Integer.valueOf(2)});
+        server2.invoke(() -> ClientCQPostAuthorizationDUnitTest.allowCQsToRegister(Integer.valueOf(2)));
 
-        client2.invoke(ClientCQPostAuthorizationDUnitTest.class, "doPuts",
-            new Object[] {numOfPuts, Boolean.TRUE/* put last key */});
-        client1.invoke(ClientCQPostAuthorizationDUnitTest.class,
-            "waitForLastKeyUpdate", new Object[] {Integer.valueOf(0)});
-        client1.invoke(ClientCQPostAuthorizationDUnitTest.class,
-            "checkCQListeners", new Object[] {numOfUsers, postAuthzAllowed,
+        client2.invoke(() -> ClientCQPostAuthorizationDUnitTest.doPuts(numOfPuts, Boolean.TRUE/* put last key */));
+        client1.invoke(() -> ClientCQPostAuthorizationDUnitTest.waitForLastKeyUpdate(Integer.valueOf(0)));
+        client1.invoke(() -> ClientCQPostAuthorizationDUnitTest.checkCQListeners(numOfUsers, postAuthzAllowed,
                 numOfPuts + 1/* last key */, numOfPuts + 1/* last key */,
-                Boolean.TRUE});
+                Boolean.TRUE));
       }
   }
 

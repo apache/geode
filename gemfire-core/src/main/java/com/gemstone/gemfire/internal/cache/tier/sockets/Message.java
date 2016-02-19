@@ -34,14 +34,12 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
@@ -61,7 +59,7 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * transId       - int - 4 bytes  filled in by the requestor, copied back into
  *                    the response
  *
- * earlyAck      - byte- 1 byte   filled in by the requestor
+ * flags         - byte- 1 byte   filled in by the requestor
  * len1
  * part1
  * .
@@ -81,33 +79,17 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  *
  * @see com.gemstone.gemfire.internal.cache.tier.MessageType
  *
- * @author Sudhir Menon
- * @since 2.0.2
  */
 public class Message  {
 
   private static final Logger logger = LogService.getLogger();
   
-  @Override
-  public String toString() {
-    StringBuffer sb = new StringBuffer();
-    sb.append("type=" + MessageType.getString(msgType));
-    sb.append("; payloadLength=" + payloadLength);
-    sb.append("; numberOfParts=" + numberOfParts);
-    sb.append("; transactionId=" + transactionId);
-    //sb.append("; bufferLength=" + bufferLength);
-    sb.append("; currentPart=" + currentPart);
-    sb.append("; messageModified=" + messageModified);
-    sb.append("; earlyAck=" + earlyAck);
-    for (int i = 0; i < numberOfParts; i ++) {
-      sb.append("; part[" + i + "]={");
-      sb.append(this.partsList[i].toString());
-      sb.append("}");
-    }
-    return sb.toString();
-  }
+  private static final int PART_HEADER_SIZE = 5; // 4 bytes for length, 1 byte for isObject
+  
+  private static final int FIXED_LENGTH = 17;
 
-  protected final static int FIXED_LENGTH = 17;
+  private static final ThreadLocal<ByteBuffer> tlCommBuffer = new ThreadLocal<>();
+
   protected int msgType;
   protected int payloadLength=0;
   protected int numberOfParts =0;
@@ -122,10 +104,10 @@ public class Message  {
   protected boolean messageModified = true;
   /** is this message a retry of a previously sent message? */
   protected boolean isRetry;
-  private byte earlyAck = 0x00;
+  private byte flags = 0x00;
   protected MessageStats msgStats = null;
   protected ServerConnection sc = null;
-  private int MAX_DATA = -1;
+  private int maxIncomingMessageLength = -1;
   private Semaphore dataLimiter = null;
 //  private int MAX_MSGS = -1;
   private Semaphore msgLimiter = null;
@@ -133,8 +115,10 @@ public class Message  {
   private int chunkSize = 1024;//Default Chunk Size.
 
   protected Part securePart = null;
+  private boolean isMetaRegion = false;
 
-  // These two statics are fields shoved into the earlyAck byte for transmission.
+
+  // These two statics are fields shoved into the flags byte for transmission.
   // The MESSAGE_IS_RETRY bit is stripped out during deserialization but the other
   // is left in place
   public static final byte MESSAGE_HAS_SECURE_PART = (byte)0x02;
@@ -181,30 +165,13 @@ public class Message  {
     this.version = clientVersion;
   }
 
-  /**
-   * Sets whether this message is early-ack
-   * @param earlyAck whether this message is early-ack
-   */
-  public void setEarlyAck(boolean earlyAck) {
-    if (earlyAck) {
-      this.earlyAck = 0x01;
-    } else {
-      this.earlyAck = 0x00;
-    }
+  public void setMessageHasSecurePartFlag() {
+    this.flags = (byte)(this.flags | MESSAGE_HAS_SECURE_PART);
   }
-
-  // TODO (ashetkar) To be removed later.
-  public void setEarlyAck(byte earlyAck) {
-    // Check that the passed in value is within the acceptable range.
-    if (0x00 <= earlyAck && earlyAck <= 0x02) {
-      this.earlyAck |= earlyAck;
-    }
+  
+  public void clearMessageHasSecurePartFlag() {
+    this.flags = (byte)(this.flags & MESSAGE_HAS_SECURE_PART);
   }
-
-  /*
-   * public void setPayloadLength(int payloadLength) {
-     this.payloadLength = payloadLength;
-  }*/
 
   /**
    *  Sets and builds the {@link Part}s that are sent
@@ -252,6 +219,14 @@ public class Message  {
   public void setChunkSize(int chunkSize) {
     this.chunkSize = chunkSize;
   }
+  
+  /**
+   * When building a Message this will return the number of the
+   * next Part to be added to the message
+   */
+  public int getNextPartNumber() {
+    return this.currentPart;
+  }
 
   public void addStringPart(String str) {
     if (str==null) {
@@ -265,15 +240,6 @@ public class Message  {
       this.currentPart++;
     }
   }
-
-  /**
-   * Sets whether or not a
-   * <code>DataOutputStream</code>/<code>DataOutputStream</code>
-   * should be used to send/receive data.
-      public void setUseDataStream (boolean useDataStream) {
-        this.useDataStream = useDataStream;
-    }
-   */
 
   /*
    * Adds a new part to this message that contains a <code>byte</code>
@@ -295,7 +261,7 @@ public class Message  {
     }
   }
 
-  public void addDeltaPart(HeapDataOutputStream hdos) { // TODO: Amogh- Should it be just DataOutput?
+  public void addDeltaPart(HeapDataOutputStream hdos) {
     this.messageModified = true;
     Part part = partsList[this.currentPart];
     part.setPartState(hdos, false);
@@ -364,12 +330,6 @@ public class Message  {
     // the heap bb to the existing direct bb without needing to allocate extra direct bbs.
     // Delaying the flush uses more direct memory but reduces the number of system calls.
     try {
-//      logger.fine("hitesh before serializatino: " );
-//      
-//      if (o != null ){
-//        logger.fine("hitesh before serializatino: " + o.toString());
-//        logger.fine("hitesh before serializatino: " + o.getClass().getName());
-//      }
       BlobHelper.serializeTo(o, hdos);
     } catch (IOException ex) {
       throw new SerializationException("failed serializing object", ex);
@@ -385,8 +345,6 @@ public class Message  {
     if (zipValues) {
       throw new UnsupportedOperationException("zipValues no longer supported");    
       
-//       byte[] b = CacheServerHelper.serialize(o, zipValues);
-//       addRawPart(b, true);
     } else {
       HeapDataOutputStream hdos;
       Version v = version;
@@ -395,12 +353,6 @@ public class Message  {
       }
       hdos = new HeapDataOutputStream(chunkSize, v);
       try {
-//        logger.fine("hitesh before serializatino: " );
-//        
-//        if (o != null ){
-//          logger.fine("hitesh before serializatino: " + o.toString());
-//          logger.fine("hitesh before serializatino: " + o.getClass().getName());
-//        }
         BlobHelper.serializeTo(o, hdos);
       } catch (IOException ex) {
         throw new SerializationException("failed serializing object", ex);
@@ -468,19 +420,8 @@ public class Message  {
     return null;
   }
 
-  public boolean getEarlyAck() {
-    return this.earlyAck == 0x01 ? true: false;
-  }
-
-  // TODO (ashetkar) To be removed
-  public byte getEarlyAckByte() {
-    return this.earlyAck;
-  }
-
-  private static ThreadLocal tlCommBuffer = new ThreadLocal();
-
   public static ByteBuffer setTLCommBuffer(ByteBuffer bb) {
-    ByteBuffer result = (ByteBuffer)tlCommBuffer.get();
+    ByteBuffer result = tlCommBuffer.get();
     tlCommBuffer.set(bb);
     return result;
   }
@@ -490,7 +431,7 @@ public class Message  {
       return this.cachedCommBuffer;
     }
     else {
-      return (ByteBuffer)tlCommBuffer.get();
+      return tlCommBuffer.get();
     }
   }
 
@@ -505,14 +446,15 @@ public class Message  {
         this.msgStats.decMessagesBeingReceived(len);
       }
     }
-    if (this.socket != null) {
-      getCommBuffer().clear();
+    ByteBuffer buffer = getCommBuffer();
+    if (buffer != null) {
+      buffer.clear();
     }
     clearParts();
     if (len != 0 && this.dataLimiter != null) {
       this.dataLimiter.release(len);
       this.dataLimiter = null;
-      this.MAX_DATA = 0;
+      this.maxIncomingMessageLength = 0;
     }
     if (this.hdrRead) {
       if (this.msgLimiter != null) {
@@ -521,29 +463,28 @@ public class Message  {
       }
       this.hdrRead = false;
     }
+    this.flags = 0;
   }
 
   protected void packHeaderInfoForSending(int msgLen, boolean isSecurityHeader) {
-    //TODO:hitesh setting second bit of early ack for client 
+    //TODO:hitesh setting second bit of flags byte for client 
     //this is not require but this makes all changes easily at client side right now
     //just see this bit and process security header
-    byte eAck = this.earlyAck;
+    byte flagsByte = this.flags;
     if (isSecurityHeader) {
-      eAck |= MESSAGE_HAS_SECURE_PART;
+      flagsByte |= MESSAGE_HAS_SECURE_PART;
     }
     if (this.isRetry) {
-      eAck |= MESSAGE_IS_RETRY;
+      flagsByte |= MESSAGE_IS_RETRY;
     }
     getCommBuffer()
       .putInt(this.msgType)
       .putInt(msgLen)
       .putInt(this.numberOfParts)
       .putInt(this.transactionId)
-      .put(eAck);
+      .put(flagsByte);
   }
 
-  private static final int PART_HEADER_SIZE = 5; // 4 bytes for length, 1 byte for isObject
-  
   protected Part getSecurityPart() {
     if (this.sc != null ) {
       //look types right put get etc
@@ -557,15 +498,13 @@ public class Message  {
     this.securePart.setPartState(bytes, false);
   }
 
-  private boolean m_isMetaRegion = false;
-
   public void setMetaRegion(boolean isMetaRegion) {
-    this.m_isMetaRegion = isMetaRegion;
+    this.isMetaRegion = isMetaRegion;
   }
 
   public boolean getAndResetIsMetaRegion() {
-    boolean isMetaRegion = this.m_isMetaRegion;
-    this.m_isMetaRegion = false;
+    boolean isMetaRegion = this.isMetaRegion;
+    this.isMetaRegion = false;
     return isMetaRegion;
   }
 
@@ -598,7 +537,6 @@ public class Message  {
           numOfSecureParts = 1;          
         }
 
-        //this.logger.fine("hitesh sendbytes forServer_SecurityPart " + numOfSecureParts);
         int totalPartLen = 0;
         for (int i=0;i<this.numberOfParts;i++){
           Part part = this.partsList[i];
@@ -740,7 +678,7 @@ public class Message  {
     final int len = cb.getInt();
     final int numParts = cb.getInt();
     final int txid = cb.getInt();
-    byte early = cb.get();
+    byte bits = cb.get();
     cb.clear();
 
     if (!MessageType.validate(type)) {
@@ -783,8 +721,8 @@ public class Message  {
         } // for
     }
     if (len > 0) {
-      if (this.MAX_DATA > 0 && len > this.MAX_DATA) {
-        throw new IOException(LocalizedStrings.Message_MESSAGE_SIZE_0_EXCEEDED_MAX_LIMIT_OF_1.toLocalizedString(new Object[] {Integer.valueOf(len), Integer.valueOf(this.MAX_DATA)}));
+      if (this.maxIncomingMessageLength > 0 && len > this.maxIncomingMessageLength) {
+        throw new IOException(LocalizedStrings.Message_MESSAGE_SIZE_0_EXCEEDED_MAX_LIMIT_OF_1.toLocalizedString(new Object[] {Integer.valueOf(len), Integer.valueOf(this.maxIncomingMessageLength)}));
       }
       if (this.dataLimiter != null) {
         for (;;) {
@@ -825,13 +763,12 @@ public class Message  {
       this.payloadLength = len; // makes sure payloadLength gets set now so we will dec on clear
     }
     
-    this.isRetry = (early & MESSAGE_IS_RETRY) != 0;
-    early = (byte)(early & MESSAGE_IS_RETRY_MASK);
-
-    //TODO:hitesh it was below ??
-    this.earlyAck = early;
+    this.isRetry = (bits & MESSAGE_IS_RETRY) != 0;
+    bits = (byte)(bits & MESSAGE_IS_RETRY_MASK);
+    this.flags = bits;
+    // TODO why is the msgType set twice, here and after reading the payload fields?
     this.msgType = type;
-    //this.logger.fine("Before reading message parts, earlyAck already read as " + this.earlyAck);
+
     readPayloadFields(numParts, len);
 
     // Set the header and payload fields only after receiving all the
@@ -841,42 +778,12 @@ public class Message  {
     this.payloadLength = len;
     // this.numberOfParts = numParts;  Already set in setPayloadFields via setNumberOfParts
     this.transactionId = txid;
-    this.earlyAck = early;
+    this.flags = bits;
     if (this.sc != null) {
       // Keep track of the fact that a message is being processed.
       this.sc.updateProcessingMessage();
     }
   }
-
-//   static final int MAX_PART_BUFFERS = 2;
-//   static final int MIN_PART_BUFFER_SIZE = 999;
-//   static final int MAX_PART_BUFFER_SIZE = 1024*1024*11;
-//   static ArrayList partBuffers = new ArrayList(2);
-//   static int partBufferIdx = 0;
-//   static {
-//     for (int i=0; i < MAX_PART_BUFFERS; i++) {
-//       partBuffers.add(i, null);
-//     }
-//   }
-
-//   private static synchronized byte[] getPartBuffer(int size) {
-//     byte[] result;
-//     synchronized (partBuffers) {
-//       result = (byte[])partBuffers.get(partBufferIdx);
-//       if (result == null) {
-//         result = new byte[size];
-//         partBuffers.add(partBufferIdx, result);
-//       } else if (result.length != size) {
-//         // can't use a cached one
-//         return null;
-//       }
-//       partBufferIdx++;
-//       if (partBufferIdx >= MAX_PART_BUFFERS) {
-//         partBufferIdx = 0;
-//       }
-//     }
-//     return result;
-//   }
 
   protected void readPayloadFields(final int numParts, final int len)
   throws IOException {
@@ -912,11 +819,9 @@ public class Message  {
 
     int readSecurePart = 0;
     //TODO:Hitesh look if securePart can be cached here
-    //this.logger.fine("readPayloadFields() early ack = " + this.earlyAck);
     readSecurePart = checkAndSetSecurityPart();
     
     int bytesRemaining = len;
-    //this.logger.fine("readPayloadFields() : numParts=" + numParts + " len=" + len);
     for (int i = 0; ((i < numParts + readSecurePart) || ((readSecurePart == 1) && (cb
         .remaining() > 0))); i++) {
       int bytesReadThisTime = readPartChunk(bytesRemaining);
@@ -934,14 +839,8 @@ public class Message  {
       int partLen = cb.getInt();
       byte partType = cb.get();
       byte[] partBytes = null;
-//      this.logger.fine("readPayloadFields(): partLen=" + partLen + " partType=" + partType);
       if (partLen > 0) {
-//         if (partLen >= MIN_PART_BUFFER_SIZE && partLen <= MAX_PART_BUFFER_SIZE) {
-//           partBytes = getPartBuffer(partLen);
-//         }
-//         if (partBytes == null) {
-          partBytes = new byte[partLen];
-//         }
+        partBytes = new byte[partLen];
         int alreadyReadBytes = cb.remaining();
         if (alreadyReadBytes > 0) {
           if (partLen < alreadyReadBytes) {
@@ -961,7 +860,6 @@ public class Message  {
             }
             cb.limit(bytesThisTime);
             int res = this.sockCh.read(cb);
-            //System.out.println("DEBUG: part read " + res + " bytes commBuffer=" + cb);
             if (res != -1) {
               cb.flip();
               bytesRemaining -= res;
@@ -980,7 +878,6 @@ public class Message  {
               res = this.is.read(partBytes, off, remaining);
             }
             catch (SocketTimeoutException e) {
-//              res = 0;
               // TODO: add cancellation check
               throw e;
             }
@@ -1002,7 +899,7 @@ public class Message  {
   }
 
   protected int checkAndSetSecurityPart() {
-    if ((this.earlyAck | MESSAGE_HAS_SECURE_PART) == this.earlyAck) {
+    if ((this.flags | MESSAGE_HAS_SECURE_PART) == this.flags) {
       this.securePart = new Part();
       return 1;
     }
@@ -1018,7 +915,6 @@ public class Message  {
    */
   private int readPartChunk(int bytesRemaining) throws IOException {
     final ByteBuffer cb = getCommBuffer();
-    //this.logger.info("DEBUG: commBuffer.remaining=" + cb.remaining());
     if (cb.remaining() >= PART_HEADER_SIZE) {
       // we already have the next part header in commBuffer so just return
       return 0;
@@ -1042,7 +938,6 @@ public class Message  {
       }
       while (remaining > 0) {
         int res = this.sockCh.read(cb);
-        //System.out.println("DEBUG: partChunk read " + res + " bytes commBuffer=" + cb);
         if (res != -1) {
           remaining -= res;
           bytesRead += res;
@@ -1067,7 +962,6 @@ public class Message  {
           res = this.is.read(cb.array(), pos, bytesToRead);
         }
         catch (SocketTimeoutException e) {
-//          res = 0;
           // TODO add a cancellation check
           throw e;
         }
@@ -1097,6 +991,26 @@ public class Message  {
     }
     this.currentPart=0;
   }
+
+  @Override
+  public String toString() {
+    StringBuffer sb = new StringBuffer();
+    sb.append("type=").append(MessageType.getString(msgType));
+    sb.append("; payloadLength=").append(payloadLength);
+    sb.append("; numberOfParts=").append(numberOfParts);
+    sb.append("; transactionId=").append(transactionId);
+    sb.append("; currentPart=").append(currentPart);
+    sb.append("; messageModified=").append(messageModified);
+    sb.append("; flags=").append(Integer.toHexString(flags));
+    for (int i = 0; i < numberOfParts; i ++) {
+      sb.append("; part[").append(i).append("]={");
+      sb.append(this.partsList[i].toString());
+      sb.append("}");
+    }
+    return sb.toString();
+  }
+
+  
   public void setComms(ServerConnection sc, Socket socket, ByteBuffer bb, MessageStats msgStats) throws IOException {
     this.sc = sc;
     setComms(socket, bb, msgStats);
@@ -1174,17 +1088,13 @@ public class Message  {
       throw new IOException(LocalizedStrings.Message_DEAD_CONNECTION.toLocalizedString());
     }
   }
-  public void recv(ServerConnection sc, int MAX_DATA, Semaphore dataLimiter, int MAX_MSGS, Semaphore msgLimiter)
+  public void recv(ServerConnection sc, int maxMessageLength, Semaphore dataLimiter, Semaphore msgLimiter)
   throws IOException {
     this.sc = sc;
-    this.MAX_DATA = MAX_DATA;
+    this.maxIncomingMessageLength = maxMessageLength;
     this.dataLimiter = dataLimiter;
-//    this.MAX_MSGS = MAX_MSGS;
     this.msgLimiter = msgLimiter;
     recv();
   }
 
-  public boolean canStartRemoteTransaction() {
-    return true;
-  }
 }

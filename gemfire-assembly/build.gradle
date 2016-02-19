@@ -236,6 +236,12 @@ distributions {
         exclude '**/*.ipr'
         exclude '**/*.iws'
         exclude '**/tags'
+
+        //These directories are generated on the jenkins server by gradle
+        exclude 'caches'
+        exclude 'daemon'
+        exclude 'native'
+        exclude 'wrapper'
       }
     }
   }

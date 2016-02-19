@@ -177,7 +177,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     disconnectFromDS();
     // shut down clients before servers
     for (int i=numServers; i<4; i++) {
-      host.getVM(i).invoke(CacheTestCase.class, "disconnectFromDS");
+      host.getVM(i).invoke(() -> CacheTestCase.disconnectFromDS());
     }
   }
   
@@ -262,7 +262,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   public void configClient(VM client, VM[] server){
     final int[] port = new int[server.length];
     for (int i=0; i < server.length; i++){
-      port[i] = server[i].invokeInt(QueryMonitorDUnitTest.class, "getCacheServerPort");
+      port[i] = server[i].invoke(() -> QueryMonitorDUnitTest.getCacheServerPort());
     }
     final String host0 = NetworkUtils.getServerHostName(server[0].getHost());
 
@@ -1018,8 +1018,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     VM producerClient = host.getVM(2);
     
     cqDUnitTest.createServer(server, 0, true);
-    final int port = server.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.

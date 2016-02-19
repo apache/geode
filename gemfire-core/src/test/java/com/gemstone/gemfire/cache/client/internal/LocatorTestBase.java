@@ -241,12 +241,12 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
     return port.intValue();
   }
   
-  protected void  startBridgeClientInVM(VM vm, final String group, final String host, final int port) {
+  protected void  startBridgeClientInVM(VM vm, final String group, final String host, final int port) throws Exception {
     startBridgeClientInVM(vm, group, host, port, new String[] {REGION_NAME});
   }
   
 
-  protected void startBridgeClientInVM(VM vm, final String group, final String host, final int port, final String[] regions) {
+  protected void startBridgeClientInVM(VM vm, final String group, final String host, final int port, final String[] regions) throws Exception {
     PoolFactoryImpl pf = new PoolFactoryImpl(null);
     pf.addLocator(host, port)
     .setServerGroup(group)
@@ -256,7 +256,7 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
     startBridgeClientInVM(vm, pf.getPoolAttributes(), regions);
   }
   
-  protected void  startBridgeClientInVM(VM vm, final Pool pool, final String[] regions) {
+  protected void  startBridgeClientInVM(VM vm, final Pool pool, final String[] regions) throws Exception {
     SerializableRunnable connect =
       new SerializableRunnable("Start bridge client") {
           public void run() {

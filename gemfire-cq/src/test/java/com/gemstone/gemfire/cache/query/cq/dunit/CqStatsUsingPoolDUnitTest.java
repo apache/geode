@@ -248,7 +248,7 @@ public class CqStatsUsingPoolDUnitTest extends CacheTestCase {
     
     /* Init Server and Client */
     cqDUnitTest.createServer(server);
-    final int port = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     String poolName = "testCQStatistics";
@@ -343,7 +343,7 @@ public class CqStatsUsingPoolDUnitTest extends CacheTestCase {
     
     /* Init Server and Client */
     cqDUnitTest.createServer(server);
-    final int port = server.invokeInt(CqQueryUsingPoolDUnitTest.class, "getCacheServerPort");
+    final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     
     String poolName1 = "testCQServiceStatistics1";

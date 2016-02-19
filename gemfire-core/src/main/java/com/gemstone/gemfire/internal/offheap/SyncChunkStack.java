@@ -42,7 +42,7 @@ public class SyncChunkStack {
     assert e != 0;
     SimpleMemoryAllocatorImpl.validateAddress(e);
     synchronized (this) {
-      Chunk.setNext(e, this.topAddr);
+      ObjectChunk.setNext(e, this.topAddr);
       this.topAddr = e;
     }
   }
@@ -51,7 +51,7 @@ public class SyncChunkStack {
     synchronized (this) {
       result = this.topAddr;
       if (result != 0L) {
-        this.topAddr = Chunk.getNext(result);
+        this.topAddr = ObjectChunk.getNext(result);
       }
     }
     return result;
@@ -85,8 +85,8 @@ public class SyncChunkStack {
       concurrentModDetected = false;
       addr = headAddr;
       while (addr != 0L) {
-        int curSize = Chunk.getSize(addr);
-        addr = Chunk.getNext(addr);
+        int curSize = ObjectChunk.getSize(addr);
+        addr = ObjectChunk.getNext(addr);
         testHookDoConcurrentModification();
         long curHead = this.topAddr;
         if (curHead != headAddr) {
@@ -113,8 +113,8 @@ public class SyncChunkStack {
       result = 0;
       addr = headAddr;
       while (addr != 0L) {
-        result += Chunk.getSize(addr);
-        addr = Chunk.getNext(addr);
+        result += ObjectChunk.getSize(addr);
+        addr = ObjectChunk.getNext(addr);
         testHookDoConcurrentModification();
         long curHead = this.topAddr;
         if (curHead != headAddr) {

@@ -101,8 +101,8 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
    */
   @Override
   protected final void preTearDown() throws Exception {
-    vm0.invoke(NewRegionAttributesDUnitTest.class, "closeCache");
-    vm1.invoke(NewRegionAttributesDUnitTest.class, "closeCache");
+    vm0.invoke(() -> NewRegionAttributesDUnitTest.closeCache());
+    vm1.invoke(() -> NewRegionAttributesDUnitTest.closeCache());
   }
 
   /**
@@ -186,18 +186,16 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
    */
   public void testEntryOperationsWithNewAttributesEnabled()
   {
-    vm0.invoke(NewRegionAttributesDUnitTest.class, "checkAttributes");
-    vm1.invoke(NewRegionAttributesDUnitTest.class, "checkAttributes");
-    vm0.invoke(NewRegionAttributesDUnitTest.class, "doPuts");
-    Integer cnt1 = (Integer)vm1.invoke(NewRegionAttributesDUnitTest.class,
-        "getEntryCount");
+    vm0.invoke(() -> NewRegionAttributesDUnitTest.checkAttributes());
+    vm1.invoke(() -> NewRegionAttributesDUnitTest.checkAttributes());
+    vm0.invoke(() -> NewRegionAttributesDUnitTest.doPuts());
+    Integer cnt1 = (Integer)vm1.invoke(() -> NewRegionAttributesDUnitTest.getEntryCount());
     assertEquals(TOTAL_PUTS, cnt1.intValue());
-    vm0.invoke(NewRegionAttributesDUnitTest.class, "doPuts");
-    vm0.invoke(NewRegionAttributesDUnitTest.class, "doInvalidates");
-    vm0.invoke(NewRegionAttributesDUnitTest.class, "doDestroy");
+    vm0.invoke(() -> NewRegionAttributesDUnitTest.doPuts());
+    vm0.invoke(() -> NewRegionAttributesDUnitTest.doInvalidates());
+    vm0.invoke(() -> NewRegionAttributesDUnitTest.doDestroy());
 
-    Integer cnt2 = (Integer)vm1.invoke(NewRegionAttributesDUnitTest.class,
-        "getEntryCount");
+    Integer cnt2 = (Integer)vm1.invoke(() -> NewRegionAttributesDUnitTest.getEntryCount());
     assertEquals(0, cnt2.intValue());
   }
 
@@ -208,9 +206,9 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
    */
   public void testRegisterInterestUseCases()
   {
-    vm1.invoke(NewRegionAttributesDUnitTest.class, "registerInterest");
-    vm1.invoke(NewRegionAttributesDUnitTest.class, "unregisterInterest");
-    vm1.invoke(NewRegionAttributesDUnitTest.class, "getInterestForRegion");
+    vm1.invoke(() -> NewRegionAttributesDUnitTest.registerInterest());
+    vm1.invoke(() -> NewRegionAttributesDUnitTest.unregisterInterest());
+    vm1.invoke(() -> NewRegionAttributesDUnitTest.getInterestForRegion());
   }
 
   /**

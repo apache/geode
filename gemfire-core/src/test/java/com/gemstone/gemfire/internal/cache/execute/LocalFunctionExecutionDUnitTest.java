@@ -63,25 +63,25 @@ public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
   
   
   public void testLocalDataSetPR(){
-    dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "createCacheInVm");
+    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
     Object args[] = new Object[] { "testRegion", new Integer(1), new Integer(50),
         new Integer(10), null };
     dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "createPR", args);
-    dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "put");
-    dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "executeFunction");
+    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.put());
+    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.executeFunction());
   }
   
   public void testLocalDataSetDR(){
-    dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "createCacheInVm");
+    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
     Object args[] = new Object[] { "testRegion",DataPolicy.REPLICATE };
     dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "createDR", args);
-    dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "put");
-    dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "executeFunction");
+    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.put());
+    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.executeFunction());
   }
   
   public void testLocalMember(){
-    dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "createCacheInVm");
-    dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "executeFunctionOnMember");
+    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
+    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.executeFunctionOnMember());
   }
 
   public static void createCacheInVm() {

@@ -40,7 +40,7 @@ public class DurableClientCrashDUnitTest extends DurableClientTestCase {
   
   public void configureClientStop1()
   {
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "setClientCrash", new Object[] {new Boolean(true)});    
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(new Boolean(true)));    
   }
   
   @Override
@@ -50,7 +50,7 @@ public class DurableClientCrashDUnitTest extends DurableClientTestCase {
   
   public void configureClientStop2()
   {
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "setClientCrash", new Object[] {new Boolean(false)});    
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(new Boolean(false)));    
   }
   
   public void verifySimpleDurableClient() {

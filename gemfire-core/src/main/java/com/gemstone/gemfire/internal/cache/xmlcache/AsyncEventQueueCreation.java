@@ -63,6 +63,7 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
     this.asyncEventListener = eventListener;
     this.isBucketSorted = senderAttrs.isBucketSorted; 
     this.isHDFSQueue = senderAttrs.isHDFSQueue;
+    this.gatewayEventSubstitutionFilter = senderAttrs.eventSubstitutionFilter;
   }
   
   @Override

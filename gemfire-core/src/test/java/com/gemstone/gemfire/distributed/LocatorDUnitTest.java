@@ -558,7 +558,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
       locvm.invoke(crashLocator);
       
       assertTrue("Distributed system should not have disconnected",
-          vm1.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm1.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       // ensure quorumLost is properly invoked
       DistributionManager dm = (DistributionManager)((InternalDistributedSystem)sys).getDistributionManager();
@@ -698,10 +698,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
           isSystemConnected());
       
       assertTrue("Distributed system should not have disconnected",
-          vm2.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       assertTrue("Distributed system should not have disconnected",
-          locvm.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          locvm.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       // stop the locator normally.  This should also be okay
       locator.stop();
@@ -713,15 +713,15 @@ public class LocatorDUnitTest extends DistributedTestCase {
       assertTrue("locator is not stopped", Locator.getLocators().isEmpty());
       
       assertTrue("Distributed system should not have disconnected",
-          vm2.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       assertTrue("Distributed system should not have disconnected",
-          locvm.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          locvm.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       // the remaining non-locator member should now be the lead member
       assertEquals("This test sometimes fails.  If the log contains " +
       		"'failed to collect all ACKs' it is a false failure.",
-      		mem2, vm2.invoke(LocatorDUnitTest.class, "getLeadMember", new Object[]{}));
+      		mem2, vm2.invoke(() -> LocatorDUnitTest.getLeadMember()));
       
       SerializableRunnable disconnect =
         new SerializableRunnable("Disconnect from " + locators) {
@@ -849,10 +849,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
           isSystemConnected());
       
       assertTrue("Distributed system should not have disconnected",
-          vm2.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       assertTrue("Distributed system should not have disconnected",
-          locvm.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          locvm.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       vm2.invokeAsync(crashSystem);
 
@@ -986,8 +986,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
       DistributedMember mem2 = (DistributedMember)vm2.invoke(this.getClass(),
           "getDistributedMember", connectArgs);
       
-      DistributedMember loc1Mbr = (DistributedMember)locvm.invoke(this.getClass(),
-          "getLocatorDistributedMember", new Object[]{});
+      DistributedMember loc1Mbr = (DistributedMember)locvm.invoke(() -> this.getLocatorDistributedMember());
 
       assertLeadMember(mem1, sys, 5000);
       
@@ -1001,10 +1000,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
           sys.isConnected());
       
       assertTrue("Distributed system should not have disconnected",
-          vm1.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm1.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       assertTrue("Distributed system should not have disconnected",
-          vm2.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       // disconnect the first vm and demonstrate that the non-lead vm and the
       // locator notice the failure and continue to run
@@ -1012,7 +1011,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
       Wait.pause(10 * 1000);
       
       assertTrue("Distributed system should not have disconnected",
-          vm2.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       assertEquals(sys.getDistributedMember(),
           MembershipManagerHelper.getCoordinator(sys));
@@ -1091,6 +1090,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * members of the distributed system join it.  This ensures that
    * members start up okay, and that handling of a stopped locator
    * is correct.
+   * <p>The locator is then restarted and is shown to take over the
+   * role of membership coordinator.
    */
   public void testOneLocator() throws Exception {
     disconnectAllFromDS();

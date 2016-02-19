@@ -17,24 +17,13 @@
 package com.gemstone.gemfire.internal.offheap;
 
 /**
- * Used to keep the heapForm around while an operation is still in progress.
- * This allows the operation to access the serialized heap form instead of copying
- * it from offheap. See bug 48135.
+ * A memory chunk that also has an address of its memory.
  */
-public class ChunkWithHeapForm extends GemFireChunk {
-  private final byte[] heapForm;
-  
-  public ChunkWithHeapForm(GemFireChunk chunk, byte[] heapForm) {
-    super(chunk);
-    this.heapForm = heapForm;
-  }
+public interface AddressableMemoryChunk extends MemoryChunk {
 
-  @Override
-  protected byte[] getRawBytes() {
-    return this.heapForm;
-  }
-  
-  public Chunk getChunkWithoutHeapForm() {
-    return new GemFireChunk(this);
-  }
+  /**
+   * Return the address of the memory of this chunk.
+   */
+  public long getMemoryAddress();
+
 }

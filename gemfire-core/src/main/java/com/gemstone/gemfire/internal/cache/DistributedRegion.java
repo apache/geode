@@ -121,7 +121,7 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewa
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
@@ -438,8 +438,10 @@ public class DistributedRegion extends LocalRegion implements
          * local AbstractRegionMap, and so will never be flipped to a 'create'
          */
         event.makeCreate();
-        distributeUpdate(event, lastModified, ifNew, ifOld, expectedOldValue, requireOldValue);
-        event.invokeCallbacks(this,true, true);
+        if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          distributeUpdate(event, lastModified, ifNew, ifOld, expectedOldValue, requireOldValue);
+          event.invokeCallbacks(this,true, true);
+        }
         return true;
       }
     }
@@ -1826,8 +1828,10 @@ public class DistributedRegion extends LocalRegion implements
         if (event.isBulkOpInProgress() && !event.isOriginRemote()) {
           event.getRemoveAllOperation().addEntry(event, true);
         }
-        distributeDestroy(event, expectedOldValue);
-        event.invokeCallbacks(this,true, false);
+        if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          distributeDestroy(event, expectedOldValue);
+          event.invokeCallbacks(this,true, false);
+        }
       }
     }
   }
@@ -2008,8 +2012,10 @@ public class DistributedRegion extends LocalRegion implements
       return;
     } finally {
       if (hasSeen) {
-        distributeInvalidate(event);
-        event.invokeCallbacks(this,true, false);
+    	if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          distributeInvalidate(event);
+          event.invokeCallbacks(this,true, false);
+    	}
       }
     }
   }
@@ -2045,7 +2051,9 @@ public class DistributedRegion extends LocalRegion implements
       }
       return;
     } finally {
-      distributeUpdateEntryVersion(event);
+      if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+        distributeUpdateEntryVersion(event);
+      }
     }
   }
 
@@ -2541,8 +2549,8 @@ public class DistributedRegion extends LocalRegion implements
     }
     //For SQLFire , we need to increment the use count so that returned
     //object has use count 2
-    if( incrementUseCountForSqlf && result instanceof Chunk) {
-      ((Chunk)result).retain();
+    if( incrementUseCountForSqlf && result instanceof ObjectChunk) {
+      ((ObjectChunk)result).retain();
     }
     return result;
     } finally {

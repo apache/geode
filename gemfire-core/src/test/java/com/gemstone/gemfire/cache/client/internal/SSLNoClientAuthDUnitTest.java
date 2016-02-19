@@ -241,10 +241,10 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
     boolean cacheClientSslenabled = true;
     boolean cacheClientSslRequireAuth = true;
 
-    serverVM.invoke(SSLNoClientAuthDUnitTest.class, "setUpServerVMTask", new Object[]{cacheServerSslenabled});
-    serverVM.invoke(SSLNoClientAuthDUnitTest.class, "createServerTask");
+    serverVM.invoke(() -> SSLNoClientAuthDUnitTest.setUpServerVMTask(cacheServerSslenabled));
+    serverVM.invoke(() -> SSLNoClientAuthDUnitTest.createServerTask());
 
-    Object array[] = (Object[])serverVM.invoke(SSLNoClientAuthDUnitTest.class, "getCacheServerEndPointTask"); 
+    Object array[] = (Object[])serverVM.invoke(() -> SSLNoClientAuthDUnitTest.getCacheServerEndPointTask()); 
     String hostName = (String)array[0];
     int port = (Integer) array[1];
     Object params[] = new Object[6];
@@ -257,8 +257,8 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
     //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);
     try {
       clientVM.invoke(SSLNoClientAuthDUnitTest.class, "setUpClientVMTask", params);
-      clientVM.invoke(SSLNoClientAuthDUnitTest.class, "doClientRegionTestTask");
-      serverVM.invoke(SSLNoClientAuthDUnitTest.class, "doServerRegionTestTask");
+      clientVM.invoke(() -> SSLNoClientAuthDUnitTest.doClientRegionTestTask());
+      serverVM.invoke(() -> SSLNoClientAuthDUnitTest.doServerRegionTestTask());
     } catch (Exception rmiException) {
       Throwable e = rmiException.getCause();
       //getLogWriter().info("ExceptionCause at clientVM " + e);
@@ -271,7 +271,7 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
     VM clientVM = host.getVM(2);
-    clientVM.invoke(SSLNoClientAuthDUnitTest.class, "closeClientCacheTask");
-    serverVM.invoke(SSLNoClientAuthDUnitTest.class, "closeCacheTask");
+    clientVM.invoke(() -> SSLNoClientAuthDUnitTest.closeClientCacheTask());
+    serverVM.invoke(() -> SSLNoClientAuthDUnitTest.closeCacheTask());
   }
 }

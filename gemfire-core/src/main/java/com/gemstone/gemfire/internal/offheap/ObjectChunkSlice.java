@@ -17,15 +17,15 @@
 package com.gemstone.gemfire.internal.offheap;
 
 /**
- * Represents a slice of a GemFireChunk.
- * A slice is a subsequence of the bytes stored in a GemFireChunk.
+ * Represents a slice of an ObjectChunk.
+ * A slice is a subsequence of the bytes stored in an ObjectChunk.
  */
-public class GemFireChunkSlice extends GemFireChunk {
+public class ObjectChunkSlice extends ObjectChunk {
   private final int offset;
   private final int capacity;
-  public GemFireChunkSlice(GemFireChunk gemFireChunk, int position, int limit) {
-    super(gemFireChunk);
-    this.offset = gemFireChunk.getBaseDataOffset() + position;
+  public ObjectChunkSlice(ObjectChunk objectChunk, int position, int limit) {
+    super(objectChunk);
+    this.offset = objectChunk.getBaseDataOffset() + position;
     this.capacity = limit - position;
   }
   @Override

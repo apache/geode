@@ -110,10 +110,10 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
   
   @Override
   protected final void preTearDownCacheTestCase() throws Exception {
-    P.invoke(GIIDeltaDUnitTest.class, "resetSlowGII");
-    R.invoke(GIIDeltaDUnitTest.class, "resetSlowGII");
-    P.invoke(InitialImageOperation.class, "resetAllGIITestHooks");
-    R.invoke(InitialImageOperation.class, "resetAllGIITestHooks");
+    P.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
+    R.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
+    P.invoke(() -> InitialImageOperation.resetAllGIITestHooks());
+    R.invoke(() -> InitialImageOperation.resetAllGIITestHooks());
     changeUnfinishedOperationLimit(R, 10000);
     changeForceFullGII(R, false, false);
     changeForceFullGII(P, false, false);
@@ -201,8 +201,8 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     final DiskStoreID memberR = getMemberID(R);
     final long blocklist[] = {2,3};
     
-    P.invoke(GIIDeltaDUnitTest.class, "slowGII", new Object[] {blocklist});
-    R.invoke(GIIDeltaDUnitTest.class, "slowGII", new Object[] {blocklist});
+    P.invoke(() -> GIIDeltaDUnitTest.slowGII(blocklist));
+    R.invoke(() -> GIIDeltaDUnitTest.slowGII(blocklist));
     AsyncInvocation async1 = doOnePutAsync(P, 2, "key1");
     AsyncInvocation async2 = doOnePutAsync(R, 3, "key1");
     
@@ -213,8 +213,8 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     waitForToVerifyRVV(R, memberR, 3, null, 0); // P's rvv=r2, gc=0
     
     // new Object[] { memberP, 2, 3, 0, 0, false }
-    P.invoke(GIIDeltaDUnitTest.class, "resetSlowGII");
-    R.invoke(GIIDeltaDUnitTest.class, "resetSlowGII");
+    P.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
+    R.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
     
     // should wait for async calls to finish before going on
     checkAsyncCall(async1);
@@ -237,7 +237,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     final long[] exceptionlist = {4,5};
     
     // let r6 to succeed, r4,r5 to be blocked
-    R.invoke(GIIDeltaDUnitTest.class, "slowGII", new Object[] {exceptionlist});
+    R.invoke(() -> GIIDeltaDUnitTest.slowGII(exceptionlist));
     AsyncInvocation async1 = doOnePutAsync(R, 4, "key4");
     waitForToVerifyRVV(R, memberR, 4, null, 0); // P's rvv=r4, gc=0
     
@@ -482,7 +482,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     // 2
     waitForCallbackStarted(R, GIITestHookType.AfterRequestRVV);
     forceGC(R, 1);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterRequestRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterRequestRVV, true));
     
     async3.join(MAX_WAIT);
     
@@ -608,7 +608,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     checkIfFullGII(P, REGION_NAME, R_rvv_bytes, true);
 
     // let GII continue
-    P.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterReceivedRequestImage, true});
+    P.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterReceivedRequestImage, true));
     async3.join(MAX_WAIT);
 
     waitForToVerifyRVV(R, memberP, 7, null, 4); // R's rvv=p7, gc=4
@@ -772,7 +772,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     
     final long[] exceptionlist2 = {8};
     // let p9 to succeed, p8 to be blocked
-    P.invoke(GIIDeltaDUnitTest.class, "slowGII", new Object[] {exceptionlist2});
+    P.invoke(() -> GIIDeltaDUnitTest.slowGII(exceptionlist2));
     AsyncInvocation async1 = doOneDestroyAsync(P, 8, "key1");
     waitForToVerifyRVV(P, memberP, 8, null, 0);
     doOnePut(P, 9, "key3");
@@ -815,7 +815,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     VersionTag expect_tag = getVersionTag(R, "key5");
 
     final long[] exceptionlist = {4,5};
-    R.invoke(GIIDeltaDUnitTest.class, "slowGII", new Object[] {exceptionlist});
+    R.invoke(() -> GIIDeltaDUnitTest.slowGII(exceptionlist));
     AsyncInvocation async1 = doOnePutAsync(R, 4, "key4");
     waitForToVerifyRVV(R, memberR, 4, null, 0); // P's rvv=r4, gc=0
     
@@ -906,9 +906,9 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
 
     doOneDestroy(P, 4, "key2");
     doOnePut(P, 5, "key1");
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.BeforeSavedReceivedRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.BeforeSavedReceivedRVV, true));
     waitForCallbackStarted(R, GIITestHookType.AfterSavedReceivedRVV);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterSavedReceivedRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterSavedReceivedRVV, true));
     async3.join(MAX_WAIT);
     waitForToVerifyRVV(R, memberP, 5, null, 0); // P's rvv=r5, gc=0
     changeForceFullGII(R, true, true);
@@ -959,9 +959,9 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
 
     doOneDestroy(P, 4, "key2");
     doOnePut(P, 5, "key1");
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterCalculatedUnfinishedOps, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterCalculatedUnfinishedOps, true));
     waitForCallbackStarted(R, GIITestHookType.AfterSavedReceivedRVV);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterSavedReceivedRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterSavedReceivedRVV, true));
     async3.join(MAX_WAIT);
     waitForToVerifyRVV(R, memberP, 5, null, 0); // P's rvv=r5, gc=0
     verifyDeltaSizeFromStats(R, 2, 1);
@@ -985,7 +985,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     VersionTag expect_tag = getVersionTag(R, "key5");
 
     final long[] exceptionlist = {4,5};
-    R.invoke(GIIDeltaDUnitTest.class, "slowGII", new Object[] {exceptionlist});
+    R.invoke(() -> GIIDeltaDUnitTest.slowGII(exceptionlist));
     AsyncInvocation async1 = doOnePutAsync(R, 4, "key4");
     waitForToVerifyRVV(R, memberR, 4, null, 0); // P's rvv=r4, gc=0
     
@@ -1119,46 +1119,46 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     
     // 1
     waitForCallbackStarted(R, GIITestHookType.BeforeRequestRVV);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.BeforeRequestRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.BeforeRequestRVV, true));
     // 2
     waitForCallbackStarted(R, GIITestHookType.AfterRequestRVV);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterRequestRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterRequestRVV, true));
     // 3
     waitForCallbackStarted(R, GIITestHookType.AfterCalculatedUnfinishedOps);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterCalculatedUnfinishedOps, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterCalculatedUnfinishedOps, true));
     // 4
     waitForCallbackStarted(R, GIITestHookType.BeforeSavedReceivedRVV);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.BeforeSavedReceivedRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.BeforeSavedReceivedRVV, true));
     // 5
     waitForCallbackStarted(R, GIITestHookType.AfterSavedReceivedRVV);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterSavedReceivedRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterSavedReceivedRVV, true));
 
     // 6
     waitForCallbackStarted(R, GIITestHookType.AfterSentRequestImage);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterSentRequestImage, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterSentRequestImage, true));
     
     // 7
     waitForCallbackStarted(P, GIITestHookType.AfterReceivedRequestImage);
-    P.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterReceivedRequestImage, true});
+    P.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterReceivedRequestImage, true));
     // 8
     waitForCallbackStarted(P, GIITestHookType.DuringPackingImage);
-    P.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.DuringPackingImage, true});
+    P.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.DuringPackingImage, true));
     // 9
     waitForCallbackStarted(P, GIITestHookType.AfterSentImageReply);
-    P.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterSentImageReply, true});
+    P.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterSentImageReply, true));
 
     // 10
     waitForCallbackStarted(R, GIITestHookType.AfterReceivedImageReply);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterReceivedImageReply, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterReceivedImageReply, true));
     // 11
     waitForCallbackStarted(R, GIITestHookType.DuringApplyDelta);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.DuringApplyDelta, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.DuringApplyDelta, true));
     // 12
     waitForCallbackStarted(R, GIITestHookType.BeforeCleanExpiredTombstones);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.BeforeCleanExpiredTombstones, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.BeforeCleanExpiredTombstones, true));
     // 13
     waitForCallbackStarted(R, GIITestHookType.AfterSavedRVVEnd);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterSavedRVVEnd, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterSavedRVVEnd, true));
     
     async3.join(MAX_WAIT);
     
@@ -1182,7 +1182,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     waitForToVerifyRVV(R, memberR, 6, exceptionlist, 0); // R's rvv=r6, gc=0
     waitForToVerifyRVV(P, memberR, 6, exceptionlist, 0); // P's rvv=r6(3-6), gc=0
     
-    P.invoke(InitialImageOperation.class, "resetAllGIITestHooks");
+    P.invoke(() -> InitialImageOperation.resetAllGIITestHooks());
   }
 
   /**
@@ -1266,8 +1266,8 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     waitForToVerifyRVV(P, memberP, 7, null, 0); // P's rvv=p7, gc=0
 
     // let GII continue
-    P.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.DuringPackingImage, false});
-    P.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.DuringPackingImage, true});
+    P.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.DuringPackingImage, false));
+    P.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.DuringPackingImage, true));
     
     WaitCriterion ev2 = new WaitCriterion() {
       public boolean done() {
@@ -1316,7 +1316,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     waitToVerifyKey(R, "key5", generateValue(R));
     VersionTag tag = getVersionTag(R, "key5");
     assertTrue(expect_tag.equals(tag));
-    //    P.invoke(InitialImageOperation.class, "resetAllGIITestHooks");
+    //    P.invoke(() -> InitialImageOperation.resetAllGIITestHooks());
   }
   
   /**
@@ -1393,7 +1393,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     forceGC(P, 3);
     
     // let GII continue
-    P.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.DuringPackingImage, true});
+    P.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.DuringPackingImage, true));
     async3.join(MAX_WAIT*2);
     count = getDeltaGIICount(P);
     assertEquals(0, count);
@@ -1581,7 +1581,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     waitForCallbackStarted(R, GIITestHookType.AfterReceivedImageReply);
     doOneClear(P, 8);
 
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterReceivedImageReply, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterReceivedImageReply, true));
     async3.getResult(MAX_WAIT);
 
     // clear() increased P's version with 1 to P8
@@ -1649,7 +1649,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     waitForCallbackStarted(R, GIITestHookType.AfterSavedReceivedRVV);
     doOneClear(P, 8);
 
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterSavedReceivedRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterSavedReceivedRVV, true));
     async3.join(MAX_WAIT);
 
     // clear() increased P's version with 1 to P8
@@ -1802,7 +1802,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     // kill and restart R
     closeCache(R);
     async3.join(MAX_WAIT);
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterSavedReceivedRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterSavedReceivedRVV, true));
     createDistributedRegion(R);
 
     waitForToVerifyRVV(P, memberP, 7, null, 0); // P's rvv=r8, gc=0
@@ -1868,7 +1868,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     // from P.
     doOnePut(P, 7, "key1");
     
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.BeforeSavedReceivedRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.BeforeSavedReceivedRVV, true));
     
     // Wait until the new RVV is applied
     waitForCallbackStarted(R, GIITestHookType.AfterSavedReceivedRVV);
@@ -1878,7 +1878,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     destroyRegion(P);
     
     //Allow the GII to continue.
-    R.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterSavedReceivedRVV, true});
+    R.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterSavedReceivedRVV, true));
     
     async3.join(MAX_WAIT);
     
@@ -1963,7 +1963,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
               DistributionMessage message) {
             if(message instanceof TombstoneMessage && ((TombstoneMessage) message).regionPath.contains(REGION_NAME)) {
               System.err.println("DAN DEBUG  P has processed the tombstone message, allowing R to proceed with the GII");
-              vmR.invoke(InitialImageOperation.class, "resetGIITestHook", new Object[] {GIITestHookType.AfterCalculatedUnfinishedOps, true});
+              vmR.invoke(() -> InitialImageOperation.resetGIITestHook(GIITestHookType.AfterCalculatedUnfinishedOps, true));
               DistributionMessageObserver.setInstance(null);
             }
           }

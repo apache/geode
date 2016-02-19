@@ -84,10 +84,10 @@ public class FailoverDUnitTest extends DistributedTestCase
     vm1 = host.getVM(1);
 
     //start servers first
-    vm0.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
-    vm1.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
-    PORT1 =  ((Integer)vm0.invoke(FailoverDUnitTest.class, "createServerCache" )).intValue();
-    PORT2 =  ((Integer)vm1.invoke(FailoverDUnitTest.class, "createServerCache" )).intValue();
+    vm0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    vm1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    PORT1 =  ((Integer)vm0.invoke(() -> FailoverDUnitTest.createServerCache())).intValue();
+    PORT2 =  ((Integer)vm1.invoke(() -> FailoverDUnitTest.createServerCache())).intValue();
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
     createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1),new Integer(PORT2));
@@ -108,10 +108,10 @@ public class FailoverDUnitTest extends DistributedTestCase
     createEntries();
     waitForPrimaryAndBackups(1);
     registerInterestList();
-    primary.invoke(FailoverDUnitTest.class, "put");
+    primary.invoke(() -> FailoverDUnitTest.put());
     verifyEntries();
     setClientServerObserver();
-    primary.invoke(FailoverDUnitTest.class, "stopServer");
+    primary.invoke(() -> FailoverDUnitTest.stopServer());
     verifyEntriesAfterFailover();
   }
 
@@ -286,7 +286,7 @@ public class FailoverDUnitTest extends DistributedTestCase
     PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
         public void beforePrimaryIdentificationFromBackup() {
-          primary.invoke(FailoverDUnitTest.class, "putDuringFailover");
+          primary.invoke(() -> FailoverDUnitTest.putDuringFailover());
           PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
         }
     });
@@ -329,8 +329,8 @@ public class FailoverDUnitTest extends DistributedTestCase
     // close the clients first
     closeCache();
     // then close the servers
-    vm0.invoke(FailoverDUnitTest.class, "closeCache");
-    vm1.invoke(FailoverDUnitTest.class, "closeCache");
+    vm0.invoke(() -> FailoverDUnitTest.closeCache());
+    vm1.invoke(() -> FailoverDUnitTest.closeCache());
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 

@@ -821,7 +821,7 @@ public class ReconnectDUnitTest extends CacheTestCase
         if (!roleLossAsync.isAlive()) {
           return true;
         }
-        Object res = vm0.invoke(ReconnectDUnitTest.class, "reconnectTries");
+        Object res = vm0.invoke(() -> ReconnectDUnitTest.reconnectTries());
         if (((Integer)res).intValue() != 0) {
           return true;
         }
@@ -884,7 +884,7 @@ public class ReconnectDUnitTest extends CacheTestCase
           LogWriterUtils.getLogWriter().info(startupMessage);
           WaitCriterion ev = new WaitCriterion() {
             public boolean done() {
-              return ((Boolean)otherVM.invoke(ReconnectDUnitTest.class, "isInitialRolePlayerStarted")).booleanValue();
+              return ((Boolean)otherVM.invoke(() -> ReconnectDUnitTest.isInitialRolePlayerStarted())).booleanValue();
             }
             public String description() {
               return null;
@@ -1100,7 +1100,7 @@ public class ReconnectDUnitTest extends CacheTestCase
         LogWriterUtils.getLogWriter().info("STARTED THE REQUIREDROLES CACHE");
         initialRolePlayerStarted = true;
 
-        while(!((Boolean)otherVM.invoke(ReconnectDUnitTest.class, "isInitialized")).booleanValue()){
+        while(!((Boolean)otherVM.invoke(() -> ReconnectDUnitTest.isInitialized())).booleanValue()){
           try{
             Thread.sleep(15);
           }catch(InterruptedException ignor){

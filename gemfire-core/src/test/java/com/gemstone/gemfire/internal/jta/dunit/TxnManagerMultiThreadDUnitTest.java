@@ -331,7 +331,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     vm0.invoke(CacheUtils.class, "setTableName", o);
     //delete the rows which are inseted in CacheUtils.init by calling delRows
     // method
-    vm0.invoke(TxnManagerMultiThreadDUnitTest.class, "delRows");
+    vm0.invoke(() -> TxnManagerMultiThreadDUnitTest.delRows());
   }
 
   public static void delRows() {
@@ -424,13 +424,12 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
    */
   public static void test1AllCommit() throws Throwable {
     VM vm0 = Host.getHost(0).getVM(0);
-    AsyncInvocation asyncObj1 = vm0.invokeAsync(
-        TxnManagerMultiThreadDUnitTest.class, "callCommitThreads");
+    AsyncInvocation asyncObj1 = vm0.invokeAsync(() -> TxnManagerMultiThreadDUnitTest.callCommitThreads());
     ThreadUtils.join(asyncObj1, 30 * 1000);
     if(asyncObj1.exceptionOccurred()){
       Assert.fail("asyncObj1 failed", asyncObj1.getException());
     }
-    vm0.invoke(TxnManagerMultiThreadDUnitTest.class, "getNumberOfRows");
+    vm0.invoke(() -> TxnManagerMultiThreadDUnitTest.getNumberOfRows());
   }//end of testAllCommit
 
   /*
@@ -457,13 +456,12 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
    */
   public static void _test3Commit2Rollback() throws Throwable {
     VM vm0 = Host.getHost(0).getVM(0);
-    AsyncInvocation asyncObj1 = vm0.invokeAsync(
-        TxnManagerMultiThreadDUnitTest.class, "callCommitandRollbackThreads");
+    AsyncInvocation asyncObj1 = vm0.invokeAsync(() -> TxnManagerMultiThreadDUnitTest.callCommitandRollbackThreads());
     ThreadUtils.join(asyncObj1, 30 * 1000);
     if(asyncObj1.exceptionOccurred()){
       Assert.fail("asyncObj1 failed", asyncObj1.getException());
     }
-    vm0.invoke(TxnManagerMultiThreadDUnitTest.class, "getNumberOfRows");
+    vm0.invoke(() -> TxnManagerMultiThreadDUnitTest.getNumberOfRows());
   }//end of test3Commit2Rollback
 
   public static void callCommitandRollbackThreads() {
@@ -493,7 +491,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
    * (InterruptedException e) { fail ("Current thread experienced Interrupted
    * Exception !"); }
    * 
-   * //vm0.invoke(TxnManagerMultiThreadDUnitTest.class, "getNumberOfRows");
+   * //vm0.invoke(() -> TxnManagerMultiThreadDUnitTest.getNumberOfRows());
    * 
    * }//end of test3Commit2Rollback
    *  

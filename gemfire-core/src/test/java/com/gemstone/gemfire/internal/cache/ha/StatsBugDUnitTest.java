@@ -119,10 +119,8 @@ public class StatsBugDUnitTest extends DistributedTestCase
     primary = host.getVM(0);
     secondary = host.getVM(1);
     client1 = host.getVM(2);
-    PORT1 = ((Integer)primary.invoke(StatsBugDUnitTest.class,
-        "createServerCache")).intValue();
-    PORT2 = ((Integer)secondary.invoke(StatsBugDUnitTest.class,
-        "createServerCache")).intValue();
+    PORT1 = ((Integer)primary.invoke(() -> StatsBugDUnitTest.createServerCache())).intValue();
+    PORT2 = ((Integer)secondary.invoke(() -> StatsBugDUnitTest.createServerCache())).intValue();
   }
 
   /**
@@ -156,11 +154,11 @@ public class StatsBugDUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     // close client
-    client1.invoke(StatsBugDUnitTest.class, "closeCache");
+    client1.invoke(() -> StatsBugDUnitTest.closeCache());
 
     // close server
-    primary.invoke(StatsBugDUnitTest.class, "closeCache");
-    secondary.invoke(StatsBugDUnitTest.class, "closeCache");
+    primary.invoke(() -> StatsBugDUnitTest.closeCache());
+    secondary.invoke(() -> StatsBugDUnitTest.closeCache());
   }
 
   /**
@@ -179,13 +177,12 @@ public class StatsBugDUnitTest extends DistributedTestCase
   public void testBug36109() throws Exception
   {
     LogWriterUtils.getLogWriter().info("testBug36109 : BEGIN");
-    client1.invoke(StatsBugDUnitTest.class, "createClientCacheForInvalidates", new Object[] {
-        NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) });
-    client1.invoke(StatsBugDUnitTest.class, "prepopulateClient");
-    primary.invoke(StatsBugDUnitTest.class, "doEntryOperations",
-        new Object[] { primaryPrefix });
+    client1.invoke(() -> StatsBugDUnitTest.createClientCacheForInvalidates(
+        NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) ));
+    client1.invoke(() -> StatsBugDUnitTest.prepopulateClient());
+    primary.invoke(() -> StatsBugDUnitTest.doEntryOperations( primaryPrefix ));
     Wait.pause(3000);
-    primary.invoke(StatsBugDUnitTest.class, "stopServer");
+    primary.invoke(() -> StatsBugDUnitTest.stopServer());
     try {
       Thread.sleep(5000);
     }
@@ -193,8 +190,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
       fail("interrupted");
     }
 
-    secondary.invoke(StatsBugDUnitTest.class, "doEntryOperations",
-        new Object[] { secondaryPrefix });
+    secondary.invoke(() -> StatsBugDUnitTest.doEntryOperations( secondaryPrefix ));
     try {
       Thread.sleep(5000);
     }
@@ -202,7 +198,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
       fail("interrupted");
     }
 
-    client1.invoke(StatsBugDUnitTest.class, "verifyNumInvalidates");
+    client1.invoke(() -> StatsBugDUnitTest.verifyNumInvalidates());
     LogWriterUtils.getLogWriter().info("testBug36109 : END");
   }
 

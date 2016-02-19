@@ -28,9 +28,6 @@ public class UpdatePropagationPRDUnitTest extends UpdatePropagationDUnitTest {
   public UpdatePropagationPRDUnitTest(String name) {
     super(name);
   }
-  public static void createImpl() {
-    impl = new UpdatePropagationPRDUnitTest("temp");
-  }
   protected RegionAttributes createCacheServerAttributes()
   {
     AttributesFactory factory = new AttributesFactory();

@@ -176,8 +176,7 @@ public class RolePerformanceDUnitTest extends CacheTestCase {
         timing = finish - begin;
       }
     });
-    Long timing = (Long) Host.getHost(0).getVM(0).invoke(
-      RolePerformanceDUnitTest.class, "getTiming", new Object[] {});
+    Long timing = (Long) Host.getHost(0).getVM(0).invoke(() -> RolePerformanceDUnitTest.getTiming());
     return timing.longValue();
   }
   protected static transient long timing = -1;
