@@ -19,10 +19,9 @@
 
 package com.vmware.gemfire.tools.pulse.internal.data;
 
-
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
 import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
@@ -53,13 +52,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
-
-import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
 
 /**
  * Class Cluster This class is the Data Model for the data used for the Pulse
