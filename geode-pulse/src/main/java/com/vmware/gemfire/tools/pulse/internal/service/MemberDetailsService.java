@@ -49,7 +49,7 @@ public class MemberDetailsService implements PulseService {
 
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
+  public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     String userName = request.getUserPrincipal().getName();
 

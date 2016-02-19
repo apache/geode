@@ -48,7 +48,7 @@ public class MemberDiskThroughputService implements PulseService {
 
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception, JSONException {
+  public ObjectNode execute(final HttpServletRequest request) throws Exception, JSONException {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();

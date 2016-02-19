@@ -52,7 +52,7 @@ public class MemberClientsService implements PulseService {
   private final String NAME = "name";
   private final String HOST = "host";
 
-  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
+  public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();

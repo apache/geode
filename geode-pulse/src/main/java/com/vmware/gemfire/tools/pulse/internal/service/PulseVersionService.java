@@ -46,7 +46,7 @@ public class PulseVersionService implements PulseService {
 
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
+  public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();

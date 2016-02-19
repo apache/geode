@@ -57,7 +57,7 @@ public class MemberRegionsService implements PulseService {
   private final String DISC_STORE_NAME = "diskStoreName";
   private final String DISC_SYNCHRONOUS = "diskSynchronous";
 
-  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
+  public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();

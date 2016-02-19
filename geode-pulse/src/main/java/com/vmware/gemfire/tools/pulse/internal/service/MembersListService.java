@@ -45,7 +45,7 @@ public class MembersListService implements PulseService {
 
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
+  public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();

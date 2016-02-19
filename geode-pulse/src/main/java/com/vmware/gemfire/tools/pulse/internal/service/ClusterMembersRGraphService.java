@@ -86,7 +86,7 @@ public class ClusterMembersRGraphService implements PulseService {
   private List<String> errorAlertsList;
   private List<String> warningAlertsList;
 
-  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
+  public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // Reference to repository
     Repository repository = Repository.get();

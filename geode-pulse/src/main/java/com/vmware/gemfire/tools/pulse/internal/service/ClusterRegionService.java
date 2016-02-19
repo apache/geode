@@ -72,7 +72,7 @@ public class ClusterRegionService implements PulseService {
   };
 
   @Override
-  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
+  public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     String userName = request.getUserPrincipal().getName();
 

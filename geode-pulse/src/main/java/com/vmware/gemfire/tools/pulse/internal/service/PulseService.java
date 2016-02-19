@@ -22,7 +22,6 @@ package com.vmware.gemfire.tools.pulse.internal.service;
 import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 
 /**
  * Abstract class PulseService
@@ -38,11 +37,5 @@ public interface PulseService {
   String VALUE_ON = "ON";
   String VALUE_OFF = "OFF";
 
-  default JSONObject execute(HttpServletRequest httpServletRequest) throws Exception {
-    return null;
-  }
-
-  default ObjectNode tempExecute(HttpServletRequest httpServletRequest) throws Exception {
-    return null;
-  }
+  ObjectNode execute(HttpServletRequest httpServletRequest) throws Exception;
 }

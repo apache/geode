@@ -31,9 +31,6 @@ import org.springframework.stereotype.Service;
 import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
 import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 
 /**
  * Class QueryStatisticsService
@@ -52,7 +49,7 @@ public class QueryStatisticsService implements PulseService {
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Override
-  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
+  public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();

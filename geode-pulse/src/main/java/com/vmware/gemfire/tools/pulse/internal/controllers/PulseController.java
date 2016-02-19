@@ -105,7 +105,7 @@ public class PulseController {
         try {
           PulseService pulseService = pulseServiceFactory
               .getPulseServiceInstance(serviceName);
-          responseMap.put(serviceName, pulseService.tempExecute(request));
+          responseMap.put(serviceName, pulseService.execute(request));
         } catch (Exception serviceException) {
           LOGGER.warning("serviceException [for service "+serviceName+"] = " + serviceException.getMessage());
           responseMap.put(serviceName, EMPTY_JSON);
