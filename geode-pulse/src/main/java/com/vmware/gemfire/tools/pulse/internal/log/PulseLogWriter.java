@@ -28,8 +28,6 @@ import java.util.logging.Logger;
 
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConfig;
 import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.log.MessageFormatter;
 
 /**
  * Class PulseLogWriter
@@ -97,7 +95,7 @@ public class PulseLogWriter implements LogWriter {
    * @param jsonErr
    * @param errorData
    */
-  public void logJSONError(JSONException jsonErr, Object errorData) {
+  public void logJSONError(Exception jsonErr, Object errorData) {
 
     // print details of thrown exception and data that couldn't be converted to
     // json

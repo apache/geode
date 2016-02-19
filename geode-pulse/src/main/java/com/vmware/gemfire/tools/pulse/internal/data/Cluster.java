@@ -59,6 +59,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
+import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+
 /**
  * Class Cluster This class is the Data Model for the data used for the Pulse
  * Web UI.
