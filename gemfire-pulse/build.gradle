@@ -14,18 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
-  }
-  dependencies {
-    classpath "org.ajoberstar:gradle-git:1.3.2"
-  }
-}
-
 apply plugin: 'war'
 
 sourceSets {
@@ -38,41 +26,35 @@ sourceSets {
 }
 
 dependencies {
-  compile 'org.apache.commons:com.springsource.org.apache.commons.beanutils:1.8.0'
-  compile 'org.apache.commons:com.springsource.org.apache.commons.collections:3.2.0'
-  compile 'org.apache.commons:com.springsource.org.apache.commons.digester:1.8.1'
-  compile 'org.apache.commons:com.springsource.org.apache.commons.logging:1.1.1'
-  compile 'commons-lang:commons-lang:2.6'
-  compile 'org.springframework.ldap:spring-ldap-core:1.3.2.RELEASE'
-  compile 'org.springframework.security:spring-security-config:3.1.7.RELEASE'
-  compile 'org.springframework.security:spring-security-core:3.1.7.RELEASE'
-  compile 'org.springframework.security:spring-security-ldap:3.1.7.RELEASE'
-  compile 'org.springframework.security:spring-security-web:3.1.7.RELEASE'
-  compile 'org.springframework:spring-tx:3.2.12.RELEASE'
+  compile 'commons-beanutils:commons-beanutils:'+project.'commons-beanutils.version'
+  compile 'commons-collections:commons-collections:'+project.'commons-collections.version'
+  compile 'commons-digester:commons-digester:'+project.'commons-digester.version'
+  compile 'commons-lang:commons-lang:'+project.'commons-lang.version'
+  compile 'org.springframework.ldap:spring-ldap-core:'+project.'spring-ldap-core.version'
+  compile 'org.springframework.security:spring-security-config:'+project.'spring-security.version'
+  compile 'org.springframework.security:spring-security-core:'+project.'spring-security.version'
+  compile 'org.springframework.security:spring-security-ldap:'+project.'spring-security.version'
+  compile 'org.springframework.security:spring-security-web:'+project.'spring-security.version'
+  compile 'org.springframework:spring-tx:'+project.'spring-tx.version'
 
-  providedCompile 'commons-logging:commons-logging:1.1.3'
-  providedCompile 'commons-codec:commons-codec:1.6'
-  providedCompile 'org.apache.httpcomponents:fluent-hc:4.3.3'
-  providedCompile 'org.apache.httpcomponents:httpclient:4.3.3'
-  providedCompile 'org.apache.httpcomponents:httpclient-cache:4.3.3'
-  providedCompile 'org.apache.httpcomponents:httpcore:4.3.2'
-  providedCompile 'org.apache.httpcomponents:httpmime:4.3.3'
+  providedCompile 'commons-logging:commons-logging:'+project.'commons-logging.version'
 
-  provided 'org.mortbay.jetty:servlet-api:2.5-20081211'
-  provided 'com.google.guava:guava:15.0'
+  provided 'org.mortbay.jetty:servlet-api:'+project.'mortbay-jetty-servlet-api.version'
+  provided 'com.google.guava:guava:'+project.'guava.version'
 
   testCompile project(':gemfire-junit')
 
-  testCompile 'org.apache.tomcat.embed:tomcat-embed-core:7.0.30'
-  testCompile 'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.30'
-  testCompile 'org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.30'
-  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:2.52.0'
-  testCompile 'org.seleniumhq.selenium:selenium-api:2.52.0'
-  testCompile 'org.seleniumhq.selenium:selenium-remote-driver:2.52.0'
-  testCompile 'org.seleniumhq.selenium:selenium-support:2.52.0'
+  testCompile 'org.apache.tomcat.embed:tomcat-embed-core:'+project.'tomcat7.version'
+  testCompile 'org.apache.tomcat.embed:tomcat-embed-jasper:'+project.'tomcat7.version'
+  testCompile 'org.apache.tomcat.embed:tomcat-embed-logging-juli:'+project.'tomcat7.version'
+  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:'+project.'selenium.version'
+  testCompile 'org.seleniumhq.selenium:selenium-api:'+project.'selenium.version'
+  testCompile 'org.seleniumhq.selenium:selenium-remote-driver:'+project.'selenium.version'
+  testCompile 'org.seleniumhq.selenium:selenium-support:'+project.'selenium.version'
 
-  testRuntime 'com.google.code.gson:gson:2.3.1'
-  testRuntime 'org.apache.commons:commons-exec:1.3'
+  testRuntime 'com.google.code.gson:gson:'+project.'google-gson.version'
+  testRuntime 'org.apache.commons:commons-exec:'+project.'commons-exec.version'
+
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
