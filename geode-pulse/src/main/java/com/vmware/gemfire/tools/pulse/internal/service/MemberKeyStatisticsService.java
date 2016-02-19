@@ -19,18 +19,18 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
+import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
+import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
-import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class MemberKeyStatisticsService
@@ -46,53 +46,33 @@ import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 @Scope("singleton")
 public class MemberKeyStatisticsService implements PulseService {
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception, JSONException {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
-    try {
-      JSONObject requestDataJSON = new JSONObject(
-          request.getParameter("pulseData"));
-      String memberName = requestDataJSON.getJSONObject("MemberKeyStatistics")
-          .getString("memberName");
+    JsonNode requestDataJSON = mapper.readTree(request.getParameter("pulseData"));
+    String memberName = requestDataJSON.get("MemberKeyStatistics").get("memberName").textValue();
 
-      Cluster.Member clusterMember = cluster.getMember(StringUtils
-          .makeCompliantName(memberName));
-      if (clusterMember != null) {
-        // response
-        responseJSON
-            .put(
-                "cpuUsageTrend",
-                new JSONArray(
-                    clusterMember
-                        .getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_CPU_USAGE_SAMPLE)));
-        responseJSON
-            .put(
-                "memoryUsageTrend",
-                new JSONArray(
-                    clusterMember
-                        .getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_HEAP_USAGE_SAMPLE)));
-        responseJSON
-            .put(
-                "readPerSecTrend",
-                new JSONArray(
-                    clusterMember
-                        .getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_GETS_PER_SECOND)));
-        responseJSON
-            .put(
-                "writePerSecTrend",
-                new JSONArray(
-                    clusterMember
-                        .getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_PUTS_PER_SECOND)));
-      }
-      // Send json response
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
+    Cluster.Member clusterMember = cluster.getMember(StringUtils.makeCompliantName(memberName));
+
+    if (clusterMember != null) {
+      // response
+      responseJSON.put("cpuUsageTrend",
+          mapper.valueToTree(clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_CPU_USAGE_SAMPLE)));
+      responseJSON.put("memoryUsageTrend",
+          mapper.valueToTree(clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_HEAP_USAGE_SAMPLE)));
+      responseJSON.put("readPerSecTrend",
+          mapper.valueToTree(clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_GETS_PER_SECOND)));
+      responseJSON.put("writePerSecTrend",
+          mapper.valueToTree(clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_PUTS_PER_SECOND)));
     }
+    // Send json response
+    return responseJSON;
   }
 }

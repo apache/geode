@@ -19,11 +19,11 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
 import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -43,35 +43,34 @@ import javax.servlet.http.HttpServletRequest;
 @Scope("singleton")
 public class MembersListService implements PulseService {
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
     // members list
-    JSONArray memberListJson = new JSONArray();
+    ArrayNode memberListJson = mapper.createArrayNode();
     Cluster.Member[] memberSet = cluster.getMembers();
 
-    try {
-      for (Cluster.Member member : memberSet) {
-        JSONObject memberJSON = new JSONObject();
-        memberJSON.put("memberId", member.getId());
-        memberJSON.put("name", member.getName());
-        memberJSON.put("host", member.getHost());
-        memberJSON.put("hostnameForClients", member.getHostnameForClients());
-        memberListJson.put(memberJSON);
-      }
+    for (Cluster.Member member : memberSet) {
+      ObjectNode memberJSON = mapper.createObjectNode();
+      memberJSON.put("memberId", member.getId());
+      memberJSON.put("name", member.getName());
+      memberJSON.put("host", member.getHost());
 
-      // Response JSON
-      responseJSON.put("clusterMembers", memberListJson);
-      responseJSON.put("clusterName", cluster.getServerName());
-      // Send json response
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
+      memberListJson.add(memberJSON);
     }
+
+    // Response JSON
+    responseJSON.put("clusterMembers", memberListJson);
+    responseJSON.put("clusterName", cluster.getServerName());
+
+    // Send json response
+    return responseJSON;
   }
 }

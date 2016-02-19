@@ -19,15 +19,14 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class PulseVersionService
@@ -45,28 +44,21 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 @Scope("singleton")
 public class PulseVersionService implements PulseService {
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
-    try {
-      // Response
-      responseJSON.put("pulseVersion",
-          PulseController.pulseVersion.getPulseVersion());
-      responseJSON.put("buildId",
-          PulseController.pulseVersion.getPulseBuildId());
-      responseJSON.put("buildDate",
-          PulseController.pulseVersion.getPulseBuildDate());
-      responseJSON.put("sourceDate",
-          PulseController.pulseVersion.getPulseSourceDate());
-      responseJSON.put("sourceRevision",
-          PulseController.pulseVersion.getPulseSourceRevision());
-      responseJSON.put("sourceRepository",
-          PulseController.pulseVersion.getPulseSourceRepository());
-    } catch (JSONException e) {
-      throw new Exception(e);
-    }
+    // Response
+    responseJSON.put("pulseVersion", PulseController.pulseVersion.getPulseVersion());
+    responseJSON.put("buildId", PulseController.pulseVersion.getPulseBuildId());
+    responseJSON.put("buildDate", PulseController.pulseVersion.getPulseBuildDate());
+    responseJSON.put("sourceDate", PulseController.pulseVersion.getPulseSourceDate());
+    responseJSON.put("sourceRevision", PulseController.pulseVersion.getPulseSourceRevision());
+    responseJSON.put("sourceRepository", PulseController.pulseVersion.getPulseSourceRepository());
+
     // Send json response
     return responseJSON;
   }

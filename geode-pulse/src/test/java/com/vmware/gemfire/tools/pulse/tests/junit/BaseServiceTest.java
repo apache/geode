@@ -18,18 +18,11 @@
  */
 package com.vmware.gemfire.tools.pulse.tests.junit;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.URI;
-import java.util.List;
-import java.util.Properties;
-
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemstone.gemfire.test.junit.categories.UITest;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.google.gson.JsonObject;
+import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -39,10 +32,22 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.junit.*;
-
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URI;
+import java.util.List;
+import java.util.Properties;
 
 
 /**
@@ -61,14 +66,14 @@ public abstract class BaseServiceTest {
 
   protected static Properties propsForJUnit = new Properties();
   protected static String strHost = null;
-    protected static String strPort = null;
-    protected static String LOGIN_URL;
-    protected static String LOGOUT_URL;
-    protected static String IS_AUTHENTICATED_USER_URL;
-    protected static String PULSE_UPDATE_URL;
+  protected static String strPort = null;
+  protected static String LOGIN_URL;
+  protected static String LOGOUT_URL;
+  protected static String IS_AUTHENTICATED_USER_URL;
+  protected static String PULSE_UPDATE_URL;
 
-    protected static final String PULSE_UPDATE_PARAM = "pulseData";
-    protected static final String PULSE_UPDATE_1_VALUE = "{'ClusterSelectedRegion':{'regionFullPath':'/GlobalVilage_2/GlobalVilage_9'}}";
+  protected static final String PULSE_UPDATE_PARAM = "pulseData";
+  protected static final String PULSE_UPDATE_1_VALUE = "{'ClusterSelectedRegion':{'regionFullPath':'/GlobalVilage_2/GlobalVilage_9'}}";
   protected static final String PULSE_UPDATE_2_VALUE = "{'ClusterSelectedRegion':{'regionFullPath':'/Rubbish'}}";
 
   protected static final String PULSE_UPDATE_3_VALUE = "{'ClusterSelectedRegionsMember':{'regionFullPath':'/GlobalVilage_2/GlobalVilage_9'}}";
@@ -78,25 +83,27 @@ public abstract class BaseServiceTest {
   protected static final String PULSE_UPDATE_6_VALUE = "{'MemberGatewayHub':{'memberName':'pnq-visitor2'}}";
   protected static CloseableHttpClient httpclient = null;
 
+  private final ObjectMapper mapper = new ObjectMapper();
 
-    @BeforeClass
-    public static void beforeClass() throws Exception{
-        InputStream stream = BaseServiceTest.class.getClassLoader().getResourceAsStream("pulse.properties");
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    InputStream stream = BaseServiceTest.class.getClassLoader().getResourceAsStream("pulse.properties");
 
-        try{
-            propsForJUnit.load(stream);
-        } catch(Exception exProps){
-            System.out.println("BaseServiceTest :: Error loading properties from pulse.properties in classpath");
-        }
-        strHost = propsForJUnit.getProperty("pulse.host");
-        strPort = propsForJUnit.getProperty("pulse.port");
-        System.out.println("BaseServiceTest :: Loaded properties from classpath. Checking properties for hostname. Hostname found = " + strHost);
-        LOGIN_URL =                 "http://" + strHost + ":" + strPort + "/pulse/j_spring_security_check";
-        LOGOUT_URL =                "http://" + strHost + ":" + strPort + "/pulse/clusterLogout";
-        IS_AUTHENTICATED_USER_URL = "http://" + strHost + ":" + strPort + "/pulse/authenticateUser";
-        PULSE_UPDATE_URL =          "http://" + strHost + ":" + strPort + "/pulse/pulseUpdate";
-
+    try {
+      propsForJUnit.load(stream);
+    } catch (Exception exProps) {
+      System.out.println("BaseServiceTest :: Error loading properties from pulse.properties in classpath");
     }
+    strHost = propsForJUnit.getProperty("pulse.host");
+    strPort = propsForJUnit.getProperty("pulse.port");
+    System.out.println(
+        "BaseServiceTest :: Loaded properties from classpath. Checking properties for hostname. Hostname found = " + strHost);
+    LOGIN_URL = "http://" + strHost + ":" + strPort + "/pulse/j_spring_security_check";
+    LOGOUT_URL = "http://" + strHost + ":" + strPort + "/pulse/clusterLogout";
+    IS_AUTHENTICATED_USER_URL = "http://" + strHost + ":" + strPort + "/pulse/authenticateUser";
+    PULSE_UPDATE_URL = "http://" + strHost + ":" + strPort + "/pulse/pulseUpdate";
+
+  }
   /**
   *
   * @author rbhandekar
@@ -232,8 +239,8 @@ public abstract class BaseServiceTest {
             System.out.println("BaseServiceTest :: JSON response returned : " + jsonResp);
             EntityUtils.consume(entity);
 
-            JSONObject jsonObj = new JSONObject(jsonResp);
-            boolean isUserLoggedIn = jsonObj.getBoolean("isUserLoggedIn");
+            JsonNode jsonObj = mapper.readTree(jsonResp);
+            boolean isUserLoggedIn = jsonObj.get("isUserLoggedIn").booleanValue();
             Assert.assertNotNull("BaseServiceTest :: Server returned null response in 'isUserLoggedIn'", isUserLoggedIn);
             Assert.assertTrue("BaseServiceTest :: User login failed for this username, password", (isUserLoggedIn == true));
           } finally {

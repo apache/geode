@@ -19,17 +19,15 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class ClusterDiskThroughput This class contains implementations for getting
@@ -44,36 +42,31 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 @Scope("singleton")
 public class ClusterDiskThroughputService implements PulseService {
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
-    // clucter's Throughout Writes trend added to json response object
+    ObjectNode responseJSON = mapper.createObjectNode();
+
+    // cluster's Throughout Writes trend added to json response object
     // CircularFifoBuffer throughoutWritesTrend =
     // cluster.getThroughoutWritesTrend();
     Float currentThroughputWrites = cluster.getDiskWritesRate();
     Float currentThroughputReads = cluster.getDiskReadsRate();
 
-    try {
-      responseJSON.put("currentThroughputReads", currentThroughputReads);
-      responseJSON.put(
-          "throughputReads",
-          new JSONArray(cluster
-              .getStatisticTrend(Cluster.CLUSTER_STAT_THROUGHPUT_READS)));
+    responseJSON.put("currentThroughputReads", currentThroughputReads);
+    responseJSON.put("throughputReads",
+        mapper.valueToTree(cluster.getStatisticTrend(Cluster.CLUSTER_STAT_THROUGHPUT_READS)));
 
-      responseJSON.put("currentThroughputWrites", currentThroughputWrites);
-      responseJSON.put(
-          "throughputWrites",
-          new JSONArray(cluster
-              .getStatisticTrend(Cluster.CLUSTER_STAT_THROUGHPUT_WRITES)));
+    responseJSON.put("currentThroughputWrites", currentThroughputWrites);
+    responseJSON.put("throughputWrites",
+        mapper.valueToTree( cluster.getStatisticTrend(Cluster.CLUSTER_STAT_THROUGHPUT_WRITES)));
 
-      // Send json response
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
-    }
+    // Send json response
+    return responseJSON;
   }
 }

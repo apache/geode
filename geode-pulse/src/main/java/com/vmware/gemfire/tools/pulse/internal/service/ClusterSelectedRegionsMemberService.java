@@ -19,24 +19,22 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster.RegionOnMember;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
+import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster.RegionOnMember;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
-import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Class ClusterSelectedRegionsMemberService
@@ -53,57 +51,53 @@ import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
 @Scope("singleton")
 public class ClusterSelectedRegionsMemberService implements PulseService {
 
+  private final ObjectMapper mapper = new ObjectMapper();
+
   //Comparator based upon regions entry count
-  private static Comparator<Cluster.RegionOnMember> romEntryCountComparator = new Comparator<Cluster.RegionOnMember>() {
-   @Override
-     public int compare(Cluster.RegionOnMember m1, Cluster.RegionOnMember m2) {
-       long m1EntryCount = m1.getEntryCount();
-       long m2EntryCount = m2.getEntryCount();
-       if (m1EntryCount < m2EntryCount) {
-         return -1;
-       } else if (m1EntryCount > m2EntryCount) {
-         return 1;
-       } else {
-         return 0;
-       }
-     }
-  };
+  private static Comparator<Cluster.RegionOnMember> romEntryCountComparator = (m1, m2) -> {
+      long m1EntryCount = m1.getEntryCount();
+      long m2EntryCount = m2.getEntryCount();
+      if (m1EntryCount < m2EntryCount) {
+        return -1;
+      } else if (m1EntryCount > m2EntryCount) {
+        return 1;
+      } else {
+        return 0;
+      }
+    };
 
   @Override
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
     PulseLogWriter LOGGER = PulseLogWriter.getLogger();
     String userName = request.getUserPrincipal().getName();
     String pulseData = request.getParameter("pulseData");
-    JSONObject parameterMap = new JSONObject(pulseData);
-    String selectedRegionFullPath = parameterMap.getJSONObject("ClusterSelectedRegionsMember").getString("regionFullPath");
+    JsonNode parameterMap = mapper.readTree(pulseData);
+    String selectedRegionFullPath = parameterMap.get("ClusterSelectedRegionsMember").get("regionFullPath").textValue();
     LOGGER.finest("ClusterSelectedRegionsMemberService selectedRegionFullPath = " + selectedRegionFullPath);
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
-    try {
-      // getting cluster's Regions
-      responseJSON.put("clusterName", cluster.getServerName());
-      responseJSON.put("userName", userName);
-      responseJSON.put("selectedRegionsMembers", getSelectedRegionsMembersJson(cluster, selectedRegionFullPath));
-      // Send json response
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
-    }
+    // getting cluster's Regions
+    responseJSON.put("clusterName", cluster.getServerName());
+    responseJSON.put("userName", userName);
+    responseJSON.put("selectedRegionsMembers", getSelectedRegionsMembersJson(cluster, selectedRegionFullPath));
+    // Send json response
+    return responseJSON;
   }
 
   /**
    * Create JSON for selected cluster region's all members
    */
-  private JSONObject getSelectedRegionsMembersJson(Cluster cluster, String selectedRegionFullPath) throws JSONException {
+  private ObjectNode getSelectedRegionsMembersJson(Cluster cluster, String selectedRegionFullPath) {
     PulseLogWriter LOGGER = PulseLogWriter.getLogger();
     Cluster.Region reg = cluster.getClusterRegion(selectedRegionFullPath);
-    if(reg != null){
-      JSONObject regionMemberJSON = new JSONObject();
+
+    if (reg != null){
+      ObjectNode regionMemberJSON = mapper.createObjectNode();
       RegionOnMember[] regionOnMembers = reg.getRegionOnMembers();
 
       //sort on entry count
@@ -111,35 +105,39 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
       Collections.sort(romList, romEntryCountComparator);
 
       for(RegionOnMember rom : romList) {
-
-        JSONObject memberJSON = new JSONObject();
+        ObjectNode memberJSON = mapper.createObjectNode();
         memberJSON.put("memberName", rom.getMemberName());
         memberJSON.put("regionFullPath", rom.getRegionFullPath());
         memberJSON.put("entryCount", rom.getEntryCount());
         memberJSON.put("entrySize", rom.getEntrySize());
+
         memberJSON.put("accessor", ((rom.getLocalMaxMemory() == 0) ? "True" : "False"));
         LOGGER.finest("calling getSelectedRegionsMembersJson :: rom.getLocalMaxMemory() = " + rom.getLocalMaxMemory());
-        memberJSON.put(
-            "memoryReadsTrend", new JSONArray(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_GETS_PER_SEC_TREND)));
+
+        memberJSON.put("memoryReadsTrend",
+            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_GETS_PER_SEC_TREND)));
         LOGGER.finest("memoryReadsTrend = " + rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_GETS_PER_SEC_TREND).length);
-        memberJSON.put(
-            "memoryWritesTrend", new JSONArray(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_PUTS_PER_SEC_TREND)));
+
+        memberJSON.put("memoryWritesTrend",
+            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_PUTS_PER_SEC_TREND)));
         LOGGER.finest("memoryWritesTrend = " + rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_PUTS_PER_SEC_TREND).length);
-        memberJSON.put(
-            "diskReadsTrend", new JSONArray(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_READS_PER_SEC_TREND)));
+
+        memberJSON.put("diskReadsTrend",
+            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_READS_PER_SEC_TREND)));
         LOGGER.finest("diskReadsTrend = " + rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_READS_PER_SEC_TREND).length);
-        memberJSON.put(
-            "diskWritesTrend", new JSONArray(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_WRITES_PER_SEC_TREND)));
+
+        memberJSON.put("diskWritesTrend",
+            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_WRITES_PER_SEC_TREND)));
         LOGGER.finest("diskWritesTrend = " + rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_WRITES_PER_SEC_TREND).length);
+
         regionMemberJSON.put(rom.getMemberName(), memberJSON);
       }
 
       LOGGER.fine("calling getSelectedRegionsMembersJson :: regionJSON = " + regionMemberJSON);
       return regionMemberJSON;
     } else {
-      JSONObject responseJSON = new JSONObject();
-      responseJSON.put("errorOnRegion", "Region [" + selectedRegionFullPath
-          + "] is not available");
+      ObjectNode responseJSON = mapper.createObjectNode();
+      responseJSON.put("errorOnRegion", "Region [" + selectedRegionFullPath + "] is not available");
       return responseJSON;
     }
   }

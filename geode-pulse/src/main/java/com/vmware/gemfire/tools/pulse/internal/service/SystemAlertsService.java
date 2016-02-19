@@ -19,18 +19,18 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
+import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
-import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class SystemAlertsService
@@ -47,36 +47,31 @@ import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 @Scope("singleton")
 public class SystemAlertsService implements PulseService {
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  private static final ObjectMapper mapper = new ObjectMapper();
+
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
-    try {
-      JSONObject requestDataJSON = new JSONObject(
-          request.getParameter("pulseData"));
-      int pageNumber = 1; // Default
-      String strPageNumber = requestDataJSON.getJSONObject("SystemAlerts")
-          .getString("pageNumber");
-      if (StringUtils.isNotNullNotEmptyNotWhiteSpace(strPageNumber)) {
-        try {
-          pageNumber = Integer.valueOf(strPageNumber);
-        } catch (NumberFormatException e) {
-        }
+    JsonNode requestDataJSON = mapper.readTree(request.getParameter("pulseData"));
+    int pageNumber = 1; // Default
+    String strPageNumber = requestDataJSON.get("SystemAlerts").get("pageNumber").textValue();
+    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(strPageNumber)) {
+      try {
+        pageNumber = Integer.valueOf(strPageNumber);
+      } catch (NumberFormatException e) {
       }
-
-      // clucter's Members
-      responseJSON.put("systemAlerts", getAlertsJson(cluster, pageNumber));
-      responseJSON.put("pageNumber", cluster.getNotificationPageNumber());
-      responseJSON.put("connectedFlag", cluster.isConnectedFlag());
-      responseJSON.put("connectedErrorMsg", cluster.getConnectionErrorMsg());
-
-    } catch (JSONException e) {
-      throw new Exception(e);
     }
+
+    // cluster's Members
+    responseJSON.put("systemAlerts", getAlertsJson(cluster, pageNumber));
+    responseJSON.put("pageNumber", cluster.getNotificationPageNumber());
+    responseJSON.put("connectedFlag", cluster.isConnectedFlag());
+    responseJSON.put("connectedErrorMsg", cluster.getConnectionErrorMsg());
 
     // Send json response
     return responseJSON;
@@ -89,23 +84,22 @@ public class SystemAlertsService implements PulseService {
    * @param cluster
    * @return JSONObject Array list
    */
-  public static JSONObject getAlertsJson(Cluster cluster, int pageNumber)
-      throws JSONException {
+  public static ObjectNode getAlertsJson(Cluster cluster, int pageNumber) {
     // getting list of all types of alerts
     Cluster.Alert[] alertsList = cluster.getAlertsList();
 
     // create alerts json
-    JSONObject alertsJsonObject = new JSONObject();
+    ObjectNode alertsJsonObject = mapper.createObjectNode();
 
     if ((alertsList != null) && (alertsList.length > 0)) {
-      JSONArray errorJsonArray = new JSONArray();
-      JSONArray severeJsonArray = new JSONArray();
-      JSONArray warningJsonArray = new JSONArray();
-      JSONArray infoJsonArray = new JSONArray();
+      ArrayNode errorJsonArray = mapper.createArrayNode();
+      ArrayNode severeJsonArray = mapper.createArrayNode();
+      ArrayNode warningJsonArray = mapper.createArrayNode();
+      ArrayNode infoJsonArray = mapper.createArrayNode();
 
       cluster.setNotificationPageNumber(pageNumber);
       for (Cluster.Alert alert : alertsList) {
-        JSONObject objAlertJson = new JSONObject();
+        ObjectNode objAlertJson = mapper.createObjectNode();
         objAlertJson.put("description", alert.getDescription());
         objAlertJson.put("memberName", alert.getMemberName());
         objAlertJson.put("severity", alert.getSeverity());
@@ -115,13 +109,13 @@ public class SystemAlertsService implements PulseService {
         objAlertJson.put("id", alert.getId());
 
         if (alert.getSeverity() == Cluster.Alert.SEVERE) {
-          severeJsonArray.put(objAlertJson);
+          severeJsonArray.add(objAlertJson);
         } else if (alert.getSeverity() == Cluster.Alert.ERROR) {
-          errorJsonArray.put(objAlertJson);
+          errorJsonArray.add(objAlertJson);
         } else if (alert.getSeverity() == Cluster.Alert.WARNING) {
-          warningJsonArray.put(objAlertJson);
+          warningJsonArray.add(objAlertJson);
         } else {
-          infoJsonArray.put(objAlertJson);
+          infoJsonArray.add(objAlertJson);
         }
       }
       alertsJsonObject.put("info", infoJsonArray);

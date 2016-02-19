@@ -19,17 +19,16 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class ClusterGCPausesService
@@ -46,26 +45,24 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 @Scope("singleton")
 public class ClusterGCPausesService implements PulseService {
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
-    // clucter's GC Pauses trend added to json response object
+    ObjectNode responseJSON = mapper.createObjectNode();
+    // cluster's GC Pauses trend added to json response object
 
-    try {
-      responseJSON.put("currentGCPauses", cluster.getGarbageCollectionCount());
-      responseJSON.put(
-          "gCPausesTrend",
-          new JSONArray(cluster
-              .getStatisticTrend(Cluster.CLUSTER_STAT_GARBAGE_COLLECTION))); // new
-                                                                             // JSONArray(array)
-      // Send json response
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
+    ArrayNode pauses = mapper.createArrayNode();
+    for (Object obj : cluster.getStatisticTrend(Cluster.CLUSTER_STAT_GARBAGE_COLLECTION)) {
+      pauses.add(obj.toString());
     }
+    responseJSON.put("currentGCPauses", cluster.getGarbageCollectionCount());
+    responseJSON.put("gCPausesTrend", pauses);
+    // Send json response
+    return responseJSON;
   }
 }

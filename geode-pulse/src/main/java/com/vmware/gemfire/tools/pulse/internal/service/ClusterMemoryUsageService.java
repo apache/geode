@@ -19,17 +19,15 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class ClusterMemoryUsageService
@@ -46,25 +44,23 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 @Scope("singleton")
 public class ClusterMemoryUsageService implements PulseService {
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
-    // clucter's Memory Usage trend added to json response object
+    ObjectNode responseJSON = mapper.createObjectNode();
 
-    try {
-      responseJSON.put("currentMemoryUsage", cluster.getUsedHeapSize());
-      responseJSON.put(
-          "memoryUsageTrend",
-          new JSONArray(cluster
-              .getStatisticTrend(Cluster.CLUSTER_STAT_MEMORY_USAGE)));
-      // Send json response
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
-    }
+    // cluster's Memory Usage trend added to json response object
+
+    responseJSON.put("currentMemoryUsage", cluster.getUsedHeapSize());
+    responseJSON.put("memoryUsageTrend",
+        mapper.valueToTree(cluster.getStatisticTrend(Cluster.CLUSTER_STAT_MEMORY_USAGE)));
+
+    // Send json response
+    return responseJSON;
   }
 }

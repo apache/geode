@@ -19,29 +19,25 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
 import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
 import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class ClusterRegionsService
@@ -57,43 +53,36 @@ import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 @Scope("singleton")
 public class ClusterRegionsService implements PulseService {
 
+  private final ObjectMapper mapper = new ObjectMapper();
+
   // String constants used for forming a json response
   private final String ENTRY_SIZE = "entrySize";
 
   // Comparator based upon regions entry count
-  private static Comparator<Cluster.Region> regionEntryCountComparator = new Comparator<Cluster.Region>() {
-    @Override
-    public int compare(Cluster.Region r1, Cluster.Region r2) {
-      long r1Cnt = r1.getSystemRegionEntryCount();
-      long r2Cnt = r2.getSystemRegionEntryCount();
-      if (r1Cnt < r2Cnt) {
-        return -1;
-      } else if (r1Cnt > r2Cnt) {
-        return 1;
-      } else {
-        return 0;
-      }
+  private static Comparator<Cluster.Region> regionEntryCountComparator = (r1, r2) -> {
+    long r1Cnt = r1.getSystemRegionEntryCount();
+    long r2Cnt = r2.getSystemRegionEntryCount();
+    if (r1Cnt < r2Cnt) {
+      return -1;
+    } else if (r1Cnt > r2Cnt) {
+      return 1;
+    } else {
+      return 0;
     }
   };
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
-
-    String userName = request.getUserPrincipal().getName();
-
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
-    try {
-      // getting cluster's Regions
-      responseJSON.put("regions", getRegionJson(cluster));
-      // Send json response
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
-    }
+    // getting cluster's Regions
+    responseJSON.put("regions", getRegionJson(cluster));
+
+    // Send json response
+    return responseJSON;
   }
 
   /**
@@ -104,7 +93,7 @@ public class ClusterRegionsService implements PulseService {
    * @param cluster
    * @return JSONObject Array List
    */
-  private List<JSONObject> getRegionJson(Cluster cluster) throws JSONException {
+  private ArrayNode getRegionJson(Cluster cluster) {
 
     Long totalHeapSize = cluster.getTotalHeapSize();
     Long totalDiskUsage = cluster.getTotalBytesOnDisk();
@@ -116,10 +105,10 @@ public class ClusterRegionsService implements PulseService {
 
     Collections.sort(clusterRegionsList, regionEntryCountComparator);
 
-    List<JSONObject> regionListJson = new ArrayList<JSONObject>();
+    ArrayNode regionListJson = mapper.createArrayNode();
     for (int count = 0; count < clusterRegionsList.size(); count++) {
       Cluster.Region reg = clusterRegionsList.get(count);
-      JSONObject regionJSON = new JSONObject();
+      ObjectNode regionJSON = mapper.createObjectNode();
 
       regionJSON.put("name", reg.getName());
       regionJSON.put("totalMemory", totalHeapSize);
@@ -133,7 +122,7 @@ public class ClusterRegionsService implements PulseService {
 
       Cluster.Member[] clusterMembersList = cluster.getMembers();
 
-      JSONArray memberNameArray = new JSONArray();
+      ArrayNode memberNameArray = mapper.createArrayNode();
       for (String memberName : reg.getMemberName()) {
         for (Cluster.Member member : clusterMembersList) {
           String name = member.getName();
@@ -142,10 +131,10 @@ public class ClusterRegionsService implements PulseService {
           id = id.replace(":", "-");
 
           if ((memberName.equals(id)) || (memberName.equals(name))) {
-            JSONObject regionMember = new JSONObject();
+            ObjectNode regionMember = mapper.createObjectNode();
             regionMember.put("id", member.getId());
             regionMember.put("name", member.getName());
-            memberNameArray.put(regionMember);
+            memberNameArray.add(regionMember);
             break;
           }
         }
@@ -186,8 +175,7 @@ public class ClusterRegionsService implements PulseService {
         regionJSON.put("compressionCodec", this.VALUE_NA);
       }
 
-      if (PulseConstants.PRODUCT_NAME_SQLFIRE.equalsIgnoreCase(PulseController
-          .getPulseProductSupport())) {
+      if (PulseConstants.PRODUCT_NAME_SQLFIRE.equalsIgnoreCase(PulseController.getPulseProductSupport())) {
         // Convert region path to dot separated region path
         regionJSON.put("regionPath",
             StringUtils.getTableNameFromRegionName(reg.getFullPath()));
@@ -198,30 +186,17 @@ public class ClusterRegionsService implements PulseService {
         regionJSON.put("id", reg.getFullPath());
       }
 
-      regionJSON
-          .put(
-              "memoryReadsTrend",
-              new JSONArray(
-                  reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_GETS_PER_SEC_TREND)));
-      regionJSON
-          .put(
-              "memoryWritesTrend",
-              new JSONArray(
-                  reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_PUTS_PER_SEC_TREND)));
-      regionJSON
-          .put(
-              "diskReadsTrend",
-              new JSONArray(
-                  reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_READS_PER_SEC_TREND)));
-      regionJSON
-          .put(
-              "diskWritesTrend",
-              new JSONArray(
-                  reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_WRITES_PER_SEC_TREND)));
+      regionJSON.put("memoryReadsTrend",
+          mapper.valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_GETS_PER_SEC_TREND)));
+      regionJSON.put("memoryWritesTrend",
+          mapper.valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_PUTS_PER_SEC_TREND)));
+      regionJSON.put("diskReadsTrend",
+          mapper.valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_READS_PER_SEC_TREND)));
+      regionJSON.put("diskWritesTrend",
+          mapper.valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_WRITES_PER_SEC_TREND)));
       regionJSON.put("emptyNodes", reg.getEmptyNode());
       Long entrySize = reg.getEntrySize();
-      DecimalFormat form = new DecimalFormat(
-          PulseConstants.DECIMAL_FORMAT_PATTERN_2);
+      DecimalFormat form = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN_2);
       String entrySizeInMB = form.format(entrySize / (1024f * 1024f));
 
       if (entrySize < 0) {

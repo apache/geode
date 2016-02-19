@@ -30,6 +30,10 @@ import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
 import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
 import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
@@ -52,6 +56,8 @@ public class DataBrowser {
   private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
       PulseConstants.PULSE_QUERY_HISTORY_DATE_PATTERN);
 
+  private final ObjectMapper mapper = new ObjectMapper();
+
   /**
    * addQueryInHistory method adds user's query into query history file
    * 
@@ -61,35 +67,25 @@ public class DataBrowser {
    *          Query text to execute
    */
   public boolean addQueryInHistory(String queryText, String userId) {
-
     boolean operationStatus = false;
     if (StringUtils.isNotNullNotEmptyNotWhiteSpace(queryText)
         && StringUtils.isNotNullNotEmptyNotWhiteSpace(userId)) {
 
       // Fetch all queries from query log file
-      JSONObject queries = fetchAllQueriesFromFile();
+      ObjectNode queries = fetchAllQueriesFromFile();
 
       // Get user's query history list
-      JSONObject userQueries = null;
-      try {
-        userQueries = queries.getJSONObject(userId);
-      } catch (JSONException e) {
-        userQueries = new JSONObject();
+      ObjectNode userQueries = (ObjectNode) queries.get(userId);
+      if (userQueries == null) {
+        userQueries = mapper.createObjectNode();
       }
 
       // Add query in user's query history list
-      try {
-        userQueries.put(Long.toString(System.currentTimeMillis()), queryText);
-        queries.put(userId, userQueries);
-      } catch (JSONException e) {
-        if (LOGGER.fineEnabled()) {
-          LOGGER.fine("JSONException Occured while adding user's query : " + e.getMessage());
-        }
-      }
+      userQueries.put(Long.toString(System.currentTimeMillis()), queryText);
+      queries.put(userId, userQueries);
 
       // Store queries in file back
       operationStatus = storeQueriesInFile(queries);
-
     }
 
     return operationStatus;
@@ -111,29 +107,17 @@ public class DataBrowser {
         && StringUtils.isNotNullNotEmptyNotWhiteSpace(userId)) {
 
       // Fetch all queries from query log file
-      JSONObject queries = fetchAllQueriesFromFile();
+      ObjectNode queries = fetchAllQueriesFromFile();
 
       // Get user's query history list
-      JSONObject userQueries = null;
-      try {
-        userQueries = queries.getJSONObject(userId);
-      } catch (JSONException e) {
-        userQueries = new JSONObject();
-      }
+      ObjectNode userQueries = (ObjectNode) queries.get(userId);
 
       // Remove user's query
-      try {
-        userQueries.remove(queryId);
-        queries.put(userId, userQueries);
-      } catch (JSONException e) {
-        if (LOGGER.fineEnabled()) {
-          LOGGER.fine("JSONException Occured while deleting user's query : " + e.getMessage());
-        }
-      }
+      userQueries.remove(queryId);
+      queries.put(userId, userQueries);
 
       // Store queries in file back
       operationStatus = storeQueriesInFile(queries);
-
     }
     
     return operationStatus;
@@ -146,38 +130,27 @@ public class DataBrowser {
    * @param userId
    *          Logged in User's Id
    */
-  public JSONArray getQueryHistoryByUserId(String userId) {
+  public ArrayNode getQueryHistoryByUserId(String userId) {
 
-    JSONArray queryList = new JSONArray();
+    ArrayNode queryList = mapper.createArrayNode();
 
     if (StringUtils.isNotNullNotEmptyNotWhiteSpace(userId)) {
 
       // Fetch all queries from query log file
-      JSONObject queries = fetchAllQueriesFromFile();
+      ObjectNode queries = fetchAllQueriesFromFile();
       
       // Get user's query history list
-      JSONObject userQueries = null;
-      try {
-        userQueries = queries.getJSONObject(userId);
-      } catch (JSONException e) {
-        userQueries = new JSONObject();
-      }
+      ObjectNode userQueries = (ObjectNode) queries.get(userId);
 
-      try {
-        Iterator<?> it = userQueries.keys();
-        while (it.hasNext()) {
-          String key = (String) it.next();
-          JSONObject queryItem = new JSONObject();
-          queryItem.put("queryId", key);
-          queryItem.put("queryText", userQueries.get(key).toString());
-          queryItem.put("queryDateTime",
-              simpleDateFormat.format(Long.valueOf(key)));
-          queryList.put(queryItem);
-        }
-      } catch (JSONException e) {
-        if (LOGGER.fineEnabled()) {
-          LOGGER.fine("JSONException Occured: " + e.getMessage());
-        }
+      Iterator<String> it = userQueries.fieldNames();
+      while (it.hasNext()) {
+        String key = it.next();
+        ObjectNode queryItem = mapper.createObjectNode();
+        queryItem.put("queryId", key);
+        queryItem.put("queryText", userQueries.get(key).toString());
+        queryItem.put("queryDateTime",
+            simpleDateFormat.format(Long.valueOf(key)));
+        queryList.add(queryItem);
       }
     }
 
@@ -189,15 +162,14 @@ public class DataBrowser {
    * 
    * @return Properties A collection queries in form of key and values
    */
-  private JSONObject fetchAllQueriesFromFile() {
+  private ObjectNode fetchAllQueriesFromFile() {
     InputStream inputStream = null;
-    JSONObject queriesJSON = new JSONObject();
+    JsonNode queriesJSON = mapper.createObjectNode();
 
     try {
       inputStream = new FileInputStream(Repository.get().getPulseConfig().getQueryHistoryFileName());
-      String inputStreamString = new Scanner(inputStream, "UTF-8")
-          .useDelimiter("\\A").next();
-      queriesJSON = new JSONObject(inputStreamString);
+      String inputStreamString = new Scanner(inputStream, "UTF-8").useDelimiter("\\A").next();
+      queriesJSON = mapper.readTree(inputStreamString);
     } catch (FileNotFoundException e) {
       if (LOGGER.fineEnabled()) {
         LOGGER.fine(resourceBundle
@@ -221,7 +193,7 @@ public class DataBrowser {
       }
     }
 
-    return queriesJSON;
+    return (ObjectNode) queriesJSON;
   }
 
   /**
@@ -229,7 +201,7 @@ public class DataBrowser {
    * 
    * @return Boolean true is operation is successful, false otherwise
    */
-  private boolean storeQueriesInFile(JSONObject queries) {
+  private boolean storeQueriesInFile(ObjectNode queries) {
     boolean operationStatus = false;
     FileOutputStream fileOut = null;
 

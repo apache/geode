@@ -19,21 +19,19 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import java.util.Formatter;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
+import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
+import com.vmware.gemfire.tools.pulse.internal.util.TimeUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
-import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
-import com.vmware.gemfire.tools.pulse.internal.util.TimeUtils;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class MemberClientsService
@@ -48,76 +46,57 @@ import com.vmware.gemfire.tools.pulse.internal.util.TimeUtils;
 @Scope("singleton")
 public class MemberClientsService implements PulseService {
 
+  private final ObjectMapper mapper = new ObjectMapper();
+
   // String constants used for forming a json response
   private final String NAME = "name";
   private final String HOST = "host";
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
-    try {
-      JSONObject requestDataJSON = new JSONObject(
-          request.getParameter("pulseData"));
-      String memberName = requestDataJSON.getJSONObject("MemberClients")
-          .getString("memberName");
+    JsonNode requestDataJSON = mapper.readTree(request.getParameter("pulseData"));
+    String memberName = requestDataJSON.get("MemberClients").get("memberName").textValue();
 
-      JSONArray clientListJson = new JSONArray();
+    ArrayNode clientListJson = mapper.createArrayNode();
 
-      Cluster.Member clusterMember = cluster.getMember(StringUtils
-          .makeCompliantName(memberName));
-      if (clusterMember != null) {
-        responseJSON.put("memberId", clusterMember.getId());
-        responseJSON.put(this.NAME, clusterMember.getName());
-        responseJSON.put(this.HOST, clusterMember.getHost());
+    Cluster.Member clusterMember = cluster.getMember(StringUtils.makeCompliantName(memberName));
+    if (clusterMember != null) {
+      responseJSON.put("memberId", clusterMember.getId());
+      responseJSON.put(this.NAME, clusterMember.getName());
+      responseJSON.put(this.HOST, clusterMember.getHost());
 
-        // member's clients
+      // member's clients
 
-        Cluster.Client[] memberClients = clusterMember.getMemberClients();
-        for (Cluster.Client memberClient : memberClients) {
-          JSONObject regionJSON = new JSONObject();
-          regionJSON.put("clientId", memberClient.getId());
-          regionJSON.put(this.NAME, memberClient.getName());
-          regionJSON.put(this.HOST, memberClient.getHost());
-          regionJSON.put("queueSize", memberClient.getQueueSize());
-          regionJSON.put("clientCQCount", memberClient.getClientCQCount()); 
-          if(memberClient.isConnected()){
-            regionJSON.put("isConnected", "Yes");
-          }else{
-            regionJSON.put("isConnected", "No");
-          }
-          
-          if(memberClient.isSubscriptionEnabled()){ 
-            regionJSON.put("isSubscriptionEnabled", "Yes"); 
-          }else{ 
-            regionJSON.put("isSubscriptionEnabled", "No"); 
-          } 
+      Cluster.Client[] memberClients = clusterMember.getMemberClients();
+      for (Cluster.Client memberClient : memberClients) {
+        ObjectNode regionJSON = mapper.createObjectNode();
+        regionJSON.put("clientId", memberClient.getId());
+        regionJSON.put(this.NAME, memberClient.getName());
+        regionJSON.put(this.HOST, memberClient.getHost());
+        regionJSON.put("queueSize", memberClient.getQueueSize());
+        regionJSON.put("clientCQCount", memberClient.getClientCQCount());
+        regionJSON.put("isConnected", memberClient.isConnected() ? "Yes" : "No");
+        regionJSON.put("isSubscriptionEnabled", memberClient.isSubscriptionEnabled() ? "Yes" : "No");
+        regionJSON.put("uptime", TimeUtils.convertTimeSecondsToHMS(memberClient.getUptime()));
 
-          regionJSON.put("uptime",
-              TimeUtils.convertTimeSecondsToHMS(memberClient.getUptime()));
-          Formatter fmt = new Formatter();
-          regionJSON.put("cpuUsage",
-              fmt.format("%.4f", memberClient.getCpuUsage()).toString());
-          // regionJSON.put("cpuUsage", memberClient.getCpuUsage());
-          regionJSON.put("threads", memberClient.getThreads());
-          regionJSON.put("gets", memberClient.getGets());
-          regionJSON.put("puts", memberClient.getPuts());
+        regionJSON.put("cpuUsage", String.format("%.4f", memberClient.getCpuUsage()).toString());
+        // regionJSON.put("cpuUsage", memberClient.getCpuUsage());
+        regionJSON.put("threads", memberClient.getThreads());
+        regionJSON.put("gets", memberClient.getGets());
+        regionJSON.put("puts", memberClient.getPuts());
 
-          clientListJson.put(regionJSON);
-          fmt.close();
-
-        }
-        responseJSON.put("memberClients", clientListJson);
+        clientListJson.add(regionJSON);
       }
-      // Send json response
-      return responseJSON;
-
-    } catch (JSONException e) {
-      throw new Exception(e);
+      responseJSON.put("memberClients", clientListJson);
     }
+    // Send json response
+    return responseJSON;
+
   }
 }

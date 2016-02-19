@@ -19,18 +19,18 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
+import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
+import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
-import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class MemberDiskThroughputService
@@ -46,48 +46,33 @@ import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 @Scope("singleton")
 public class MemberDiskThroughputService implements PulseService {
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception, JSONException {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
     // members list
-    try {
-      JSONObject requestDataJSON = new JSONObject(
-          request.getParameter("pulseData"));
-      String memberName = requestDataJSON.getJSONObject("MemberDiskThroughput")
-          .getString("memberName");
+    JsonNode requestDataJSON = mapper.readTree(request.getParameter("pulseData"));
+    String memberName = requestDataJSON.get("MemberDiskThroughput").get("memberName").textValue();
 
-      Cluster.Member clusterMember = cluster.getMember(StringUtils
-          .makeCompliantName(memberName));
+    Cluster.Member clusterMember = cluster.getMember(StringUtils.makeCompliantName(memberName));
 
-      if (clusterMember != null) {
-        // response
-        responseJSON.put("throughputWrites",
-            clusterMember.getThroughputWrites());
-        responseJSON
-            .put(
-                "throughputWritesTrend",
-                new JSONArray(
-                    clusterMember
-                        .getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_THROUGHPUT_WRITES)));
-        responseJSON
-            .put("throughputReads", clusterMember.getThroughputWrites());
-        responseJSON
-            .put(
-                "throughputReadsTrend",
-                new JSONArray(
-                    clusterMember
-                        .getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_THROUGHPUT_READS)));
-      }
-
-      // Send json response
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
+    if (clusterMember != null) {
+      // response
+      responseJSON.put("throughputWrites", clusterMember.getThroughputWrites());
+      responseJSON.put("throughputWritesTrend",
+          mapper.valueToTree(clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_THROUGHPUT_WRITES)));
+      responseJSON.put("throughputReads", clusterMember.getThroughputWrites());
+      responseJSON.put("throughputReadsTrend",
+          mapper.valueToTree(clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_THROUGHPUT_READS)));
     }
+
+    // Send json response
+    return responseJSON;
   }
 }

@@ -19,19 +19,17 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 /**
  * Class ClusterWANInfoService
@@ -47,36 +45,32 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 @Scope("singleton")
 public class ClusterWANInfoService implements PulseService {
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
     // members list
-    // ArrayList<Cluster> connectedClusters = cluster.getConnectedClusterList();
-    JSONArray connectedClusterListJson = new JSONArray();
+    ArrayNode connectedClusterListJson = mapper.createArrayNode();
 
-    try {
+    for (Map.Entry<String, Boolean> entry : cluster.getWanInformation()
+        .entrySet()) {
+      ObjectNode clusterJSON = mapper.createObjectNode();
+      clusterJSON.put("clusterId", entry.getKey());
+      clusterJSON.put("name", entry.getKey());
+      clusterJSON.put("status", entry.getValue());
 
-      for (Map.Entry<String, Boolean> entry : cluster.getWanInformation()
-          .entrySet()) {
-        JSONObject clusterJSON = new JSONObject();
-        clusterJSON.put("clusterId", entry.getKey());
-        clusterJSON.put("name", entry.getKey());
-        clusterJSON.put("status", entry.getValue());
-
-        connectedClusterListJson.put(clusterJSON);
-      }
-      // Response JSON
-      responseJSON.put("connectedClusters", connectedClusterListJson);
-      // Send json response
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
+      connectedClusterListJson.add(clusterJSON);
     }
+    // Response JSON
+    responseJSON.put("connectedClusters", connectedClusterListJson);
+    // Send json response
+    return responseJSON;
   }
 
 }

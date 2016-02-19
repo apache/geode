@@ -26,6 +26,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -33,9 +36,6 @@ import org.springframework.stereotype.Service;
 import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
 import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 
 /**
  * Class ClusterMembersRGraphService
@@ -48,9 +48,10 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  */
 @Component
 @Service("ClusterMembersRGraph")
-// @Service("ClusterMembers")
 @Scope("singleton")
 public class ClusterMembersRGraphService implements PulseService {
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   // String constants used for forming a json response
   private final String CLUSTER = "clustor";
@@ -85,7 +86,7 @@ public class ClusterMembersRGraphService implements PulseService {
   private List<String> errorAlertsList;
   private List<String> warningAlertsList;
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
 
     // Reference to repository
     Repository repository = Repository.get();
@@ -94,20 +95,15 @@ public class ClusterMembersRGraphService implements PulseService {
     Cluster cluster = repository.getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
-    try {
-      // clucter's Members
-      responseJSON.put(
-          this.CLUSTER,
-          getPhysicalServerJson(cluster, repository.getJmxHost(),
-              repository.getJmxPort()));
-      responseJSON.put(this.MEMBER_COUNT, cluster.getMemberCount());
-      // Send json response
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
-    }
+    // cluster's Members
+    responseJSON.put(this.CLUSTER,
+        getPhysicalServerJson(cluster, repository.getJmxHost(), repository.getJmxPort()));
+    responseJSON.put(this.MEMBER_COUNT, cluster.getMemberCount());
+
+    // Send json response
+    return responseJSON;
   }
 
   /**
@@ -121,24 +117,21 @@ public class ClusterMembersRGraphService implements PulseService {
    * @return Array list of JSON objects for required fields of members in
    *         cluster
    */
-  private JSONObject getPhysicalServerJson(Cluster cluster, String host,
-      String port) throws JSONException {
-    Map<String, List<Cluster.Member>> physicalToMember = cluster
-        .getPhysicalToMember();
+  private ObjectNode getPhysicalServerJson(Cluster cluster, String host, String port) {
+    Map<String, List<Cluster.Member>> physicalToMember = cluster.getPhysicalToMember();
 
-    JSONObject clusterTopologyJSON = new JSONObject();
+    ObjectNode clusterTopologyJSON = mapper.createObjectNode();
 
     clusterTopologyJSON.put(this.ID, cluster.getClusterId());
     clusterTopologyJSON.put(this.NAME, cluster.getClusterId());
-    JSONObject data1 = new JSONObject();
+    ObjectNode data1 = mapper.createObjectNode();
     clusterTopologyJSON.put(this.DATA, data1);
-    JSONArray childHostArray = new JSONArray();
+    ArrayNode childHostArray = mapper.createArrayNode();
     DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
 
     updateAlertLists(cluster);
 
-    for (Map.Entry<String, List<Cluster.Member>> physicalToMem : physicalToMember
-        .entrySet()) {
+    for (Map.Entry<String, List<Cluster.Member>> physicalToMem : physicalToMember.entrySet()) {
       String hostName = physicalToMem.getKey();
       Float hostCpuUsage = 0.0F;
       Long hostMemoryUsage = (long) 0;
@@ -149,20 +142,20 @@ public class ClusterMembersRGraphService implements PulseService {
       boolean hostError = false;
       boolean hostWarning = false;
       String hostStatus;
-      JSONObject childHostObject = new JSONObject();
+      ObjectNode childHostObject = mapper.createObjectNode();
       childHostObject.put(this.ID, hostName);
       childHostObject.put(this.NAME, hostName);
 
-      JSONArray membersArray = new JSONArray();
+      ArrayNode membersArray = mapper.createArrayNode();
 
       List<Cluster.Member> memberList = physicalToMem.getValue();
       for (Cluster.Member member : memberList) {
-        JSONObject memberJSONObj = new JSONObject();
+        ObjectNode memberJSONObj = mapper.createObjectNode();
 
         memberJSONObj.put(this.ID, member.getId());
         memberJSONObj.put(this.NAME, member.getName());
 
-        JSONObject memberData = new JSONObject();
+        ObjectNode memberData = mapper.createObjectNode();
 
         memberData.put("gemfireVersion", member.getGemfireVersion());
 
@@ -185,10 +178,11 @@ public class ClusterMembersRGraphService implements PulseService {
         memberData.put(this.REGIONS, member.getMemberRegions().size());
         memberData.put(this.HOST, member.getHost());
         if ((member.getMemberPort() == null)
-            || (member.getMemberPort().equals("")))
+            || (member.getMemberPort().equals(""))) {
           memberData.put(this.PORT, "-");
-        else
+        } else {
           memberData.put(this.PORT, member.getMemberPort());
+        }
         memberData.put(this.CLIENTS, member.getMemberClientsHMap().size());
         memberData.put(this.GC_PAUSES, member.getGarbageCollectionCount());
         memberData.put(this.NUM_THREADS, member.getNumThreads());
@@ -206,14 +200,12 @@ public class ClusterMembersRGraphService implements PulseService {
         String memberNodeType = "";
         // for severe alert
         if (severeAlertList.contains(member.getName())) {
-          memberNodeType = getMemberNodeType(member,
-              this.MEMBER_NODE_TYPE_SEVERE);
+          memberNodeType = getMemberNodeType(member, this.MEMBER_NODE_TYPE_SEVERE);
           if (!hostSevere) {
             hostSevere = true;
           }
-        }
-        // for error alerts
-        else if (errorAlertsList.contains(member.getName())) {
+        } else if (errorAlertsList.contains(member.getName())) {
+          // for error alerts
           memberNodeType = getMemberNodeType(member,
               this.MEMBER_NODE_TYPE_ERROR);
           if (!hostError) {
@@ -222,29 +214,27 @@ public class ClusterMembersRGraphService implements PulseService {
         }
         // for warning alerts
         else if (warningAlertsList.contains(member.getName())) {
-          memberNodeType = getMemberNodeType(member,
-              this.MEMBER_NODE_TYPE_WARNING);
-          if (!hostWarning)
+          memberNodeType = getMemberNodeType(member, this.MEMBER_NODE_TYPE_WARNING);
+          if (!hostWarning) {
             hostWarning = true;
+          }
         } else {
-          memberNodeType = getMemberNodeType(member,
-              this.MEMBER_NODE_TYPE_NORMAL);
+          memberNodeType = getMemberNodeType(member, this.MEMBER_NODE_TYPE_NORMAL);
         }
 
         memberData.put("nodeType", memberNodeType);
         memberData.put("$type", memberNodeType);
-        memberData.put(this.GATEWAY_SENDER, member.getGatewaySenderList()
-            .size());
+        memberData.put(this.GATEWAY_SENDER, member.getGatewaySenderList().size());
         if (member.getGatewayReceiver() != null) {
-          memberData.put(this.GATEWAY_RECEIVER, "1");
+          memberData.put(this.GATEWAY_RECEIVER, 1);
         } else {
-          memberData.put(this.GATEWAY_RECEIVER, "0");
+          memberData.put(this.GATEWAY_RECEIVER, 0);
         }
         memberJSONObj.put(this.DATA, memberData);
-        memberJSONObj.put(this.CHILDREN, new JSONArray());
-        membersArray.put(memberJSONObj);
+        memberJSONObj.put(this.CHILDREN, mapper.createArrayNode());
+        membersArray.add(memberJSONObj);
       }
-      JSONObject data = new JSONObject();
+      ObjectNode data = mapper.createObjectNode();
 
       data.put(this.LOAD_AVG, hostLoadAvg);
       data.put(this.SOCKETS, hostSockets);
@@ -273,7 +263,7 @@ public class ClusterMembersRGraphService implements PulseService {
       childHostObject.put(this.DATA, data);
 
       childHostObject.put(this.CHILDREN, membersArray);
-      childHostArray.put(childHostObject);
+      childHostArray.add(childHostObject);
     }
     clusterTopologyJSON.put(this.CHILDREN, childHostArray);
 
@@ -367,6 +357,5 @@ public class ClusterMembersRGraphService implements PulseService {
         }
       }
     }
-
   }
 }

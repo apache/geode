@@ -19,19 +19,17 @@
 
 package com.vmware.gemfire.tools.pulse.internal.service;
 
-import java.text.DecimalFormat;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
-import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import javax.servlet.http.HttpServletRequest;
+import java.text.DecimalFormat;
 
 /**
  * Class ClusterDetailsService
@@ -48,7 +46,9 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 @Scope("singleton")
 public class ClusterDetailsService implements PulseService {
 
-  public JSONObject execute(final HttpServletRequest request) throws Exception {
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  public ObjectNode tempExecute(final HttpServletRequest request) throws Exception {
 
     String userName = request.getUserPrincipal().getName();
 
@@ -56,7 +56,7 @@ public class ClusterDetailsService implements PulseService {
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
-    JSONObject responseJSON = new JSONObject();
+    ObjectNode responseJSON = mapper.createObjectNode();
 
     Cluster.Alert[] alertsList = cluster.getAlertsList();
     int severeAlertCount = 0;
@@ -75,35 +75,31 @@ public class ClusterDetailsService implements PulseService {
         infoAlertCount++;
       }
     }
-    try {
-      // getting basic details of Cluster
-      responseJSON.put("clusterName", cluster.getServerName());
-      responseJSON.put("severeAlertCount", severeAlertCount);
-      responseJSON.put("errorAlertCount", errorAlertCount);
-      responseJSON.put("warningAlertCount", warningAlertCount);
-      responseJSON.put("infoAlertCount", infoAlertCount);
+    // getting basic details of Cluster
+    responseJSON.put("clusterName", cluster.getServerName());
+    responseJSON.put("severeAlertCount", severeAlertCount);
+    responseJSON.put("errorAlertCount", errorAlertCount);
+    responseJSON.put("warningAlertCount", warningAlertCount);
+    responseJSON.put("infoAlertCount", infoAlertCount);
 
-      responseJSON.put("totalMembers", cluster.getMemberCount());
-      responseJSON.put("servers", cluster.getServerCount());
-      responseJSON.put("clients", cluster.getClientConnectionCount());
-      responseJSON.put("locators", cluster.getLocatorCount());
-      responseJSON.put("totalRegions", cluster.getTotalRegionCount());
-      Long heapSize = cluster.getTotalHeapSize();
+    responseJSON.put("totalMembers", cluster.getMemberCount());
+    responseJSON.put("servers", cluster.getServerCount());
+    responseJSON.put("clients", cluster.getClientConnectionCount());
+    responseJSON.put("locators", cluster.getLocatorCount());
+    responseJSON.put("totalRegions", cluster.getTotalRegionCount());
+    Long heapSize = cluster.getTotalHeapSize();
 
-      DecimalFormat df2 = new DecimalFormat(
-          PulseConstants.DECIMAL_FORMAT_PATTERN);
-      Double heapS = heapSize.doubleValue() / 1024;
-      responseJSON.put("totalHeap", Double.valueOf(df2.format(heapS)));
-      responseJSON.put("functions", cluster.getRunningFunctionCount());
-      responseJSON.put("uniqueCQs", cluster.getRegisteredCQCount());
-      responseJSON.put("subscriptions", cluster.getSubscriptionCount());
-      responseJSON.put("txnCommitted", cluster.getTxnCommittedCount());
-      responseJSON.put("txnRollback", cluster.getTxnRollbackCount());
-      responseJSON.put("userName", userName);
+    DecimalFormat df2 = new DecimalFormat(
+        PulseConstants.DECIMAL_FORMAT_PATTERN);
+    Double heapS = heapSize.doubleValue() / 1024;
+    responseJSON.put("totalHeap", Double.valueOf(df2.format(heapS)));
+    responseJSON.put("functions", cluster.getRunningFunctionCount());
+    responseJSON.put("uniqueCQs", cluster.getRegisteredCQCount());
+    responseJSON.put("subscriptions", cluster.getSubscriptionCount());
+    responseJSON.put("txnCommitted", cluster.getTxnCommittedCount());
+    responseJSON.put("txnRollback", cluster.getTxnRollbackCount());
+    responseJSON.put("userName", userName);
 
-      return responseJSON;
-    } catch (JSONException e) {
-      throw new Exception(e);
-    }
+    return responseJSON;
   }
 }

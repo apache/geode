@@ -19,10 +19,10 @@
 
 package com.vmware.gemfire.tools.pulse.internal.data;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
 import com.vmware.gemfire.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
 import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 
@@ -100,6 +100,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   private final String opSignature[] = { String.class.getName(),
       String.class.getName(), int.class.getName() };
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   /**
    * constructor used for creating JMX connection
@@ -2377,15 +2379,12 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   }
 
   @Override
-  public JSONObject executeQuery(String queryText, String members, int limit)
-      throws JSONException {
+  public ObjectNode executeQuery(String queryText, String members, int limit) {
 
-    JSONObject queryResult = new JSONObject();
+    ObjectNode queryResult = mapper.createObjectNode();
 
     if (this.mbs != null && this.systemMBeans != null) {
-
       Object opParams[] = { queryText, members, limit };
-
       for (ObjectName sysMBean : this.systemMBeans) {
         try {
           String resultString = (String) (this.mbs.invoke(sysMBean,
@@ -2393,7 +2392,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               this.opSignature));
 
           // Convert result into JSON
-          queryResult = new JSONObject(resultString);
+          queryResult = (ObjectNode) mapper.readTree(resultString);
 
         } catch (Exception e) {
           // Send error into result

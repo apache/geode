@@ -54,6 +54,11 @@ import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
+
 /**
  * Class Cluster This class is the Data Model for the data used for the Pulse
  * Web UI.
@@ -162,7 +167,10 @@ public class Cluster extends Thread {
   private boolean stopUpdates = false;
 
   private static final int MAX_HOSTS = 40;
+
   private final List<String> hostNames = new ArrayList<String>();
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   public Object[] getStatisticTrend(int trendId) {
 
@@ -216,7 +224,6 @@ public class Cluster extends Thread {
         returnArray = this.garbageCollectionTrend.toArray();
       }
       break;
-
     }
 
     return returnArray;
@@ -2881,13 +2888,12 @@ public class Cluster extends Thread {
     this.dataBrowser = dataBrowser;
   }
 
-  public JSONObject executeQuery(String queryText, String members, int limit)
-      throws JSONException {
+  public ObjectNode executeQuery(String queryText, String members, int limit) {
     // Execute data browser query
     return this.updater.executeQuery(queryText, members, limit);
   }
 
-  public JSONArray getQueryHistoryByUserId(String userId) throws JSONException {
+  public ArrayNode getQueryHistoryByUserId(String userId) {
     return this.getDataBrowser().getQueryHistoryByUserId(userId);
   }
 
@@ -3513,11 +3519,10 @@ public class Cluster extends Thread {
     private int queryCounter = 0;
 
     @Override
-    public JSONObject executeQuery(String queryText, String members, int limit)
-        throws JSONException {
+    public ObjectNode executeQuery(String queryText, String members, int limit) {
 
       BufferedReader streamReader = null;
-      JSONObject jsonObject = new JSONObject();
+      ObjectNode jsonObject = mapper.createObjectNode();
       Random rand = new Random();
       int min = 1, max = 5;
       int randomNum = rand.nextInt(max - min + 1) + min;
@@ -3530,8 +3535,7 @@ public class Cluster extends Thread {
       }
 
       try {
-        ClassLoader classLoader = Thread.currentThread()
-            .getContextClassLoader();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
         switch (queryCounter++) {
         case 1:
@@ -3643,14 +3647,11 @@ public class Cluster extends Thread {
           testQueryResultClusterSmallresponseStrBuilder.append(inputStr);
         }
 
-        jsonObject = new JSONObject(
-            testQueryResultClusterSmallresponseStrBuilder.toString());
+//        jsonObject = new JSONObject(
+//            testQueryResultClusterSmallresponseStrBuilder.toString());
 
         // close stream reader
         streamReader.close();
-
-      } catch (JSONException ex) {
-        LOGGER.severe(ex.getMessage());
       } catch (IOException ex) {
         LOGGER.severe(ex.getMessage());
       }

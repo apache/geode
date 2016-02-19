@@ -67,6 +67,12 @@ sourceSets {
   main {
     output.dir(generatedResources, builtBy: 'copyGemFireVersionFile')
   }
+
+  test {
+    resources {
+      srcDir 'src/main/webapp/WEB-INF'
+    }
+  }
 }
 
 task copyGemFireVersionFile(type: Copy) {
@@ -88,7 +94,6 @@ idea.module.iml {
     module.dependencies.removeAll { entry -> entry.toString().contains('geode-core/build')}
   }
 }
-
 
 artifacts {
   archives war

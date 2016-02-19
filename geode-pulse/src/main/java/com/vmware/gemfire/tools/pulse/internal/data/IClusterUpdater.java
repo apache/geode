@@ -19,8 +19,7 @@
 
 package com.vmware.gemfire.tools.pulse.internal.data;
 
-import com.vmware.gemfire.tools.pulse.internal.json.JSONException;
-import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Interface having updateData() function which is getting Override by both
@@ -33,5 +32,5 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 public interface IClusterUpdater {
   boolean updateData();
 
-  JSONObject executeQuery(String queryText, String members, int limit) throws JSONException;
+  ObjectNode executeQuery(String queryText, String members, int limit);
 }
