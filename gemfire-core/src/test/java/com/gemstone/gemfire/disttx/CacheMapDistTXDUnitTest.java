@@ -37,14 +37,14 @@ public class CacheMapDistTXDUnitTest extends CacheMapTxnDUnitTest {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    vm0.invoke(CacheMapDistTXDUnitTest.class, "setDistributedTX");
-    vm1.invoke(CacheMapDistTXDUnitTest.class, "setDistributedTX");
+    vm0.invoke(() -> CacheMapDistTXDUnitTest.setDistributedTX());
+    vm1.invoke(() -> CacheMapDistTXDUnitTest.setDistributedTX());
 
     super.setUp(); // creates cache
 
     // make sure that "distributed-transactions" is true 
-    vm0.invoke(CacheMapDistTXDUnitTest.class, "checkIsDistributedTX");
-    vm1.invoke(CacheMapDistTXDUnitTest.class, "checkIsDistributedTX");
+    vm0.invoke(() -> CacheMapDistTXDUnitTest.checkIsDistributedTX());
+    vm1.invoke(() -> CacheMapDistTXDUnitTest.checkIsDistributedTX());
   }
 
   public static void setDistributedTX() {

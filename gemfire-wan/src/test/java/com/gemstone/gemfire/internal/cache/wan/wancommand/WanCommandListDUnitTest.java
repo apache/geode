@@ -44,8 +44,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
   public void testListGatewayWithNoSenderReceiver() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -53,15 +52,11 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm4.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm5.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
+    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
     
     Wait.pause(10000);
     String command = CliStrings.LIST_GATEWAY;
@@ -78,8 +73,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   
   public void testListGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -87,30 +81,26 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm6.invoke(WANCommandTestBase.class, "createAndStartReceiver", new Object[] { nyPort });
-    vm7.invoke(WANCommandTestBase.class, "createAndStartReceiver", new Object[] { nyPort });
+    vm6.invoke(() -> WANCommandTestBase.createAndStartReceiver( nyPort ));
+    vm7.invoke(() -> WANCommandTestBase.createAndStartReceiver( nyPort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 2, false, 100, 400, false, false, null, false });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Parallel", 2, true, 100, 400, false, false, null, false });
+    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 2, false, 100, 400, false, false, null, false ));
+    vm3.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
 
-    vm4.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Parallel", 2, true, 100, 400, false, false, null, false });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 2, false, 100, 400, false, false, null, false });
+    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm4.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
+    vm4.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 2, false, 100, 400, false, false, null, false ));
 
-    vm5.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 2, false, 100, 400, false, false, null, false });
+    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm5.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 2, false, 100, 400, false, false, null, false ));
 
     Wait.pause(10000);
     String command = CliStrings.LIST_GATEWAY;
@@ -135,8 +125,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
   public void testListGatewayReceiver() {
 
-    Integer lnPort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -144,24 +133,21 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + lnPort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createAndStartReceiver", new Object[] { lnPort });
-    vm4.invoke(WANCommandTestBase.class, "createAndStartReceiver", new Object[] { lnPort });
+    vm3.invoke(() -> WANCommandTestBase.createAndStartReceiver( lnPort ));
+    vm4.invoke(() -> WANCommandTestBase.createAndStartReceiver( lnPort ));
 
     vm5
-        .invoke(WANCommandTestBase.class, "createCache",
-            new Object[] { nyPort });
-    vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 1, false, 100, 400, false, false, null, false });
+        .invoke(() -> WANCommandTestBase.createCache( nyPort ));
+    vm5.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 1, false, 100, 400, false, false, null, false ));
     vm6
-        .invoke(WANCommandTestBase.class, "createCache",
-            new Object[] { nyPort });
-    vm6.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 1, false, 100, 400, false, false, null, false });
-    vm6.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Parallel", 1, true, 100, 400, false, false, null, false });
+        .invoke(() -> WANCommandTestBase.createCache( nyPort ));
+    vm6.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 1, false, 100, 400, false, false, null, false ));
+    vm6.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Parallel", 1, true, 100, 400, false, false, null, false ));
 
     Wait.pause(10000);
     String command = CliStrings.LIST_GATEWAY;
@@ -188,8 +174,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   
   public void testListGatewaySenderGatewayReceiver() throws GfJsonException {
 
-    Integer lnPort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -197,33 +182,29 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + lnPort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm6.invoke(WANCommandTestBase.class, "createAndStartReceiver", new Object[] { nyPort });
+    vm6.invoke(() -> WANCommandTestBase.createAndStartReceiver( nyPort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { lnPort });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 2, false, 100, 400, false, false, null, false });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Parallel", 2, true, 100, 400, false, false, null, false });
+    vm3.invoke(() -> WANCommandTestBase.createCache( lnPort ));
+    vm3.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 2, false, 100, 400, false, false, null, false ));
+    vm3.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
 
-    vm4.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { lnPort });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Parallel", 2, true, 100, 400, false, false, null, false });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 2, false, 100, 400, false, false, null, false });
+    vm4.invoke(() -> WANCommandTestBase.createCache( lnPort ));
+    vm4.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
+    vm4.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 2, false, 100, 400, false, false, null, false ));
 
-    vm5.invoke(WANCommandTestBase.class, "createAndStartReceiver", new Object[] { lnPort });
+    vm5.invoke(() -> WANCommandTestBase.createAndStartReceiver( lnPort ));
 
-    vm7.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { nyPort });
-    vm7.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 1, false, 100, 400, false, false, null, false });
-    vm7.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Parallel", 1, true, 100, 400, false, false, null, false });
+    vm7.invoke(() -> WANCommandTestBase.createCache( nyPort ));
+    vm7.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 1, false, 100, 400, false, false, null, false ));
+    vm7.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Parallel", 1, true, 100, 400, false, false, null, false ));
 
     Wait.pause(10000);
     String command = CliStrings.LIST_GATEWAY;
@@ -254,8 +235,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   
   public void testListGatewaySenderGatewayReceiver_group() {
 
-    Integer lnPort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -263,36 +243,32 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + lnPort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm6.invoke(WANCommandTestBase.class, "createAndStartReceiver", new Object[] { nyPort });
+    vm6.invoke(() -> WANCommandTestBase.createAndStartReceiver( nyPort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCacheWithGroups",
-        new Object[] { lnPort, "Serial_Sender, Paralle_Sender"});
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 2, false, 100, 400, false, false, null, false });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Parallel", 2, true, 100, 400, false, false, null, false });
+    vm3.invoke(() -> WANCommandTestBase.createCacheWithGroups( lnPort, "Serial_Sender, Paralle_Sender"));
+    vm3.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 2, false, 100, 400, false, false, null, false ));
+    vm3.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
 
-    vm4.invoke(WANCommandTestBase.class, "createCacheWithGroups",
-        new Object[] { lnPort,"Serial_Sender, Paralle_Sender"});
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Parallel", 2, true, 100, 400, false, false, null, false });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 2, false, 100, 400, false, false, null, false });
+    vm4.invoke(() -> WANCommandTestBase.createCacheWithGroups( lnPort,"Serial_Sender, Paralle_Sender"));
+    vm4.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
+    vm4.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 2, false, 100, 400, false, false, null, false ));
 
-    vm5.invoke(WANCommandTestBase.class, "createAndStartReceiverWithGroup", new Object[] { lnPort, "Paralle_Sender,Receiver_Group" });
-    vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-      "ln_Parallel", 2, true, 100, 400, false, false, null, false });
+    vm5.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( lnPort, "Paralle_Sender,Receiver_Group" ));
+    vm5.invoke(() -> WANCommandTestBase.createSender(
+      "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
     
 
-    vm7.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { nyPort });
-    vm7.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Serial", 1, false, 100, 400, false, false, null, false });
-    vm7.invoke(WANCommandTestBase.class, "createSender", new Object[] {
-        "ln_Parallel", 1, true, 100, 400, false, false, null, false });
+    vm7.invoke(() -> WANCommandTestBase.createCache( nyPort ));
+    vm7.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Serial", 1, false, 100, 400, false, false, null, false ));
+    vm7.invoke(() -> WANCommandTestBase.createSender(
+        "ln_Parallel", 1, true, 100, 400, false, false, null, false ));
 
     Wait.pause(10000);
     String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Serial_Sender";

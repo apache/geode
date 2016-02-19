@@ -113,12 +113,10 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
   public void testSimpleDurableClient() {
 
     // Step 1: Starting the servers
-    PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true)
-            })).intValue();
-    PORT2 = ((Integer)this.server2VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-            })).intValue();
+    PORT1 = ((Integer)this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true)
+            ))).intValue();
+    PORT2 = ((Integer)this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true)
+            ))).intValue();
 
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it
@@ -127,12 +125,11 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
     final int durableClientTimeout = 600; // keep the client alive for 600
     // seconds
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
-        new Object[] {
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
             getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
             regionName,
             getClientDistributedSystemProperties(durableClientId,
-                durableClientTimeout), Boolean.TRUE });
+                durableClientTimeout), Boolean.TRUE ));
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable(
@@ -146,66 +143,46 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     // KEY_STONE1, KEY_STONE2 are registered as durableKeys & KEY_STONE3,
     // KEY_STONE4 as non-durableKeys
 
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K1, new Boolean(false) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K2, new Boolean(false) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K3, new Boolean(true) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K4, new Boolean(true) });
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K1, new Boolean(false) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K2, new Boolean(false) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K3, new Boolean(true) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K4, new Boolean(true) ));
 
     // Step 4: Update Values on the Server for KEY_STONE1, KEY_STONE2,
     // KEY_STONE3, KEY_STONE4
 
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K1, "Value1" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K2, "Value2" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K3, "Value3" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K4, "Value4" });
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K1, "Value1" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K2, "Value2" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K3, "Value3" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K4, "Value4" ));
 
     Wait.pause(1000);
     // Step 5: Verify Updates on the Client
 
-    assertEquals("Value1", this.server2VM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K1 }));
-    assertEquals("Value1", this.server1VM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K1 }));
+    assertEquals("Value1", this.server2VM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
+    assertEquals("Value1", this.server1VM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
 
-    assertEquals("Value1", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K1 }));
-    assertEquals("Value2", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K2 }));
-    assertEquals("Value3", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K3 }));
-    assertEquals("Value4", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K4 }));
+    assertEquals("Value1", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
+    assertEquals("Value2", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K2 )));
+    assertEquals("Value3", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K3 )));
+    assertEquals("Value4", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K4 )));
 
     // Step 6: Close Cache of the DurableClient
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "closeCache");
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.closeCache());
     // pause(5000);
     // Step 7: Update KEY_STONE1,KEY_STONE2,KEY_STONE3,KEY_STONE4 on the
     // Server say with values PingPong1, PingPong2, PingPong3, PingPong4
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K1, "PingPong1" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K2, "PingPong2" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K3, "PingPong3" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K4, "PingPong4" });
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K1, "PingPong1" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K2, "PingPong2" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K3, "PingPong3" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K4, "PingPong4" ));
 
     // Step 8: Re-start the Client
     this.durableClientVM
-        .invoke(CacheServerTestUtil.class, "createCacheClient",
-            new Object[] { getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
+        .invoke(() -> CacheServerTestUtil.createCacheClient( getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
                 regionName,
                 getClientDistributedSystemProperties(durableClientId),
-                Boolean.TRUE });
+                Boolean.TRUE ));
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable(
@@ -217,61 +194,46 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
     Wait.pause(5000);
 
-    assertNull(this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "getValue", new Object[] { K1 }));
-    assertNull(this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "getValue", new Object[] { K2 }));
+    assertNull(this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
+    assertNull(this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K2 )));
 
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K1, new Boolean(false) });
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K1, new Boolean(false) ));
 
     Wait.pause(5000);
-    assertNull(this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "getValue", new Object[] { K1 }));
-    assertNull(this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "getValue", new Object[] { K2 }));
+    assertNull(this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
+    assertNull(this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K2 )));
 
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K1, "PingPong_updated_1" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K2, "PingPong_updated_2" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K3, "PingPong_updated_3" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K4, "PingPong_updated_4" });
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K1, "PingPong_updated_1" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K2, "PingPong_updated_2" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K3, "PingPong_updated_3" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K4, "PingPong_updated_4" ));
 
     Wait.pause(5000);
 
     // Step 9: Verify Updates on the Client
-    assertEquals("PingPong_updated_1", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K1 }));
-    assertNull(this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "getValue", new Object[] { K2 }));
-    assertEquals("PingPong_updated_3", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K3 }));
-    assertEquals("PingPong_updated_4", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K4 }));
+    assertEquals("PingPong_updated_1", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
+    assertNull(this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K2 )));
+    assertEquals("PingPong_updated_3", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K3 )));
+    assertEquals("PingPong_updated_4", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K4 )));
 
     // Step 10 : Stop all VMs
     // Stop the durable client
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 2
-    this.server2VM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.server2VM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 1
-    this.server1VM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
 
   }
 
   public void testSimpleDurableClientWithRegistration() {
     // Step 1: Starting the servers
-    PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true)
-            })).intValue();
-    PORT2 = ((Integer)this.server2VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true)
-            })).intValue();
+    PORT1 = ((Integer)this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true)
+            ))).intValue();
+    PORT2 = ((Integer)this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true)
+            ))).intValue();
 
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it
@@ -279,12 +241,11 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     final String durableClientId = getName() + "_client";
     // keep the client alive for 600 seconds
     final int durableClientTimeout = 600;
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
-        new Object[] {
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
             getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
             regionName,
             getClientDistributedSystemProperties(durableClientId,
-                durableClientTimeout) });
+                durableClientTimeout) ));
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable(
@@ -298,66 +259,46 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     // KEY_STONE1, KEY_STONE2 are registered as durableKeys & KEY_STONE3,
     // KEY_STONE4 as non-durableKeys
 
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K1, new Boolean(false) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K2, new Boolean(false) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K3, new Boolean(true) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K4, new Boolean(true) });
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K1, new Boolean(false) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K2, new Boolean(false) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K3, new Boolean(true) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K4, new Boolean(true) ));
 
     // Step 4: Update Values on the Server for KEY_STONE1, KEY_STONE2,
     // KEY_STONE3, KEY_STONE4
 
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K1, "Value1" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K2, "Value2" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K3, "Value3" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K4, "Value4" });
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K1, "Value1" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K2, "Value2" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K3, "Value3" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K4, "Value4" ));
 
     Wait.pause(1000);
     // Step 5: Verify Updates on the Client
 
-    assertEquals("Value1", this.server2VM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K1 }));
-    assertEquals("Value1", this.server1VM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K1 }));
+    assertEquals("Value1", this.server2VM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
+    assertEquals("Value1", this.server1VM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
 
-    assertEquals("Value1", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K1 }));
-    assertEquals("Value2", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K2 }));
-    assertEquals("Value3", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K3 }));
-    assertEquals("Value4", this.durableClientVM.invoke(
-        DurableRegistrationDUnitTest.class, "getValue", new Object[] { K4 }));
+    assertEquals("Value1", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
+    assertEquals("Value2", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K2 )));
+    assertEquals("Value3", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K3 )));
+    assertEquals("Value4", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K4 )));
 
     // Step 6: Close Cache of the DurableClient
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "closeCache");
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.closeCache());
     // pause(5000);
     // Step 7: Update KEY_STONE1,KEY_STONE2,KEY_STONE3,KEY_STONE4 on the
     // Server say with values PingPong1, PingPong2, PingPong3, PingPong4
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K1, "PingPong1" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K2, "PingPong2" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K3, "PingPong3" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K4, "PingPong4" });
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K1, "PingPong1" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K2, "PingPong2" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K3, "PingPong3" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K4, "PingPong4" ));
 
     // Step 8: Re-start the Client
     this.durableClientVM
-        .invoke(CacheServerTestUtil.class, "createCacheClient",
-            new Object[] { getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
+        .invoke(() -> CacheServerTestUtil.createCacheClient( getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 0),
                 regionName,
                 getClientDistributedSystemProperties(durableClientId),
-                Boolean.TRUE });
+                Boolean.TRUE ));
 
     // Step 9: Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable(
@@ -370,89 +311,71 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     // pause(1000);
 
     // Step 10: Register all Keys
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K3, new Boolean(true) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K4, new Boolean(true) });
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K3, new Boolean(true) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K4, new Boolean(true) ));
 
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K1, new Boolean(false) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K2, new Boolean(false) });
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K1, new Boolean(false) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K2, new Boolean(false) ));
 
     // Step 11: Unregister Some Keys (Here K1, K3)
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "unregisterKey", new Object[] { K1 });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "unregisterKey", new Object[] { K3 });
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.unregisterKey( K1 ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.unregisterKey( K3 ));
 
     Wait.pause(5000);
 
     // Step 12: Modify values on the server for all the Keys
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K1, "PingPong_updated_1" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K2, "PingPong_updated_2" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K3, "PingPong_updated_3" });
-    this.server2VM.invoke(DurableRegistrationDUnitTest.class, "putValue",
-        new Object[] { K4, "PingPong_updated_4" });
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K1, "PingPong_updated_1" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K2, "PingPong_updated_2" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K3, "PingPong_updated_3" ));
+    this.server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue( K4, "PingPong_updated_4" ));
 
     Wait.pause(5000);
 
     // Step 13: Check the values for the ones not unregistered and the
     // Unregistered Keys' Values should be null
     try {
-      assertEquals("PingPong_updated_2", this.durableClientVM.invoke(
-          DurableRegistrationDUnitTest.class, "getValue", new Object[] { K2 }));
+      assertEquals("PingPong_updated_2", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K2 )));
     }
     catch (Exception e) {
       fail("Prob in KEY_STONE2: "
-          + this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-              "getValue", new Object[] { K2 }));
+          + this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K2 )));
     }
 
     try {
-      assertEquals("PingPong_updated_4", this.durableClientVM.invoke(
-          DurableRegistrationDUnitTest.class, "getValue", new Object[] { K4 }));
+      assertEquals("PingPong_updated_4", this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K4 )));
     }
     catch (Exception e) {
       fail("Prob in KEY_STONE4: "
-          + this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-              "getValue", new Object[] { K4 }));
+          + this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K4 )));
 
     }
 
     try {
-      assertNull(this.durableClientVM.invoke(
-          DurableRegistrationDUnitTest.class, "getValue", new Object[] { K1 }));
+      assertNull(this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
     }
     catch (Exception e) {
       fail("Prob in KEY_STONE1: "
-          + this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-              "getValue", new Object[] { K1 }));
+          + this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K1 )));
 
     }
 
     try {
-      assertNull(this.durableClientVM.invoke(
-          DurableRegistrationDUnitTest.class, "getValue", new Object[] { K3 }));
+      assertNull(this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K3 )));
     }
     catch (Exception e) {
       fail("Prob in KEY_STONE3: "
-          + this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-              "getValue", new Object[] { K3 }));
+          + this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue( K3 )));
 
     }
 
     // Stop the durable client
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 2
-    this.server2VM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.server2VM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 1
-    this.server1VM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
 
   }
 
@@ -461,21 +384,19 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     // Step 1: Start server1
     PORT2 = new Integer(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
     
-    PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true)
-             })).intValue();
+    PORT1 = ((Integer)this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true)
+             ))).intValue();
     
 
     // Step 2: Bring Up the Client
     final String durableClientId = getName() + "_client";
     // keep the client alive for 600 seconds
     final int durableClientTimeout = 600;
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
-        new Object[] {
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
             getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 1),
             regionName,
             getClientDistributedSystemProperties(durableClientId,
-                durableClientTimeout) });
+                durableClientTimeout) ));
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable(
@@ -486,20 +407,15 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     });
 
     // Step 3: Client registers Interests
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K1, new Boolean(false) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K2, new Boolean(false) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K3, new Boolean(true) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K4, new Boolean(true) });
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K1, new Boolean(false) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K2, new Boolean(false) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K3, new Boolean(true) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K4, new Boolean(true) ));
 
     // Step 4: Bring up the server2
 
-    this.server2VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-             PORT2 });
+    this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true),
+             PORT2 ));
 
     Wait.pause(3000);
 
@@ -546,13 +462,13 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
 
     // Stop the durable client
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 2
-    this.server2VM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.server2VM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 1
-    this.server1VM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
 
   }
 
@@ -561,21 +477,19 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     // Step 1: Start server1
     PORT2 = new Integer(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
     
-    PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true)
-             })).intValue();
+    PORT1 = ((Integer)this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true)
+             ))).intValue();
     
 
     // Step 2: Bring Up the Client
     final String durableClientId = getName() + "_client";
     // keep the client alive for 600 seconds
     final int durableClientTimeout = 600;
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
-        new Object[] {
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
             getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 1),
             regionName,
             getClientDistributedSystemProperties(durableClientId,
-                durableClientTimeout) });
+                durableClientTimeout) ));
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable(
@@ -586,28 +500,22 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     });
 
     // Step 3: Client registers Interests
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K1, new Boolean(false) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K2, new Boolean(false) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K3, new Boolean(true) });
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "registerKey", new Object[] { K4, new Boolean(true) });
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K1, new Boolean(false) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K2, new Boolean(false) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K3, new Boolean(true) ));
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.registerKey( K4, new Boolean(true) ));
 
     // Close Cache of the DurableClient
-    this.durableClientVM.invoke(DurableRegistrationDUnitTest.class,
-        "closeCache");
+    this.durableClientVM.invoke(() -> DurableRegistrationDUnitTest.closeCache());
 
     Wait.pause(2000);
 
     //Re-start the Client
     this.durableClientVM
-        .invoke(CacheServerTestUtil.class, "createCacheClient",
-            new Object[] { getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 1),
+        .invoke(() -> CacheServerTestUtil.createCacheClient( getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true, 1),
                 regionName,
                 getClientDistributedSystemProperties(durableClientId),
-                Boolean.TRUE });
+                Boolean.TRUE ));
 
     //Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable(
@@ -618,9 +526,8 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     });
 
     // Step 4: Bring up the server2
-    this.server2VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-             PORT2 });
+    this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true),
+             PORT2 ));
 
     Wait.pause(3000);
 
@@ -666,13 +573,13 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
 
     // Stop the durable client
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 2
-    this.server2VM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.server2VM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 1
-    this.server1VM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
 
   }
 

@@ -169,15 +169,11 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    int PORT1 = ((Integer)server1.invoke(EventIdOptimizationDUnitTest.class,
-        "createServerCache")).intValue();
-    int PORT2 = ((Integer)server2.invoke(EventIdOptimizationDUnitTest.class,
-        "createServerCache")).intValue();
+    int PORT1 = ((Integer)server1.invoke(() -> EventIdOptimizationDUnitTest.createServerCache())).intValue();
+    int PORT2 = ((Integer)server2.invoke(() -> EventIdOptimizationDUnitTest.createServerCache())).intValue();
 
-    client1.invoke(EventIdOptimizationDUnitTest.class, "createClientCache1",
-        new Object[] { NetworkUtils.getServerHostName(host), new Integer(PORT1) });
-    client2.invoke(EventIdOptimizationDUnitTest.class, "createClientCache2",
-        new Object[] { NetworkUtils.getServerHostName(host), new Integer(PORT2) });
+    client1.invoke(() -> EventIdOptimizationDUnitTest.createClientCache1( NetworkUtils.getServerHostName(host), new Integer(PORT1) ));
+    client2.invoke(() -> EventIdOptimizationDUnitTest.createClientCache2( NetworkUtils.getServerHostName(host), new Integer(PORT2) ));
 
   }
 
@@ -388,10 +384,8 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
    */
   public void testEventIdOptimizationByPutOperation() throws Exception
   {
-    client1.invoke(EventIdOptimizationDUnitTest.class,
-        "generateEventsByPutOperation");
-    client2.invoke(EventIdOptimizationDUnitTest.class,
-        "verifyEventIdsOnClient2");
+    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByPutOperation());
+    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
 
   }
 
@@ -405,10 +399,8 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
    */
   public void testEventIdOptimizationByDestroyEntryOperation() throws Exception
   {
-    client1.invoke(EventIdOptimizationDUnitTest.class,
-        "generateEventsByDestroyEntryOperation");
-    client2.invoke(EventIdOptimizationDUnitTest.class,
-        "verifyEventIdsOnClient2");
+    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByDestroyEntryOperation());
+    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
   }
 
   /**
@@ -422,10 +414,8 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
   public void testEventIdOptimizationByDestroyRegionOperation()
       throws Exception
   {
-    client1.invoke(EventIdOptimizationDUnitTest.class,
-        "generateEventsByDestroyRegionOperation");
-    client2.invoke(EventIdOptimizationDUnitTest.class,
-        "verifyEventIdsOnClient2");
+    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByDestroyRegionOperation());
+    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
   }
 
   /**
@@ -438,10 +428,8 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
    */
   public void testEventIdOptimizationByClearRegionOperation() throws Exception
   {
-    client1.invoke(EventIdOptimizationDUnitTest.class,
-        "generateEventsByClearRegionOperation");
-    client2.invoke(EventIdOptimizationDUnitTest.class,
-        "verifyEventIdsOnClient2");
+    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByClearRegionOperation());
+    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
   }
 
   /**
@@ -513,11 +501,11 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     // close client
-    client1.invoke(EventIdOptimizationDUnitTest.class, "closeCache");
-    client2.invoke(EventIdOptimizationDUnitTest.class, "closeCache");
+    client1.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
+    client2.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
     // close server
-    server1.invoke(EventIdOptimizationDUnitTest.class, "closeCache");
-    server2.invoke(EventIdOptimizationDUnitTest.class, "closeCache");
+    server1.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
+    server2.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
   }
 
   /**

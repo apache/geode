@@ -59,10 +59,8 @@ public class Bug48879DUnitTest extends DistributedTestCase {
     vm0 = host.getVM(0); // server1
     vm1 = host.getVM(1); // server2
 
-    int port0 = (Integer) vm0.invoke(Bug48879DUnitTest.class,
-        "createCacheServer", new Object[] { });
-    int port1 = (Integer) vm1.invoke(Bug48879DUnitTest.class,
-        "createCacheServer", new Object[] { });
+    int port0 = (Integer) vm0.invoke(() -> Bug48879DUnitTest.createCacheServer( ));
+    int port1 = (Integer) vm1.invoke(() -> Bug48879DUnitTest.createCacheServer( ));
 
     createClientCache(host, new Integer[] {port0, port1}, Boolean.TRUE);
   }
@@ -71,8 +69,8 @@ public class Bug48879DUnitTest extends DistributedTestCase {
   protected final void preTearDown() throws Exception {
     closeCache();
 
-    vm0.invoke(Bug48879DUnitTest.class, "closeCache");
-    vm1.invoke(Bug48879DUnitTest.class, "closeCache");
+    vm0.invoke(() -> Bug48879DUnitTest.closeCache());
+    vm1.invoke(() -> Bug48879DUnitTest.closeCache());
   }
 
   public static void closeCache() throws Exception {
@@ -206,16 +204,16 @@ public class Bug48879DUnitTest extends DistributedTestCase {
     // put events in region
     int threads = 10;
     int putsPerThread = 1;
-    vm0.invoke(Bug48879DUnitTest.class, "doPuts", new Object[] {threads, putsPerThread});
-    vm0.invoke(Bug48879DUnitTest.class, "verifyThreadsBeforeExpiry", new Object[] {threads});
-    vm1.invoke(Bug48879DUnitTest.class, "verifyThreadsBeforeExpiry", new Object[] {threads});
+    vm0.invoke(() -> Bug48879DUnitTest.doPuts(threads, putsPerThread));
+    vm0.invoke(() -> Bug48879DUnitTest.verifyThreadsBeforeExpiry(threads));
+    vm1.invoke(() -> Bug48879DUnitTest.verifyThreadsBeforeExpiry(threads));
     // sleep till expiry time elapses
     Thread.sleep(SLEEP_TIME*2 + 30000);
 
     // Assert that threadidentifiers are expired and region events are retained on primary server
-    vm0.invoke(Bug48879DUnitTest.class, "verifyStats", new Object[] {threads*putsPerThread, threads});
+    vm0.invoke(() -> Bug48879DUnitTest.verifyStats(threads*putsPerThread, threads));
     // Assert that region events and threadidentifiers are expired on secondary server.
-    vm1.invoke(Bug48879DUnitTest.class, "verifyStats", new Object[] {threads*putsPerThread, threads});
+    vm1.invoke(() -> Bug48879DUnitTest.verifyStats(threads*putsPerThread, threads));
   }
 }
 

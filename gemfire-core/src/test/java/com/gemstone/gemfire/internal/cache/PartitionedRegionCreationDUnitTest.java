@@ -240,7 +240,7 @@ public class PartitionedRegionCreationDUnitTest extends
       }
     };
 
-    Thread th = new Thread(createAccessorPR);
+    Thread th = new Thread(() -> createAccessorPR.run());
     th.start();
 
     async[0] = vm0.invokeAsync(createPR);

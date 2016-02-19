@@ -62,16 +62,14 @@ public class Bug36829DUnitTest extends DistributedTestCase {
 
     final int durableClientTimeout = 600; // keep the client alive for 600
 
-    PORT = ((Integer)this.serverVM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { "DUMMY_REGION", new Boolean(true)
-          })).intValue();
+    PORT = ((Integer)this.serverVM.invoke(() -> CacheServerTestUtil.createCacheServer( "DUMMY_REGION", new Boolean(true)
+          ))).intValue();
 
-    this.ClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
-        new Object[] {
+    this.ClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
             getClientPool(NetworkUtils.getServerHostName(ClientVM.getHost()), PORT, true, 0),
             regionName,
             getClientDistributedSystemProperties(durableClientId,
-                durableClientTimeout), Boolean.TRUE });
+                durableClientTimeout), Boolean.TRUE ));
 
     // Send clientReady message
     this.ClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
@@ -82,23 +80,20 @@ public class Bug36829DUnitTest extends DistributedTestCase {
 
     // We expect in registerKey() that the RegionNotFoundException is thrown.
     // If exception is not thrown then the test fails.
-    this.ClientVM.invoke(Bug36829DUnitTest.class, "registerKey",
-        new Object[] { "Key1" });
+    this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKey( "Key1" ));
 
 
     // creating REgion on the Server
-/*    this.serverVM.invoke(CacheServerTestUtil.class, "createRegion",
-        new Object[] { regionName });
+/*    this.serverVM.invoke(() -> CacheServerTestUtil.createRegion( regionName ));
      // should be successful.
-    this.ClientVM.invoke(Bug36829DUnitTest.class, "registerKeyAfterRegionCreation",
-        new Object[] { "Key1" });*/
+    this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKeyAfterRegionCreation( "Key1" ));*/
 
 
     // Stop the durable client
-    this.ClientVM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.ClientVM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 1
-    this.serverVM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.serverVM.invoke(() -> CacheServerTestUtil.closeCache());
 
   }
 

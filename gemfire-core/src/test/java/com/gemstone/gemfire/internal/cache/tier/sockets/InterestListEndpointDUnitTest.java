@@ -62,15 +62,15 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 public class InterestListEndpointDUnitTest extends DistributedTestCase
 {
 
-  static VM server1 = null;
+  VM server1 = null;
 
   static VM server2 = null;
 
   static VM client1 = null;
 
   protected static Cache cache = null;
-  private static int PORT1;
-  private static int PORT2;
+  private int PORT1;
+  private int PORT2;
 
   private static Connection conn1 ;
   private static PoolImpl pool;
@@ -110,8 +110,8 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
 
     // then create client
     Wait.pause(5000);  // [bruce] avoid ConnectException
-    client1.invoke(impl.getClass(), "createClientCache", new Object[] {
-      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)});
+    client1.invoke(() -> impl.createClientCache(
+      NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)));
 
   }
 
@@ -133,14 +133,14 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
    */
   public void testDirectPutOnServer()
   {
-    client1.invoke(impl.getClass(), "createEntriesK1andK2");
-    server1.invoke(impl.getClass(), "createEntriesK1andK2");
-    server2.invoke(impl.getClass(), "createEntriesK1andK2");
+    client1.invoke(() -> impl.createEntriesK1andK2());
+    server1.invoke(() -> impl.createEntriesK1andK2());
+    server2.invoke(() -> impl.createEntriesK1andK2());
 
-    client1.invoke(impl.getClass(), "registerKey1");
+    client1.invoke(() -> impl.registerKey1());
     //directly put on server
-    server1.invoke(impl.getClass(), "put");
-    client1.invoke(impl.getClass(), "verifyPut");
+    server1.invoke(() -> impl.put());
+    client1.invoke(() -> impl.verifyPut());
   }
  /**
   * put on non interest list ep and verify updates
@@ -148,30 +148,30 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
   */
   public void testInterestListEndpoint()
   {
-    client1.invoke(impl.getClass(), "createEntriesK1andK2");
-    server2.invoke(impl.getClass(), "createEntriesK1andK2"); // server
-    server1.invoke(impl.getClass(), "createEntriesK1andK2"); // server
+    client1.invoke(() -> createEntriesK1andK2());
+    server2.invoke(() -> createEntriesK1andK2()); // server
+    server1.invoke(() -> createEntriesK1andK2()); // server
 
-    client1.invoke(impl.getClass(), "registerKey1");
+    client1.invoke(() -> registerKey1());
 
-    server1.invoke(impl.getClass(), "verifyIfNotInterestListEndpointAndThenPut");
-    server2.invoke(impl.getClass(), "verifyIfNotInterestListEndpointAndThenPut");
-    client1.invoke(impl.getClass(), "verifyPut");
+    server1.invoke(() -> verifyIfNotInterestListEndpointAndThenPut());
+    server2.invoke(() -> verifyIfNotInterestListEndpointAndThenPut());
+    client1.invoke(() -> verifyPut());
   }
 
   public void testInterestListEndpointAfterFailover() throws Exception
   {
     final long maxWaitTime = 20000;
-    client1.invoke(impl.getClass(), "createEntriesK1andK2");
-    server2.invoke(impl.getClass(), "createEntriesK1andK2");
-    server1.invoke(impl.getClass(), "createEntriesK1andK2");
+    client1.invoke(() -> createEntriesK1andK2());
+    server2.invoke(() -> createEntriesK1andK2());
+    server1.invoke(() -> createEntriesK1andK2());
 
-    client1.invoke(impl.getClass(), "registerKey1");
+    client1.invoke(() -> registerKey1());
 
     boolean firstIsPrimary = isVm0Primary();
     VM primary = firstIsPrimary? server1 : server2;
 
-    primary.invoke(impl.getClass(), "stopILEndpointServer");
+    primary.invoke(() -> stopILEndpointServer());
     Wait.pause(5000);
 
     //Since the loadbalancing policy is roundrobin & there are two servers so
@@ -210,13 +210,13 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
     });
 
     //put on stopped server
-    primary.invoke(impl.getClass(), "put");
-    client1.invoke(impl.getClass(), "verifyPut");
+    primary.invoke(() -> put());
+    client1.invoke(() -> verifyPut());
   }
 
 
-  public static boolean isVm0Primary() throws Exception {
-    int port = ((Integer)client1.invoke(impl.getClass(), "getPrimaryPort")).intValue();
+  public boolean isVm0Primary() throws Exception {
+    int port = ((Integer)client1.invoke(() -> impl.getPrimaryPort())).intValue();
     return port == PORT1;
   }
 
@@ -232,9 +232,9 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
 
 
  public void testUpdaterThreadIsAliveForFailedEndPoint(){
-      client1.invoke(impl.getClass(), "acquirePoolConnection");
-      client1.invoke(impl.getClass(), "processException");
-      client1.invoke(impl.getClass(), "verifyUpdaterThreadIsAlive");
+      client1.invoke(() -> acquirePoolConnection());
+      client1.invoke(() -> processException());
+      client1.invoke(() -> verifyUpdaterThreadIsAlive());
  }
 
  public static void acquirePoolConnection()
@@ -493,9 +493,9 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     // Close client cache first, then server caches
-    client1.invoke(impl.getClass(), "closeCache");
-    server2.invoke(impl.getClass(), "closeCache");
-    server1.invoke(impl.getClass(), "closeCache");
+    client1.invoke(() -> impl.closeCache());
+    server2.invoke(() -> impl.closeCache());
+    server1.invoke(() -> impl.closeCache());
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });

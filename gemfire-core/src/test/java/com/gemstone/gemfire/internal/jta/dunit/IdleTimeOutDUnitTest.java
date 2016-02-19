@@ -256,15 +256,14 @@ public class IdleTimeOutDUnitTest extends DistributedTestCase {
   @Override
   protected final void preTearDown() throws Exception {
     VM vm0 = Host.getHost(0).getVM(0);
-    vm0.invoke(IdleTimeOutDUnitTest.class, "closeCache");
+    vm0.invoke(() -> IdleTimeOutDUnitTest.closeCache());
   }
 
   public void testIdleTimeOut() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(IdleTimeOutDUnitTest.class, "runTest1");
-    AsyncInvocation asyncObj = vm0.invokeAsync(IdleTimeOutDUnitTest.class,
-        "runTest2");
+    vm0.invoke(() -> IdleTimeOutDUnitTest.runTest1());
+    AsyncInvocation asyncObj = vm0.invokeAsync(() -> IdleTimeOutDUnitTest.runTest2());
     ThreadUtils.join(asyncObj, 30 * 1000);
     if(asyncObj.exceptionOccurred()){
       Assert.fail("asyncObj failed", asyncObj.getException());

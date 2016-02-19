@@ -252,10 +252,10 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     boolean cacheClientSslenabled = true;
     boolean cacheClientSslRequireAuth = true;
     
-    serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpServerVMTask", new Object[]{cacheServerSslenabled});
-    serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "createServerTask");
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.setUpServerVMTask(cacheServerSslenabled));
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.createServerTask());
     
-    Object array[] = (Object[])serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "getCacheServerEndPointTask"); 
+    Object array[] = (Object[])serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.getCacheServerEndPointTask()); 
     String hostName = (String)array[0];
     int port = (Integer) array[1];
     Object params[] = new Object[6];
@@ -267,8 +267,8 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     params[5] = CLIENT_TRUST_STORE;
     //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);
     clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpClientVMTask", params);
-    clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "doClientRegionTestTask");
-    serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "doServerRegionTestTask");
+    clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
     
   }
   
@@ -282,10 +282,10 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     boolean cacheClientSslenabled = false;
     boolean cacheClientSslRequireAuth = true;
     
-    serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpServerVMTask", new Object[]{cacheServerSslenabled});
-    serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "createServerTask");
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.setUpServerVMTask(cacheServerSslenabled));
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.createServerTask());
     
-    Object array[] = (Object[])serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "getCacheServerEndPointTask"); 
+    Object array[] = (Object[])serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.getCacheServerEndPointTask()); 
     String hostName = (String)array[0];
     int port = (Integer) array[1];
     Object params[] = new Object[6];
@@ -300,8 +300,8 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     try{
       //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);    
       clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpClientVMTaskNoSubscription", params);
-      clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "doClientRegionTestTask");
-      serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "doServerRegionTestTask");
+      clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
+      serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
       fail("Test should fail as non-ssl client is trying to connect to ssl configured server");
     } catch (Exception rmiException) {
       Throwable e = rmiException.getCause();
@@ -330,10 +330,10 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     boolean cacheClientSslenabled = true;
     boolean cacheClientSslRequireAuth = false;
 
-    serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpServerVMTask", new Object[]{cacheServerSslenabled});
-    serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "createServerTask");
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.setUpServerVMTask(cacheServerSslenabled));
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.createServerTask());
 
-    Object array[] = (Object[])serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "getCacheServerEndPointTask"); 
+    Object array[] = (Object[])serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.getCacheServerEndPointTask()); 
     String hostName = (String)array[0];
     int port = (Integer) array[1];
     Object params[] = new Object[6];
@@ -346,8 +346,8 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);
     try {
       clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpClientVMTask", params);
-      clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "doClientRegionTestTask");
-      serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "doServerRegionTestTask");
+      clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
+      serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
     } catch (Exception rmiException) {
       Throwable e = rmiException.getCause();
       //getLogWriter().info("ExceptionCause at clientVM " + e);
@@ -372,10 +372,10 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     boolean cacheClientSslenabled = true;
     boolean cacheClientSslRequireAuth = true;
     
-    serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpServerVMTask", new Object[]{cacheServerSslenabled});
-    serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "createServerTask");
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.setUpServerVMTask(cacheServerSslenabled));
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.createServerTask());
     
-    Object array[] = (Object[])serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "getCacheServerEndPointTask"); 
+    Object array[] = (Object[])serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.getCacheServerEndPointTask()); 
     String hostName = (String)array[0];
     int port = (Integer) array[1];
     Object params[] = new Object[6];
@@ -389,8 +389,8 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     try{
       //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);    
       clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpClientVMTask", params);
-      clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "doClientRegionTestTask");
-      serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "doServerRegionTestTask");
+      clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
+      serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
       fail("Test should fail as ssl client with ssl enabled is trying to connect to server with ssl disabled");
     }catch (Exception rmiException) {
       
@@ -417,8 +417,8 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
     VM clientVM = host.getVM(2);
-    clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "closeClientCacheTask");
-    serverVM.invoke(CacheServerSSLConnectionDUnitTest.class, "closeCacheTask");
+    clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.closeClientCacheTask());
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.closeCacheTask());
   }
 }
 

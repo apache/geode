@@ -63,7 +63,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
   private static Cache cacheClient = null;
   private static Cache cacheFeeder = null;
   private static Cache cacheServer = null;
-  private static int PORT ;
+  private int PORT ;
   private static int poolNameCounter = 0;
   private static final String REGION_NAME1 = "ClientConflationDUnitTest_region1" ;
   private static final String REGION_NAME2 = "ClientConflationDUnitTest_region2" ;
@@ -81,8 +81,8 @@ public class ClientConflationDUnitTest extends DistributedTestCase
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     setIsSlowStart();
-    vm0.invoke(ClientConflationDUnitTest.class, "setIsSlowStart");
-    PORT =  ((Integer)vm0.invoke(ClientConflationDUnitTest.class, "createServerCache" )).intValue();
+    vm0.invoke(() -> ClientConflationDUnitTest.setIsSlowStart());
+    PORT =  ((Integer)vm0.invoke(() -> ClientConflationDUnitTest.createServerCache())).intValue();
   }
 
   private Cache createCache(Properties props) throws Exception
@@ -134,19 +134,19 @@ public class ClientConflationDUnitTest extends DistributedTestCase
   
   private void performSteps(String conflation) throws Exception {
     createClientCacheFeeder(NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT));
-    vm1.invoke(ClientConflationDUnitTest.class, "createClientCache", new Object[] { NetworkUtils.getServerHostName(vm1.getHost()), new Integer(PORT),
-      conflation});
-    vm1.invoke(ClientConflationDUnitTest.class, "setClientServerObserverForBeforeInterestRecovery");
-    vm1.invoke(ClientConflationDUnitTest.class, "setAllCountersZero");
-    vm1.invoke(ClientConflationDUnitTest.class, "assertAllCountersZero");
-    vm1.invoke(ClientConflationDUnitTest.class, "registerInterest");
+    vm1.invoke(() -> ClientConflationDUnitTest.createClientCache( NetworkUtils.getServerHostName(vm1.getHost()), new Integer(PORT),
+      conflation));
+    vm1.invoke(() -> ClientConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
+    vm1.invoke(() -> ClientConflationDUnitTest.setAllCountersZero());
+    vm1.invoke(() -> ClientConflationDUnitTest.assertAllCountersZero());
+    vm1.invoke(() -> ClientConflationDUnitTest.registerInterest());
     putEntries();
-    vm0.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
+    vm0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
     Thread.sleep(20000);
-    vm0.invoke(ClientConflationDUnitTest.class, "assertAllQueuesEmpty");
+    vm0.invoke(() -> ClientConflationDUnitTest.assertAllQueuesEmpty());
     
-    vm1.invoke(ClientConflationDUnitTest.class, "assertCounterSizes", new Object[] {conflation});
-    vm1.invoke(ClientConflationDUnitTest.class, "assertValue");
+    vm1.invoke(() -> ClientConflationDUnitTest.assertCounterSizes(conflation));
+    vm1.invoke(() -> ClientConflationDUnitTest.assertValue());
   }
   
   /**
@@ -532,9 +532,9 @@ public class ClientConflationDUnitTest extends DistributedTestCase
   protected final void preTearDown() throws Exception {
     // close client
     closeCacheFeeder();
-    vm1.invoke(ClientConflationDUnitTest.class, "closeCacheClient");
+    vm1.invoke(() -> ClientConflationDUnitTest.closeCacheClient());
     // close server
-    vm0.invoke(ClientConflationDUnitTest.class, "closeCacheServer");
+    vm0.invoke(() -> ClientConflationDUnitTest.closeCacheServer());
   }
 }
 

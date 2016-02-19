@@ -62,7 +62,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     try {
       createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 0);
       verifyOrderOfEndpoints();
-      server2.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
       //pause(5000);      
       verifyLiveAndRedundantServers(3, 0);
       verifyOrderOfEndpoints();
@@ -111,7 +111,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 0, 3000, 100);
       assertTrue(pool.getPrimaryName().equals(SERVER1));
       verifyOrderOfEndpoints();
-      server0.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server0.invoke(() -> RedundancyLevelTestBase.stopServer());
       // pause(5000);
       verifyLiveAndRedundantServers(3, 0);
       verifyOrderOfEndpoints();
@@ -156,7 +156,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       assertTrue(pool.getRedundantNames().contains(SERVER2));
       //assertEquals(0, proxy.getDeadServers().size());
       verifyOrderOfEndpoints();
-      server2.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
       //pause(5000);
       verifyDeadServers(1);
       verifyRedundantServersContain(SERVER2);
@@ -196,7 +196,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       assertTrue(pool.getRedundantNames().contains(SERVER4));
       //assertEquals(0, proxy.getDeadServers().size());
       verifyOrderOfEndpoints();
-      server2.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
       // pause(5000);
       verifyDeadServers(1);
       verifyRedundantServersContain(SERVER4);
@@ -233,7 +233,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       assertTrue(pool.getRedundantNames().contains(SERVER4));
       //assertEquals(0, proxy.getDeadServers().size());
       verifyOrderOfEndpoints();
-      server2.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
       // pause(5000);
       createEntriesK1andK2();
       registerK1AndK2();
@@ -273,7 +273,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       assertTrue(pool.getRedundantNames().contains(SERVER4));
       //assertEquals(0, proxy.getDeadServers().size());
       verifyOrderOfEndpoints();
-      server2.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
       // pause(5000);
       unregisterInterest();
       verifyDeadServers(1);
@@ -311,7 +311,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       assertTrue(pool.getRedundantNames().contains(SERVER2));
       //assertEquals(0, proxy.getDeadServers().size());
       verifyOrderOfEndpoints();
-      server2.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
       // pause(5000);
       doPuts();
       verifyDeadServers(1);
@@ -350,7 +350,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       assertTrue(pool.getRedundantNames().contains(SERVER2));
       //assertEquals(0, proxy.getDeadServers().size());
       verifyOrderOfEndpoints();
-      server1.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server1.invoke(() -> RedundancyLevelTestBase.stopServer());
       //pause(5000);
       verifyDeadServers(1);
       verifyRedundantServersContain(SERVER3);
@@ -359,8 +359,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       //      assertTrue(pool.getRedundantNames()
       //          .contains(SERVER1));
       verifyOrderOfEndpoints();
-      server2.invoke(RedundancyLevelTestBase.class,
-          "verifyInterestRegistration");
+      server2.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       //assertEquals(3, pool.getConnectedServerCount());
       //assertEquals(1, proxy.getDeadServers().size());
     }
@@ -391,7 +390,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       assertTrue(pool.getRedundantNames().contains(SERVER2));
       //assertEquals(0, proxy.getDeadServers().size());
       verifyOrderOfEndpoints();
-      server1.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server1.invoke(() -> RedundancyLevelTestBase.stopServer());
       // pause(5000);
       verifyDeadServers(1);
       verifyRedundantServersContain(SERVER3);
@@ -400,8 +399,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       // assertTrue(pool.getRedundantNames()
       // .contains(SERVER1));
       verifyOrderOfEndpoints();
-      server2.invoke(RedundancyLevelTestBase.class,
-          "verifyInterestRegistration");
+      server2.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       // assertEquals(3, pool.getConnectedServerCount());
       //assertEquals(1, proxy.getDeadServers().size());
     }
@@ -430,7 +428,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       assertTrue(pool.getRedundantNames().contains(SERVER2));
       //assertEquals(0, proxy.getDeadServers().size());
       verifyOrderOfEndpoints();
-      server1.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server1.invoke(() -> RedundancyLevelTestBase.stopServer());
       // pause(5000);
       createEntriesK1andK2();
       registerK1AndK2();
@@ -441,8 +439,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       // assertTrue(pool.getRedundantNames()
       // .contains(SERVER1));
       verifyOrderOfEndpoints();
-      server2.invoke(RedundancyLevelTestBase.class,
-          "verifyInterestRegistration");
+      server2.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       // assertEquals(3, pool.getConnectedServerCount());
       //assertEquals(1, proxy.getDeadServers().size());
     }
@@ -471,7 +468,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       assertTrue(pool.getRedundantNames().contains(SERVER2));
       //assertEquals(0, proxy.getDeadServers().size());
       verifyOrderOfEndpoints();
-      server1.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server1.invoke(() -> RedundancyLevelTestBase.stopServer());
       // pause(5000);
       unregisterInterest();
       verifyDeadServers(1);
@@ -511,7 +508,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       assertTrue(pool.getRedundantNames().contains(SERVER2));
       //assertEquals(0, proxy.getDeadServers().size());
       verifyOrderOfEndpoints();
-      server1.invoke(RedundancyLevelTestBase.class, "stopServer");
+      server1.invoke(() -> RedundancyLevelTestBase.stopServer());
       // pause(5000);
       doPuts();
       System.out.println("server1="+SERVER1);
@@ -525,8 +522,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       // assertTrue(pool.getRedundantNames()
       // .contains(SERVER1));
       verifyOrderOfEndpoints();
-      server2.invoke(RedundancyLevelTestBase.class,
-          "verifyInterestRegistration");
+      server2.invoke(() -> RedundancyLevelTestBase.verifyInterestRegistration());
       // assertEquals(3, pool.getConnectedServerCount());
       //assertEquals(1, proxy.getDeadServers().size());
     }

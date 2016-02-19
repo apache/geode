@@ -70,8 +70,7 @@ public class TestLocatorsDUnitTest extends ManagementTestBase {
 
   public void testLocatorsDUnitTest() throws Exception {
     initManagement(false);
-    int locatorCount = ((Number) managingNode.invoke(
-        TestLocatorsDUnitTest.class, "getNumOfLocatorFromMBean")).intValue();
+    int locatorCount = ((Number) managingNode.invoke(() -> TestLocatorsDUnitTest.getNumOfLocatorFromMBean())).intValue();
     LogWriterUtils.getLogWriter().info("TestLocatorsDUnitTest locatorCount =" + locatorCount);
     assertEquals(1, locatorCount);
 

@@ -78,7 +78,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
   private static final int cntDest = 100;
 
-  static VM server1 = null;
+  VM server1 = null;
 
   static VM server2 = null;
 
@@ -713,44 +713,37 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   private void createServersWithRegions() {
     //Create caches
     Properties props = new Properties();
-    server1.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
-    server2.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
-    server3.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
+    server1.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
+    server2.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
+    server3.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
 
     //Create Cache Servers
-    Integer port1 = (Integer)server1.invoke(PRClientServerTestBase.class,
-    "createCacheServer");
-    Integer port2 = (Integer)server2.invoke(PRClientServerTestBase.class,
-        "createCacheServer");
-    Integer port3 = (Integer)server3.invoke(PRClientServerTestBase.class,
-        "createCacheServer");
+    Integer port1 = (Integer)server1.invoke(() -> PRClientServerTestBase.createCacheServer());
+    Integer port2 = (Integer)server2.invoke(() -> PRClientServerTestBase.createCacheServer());
+    Integer port3 = (Integer)server3.invoke(() -> PRClientServerTestBase.createCacheServer());
     serverPort1 = port1;
     serverPort2 = port2;
     serverPort3 = port3;
 
     //Create client cache without regions
-    client.invoke(QueryUsingFunctionContextDUnitTest.class, "createCacheClientWithoutRegion",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
-            port3 });
+    client.invoke(() -> QueryUsingFunctionContextDUnitTest.createCacheClientWithoutRegion( NetworkUtils.getServerHostName(server1.getHost()), port1, port2,
+            port3 ));
 
     //Create proxy regions on client.
-    client.invoke(QueryUsingFunctionContextDUnitTest.class, "createProxyRegions");
+    client.invoke(() -> QueryUsingFunctionContextDUnitTest.createProxyRegions());
 
     //Create local Region on servers
-    server1.invoke(QueryUsingFunctionContextDUnitTest.class, "createLocalRegion");
+    server1.invoke(() -> QueryUsingFunctionContextDUnitTest.createLocalRegion());
 
     //Create ReplicatedRegion on servers
-    server1.invoke(QueryUsingFunctionContextDUnitTest.class, "createReplicatedRegion");
-    server2.invoke(QueryUsingFunctionContextDUnitTest.class, "createReplicatedRegion");
-    server3.invoke(QueryUsingFunctionContextDUnitTest.class, "createReplicatedRegion");
+    server1.invoke(() -> QueryUsingFunctionContextDUnitTest.createReplicatedRegion());
+    server2.invoke(() -> QueryUsingFunctionContextDUnitTest.createReplicatedRegion());
+    server3.invoke(() -> QueryUsingFunctionContextDUnitTest.createReplicatedRegion());
 
     //Create two colocated PartitionedRegions On Servers.
-    server1.invoke(QueryUsingFunctionContextDUnitTest.class, "createColocatedPR");
-    server2.invoke(QueryUsingFunctionContextDUnitTest.class, "createColocatedPR");
-    server3.invoke(QueryUsingFunctionContextDUnitTest.class, "createColocatedPR");
+    server1.invoke(() -> QueryUsingFunctionContextDUnitTest.createColocatedPR());
+    server2.invoke(() -> QueryUsingFunctionContextDUnitTest.createColocatedPR());
+    server3.invoke(() -> QueryUsingFunctionContextDUnitTest.createColocatedPR());
 
   }
 

@@ -67,41 +67,32 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM puneLocator = Host.getLocator();
 
-    int punePort = (Integer) puneLocator.invoke(
-        TestRemoteClusterDUnitTest.class, "getLocatorPort");
+    int punePort = (Integer) puneLocator.invoke(() -> TestRemoteClusterDUnitTest.getLocatorPort());
 
-    Integer nyPort = (Integer) nyLocator.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 12, punePort });
+    Integer nyPort = (Integer) nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator( 12, punePort ));
 
-    puneSender.invoke(WANTestBase.class, "createCache",
-        new Object[] { punePort });
-    managing.invoke(WANTestBase.class, "createManagementCache",
-        new Object[] { punePort });
+    puneSender.invoke(() -> WANTestBase.createCache( punePort ));
+    managing.invoke(() -> WANTestBase.createManagementCache( punePort ));
     startManagingNode(managing);
 
-    puneSender.invoke(WANTestBase.class, "createSender", new Object[] { "pn",
-        12, true, 100, 300, false, false, null, true });
-    managing.invoke(WANTestBase.class, "createSender", new Object[] { "pn", 12,
-        true, 100, 300, false, false, null, true });
+    puneSender.invoke(() -> WANTestBase.createSender( "pn",
+        12, true, 100, 300, false, false, null, true ));
+    managing.invoke(() -> WANTestBase.createSender( "pn", 12,
+        true, 100, 300, false, false, null, true ));
 
-    puneSender.invoke(WANTestBase.class, "createPartitionedRegion",
-        new Object[] { getTestMethodName() + "_PR", "pn", 1, 100, false });
-    managing.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName() + "_PR", "pn", 1, 100, false });
+    puneSender.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", "pn", 1, 100, false ));
+    managing.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName() + "_PR", "pn", 1, 100, false ));
 
-    nyReceiver.invoke(WANTestBase.class, "createReceiver",
-        new Object[] { nyPort });
-    nyReceiver.invoke(WANTestBase.class, "createPartitionedRegion",
-        new Object[] { getTestMethodName() + "_PR", null, 1, 100, false });
+    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
 
-    puneSender.invoke(WANTestBase.class, "startSender", new Object[] { "pn" });
-    managing.invoke(WANTestBase.class, "startSender", new Object[] { "pn" });
+    puneSender.invoke(() -> WANTestBase.startSender( "pn" ));
+    managing.invoke(() -> WANTestBase.startSender( "pn" ));
 
     // make sure all the senders are running before doing any puts
-    puneSender.invoke(WANTestBase.class, "waitForSenderRunningState",
-        new Object[] { "pn" });
-    managing.invoke(WANTestBase.class, "waitForSenderRunningState",
-        new Object[] { "pn" });
+    puneSender.invoke(() -> WANTestBase.waitForSenderRunningState( "pn" ));
+    managing.invoke(() -> WANTestBase.waitForSenderRunningState( "pn" ));
 
     checkSenderMBean(puneSender, getTestMethodName() + "_PR");
     checkSenderMBean(managing, getTestMethodName() + "_PR");
@@ -111,8 +102,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
     stopGatewaySender(puneSender);
     startGatewaySender(puneSender);
 
-    DistributedMember puneMember = (DistributedMember) puneSender.invoke(
-        TestRemoteClusterDUnitTest.class, "getMember");
+    DistributedMember puneMember = (DistributedMember) puneSender.invoke(() -> TestRemoteClusterDUnitTest.getMember());
 
     checkRemoteClusterStatus(managing, puneMember);
 

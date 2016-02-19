@@ -61,7 +61,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
 
   private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;
 
-  static Boolean isByName = null;
+  Boolean isByName = null;
 
   private static int retryCount = 0;
 
@@ -81,9 +81,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     Function function = new TestFunction(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = new Boolean(false);
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverAllKeyExecution", new Object[] { isByName });
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverAllKeyExecution( isByName ));
   }
 
   /*
@@ -91,9 +89,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
    */
   public void testServerGetAllFunction() {
     createScenario();
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "getAll");
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.getAll());
   }
 
   /*
@@ -101,9 +97,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
    */
   public void testServerPutAllFunction() {
     createScenario();
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "putAll");
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.putAll());
   }
 
   /*
@@ -115,9 +109,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     Function function = new TestFunction(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = new Boolean(true);
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverSingleKeyExecution", new Object[] { isByName });
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverSingleKeyExecution( isByName ));
   }
 
   /*
@@ -128,9 +120,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
    */
   public void testserverSingleKeyExecution_FunctionInvocationTargetException() {
     createScenario();
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverSingleKeyExecution_FunctionInvocationTargetException");
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverSingleKeyExecution_FunctionInvocationTargetException());
   }
   
   /*
@@ -145,15 +135,11 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     bucketFilterSet.add(3);
     bucketFilterSet.add(6);
     bucketFilterSet.add(8);
-    client.invoke(PRClientServerTestBase.class,
-        "serverBucketFilterExecution",
-        new Object[]{bucketFilterSet});
+    client.invoke(() -> PRClientServerTestBase.serverBucketFilterExecution(bucketFilterSet));
     bucketFilterSet.clear();
     //Test single filter
     bucketFilterSet.add(7);
-    client.invoke(PRClientServerTestBase.class,
-        "serverBucketFilterExecution",
-        new Object[]{bucketFilterSet});
+    client.invoke(() -> PRClientServerTestBase.serverBucketFilterExecution(bucketFilterSet));
   }
   
   public void testBucketFilterOverride(){
@@ -170,9 +156,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     keyFilterSet.add(75);
     keyFilterSet.add(25);
     
-    client.invoke(PRClientServerTestBase.class,
-        "serverBucketFilterOverrideExecution",
-        new Object[]{bucketFilterSet, keyFilterSet});   
+    client.invoke(() -> PRClientServerTestBase.serverBucketFilterOverrideExecution(bucketFilterSet, keyFilterSet));   
     
   }
 
@@ -182,9 +166,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
         TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
     registerFunctionAtServer(function);
     isByName = new Boolean(true);
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverSingleKeyExecutionSocketTimeOut", new Object[] { isByName });
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverSingleKeyExecutionSocketTimeOut( isByName ));
   }
 
   /*
@@ -196,9 +178,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     Function function = new TestFunction(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = new Boolean(false);
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverSingleKeyExecution", new Object[] { isByName });
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverSingleKeyExecution( isByName ));
   }
 
   /*
@@ -207,9 +187,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
    */
   public void testServerSingleKeyExecution_byInlineFunction() {
     createScenario();
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverSingleKeyExecution_Inline");
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverSingleKeyExecution_Inline());
   }
 
   /*
@@ -221,18 +199,10 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     Function function = new TestFunction(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = new Boolean(true);
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverMultiKeyExecution", new Object[] { isByName });
-    server1.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "checkBucketsOnServer");
-    server2.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "checkBucketsOnServer");
-    server3.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "checkBucketsOnServer");
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecution( isByName ));
+    server1.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.checkBucketsOnServer());
+    server2.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.checkBucketsOnServer());
+    server3.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.checkBucketsOnServer());
   }
 
   public void testserverMultiKeyExecution_SocektTimeOut() {
@@ -241,9 +211,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
         TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
     registerFunctionAtServer(function);
     isByName = new Boolean(true);
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverMultiKeyExecutionSocketTimeOut", new Object[] { isByName });
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecutionSocketTimeOut( isByName ));
   }
 
   /*
@@ -252,9 +220,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
    */
   public void testserverMultiKeyExecution_byInlineFunction() {
     createScenario();
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverMultiKeyExecution_Inline");
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecution_Inline());
   }
 
   /*
@@ -265,9 +231,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
    */
   public void testserverMultiKeyExecution_FunctionInvocationTargetException() {
     createScenario();
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverMultiKeyExecution_FunctionInvocationTargetException");
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecution_FunctionInvocationTargetException());
   }
 
   /*
@@ -279,9 +243,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     Function function = new TestFunction(false, TEST_FUNCTION7);
     registerFunctionAtServer(function);
     isByName = new Boolean(true);
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverMultiKeyExecutionNoResult", new Object[] { isByName });
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecutionNoResult( isByName ));
   }
 
   /*
@@ -293,9 +255,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     Function function = new TestFunction(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = new Boolean(false);
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverMultiKeyExecution", new Object[] { isByName });
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecution( isByName ));
   }
 
   /*
@@ -308,9 +268,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     Function function = new TestFunction(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = new Boolean(true);
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverMultiKeyExecutionOnASingleBucket", new Object[] { isByName });
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecutionOnASingleBucket( isByName ));
   }
 
   /*
@@ -323,9 +281,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     Function function = new TestFunction(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = new Boolean(false);
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "serverMultiKeyExecutionOnASingleBucket", new Object[] { isByName });
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecutionOnASingleBucket( isByName ));
   }
 
   /*
@@ -340,33 +296,18 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     createClientServerScenarion(commonAttributes, 20, 20, 20);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
     registerFunctionAtServer(function);
-    server2.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "stopServerHA");
-    server3.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "stopServerHA");
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "putOperation");
+    server2.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.stopServerHA());
+    server3.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.stopServerHA());
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.putOperation());
 
     int AsyncInvocationArrSize = 1;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = client.invokeAsync(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "executeFunctionHA");
-    server2.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "startServerHA");
-    server3.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "startServerHA");
-    server1.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "stopServerHA");
-    client.invoke(PRClientServerRegionFunctionExecutionDUnitTest.class,
-        "verifyDeadAndLiveServers", new Object[] { new Integer(1),
-            new Integer(2) });
+    async[0] = client.invokeAsync(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.executeFunctionHA());
+    server2.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.startServerHA());
+    server3.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.startServerHA());
+    server1.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.stopServerHA());
+    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.verifyDeadAndLiveServers( new Integer(1),
+            new Integer(2) ));
     ThreadUtils.join(async[0], 6 * 60 * 1000);
     if (async[0].getException() != null) {
       Assert.fail("UnExpected Exception Occured : ", async[0].getException());
@@ -388,33 +329,17 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
     createClientServerScenarion(commonAttributes, 20, 20, 20);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
     registerFunctionAtServer(function);
-    server2.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "stopServerHA");
-    server3.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "stopServerHA");
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "putOperation");
+    server2.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.stopServerHA());
+    server3.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.stopServerHA());
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.putOperation());
     int AsyncInvocationArrSize = 1;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = client.invokeAsync(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "executeFunctionHA");
-    server2.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "startServerHA");
-    server3.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "startServerHA");
-    server1.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "closeCacheHA");
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "verifyDeadAndLiveServers", new Object[] { new Integer(1),
-            new Integer(2) });
+    async[0] = client.invokeAsync(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.executeFunctionHA());
+    server2.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.startServerHA());
+    server3.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.startServerHA());
+    server1.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.closeCacheHA());
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.verifyDeadAndLiveServers( new Integer(1),
+            new Integer(2) ));
     ThreadUtils.join(async[0], 5 * 60 * 1000);
     if (async[0].getException() != null) {
       Assert.fail("UnExpected Exception Occured : ", async[0].getException());
@@ -425,20 +350,11 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
 
   public void testBug40714() {
     createScenario();
-    server1.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "registerFunction");
-    server1.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "registerFunction");
-    server1.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "registerFunction");
-    client.invoke(
-        PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.class,
-        "registerFunction");
-    client.invoke(PRClientServerRegionFunctionExecutionDUnitTest.class,
-        "FunctionExecution_Inline_Bug40714");
+    server1.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.registerFunction());
+    server1.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.registerFunction());
+    server1.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.registerFunction());
+    client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.registerFunction());
+    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.FunctionExecution_Inline_Bug40714());
   }
 
   public static void registerFunction() {

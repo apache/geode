@@ -71,8 +71,8 @@ public class ClearMultiVmDUnitTest extends DistributedTestCase{
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(ClearMultiVmDUnitTest.class, "createCache");
-      vm1.invoke(ClearMultiVmDUnitTest.class, "createCache");
+      vm0.invoke(() -> ClearMultiVmDUnitTest.createCache());
+      vm1.invoke(() -> ClearMultiVmDUnitTest.createCache());
     }
     
     @Override
@@ -80,8 +80,8 @@ public class ClearMultiVmDUnitTest extends DistributedTestCase{
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(ClearMultiVmDUnitTest.class, "closeCache");
-      vm1.invoke(ClearMultiVmDUnitTest.class, "closeCache");
+      vm0.invoke(() -> ClearMultiVmDUnitTest.closeCache());
+      vm1.invoke(() -> ClearMultiVmDUnitTest.closeCache());
       cache = null;
       Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
     }
@@ -212,8 +212,8 @@ public class ClearMultiVmDUnitTest extends DistributedTestCase{
             vm1.invoke(ClearMultiVmDUnitTest.class, "getMethod", objArr);
         }
         
-        AsyncInvocation as1 = vm0.invokeAsync(ClearMultiVmDUnitTest.class, "firstVM");
-        AsyncInvocation as2 = vm1.invokeAsync(ClearMultiVmDUnitTest.class, "secondVM");
+        AsyncInvocation as1 = vm0.invokeAsync(() -> ClearMultiVmDUnitTest.firstVM());
+        AsyncInvocation as2 = vm1.invokeAsync(() -> ClearMultiVmDUnitTest.secondVM());
         ThreadUtils.join(as1, 30 * 1000);
         ThreadUtils.join(as2, 30 * 1000);
         
@@ -225,10 +225,10 @@ public class ClearMultiVmDUnitTest extends DistributedTestCase{
           Assert.fail("as2 failed", as2.getException());
         }
         
-        int j = vm0.invokeInt(ClearMultiVmDUnitTest.class, "sizeMethod");
+        int j = vm0.invoke(() -> ClearMultiVmDUnitTest.sizeMethod());
         assertEquals(0, j);
         
-        j = vm1.invokeInt(ClearMultiVmDUnitTest.class, "sizeMethod");
+        j = vm1.invoke(() -> ClearMultiVmDUnitTest.sizeMethod());
         assertEquals(1, j);
         
         
@@ -237,9 +237,7 @@ public class ClearMultiVmDUnitTest extends DistributedTestCase{
         objArr[0] = ""+i;
         vm1.invoke(ClearMultiVmDUnitTest.class, "getMethod", objArr);
         
-        Object ob[] = new Object[1];
-        ob[0] = "secondVM";
-        boolean val = vm1.invokeBoolean(ClearMultiVmDUnitTest.class, "containsValueMethod", ob);
+        boolean val = vm1.invoke(() -> containsValueMethod("secondVM"));
         assertEquals(true, val);
         
     }//end of testClearMultiVM
@@ -249,7 +247,7 @@ public class ClearMultiVmDUnitTest extends DistributedTestCase{
         VM vm0 = host.getVM(0);
         VM vm1 = host.getVM(1);
         
-        vm1.invoke(ClearMultiVmDUnitTest.class, "localDestroyRegionMethod");
+        vm1.invoke(() -> ClearMultiVmDUnitTest.localDestroyRegionMethod());
         vm0.invoke(new CacheSerializableRunnable ("exception in vm0"){
             public void run2() throws CacheException {
                try{

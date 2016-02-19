@@ -85,6 +85,7 @@ import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.FileUtil;
@@ -115,10 +116,10 @@ import com.gemstone.gemfire.pdx.SimpleClass;
 import com.gemstone.gemfire.pdx.SimpleClass1;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
@@ -1519,7 +1520,6 @@ public class WANTestBase extends DistributedTestCase{
     //q.start();
   }
   
-  /*
   public static Map getSenderToReceiverConnectionInfo(String senderId){	
 	  Set<GatewaySender> senders = cache.getGatewaySenders();
 	  GatewaySender sender = null;
@@ -1536,7 +1536,7 @@ public class WANTestBase extends DistributedTestCase{
 			  ((AbstractGatewaySender)sender).getEventProcessor().getDispatcher();
 		  if (dispatcher instanceof GatewaySenderEventRemoteDispatcher) {
 			  ServerLocation serverLocation = 
-				  ((GatewaySenderEventRemoteDispatcher) dispatcher).getConnection().getServer();
+				  ((GatewaySenderEventRemoteDispatcher) dispatcher).getConnection(false).getServer();
 			  connectionInfo.put("serverHost", serverLocation.getHostName());
 			  connectionInfo.put("serverPort", serverLocation.getPort());
 			  
@@ -1544,7 +1544,6 @@ public class WANTestBase extends DistributedTestCase{
 	  }
 	  return connectionInfo;
   }
-  */
   public static List<Integer> getSenderStats(String senderId, final int expectedQueueSize){
     Set<GatewaySender> senders = cache.getGatewaySenders();
     AbstractGatewaySender sender = null;
@@ -4258,7 +4257,7 @@ public class WANTestBase extends DistributedTestCase{
   }
   
   public static void checkAllSiteMetaData(     
-      Map<Integer, List<Integer>> dsVsPorts) {
+      Map<Integer, ArrayList<Integer>> dsVsPorts) {
     waitForSitesToUpdate();
     assertNotNull(system);
 //    Map<Integer,Set<DistributionLocatorId>> allSiteMetaData = ((DistributionConfigImpl)system
@@ -4272,7 +4271,7 @@ public class WANTestBase extends DistributedTestCase{
     System.out.println("Server allSiteMetaData : " + ((InternalLocator)locator).getlocatorMembershipListener().getAllServerLocatorsInfo());
     
     //assertEquals(dsVsPorts.size(), allSiteMetaData.size());
-    for (Map.Entry<Integer, List<Integer>> entry : dsVsPorts.entrySet()) {
+    for (Map.Entry<Integer, ArrayList<Integer>> entry : dsVsPorts.entrySet()) {
       Set<DistributionLocatorId> locators = allSiteMetaData.get(entry.getKey());
       assertNotNull(locators);
       List<Integer> value = entry.getValue();
@@ -5119,18 +5118,18 @@ public class WANTestBase extends DistributedTestCase{
     }
   }*/
   
- @Override
- protected final void preTearDown() throws Exception {
-   cleanupVM();
-   List<AsyncInvocation> invocations = new ArrayList<AsyncInvocation>();
-   final Host host = Host.getHost(0);
-   for (int i=0; i< host.getVMCount(); i++) {
-     invocations.add(host.getVM(i).invokeAsync(WANTestBase.class, "cleanupVM"));
-   }
-   for (AsyncInvocation invocation : invocations) {
-     invocation.join();
-     assertFalse(invocation.exceptionOccurred());
-   }
+  @Override
+  protected final void preTearDown() throws Exception {
+    cleanupVM();
+    List<AsyncInvocation> invocations = new ArrayList<AsyncInvocation>();
+    final Host host = Host.getHost(0);
+    for (int i=0; i< host.getVMCount(); i++) {
+      invocations.add(host.getVM(i).invokeAsync(() -> WANTestBase.cleanupVM()));
+    }
+    for (AsyncInvocation invocation : invocations) {
+      invocation.join();
+      assertFalse(invocation.exceptionOccurred());
+    }
   }
   
   public static void cleanupVM() throws IOException {

@@ -537,7 +537,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
 
     // create existing pid file
     this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.LOCATOR.getPidFileName());
-    final int realPid = Host.getHost(0).getVM(3).invokeInt(ProcessUtils.class, "identifyPid");
+    final int realPid = Host.getHost(0).getVM(3).invoke(() -> ProcessUtils.identifyPid());
     assertFalse("Remote pid shouldn't be the same as local pid " + realPid, realPid == ProcessUtils.identifyPid());
     writePid(this.pidFile, realPid);
     

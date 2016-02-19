@@ -120,8 +120,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     
     verifyCacheServer(server,serverPort);
 
-    final int port = server.invokeInt(CqQueryDUnitTest.class,
-        "getCacheServerPort");
+    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.

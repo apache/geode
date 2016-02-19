@@ -114,8 +114,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
   public void testCompactRangeIndex() {
     // Create caches
     Properties props = new Properties();
-    server.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
+    server.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
 
     server.invoke(new CacheSerializableRunnable("create indexes") {
 
@@ -210,8 +209,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
   public void testRangeIndex() {
     // Create caches
     Properties props = new Properties();
-    server.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
+    server.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
 
     server.invoke(new CacheSerializableRunnable("create indexes") {
 
@@ -305,8 +303,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
   public void testRangeIndexWithIndexAndQueryFromCluaseMisMatch() {
     // Create caches
     Properties props = new Properties();
-    server.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
+    server.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
 
     server.invoke(new CacheSerializableRunnable("create indexes") {
 
@@ -396,8 +393,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
   public void testRangeIndexWithIndexAndQueryFromCluaseMisMatch2() {
     // Create caches
     Properties props = new Properties();
-    server.invoke(PRClientServerTestBase.class, "createCacheInVm",
-        new Object[] { props });
+    server.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
 
     server.invoke(new CacheSerializableRunnable("create indexes") {
 

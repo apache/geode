@@ -8093,9 +8093,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
     
     // check consistency of the regions
-    Map r0Contents = (Map)vm0.invoke(this.getClass(), "getCCRegionContents");
-    Map r1Contents = (Map)vm1.invoke(this.getClass(), "getCCRegionContents");
-    Map r2Contents = (Map)vm2.invoke(this.getClass(), "getCCRegionContents");
+    Map r0Contents = (Map)vm0.invoke(() -> this.getCCRegionContents());
+    Map r1Contents = (Map)vm1.invoke(() -> this.getCCRegionContents());
+    Map r2Contents = (Map)vm2.invoke(() -> this.getCCRegionContents());
     
     for (int i=0; i<10; i++) {
       String key = "cckey" + i;
@@ -8116,7 +8116,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // now we move on to testing deltas
     
     if (!getRegionAttributes().getScope().isDistributedNoAck()) { // no-ack doesn't support deltas 
-      vm0.invoke(this.getClass(), "clearCCRegion");
+      vm0.invoke(() -> this.clearCCRegion());
       
       performOps = new SerializableRunnable("perform concurrent delta ops") {
         public void run() {
@@ -8147,9 +8147,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
   
       // check consistency of the regions
-      r0Contents = (Map)vm0.invoke(this.getClass(), "getCCRegionContents");
-      r1Contents = (Map)vm1.invoke(this.getClass(), "getCCRegionContents");
-      r2Contents = (Map)vm2.invoke(this.getClass(), "getCCRegionContents");
+      r0Contents = (Map)vm0.invoke(() -> this.getCCRegionContents());
+      r1Contents = (Map)vm1.invoke(() -> this.getCCRegionContents());
+      r2Contents = (Map)vm2.invoke(() -> this.getCCRegionContents());
       
       for (int i=0; i<10; i++) {
         String key = "cckey" + i;
@@ -8168,9 +8168,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       
       // The region version vectors should now all be consistent with the version stamps in the entries.
       
-      InternalDistributedMember vm0Id = (InternalDistributedMember)vm0.invoke(this.getClass(), "getMemberId");
-      InternalDistributedMember vm1Id = (InternalDistributedMember)vm1.invoke(this.getClass(), "getMemberId");
-      InternalDistributedMember vm2Id = (InternalDistributedMember)vm2.invoke(this.getClass(), "getMemberId");
+      InternalDistributedMember vm0Id = (InternalDistributedMember)vm0.invoke(() -> this.getMemberId());
+      InternalDistributedMember vm1Id = (InternalDistributedMember)vm1.invoke(() -> this.getMemberId());
+      InternalDistributedMember vm2Id = (InternalDistributedMember)vm2.invoke(() -> this.getMemberId());
   
       long start = System.currentTimeMillis();
       RegionVersionVector vm0vv = getVersionVector(vm0);
@@ -8181,9 +8181,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       RegionVersionVector vm1vv = getVersionVector(vm1);    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm1 vector = " + vm1vv);
       RegionVersionVector vm2vv = getVersionVector(vm2);    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm2 vector = " + vm2vv);
       
-      Map<String, VersionTag> vm0Versions = (Map<String, VersionTag>)vm0.invoke(this.getClass(), "getCCRegionVersions");
-      Map<String, VersionTag> vm1Versions = (Map<String, VersionTag>)vm1.invoke(this.getClass(), "getCCRegionVersions");
-      Map<String, VersionTag> vm2Versions = (Map<String, VersionTag>)vm2.invoke(this.getClass(), "getCCRegionVersions");
+      Map<String, VersionTag> vm0Versions = (Map<String, VersionTag>)vm0.invoke(() -> this.getCCRegionVersions());
+      Map<String, VersionTag> vm1Versions = (Map<String, VersionTag>)vm1.invoke(() -> this.getCCRegionVersions());
+      Map<String, VersionTag> vm2Versions = (Map<String, VersionTag>)vm2.invoke(() -> this.getCCRegionVersions());
   
       for (Map.Entry<String, VersionTag> entry: vm0Versions.entrySet()) {
         VersionTag tag = entry.getValue();
@@ -8213,7 +8213,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   
   
   private RegionVersionVector getVersionVector(VM vm) throws Exception {
-    byte[] serializedForm = (byte[])vm.invoke(this.getClass(), "getCCRegionVersionVector");
+    byte[] serializedForm = (byte[])vm.invoke(() -> this.getCCRegionVersionVector());
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(serializedForm));
     return (RegionVersionVector)DataSerializer.readObject(dis);
   }
@@ -8299,9 +8299,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //    }
     
     // check consistency of the regions
-    Map r0Contents = (Map)vm0.invoke(this.getClass(), "getCCRegionContents");
-    Map r1Contents = (Map)vm1.invoke(this.getClass(), "getCCRegionContents");
-    Map r2Contents = (Map)vm2.invoke(this.getClass(), "getCCRegionContents");
+    Map r0Contents = (Map)vm0.invoke(() -> this.getCCRegionContents());
+    Map r1Contents = (Map)vm1.invoke(() -> this.getCCRegionContents());
+    Map r2Contents = (Map)vm2.invoke(() -> this.getCCRegionContents());
     
     for (int i=0; i<10; i++) {
       String key = "cckey" + i;
@@ -8318,9 +8318,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     }
     
-    vm0.invoke(this.getClass(), "assertNoClearTimeouts");
-    vm1.invoke(this.getClass(), "assertNoClearTimeouts");
-    vm2.invoke(this.getClass(), "assertNoClearTimeouts");
+    vm0.invoke(() -> this.assertNoClearTimeouts());
+    vm1.invoke(() -> this.assertNoClearTimeouts());
+    vm2.invoke(() -> this.assertNoClearTimeouts());
   }
   
   
@@ -8390,10 +8390,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     waitForAsyncProcessing(a1, "");
 
     // check consistency of the regions
-//    Map r0Contents = (Map)vm0.invoke(this.getClass(), "getCCRegionContents"); empty region
-    Map r1Contents = (Map)vm1.invoke(this.getClass(), "getCCRegionContents"); // normal region
-    Map r2Contents = (Map)vm2.invoke(this.getClass(), "getCCRegionContents"); // replicated
-    Map r3Contents = (Map)vm3.invoke(this.getClass(), "getCCRegionContents"); // replicated
+//    Map r0Contents = (Map)vm0.invoke(() -> this.getCCRegionContents()); empty region
+    Map r1Contents = (Map)vm1.invoke(() -> this.getCCRegionContents()); // normal region
+    Map r2Contents = (Map)vm2.invoke(() -> this.getCCRegionContents()); // replicated
+    Map r3Contents = (Map)vm3.invoke(() -> this.getCCRegionContents()); // replicated
     
     for (int i=0; i<10; i++) {
       String key = "cckey" + i;
@@ -8421,9 +8421,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // their region version vector to dominate the vector sent with the clear() operation.
     // If they did, then some ops were not properly recorded in the vector and something
     // is broken.
-    vm1.invoke(this.getClass(), "assertNoClearTimeouts");
-    vm2.invoke(this.getClass(), "assertNoClearTimeouts");
-    vm3.invoke(this.getClass(), "assertNoClearTimeouts");
+    vm1.invoke(() -> this.assertNoClearTimeouts());
+    vm2.invoke(() -> this.assertNoClearTimeouts());
+    vm3.invoke(() -> this.assertNoClearTimeouts());
   }
   
   
@@ -8725,9 +8725,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
     
     // check consistency of the regions
-    Map r1Contents = (Map)vm1.invoke(this.getClass(), "getCCRegionContents");
-    Map r2Contents = (Map)vm2.invoke(this.getClass(), "getCCRegionContents");
-    Map r3Contents = (Map)vm3.invoke(this.getClass(), "getCCRegionContents");
+    Map r1Contents = (Map)vm1.invoke(() -> this.getCCRegionContents());
+    Map r2Contents = (Map)vm2.invoke(() -> this.getCCRegionContents());
+    Map r3Contents = (Map)vm3.invoke(() -> this.getCCRegionContents());
     
     for (int i=0; i<10; i++) {
       String key = "cckey" + i;
@@ -8906,10 +8906,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
     
     // check consistency of the regions
-    Map r0Contents = (Map)vm0.invoke(this.getClass(), "getCCRegionContents");
-    Map r1Contents = (Map)vm1.invoke(this.getClass(), "getCCRegionContents");
-    Map r2Contents = (Map)vm2.invoke(this.getClass(), "getCCRegionContents");
-    Map r3Contents = (Map)vm3.invoke(this.getClass(), "getCCRegionContents");
+    Map r0Contents = (Map)vm0.invoke(() -> this.getCCRegionContents());
+    Map r1Contents = (Map)vm1.invoke(() -> this.getCCRegionContents());
+    Map r2Contents = (Map)vm2.invoke(() -> this.getCCRegionContents());
+    Map r3Contents = (Map)vm3.invoke(() -> this.getCCRegionContents());
     
     for (int i=0; i<10; i++) {
       String key = "cckey" + i;

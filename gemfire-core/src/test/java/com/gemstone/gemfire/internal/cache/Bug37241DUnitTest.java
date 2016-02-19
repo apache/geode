@@ -75,30 +75,28 @@ public class Bug37241DUnitTest extends DistributedTestCase
    */
   public void testBug37241ForNewDiskRegion()
   {
-    server1.invoke(Bug37241DUnitTest.class, "createRegionOnServer1");   
+    server1.invoke(() -> Bug37241DUnitTest.createRegionOnServer1());   
 
     try{
-      server2.invoke(Bug37241DUnitTest.class, "createRegionOnServer2",
-          new Object[]{Scope.DISTRIBUTED_ACK});
+      server2.invoke(() -> Bug37241DUnitTest.createRegionOnServer2(Scope.DISTRIBUTED_ACK));
     }
     catch(Exception e){
-      server2.invoke(Bug37241DUnitTest.class, "ignoreExceptionInLogs");
-      server2.invoke(Bug37241DUnitTest.class, "checkForCleanup");
+      server2.invoke(() -> Bug37241DUnitTest.ignoreExceptionInLogs());
+      server2.invoke(() -> Bug37241DUnitTest.checkForCleanup());
     }
   }
 
   public void testBug37241ForRecreatedDiskRegion()
   {
-    server1.invoke(Bug37241DUnitTest.class, "createRegionOnServer1");
-    server2.invoke(Bug37241DUnitTest.class, "createRegionOnServer2", new Object[]{Scope.GLOBAL});
-    server2.invoke(Bug37241DUnitTest.class, "closeRegion");
+    server1.invoke(() -> Bug37241DUnitTest.createRegionOnServer1());
+    server2.invoke(() -> Bug37241DUnitTest.createRegionOnServer2(Scope.GLOBAL));
+    server2.invoke(() -> Bug37241DUnitTest.closeRegion());
     try {
-      server2.invoke(Bug37241DUnitTest.class, "createRegionOnServer2",
-          new Object[] {Scope.DISTRIBUTED_ACK });
+      server2.invoke(() -> Bug37241DUnitTest.createRegionOnServer2(Scope.DISTRIBUTED_ACK ));
     }
     catch (Exception e) {
-      server2.invoke(Bug37241DUnitTest.class, "ignoreExceptionInLogs");
-      server2.invoke(Bug37241DUnitTest.class, "checkForCleanupAfterRecreation");
+      server2.invoke(() -> Bug37241DUnitTest.ignoreExceptionInLogs());
+      server2.invoke(() -> Bug37241DUnitTest.checkForCleanupAfterRecreation());
     }
   }
 
@@ -225,8 +223,8 @@ public class Bug37241DUnitTest extends DistributedTestCase
 
   @Override
   protected final void preTearDown() throws Exception {
-    server1.invoke(Bug37241DUnitTest.class, "closeCache");
-    server2.invoke(Bug37241DUnitTest.class, "closeCache");
+    server1.invoke(() -> Bug37241DUnitTest.closeCache());
+    server2.invoke(() -> Bug37241DUnitTest.closeCache());
   }
 }
 

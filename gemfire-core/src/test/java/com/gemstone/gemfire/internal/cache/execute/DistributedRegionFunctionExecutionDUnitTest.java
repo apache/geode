@@ -107,73 +107,49 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
 
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
     executeFunction();
   }
   
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_SendException() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
     executeFunction_SendException();
   }
   
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_NoLastResult() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
     executeFunction_NoLastResult();
   }
 
@@ -181,28 +157,19 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   
   public void testDistributedRegionFunctionExecutionOnDataPolicyNormal() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
     try {
-      normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-          "executeFunction");
+      normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction());
       fail("Function execution was expecting an Exception as it was executed on Region with DataPolicy.NORMAL");
     }
     catch (Exception expected) {
@@ -212,199 +179,134 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
 
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "executeFunction");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction());
   }
   
   
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_SendException() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "executeFunction_SendException");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction_SendException());
   }
   
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_NoLastResult() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "executeFunction_NoLastResult");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction_NoLastResult());
   }
   
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetException() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     registerFunction(new Boolean(true), new Integer(5));
 
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
 
     // add expected exception to avoid suspect strings
     final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "executeFunctionFunctionInvocationTargetException");
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunctionFunctionInvocationTargetException());
     ex.remove();
   }
 
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetException_WithoutHA() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     registerFunction(new Boolean(false), new Integer(0));
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
     normal
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
     replicate1
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
     replicate2
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
     replicate3
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
 
     // add expected exception to avoid suspect strings
     final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "executeFunctionFunctionInvocationTargetExceptionWithoutHA");
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunctionFunctionInvocationTargetExceptionWithoutHA());
     ex.remove();
   }
 
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetExceptionForEmptyDataPolicy() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     registerFunction(new Boolean(true), new Integer(5));
 
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
 
     // add expected exception to avoid suspect strings
     final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
@@ -414,39 +316,27 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
 
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetExceptionForEmptyDataPolicy_WithoutHA() {
     createCacheInVm(); // Empty
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     registerFunction(new Boolean(false), new Integer(0));
     createPeer(DataPolicy.EMPTY);
     populateRegion();
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(false),
-            new Integer(0) });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(false),
-            new Integer(0) });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(false),
-            new Integer(0) });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(false),
-            new Integer(0) });
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+            new Integer(0) ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+            new Integer(0) ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+            new Integer(0) ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+            new Integer(0) ));
 
     // add expected exception to avoid suspect strings
     final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
@@ -457,40 +347,29 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionHACacheClosedException() {
     VM empty = normal;
 
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.EMPTY });
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.EMPTY ));
 
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "populateRegion");
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.populateRegion());
 
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
     /* (original code below is not proper since function execution may not find
      *  any node for execution when the first node closes; now closing cache
      *  from within function body)
     int AsyncInvocationArrSize = 1;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = empty.invokeAsync(
-        DistributedRegionFunctionExecutionDUnitTest.class, "executeFunctionHA");
+    async[0] = empty.invokeAsync(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunctionHA());
 
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "closeCache");
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.closeCache());
 
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
     DistributedTestCase.join(async[0], 50 * 1000, getLogWriter());
     if (async[0].getException() != null) {
@@ -498,9 +377,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     }
     List l = (List)async[0].getReturnValue();
     */
-    List l = (List)empty.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "executeFunctionHACacheClose");
+    List l = (List)empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunctionHACacheClose());
     assertEquals(5001, l.size());
     for (int i = 0; i < 5001; i++) {
       assertEquals(l.get(i), Boolean.TRUE);
@@ -510,32 +387,23 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionHANodeFailure() {
     VM empty = normal;
 
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.EMPTY });
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.EMPTY ));
 
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "populateRegion");
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.populateRegion());
 
     int AsyncInvocationArrSize = 1;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = empty.invokeAsync(
-        DistributedRegionFunctionExecutionDUnitTest.class, "executeFunctionHA");
+    async[0] = empty.invokeAsync(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunctionHA());
 
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "disconnect");
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.disconnect());
 
     ThreadUtils.join(async[0], 50 * 1000);
     if (async[0].getException() != null) {
@@ -552,29 +420,17 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer() {
     VM empty1 = replicate3;
     VM empty2 = normal;
-    empty2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
 
-    Integer port1 = (Integer)empty1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.EMPTY });    
-    Integer port2 = (Integer) empty2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.EMPTY });
-    replicate1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    Integer port1 = (Integer)empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));    
+    Integer port2 = (Integer) empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
 
     executeFunction();
@@ -583,29 +439,17 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_SendException() {
     VM empty1 = replicate3;
     VM empty2 = normal;
-    empty2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
 
-    Integer port1 = (Integer)empty1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.EMPTY });    
-    Integer port2 = (Integer) empty2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.EMPTY });
-    replicate1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    Integer port1 = (Integer)empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));    
+    Integer port2 = (Integer) empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
 
     executeFunction_SendException();
@@ -614,29 +458,17 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_NoLastResult() {
     VM empty1 = replicate3;
     VM empty2 = normal;
-    empty2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
 
-    Integer port1 = (Integer)empty1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.EMPTY });    
-    Integer port2 = (Integer) empty2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.EMPTY });
-    replicate1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    Integer port1 = (Integer)empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));    
+    Integer port2 = (Integer) empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
     // add ExpectedException's to servers since client can connect to any
     // one of those
@@ -662,37 +494,23 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     VM emptyServer1 = replicate1;
     VM client = normal;
 
-    emptyServer1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    client.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInClientVm");
+    emptyServer1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInClientVm());
 
-    Integer port1 = (Integer)emptyServer1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.EMPTY });
-    Integer port2 = (Integer)replicate2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.REPLICATE });
-    replicate3.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    client.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createClientAndPopulateClientRegion", new Object[] { DataPolicy.EMPTY,
-            port1, port2 });
+    Integer port1 = (Integer)emptyServer1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));
+    Integer port2 = (Integer)replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createClientAndPopulateClientRegion( DataPolicy.EMPTY,
+            port1, port2 ));
 
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "stopServerHA");
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.stopServerHA());
     int AsyncInvocationArrSize = 1;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = client.invokeAsync(
-        DistributedRegionFunctionExecutionDUnitTest.class, "executeFunctionHA");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "startServerHA");
-    emptyServer1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "closeCacheHA");
+    async[0] = client.invokeAsync(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunctionHA());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.startServerHA());
+    emptyServer1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.closeCacheHA());
     ThreadUtils.join(async[0], 4 * 60 * 1000);
     if (async[0].getException() != null) {
       Assert.fail("UnExpected Exception Occured : ", async[0].getException());
@@ -710,29 +528,17 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     VM normal2 = replicate3;
     VM empty = replicate2 ;
 
-    normal1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    normal2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    normal2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
     
-    Integer port1 = (Integer)normal1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.NORMAL });
-    Integer port2 = (Integer)normal2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.NORMAL });    
-    empty.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.EMPTY });
-    replicate1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    Integer port1 = (Integer)normal1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.NORMAL ));
+    Integer port2 = (Integer)normal2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.NORMAL ));    
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.EMPTY ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
     // add expected exception
@@ -753,29 +559,17 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer() {
     VM empty = replicate3;
     
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
     
-    Integer port1 = (Integer)replicate1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.REPLICATE });
-    Integer port2 = (Integer)replicate2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.REPLICATE });    
-    normal.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    empty.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.EMPTY });
+    Integer port1 = (Integer)replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
+    Integer port2 = (Integer)replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));    
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.EMPTY ));
 
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
 
@@ -785,29 +579,17 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer_WithoutRegister() {
     VM empty = replicate3;
     
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
     
-    Integer port1 = (Integer)replicate1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.REPLICATE });
-    Integer port2 = (Integer)replicate2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.REPLICATE });    
-    normal.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    empty.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.EMPTY });
+    Integer port1 = (Integer)replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
+    Integer port2 = (Integer)replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));    
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.EMPTY ));
 
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
 
@@ -817,37 +599,23 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer_FunctionInvocationTargetException() {
     VM empty = replicate3;
 
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
     registerFunction(new Boolean(true), new Integer(5));
 
-    Integer port1 = (Integer)replicate1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.REPLICATE });
-    Integer port2 = (Integer)replicate2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.REPLICATE });
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.EMPTY });
+    Integer port1 = (Integer)replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
+    Integer port2 = (Integer)replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.EMPTY ));
 
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
 
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
 
@@ -860,45 +628,31 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer_FunctionInvocationTargetException_WithoutHA() {
     VM empty = replicate3;
 
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
     registerFunction(new Boolean(false), new Integer(0));
 
-    Integer port1 = (Integer)replicate1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.REPLICATE });
-    Integer port2 = (Integer)replicate2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.REPLICATE });
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.NORMAL });
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.EMPTY });
+    Integer port1 = (Integer)replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
+    Integer port2 = (Integer)replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.NORMAL ));
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.EMPTY ));
 
     replicate1
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
     replicate2
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
     normal
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
     empty
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
 
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
 
@@ -911,38 +665,24 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_FunctionInvocationTargetException() {
     VM empty1 = replicate3;
     VM empty2 = normal;
-    empty2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
     registerFunction(new Boolean(true), new Integer(5));
 
-    Integer port1 = (Integer)empty1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.EMPTY });
-    Integer port2 = (Integer)empty2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.EMPTY });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    Integer port1 = (Integer)empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));
+    Integer port2 = (Integer)empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
 
-    empty1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    empty2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction", new Object[] { new Boolean(true), new Integer(5) });
+    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(true), new Integer(5) ));
 
     // add expected exception to avoid suspect strings
     final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
@@ -953,46 +693,32 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_FunctionInvocationTargetException_WithoutHA() {
     VM empty1 = replicate3;
     VM empty2 = normal;
-    empty2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
     registerFunction(new Boolean(false), new Integer(0));
 
-    Integer port1 = (Integer)empty1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.EMPTY });
-    Integer port2 = (Integer)empty2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.EMPTY });
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    Integer port1 = (Integer)empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));
+    Integer port2 = (Integer)empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.EMPTY ));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
 
     empty1
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
     empty2
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
     replicate1
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
     replicate2
-        .invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "registerFunction", new Object[] { new Boolean(false),
-                new Integer(0) });
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction( new Boolean(false),
+                new Integer(0) ));
 
     // add expected exception to avoid suspect strings
     final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
@@ -1002,34 +728,20 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
 
   public void testBug40714() {
     VM empty = replicate3;
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
-    Integer port1 = (Integer)replicate1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.REPLICATE });
-    Integer port2 = (Integer)replicate2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.REPLICATE });
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createPeer", new Object[] { DataPolicy.REPLICATE });
+    Integer port1 = (Integer)replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
+    Integer port2 = (Integer)replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer( DataPolicy.REPLICATE ));
 
-    normal.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction");
-    empty.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "registerFunction");
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction());
+    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction());
     createCacheInVm();
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
 
@@ -1045,8 +757,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
    */
 
   public void testBug41118() {
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-    "bug41118");
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.bug41118());
   }
 
   /**
@@ -1058,24 +769,18 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     VM client = replicate1;
     VM server = replicate2;
 
-    server.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm_41367");
+    server.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm_41367());
 
-    client.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInClientVm_41367");
+    client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInClientVm_41367());
 
-    Integer port1 = (Integer)server.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class, "createServer",
-        new Object[] { DataPolicy.REPLICATE });
+    Integer port1 = (Integer)server.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
 
-    client.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createClient_41367", new Object[] { port1 });
+    client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createClient_41367( port1 ));
 
     for (int i = 0; i < 3; i++) {
       try {
-        client.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-            "executeFunction_NoResult");
-        client.invoke(DistributedRegionFunctionExecutionDUnitTest.class, "put");
+        client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction_NoResult());
+        client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.put());
       }
       catch (Exception e) {
         fail("Exception " + e + " not expected");
@@ -1086,19 +791,13 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   
   public void testFunctionWithNoResultThrowsException(){
     IgnoredException.addIgnoredException("RuntimeException");
-    replicate1.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
-    replicate2.invoke(DistributedRegionFunctionExecutionDUnitTest.class,
-        "createCacheInVm");
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
     createCacheInClientVm();
     
-    Integer port1 = (Integer)replicate1.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.REPLICATE });
-    Integer port2 = (Integer)replicate2.invoke(
-        DistributedRegionFunctionExecutionDUnitTest.class,
-        "createServer", new Object[] { DataPolicy.REPLICATE });    
+    Integer port1 = (Integer)replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));
+    Integer port2 = (Integer)replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer( DataPolicy.REPLICATE ));    
     
     createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
 

@@ -90,10 +90,8 @@ public class Bug47388DUnitTest extends DistributedTestCase {
     vm3 = host.getVM(3); // durable client without subscription
 
     //int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-    int port0 = (Integer) vm0.invoke(Bug47388DUnitTest.class,
-        "createCacheServerWithPRDatastore", new Object[] { });
-    int port1 = (Integer) vm1.invoke(Bug47388DUnitTest.class,
-        "createCacheServerWithPRDatastore", new Object[] { });
+    int port0 = (Integer) vm0.invoke(() -> Bug47388DUnitTest.createCacheServerWithPRDatastore( ));
+    int port1 = (Integer) vm1.invoke(() -> Bug47388DUnitTest.createCacheServerWithPRDatastore( ));
 
     vm2.invoke(Bug47388DUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 },
@@ -107,11 +105,11 @@ public class Bug47388DUnitTest extends DistributedTestCase {
   protected final void preTearDown() throws Exception {
     closeCache();
 
-    vm2.invoke(Bug47388DUnitTest.class, "closeCache");
-    vm3.invoke(Bug47388DUnitTest.class, "closeCache");
+    vm2.invoke(() -> Bug47388DUnitTest.closeCache());
+    vm3.invoke(() -> Bug47388DUnitTest.closeCache());
 
-    vm0.invoke(Bug47388DUnitTest.class, "closeCache");
-    vm1.invoke(Bug47388DUnitTest.class, "closeCache");
+    vm0.invoke(() -> Bug47388DUnitTest.closeCache());
+    vm1.invoke(() -> Bug47388DUnitTest.closeCache());
   }
 
   public static void closeCache() throws Exception {
@@ -272,18 +270,15 @@ public class Bug47388DUnitTest extends DistributedTestCase {
     int totalEvents = 23; // = (numOfSets * numOfPuts) * 2 [eviction-destroys] +
                           // 2 [last key's put and eviction-destroy] + 1 [marker
                           // message]
-    vm3.invoke(Bug47388DUnitTest.class, "doPuts", new Object[] { numOfSets,
-        numOfPuts });
+    vm3.invoke(() -> Bug47388DUnitTest.doPuts( numOfSets,
+        numOfPuts ));
 
-    boolean isvm0Primary = (Boolean) vm0.invoke(Bug47388DUnitTest.class,
-        "isPrimaryServer");
+    boolean isvm0Primary = (Boolean) vm0.invoke(() -> Bug47388DUnitTest.isPrimaryServer());
 
-    vm2.invoke(Bug47388DUnitTest.class, "waitForLastKeyDestroyed");
+    vm2.invoke(() -> Bug47388DUnitTest.waitForLastKeyDestroyed());
 
-    vm0.invoke(Bug47388DUnitTest.class, "verifyClientSubscriptionStats",
-        new Object[] { isvm0Primary, totalEvents });
-    vm1.invoke(Bug47388DUnitTest.class, "verifyClientSubscriptionStats",
-        new Object[] { !isvm0Primary, totalEvents });
+    vm0.invoke(() -> Bug47388DUnitTest.verifyClientSubscriptionStats( isvm0Primary, totalEvents ));
+    vm1.invoke(() -> Bug47388DUnitTest.verifyClientSubscriptionStats( !isvm0Primary, totalEvents ));
   }
   public void testNothingBecauseOfBug51931() {
     // remove this when bug #51931 is fixed

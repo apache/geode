@@ -108,9 +108,9 @@ public class HAInterestTestCase extends DistributedTestCase {
     server3 = host.getVM(2);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     // start servers first
-    PORT1 = ((Integer) server1.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
-    PORT2 = ((Integer) server2.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
-    PORT3 = ((Integer) server3.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
+    PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
+    PORT2 = ((Integer) server2.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
+    PORT3 = ((Integer) server3.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
     exceptionOccured = false;
     IgnoredException.addIgnoredException("java.net.ConnectException: Connection refused: connect");
   }
@@ -121,9 +121,9 @@ public class HAInterestTestCase extends DistributedTestCase {
     closeCache();
 
     // then close the servers
-    server1.invoke(HAInterestTestCase.class, "closeCache");
-    server2.invoke(HAInterestTestCase.class, "closeCache");
-    server3.invoke(HAInterestTestCase.class, "closeCache");
+    server1.invoke(() -> HAInterestTestCase.closeCache());
+    server2.invoke(() -> HAInterestTestCase.closeCache());
+    server3.invoke(() -> HAInterestTestCase.closeCache());
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 
@@ -307,8 +307,8 @@ public class HAInterestTestCase extends DistributedTestCase {
         synchronized (HAInterestTestCase.class) {
           Thread t = new Thread() {
             public void run() {
-              getBackupVM().invoke(HAInterestTestCase.class, "startServer");
-              getPrimaryVM().invoke(HAInterestTestCase.class, "stopServer");
+              getBackupVM().invoke(() -> HAInterestTestCase.startServer());
+              getPrimaryVM().invoke(() -> HAInterestTestCase.stopServer());
             }
           };
           t.start();
@@ -361,7 +361,7 @@ public class HAInterestTestCase extends DistributedTestCase {
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeInterestRegistration() {
         synchronized (HAInterestTestCase.class) {
-          vm.invoke(HAInterestTestCase.class, "startServer");
+          vm.invoke(() -> HAInterestTestCase.startServer());
           HAInterestTestCase.isBeforeRegistrationCallbackCalled = true;
           HAInterestTestCase.class.notify();
           PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = false;
@@ -384,7 +384,7 @@ public class HAInterestTestCase extends DistributedTestCase {
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void afterInterestRegistration() {
         synchronized (HAInterestTestCase.class) {
-          vm.invoke(HAInterestTestCase.class, "startServer");
+          vm.invoke(() -> HAInterestTestCase.startServer());
           HAInterestTestCase.isAfterRegistrationCallbackCalled = true;
           HAInterestTestCase.class.notify();
           PoolImpl.AFTER_REGISTER_CALLBACK_FLAG = false;
@@ -597,7 +597,7 @@ public class HAInterestTestCase extends DistributedTestCase {
     Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     // close primaryEP
-    getPrimaryVM().invoke(HAInterestTestCase.class, "stopServer");
+    getPrimaryVM().invoke(() -> HAInterestTestCase.stopServer());
     List list = new ArrayList();
     list.add(k1);
     list.add(k2);
@@ -627,7 +627,7 @@ public class HAInterestTestCase extends DistributedTestCase {
     Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     // close primaryEP
-    getPrimaryVM().invoke(HAInterestTestCase.class, "stopServer");
+    getPrimaryVM().invoke(() -> HAInterestTestCase.stopServer());
     List list = new ArrayList();
     list.add(k1);
     srp.unregisterInterest(list, InterestType.KEY, false, false);
@@ -652,9 +652,9 @@ public class HAInterestTestCase extends DistributedTestCase {
 
     // close primaryEP
     VM backup = getBackupVM();
-    getPrimaryVM().invoke(HAInterestTestCase.class, "stopServer");
+    getPrimaryVM().invoke(() -> HAInterestTestCase.stopServer());
     // close secondary
-    backup.invoke(HAInterestTestCase.class, "stopServer");
+    backup.invoke(() -> HAInterestTestCase.stopServer());
     List list = new ArrayList();
     list.add(k1);
     list.add(k2);
@@ -689,7 +689,7 @@ public class HAInterestTestCase extends DistributedTestCase {
 
     // close secondary EP
     VM result = getBackupVM();
-    result.invoke(HAInterestTestCase.class, "stopServer");
+    result.invoke(() -> HAInterestTestCase.stopServer());
     List list = new ArrayList();
     list.add(k1);
     list.add(k2);
@@ -725,7 +725,7 @@ public class HAInterestTestCase extends DistributedTestCase {
 
     // close secondary EP
     VM result = getBackupVM();
-    result.invoke(HAInterestTestCase.class, "stopServer");
+    result.invoke(() -> HAInterestTestCase.stopServer());
     List list = new ArrayList();
     list.add(k1);
     srp.unregisterInterest(list, InterestType.KEY, false, false);

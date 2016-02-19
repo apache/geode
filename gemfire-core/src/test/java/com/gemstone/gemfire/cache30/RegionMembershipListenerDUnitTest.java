@@ -84,7 +84,7 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
           getCache();
         }
       });
-    this.otherId = (DistributedMember)vm.invoke(RegionMembershipListenerDUnitTest.class, "getVMDistributedMember");
+    this.otherId = (DistributedMember)vm.invoke(() -> RegionMembershipListenerDUnitTest.getVMDistributedMember());
   }
   protected void createRootOtherVm(final String rName) {
     VM vm = getOtherVm();

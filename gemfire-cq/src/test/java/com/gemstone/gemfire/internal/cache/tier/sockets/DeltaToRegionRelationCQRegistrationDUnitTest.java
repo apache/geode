@@ -66,9 +66,9 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   
   VM client2 = null;
  
-  private static  int PORT1 ;
+  private int PORT1 ;
   
-  private static  int PORT2 ;
+  private int PORT2 ;
   
   private static PoolImpl p = null; 
   /*
@@ -138,30 +138,26 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     
     // Register CQ on region with data policy as EMPTY
     // CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName1, CQ1, new Boolean(false)});
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName1, CQ1, new Boolean(false)));
     
     // Register CQ on region with data policy other then EMPTY
     // CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName2, CQ2, new Boolean(false)});
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName2, CQ2, new Boolean(false)));
     
     // validation on server side
-    server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServer");
+    server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServer());
    
     //  check for multiple time cq registration 
     //  Register CQ on region with data policy as EMPTY
     //  CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName3, CQ3, new Boolean(false)});
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName3, CQ3, new Boolean(false)));
     
     // Register CQ on region with data policy as EMPTY
     // CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName4, CQ4, new Boolean(true)});
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName4, CQ4, new Boolean(true)));
     
     // validation on server side
-    server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServer");
+    server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServer());
     
     tearDownforSimpleCase();
   }
@@ -178,31 +174,27 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     
     // Register CQ on region with data policy as EMPTY
     // CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName1, CQ1, new Boolean(true)});
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName1, CQ1, new Boolean(true)));
     
     // Register CQ on region with data policy other then EMPTY
     // CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName2, CQ2, new Boolean(true)});
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName2, CQ2, new Boolean(true)));
     
     // validation on server side
-    server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServer");
+    server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServer());
    
     //  check for multiple time registration Interest
     
     //  Register CQ on region with data policy as EMPTY
     //  CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName3, CQ3, new Boolean(true) });
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName3, CQ3, new Boolean(true) ));
     
     // Register CQ on region with data policy as EMPTY
     // CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName4, CQ4, new Boolean(false)});
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName4, CQ4, new Boolean(false)));
     
     // validation on server side
-    server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServer");
+    server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServer());
     
     tearDownforSimpleCase();
   }
@@ -218,31 +210,27 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     
     // Register CQ on region
     // CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCqThroughPool",
-        new Object[] {cqName1, CQ1, new Boolean(true)});
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCqThroughPool(cqName1, CQ1, new Boolean(true)));
     
     // Register CQ on region 
     // CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCqThroughPool",
-        new Object[] {cqName2, CQ2, new Boolean(true)});
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCqThroughPool(cqName2, CQ2, new Boolean(true)));
     
     // validation on server side
-    server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServerForCqRegistrationFromPool");
+    server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServerForCqRegistrationFromPool());
    
     //  check for multiple time registration cq
     
     //  Register CQ on region 
     //  CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCqThroughPool",
-        new Object[] {cqName3, CQ3, new Boolean(true) });
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCqThroughPool(cqName3, CQ3, new Boolean(true) ));
     
     // Register CQ on region
     // CQ registration
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCqThroughPool",
-        new Object[] {cqName4, CQ4, new Boolean(false)});
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCqThroughPool(cqName4, CQ4, new Boolean(false)));
     
     // validation on server side
-    server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServerForCqRegistrationFromPool");
+    server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServerForCqRegistrationFromPool());
     
     tearDownforSimpleCase();
   }
@@ -258,11 +246,9 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     
     intialSetUpForFailOver();
     // Register CQ on region with data policy as EMPTY
-    client2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName1, CQ1, new Boolean(false)});
+    client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName1, CQ1, new Boolean(false)));
     // Register CQ on region with data policy other then EMPTY
-    client2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName2, CQ2, new Boolean(false)});
+    client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName2, CQ2, new Boolean(false)));
         
     validationForFailOver();
     tearDownForFailOver();
@@ -277,12 +263,10 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public void testDeltaToRegionForRegisterCQIRFaliover() {
     intialSetUpForFailOver();
     // Register CQ on region with data policy as EMPTY
-    client2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName1, CQ1, new Boolean(true)});
+    client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName1, CQ1, new Boolean(true)));
 
     // Register CQ on region with data policy other then EMPTY
-    client2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCq",
-        new Object[] {cqName2, CQ2, new Boolean(true)});
+    client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCq(cqName2, CQ2, new Boolean(true)));
 
     validationForFailOver();
     tearDownForFailOver();
@@ -296,12 +280,10 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public void testDeltaToRegionForRegisterCQIRFromPoolFaliover() {
     intialSetUpNoRegiononClientForFailOver();
     // Register CQ on region
-    client2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCqThroughPool",
-        new Object[] {cqName1, CQ1, new Boolean(true)});
+    client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCqThroughPool(cqName1, CQ1, new Boolean(true)));
     
     //  Register CQ on region 
-    client2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "registerCqThroughPool",
-        new Object[] {cqName2, CQ2, new Boolean(true)});
+    client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.registerCqThroughPool(cqName2, CQ2, new Boolean(true)));
     
     validationForCQFiredFromPoolFailOver();
     tearDownForFailOver();
@@ -661,64 +643,52 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
    * initial setup required for testcase with out failover
    */
   public void intialSetUp() {
-    PORT1 = ((Integer)server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class,
-        "createServerCache")).intValue();
+    PORT1 = ((Integer)server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
     client
-        .invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "createClientCache",
-            new Object[] { NetworkUtils.getServerHostName(server.getHost()),
-                new Integer(PORT1) });
+        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server.getHost()),
+                new Integer(PORT1) ));
   }
   
   /*
    * initial setup required for testcase with out failover
    */
   public void intialSetUpClientWithNoRegion() {
-    PORT1 = ((Integer)server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class,
-        "createServerCache")).intValue();
+    PORT1 = ((Integer)server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
     client
-        .invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "createClientCacheWithNoRegion",
-            new Object[] { NetworkUtils.getServerHostName(server.getHost()),
-                new Integer(PORT1) });
+        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createClientCacheWithNoRegion( NetworkUtils.getServerHostName(server.getHost()),
+                new Integer(PORT1) ));
   }
   /*
    * kind of teardown for testcase without failover
    */
   public void tearDownforSimpleCase() {
     //  close the clients first
-    client.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "closeCache");
+    client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.closeCache());
     // then close the servers
-    server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "closeCache");
+    server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.closeCache());
   }  
   /*
    * initial setup required for testcase with failover
    */
   public void intialSetUpForFailOver() {
-    PORT1 = ((Integer)server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class,
-        "createServerCache")).intValue();
+    PORT1 = ((Integer)server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
     // used only in failover tests
-    PORT2 = ((Integer)server2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class,
-        "createServerCache")).intValue();
-    primary = (Integer)client2.invoke(
-        DeltaToRegionRelationCQRegistrationDUnitTest.class, "createClientCache2",
-        new Object[] { NetworkUtils.getServerHostName(server.getHost()),
+    PORT2 = ((Integer)server2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
+    primary = (Integer)client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createClientCache2( NetworkUtils.getServerHostName(server.getHost()),
             NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT1),
-            new Integer(PORT2) });
+            new Integer(PORT2) ));
   }
   
   /*
    * initial setup required for testcase with failover where we don't need region on client
    */
   public void intialSetUpNoRegiononClientForFailOver() {
-    PORT1 = ((Integer)server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class,
-        "createServerCache")).intValue();
+    PORT1 = ((Integer)server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
     // used only in failover tests
-    PORT2 = ((Integer)server2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class,
-        "createServerCache")).intValue();
-    primary = (Integer)client2.invoke(
-        DeltaToRegionRelationCQRegistrationDUnitTest.class, "createClientCache3",
-        new Object[] { NetworkUtils.getServerHostName(server.getHost()),
+    PORT2 = ((Integer)server2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
+    primary = (Integer)client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createClientCache3( NetworkUtils.getServerHostName(server.getHost()),
             NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT1),
-            new Integer(PORT2) });
+            new Integer(PORT2) ));
   }
   
   /*
@@ -728,16 +698,16 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public void validationForFailOver(){
     assertTrue(" primary server is not detected ",primary.intValue() != -1);
     if (primary.intValue() == PORT1) {
-      server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServer");
-      server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "stopCacheServer");
+      server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServer());
+      server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.stopCacheServer());
       server2
-          .invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServer");
+          .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServer());
     }
     else {
       server2
-          .invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServer");
-      server2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "stopCacheServer");
-      server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServer");
+          .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServer());
+      server2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.stopCacheServer());
+      server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServer());
     }
   }
   
@@ -748,16 +718,16 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public void validationForCQFiredFromPoolFailOver(){
     assertTrue(" primary server is not detected ",primary.intValue() != -1);
     if (primary.intValue() == PORT1) {
-      server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServerForCqRegistrationFromPool");
-      server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "stopCacheServer");
+      server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServerForCqRegistrationFromPool());
+      server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.stopCacheServer());
       server2
-          .invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServerForCqRegistrationFromPool");
+          .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServerForCqRegistrationFromPool());
     }
     else {
       server2
-          .invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServerForCqRegistrationFromPool");
-      server2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "stopCacheServer");
-      server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "validationOnServerForCqRegistrationFromPool");
+          .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServerForCqRegistrationFromPool());
+      server2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.stopCacheServer());
+      server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServerForCqRegistrationFromPool());
     }
   }
   /*
@@ -765,10 +735,10 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
    */
   public void tearDownForFailOver() {
     // close the clients first
-    client2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "closeCache");
+    client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.closeCache());
     // then close the servers
-    server.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "closeCache");
-    server2.invoke(DeltaToRegionRelationCQRegistrationDUnitTest.class, "closeCache");
+    server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.closeCache());
+    server2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.closeCache());
   }
   /*
    * create cache with properties

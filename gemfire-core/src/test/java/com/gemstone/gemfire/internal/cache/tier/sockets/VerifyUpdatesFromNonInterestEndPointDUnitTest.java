@@ -62,8 +62,8 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
 
   VM vm2 = null;
 
-  private static int PORT1;
-  private static int PORT2;
+  private int PORT1;
+  private int PORT2;
   private static final String REGION_NAME = "VerifyUpdatesFromNonInterestEndPointDUnitTest_region";
 
   private static Cache cache = null;
@@ -83,11 +83,10 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
     vm2 = host.getVM(2);
 
 
-    PORT1 =  ((Integer)vm0.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "createServerCache" )).intValue();
-    PORT2 =  ((Integer)vm1.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "createServerCache" )).intValue();
+    PORT1 =  ((Integer)vm0.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache())).intValue();
+    PORT2 =  ((Integer)vm1.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache())).intValue();
 
-    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(vm0.getHost()), new Integer(PORT1),new Integer(PORT2)});
+    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createClientCache( NetworkUtils.getServerHostName(vm0.getHost()), new Integer(PORT1),new Integer(PORT2)));
 
 
   }
@@ -106,15 +105,15 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
 
   public void testVerifyUpdatesFromNonInterestEndPoint()
   {
-    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "createEntries");
-    vm1.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "createEntries");
-    vm0.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "createEntries");
+    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createEntries());
+    vm1.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createEntries());
+    vm0.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createEntries());
 
-    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "registerKey");
+    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.registerKey());
 
-    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "acquireConnectionsAndPut", new Object[] { new Integer(PORT2)});
+    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.acquireConnectionsAndPut( new Integer(PORT2)));
     Wait.pause(30000);
-    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "verifyPut");
+    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.verifyPut());
   }
 
 
@@ -249,9 +248,9 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
   @Override
   protected final void preTearDown() throws Exception {
     //close client
-    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "closeCache");
+    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.closeCache());
     //close server
-    vm0.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "closeCache");
-    vm1.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest.class, "closeCache");
+    vm0.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.closeCache());
+    vm1.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.closeCache());
   }
 }

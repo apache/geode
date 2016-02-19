@@ -592,11 +592,11 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
   }
 
   public static boolean vmRemoteLoaderInvoked(VM vm) {
-    Boolean v = (Boolean)vm.invoke(SearchAndLoadDUnitTest.class, "fetchRemoteLoaderInvoked");
+    Boolean v = (Boolean)vm.invoke(() -> SearchAndLoadDUnitTest.fetchRemoteLoaderInvoked());
     return v.booleanValue();
   }
   public static int vmRemoteLoaderInvokedCount(VM vm) {
-    Integer v = (Integer)vm.invoke(SearchAndLoadDUnitTest.class, "fetchRemoteLoaderInvokedCount");
+    Integer v = (Integer)vm.invoke(() -> SearchAndLoadDUnitTest.fetchRemoteLoaderInvokedCount());
     return v.intValue();
   }
 

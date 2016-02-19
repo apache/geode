@@ -52,9 +52,9 @@ import java.util.concurrent.Callable;
 public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBase {
   private static final String TEST_FUNCTION1 = TestFunction.TEST_FUNCTION1;
 
-  static Boolean isByName = null;
-  static Function function = null;
-  static Boolean toRegister = null;
+  Boolean isByName = null;
+  Function function = null;
+  Boolean toRegister = null;
   static final String retryRegionName = "RetryDataRegion";
   static Region metaDataRegion;
   
@@ -72,8 +72,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
       throws InterruptedException {
     createScenario();
     try {
-      client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-          "executeRegisteredFunction");
+      client.invoke(() -> ClientServerFunctionExecutionDUnitTest.executeRegisteredFunction());
     }
     catch (Exception e) {
       assertEquals(true, (e.getCause() instanceof ServerOperationException));
@@ -86,8 +85,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     createScenario();
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     registerFunctionAtServer(function);
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "executeRegisteredFunction");
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.executeRegisteredFunction());
   }
 
   /*
@@ -103,10 +101,8 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     isByName = new Boolean(true);   
     toRegister = new Boolean(true);
     LogWriterUtils.getLogWriter().info("ClientServerFFunctionExecutionDUnitTest#testServerSingleKeyExecution_byName : Starting test");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecution", new Object[] { isByName, function, toRegister});
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "allServerExecution", new Object[] { isByName, function, toRegister});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecution( isByName, function, toRegister));
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.allServerExecution( isByName, function, toRegister));
   }
   
   
@@ -120,10 +116,8 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     isByName = new Boolean(true);   
     toRegister = new Boolean(true);
     LogWriterUtils.getLogWriter().info("ClientServerFFunctionExecutionDUnitTest#testServerSingleKeyExecution_byName : Starting test");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecution_SendException", new Object[] { isByName, function, toRegister});
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "allServerExecution_SendException", new Object[] { isByName, function, toRegister});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecution_SendException( isByName, function, toRegister));
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.allServerExecution_SendException( isByName, function, toRegister));
   }
   
   /*
@@ -139,10 +133,8 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     isByName = new Boolean(true);   
     toRegister = new Boolean(true);
     LogWriterUtils.getLogWriter().info("ClientServerFFunctionExecutionDUnitTest#testServerSingleKeyExecution_byName : Starting test");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecution_NoLastResult", new Object[] { isByName, function, toRegister});
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "allServerExecution_NoLastResult", new Object[] { isByName, function, toRegister});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecution_NoLastResult( isByName, function, toRegister));
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.allServerExecution_NoLastResult( isByName, function, toRegister));
   }
 
   public void testServerExecution_byName_WithoutRegister() {
@@ -155,10 +147,8 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     isByName = new Boolean(true);  
     toRegister = new Boolean(false);
     LogWriterUtils.getLogWriter().info("ClientServerFFunctionExecutionDUnitTest#testServerSingleKeyExecution_byName : Starting test");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecution", new Object[] { isByName, function, toRegister});
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "allServerExecution", new Object[] { isByName, function, toRegister});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecution( isByName, function, toRegister));
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.allServerExecution( isByName, function, toRegister));
   }
   /*
    * Execution of the inline function on server 
@@ -166,10 +156,8 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   public void testServerExecution_byInlineFunction() {
     createScenario();
     LogWriterUtils.getLogWriter().info("ClientServerFunctionExecutionDUnitTest#testServerSingleKeyExecution_byName : Starting test");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecution_Inline");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "allServerExecution_Inline");
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecution_Inline());
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.allServerExecution_Inline());
   }
   
   
@@ -179,8 +167,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   public void testServerExecution_byInlineFunction_InvalidAttrbiutes() {
     createScenario();
     LogWriterUtils.getLogWriter().info("ClientServerFunctionExecutionDUnitTest#testServerSingleKeyExecution_byName : Starting test");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecution_Inline_InvalidAttributes");
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecution_Inline_InvalidAttributes());
   }
   
   /*
@@ -192,16 +179,11 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
         .info(
             "ClientServerFunctionExecutionDUnitTest#testBug40714 : Starting test");
 
-    server1.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "registerFunction");
-    server1.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "registerFunction");
-    server1.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "registerFunction");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "registerFunction");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "FunctionExecution_Inline_Bug40714");
+    server1.invoke(() -> ClientServerFunctionExecutionDUnitTest.registerFunction());
+    server1.invoke(() -> ClientServerFunctionExecutionDUnitTest.registerFunction());
+    server1.invoke(() -> ClientServerFunctionExecutionDUnitTest.registerFunction());
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.registerFunction());
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.FunctionExecution_Inline_Bug40714());
 
   }
 
@@ -274,10 +256,8 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     isByName = new Boolean(true);
     toRegister = new Boolean(true);    
     LogWriterUtils.getLogWriter().info("ClientServerFFunctionExecutionDUnitTest#testServerSingleKeyExecution_byName : Starting test");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecution", new Object[] { isByName, function, toRegister});
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "allServerExecution", new Object[] { isByName, function, toRegister});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecution( isByName, function, toRegister));
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.allServerExecution( isByName, function, toRegister));
   }
 
   public void testServerExecution_SocketTimeOut_WithoutRegister() {
@@ -288,10 +268,8 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     isByName = new Boolean(true);
     toRegister = new Boolean(false);
     LogWriterUtils.getLogWriter().info("ClientServerFFunctionExecutionDUnitTest#testServerSingleKeyExecution_byName : Starting test");
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecution", new Object[] { isByName, function, toRegister});
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "allServerExecution", new Object[] { isByName, function, toRegister});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecution( isByName, function, toRegister));
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.allServerExecution( isByName, function, toRegister));
   }
   
   
@@ -308,32 +286,20 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     IgnoredException.addIgnoredException("did not send last result");
     createScenario();
     
-    server1.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "createReplicatedRegion");
+    server1.invoke(() -> ClientServerFunctionExecutionDUnitTest.createReplicatedRegion());
     
-    server2.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "createReplicatedRegion");
+    server2.invoke(() -> ClientServerFunctionExecutionDUnitTest.createReplicatedRegion());
     
-    server3.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "createReplicatedRegion");
+    server3.invoke(() -> ClientServerFunctionExecutionDUnitTest.createReplicatedRegion());
     
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "createProxyRegion",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()) });
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.createProxyRegion( NetworkUtils.getServerHostName(server1.getHost()) ));
     
     function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA_SERVER);
     registerFunctionAtServer(function);
     
-    client.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecutionHAOneServerDown", new Object[]{Boolean.FALSE,function,Boolean.FALSE});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecutionHAOneServerDown(Boolean.FALSE,function,Boolean.FALSE));
 
-    client.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "verifyMetaData",new Object[]{new Integer(1), new Integer(1)});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.verifyMetaData(new Integer(1), new Integer(1)));
   }
 
   @SuppressWarnings("rawtypes")
@@ -346,32 +312,20 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     IgnoredException.addIgnoredException("did not send last result");
     createScenario();
     
-    server1.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "createReplicatedRegion");
+    server1.invoke(() -> ClientServerFunctionExecutionDUnitTest.createReplicatedRegion());
     
-    server2.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "createReplicatedRegion");
+    server2.invoke(() -> ClientServerFunctionExecutionDUnitTest.createReplicatedRegion());
     
-    server3.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "createReplicatedRegion");
+    server3.invoke(() -> ClientServerFunctionExecutionDUnitTest.createReplicatedRegion());
     
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "createProxyRegion",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()) });
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.createProxyRegion( NetworkUtils.getServerHostName(server1.getHost()) ));
     
     function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA_SERVER);
     registerFunctionAtServer(function);
     
-    client.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecutionHATwoServerDown", new Object[]{Boolean.FALSE,function,Boolean.FALSE});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecutionHATwoServerDown(Boolean.FALSE,function,Boolean.FALSE));
 
-    client.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "verifyMetaData",new Object[]{new Integer(2), new Integer(0)});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.verifyMetaData(new Integer(2), new Integer(0)));
   }
 
   
@@ -386,31 +340,19 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     //last result;
     IgnoredException.addIgnoredException("did not send last result");
     createScenario();
-    server1.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "createReplicatedRegion");
+    server1.invoke(() -> ClientServerFunctionExecutionDUnitTest.createReplicatedRegion());
     
-    server2.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "createReplicatedRegion");
+    server2.invoke(() -> ClientServerFunctionExecutionDUnitTest.createReplicatedRegion());
     
-    server3.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "createReplicatedRegion");
+    server3.invoke(() -> ClientServerFunctionExecutionDUnitTest.createReplicatedRegion());
     
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "createProxyRegion",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()) });
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.createProxyRegion( NetworkUtils.getServerHostName(server1.getHost()) ));
     
     function = new TestFunction(true, TestFunction.TEST_FUNCTION_NONHA_SERVER);
     registerFunctionAtServer(function);
     
-    client.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "serverExecutionNonHA", new Object[]{Boolean.FALSE,function,Boolean.FALSE});
-    client.invoke(
-        ClientServerFunctionExecutionDUnitTest.class,
-        "verifyMetaData",new Object[]{new Integer(1), new Integer(0)});
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverExecutionNonHA(Boolean.FALSE,function,Boolean.FALSE));
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.verifyMetaData(new Integer(1), new Integer(0)));
   }
 
   
@@ -424,9 +366,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     function = new TestFunction(true, TestFunction.TEST_FUNCTION_ONSERVER_REEXECUTE_EXCEPTION);
     registerFunctionAtServer(function);
 
-    client.invoke(ClientServerFunctionExecutionDUnitTest.class,
-        "serverFunctionExecution_FunctionInvocationTargetException",
-        new Object[] { Boolean.FALSE, function, Boolean.FALSE });
+    client.invoke(() -> ClientServerFunctionExecutionDUnitTest.serverFunctionExecution_FunctionInvocationTargetException( Boolean.FALSE, function, Boolean.FALSE ));
   }
   
   

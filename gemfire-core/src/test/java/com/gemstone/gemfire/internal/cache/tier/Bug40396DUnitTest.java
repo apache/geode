@@ -163,10 +163,9 @@ public class Bug40396DUnitTest extends DistributedTestCase {
    */
   public void testForFaultyDeltaImplementationForEOFEX() {
     boolean matched = false;
-    ((Integer)server.invoke(Bug40396DUnitTest.class, "createServerCache")).intValue();
-    ((Integer)server2.invoke(Bug40396DUnitTest.class, "createServerCache")).intValue();
-    Exception xp = (Exception)server.invoke(Bug40396DUnitTest.class,
-        "putDelta", new Object[] { REGION_NAME, END_OF_FILE_EX });
+    ((Integer)server.invoke(() -> Bug40396DUnitTest.createServerCache())).intValue();
+    ((Integer)server2.invoke(() -> Bug40396DUnitTest.createServerCache())).intValue();
+    Exception xp = (Exception)server.invoke(() -> Bug40396DUnitTest.putDelta( REGION_NAME, END_OF_FILE_EX ));
     StackTraceElement[] st = xp.getCause().getStackTrace();
     matched = getMatched(st);
 
@@ -191,10 +190,10 @@ public class Bug40396DUnitTest extends DistributedTestCase {
    */
   public void testForFaultyDeltaImplementationForAIOBEX() {
     boolean matched = false;
-    ((Integer)server.invoke(Bug40396DUnitTest.class, "createServerCache")).intValue();
-    ((Integer)server2.invoke(Bug40396DUnitTest.class, "createServerCache")).intValue();
-    Exception xp = (Exception) server.invoke(Bug40396DUnitTest.class, "putDelta", new Object[] {
-          REGION_NAME, ARRAY_INDEX_OUT_BOUND_EX });
+    ((Integer)server.invoke(() -> Bug40396DUnitTest.createServerCache())).intValue();
+    ((Integer)server2.invoke(() -> Bug40396DUnitTest.createServerCache())).intValue();
+    Exception xp = (Exception) server.invoke(() -> Bug40396DUnitTest.putDelta(
+          REGION_NAME, ARRAY_INDEX_OUT_BOUND_EX ));
     
     StackTraceElement[] st = xp.getStackTrace();
     matched = getMatched(st);
@@ -205,9 +204,9 @@ public class Bug40396DUnitTest extends DistributedTestCase {
   @Override
   protected final void preTearDown() throws Exception {
     // then close the servers
-    server.invoke(Bug40396DUnitTest.class, "removeExceptions");
-    server.invoke(Bug40396DUnitTest.class, "closeCache");
-    server2.invoke(Bug40396DUnitTest.class, "closeCache");
+    server.invoke(() -> Bug40396DUnitTest.removeExceptions());
+    server.invoke(() -> Bug40396DUnitTest.closeCache());
+    server2.invoke(() -> Bug40396DUnitTest.closeCache());
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
   }

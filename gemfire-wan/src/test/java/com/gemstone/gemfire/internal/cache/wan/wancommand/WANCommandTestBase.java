@@ -494,14 +494,14 @@ public class WANCommandTestBase extends CliCommandTestBase{
   @Override
   protected final void postTearDownCacheTestCase() throws Exception {
     closeCache();
-    vm0.invoke(WANCommandTestBase.class, "closeCache");
-    vm1.invoke(WANCommandTestBase.class, "closeCache");
-    vm2.invoke(WANCommandTestBase.class, "closeCache");
-    vm3.invoke(WANCommandTestBase.class, "closeCache");
-    vm4.invoke(WANCommandTestBase.class, "closeCache");
-    vm5.invoke(WANCommandTestBase.class, "closeCache");
-    vm6.invoke(WANCommandTestBase.class, "closeCache");
-    vm7.invoke(WANCommandTestBase.class, "closeCache");
+    vm0.invoke(() -> WANCommandTestBase.closeCache());
+    vm1.invoke(() -> WANCommandTestBase.closeCache());
+    vm2.invoke(() -> WANCommandTestBase.closeCache());
+    vm3.invoke(() -> WANCommandTestBase.closeCache());
+    vm4.invoke(() -> WANCommandTestBase.closeCache());
+    vm5.invoke(() -> WANCommandTestBase.closeCache());
+    vm6.invoke(() -> WANCommandTestBase.closeCache());
+    vm7.invoke(() -> WANCommandTestBase.closeCache());
   }
 
   public static void closeCache() {

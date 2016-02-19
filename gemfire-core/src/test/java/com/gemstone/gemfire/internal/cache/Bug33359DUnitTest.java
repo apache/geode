@@ -66,8 +66,8 @@ public class Bug33359DUnitTest extends DistributedTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(Bug33359DUnitTest.class, "createCacheVM0");
-      vm1.invoke(Bug33359DUnitTest.class, "createCacheVM1");
+      vm0.invoke(() -> Bug33359DUnitTest.createCacheVM0());
+      vm1.invoke(() -> Bug33359DUnitTest.createCacheVM1());
       LogWriterUtils.getLogWriter().fine("Cache created in successfully");
     }
     
@@ -76,8 +76,8 @@ public class Bug33359DUnitTest extends DistributedTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(Bug33359DUnitTest.class, "closeCache");
-      vm1.invoke(Bug33359DUnitTest.class, "closeCache");
+      vm0.invoke(() -> Bug33359DUnitTest.closeCache());
+      vm1.invoke(() -> Bug33359DUnitTest.closeCache());
     }
     
     public static void createCacheVM0(){

@@ -60,10 +60,10 @@ public class RestAPITestBase extends DistributedTestCase {
    */
   @Override
   protected final void preTearDown() throws Exception {
-    vm0.invoke(getClass(), "closeCache");
-    vm1.invoke(getClass(), "closeCache");
-    vm2.invoke(getClass(), "closeCache");
-    vm3.invoke(getClass(), "closeCache");
+    vm0.invoke(() -> closeCache());
+    vm1.invoke(() -> closeCache());
+    vm2.invoke(() -> closeCache());
+    vm3.invoke(() -> closeCache());
   }
 
   /**

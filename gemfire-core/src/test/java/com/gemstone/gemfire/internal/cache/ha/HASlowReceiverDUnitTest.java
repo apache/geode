@@ -55,11 +55,11 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
 
   protected static VM clientVM = null;
 
-  private static int PORT0;
+  private int PORT0;
 
-  private static int PORT1;
+  private int PORT1;
 
-  private static int PORT2;
+  private int PORT2;
 
   private static final String regionName = "HASlowReceiverDUnitTest";
 
@@ -83,21 +83,19 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
     clientVM = host.getVM(3);
 
     PORT0 = createServerCache().intValue();
-    PORT1 = ((Integer)serverVM1.invoke(HASlowReceiverDUnitTest.class,
-        "createServerCache")).intValue();
-    PORT2 = ((Integer)serverVM2.invoke(HASlowReceiverDUnitTest.class,
-        "createServerCache")).intValue();
+    PORT1 = ((Integer)serverVM1.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
+    PORT2 = ((Integer)serverVM2.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
 
   }
 
   @Override
   protected final void preTearDown() throws Exception {
-    clientVM.invoke(HASlowReceiverDUnitTest.class, "closeCache");
+    clientVM.invoke(() -> HASlowReceiverDUnitTest.closeCache());
 
     // then close the servers
     closeCache();
-    serverVM1.invoke(HASlowReceiverDUnitTest.class, "closeCache");
-    serverVM2.invoke(HASlowReceiverDUnitTest.class, "closeCache");
+    serverVM1.invoke(() -> HASlowReceiverDUnitTest.closeCache());
+    serverVM2.invoke(() -> HASlowReceiverDUnitTest.closeCache());
     disconnectAllFromDS();
   }
 
@@ -249,10 +247,10 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
   // Test slow client
   public void testSlowClient() throws Exception {
     setBridgeObeserverForAfterQueueDestroyMessage();
-    clientVM.invoke(HASlowReceiverDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT0),
-            new Integer(PORT1), new Integer(PORT2), new Integer(2) });
-    clientVM.invoke(HASlowReceiverDUnitTest.class, "registerInterest");
+    Host host = Host.getHost(0);
+    clientVM.invoke(() -> HASlowReceiverDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT0),
+            new Integer(PORT1), new Integer(PORT2), new Integer(2) ));
+    clientVM.invoke(() -> HASlowReceiverDUnitTest.registerInterest());
     // add expected socket exception string
     final IgnoredException ex1 = IgnoredException.addIgnoredException(SocketException.class
         .getName());
@@ -261,8 +259,7 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
     putEntries();
     Thread.sleep(20000);// wait for put to block and allow server to remove
                         // client queue
-    clientVM.invoke(HASlowReceiverDUnitTest.class, "checkRedundancyLevel",
-        new Object[] { new Integer(2) });
+    clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel( new Integer(2) ));
     // check for slow client queue is removed or not.
     assertTrue("isUnresponsiveClientRemoved is false, but should be true "
         + "after 20 seconds", isUnresponsiveClientRemoved);
@@ -276,8 +273,7 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       @Override
       public void afterQueueDestroyMessage() {       
-        clientVM.invoke(HASlowReceiverDUnitTest.class, "checkRedundancyLevel",
-            new Object[] { new Integer(0) });
+        clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel( new Integer(0) ));
         isUnresponsiveClientRemoved = true;   
         PoolImpl.AFTER_QUEUE_DESTROY_MESSAGE_FLAG = false;
       }

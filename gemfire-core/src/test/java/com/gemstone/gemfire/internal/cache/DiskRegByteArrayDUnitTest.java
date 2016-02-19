@@ -85,8 +85,8 @@ public class DiskRegByteArrayDUnitTest extends CacheTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(DiskRegByteArrayDUnitTest.class, "createCacheForVM0");
-      vm1.invoke(DiskRegByteArrayDUnitTest.class, "createCacheForVM1");
+      vm0.invoke(() -> DiskRegByteArrayDUnitTest.createCacheForVM0());
+      vm1.invoke(() -> DiskRegByteArrayDUnitTest.createCacheForVM1());
      }
     
     @Override
@@ -99,10 +99,10 @@ public class DiskRegByteArrayDUnitTest extends CacheTestCase {
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
         VM vm1 = host.getVM(1);
-        vm0.invoke(DiskRegByteArrayDUnitTest.class, "deleteFiles");
-        vm1.invoke(DiskRegByteArrayDUnitTest.class, "deleteFiles");
-        vm0.invoke(DiskRegByteArrayDUnitTest.class, "closeCache");
-        vm1.invoke(DiskRegByteArrayDUnitTest.class, "closeCache");
+        vm0.invoke(() -> DiskRegByteArrayDUnitTest.deleteFiles());
+        vm1.invoke(() -> DiskRegByteArrayDUnitTest.deleteFiles());
+        vm0.invoke(() -> DiskRegByteArrayDUnitTest.closeCache());
+        vm1.invoke(() -> DiskRegByteArrayDUnitTest.closeCache());
     }*/
     
     public static void createCacheForVM0(){
@@ -170,7 +170,7 @@ public class DiskRegByteArrayDUnitTest extends CacheTestCase {
        //Put in vm0 
        vm0.invoke(DiskRegByteArrayDUnitTest.class, "putMethod", objArr);
        //forceflush data to disk
-        vm1.invoke(DiskRegByteArrayDUnitTest.class, "flushMethod");
+        vm1.invoke(() -> DiskRegByteArrayDUnitTest.flushMethod());
       /* get the val from disk
        * verify that the value retrieved from disk represents a byte[]
        * 

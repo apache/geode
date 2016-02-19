@@ -119,7 +119,11 @@ public class IgnoredException implements Serializable {
       }
     };
 
-    removeRunnable.run();
+    try {
+      removeRunnable.run();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     
     if (this.vm != null) {
       vm.invoke(removeRunnable);
@@ -169,7 +173,11 @@ public class IgnoredException implements Serializable {
       }
     };
     
-    addRunnable.run();
+    try {
+      addRunnable.run();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     
     if (vm != null) {
       vm.invoke(addRunnable);

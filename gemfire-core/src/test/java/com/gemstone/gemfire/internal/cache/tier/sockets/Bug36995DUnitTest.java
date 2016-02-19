@@ -142,9 +142,9 @@ public class Bug36995DUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     closeCache();
-    server1.invoke(Bug36995DUnitTest.class, "closeCache");
-    server2.invoke(Bug36995DUnitTest.class, "closeCache");
-    server3.invoke(Bug36995DUnitTest.class, "closeCache");
+    server1.invoke(() -> Bug36995DUnitTest.closeCache());
+    server2.invoke(() -> Bug36995DUnitTest.closeCache());
+    server3.invoke(() -> Bug36995DUnitTest.closeCache());
   }
 
   public static void closeCache()
@@ -160,12 +160,9 @@ public class Bug36995DUnitTest extends DistributedTestCase
    */
   public void testBug36995_Default()
   {
-    Integer port1 = ((Integer)server1.invoke(Bug36995DUnitTest.class,
-        "createServerCache"));
-    Integer port2 = ((Integer)server2.invoke(Bug36995DUnitTest.class,
-        "createServerCache"));
-    Integer port3 = ((Integer)server3.invoke(Bug36995DUnitTest.class,
-        "createServerCache"));
+    Integer port1 = ((Integer)server1.invoke(() -> Bug36995DUnitTest.createServerCache()));
+    Integer port2 = ((Integer)server2.invoke(() -> Bug36995DUnitTest.createServerCache()));
+    Integer port3 = ((Integer)server3.invoke(() -> Bug36995DUnitTest.createServerCache()));
     createClientCacheWithDefaultMessageTrackingTimeout(
         NetworkUtils.getServerHostName(server1.getHost()), port1.intValue(), port2
         .intValue(), port3.intValue());
@@ -180,12 +177,9 @@ public class Bug36995DUnitTest extends DistributedTestCase
   {
     //work around GEODE-507
     IgnoredException.addIgnoredException("Connection reset");
-    Integer port1 = ((Integer)server1.invoke(Bug36995DUnitTest.class,
-        "createServerCache"));
-    Integer port2 = ((Integer)server2.invoke(Bug36995DUnitTest.class,
-        "createServerCache"));
-    Integer port3 = ((Integer)server3.invoke(Bug36995DUnitTest.class,
-        "createServerCache"));
+    Integer port1 = ((Integer)server1.invoke(() -> Bug36995DUnitTest.createServerCache()));
+    Integer port2 = ((Integer)server2.invoke(() -> Bug36995DUnitTest.createServerCache()));
+    Integer port3 = ((Integer)server3.invoke(() -> Bug36995DUnitTest.createServerCache()));
     createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
         port1.intValue(), port2.intValue(), port3.intValue());
     assertEquals(54321, pool.getSubscriptionMessageTrackingTimeout());
@@ -196,16 +190,13 @@ public class Bug36995DUnitTest extends DistributedTestCase
    */
   public void testBug36526()
   {
-    Integer port1 = ((Integer)server1.invoke(Bug36995DUnitTest.class,
-        "createServerCache"));
-    Integer port2 = ((Integer)server2.invoke(Bug36995DUnitTest.class,
-        "createServerCache"));
-    Integer port3 = ((Integer)server3.invoke(Bug36995DUnitTest.class,
-        "createServerCache"));
+    Integer port1 = ((Integer)server1.invoke(() -> Bug36995DUnitTest.createServerCache()));
+    Integer port2 = ((Integer)server2.invoke(() -> Bug36995DUnitTest.createServerCache()));
+    Integer port3 = ((Integer)server3.invoke(() -> Bug36995DUnitTest.createServerCache()));
     createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
         port1.intValue(), port2.intValue(), port3.intValue());
     verifyDeadAndLiveServers(0, 3);
-    server2.invoke(Bug36995DUnitTest.class, "stopServer");
+    server2.invoke(() -> Bug36995DUnitTest.stopServer());
     verifyDeadAndLiveServers(1, 2);
   }
 

@@ -46,10 +46,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  */
 public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
 
-  //These fields are used as BlackBoard for test data verification.
-  static long destroyTimeStamp;
-  static int destroyingMember;
-  
   public NewWANConcurrencyCheckForDestroyDUnitTest(String name) {
     super(name);
   }
@@ -68,49 +64,46 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // Site 2 and Site 3.
 
     // Site 1
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer lnRecPort = (Integer) vm1.invoke(WANTestBase.class, "createReceiver", new Object[] { lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
     
     //Site 2
-    Integer nyPort = (Integer)vm2.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
-    Integer nyRecPort = (Integer) vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
     //Site 3
-    Integer tkPort = (Integer)vm4.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 3, lnPort });
-    Integer tkRecPort = (Integer) vm5.invoke(WANTestBase.class, "createReceiver", new Object[] { tkPort });
+    Integer tkPort = (Integer)vm4.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, lnPort ));
+    Integer tkRecPort = (Integer) vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 3 distributed systems");
      
     //Site 1
-    vm1.invoke(WANTestBase.class, "createSender", new Object[] { "ln1", 2,
-      true, 10, 1, false, false, null, true });
-    vm1.invoke(WANTestBase.class, "createSender", new Object[] { "ln2", 3,
-      true, 10, 1, false, false, null, true });
+    vm1.invoke(() -> WANTestBase.createSender( "ln1", 2,
+      true, 10, 1, false, false, null, true ));
+    vm1.invoke(() -> WANTestBase.createSender( "ln2", 3,
+      true, 10, 1, false, false, null, true ));
     
-    vm1.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {"repRegion", "ln1,ln2", 0, 1, isOffHeap() });
-    vm1.invoke(WANTestBase.class, "startSender", new Object[] { "ln1" });
-    vm1.invoke(WANTestBase.class, "startSender", new Object[] { "ln2" });
-    vm1.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln1" });
-    vm1.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln2" });
+    vm1.invoke(() -> WANTestBase.createPartitionedRegion("repRegion", "ln1,ln2", 0, 1, isOffHeap() ));
+    vm1.invoke(() -> WANTestBase.startSender( "ln1" ));
+    vm1.invoke(() -> WANTestBase.startSender( "ln2" ));
+    vm1.invoke(() -> WANTestBase.waitForSenderRunningState( "ln1" ));
+    vm1.invoke(() -> WANTestBase.waitForSenderRunningState( "ln2" ));
     
     //Site 2
-    vm3.invoke(WANTestBase.class, "createSender", new Object[] { "ny1", 1,
-      true, 10, 1, false, false, null, true });
+    vm3.invoke(() -> WANTestBase.createSender( "ny1", 1,
+      true, 10, 1, false, false, null, true ));
     
-    vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {"repRegion", "ny1", 0, 1, isOffHeap() });
-    vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ny1" });
-    vm3.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ny1" });
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion("repRegion", "ny1", 0, 1, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.startSender( "ny1" ));
+    vm3.invoke(() -> WANTestBase.waitForSenderRunningState( "ny1" ));
     
     //Site 3 which only knows about Site 1.
-    vm5.invoke(WANTestBase.class, "createSender", new Object[] { "tk1", 1,
-      true, 10, 1, false, false, null, true });
+    vm5.invoke(() -> WANTestBase.createSender( "tk1", 1,
+      true, 10, 1, false, false, null, true ));
     
-    vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {"repRegion", "tk1", 0, 1, isOffHeap() });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "tk1" });
-    vm5.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "tk1" });
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion("repRegion", "tk1", 0, 1, isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.startSender( "tk1" ));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "tk1" ));
     
     Wait.pause(2000);
     
@@ -131,13 +124,12 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     //wait for vm1 to propagate put to vm3 and vm5
     Wait.pause(2000); 
 
-    destroyTimeStamp = (Long) vm3.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "getVersionTimestampAfterOp");
+    long destroyTimeStamp = (Long) vm3.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterOp());
     
     //wait for vm1 to propagate destroyed entry's new version tag to vm5
     Wait.pause(2000); 
 
-    vm5.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "verifyTimestampAfterOp", 
-          new Object[] {destroyTimeStamp, 1 /* ds 3 receives gatway event only from ds 1*/});
+    vm5.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.verifyTimestampAfterOp(destroyTimeStamp, 1 /* ds 3 receives gatway event only from ds 1*/));
   }
 
   /**
@@ -153,32 +145,30 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // a Replicated Region with one entry and concurrency checks enabled.
 
     // Site 1
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer lnRecPort = (Integer) vm1.invoke(WANTestBase.class, "createReceiver", new Object[] { lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
     
     //Site 2
-    Integer nyPort = (Integer)vm2.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
-    Integer nyRecPort = (Integer) vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
      
     //Site 1
-    vm1.invoke(WANTestBase.class, "createSender", new Object[] { "ln1", 2,
-      false, 10, 1, false, false, null, true });
+    vm1.invoke(() -> WANTestBase.createSender( "ln1", 2,
+      false, 10, 1, false, false, null, true ));
     
-    vm1.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {"repRegion", "ln1", isOffHeap() });
-    vm1.invoke(WANTestBase.class, "startSender", new Object[] { "ln1" });
-    vm1.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln1" });
+    vm1.invoke(() -> WANTestBase.createReplicatedRegion("repRegion", "ln1", isOffHeap() ));
+    vm1.invoke(() -> WANTestBase.startSender( "ln1" ));
+    vm1.invoke(() -> WANTestBase.waitForSenderRunningState( "ln1" ));
     
     //Site 2
-    vm3.invoke(WANTestBase.class, "createSender", new Object[] { "ny1", 1,
-      false, 10, 1, false, false, null, true });
+    vm3.invoke(() -> WANTestBase.createSender( "ny1", 1,
+      false, 10, 1, false, false, null, true ));
     
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {"repRegion", "ny1", isOffHeap() });
-    vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ny1" });
-    vm3.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ny1" });
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion("repRegion", "ny1", isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.startSender( "ny1" ));
+    vm3.invoke(() -> WANTestBase.waitForSenderRunningState( "ny1" ));
     
     Wait.pause(2000);
     
@@ -242,9 +232,9 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     //Wait for all Gateway events be received by vm3.
     Wait.pause(1000);
 
-    long putAllTimeStampVm1 = (Long) vm1.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "getVersionTimestampAfterPutAllOp");
+    long putAllTimeStampVm1 = (Long) vm1.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
     
-    long putAllTimeStampVm3 = (Long) vm3.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "getVersionTimestampAfterPutAllOp");
+    long putAllTimeStampVm3 = (Long) vm3.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
     
     assertEquals(putAllTimeStampVm1, putAllTimeStampVm3);
   }
@@ -258,32 +248,30 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     // a Replicated Region with one entry and concurrency checks enabled.
 
     // Site 1
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer lnRecPort = (Integer) vm1.invoke(WANTestBase.class, "createReceiver", new Object[] { lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
     
     //Site 2
-    Integer nyPort = (Integer)vm2.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
-    Integer nyRecPort = (Integer) vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
      
     //Site 1
-    vm1.invoke(WANTestBase.class, "createSender", new Object[] { "ln1", 2,
-      false, 10, 1, false, false, null, true });
+    vm1.invoke(() -> WANTestBase.createSender( "ln1", 2,
+      false, 10, 1, false, false, null, true ));
     
-    vm1.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {"repRegion", "ln1", 0, 1, isOffHeap() });
-    vm1.invoke(WANTestBase.class, "startSender", new Object[] { "ln1" });
-    vm1.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln1" });
+    vm1.invoke(() -> WANTestBase.createPartitionedRegion("repRegion", "ln1", 0, 1, isOffHeap() ));
+    vm1.invoke(() -> WANTestBase.startSender( "ln1" ));
+    vm1.invoke(() -> WANTestBase.waitForSenderRunningState( "ln1" ));
     
     //Site 2
-    vm3.invoke(WANTestBase.class, "createSender", new Object[] { "ny1", 1,
-      false, 10, 1, false, false, null, true });
+    vm3.invoke(() -> WANTestBase.createSender( "ny1", 1,
+      false, 10, 1, false, false, null, true ));
     
-    vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {"repRegion", "ny1", 0, 1, isOffHeap() });
-    vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ny1" });
-    vm3.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ny1" });
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion("repRegion", "ny1", 0, 1, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.startSender( "ny1" ));
+    vm3.invoke(() -> WANTestBase.waitForSenderRunningState( "ny1" ));
     
     Wait.pause(2000);
     
@@ -347,9 +335,9 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     //Wait for all Gateway events be received by vm3.
     Wait.pause(1000);
 
-    long putAllTimeStampVm1 = (Long) vm1.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "getVersionTimestampAfterPutAllOp");
+    long putAllTimeStampVm1 = (Long) vm1.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
     
-    long putAllTimeStampVm3 = (Long) vm3.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "getVersionTimestampAfterPutAllOp");
+    long putAllTimeStampVm3 = (Long) vm3.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
     
     assertEquals(putAllTimeStampVm1, putAllTimeStampVm3);
   }
@@ -365,35 +353,33 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     // a Replicated Region with one entry and concurrency checks enabled.
 
     // Site 1
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer lnRecPort = (Integer) vm1.invoke(WANTestBase.class, "createReceiver", new Object[] { lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
     
     //Site 2
-    Integer nyPort = (Integer)vm2.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
-    Integer nyRecPort = (Integer) vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
     
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
 
     //Site 1
-    vm1.invoke(WANTestBase.class, "createSender", new Object[] { "ln1", 2,
-      false, 10, 1, false, false, null, true });
+    vm1.invoke(() -> WANTestBase.createSender( "ln1", 2,
+      false, 10, 1, false, false, null, true ));
     
-    vm1.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {"repRegion", "ln1", isOffHeap() });
-    vm1.invoke(WANTestBase.class, "startSender", new Object[] { "ln1" });
-    vm1.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln1" });
+    vm1.invoke(() -> WANTestBase.createReplicatedRegion("repRegion", "ln1", isOffHeap() ));
+    vm1.invoke(() -> WANTestBase.startSender( "ln1" ));
+    vm1.invoke(() -> WANTestBase.waitForSenderRunningState( "ln1" ));
     
     //Site 2
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {"repRegion", "ny1", isOffHeap() });
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion("repRegion", "ny1", isOffHeap() ));
     
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { nyPort });
-    vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ny1", 1,
-      false, 10, 1, false, false, null, true });
+    vm4.invoke(() -> WANTestBase.createCache( nyPort ));
+    vm4.invoke(() -> WANTestBase.createSender( "ny1", 1,
+      false, 10, 1, false, false, null, true ));
     
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {"repRegion", "ny1", isOffHeap() });
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ny1" });
-    vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ny1" });
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion("repRegion", "ny1", isOffHeap() ));
+    vm4.invoke(() -> WANTestBase.startSender( "ny1" ));
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ny1" ));
     
     Wait.pause(2000);
     
@@ -457,9 +443,9 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     });
 
     // Check vm3 has latest timestamp from vm4.
-    long putAllTimeStampVm1 = (Long) vm4.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "getVersionTimestampAfterPutAllOp");
+    long putAllTimeStampVm1 = (Long) vm4.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
     
-    long putAllTimeStampVm3 = (Long) vm3.invoke(NewWANConcurrencyCheckForDestroyDUnitTest.class, "getVersionTimestampAfterPutAllOp");
+    long putAllTimeStampVm3 = (Long) vm3.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
     
     assertEquals(putAllTimeStampVm1, putAllTimeStampVm3);
   }

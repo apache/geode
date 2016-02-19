@@ -182,32 +182,32 @@ public class ExceptionsDUnitTest extends DistributedTestCase {
     super.setUp();
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(ExceptionsDUnitTest.class, "init");
+    vm0.invoke(() -> ExceptionsDUnitTest.init());
   }
 
   @Override
   protected final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(ExceptionsDUnitTest.class, "closeCache");
+    vm0.invoke(() -> ExceptionsDUnitTest.closeCache());
   }
 
   public static void testBlockingTimeOut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(ExceptionsDUnitTest.class, "runTest1");
+    vm0.invoke(() -> ExceptionsDUnitTest.runTest1());
   }
 
   public static void testLoginTimeOut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(ExceptionsDUnitTest.class, "runTest2");
+    vm0.invoke(() -> ExceptionsDUnitTest.runTest2());
   }
 
   public static void testTransactionTimeOut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(ExceptionsDUnitTest.class, "runTest3");
+    vm0.invoke(() -> ExceptionsDUnitTest.runTest3());
   }
 
   public static void runTest1() throws Exception {

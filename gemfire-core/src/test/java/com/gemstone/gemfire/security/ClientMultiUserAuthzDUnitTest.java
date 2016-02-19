@@ -53,12 +53,9 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    server1.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { serverExpectedExceptions });
-    server2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { serverExpectedExceptions });
-    client2.invoke(SecurityTestUtil.class, "registerExpectedExceptions",
-        new Object[] { clientExpectedExceptions });
+    server1.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
+    server2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
+    client2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( clientExpectedExceptions ));
     SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions);
   }
 
@@ -86,12 +83,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
           extraAuthProps, extraAuthzProps);
       Integer port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
       Integer port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-      server1.invoke(ClientAuthorizationTestBase.class, "createCacheServer",
-          new Object[] {SecurityTestUtil.getLocatorPort(), port1, serverProps,
-              javaProps});
-      server2.invoke(ClientAuthorizationTestBase.class, "createCacheServer",
-          new Object[] {SecurityTestUtil.getLocatorPort(), port2, serverProps,
-              javaProps});
+      createCacheServers(javaProps, serverProps, port1, port2);
 
       if (!prepareClientsForOps(gen, cGen, new OperationCode[] {
           OperationCode.PUT, OperationCode.PUT}, new OperationCode[] {
@@ -316,7 +308,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
   }
 
   private void verifyGetAllInTX() {
-    server1.invoke(ClientMultiUserAuthzDUnitTest.class, "doPuts");
+    server1.invoke(() -> ClientMultiUserAuthzDUnitTest.doPuts());
     client1.invoke(SecurityTestUtil.class, "doMultiUserGetAll", new Object[] {
       Integer.valueOf(2),
       new Integer[] {SecurityTestUtil.NO_EXCEPTION,
@@ -324,7 +316,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
   }
 
   private void verifyGetAllRegionDestroys() {
-    server1.invoke(ClientMultiUserAuthzDUnitTest.class, "doPuts");
+    server1.invoke(() -> ClientMultiUserAuthzDUnitTest.doPuts());
     client1.invoke(SecurityTestUtil.class, "doMultiUserGetAll", new Object[] {
       Integer.valueOf(2),
       new Integer[] {SecurityTestUtil.NO_EXCEPTION,
@@ -364,12 +356,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
           extraAuthProps, extraAuthzProps);
       Integer port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
       Integer port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-      server1.invoke(ClientAuthorizationTestBase.class, "createCacheServer",
-          new Object[] {SecurityTestUtil.getLocatorPort(), port1, serverProps,
-              javaProps});
-      server2.invoke(ClientAuthorizationTestBase.class, "createCacheServer",
-          new Object[] {SecurityTestUtil.getLocatorPort(), port2, serverProps,
-              javaProps});
+      createCacheServers(javaProps, serverProps, port1, port2);
 
       // Start client1 with valid/invalid QUERY credentials
       Properties[] client1Credentials = new Properties[] {
@@ -442,7 +429,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
           Boolean.FALSE});
 
       // Failover
-      server1.invoke(SecurityTestUtil.class, "closeCache");
+      server1.invoke(() -> SecurityTestUtil.closeCache());
       Thread.sleep(2000);
 
       client1.invoke(SecurityTestUtil.class, "doMultiUserPuts", new Object[] {
@@ -473,6 +460,14 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
 
   }
 
+  protected void createCacheServers(Properties javaProps,
+      Properties serverProps, Integer port1, Integer port2) {
+    server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(SecurityTestUtil.getLocatorPort(), port1, serverProps,
+            javaProps));
+    server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(SecurityTestUtil.getLocatorPort(), port2, serverProps,
+            javaProps));
+  }
+
   public void testOpsWithClientsInDifferentModes() throws Exception {
     Iterator iter = getDummyGeneratorCombos().iterator();
     while (iter.hasNext()) {
@@ -495,12 +490,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
           extraAuthProps, extraAuthzProps);
       Integer port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
       Integer port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-      server1.invoke(ClientAuthorizationTestBase.class, "createCacheServer",
-          new Object[] {SecurityTestUtil.getLocatorPort(), port1, serverProps,
-              javaProps});
-      server2.invoke(ClientAuthorizationTestBase.class, "createCacheServer",
-          new Object[] {SecurityTestUtil.getLocatorPort(), port2, serverProps,
-              javaProps});
+      createCacheServers(javaProps, serverProps, port1, port2);
 
       if (!prepareClientsForOps(gen, cGen, new OperationCode[] {
           OperationCode.PUT, OperationCode.PUT}, new OperationCode[] {
@@ -525,11 +515,11 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
   @Override
   protected final void preTearDown() throws Exception {
     // close the clients first
-    client1.invoke(SecurityTestUtil.class, "closeCache");
-    client2.invoke(SecurityTestUtil.class, "closeCache");
+    client1.invoke(() -> SecurityTestUtil.closeCache());
+    client2.invoke(() -> SecurityTestUtil.closeCache());
     SecurityTestUtil.closeCache();
     // then close the servers
-    server1.invoke(SecurityTestUtil.class, "closeCache");
-    server2.invoke(SecurityTestUtil.class, "closeCache");
+    server1.invoke(() -> SecurityTestUtil.closeCache());
+    server2.invoke(() -> SecurityTestUtil.closeCache());
   }
 }

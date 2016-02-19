@@ -273,12 +273,12 @@ public class QueryDataDUnitTest extends ManagementTestBase {
   private void createRegionsInNodes() {
 
     // Create local Region on servers
-    managedNode1.invoke(QueryUsingFunctionContextDUnitTest.class, "createLocalRegion");
+    managedNode1.invoke(() -> QueryUsingFunctionContextDUnitTest.createLocalRegion());
 
     // Create ReplicatedRegion on servers
-    managedNode1.invoke(QueryUsingFunctionContextDUnitTest.class, "createReplicatedRegion");
-    managedNode2.invoke(QueryUsingFunctionContextDUnitTest.class, "createReplicatedRegion");
-    managedNode3.invoke(QueryUsingFunctionContextDUnitTest.class, "createReplicatedRegion");
+    managedNode1.invoke(() -> QueryUsingFunctionContextDUnitTest.createReplicatedRegion());
+    managedNode2.invoke(() -> QueryUsingFunctionContextDUnitTest.createReplicatedRegion());
+    managedNode3.invoke(() -> QueryUsingFunctionContextDUnitTest.createReplicatedRegion());
     try {
       this.createDistributedRegion(managedNode2, repRegionName2);
       this.createDistributedRegion(managedNode1, repRegionName3);
@@ -288,9 +288,9 @@ public class QueryDataDUnitTest extends ManagementTestBase {
     }
 
     // Create two colocated PartitionedRegions On Servers.
-    managedNode1.invoke(QueryUsingFunctionContextDUnitTest.class, "createColocatedPR");
-    managedNode2.invoke(QueryUsingFunctionContextDUnitTest.class, "createColocatedPR");
-    managedNode3.invoke(QueryUsingFunctionContextDUnitTest.class, "createColocatedPR");
+    managedNode1.invoke(() -> QueryUsingFunctionContextDUnitTest.createColocatedPR());
+    managedNode2.invoke(() -> QueryUsingFunctionContextDUnitTest.createColocatedPR());
+    managedNode3.invoke(() -> QueryUsingFunctionContextDUnitTest.createColocatedPR());
 
     this.managingNode.invoke(new SerializableRunnable("Wait for all Region Proxies to get replicated") {
 
@@ -760,11 +760,11 @@ public class QueryDataDUnitTest extends ManagementTestBase {
       }
     });
 
-    final List<String> member1RealData = (List<String>)managedNode1.invoke(QueryDataDUnitTest.class, "getLocalDataSet", new Object[] { PartitionedRegionName6 });
+    final List<String> member1RealData = (List<String>)managedNode1.invoke(() -> QueryDataDUnitTest.getLocalDataSet( PartitionedRegionName6 ));
    
-    final List<String> member2RealData = (List<String>) managedNode2.invoke(QueryDataDUnitTest.class, "getLocalDataSet", new Object[] { PartitionedRegionName6 });
+    final List<String> member2RealData = (List<String>) managedNode2.invoke(() -> QueryDataDUnitTest.getLocalDataSet( PartitionedRegionName6 ));
     
-    final List<String> member3RealData = (List<String>) managedNode3.invoke(QueryDataDUnitTest.class, "getLocalDataSet", new Object[] { PartitionedRegionName6 });
+    final List<String> member3RealData = (List<String>) managedNode3.invoke(() -> QueryDataDUnitTest.getLocalDataSet( PartitionedRegionName6 ));
     
 
     

@@ -109,7 +109,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   public void testGCForMemberID() {
     createDefaultSetup(null);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(MiscellaneousCommandsDUnitTest.class, "getMemberId");
+    final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
     String command = "gc --member=" + vm1MemberId;
     CommandResult cmdResult = executeCommand(command);
     cmdResult.resetToFirstLine();
@@ -135,7 +135,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       props.setProperty("log-file", "testShowLogDefault.log");
       createDefaultSetup(props);
       final VM vm1 = Host.getHost(0).getVM(0);
-      final String vm1MemberId = (String) vm1.invoke(MiscellaneousCommandsDUnitTest.class, "getMemberId");
+      final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
       String command = "show log --member=" + vm1MemberId;
       CommandResult cmdResult = executeCommand(command);
       if (cmdResult != null) {
@@ -157,7 +157,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     try {
       createDefaultSetup(props);
       final VM vm1 = Host.getHost(0).getVM(0);
-      final String vm1MemberId = (String) vm1.invoke(MiscellaneousCommandsDUnitTest.class, "getMemberId");
+      final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
       String command = "show log --member=" + vm1MemberId + " --lines=50";
       CommandResult cmdResult = executeCommand(command);
       if (cmdResult != null) {

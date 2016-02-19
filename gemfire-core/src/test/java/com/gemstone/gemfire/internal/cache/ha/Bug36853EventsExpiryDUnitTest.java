@@ -109,12 +109,10 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
     final Host host = Host.getHost(0);
     server = host.getVM(0);
     client = host.getVM(1);
-    server.invoke(ConflationDUnitTest.class, "setIsSlowStart");
-    int PORT2 = ((Integer)server.invoke(Bug36853EventsExpiryDUnitTest.class,
-        "createServerCache")).intValue();
+    server.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+    int PORT2 = ((Integer)server.invoke(() -> Bug36853EventsExpiryDUnitTest.createServerCache())).intValue();
 
-    client.invoke(Bug36853EventsExpiryDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(host), new Integer(PORT2) });
+    client.invoke(() -> Bug36853EventsExpiryDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT2) ));
 
   }
 
@@ -244,9 +242,8 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
   {
     IgnoredException.addIgnoredException("Unexpected IOException");
     IgnoredException.addIgnoredException("Connection reset");
-    server.invoke(Bug36853EventsExpiryDUnitTest.class, "generateEvents");
-    client.invoke(Bug36853EventsExpiryDUnitTest.class,
-        "validateEventCountAtClient");
+    server.invoke(() -> Bug36853EventsExpiryDUnitTest.generateEvents());
+    client.invoke(() -> Bug36853EventsExpiryDUnitTest.validateEventCountAtClient());
   }
 
   /**
@@ -298,9 +295,9 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
   protected final void preTearDownCacheTestCase() throws Exception
   {
     // close client
-    client.invoke(Bug36853EventsExpiryDUnitTest.class, "closeCache");
+    client.invoke(() -> Bug36853EventsExpiryDUnitTest.closeCache());
     // close server
-    server.invoke(Bug36853EventsExpiryDUnitTest.class, "closeCache");
+    server.invoke(() -> Bug36853EventsExpiryDUnitTest.closeCache());
 
   }
 

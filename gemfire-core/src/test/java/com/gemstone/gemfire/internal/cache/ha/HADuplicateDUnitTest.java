@@ -67,10 +67,6 @@ public class HADuplicateDUnitTest extends DistributedTestCase
 
   VM client2 = null;
 
-  public static int PORT1;
-
-  public static int PORT2;
-
   private static final String REGION_NAME = "HADuplicateDUnitTest_Region";
 
   protected static Cache cache = null;
@@ -109,11 +105,11 @@ public class HADuplicateDUnitTest extends DistributedTestCase
 
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(HADuplicateDUnitTest.class, "closeCache");
+    client1.invoke(() -> HADuplicateDUnitTest.closeCache());
     // close server
-    server1.invoke(HADuplicateDUnitTest.class, "reSetQRMslow");
-    server1.invoke(HADuplicateDUnitTest.class, "closeCache");
-    server2.invoke(HADuplicateDUnitTest.class, "closeCache");
+    server1.invoke(() -> HADuplicateDUnitTest.reSetQRMslow());
+    server1.invoke(() -> HADuplicateDUnitTest.closeCache());
+    server2.invoke(() -> HADuplicateDUnitTest.closeCache());
   }
 
   public void _testDuplicate() throws Exception
@@ -153,7 +149,7 @@ public class HADuplicateDUnitTest extends DistributedTestCase
       }
     });
 
-    server1.invoke(HADuplicateDUnitTest.class, "reSetQRMslow");
+    server1.invoke(() -> HADuplicateDUnitTest.reSetQRMslow());
   }
 
 
@@ -219,13 +215,11 @@ public class HADuplicateDUnitTest extends DistributedTestCase
   // function to create 2servers and 1 clients
   private void createClientServerConfiguration()
   {
-    PORT1 = ((Integer)server1.invoke(HADuplicateDUnitTest.class,
-        "createServerCache")).intValue();
-    server1.invoke(HADuplicateDUnitTest.class, "setQRMslow");
-    PORT2 = ((Integer)server2.invoke(HADuplicateDUnitTest.class,
-        "createServerCache")).intValue();
-    client1.invoke(HADuplicateDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) });
+    int PORT1 = ((Integer)server1.invoke(() -> HADuplicateDUnitTest.createServerCache())).intValue();
+    server1.invoke(() -> HADuplicateDUnitTest.setQRMslow());
+    int PORT2 = ((Integer)server2.invoke(() -> HADuplicateDUnitTest.createServerCache())).intValue();
+    String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
+    client1.invoke(() -> HADuplicateDUnitTest.createClientCache( hostname, new Integer(PORT1), new Integer(PORT2) ));
 
   }
 
@@ -270,8 +264,8 @@ public class HADuplicateDUnitTest extends DistributedTestCase
   public static void createClientCache(String hostName, Integer port1, Integer port2)
       throws Exception
   {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue();
+    int PORT2 = port2.intValue();
     Properties props = new Properties();
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");

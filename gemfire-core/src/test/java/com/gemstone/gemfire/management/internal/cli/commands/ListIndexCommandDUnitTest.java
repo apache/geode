@@ -144,7 +144,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     return distributedSystemProperties;
   }
 
-  protected void createRegionWithIndexes(final Peer peer) {
+  protected void createRegionWithIndexes(final Peer peer) throws Exception {
     peer.run(new SerializableRunnable(
         String.format("Creating Regions with Indexes on GemFire peer (%1$s).", peer.getName())) {
       public void run() {
@@ -185,7 +185,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     });
   }
 
-  protected void loadConsumerData(final Peer peer, final int operationsTotal) {
+  protected void loadConsumerData(final Peer peer, final int operationsTotal) throws Exception {
     peer.run(new SerializableRunnable("Load /consumers Region with data") {
       public void run() {
         final Cache cache = getCache();
@@ -231,7 +231,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     });
   }
 
-  protected void loadProducerData(final Peer peer, final int operationsTotal) {
+  protected void loadProducerData(final Peer peer, final int operationsTotal) throws Exception {
     peer.run(new SerializableRunnable("Load /producers Region with data") {
       public void run() {
         final Cache cache = getCache();
@@ -357,7 +357,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
       return (regionDefinitions != null && regions.removeAll(Arrays.asList(regionDefinitions)));
     }
 
-    public void run(final SerializableRunnableIF runnable) {
+    public void run(final SerializableRunnableIF runnable) throws Exception {
       if (getVm() == null) {
         runnable.run();
       } else {

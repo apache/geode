@@ -128,10 +128,10 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
   @Override
   protected final void preTearDownCacheTestCase() throws Exception {
     // close the clients first
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class, "closeCache");
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class, "closeCache");
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class, "closeCache");
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class, "closeCache");
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCache());
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCache());
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCache());
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCache());
     closeCache();
   }
   
@@ -179,16 +179,12 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
 
     setHonourServerGroupsInPRSingleHop();
     createClientWithLocator(host0, port3, "group1");
@@ -205,7 +201,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
       resetHonourServerGroupsInPRSingleHop();
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class, "stopLocator");
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
 
@@ -213,16 +209,12 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1" });
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
 
     setHonourServerGroupsInPRSingleHop();
     createClientWithLocator(host0, port3, "group1");
@@ -239,7 +231,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
       resetHonourServerGroupsInPRSingleHop();
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class, "stopLocator");  
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());  
     }
   }
   
@@ -247,16 +239,12 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1" });
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
 
     createClientWithLocator(host0, port3, "group1");
 
@@ -268,7 +256,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
       verifyMetadata(4,3);
     }
     finally{
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class, "stopLocator");      
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());      
     }
   }
 
@@ -276,16 +264,12 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 0,2, 8, "group1" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 0,2, 8, "group1" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
 
     setHonourServerGroupsInPRSingleHop();
     createClientWithLocator(host0, port3, "group1");
@@ -301,7 +285,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
       resetHonourServerGroupsInPRSingleHop();
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class, "stopLocator");  
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());  
     }
   }
   
@@ -309,19 +293,15 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,
-            2, 8, "group1" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,
-            2, 8, "group1" });
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,
-            2, 8, "group1,group2" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,
+            2, 8, "group1" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,
+            2, 8, "group1" ));
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,
+            2, 8, "group1,group2" ));
 
     setHonourServerGroupsInPRSingleHop();
     createClientWithLocator(host0, port3, "group1");
@@ -337,8 +317,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
       resetHonourServerGroupsInPRSingleHop();
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-      "stopLocator");  
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());  
     }
     
     
@@ -348,16 +327,12 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "" ));
 
     setHonourServerGroupsInPRSingleHop();
     createClientWithLocator(host0, port3, "group1");
@@ -373,7 +348,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
       resetHonourServerGroupsInPRSingleHop();
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class, "stopLocator");  
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());  
     }
   }
   
@@ -381,16 +356,12 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group3" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group3" ));
 
     setHonourServerGroupsInPRSingleHop();
     createClientWithLocator(host0, port3, "");
@@ -405,8 +376,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
       resetHonourServerGroupsInPRSingleHop();
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "stopLocator");
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
   
@@ -414,46 +384,36 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
     
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "setHonourServerGroupsInPRSingleHop", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.setHonourServerGroupsInPRSingleHop());
 
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createClientWithLocator", new Object[] {host0,port3,"group1"});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createClientWithLocator(host0,port3,"group1"));
 
     setHonourServerGroupsInPRSingleHop();
     createClientWithLocator(host0, port3, "");
 
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "putIntoPartitionedRegions", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions());
     
     putIntoPartitionedRegions();
 
     getFromPartitionedRegions();
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "getFromPartitionedRegions", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions());
     
     try {
       verifyMetadata(4, 2);
-      member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "verifyMetadata", new Object[] {new Integer(4),new Integer(1)});
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadata(new Integer(4),new Integer(1)));
       
     } finally {
       resetHonourServerGroupsInPRSingleHop();
-      member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "resetHonourServerGroupsInPRSingleHop", new Object[] {});
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.resetHonourServerGroupsInPRSingleHop());
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "stopLocator");
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
   
@@ -461,43 +421,33 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1,group2" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1,group2" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
     
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "setHonourServerGroupsInPRSingleHop", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.setHonourServerGroupsInPRSingleHop());
 
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createClientWithLocator", new Object[] {host0,port3,"group1"});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createClientWithLocator(host0,port3,"group1"));
 
     setHonourServerGroupsInPRSingleHop();
     createClientWithLocator(host0, port3, "group2");
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "putIntoPartitionedRegions", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions());
     putIntoPartitionedRegions();
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "getFromPartitionedRegions", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions());
     getFromPartitionedRegions();
 
     try {
       verifyMetadata(4, 2);
-      member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "verifyMetadata", new Object[] {new Integer(4),new Integer(1)});
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadata(new Integer(4),new Integer(1)));
 
     } finally {
       resetHonourServerGroupsInPRSingleHop();
-      member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "resetHonourServerGroupsInPRSingleHop", new Object[] {});
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.resetHonourServerGroupsInPRSingleHop());
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "stopLocator");
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
   
@@ -505,38 +455,30 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1,group2" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1,group2" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
     
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createClientWithLocator", new Object[] {host0,port3,"group1"});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createClientWithLocator(host0,port3,"group1"));
 
     setHonourServerGroupsInPRSingleHop();
     createClientWithLocator(host0, port3, "group2");
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "putIntoPartitionedRegions", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions());
     putIntoPartitionedRegions();
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "getFromPartitionedRegions", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions());
     getFromPartitionedRegions();
 
     try {
       verifyMetadata(4, 2);
-      member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "verifyMetadata", new Object[] {new Integer(4),new Integer(2)});
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadata(new Integer(4),new Integer(2)));
 
     } finally {
       resetHonourServerGroupsInPRSingleHop();
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "stopLocator");
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
   
@@ -544,43 +486,33 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup2Regions", new Object[] { locator, 100,2, 8, "group1,group2" });
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup2Regions", new Object[] { locator, 100,2, 8, "group2" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup2Regions( locator, 100,2, 8, "group1,group2" ));
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup2Regions( locator, 100,2, 8, "group2" ));
     
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "setHonourServerGroupsInPRSingleHop", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.setHonourServerGroupsInPRSingleHop());
 
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "create2ClientWithLocator", new Object[] {host0,port3,"group1",""});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.create2ClientWithLocator(host0,port3,"group1",""));
 
     setHonourServerGroupsInPRSingleHop();
     create2ClientWithLocator(host0, port3, "group2","group1");
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "putIntoPartitionedRegions2Client", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions2Client());
     putIntoPartitionedRegions2Client();
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "getFromPartitionedRegions2Client", new Object[] {});
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions2Client());
     getFromPartitionedRegions2Client();
 
     try {
       verifyMetadataFor2ClientsInOneVM(8, 2, 1);
-      member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "verifyMetadataFor2ClientsInOneVM", new Object[] {new Integer(8),new Integer(1), new Integer(2)});
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadataFor2ClientsInOneVM(new Integer(8),new Integer(1), new Integer(2)));
 
     } finally {
       resetHonourServerGroupsInPRSingleHop();
-      member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "resetHonourServerGroupsInPRSingleHop", new Object[] {});
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.resetHonourServerGroupsInPRSingleHop());
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "stopLocator");
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
 
@@ -588,18 +520,14 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    member0.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group1,group2" });
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1,group2" ));
     
-    member1.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group2" });
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
     
-    member2.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-        "createServerWithLocatorAndServerGroup", new Object[] { locator, 100,2, 8, "group3" });
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group3" ));
     
     setHonourServerGroupsInPRSingleHop();
     createClientWith3PoolLocator(host0, port3, "group2","group1","");
@@ -612,8 +540,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
       resetHonourServerGroupsInPRSingleHop();
     }
     } finally {
-      member3.invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest.class,
-          "stopLocator");
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
 

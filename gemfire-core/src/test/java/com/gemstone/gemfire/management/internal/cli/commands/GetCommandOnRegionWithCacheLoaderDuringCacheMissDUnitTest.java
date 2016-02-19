@@ -101,7 +101,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     verifyGemFireSetup(createPeer(Host.getHost(0).getVM(0), managerDistributedSystemProperties));
   }
 
-  private void setupGemFire() {
+  private void setupGemFire() throws Exception {
     initializePeer(createPeer(Host.getHost(0).getVM(1), createDistributedSystemProperties(GEMFIRE_SERVER_NAME)));
   }
 
@@ -118,7 +118,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     return new Peer(vm, distributedSystemProperties);
   }
 
-  protected void initializePeer(final Peer peer) {
+  protected void initializePeer(final Peer peer) throws Exception {
     peer.run(new SerializableRunnable(
         String.format("Initializes the '%1$s' with the '%2$s' Region having a CacheLoader.", GEMFIRE_SERVER_NAME,
             USERS_REGION_NAME)) {
@@ -151,7 +151,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     });
   }
 
-  private void verifyGemFireSetup(final Peer manager) {
+  private void verifyGemFireSetup(final Peer manager) throws Exception {
     manager.run(new SerializableRunnable("Verifies the GemFire Cluster was properly configured and initialized!") {
       @Override
       public void run() {
@@ -283,7 +283,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
       return vm;
     }
 
-    public void run(final SerializableRunnableIF runnable) {
+    public void run(final SerializableRunnableIF runnable) throws Exception {
       if (getVm() == null) {
         runnable.run();
       } else {

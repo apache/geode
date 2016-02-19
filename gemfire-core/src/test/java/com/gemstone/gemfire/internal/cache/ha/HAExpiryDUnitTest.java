@@ -98,20 +98,20 @@ public class HAExpiryDUnitTest extends DistributedTestCase
 
   @Override
   protected final void preTearDown() throws Exception {
-    vm0.invoke(HAExpiryDUnitTest.class, "closeCache");
-    vm1.invoke(HAExpiryDUnitTest.class, "closeCache");
-    vm2.invoke(HAExpiryDUnitTest.class, "closeCache");
-    vm3.invoke(HAExpiryDUnitTest.class, "closeCache");
+    vm0.invoke(() -> HAExpiryDUnitTest.closeCache());
+    vm1.invoke(() -> HAExpiryDUnitTest.closeCache());
+    vm2.invoke(() -> HAExpiryDUnitTest.closeCache());
+    vm3.invoke(() -> HAExpiryDUnitTest.closeCache());
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
   }
 
   public void testExpiryPeriod() throws Exception
   {
-    vm0.invoke(HAExpiryDUnitTest.class, "createRegionQueue", new Object[] {new Boolean(false)});
-    vm1.invoke(HAExpiryDUnitTest.class, "createRegionQueue", new Object[] {new Boolean(false)});
-    vm2.invoke(HAExpiryDUnitTest.class, "createRegionQueue", new Object[] {new Boolean(false)});
-    vm3.invoke(HAExpiryDUnitTest.class, "createRegionQueue", new Object[] {new Boolean(false)});
+    vm0.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(false)));
+    vm1.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(false)));
+    vm2.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(false)));
+    vm3.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(false)));
     
     vm0.invoke(new CacheSerializableRunnable("putFromVm") {
 
@@ -122,25 +122,25 @@ public class HAExpiryDUnitTest extends DistributedTestCase
       }
     });
 
-    vm0.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
-    vm1.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
-    vm2.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
-    vm3.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
+    vm0.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+    vm1.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+    vm2.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+    vm3.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
 
    // Thread.sleep(7 * 1000);
 
-    vm0.invoke(HAExpiryDUnitTest.class, "checkSizeAfterExpiration");
-    vm1.invoke(HAExpiryDUnitTest.class, "checkSizeAfterExpiration");
-    vm2.invoke(HAExpiryDUnitTest.class, "checkSizeAfterExpiration");
-    vm3.invoke(HAExpiryDUnitTest.class, "checkSizeAfterExpiration");
+    vm0.invoke(() -> HAExpiryDUnitTest.checkSizeAfterExpiration());
+    vm1.invoke(() -> HAExpiryDUnitTest.checkSizeAfterExpiration());
+    vm2.invoke(() -> HAExpiryDUnitTest.checkSizeAfterExpiration());
+    vm3.invoke(() -> HAExpiryDUnitTest.checkSizeAfterExpiration());
   }
   
   public void testDurableExpiryPeriod() throws Exception
   {
-    vm0.invoke(HAExpiryDUnitTest.class, "createRegionQueue", new Object[] {new Boolean(true)});
-    vm1.invoke(HAExpiryDUnitTest.class, "createRegionQueue", new Object[] {new Boolean(true)});
-    vm2.invoke(HAExpiryDUnitTest.class, "createRegionQueue", new Object[] {new Boolean(true)});
-    vm3.invoke(HAExpiryDUnitTest.class, "createRegionQueue", new Object[] {new Boolean(true)});
+    vm0.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(true)));
+    vm1.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(true)));
+    vm2.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(true)));
+    vm3.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(true)));
     
     vm0.invoke(new CacheSerializableRunnable("putFromVm") {
 
@@ -151,19 +151,19 @@ public class HAExpiryDUnitTest extends DistributedTestCase
       }
     });
 
-    vm0.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
-    vm1.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
-    vm2.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
-    vm3.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
+    vm0.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+    vm1.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+    vm2.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+    vm3.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
 
    Wait.pause(5000); // wait for some time to make sure that we give sufficient time
                 // to expiry
    // in spite of giving time the events should not expire, and queue should be
    // same as before expiration
-   vm0.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
-   vm1.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
-   vm2.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
-   vm3.invoke(HAExpiryDUnitTest.class, "checkSizeBeforeExpiration");
+   vm0.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+   vm1.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+   vm2.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+   vm3.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
    
   }
 

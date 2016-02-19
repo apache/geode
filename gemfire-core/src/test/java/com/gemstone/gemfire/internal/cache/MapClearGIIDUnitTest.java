@@ -61,8 +61,8 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(MapClearGIIDUnitTest.class, "createCacheVM0");
-    vm1.invoke(MapClearGIIDUnitTest.class, "createCacheVM1");
+    vm0.invoke(() -> MapClearGIIDUnitTest.createCacheVM0());
+    vm1.invoke(() -> MapClearGIIDUnitTest.createCacheVM1());
     System.out.println("Cache created in successfully");
   }*/
 /*
@@ -70,8 +70,8 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(MapClearGIIDUnitTest.class, "closeCache");
-    vm1.invoke(MapClearGIIDUnitTest.class, "closeCache");
+    vm0.invoke(() -> MapClearGIIDUnitTest.closeCache());
+    vm1.invoke(() -> MapClearGIIDUnitTest.closeCache());
   }*/
 
 /*  public static void createCacheVM0() throws Exception {
@@ -180,7 +180,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    //vm0.invoke(MapClearGIIDUnitTest.class, "createCacheVM0");
+    //vm0.invoke(() -> MapClearGIIDUnitTest.createCacheVM0());
     
     vm0.invoke(new CacheSerializableRunnable("createCacheVM0") {
       public void run2() throws CacheException
@@ -220,8 +220,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
     });
     LogWriterUtils.getLogWriter().info("Cache created in VM1 successfully");
     try {
-      AsyncInvocation asyncGII = vm0.invokeAsync(MapClearGIIDUnitTest.class, 
-          "createRegionInVm0");
+      AsyncInvocation asyncGII = vm0.invokeAsync(() -> MapClearGIIDUnitTest.createRegionInVm0());
       // wait until vm0's gii has done 20 slow image sleeps (10ms*20 = 200ms)
       // before starting the clear
       vm0.invoke(new CacheSerializableRunnable("wait for sleeps") {
@@ -238,7 +237,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
           }
         });
       // now that the gii has received some entries do the clear
-      vm1.invoke(MapClearGIIDUnitTest.class, "clearRegionInVm1");
+      vm1.invoke(() -> MapClearGIIDUnitTest.clearRegionInVm1());
       // wait for GII to complete
       ThreadUtils.join(asyncGII, 30 * 1000);
       if (asyncGII.exceptionOccurred()) {
@@ -246,7 +245,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
         Assert.fail("createRegionInVM0 failed", t);
       }
       assertTrue(vm0
-          .invokeBoolean(MapClearGIIDUnitTest.class, "checkImageStateFlag"));
+          .invoke(() -> MapClearGIIDUnitTest.checkImageStateFlag()));
 
       if (asyncGII.exceptionOccurred()) {
         Assert.fail("asyncGII failed", asyncGII.getException());
