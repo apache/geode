@@ -588,7 +588,8 @@ public class CacheCreation implements InternalCache {
    * Also adds a default server to the param declarativeCacheServers if a serverPort is specified.
    */
   protected void startCacheServers(List declarativeCacheServers, Cache cache, Integer serverPort, String serverBindAdd, Boolean disableDefaultServer) {
-
+    CacheServerCreation defaultServer = null;
+    
     if (declarativeCacheServers.size() > 1
         && (serverPort != null || serverBindAdd != null)) {
       throw new RuntimeException(
@@ -611,7 +612,8 @@ public class CacheCreation implements InternalCache {
       }
       
       if (!existingCacheServer) {
-        declarativeCacheServers.add(new CacheServerCreation((GemFireCacheImpl)cache, false));
+        defaultServer = new CacheServerCreation((GemFireCacheImpl)cache, false);
+        declarativeCacheServers.add(defaultServer);
       }
     }
     
@@ -634,6 +636,9 @@ public class CacheCreation implements InternalCache {
 
       CacheServerImpl impl = (CacheServerImpl)cache.addCacheServer();
       impl.configureFrom(declaredCacheServer);
+      if (declaredCacheServer == defaultServer) {
+        impl.setIsDefaultServer();
+      }
 
       if (serverPort != null && serverPort != CacheServer.DEFAULT_PORT) {
         impl.setPort(serverPort);

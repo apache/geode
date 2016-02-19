@@ -53,63 +53,53 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
   }
 
   public void testSerialSenderWithTansportFilter() {
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(SenderWithTransportFilterDUnitTest.class,
-        "createReceiverWithTransportFilters", new Object[] { nyPort });
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", null, isOffHeap() });
+    vm2.invoke(() -> SenderWithTransportFilterDUnitTest.createReceiverWithTransportFilters( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap() ));
 
-    vm3.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm3.invoke(() -> WANTestBase.createCache( lnPort ));
 
-    vm3.invoke(SenderWithTransportFilterDUnitTest.class,
-        "createSenderWithTransportFilter", new Object[] { "ln", 2, false, 100,
-            1, false, false, true });
+    vm3.invoke(() -> SenderWithTransportFilterDUnitTest.createSenderWithTransportFilter( "ln", 2, false, 100,
+            1, false, false, true ));
 
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap() });
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
-    vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm3.invoke(WANTestBase.class, "doPuts",
-        new Object[] { getTestMethodName() + "_RR", 100 });
+    vm3.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR", 100 ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 100 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 100 ));
   }
 
   public void testParallelSenderWithTansportFilter() {
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(SenderWithTransportFilterDUnitTest.class,
-        "createReceiverWithTransportFilters", new Object[] { nyPort });
-    vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName() + "_PR", null, 0, 10, isOffHeap() });
+    vm2.invoke(() -> SenderWithTransportFilterDUnitTest.createReceiverWithTransportFilters( nyPort ));
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName() + "_PR", null, 0, 10, isOffHeap() ));
 
-    vm3.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm3.invoke(() -> WANTestBase.createCache( lnPort ));
 
-    vm3.invoke(SenderWithTransportFilterDUnitTest.class,
-        "createSenderWithTransportFilter", new Object[] { "ln", 2, true, 100,
-            1, false, false, true });
+    vm3.invoke(() -> SenderWithTransportFilterDUnitTest.createSenderWithTransportFilter( "ln", 2, true, 100,
+            1, false, false, true ));
 
-    vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName() + "_PR", "ln", 0, 10, isOffHeap() });
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName() + "_PR", "ln", 0, 10, isOffHeap() ));
 
-    vm3.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm3.invoke(WANTestBase.class, "doPuts",
-        new Object[] { getTestMethodName() + "_PR", 100 });
+    vm3.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 100 ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_PR", 100 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_PR", 100 ));
   }
   
   public static int createReceiverWithTransportFilters(int locPort) {

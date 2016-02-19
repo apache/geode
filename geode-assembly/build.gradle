@@ -223,7 +223,6 @@ distributions {
         exclude 'gradlew'
         exclude 'gradlew.bat'
         exclude 'gradle/wrapper/gradle-wrapper.jar'
-        exclude 'gradle/wrapper/gradle-wrapper.properties'
         exclude '.gradle'
         exclude '**/build/**'
         exclude '**/.project'
@@ -235,6 +234,12 @@ distributions {
         exclude '**/*.ipr'
         exclude '**/*.iws'
         exclude '**/tags'
+
+        //These directories are generated on the jenkins server by gradle
+        exclude 'caches'
+        exclude 'daemon'
+        exclude 'native'
+        exclude 'wrapper'
       }
     }
   }

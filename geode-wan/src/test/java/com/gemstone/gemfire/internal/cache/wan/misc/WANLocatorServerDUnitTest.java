@@ -61,34 +61,34 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
 
     int port3 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
 
-    vm0.invoke(WANLocatorServerDUnitTest.class, "createLocator", new Object[] {
-        port1, port2, port3, port1 });
+    vm0.invoke(() -> WANLocatorServerDUnitTest.createLocator(
+        port1, port2, port3, port1 ));
 
-    vm1.invoke(WANLocatorServerDUnitTest.class, "createLocator", new Object[] {
-        port1, port2, port3, port2 });
+    vm1.invoke(() -> WANLocatorServerDUnitTest.createLocator(
+        port1, port2, port3, port2 ));
 
-    vm2.invoke(WANLocatorServerDUnitTest.class, "createLocator", new Object[] {
-        port1, port2, port3, port3 });
+    vm2.invoke(() -> WANLocatorServerDUnitTest.createLocator(
+        port1, port2, port3, port3 ));
 
-    vm3.invoke(WANLocatorServerDUnitTest.class, "createReceiver", new Object[] {
-        port1, port2, port3 });
-    vm5.invoke(WANLocatorServerDUnitTest.class, "createClient", new Object[] {
-        port1, port2, port3 });
+    vm3.invoke(() -> WANLocatorServerDUnitTest.createReceiver(
+        port1, port2, port3 ));
+    vm5.invoke(() -> WANLocatorServerDUnitTest.createClient(
+        port1, port2, port3 ));
 
-    vm0.invoke(WANLocatorServerDUnitTest.class, "disconnect");
-    vm1.invoke(WANLocatorServerDUnitTest.class, "disconnect");
-    vm2.invoke(WANLocatorServerDUnitTest.class, "disconnect");
+    vm0.invoke(() -> WANLocatorServerDUnitTest.disconnect());
+    vm1.invoke(() -> WANLocatorServerDUnitTest.disconnect());
+    vm2.invoke(() -> WANLocatorServerDUnitTest.disconnect());
 
-    vm0.invoke(WANLocatorServerDUnitTest.class, "createLocator", new Object[] {
-        port1, port2, port3, port1 });
+    vm0.invoke(() -> WANLocatorServerDUnitTest.createLocator(
+        port1, port2, port3, port1 ));
 
-    vm1.invoke(WANLocatorServerDUnitTest.class, "createLocator", new Object[] {
-        port1, port2, port3, port2 });
+    vm1.invoke(() -> WANLocatorServerDUnitTest.createLocator(
+        port1, port2, port3, port2 ));
 
-    vm2.invoke(WANLocatorServerDUnitTest.class, "createLocator", new Object[] {
-        port1, port2, port3, port3 });
+    vm2.invoke(() -> WANLocatorServerDUnitTest.createLocator(
+        port1, port2, port3, port3 ));
 
-    vm5.invoke(WANLocatorServerDUnitTest.class, "tryNewConnection");
+    vm5.invoke(() -> WANLocatorServerDUnitTest.tryNewConnection());
 
   }
 

@@ -46,65 +46,59 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
      and version prior to 8.0*/
   public void DISABLED_test_DR_PGSPERSISTENCE_VALIDATEQUEUE_Restart_Validate_Receiver() {
     //create locator on local site
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //create receiver on remote site
-    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", null, isOffHeap() });
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", null, isOffHeap() });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", null, isOffHeap() ));
     
     //create cache in local site
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
 
     //create senders with disk store
-    String diskStore1 = (String) vm4.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
-    String diskStore2 = (String) vm5.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
-    String diskStore3 = (String) vm6.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
-    String diskStore4 = (String) vm7.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
+    String diskStore1 = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
+    String diskStore2 = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
+    String diskStore3 = (String) vm6.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
+    String diskStore4 = (String) vm7.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
 
     LogWriterUtils.getLogWriter().info("The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3 + "," + diskStore4);
     
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", isOffHeap() });
-    vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", isOffHeap() });
-    vm6.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", isOffHeap() });
-    vm7.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", isOffHeap() });
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm6.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm7.invoke(() -> WANTestBase.startSender( "ln" ));
     
-    vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     
-    vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.pauseSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.pauseSender( "ln" ));
+    vm6.invoke(() -> WANTestBase.pauseSender( "ln" ));
+    vm7.invoke(() -> WANTestBase.pauseSender( "ln" ));
     
     //start puts in region on local site
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR", 3000 });
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR", 3000 ));
     LogWriterUtils.getLogWriter().info("Completed puts in the region");
     
     //--------------------close and rebuild local site -------------------------------------------------
@@ -112,10 +106,10 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
 /*    ExpectedException exp1 = addExpectedException(CacheClosedException.class
         .getName());
     try {
-*/      vm4.invoke(WANTestBase.class, "killSender", new Object[] {});
-      vm5.invoke(WANTestBase.class, "killSender", new Object[] {});
-      vm6.invoke(WANTestBase.class, "killSender", new Object[] {});
-      vm7.invoke(WANTestBase.class, "killSender", new Object[] {});
+*/      vm4.invoke(() -> WANTestBase.killSender());
+      vm5.invoke(() -> WANTestBase.killSender());
+      vm6.invoke(() -> WANTestBase.killSender());
+      vm7.invoke(() -> WANTestBase.killSender());
 /*    }
     finally {
       exp1.remove();
@@ -124,34 +118,30 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     LogWriterUtils.getLogWriter().info("Killed all the senders.");
     
     //restart the vm
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
     
     LogWriterUtils.getLogWriter().info("Created back the cache");
     
    //create senders with disk store
-    vm4.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore1, true });
-    vm5.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore2, true });
-    vm6.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore3, true });
-    vm7.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore4, true });
+    vm4.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore1, true ));
+    vm5.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore2, true ));
+    vm6.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore3, true ));
+    vm7.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore4, true ));
     
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
     
     //create PR on local site
-    AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", isOffHeap() });
-    AsyncInvocation inv2 = vm5.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", isOffHeap() });
-    AsyncInvocation inv3 = vm6.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", isOffHeap() });
-    AsyncInvocation inv4 = vm7.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", isOffHeap() });
+    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    AsyncInvocation inv3 = vm6.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    AsyncInvocation inv4 = vm7.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap() ));
     try {
       inv1.join();
       inv2.join();
@@ -164,33 +154,33 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     
     //start the senders in async mode. This will ensure that the 
     //node of shadow PR that went down last will come up first
-    vm4.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm6.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm7.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    vm6.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    vm7.invokeAsync(() -> WANTestBase.startSender( "ln" ));
     
     LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     //wait for senders running
-    vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     
     LogWriterUtils.getLogWriter().info("All the senders are now running...");
     
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
-    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
     
     //----------------------------------------------------------------------------------------------------
     
-    vm4.invoke(WANTestBase.class, "doNextPuts", new Object[] { getTestMethodName() + "_RR", 3000, 10000 });
+    vm4.invoke(() -> WANTestBase.doNextPuts( getTestMethodName() + "_RR", 3000, 10000 ));
     
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 10000 });
-    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 10000 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 10000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 10000 ));
     
   }
   
@@ -203,69 +193,59 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
      and version prior to 8.0*/
   public void DISABLED_test_DRPERSISTENCE_PGSPERSISTENCE_VALIDATEQUEUE_Restart_Validate_Receiver() {
     //create locator on local site
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //create receiver on remote site
-    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", null, isOffHeap() });
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", null, isOffHeap() });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", null, isOffHeap() ));
     
     //create cache in local site
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
 
     //create senders with disk store
-    String diskStore1 = (String) vm4.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
-    String diskStore2 = (String) vm5.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
-    String diskStore3 = (String) vm6.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
-    String diskStore4 = (String) vm7.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
+    String diskStore1 = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
+    String diskStore2 = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
+    String diskStore3 = (String) vm6.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
+    String diskStore4 = (String) vm7.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
 
     LogWriterUtils.getLogWriter().info("The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3 + "," + diskStore4);
     
-    vm4.invoke(WANTestBase.class,
-        "createReplicatedRegion", new Object[] { getTestMethodName() + "_RR", "ln",
-            Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    vm5.invoke(WANTestBase.class,
-        "createReplicatedRegion", new Object[] { getTestMethodName() + "_RR", "ln",
-            Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    vm6.invoke(WANTestBase.class,
-        "createReplicatedRegion", new Object[] { getTestMethodName() + "_RR", "ln",
-            Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    vm7.invoke(WANTestBase.class,
-        "createReplicatedRegion", new Object[] { getTestMethodName() + "_RR", "ln",
-            Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion( getTestMethodName() + "_RR", "ln",
+            Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion( getTestMethodName() + "_RR", "ln",
+            Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion( getTestMethodName() + "_RR", "ln",
+            Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion( getTestMethodName() + "_RR", "ln",
+            Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm6.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm7.invoke(() -> WANTestBase.startSender( "ln" ));
     
-    vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     
-    vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.pauseSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.pauseSender( "ln" ));
+    vm6.invoke(() -> WANTestBase.pauseSender( "ln" ));
+    vm7.invoke(() -> WANTestBase.pauseSender( "ln" ));
     
     //start puts in region on local site
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR", 3000 });
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR", 3000 ));
     LogWriterUtils.getLogWriter().info("Completed puts in the region");
     
     //--------------------close and rebuild local site -------------------------------------------------
@@ -273,44 +253,40 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
 /*    ExpectedException exp1 = addExpectedException(CacheClosedException.class
         .getName());
     try {*/
-      vm4.invoke(WANTestBase.class, "killSender", new Object[] {});
-      vm5.invoke(WANTestBase.class, "killSender", new Object[] {});
-      vm6.invoke(WANTestBase.class, "killSender", new Object[] {});
-      vm7.invoke(WANTestBase.class, "killSender", new Object[] {});
+      vm4.invoke(() -> WANTestBase.killSender());
+      vm5.invoke(() -> WANTestBase.killSender());
+      vm6.invoke(() -> WANTestBase.killSender());
+      vm7.invoke(() -> WANTestBase.killSender());
 /*    }
     finally {
       exp1.remove();
     }*/
     
     //restart the vm
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
     
     LogWriterUtils.getLogWriter().info("Created back the cache");
     
    //create senders with disk store
-    vm4.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore1, true });
-    vm5.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore2, true });
-    vm6.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore3, true });
-    vm7.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore4, true });
+    vm4.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore1, true ));
+    vm5.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore2, true ));
+    vm6.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore3, true ));
+    vm7.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore4, true ));
     
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
     
     //create PR on local site
-    AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    AsyncInvocation inv2 = vm5.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    AsyncInvocation inv3 = vm6.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    AsyncInvocation inv4 = vm7.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
+    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    AsyncInvocation inv3 = vm6.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    AsyncInvocation inv4 = vm7.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
     
     try {
       inv1.join();
@@ -324,45 +300,45 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     
     //start the senders in async mode. This will ensure that the 
     //node of shadow PR that went down last will come up first
-    vm4.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm6.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm7.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    vm6.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    vm7.invokeAsync(() -> WANTestBase.startSender( "ln" ));
     
     LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     //wait for senders running
-    vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     
     LogWriterUtils.getLogWriter().info("All the senders are now running...");
     
     //----------------------------------------------------------------------------------------------------
     
-    vm4.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
-    vm5.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
-    vm6.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
-    vm7.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
+    vm4.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
+    vm6.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
+    vm7.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
     
 /*    exp1 = addExpectedException(CacheClosedException.class.getName());
     try {
-*/      vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-          getTestMethodName() + "_RR", 3000 });
-      vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-          getTestMethodName() + "_RR", 3000 });
+*/      vm2.invoke(() -> WANTestBase.validateRegionSize(
+          getTestMethodName() + "_RR", 3000 ));
+      vm3.invoke(() -> WANTestBase.validateRegionSize(
+          getTestMethodName() + "_RR", 3000 ));
 
-      vm4.invoke(WANTestBase.class, "doNextPuts", new Object[] {
-          getTestMethodName() + "_RR", 3000, 10000 });
+      vm4.invoke(() -> WANTestBase.doNextPuts(
+          getTestMethodName() + "_RR", 3000, 10000 ));
 
-      vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-          getTestMethodName() + "_RR", 10000 });
-      vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-          getTestMethodName() + "_RR", 10000 });
+      vm2.invoke(() -> WANTestBase.validateRegionSize(
+          getTestMethodName() + "_RR", 10000 ));
+      vm3.invoke(() -> WANTestBase.validateRegionSize(
+          getTestMethodName() + "_RR", 10000 ));
 /*    }
     finally {
       exp1.remove();
@@ -378,84 +354,74 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
      and version prior to 8.0*/
   public void DISABLED_test_DRPERSISTENCE_PRPERSISTENCE_PGSPERSISTENCE_VALIDATEQUEUE_Restart_Validate_Receiver() {
     //create locator on local site
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //create receiver on remote site
-    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", null, isOffHeap() });
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", null, isOffHeap() });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", null, isOffHeap() ));
     
-    vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      getTestMethodName() + "_PR", null, 1, 100, isOffHeap() });
-    vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-      getTestMethodName() + "_PR", null, 1, 100, isOffHeap() });
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
     
     //create cache in local site
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
 
     //create senders with disk store
-    String diskStore1 = (String) vm4.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
-    String diskStore2 = (String) vm5.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
-    String diskStore3 = (String) vm6.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
-    String diskStore4 = (String) vm7.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, null, true });
+    String diskStore1 = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
+    String diskStore2 = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
+    String diskStore3 = (String) vm6.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
+    String diskStore4 = (String) vm7.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
 
     LogWriterUtils.getLogWriter().info("The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3 + "," + diskStore4);
     
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
-        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
+        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
-        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    vm6.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
+        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
-        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    vm7.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
+        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
-        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
+        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
 
-    vm4.invoke(WANTestBase.class, "createPersistentPartitionedRegion",
-        new Object[] { getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
-    vm5.invoke(WANTestBase.class, "createPersistentPartitionedRegion",
-        new Object[] { getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
-    vm6.invoke(WANTestBase.class, "createPersistentPartitionedRegion",
-        new Object[] { getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
-    vm7.invoke(WANTestBase.class, "createPersistentPartitionedRegion",
-        new Object[] { getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
+    vm4.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
+    vm6.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
     
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm6.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm7.invoke(() -> WANTestBase.startSender( "ln" ));
     
-    vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     
-    vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.pauseSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.pauseSender( "ln" ));
+    vm6.invoke(() -> WANTestBase.pauseSender( "ln" ));
+    vm7.invoke(() -> WANTestBase.pauseSender( "ln" ));
     
     //start puts in region on local site
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR", 3000 });
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR", 3000 });
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR", 3000 ));
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 3000 ));
     LogWriterUtils.getLogWriter().info("Completed puts in the region");
     
     //--------------------close and rebuild local site -------------------------------------------------
@@ -463,10 +429,10 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
 /*    ExpectedException exp1 = addExpectedException(CacheClosedException.class
         .getName());
     try {
-*/      vm4.invoke(WANTestBase.class, "killSender", new Object[] {});
-      vm5.invoke(WANTestBase.class, "killSender", new Object[] {});
-      vm6.invoke(WANTestBase.class, "killSender", new Object[] {});
-      vm7.invoke(WANTestBase.class, "killSender", new Object[] {});
+*/      vm4.invoke(() -> WANTestBase.killSender());
+      vm5.invoke(() -> WANTestBase.killSender());
+      vm6.invoke(() -> WANTestBase.killSender());
+      vm7.invoke(() -> WANTestBase.killSender());
 /*    }
     finally {
       exp1.remove();
@@ -475,34 +441,30 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     LogWriterUtils.getLogWriter().info("Killed all the senders.");
     
     //restart the vm
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
     
     LogWriterUtils.getLogWriter().info("Created back the cache");
     
    //create senders with disk store
-    vm4.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore1, true });
-    vm5.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore2, true });
-    vm6.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore3, true });
-    vm7.invoke(WANTestBase.class, "createSenderWithDiskStore", 
-        new Object[] { "ln", 2, true, 100, 10, false, true, null, diskStore4, true });
+    vm4.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore1, true ));
+    vm5.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore2, true ));
+    vm6.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore3, true ));
+    vm7.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, diskStore4, true ));
     
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
     
     //create PR on local site
-    AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    AsyncInvocation inv2 = vm5.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    AsyncInvocation inv3 = vm6.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    AsyncInvocation inv4 = vm7.invokeAsync(WANTestBase.class, "createReplicatedRegion", new Object[] {
-      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
+    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    AsyncInvocation inv3 = vm6.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    AsyncInvocation inv4 = vm7.invokeAsync(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
     
     try {
       inv1.join();
@@ -514,18 +476,14 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
       fail();
     }
     
-    inv1 = vm4.invokeAsync(WANTestBase.class,
-        "createPersistentPartitionedRegion", new Object[] { getTestMethodName() + "_PR", "ln", 1,
-            100, isOffHeap() });
-    inv2 = vm5.invokeAsync(WANTestBase.class,
-        "createPersistentPartitionedRegion", new Object[] { getTestMethodName() + "_PR", "ln", 1,
-            100, isOffHeap() });
-    inv3 = vm6.invokeAsync(WANTestBase.class,
-        "createPersistentPartitionedRegion", new Object[] { getTestMethodName() + "_PR", "ln", 1,
-            100, isOffHeap() });
-    inv4 = vm7.invokeAsync(WANTestBase.class,
-        "createPersistentPartitionedRegion", new Object[] { getTestMethodName() + "_PR", "ln", 1,
-            100, isOffHeap() });
+    inv1 = vm4.invokeAsync(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1,
+            100, isOffHeap() ));
+    inv2 = vm5.invokeAsync(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1,
+            100, isOffHeap() ));
+    inv3 = vm6.invokeAsync(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1,
+            100, isOffHeap() ));
+    inv4 = vm7.invokeAsync(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1,
+            100, isOffHeap() ));
 
     try {
       inv1.join();
@@ -540,64 +498,64 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     
     //start the senders in async mode. This will ensure that the 
     //node of shadow PR that went down last will come up first
-    vm4.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm6.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm7.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    vm6.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    vm7.invokeAsync(() -> WANTestBase.startSender( "ln" ));
     
     LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     //wait for senders running
-    vm4.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "waitForSenderRunningState", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     
     LogWriterUtils.getLogWriter().info("All the senders are now running...");
     
     //----------------------------------------------------------------------------------------------------
     
-    vm4.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
-    vm5.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
-    vm6.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
-    vm7.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
+    vm4.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
+    vm6.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
+    vm7.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
     
-    vm4.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_PR", 3000 });
-    vm5.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_PR", 3000 });
-    vm6.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_PR", 3000 });
-    vm7.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_PR", 3000 });
+    vm4.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 3000 ));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 3000 ));
+    vm6.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 3000 ));
+    vm7.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 3000 ));
     
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
-    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_RR", 3000 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", 3000 ));
     
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_PR", 3000 });
-    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_PR", 3000 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 3000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 3000 ));
     
-    vm4.invoke(WANTestBase.class, "doNextPuts", new Object[] { getTestMethodName() + "_RR", 3000, 10000 });
-    vm4.invoke(WANTestBase.class, "doNextPuts", new Object[] { getTestMethodName() + "_PR", 3000, 10000 });
+    vm4.invoke(() -> WANTestBase.doNextPuts( getTestMethodName() + "_RR", 3000, 10000 ));
+    vm4.invoke(() -> WANTestBase.doNextPuts( getTestMethodName() + "_PR", 3000, 10000 ));
     
 /*    exp1 = addExpectedException(CacheClosedException.class.getName());
     try {*/
-      vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-          getTestMethodName() + "_RR", 10000 });
-      vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-          getTestMethodName() + "_RR", 10000 });
+      vm2.invoke(() -> WANTestBase.validateRegionSize(
+          getTestMethodName() + "_RR", 10000 ));
+      vm3.invoke(() -> WANTestBase.validateRegionSize(
+          getTestMethodName() + "_RR", 10000 ));
 
-      vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-          getTestMethodName() + "_PR", 10000 });
-      vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-          getTestMethodName() + "_PR", 10000 });
+      vm2.invoke(() -> WANTestBase.validateRegionSize(
+          getTestMethodName() + "_PR", 10000 ));
+      vm3.invoke(() -> WANTestBase.validateRegionSize(
+          getTestMethodName() + "_PR", 10000 ));
 /*    }
     finally {
       exp1.remove();
@@ -615,82 +573,68 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
   public void DISABLED_test_DRPERSISTENCE_PGSPERSISTENCE_4NODES_2NODESDOWN_Validate_Receiver()
       throws Exception {
 
-    Integer lnPort = (Integer) vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer nyPort = (Integer) vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
 
     // create senders with disk store
-    String diskStore1 = (String) vm4.invoke(WANTestBase.class,
-        "createSenderWithDiskStore", new Object[] { "ln", 2, true, 100, 10,
-            false, true, null, null, true });
-    String diskStore2 = (String) vm5.invoke(WANTestBase.class,
-        "createSenderWithDiskStore", new Object[] { "ln", 2, true, 100, 10,
-            false, true, null, null, true });
-    String diskStore3 = (String) vm6.invoke(WANTestBase.class,
-        "createSenderWithDiskStore", new Object[] { "ln", 2, true, 100, 10,
-            false, true, null, null, true });
-    String diskStore4 = (String) vm7.invoke(WANTestBase.class,
-        "createSenderWithDiskStore", new Object[] { "ln", 2, true, 100, 10,
-            false, true, null, null, true });
+    String diskStore1 = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10,
+            false, true, null, null, true ));
+    String diskStore2 = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10,
+            false, true, null, null, true ));
+    String diskStore3 = (String) vm6.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10,
+            false, true, null, null, true ));
+    String diskStore4 = (String) vm7.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10,
+            false, true, null, null, true ));
 
     LogWriterUtils.getLogWriter().info(
         "The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3 + ","
             + diskStore4);
 
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
-        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
+        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
-        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    vm6.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
+        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
-        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    vm7.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
+        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
-        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
+        DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm6.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm7.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap() });
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap() });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
-    vm4.invoke(WANTestBase.class, "waitForSenderRunningState",
-        new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "waitForSenderRunningState",
-        new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "waitForSenderRunningState",
-        new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class, "waitForSenderRunningState",
-        new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
 
     pauseWaitCriteria(60000);
     {
-      AsyncInvocation inv1 = vm7.invokeAsync(
-          ReplicatedRegion_ParallelWANPropogationDUnitTest.class, "doPuts0",
-          new Object[] { getTestMethodName() + "_RR", 10000 });
+      AsyncInvocation inv1 = vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts0( getTestMethodName() + "_RR", 10000 ));
       pauseWaitCriteria(1000);
-      AsyncInvocation inv2 = vm4.invokeAsync(WANTestBase.class, "killSender");
+      AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
       pauseWaitCriteria(2000);
-      AsyncInvocation inv3 = vm6.invokeAsync(
-          ReplicatedRegion_ParallelWANPropogationDUnitTest.class, "doPuts1",
-          new Object[] { getTestMethodName() + "_RR", 10000 });
+      AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts1( getTestMethodName() + "_RR", 10000 ));
       pauseWaitCriteria(1500);
-      AsyncInvocation inv4 = vm5.invokeAsync(WANTestBase.class, "killSender");
+      AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
       try {
         inv1.join();
         inv2.join();
@@ -701,30 +645,24 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
       }
     }
 
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
 
     LogWriterUtils.getLogWriter().info("Created back the cache");
 
     // create senders with disk store
-    vm4.invoke(WANTestBase.class, "createSenderWithDiskStore", new Object[] {
-        "ln", 2, true, 100, 10, false, true, null, diskStore1, true });
-    vm5.invoke(WANTestBase.class, "createSenderWithDiskStore", new Object[] {
-        "ln", 2, true, 100, 10, false, true, null, diskStore2, true });
+    vm4.invoke(() -> WANTestBase.createSenderWithDiskStore(
+        "ln", 2, true, 100, 10, false, true, null, diskStore1, true ));
+    vm5.invoke(() -> WANTestBase.createSenderWithDiskStore(
+        "ln", 2, true, 100, 10, false, true, null, diskStore2, true ));
 
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
 
-    AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class,
-        "createReplicatedRegion",
-        new Object[] { getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
-            DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    AsyncInvocation inv2 = vm5.invokeAsync(WANTestBase.class,
-        "createReplicatedRegion",
-        new Object[] { getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
-            DataPolicy.PERSISTENT_REPLICATE, isOffHeap() });
-    AsyncInvocation inv3 = vm6.invokeAsync(
-        ReplicatedRegion_ParallelWANPropogationDUnitTest.class, "doPuts2",
-        new Object[] { getTestMethodName() + "_RR", 15000 });
+    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.createReplicatedRegion( getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
+            DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase.createReplicatedRegion( getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
+            DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
+    AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts2( getTestMethodName() + "_RR", 15000 ));
     try {
       inv1.join();
       inv2.join();
@@ -734,20 +672,17 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
       fail();
     }
 
-    vm4.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
 
     LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     // wait for senders running
-    vm4.invoke(WANTestBase.class, "waitForSenderRunningState",
-        new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
 
-    vm6.invoke(WANTestBase.class,
-        "validateParallelSenderQueueAllBucketsDrained", new Object[] { "ln" });
-    vm7.invoke(WANTestBase.class,
-        "validateParallelSenderQueueAllBucketsDrained", new Object[] { "ln" });
+    vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained( "ln" ));
+    vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained( "ln" ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 15000 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 15000 ));
   }
 }

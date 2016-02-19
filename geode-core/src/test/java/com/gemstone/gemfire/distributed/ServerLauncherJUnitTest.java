@@ -245,10 +245,32 @@ public class ServerLauncherJUnitTest {
       new Builder().setServerBindAddress("badHostName.badCompany.com");
     }
     catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE.toLocalizedString("Server"), expected.getMessage());
-      assertTrue(expected.getCause() instanceof UnknownHostException);
+      final String expectedMessage1 = LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE.toLocalizedString("Server");
+      final String expectedMessage2 = "badHostName.badCompany.com is not an address for this machine.";
+      assertTrue(expected.getMessage().equals(expectedMessage1) || expected.getMessage().equals(expectedMessage2));
+      if (expected.getMessage().equals(expectedMessage1)) {
+        assertTrue(expected.getCause() instanceof UnknownHostException);
+      }
       throw expected;
     }
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetServerBindAddressToNonLocalHost() {
+    try {
+      new Builder().setServerBindAddress("yahoo.com");
+    }
+    catch (IllegalArgumentException expected) {
+      final String expectedMessage = "yahoo.com is not an address for this machine.";
+      assertEquals(expectedMessage, expected.getMessage());
+      throw expected;
+    }
+  }
+  
+  @Test
+  public void testSetServerBindAddressToLocalHost() throws Exception {
+    String host = InetAddress.getLocalHost().getHostName();            
+    new Builder().setServerBindAddress(host);
   }
 
   @Test

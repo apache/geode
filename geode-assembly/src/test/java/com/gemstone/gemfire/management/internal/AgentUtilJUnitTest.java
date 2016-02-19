@@ -16,17 +16,11 @@
  */
 package com.gemstone.gemfire.management.internal;
 
+import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -38,7 +32,7 @@ public class AgentUtilJUnitTest {
 
   @Before
   public void setUp() {
-    version = getGemfireVersion();
+    version = GemFireVersion.getGemFireVersion();
     agentUtil = new AgentUtil(version);
   }
 
@@ -53,46 +47,4 @@ public class AgentUtilJUnitTest {
     String gemFireWarLocation = agentUtil.findWarLocation("geode-pulse");
     assertNotNull("Pulse WAR File was not found", gemFireWarLocation);
   }
-
-  private String getGemfireVersion() {
-    String version = null;
-
-    Properties prop = new Properties();
-    InputStream inputStream = null;
-    String pathPrefix = null;
-    try {
-      pathPrefix = calculatePathPrefixToProjectRoot("geode-assembly/");
-      inputStream = new FileInputStream(pathPrefix + "gradle.properties");
-    } catch (FileNotFoundException e1) {
-      try {
-        pathPrefix = calculatePathPrefixToProjectRoot("geode-core/");
-        inputStream = new FileInputStream(pathPrefix + "gradle.properties");
-      } catch (FileNotFoundException e) {
-      }
-    }
-
-    if (inputStream != null) {
-      try {
-        prop.load(inputStream);
-        version = prop.getProperty("versionNumber") + prop.getProperty("releaseType");
-      } catch (FileNotFoundException e) {
-      } catch (IOException e) {
-      }
-    }
-    return version;
-  }
-
-  private String calculatePathPrefixToProjectRoot(String subDirectory) {
-    String pathPrefix = "";
-
-    String currentDirectoryPath = new File(".").getAbsolutePath();
-    int gemfireCoreLocationIx = currentDirectoryPath.indexOf(subDirectory);
-    if (gemfireCoreLocationIx < 0) {
-      return pathPrefix;
-    }
-
-    return currentDirectoryPath.substring(0, gemfireCoreLocationIx);
-  }
-
-
 }

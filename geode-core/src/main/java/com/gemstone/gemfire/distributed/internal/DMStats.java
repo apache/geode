@@ -171,6 +171,9 @@ public interface DMStats {
   public void incNumSerialThreads(int threads);
 
   public void incMessageChannelTime(long val);
+
+  public void incUDPDispatchRequestTime(long val);
+  public long getUDPDispatchRequestTime();
   
   public long getReplyMessageTime();
   public void incReplyMessageTime(long val);

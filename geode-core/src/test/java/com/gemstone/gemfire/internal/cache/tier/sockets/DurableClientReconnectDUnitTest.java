@@ -106,10 +106,10 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
     server4 = host.getVM(3);
 
     // start servers first
-    PORT1 =  ((Integer) server1.invoke(DurableClientReconnectDUnitTest.class, "createServerCache"));
-    PORT2 =  ((Integer) server2.invoke(DurableClientReconnectDUnitTest.class, "createServerCache"));
-    PORT3 =  ((Integer) server3.invoke(DurableClientReconnectDUnitTest.class, "createServerCache"));
-    PORT4 =  ((Integer) server4.invoke(DurableClientReconnectDUnitTest.class, "createServerCache"));
+    PORT1 =  ((Integer) server1.invoke(() -> DurableClientReconnectDUnitTest.createServerCache()));
+    PORT2 =  ((Integer) server2.invoke(() -> DurableClientReconnectDUnitTest.createServerCache()));
+    PORT3 =  ((Integer) server3.invoke(() -> DurableClientReconnectDUnitTest.createServerCache()));
+    PORT4 =  ((Integer) server4.invoke(() -> DurableClientReconnectDUnitTest.createServerCache()));
     SERVER1 = NetworkUtils.getServerHostName(host)+PORT1;
     SERVER2 = NetworkUtils.getServerHostName(host)+PORT2;
     SERVER3 = NetworkUtils.getServerHostName(host)+PORT3;
@@ -488,46 +488,46 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
   
   private void determineAndVerfiyRedundantServers(Collection redundantServers) {
     if(redundantServers.contains(SERVER1)){
-      server1.invoke(DurableClientReconnectDUnitTest.class, "verifyDurableClientOnServer");
+      server1.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
     }
     if(redundantServers.contains(SERVER2)){
-      server2.invoke(DurableClientReconnectDUnitTest.class, "verifyDurableClientOnServer");  
+      server2.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());  
     }
     if (redundantServers.contains(SERVER3)){
-      server3.invoke(DurableClientReconnectDUnitTest.class, "verifyDurableClientOnServer");
+      server3.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
     }
     if(redundantServers.contains(SERVER4)){
-      server4.invoke(DurableClientReconnectDUnitTest.class, "verifyDurableClientOnServer");
+      server4.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
     }
   }
   
   private void determineAndVerfiyNonRedundantServers(Collection redundantServers) {
     if(!redundantServers.contains(SERVER1)){
-      server1.invoke(DurableClientReconnectDUnitTest.class, "verifyNoDurableClientOnServer");
+      server1.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
     }
     if(!redundantServers.contains(SERVER2)){
-      server2.invoke(DurableClientReconnectDUnitTest.class, "verifyNoDurableClientOnServer");  
+      server2.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());  
     }
     if (!redundantServers.contains(SERVER3)){
-      server3.invoke(DurableClientReconnectDUnitTest.class, "verifyNoDurableClientOnServer");
+      server3.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
     }
     if(!redundantServers.contains(SERVER4)){
-      server4.invoke(DurableClientReconnectDUnitTest.class, "verifyNoDurableClientOnServer");
+      server4.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
     }
   }
   
   private void closeServer(String server) {
     if(server.equals(SERVER1)){
-      server1.invoke(DurableClientReconnectDUnitTest.class, "closeCache");
+      server1.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
     }
     if(server.equals(SERVER2)){
-      server2.invoke(DurableClientReconnectDUnitTest.class, "closeCache");  
+      server2.invoke(() -> DurableClientReconnectDUnitTest.closeCache());  
     }
     if (server.equals(SERVER3)){
-      server3.invoke(DurableClientReconnectDUnitTest.class, "closeCache");
+      server3.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
     }
     if(server.equals(SERVER4)){
-      server4.invoke(DurableClientReconnectDUnitTest.class, "closeCache");
+      server4.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
     }
   }
 
@@ -737,10 +737,10 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
     closeCache();
 
     // then close the servers
-    server1.invoke(DurableClientReconnectDUnitTest.class, "closeCache");
-    server2.invoke(DurableClientReconnectDUnitTest.class, "closeCache");
-    server3.invoke(DurableClientReconnectDUnitTest.class, "closeCache");
-    server4.invoke(DurableClientReconnectDUnitTest.class, "closeCache");
+    server1.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
+    server2.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
+    server3.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
+    server4.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
   }
 
  public void closeCache(boolean keepAlive)

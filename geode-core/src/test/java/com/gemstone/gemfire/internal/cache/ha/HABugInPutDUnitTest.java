@@ -58,10 +58,6 @@ public class HABugInPutDUnitTest extends DistributedTestCase
 
   VM client2 = null;
 
-  public static int PORT1;
-
-  public static int PORT2;
-
   private static final String REGION_NAME = "HABugInPutDUnitTest_region";
 
   final static String KEY1 = "KEY1";
@@ -91,26 +87,26 @@ public class HABugInPutDUnitTest extends DistributedTestCase
     client2 = host.getVM(3);
 
     //System.setProperty())
-    PORT1 = ((Integer)server1.invoke(HABugInPutDUnitTest.class, "createServerCache"))
+    int PORT1 = ((Integer)server1.invoke(() -> HABugInPutDUnitTest.createServerCache()))
         .intValue();
-    PORT2 = ((Integer)server2.invoke(HABugInPutDUnitTest.class, "createServerCache"))
+    int PORT2 = ((Integer)server2.invoke(() -> HABugInPutDUnitTest.createServerCache()))
         .intValue();
 
-    client1.invoke(HABugInPutDUnitTest.class, "createClientCache", new Object[] {
-        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2) });
-    client2.invoke(HABugInPutDUnitTest.class, "createClientCache", new Object[] {
-        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2) });
+    client1.invoke(() -> HABugInPutDUnitTest.createClientCache(
+        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2) ));
+    client2.invoke(() -> HABugInPutDUnitTest.createClientCache(
+        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2) ));
     //Boolean.getBoolean("")
 
   }
 
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(HABugInPutDUnitTest.class, "closeCache");
-    client2.invoke(HABugInPutDUnitTest.class, "closeCache");
+    client1.invoke(() -> HABugInPutDUnitTest.closeCache());
+    client2.invoke(() -> HABugInPutDUnitTest.closeCache());
     // close server
-    server1.invoke(HABugInPutDUnitTest.class, "closeCache");
-    server2.invoke(HABugInPutDUnitTest.class, "closeCache");
+    server1.invoke(() -> HABugInPutDUnitTest.closeCache());
+    server2.invoke(() -> HABugInPutDUnitTest.closeCache());
   }
 
   public static void closeCache()
@@ -151,8 +147,8 @@ public class HABugInPutDUnitTest extends DistributedTestCase
   public static void createClientCache(String hostName, Integer port1, Integer port2)
       throws Exception
   {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue();
+    int PORT2 = port2.intValue();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");

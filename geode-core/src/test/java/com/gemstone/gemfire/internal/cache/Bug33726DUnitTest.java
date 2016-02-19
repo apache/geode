@@ -49,8 +49,8 @@ public class Bug33726DUnitTest extends DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(Bug33726DUnitTest.class, "closeCache");
-    vm1.invoke(Bug33726DUnitTest.class, "closeCache");
+    vm0.invoke(() -> Bug33726DUnitTest.closeCache());
+    vm1.invoke(() -> Bug33726DUnitTest.closeCache());
   }
   
   public static void closeCache(){
@@ -67,9 +67,9 @@ public class Bug33726DUnitTest extends DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(Bug33726DUnitTest.class, "createCacheAndPopulateRegion1");
-    vm1.invoke(Bug33726DUnitTest.class, "createCacheAndRegion2");
-    boolean pass = vm1.invokeBoolean(Bug33726DUnitTest.class, "testFlag");
+    vm0.invoke(() -> Bug33726DUnitTest.createCacheAndPopulateRegion1());
+    vm1.invoke(() -> Bug33726DUnitTest.createCacheAndRegion2());
+    boolean pass = vm1.invoke(() -> Bug33726DUnitTest.testFlag());
     assertTrue("The test failed", pass);
   
   }

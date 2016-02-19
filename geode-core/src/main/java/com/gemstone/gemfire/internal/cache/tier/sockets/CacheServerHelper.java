@@ -17,8 +17,10 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
@@ -40,41 +42,48 @@ import java.util.zip.GZIPOutputStream;
  * @author Barry Oglesby
  * @since 3.5
  */
-public class CacheServerHelper
-  {
-  public static byte[] serialize(Object obj) throws IOException
-  {
+public class CacheServerHelper {
+  
+  public static void setIsDefaultServer(CacheServer server) {
+    if (server instanceof CacheServerImpl) {
+      ((CacheServerImpl)server).setIsDefaultServer();
+    }
+  }
+  
+  public static boolean isDefaultServer(CacheServer server) {
+    if ( !(server instanceof CacheServerImpl) ) {
+      return false;
+    }
+    return ((CacheServerImpl)server).isDefaultServer();
+  }
+  
+  public static byte[] serialize(Object obj) throws IOException {
     return serialize(obj, false);
   }
 
-  public static byte[] serialize(Object obj, boolean zipObject) throws IOException
-  {
+  public static byte[] serialize(Object obj, boolean zipObject) throws IOException {
     return zipObject
       ? zip(obj)
       : BlobHelper.serializeToBlob(obj);
   }
 
-  public static Object deserialize(byte[] blob) throws IOException, ClassNotFoundException
-  {
+  public static Object deserialize(byte[] blob) throws IOException, ClassNotFoundException {
     return deserialize(blob, false);
   }
 
-  public static Object deserialize(byte[] blob, boolean unzipObject) throws IOException, ClassNotFoundException
-  {
+  public static Object deserialize(byte[] blob, boolean unzipObject) throws IOException, ClassNotFoundException {
     return unzipObject
       ? unzip(blob)
       : BlobHelper.deserializeBlob(blob);
   }
 
-  public static Object deserialize(byte[] blob, Version version, boolean unzipObject) throws IOException, ClassNotFoundException
-  {
+  public static Object deserialize(byte[] blob, Version version, boolean unzipObject) throws IOException, ClassNotFoundException {
     return unzipObject
       ? unzip(blob)
       : BlobHelper.deserializeBlob(blob, version, null);
   }
   
-  public static byte[] zip(Object obj) throws IOException
-  {
+  public static byte[] zip(Object obj) throws IOException {
 //logger.info("CacheServerHelper: Zipping object to blob: " + obj);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     GZIPOutputStream gz = new GZIPOutputStream(baos);
@@ -87,8 +96,7 @@ public class CacheServerHelper
     return blob;
   }
 
-  public static Object unzip(byte[] blob) throws IOException, ClassNotFoundException
-  {
+  public static Object unzip(byte[] blob) throws IOException, ClassNotFoundException {
 //logger.info("CacheServerHelper: Unzipping blob to object: " + blob);
     ByteArrayInputStream bais = new ByteArrayInputStream(blob);
     GZIPInputStream gs = new GZIPInputStream(bais);
@@ -107,8 +115,7 @@ public class CacheServerHelper
    * @param s
    * @return byte[]
    */
-  public static byte[] toUTF(String s)
-  {
+  public static byte[] toUTF(String s) {
     HeapDataOutputStream hdos = new HeapDataOutputStream(s);
     return hdos.toByteArray();
   }
@@ -118,8 +125,7 @@ public class CacheServerHelper
    * @param bytearr
    * @return String 
    */
-  public static String fromUTF(byte[] bytearr)
-  {
+  public static String fromUTF(byte[] bytearr) {
     int utflen = bytearr.length;
     int c, char2, char3;
     int count = 0;

@@ -78,10 +78,10 @@ public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
   }
   
   public void testMultiRegionFunctionExecution(){
-    vm0.invoke(MultiRegionFunctionExecutionDUnitTest.class, "createRegionsOnVm0");
-    vm1.invoke(MultiRegionFunctionExecutionDUnitTest.class, "createRegionsOnVm1");
-    vm2.invoke(MultiRegionFunctionExecutionDUnitTest.class, "createRegionsOnVm2");
-    vm3.invoke(MultiRegionFunctionExecutionDUnitTest.class, "createRegionsOnVm3");
+    vm0.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm0());
+    vm1.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm1());
+    vm2.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm2());
+    vm3.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm3());
     createRegionsOnUnitControllerVm();
     Set<Region> regions = new HashSet<Region>();
     regions.add(PR1);

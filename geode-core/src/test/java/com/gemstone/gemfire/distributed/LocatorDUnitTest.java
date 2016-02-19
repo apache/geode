@@ -257,9 +257,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
     VM loc1 = host.getVM(1);
     VM loc2 = host.getVM(2);
     
-    final int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int port1 = ports[0];
     this.port1 = port1;
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port2 = ports[1];
     this.port2 = port2; // for cleanup in tearDown2
     DistributedTestUtils.deleteLocatorStateFile(port1);
     DistributedTestUtils.deleteLocatorStateFile(port2);
@@ -490,10 +491,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
     VM locvm = host.getVM(3);
     Locator locator = null;
     
-    final int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int port1 = ports[0];
     this.port1 = port1;
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    this.port2 = port2; // for cleanup in tearDown2()
+    final int port2 = ports[1];
     DistributedTestUtils.deleteLocatorStateFile(port1, port2);
     final String host0 = NetworkUtils.getServerHostName(host); 
     final String locators = host0 + "[" + port1 + "]," +
@@ -557,7 +558,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
       locvm.invoke(crashLocator);
       
       assertTrue("Distributed system should not have disconnected",
-          vm1.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm1.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       // ensure quorumLost is properly invoked
       DistributionManager dm = (DistributionManager)((InternalDistributedSystem)sys).getDistributionManager();
@@ -625,9 +626,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
     VM locvm = host.getVM(3);
     Locator locator = null;
     
-    final int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int port1 = ports[0];
     this.port1 = port1;
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port2 = ports[1];
     this.port2 = port2;
     DistributedTestUtils.deleteLocatorStateFile(port1, port2);
     final String host0 = NetworkUtils.getServerHostName(host);
@@ -696,10 +698,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
           isSystemConnected());
       
       assertTrue("Distributed system should not have disconnected",
-          vm2.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       assertTrue("Distributed system should not have disconnected",
-          locvm.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          locvm.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       // stop the locator normally.  This should also be okay
       locator.stop();
@@ -711,15 +713,15 @@ public class LocatorDUnitTest extends DistributedTestCase {
       assertTrue("locator is not stopped", Locator.getLocators().isEmpty());
       
       assertTrue("Distributed system should not have disconnected",
-          vm2.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       assertTrue("Distributed system should not have disconnected",
-          locvm.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          locvm.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       // the remaining non-locator member should now be the lead member
       assertEquals("This test sometimes fails.  If the log contains " +
       		"'failed to collect all ACKs' it is a false failure.",
-      		mem2, vm2.invoke(LocatorDUnitTest.class, "getLeadMember", new Object[]{}));
+      		mem2, vm2.invoke(() -> LocatorDUnitTest.getLeadMember()));
       
       SerializableRunnable disconnect =
         new SerializableRunnable("Disconnect from " + locators) {
@@ -772,10 +774,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
     VM locvm = host.getVM(3);
     Locator locator = null;
     
-    final int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int port1 = ports[0];
     this.port1 = port1;
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    this.port2 = port2;
+    final int port2 = ports[1];
     DistributedTestUtils.deleteLocatorStateFile(port1, port2);
     final String host0 = NetworkUtils.getServerHostName(host);
     final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
@@ -847,10 +849,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
           isSystemConnected());
       
       assertTrue("Distributed system should not have disconnected",
-          vm2.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       assertTrue("Distributed system should not have disconnected",
-          locvm.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          locvm.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       vm2.invokeAsync(crashSystem);
 
@@ -911,10 +913,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
     VM locvm = host.getVM(3);
     Locator locator = null;
     
-    final int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int port1 = ports[0];
     this.port1 = port1;
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    this.port2 = port2;
+    final int port2 = ports[1];
     DistributedTestUtils.deleteLocatorStateFile(port1, port2);
     final String host0 = NetworkUtils.getServerHostName(host);
     final String locators = host0 + "[" + port1 + "],"
@@ -984,8 +986,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
       DistributedMember mem2 = (DistributedMember)vm2.invoke(this.getClass(),
           "getDistributedMember", connectArgs);
       
-      DistributedMember loc1Mbr = (DistributedMember)locvm.invoke(this.getClass(),
-          "getLocatorDistributedMember", new Object[]{});
+      DistributedMember loc1Mbr = (DistributedMember)locvm.invoke(() -> this.getLocatorDistributedMember());
 
       assertLeadMember(mem1, sys, 5000);
       
@@ -999,10 +1000,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
           sys.isConnected());
       
       assertTrue("Distributed system should not have disconnected",
-          vm1.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm1.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       assertTrue("Distributed system should not have disconnected",
-          vm2.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       // disconnect the first vm and demonstrate that the non-lead vm and the
       // locator notice the failure and continue to run
@@ -1010,7 +1011,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
       Wait.pause(10 * 1000);
       
       assertTrue("Distributed system should not have disconnected",
-          vm2.invokeBoolean(LocatorDUnitTest.class, "isSystemConnected"));
+          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
       
       assertEquals(sys.getDistributedMember(),
           MembershipManagerHelper.getCoordinator(sys));
@@ -1089,6 +1090,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * members of the distributed system join it.  This ensures that
    * members start up okay, and that handling of a stopped locator
    * is correct.
+   * <p>The locator is then restarted and is shown to take over the
+   * role of membership coordinator.
    */
   public void testOneLocator() throws Exception {
     disconnectAllFromDS();
@@ -1149,11 +1152,11 @@ public class LocatorDUnitTest extends DistributedTestCase {
         return !coord.equals(MembershipManagerHelper.getCoordinator(system));
       }
       public String description() {
-        return "expected the coordinator to be " + coord + " but it is " +
+        return "expected the coordinator to not be " + coord + " but it is " +
           MembershipManagerHelper.getCoordinator(system);
       }
     };
-    Wait.waitForCriterion(ev, 15 * 1000, 200, true);
+    Wait.waitForCriterion(ev, 15 * 1000, 200, false);
     DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system); 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("coordinator after shutdown of locator was " +
         newCoord);

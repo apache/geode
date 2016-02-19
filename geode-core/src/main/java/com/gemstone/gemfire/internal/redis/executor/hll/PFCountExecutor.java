@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.hll.CardinalityMergeException;
+import com.gemstone.gemfire.internal.hll.HyperLogLogPlus;
 import com.gemstone.gemfire.internal.redis.ByteArrayWrapper;
 import com.gemstone.gemfire.internal.redis.Coder;
 import com.gemstone.gemfire.internal.redis.Command;

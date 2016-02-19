@@ -43,8 +43,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
 
   public void testPauseGatewaySender_ErrorConditions() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -52,16 +51,13 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
+    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(
-        WANCommandTestBase.class, "getMember");
+    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
 
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --"
         + CliStrings.PAUSE_GATEWAYSENDER__ID + "=ln --"
@@ -81,8 +77,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
 
   public void testPauseGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -90,32 +85,28 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm4.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm5.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
+    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm4.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm5.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm4.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm4.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANCommandTestBase.startSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
 
     Wait.pause(10000);
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --"
@@ -137,12 +128,12 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
       fail("testPauseGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
   }
 
   /**
@@ -151,8 +142,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
    */
   public void testPauseGatewaySender_onMember() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -160,21 +150,18 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
+    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(
-        WANCommandTestBase.class, "getMember");
+    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
     Wait.pause(10000);
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --"
         + CliStrings.PAUSE_GATEWAYSENDER__ID + "=ln --"
@@ -190,8 +177,8 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
       fail("testPauseGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
   }
 
   /**
@@ -200,8 +187,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
    */
   public void testPauseGatewaySender_Group() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -209,32 +195,31 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1" });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm4.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1" });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm5.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1" });
-    vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
+    vm3.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1" ));
+    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm4.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1" ));
+    vm4.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm5.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1" ));
+    vm5.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm4.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm4.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANCommandTestBase.startSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
 
     Wait.pause(10000);
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --"
@@ -258,12 +243,12 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
       fail("testPauseGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
   }
 
   /**
@@ -273,8 +258,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
    */
   public void testPauseGatewaySender_MultipleGroup() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -282,46 +266,45 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1" });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm4.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1" });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm5.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1, SenderGroup2" });
-    vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm6.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup2" });
-    vm6.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm7.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup3" });
-    vm7.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
+    vm3.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1" ));
+    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm4.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1" ));
+    vm4.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm5.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1, SenderGroup2" ));
+    vm5.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm6.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup2" ));
+    vm6.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm7.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup3" ));
+    vm7.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm4.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm6.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm7.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm4.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm6.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm7.invoke(() -> WANCommandTestBase.startSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm6.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm7.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm6.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm7.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
 
     Wait.pause(10000);
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --"
@@ -344,22 +327,21 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
       fail("testPauseGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm6.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm7.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm6.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm7.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
   }
 
   public void testResumeGatewaySender_ErrorConditions() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -367,16 +349,13 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
+    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(
-        WANCommandTestBase.class, "getMember");
+    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
 
     String command = CliStrings.RESUME_GATEWAYSENDER + " --"
         + CliStrings.RESUME_GATEWAYSENDER__ID + "=ln --"
@@ -397,8 +376,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
 
   public void testResumeGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -406,43 +384,39 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm4.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm5.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
+    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm4.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm5.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm4.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm4.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANCommandTestBase.startSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
 
-    vm3.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm4.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm5.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
+    vm4.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
+    vm5.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
 
     Wait.pause(10000);
     String command = CliStrings.RESUME_GATEWAYSENDER + " --"
@@ -464,12 +438,12 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
       fail("testResumeGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
   }
 
   /**
@@ -478,8 +452,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
    */
   public void testResumeGatewaySender_onMember() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -487,26 +460,23 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCache",
-        new Object[] { punePort });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
+    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
 
-    vm3.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(
-        WANCommandTestBase.class, "getMember");
+    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
     Wait.pause(10000);
     String command = CliStrings.RESUME_GATEWAYSENDER + " --"
         + CliStrings.RESUME_GATEWAYSENDER__ID + "=ln --"
@@ -522,8 +492,8 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
       fail("testResumeGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
   }
 
   /**
@@ -532,8 +502,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
    */
   public void testResumeGatewaySender_Group() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -541,43 +510,42 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1" });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm4.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1" });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm5.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1" });
-    vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
+    vm3.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1" ));
+    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm4.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1" ));
+    vm4.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm5.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1" ));
+    vm5.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm4.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm4.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANCommandTestBase.startSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
 
-    vm3.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm4.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm5.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
+    vm4.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
+    vm5.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
 
     Wait.pause(10000);
     String command = CliStrings.RESUME_GATEWAYSENDER + " --"
@@ -600,12 +568,12 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
       fail("testResumeGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
   }
 
   /**
@@ -615,8 +583,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
    */
   public void testResumeGatewaySender_MultipleGroup() {
 
-    Integer punePort = (Integer) vm1.invoke(WANCommandTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -624,63 +591,62 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
     createDefaultSetup(props);
 
-    Integer nyPort = (Integer) vm2.invoke(WANCommandTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, punePort });
+    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1" });
-    vm3.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm4.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1" });
-    vm4.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm5.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup1, SenderGroup2" });
-    vm5.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm6.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup2" });
-    vm6.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
-    vm7.invoke(WANCommandTestBase.class, "createCacheWithGroups", new Object[] {
-        punePort, "SenderGroup3" });
-    vm7.invoke(WANCommandTestBase.class, "createSender", new Object[] { "ln",
-        2, false, 100, 400, false, false, null, true });
+    vm3.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1" ));
+    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm4.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1" ));
+    vm4.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm5.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup1, SenderGroup2" ));
+    vm5.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm6.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup2" ));
+    vm6.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
+    vm7.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+        punePort, "SenderGroup3" ));
+    vm7.invoke(() -> WANCommandTestBase.createSender( "ln",
+        2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm4.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm6.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
-    vm7.invoke(WANCommandTestBase.class, "startSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm4.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm6.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm7.invoke(() -> WANCommandTestBase.startSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm6.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm7.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm6.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm7.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
 
-    vm3.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm4.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm5.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm6.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
-    vm7.invoke(WANCommandTestBase.class, "pauseSender", new Object[] { "ln" });
+    vm3.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
+    vm4.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
+    vm5.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
+    vm6.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
+    vm7.invoke(() -> WANCommandTestBase.pauseSender( "ln" ));
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm6.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
-    vm7.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm6.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
+    vm7.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
 
     Wait.pause(10000);
     String command = CliStrings.RESUME_GATEWAYSENDER + " --"
@@ -703,15 +669,15 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
       fail("testResumeGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm4.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm5.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm6.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, false });
-    vm7.invoke(WANCommandTestBase.class, "verifySenderState", new Object[] {
-        "ln", true, true });
+    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm6.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, false ));
+    vm7.invoke(() -> WANCommandTestBase.verifySenderState(
+        "ln", true, true ));
   }
 }

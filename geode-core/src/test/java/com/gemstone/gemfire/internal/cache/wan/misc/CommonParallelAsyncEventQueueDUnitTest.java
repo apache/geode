@@ -38,16 +38,13 @@ public class CommonParallelAsyncEventQueueDUnitTest extends AsyncEventQueueTestB
     
   public void testSameSenderWithNonColocatedRegions() throws Exception {
     IgnoredException.addIgnoredException("cannot have the same parallel async");
-    Integer lnPort = (Integer)vm0.invoke(AsyncEventQueueTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    vm4.invoke(AsyncEventQueueTestBase.class, "createCache", new Object[] { lnPort });
-    vm4.invoke(AsyncEventQueueTestBase.class, "createAsyncEventQueue", new Object[] { "ln",
-      true, 100, 100, false, false, null, false });
-    vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-        new Object[] { getTestMethodName() + "_PR1", "ln", isOffHeap()  });
+    Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
+    vm4.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm4.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue( "ln",
+      true, 100, 100, false, false, null, false ));
+    vm4.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR1", "ln", isOffHeap()  ));
     try {
-      vm4.invoke(AsyncEventQueueTestBase.class, "createPartitionedRegionWithAsyncEventQueue",
-          new Object[] { getTestMethodName() + "_PR2", "ln", isOffHeap()  });
+      vm4.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR2", "ln", isOffHeap()  ));
       fail("Expected IllegateStateException : cannot have the same parallel gateway sender");
     }
     catch (Exception e) {

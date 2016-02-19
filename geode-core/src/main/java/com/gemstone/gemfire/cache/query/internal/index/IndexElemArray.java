@@ -33,6 +33,9 @@ public class IndexElemArray implements Iterable, Collection {
   private Object[] elementData;
   private volatile byte size;
 
+  /* lock for making size and data changes atomically. */
+  private Object lock = new Object();
+
   public IndexElemArray(int initialCapacity) {
     if (initialCapacity < 0) {
       throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
@@ -111,14 +114,16 @@ public class IndexElemArray implements Iterable, Collection {
    * or -1 if there is no such index.
    */
   public int indexOf(Object o) {
-    if (o == null) {
-      for (int i = 0; i < size; i++)
-        if (elementData[i] == null)
-          return i;
-    } else {
-      for (int i = 0; i < size; i++)
-        if (o.equals(elementData[i]))
-          return i;
+    synchronized (lock) {
+      if (o == null) {
+        for (int i = 0; i < size; i++)
+          if (elementData[i] == null)
+            return i;
+      } else {
+        for (int i = 0; i < size; i++)
+          if (o.equals(elementData[i]))
+            return i;
+      }
     }
     return -1;
   }
@@ -133,8 +138,10 @@ public class IndexElemArray implements Iterable, Collection {
    *          
    */
   public Object get(int index) {
-    RangeCheck(index);
-    return elementData[index];
+    synchronized (lock) {
+      RangeCheck(index);
+      return elementData[index];
+    }
   }
 
   /**
@@ -150,11 +157,13 @@ public class IndexElemArray implements Iterable, Collection {
    *           
    */
   public Object set(int index, Object element) {
-    RangeCheck(index);
+    synchronized (lock) {
+      RangeCheck(index);
 
-    Object oldValue = (Object) elementData[index];
-    elementData[index] = element;
-    return oldValue;
+      Object oldValue = (Object) elementData[index];
+      elementData[index] = element;
+      return oldValue;
+    }
   }
 
   /**
@@ -167,10 +176,12 @@ public class IndexElemArray implements Iterable, Collection {
    * @return <tt>true</tt> (as specified by {@link Collection#add})
    * @throws ArrayIndexOutOfBoundsException
    */
-  public synchronized boolean add(Object e) {
-    ensureCapacity(size + 1);
-    elementData[size] = e;
-    ++size;
+  public boolean add(Object e) {
+    synchronized (lock) {
+      ensureCapacity(size + 1);
+      elementData[size] = e;
+      ++size;
+    }
     return true;
   }
 
@@ -187,7 +198,7 @@ public class IndexElemArray implements Iterable, Collection {
    *          element to be removed from this list, if present
    * @return <tt>true</tt> if this list contained the specified element
    */
-  public synchronized boolean remove(Object o) {
+  public boolean remove(Object o) {
     if (o == null) {
       for (int index = 0; index < size; index++)
         if (elementData[index] == null) {
@@ -215,8 +226,11 @@ public class IndexElemArray implements Iterable, Collection {
     int numMoved = len - index - 1;
     if (numMoved > 0)
       System.arraycopy(elementData, index + 1, newArray, index, numMoved);
-    elementData = newArray;
-    --size;
+
+    synchronized (lock) {
+      elementData = newArray;
+      --size;
+    }
   }
 
   /**
@@ -225,10 +239,12 @@ public class IndexElemArray implements Iterable, Collection {
    */
   public void clear() {
     // Let gc do its work
-    for (int i = 0; i < size; i++) {
-      elementData[i] = null;
+    synchronized (lock) {
+      for (int i = 0; i < size; i++) {
+        elementData[i] = null;
+      }
+      size = 0;
     }
-    size = 0;
   }
 
   /**
@@ -244,12 +260,14 @@ public class IndexElemArray implements Iterable, Collection {
   }
 
   @Override
-  public synchronized boolean addAll(Collection c) {
+  public boolean addAll(Collection c) {
     Object[] a = c.toArray();
     int numNew = a.length;
-    ensureCapacity(size + numNew);
-    System.arraycopy(a, 0, elementData, size, numNew);
-    size += numNew;
+    synchronized (lock) {
+      ensureCapacity(size + numNew);
+      System.arraycopy(a, 0, elementData, size, numNew);
+      size += numNew;
+    }
     return numNew != 0;
   }
 
@@ -266,6 +284,15 @@ public class IndexElemArray implements Iterable, Collection {
   private class IndexArrayListIterator implements Iterator {
     private byte current;
     private Object currentEntry;
+    private Object[] elements;
+    private int len;
+
+    IndexArrayListIterator() {
+      synchronized (lock) {
+        elements = elementData;
+        len = size;
+      }
+    }
     
     /**
      * Checks if the array has next element, stores reference to the current
@@ -275,7 +302,7 @@ public class IndexElemArray implements Iterable, Collection {
      */
     @Override
     public boolean hasNext() {
-      return current < size;
+      return current < len;
     }
 
     /**
@@ -285,11 +312,12 @@ public class IndexElemArray implements Iterable, Collection {
     @Override
     public Object next() {
       try {
-        currentEntry = elementData[current++];
+        currentEntry = elements[current++];
       } catch (IndexOutOfBoundsException e) {
-        // Following exception must never be thrown.
-        //throw new NoSuchElementException();
-        return null;
+        // We should not be coming here as element-data and
+        // size are updated atomically.
+        throw new NoSuchElementException();
+        //return null;
       }
       return currentEntry;
     }

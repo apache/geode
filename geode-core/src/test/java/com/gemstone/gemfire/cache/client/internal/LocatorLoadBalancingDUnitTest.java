@@ -174,8 +174,9 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
    * Test to make sure the bridge servers communicate
    * their updated load to the controller when the load
    * on the bridge server changes.
+   * @throws Exception 
    */
-  public void testLoadMessaging() {
+  public void testLoadMessaging() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -220,8 +221,9 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   /**
    * Test to make sure that the locator
    * balancing load between two servers.
+   * @throws Exception 
    */
-  public void testBalancing() {
+  public void testBalancing() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -277,11 +279,11 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     vm.invoke(checkConnectionCount);
   }
   
-  private void waitForPrefilledConnections(VM vm, final int count) {
+  private void waitForPrefilledConnections(VM vm, final int count) throws Exception {
     waitForPrefilledConnections(vm, count, POOL_NAME);
   }
 
-  private void waitForPrefilledConnections(VM vm, final int count, final String poolName) {
+  private void waitForPrefilledConnections(VM vm, final int count, final String poolName) throws Exception {
     SerializableRunnable runnable = new SerializableRunnable("waitForPrefilledConnections") {
       public void run() {
         final PoolImpl pool = (PoolImpl) PoolManager.getAll().get(poolName);
@@ -307,8 +309,9 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
    * three servers with intersecting server groups.
    * Server:    1       2       3
    * Groups:    a       a,b     b
+   * @throws Exception 
    */
-  public void testIntersectingServerGroups() {
+  public void testIntersectingServerGroups() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -390,7 +393,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     
   }
   
-  public void testCustomLoadProbe() {
+  public void testCustomLoadProbe() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);

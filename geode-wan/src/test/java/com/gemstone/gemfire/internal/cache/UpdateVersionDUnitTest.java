@@ -100,22 +100,22 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     final String key = "key-1";
 
     // Site 1
-    Integer lnPort = (Integer)vm0.invoke(UpdateVersionDUnitTest.class, "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer)vm0.invoke(() -> UpdateVersionDUnitTest.createFirstLocatorWithDSId( 1 ));
 
-    vm0.invoke(UpdateVersionDUnitTest.class, "createCache", new Object[] { lnPort});
-    vm0.invoke(UpdateVersionDUnitTest.class, "createSender", new Object[] { "ln1", 2, false, 10, 1, false, false, null, true });
+    vm0.invoke(() -> UpdateVersionDUnitTest.createCache( lnPort));
+    vm0.invoke(() -> UpdateVersionDUnitTest.createSender( "ln1", 2, false, 10, 1, false, false, null, true ));
     
-    vm0.invoke(UpdateVersionDUnitTest.class, "createPartitionedRegion", new Object[] {regionName, "ln1", 1, 1});
-    vm0.invoke(UpdateVersionDUnitTest.class, "startSender", new Object[] { "ln1" });
-    vm0.invoke(UpdateVersionDUnitTest.class, "waitForSenderRunningState", new Object[] { "ln1" });
+    vm0.invoke(() -> UpdateVersionDUnitTest.createPartitionedRegion(regionName, "ln1", 1, 1));
+    vm0.invoke(() -> UpdateVersionDUnitTest.startSender( "ln1" ));
+    vm0.invoke(() -> UpdateVersionDUnitTest.waitForSenderRunningState( "ln1" ));
 
     //Site 2
-    Integer nyPort = (Integer)vm2.invoke(UpdateVersionDUnitTest.class, "createFirstRemoteLocator", new Object[] { 2, lnPort });
-    Integer nyRecPort = (Integer) vm2.invoke(UpdateVersionDUnitTest.class, "createReceiver", new Object[] { nyPort });
+    Integer nyPort = (Integer)vm2.invoke(() -> UpdateVersionDUnitTest.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyRecPort = (Integer) vm2.invoke(() -> UpdateVersionDUnitTest.createReceiver( nyPort ));
 
-    vm2.invoke(UpdateVersionDUnitTest.class, "createPartitionedRegion", new Object[] {regionName, "", 1, 1});
-    vm3.invoke(UpdateVersionDUnitTest.class, "createCache", new Object[] { nyPort});
-    vm3.invoke(UpdateVersionDUnitTest.class, "createPartitionedRegion", new Object[] {regionName, "", 1, 1});    
+    vm2.invoke(() -> UpdateVersionDUnitTest.createPartitionedRegion(regionName, "", 1, 1));
+    vm3.invoke(() -> UpdateVersionDUnitTest.createCache( nyPort));
+    vm3.invoke(() -> UpdateVersionDUnitTest.createPartitionedRegion(regionName, "", 1, 1));    
     
     final VersionTag tag = (VersionTag) vm0.invoke(new SerializableCallable("Update a single entry and get its version") {
       
@@ -238,22 +238,22 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     final String key = "key-1";
 
     // Site 1
-    Integer lnPort = (Integer)vm0.invoke(UpdateVersionDUnitTest.class, "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer)vm0.invoke(() -> UpdateVersionDUnitTest.createFirstLocatorWithDSId( 1 ));
 
-    vm0.invoke(UpdateVersionDUnitTest.class, "createCache", new Object[] { lnPort});
-    vm0.invoke(UpdateVersionDUnitTest.class, "createSender", new Object[] { "ln1", 2, false, 10, 1, false, false, null, true });
+    vm0.invoke(() -> UpdateVersionDUnitTest.createCache( lnPort));
+    vm0.invoke(() -> UpdateVersionDUnitTest.createSender( "ln1", 2, false, 10, 1, false, false, null, true ));
     
-    vm0.invoke(UpdateVersionDUnitTest.class, "createReplicatedRegion", new Object[] {regionName, "ln1"});
-    vm0.invoke(UpdateVersionDUnitTest.class, "startSender", new Object[] { "ln1" });
-    vm0.invoke(UpdateVersionDUnitTest.class, "waitForSenderRunningState", new Object[] { "ln1" });
+    vm0.invoke(() -> UpdateVersionDUnitTest.createReplicatedRegion(regionName, "ln1"));
+    vm0.invoke(() -> UpdateVersionDUnitTest.startSender( "ln1" ));
+    vm0.invoke(() -> UpdateVersionDUnitTest.waitForSenderRunningState( "ln1" ));
 
     //Site 2
-    Integer nyPort = (Integer)vm2.invoke(UpdateVersionDUnitTest.class, "createFirstRemoteLocator", new Object[] { 2, lnPort });
-    Integer nyRecPort = (Integer) vm2.invoke(UpdateVersionDUnitTest.class, "createReceiver", new Object[] { nyPort });
+    Integer nyPort = (Integer)vm2.invoke(() -> UpdateVersionDUnitTest.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyRecPort = (Integer) vm2.invoke(() -> UpdateVersionDUnitTest.createReceiver( nyPort ));
 
-    vm2.invoke(UpdateVersionDUnitTest.class, "createReplicatedRegion", new Object[] {regionName, ""});
-    vm3.invoke(UpdateVersionDUnitTest.class, "createCache", new Object[] { nyPort });
-    vm3.invoke(UpdateVersionDUnitTest.class, "createReplicatedRegion", new Object[] {regionName, ""});    
+    vm2.invoke(() -> UpdateVersionDUnitTest.createReplicatedRegion(regionName, ""));
+    vm3.invoke(() -> UpdateVersionDUnitTest.createCache( nyPort ));
+    vm3.invoke(() -> UpdateVersionDUnitTest.createReplicatedRegion(regionName, ""));    
     
     final VersionTag tag = (VersionTag) vm0.invoke(new SerializableCallable("Update a single entry and get its version") {
       
@@ -361,25 +361,25 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     VM vm3 = host.getVM(3); // server2 site2
 
     // Site 1
-    Integer lnPort = (Integer)vm0.invoke(UpdateVersionDUnitTest.class, "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer)vm0.invoke(() -> UpdateVersionDUnitTest.createFirstLocatorWithDSId( 1 ));
 
     final String key = "key-1";
 
-    vm0.invoke(UpdateVersionDUnitTest.class, "createCache", new Object[] { lnPort});
-    vm0.invoke(UpdateVersionDUnitTest.class, "createSender", new Object[] { "ln1", 2, true, 10, 1, false, false, null, true });
+    vm0.invoke(() -> UpdateVersionDUnitTest.createCache( lnPort));
+    vm0.invoke(() -> UpdateVersionDUnitTest.createSender( "ln1", 2, true, 10, 1, false, false, null, true ));
     
-    vm0.invoke(UpdateVersionDUnitTest.class, "createPartitionedRegion", new Object[] {regionName, "ln1", 1, 1});
-    vm0.invoke(UpdateVersionDUnitTest.class, "startSender", new Object[] { "ln1" });
-    vm0.invoke(UpdateVersionDUnitTest.class, "waitForSenderRunningState", new Object[] { "ln1" });
+    vm0.invoke(() -> UpdateVersionDUnitTest.createPartitionedRegion(regionName, "ln1", 1, 1));
+    vm0.invoke(() -> UpdateVersionDUnitTest.startSender( "ln1" ));
+    vm0.invoke(() -> UpdateVersionDUnitTest.waitForSenderRunningState( "ln1" ));
     
     //Site 2
-    Integer nyPort = (Integer)vm2.invoke(UpdateVersionDUnitTest.class, "createFirstRemoteLocator", new Object[] { 2, lnPort });
-    Integer nyRecPort = (Integer) vm2.invoke(UpdateVersionDUnitTest.class, "createReceiver", new Object[] { nyPort });
+    Integer nyPort = (Integer)vm2.invoke(() -> UpdateVersionDUnitTest.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyRecPort = (Integer) vm2.invoke(() -> UpdateVersionDUnitTest.createReceiver( nyPort ));
 
-    vm2.invoke(UpdateVersionDUnitTest.class, "createPartitionedRegion", new Object[] {regionName, "", 1, 1});
+    vm2.invoke(() -> UpdateVersionDUnitTest.createPartitionedRegion(regionName, "", 1, 1));
 
-    vm3.invoke(UpdateVersionDUnitTest.class, "createCache", new Object[] { nyPort});
-    vm3.invoke(UpdateVersionDUnitTest.class, "createPartitionedRegion", new Object[] {regionName, "", 1, 1});
+    vm3.invoke(() -> UpdateVersionDUnitTest.createCache( nyPort));
+    vm3.invoke(() -> UpdateVersionDUnitTest.createPartitionedRegion(regionName, "", 1, 1));
     
     final VersionTag tag = (VersionTag) vm0.invoke(new SerializableCallable("Put a single entry and get its version") {
       
@@ -500,25 +500,25 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     VM vm3 = host.getVM(3); // server2 site2
 
     // Site 1
-    Integer lnPort = (Integer)vm0.invoke(UpdateVersionDUnitTest.class, "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer lnPort = (Integer)vm0.invoke(() -> UpdateVersionDUnitTest.createFirstLocatorWithDSId( 1 ));
 
     final String key = "key-1";
 
-    vm0.invoke(UpdateVersionDUnitTest.class, "createCache", new Object[] { lnPort });
-    vm0.invoke(UpdateVersionDUnitTest.class, "createConcurrentSender", new Object[] { "ln1", 2, false, 10, 2, false, false, null, true, 2 });
+    vm0.invoke(() -> UpdateVersionDUnitTest.createCache( lnPort ));
+    vm0.invoke(() -> UpdateVersionDUnitTest.createConcurrentSender( "ln1", 2, false, 10, 2, false, false, null, true, 2 ));
     
-    vm0.invoke(UpdateVersionDUnitTest.class, "createPartitionedRegion", new Object[] {regionName, "ln1", 1, 1});
-    vm0.invoke(UpdateVersionDUnitTest.class, "startSender", new Object[] { "ln1" });
-    vm0.invoke(UpdateVersionDUnitTest.class, "waitForSenderRunningState", new Object[] { "ln1" });
+    vm0.invoke(() -> UpdateVersionDUnitTest.createPartitionedRegion(regionName, "ln1", 1, 1));
+    vm0.invoke(() -> UpdateVersionDUnitTest.startSender( "ln1" ));
+    vm0.invoke(() -> UpdateVersionDUnitTest.waitForSenderRunningState( "ln1" ));
     
     //Site 2
-    Integer nyPort = (Integer)vm2.invoke(UpdateVersionDUnitTest.class, "createFirstRemoteLocator", new Object[] { 2, lnPort });
-    Integer nyRecPort = (Integer) vm2.invoke(UpdateVersionDUnitTest.class, "createReceiver", new Object[] { nyPort });
+    Integer nyPort = (Integer)vm2.invoke(() -> UpdateVersionDUnitTest.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyRecPort = (Integer) vm2.invoke(() -> UpdateVersionDUnitTest.createReceiver( nyPort ));
 
-    vm2.invoke(UpdateVersionDUnitTest.class, "createPartitionedRegion", new Object[] {regionName, "", 1, 1});
+    vm2.invoke(() -> UpdateVersionDUnitTest.createPartitionedRegion(regionName, "", 1, 1));
 
-    vm3.invoke(UpdateVersionDUnitTest.class, "createCache", new Object[] { nyPort });
-    vm3.invoke(UpdateVersionDUnitTest.class, "createPartitionedRegion", new Object[] {regionName, "", 1, 1});    
+    vm3.invoke(() -> UpdateVersionDUnitTest.createCache( nyPort ));
+    vm3.invoke(() -> UpdateVersionDUnitTest.createPartitionedRegion(regionName, "", 1, 1));    
     
     final VersionTag tag = (VersionTag) vm0.invoke(new SerializableCallable("Put a single entry and get its version") {
       

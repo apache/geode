@@ -82,8 +82,8 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(PutAllCallBkRemoteVMDUnitTest.class, "createCacheForVM0");
-      vm1.invoke(PutAllCallBkRemoteVMDUnitTest.class, "createCacheForVM1");
+      vm0.invoke(() -> PutAllCallBkRemoteVMDUnitTest.createCacheForVM0());
+      vm1.invoke(() -> PutAllCallBkRemoteVMDUnitTest.createCacheForVM1());
       LogWriterUtils.getLogWriter().info("Cache created successfully");
     }
     
@@ -92,8 +92,8 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(PutAllCallBkRemoteVMDUnitTest.class, "closeCache");
-      vm1.invoke(PutAllCallBkRemoteVMDUnitTest.class, "closeCache");
+      vm0.invoke(() -> PutAllCallBkRemoteVMDUnitTest.closeCache());
+      vm1.invoke(() -> PutAllCallBkRemoteVMDUnitTest.closeCache());
     }
     
     public static synchronized void createCacheForVM0(){

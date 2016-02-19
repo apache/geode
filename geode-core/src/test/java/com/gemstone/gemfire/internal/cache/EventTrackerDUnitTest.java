@@ -160,7 +160,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
     });
     
     // Create Create Region in the client
-    final int port = serverVM.invokeInt(EventTrackerDUnitTest.class, "getCacheServerPort");
+    final int port = serverVM.invoke(() -> EventTrackerDUnitTest.getCacheServerPort());
     final String hostName = NetworkUtils.getServerHostName(host);
     clientVM.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
@@ -233,7 +233,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
     });
     
     // Create Create Region in the client
-    final int port = serverVM.invokeInt(EventTrackerDUnitTest.class, "getCacheServerPort");
+    final int port = serverVM.invoke(() -> EventTrackerDUnitTest.getCacheServerPort());
     final String hostName = NetworkUtils.getServerHostName(host);
     clientVM.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
@@ -311,7 +311,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
     vm1.invoke(createRegion);
     
  // Create Create Region in the client
-    final int port = vm0.invokeInt(EventTrackerDUnitTest.class, "getCacheServerPort");
+    final int port = vm0.invoke(() -> EventTrackerDUnitTest.getCacheServerPort());
     final String hostName = NetworkUtils.getServerHostName(host);
     vm2.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {

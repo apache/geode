@@ -16,12 +16,13 @@
  */
 package com.gemstone.gemfire.cache.hdfs.internal.hoplog;
 
+import com.gemstone.gemfire.internal.hll.ICardinality;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.EnumMap;
 
-import com.gemstone.gemfire.cache.hdfs.internal.cardinality.ICardinality;
 
 /**
  * Ordered sequence file

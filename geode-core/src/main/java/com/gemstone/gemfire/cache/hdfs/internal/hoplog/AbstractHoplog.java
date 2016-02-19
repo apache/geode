@@ -19,6 +19,7 @@ package com.gemstone.gemfire.cache.hdfs.internal.hoplog;
 import java.io.IOException;
 import java.util.regex.Matcher;
 
+import com.gemstone.gemfire.internal.hll.ICardinality;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -32,7 +33,6 @@ import org.apache.hadoop.io.compress.SnappyCodec;
 
 import com.gemstone.gemfire.cache.hdfs.HDFSIOException;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
-import com.gemstone.gemfire.cache.hdfs.internal.cardinality.ICardinality;
 import com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile;
 import com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.CompressionType;
 import com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option;

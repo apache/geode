@@ -95,8 +95,7 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
         }
       }
     });
-    Integer numOfRunningFunctions = (Integer) managingNode.invoke(
-        TestFunctionsDUnitTest.class, "getNumOfRunningFunction");
+    Integer numOfRunningFunctions = (Integer) managingNode.invoke(() -> TestFunctionsDUnitTest.getNumOfRunningFunction());
     LogWriterUtils.getLogWriter().info(
         "TestNumOfFunctions numOfRunningFunctions= " + numOfRunningFunctions);
     assertTrue(numOfRunningFunctions > 0 ? true : false);

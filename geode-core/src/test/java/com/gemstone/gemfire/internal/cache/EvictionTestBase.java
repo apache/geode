@@ -150,8 +150,8 @@ public class EvictionTestBase extends CacheTestCase {
       }      
     });
 
-    dataStore3.invoke(EvictionTestBase.class, "setTolerance");
-    dataStore4.invoke(EvictionTestBase.class, "setTolerance");
+    dataStore3.invoke(() -> EvictionTestBase.setTolerance());
+    dataStore4.invoke(() -> EvictionTestBase.setTolerance());
 
     dataStore3.invoke(new SerializableRunnable() {
       @Override
@@ -508,7 +508,7 @@ public class EvictionTestBase extends CacheTestCase {
   }
 
   public void killVm() {
-    dataStore4.invoke(EvictionTestBase.class, "close");
+    dataStore4.invoke(() -> EvictionTestBase.close());
 
   }
 
@@ -543,8 +543,7 @@ public class EvictionTestBase extends CacheTestCase {
   }
 
   public int getPRSize(String string) {
-    Integer prSize = (Integer)dataStore4.invoke(EvictionTestBase.class,
-        "returnPRSize", new Object[] { string });
+    Integer prSize = (Integer)dataStore4.invoke(() -> EvictionTestBase.returnPRSize( string ));
     return prSize;
 
   }

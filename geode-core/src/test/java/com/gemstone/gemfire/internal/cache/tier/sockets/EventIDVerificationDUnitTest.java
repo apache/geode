@@ -92,10 +92,8 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
     vm1 = host.getVM(1);
 
     //start servers first
-    PORT1 = ((Integer)vm0.invoke(EventIDVerificationDUnitTest.class,
-        "createServerCache")).intValue();
-    PORT2 = ((Integer)vm1.invoke(EventIDVerificationDUnitTest.class,
-        "createServerCache")).intValue();
+    PORT1 = ((Integer)vm0.invoke(() -> EventIDVerificationDUnitTest.createServerCache())).intValue();
+    PORT2 = ((Integer)vm1.invoke(() -> EventIDVerificationDUnitTest.createServerCache())).intValue();
 
     //vm2.invoke(EventIDVerificationDUnitTest.class, "createClientCache", new
     // Object[] { new Integer(PORT1),new Integer(PORT2)});
@@ -107,24 +105,20 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
   public void testEventIDOnServer()
   {
     createEntry();
-    Boolean pass = (Boolean)vm0.invoke(EventIDVerificationDUnitTest.class,
-        "verifyResult");
+    Boolean pass = (Boolean)vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
     assertTrue(pass.booleanValue());
     put();
-    pass = (Boolean)vm0.invoke(EventIDVerificationDUnitTest.class,
-        "verifyResult");
+    pass = (Boolean)vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
     assertTrue(pass.booleanValue());
     destroy();
-    pass = (Boolean)vm0.invoke(EventIDVerificationDUnitTest.class,
-        "verifyResult");
+    pass = (Boolean)vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
     assertTrue(pass.booleanValue());
 
     put();
     cache.getLogger().info("going to remove");
     remove();
     cache.getLogger().info("after remove");
-    pass = (Boolean)vm0.invoke(EventIDVerificationDUnitTest.class,
-        "verifyResult");
+    pass = (Boolean)vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
     assertTrue(pass.booleanValue());
   }
 
@@ -136,11 +130,9 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
   public void testEventIDPrapogationOnServerDuringRegionDestroy()
   {
     destroyRegion();
-    Boolean pass = (Boolean)vm0.invoke(EventIDVerificationDUnitTest.class,
-    "verifyResult");
+    Boolean pass = (Boolean)vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
     assertTrue(pass.booleanValue());
-    pass = (Boolean)vm1.invoke(EventIDVerificationDUnitTest.class,
-    "verifyResult");
+    pass = (Boolean)vm1.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
     assertTrue(pass.booleanValue());
   }
 
@@ -152,11 +144,9 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
   public void testEventIDPrapogationOnServerDuringRegionClear()
   {
     clearRegion();
-    Boolean pass = (Boolean)vm0.invoke(EventIDVerificationDUnitTest.class,
-    "verifyResult");
+    Boolean pass = (Boolean)vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
     assertTrue(pass.booleanValue());
-    pass = (Boolean)vm1.invoke(EventIDVerificationDUnitTest.class,
-    "verifyResult");
+    pass = (Boolean)vm1.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
     assertTrue(pass.booleanValue());
   }
 
@@ -190,10 +180,9 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
     CacheWriter writer = new CacheWriterAdapter() {
       public void beforeCreate(EntryEvent event)
       {
-        vm0.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
-            new Object[] { ((EntryEventImpl)event).getEventId() });
-        vm1.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
-            new Object[] { ((EntryEventImpl)event).getEventId() });
+        EventID eventId = ((EntryEventImpl)event).getEventId();
+        vm0.invoke(() -> EventIDVerificationDUnitTest.setEventIDData( eventId));
+        vm1.invoke(() -> EventIDVerificationDUnitTest.setEventIDData( eventId));
         try {
           super.beforeCreate(event);
         }
@@ -207,10 +196,9 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
       public void beforeUpdate(EntryEvent event)
       {
 
-        vm0.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
-            new Object[] { ((EntryEventImpl)event).getEventId() });
-        vm1.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
-            new Object[] { ((EntryEventImpl)event).getEventId() });
+        EventID eventId = ((EntryEventImpl)event).getEventId();
+        vm0.invoke(() -> EventIDVerificationDUnitTest.setEventIDData(eventId));
+        vm1.invoke(() -> EventIDVerificationDUnitTest.setEventIDData(eventId));
         try {
           super.beforeUpdate(event);
         }
@@ -223,11 +211,9 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
 
       public void beforeDestroy(EntryEvent event)
       {
-
-        vm0.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
-            new Object[] { ((EntryEventImpl)event).getEventId() });
-        vm1.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
-            new Object[] { ((EntryEventImpl)event).getEventId() });
+        EventID eventId = ((EntryEventImpl)event).getEventId();
+        vm0.invoke(() -> EventIDVerificationDUnitTest.setEventIDData(eventId));
+        vm1.invoke(() -> EventIDVerificationDUnitTest.setEventIDData(eventId));
         try {
           super.beforeDestroy(event);
         }
@@ -240,11 +226,9 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
 
       public void beforeRegionDestroy(RegionEvent event)
       {
-
-        vm0.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
-            new Object[] { ((RegionEventImpl)event).getEventId() });
-        vm1.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
-            new Object[] { ((RegionEventImpl)event).getEventId() });
+        EventID eventId = ((RegionEventImpl)event).getEventId();
+        vm0.invoke(() -> EventIDVerificationDUnitTest.setEventIDData(eventId));
+        vm1.invoke(() -> EventIDVerificationDUnitTest.setEventIDData(eventId));
         try {
           super.beforeRegionDestroy(event);
         }
@@ -257,10 +241,9 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
 
       public void beforeRegionClear(RegionEvent event)
       {
-        vm0.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
-            new Object[] { ((RegionEventImpl)event).getEventId() });
-        vm1.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
-            new Object[] { ((RegionEventImpl)event).getEventId() });
+        EventID eventId = ((RegionEventImpl)event).getEventId();
+        vm0.invoke(() -> EventIDVerificationDUnitTest.setEventIDData(eventId));
+        vm1.invoke(() -> EventIDVerificationDUnitTest.setEventIDData(eventId));
         try {
           super.beforeRegionClear(event);
         }
@@ -493,8 +476,8 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
     // close the clients first
     closeCache();
     // then close the servers
-    vm0.invoke(EventIDVerificationDUnitTest.class, "closeCache");
-    vm1.invoke(EventIDVerificationDUnitTest.class, "closeCache");
+    vm0.invoke(() -> EventIDVerificationDUnitTest.closeCache());
+    vm1.invoke(() -> EventIDVerificationDUnitTest.closeCache());
   }
 
   public static void closeCache()

@@ -39,9 +39,9 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   public void testPrimaryFailureInUNregisterInterest() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
-    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    server3.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
 
     registerK1AndK2();
 
@@ -51,11 +51,11 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
     verifyDeadAndLiveServers(1, 2);
 
     VM newPrimary = getPrimaryVM(oldPrimary);
-    newPrimary.invoke(HAInterestTestCase.class, "verifyDispatcherIsAlive");
+    newPrimary.invoke(() -> HAInterestTestCase.verifyDispatcherIsAlive());
     // primary
-    newPrimary.invoke(HAInterestTestCase.class, "verifyInterestUNRegistration");
+    newPrimary.invoke(() -> HAInterestTestCase.verifyInterestUNRegistration());
     // secondary
-    getBackupVM().invoke(HAInterestTestCase.class, "verifyInterestUNRegistration");
+    getBackupVM().invoke(() -> HAInterestTestCase.verifyInterestUNRegistration());
   }
 
   /**
@@ -65,18 +65,18 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   public void testSecondaryFailureInUNRegisterInterest() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
-    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    server3.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     registerK1AndK2();
     VM stoppedBackup = stopSecondaryAndUNregisterK1();
     verifyDeadAndLiveServers(1, 2);
     // still primary
-    getPrimaryVM().invoke(HAInterestTestCase.class, "verifyDispatcherIsAlive");
+    getPrimaryVM().invoke(() -> HAInterestTestCase.verifyDispatcherIsAlive());
     // primary
-    getPrimaryVM().invoke(HAInterestTestCase.class, "verifyInterestUNRegistration");
+    getPrimaryVM().invoke(() -> HAInterestTestCase.verifyInterestUNRegistration());
     // secondary
-    getBackupVM(stoppedBackup).invoke(HAInterestTestCase.class, "verifyInterestUNRegistration");
+    getBackupVM(stoppedBackup).invoke(() -> HAInterestTestCase.verifyInterestUNRegistration());
   }
 
   /**
@@ -87,11 +87,11 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   public void testDSMDetectsServerLiveJustBeforeInterestRegistration() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
-    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    server3.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     VM backup = getBackupVM();
-    backup.invoke(HAInterestTestCase.class, "stopServer");
+    backup.invoke(() -> HAInterestTestCase.stopServer());
     verifyDeadAndLiveServers(1, 2);
     setClientServerObserverForBeforeRegistration(backup);
     try {
@@ -100,9 +100,9 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
     } finally {
       unSetClientServerObserverForRegistrationCallback();
     }
-    server1.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
-    server2.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
-    server3.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
+    server1.invoke(() -> HAInterestTestCase.verifyInterestRegistration());
+    server2.invoke(() -> HAInterestTestCase.verifyInterestRegistration());
+    server3.invoke(() -> HAInterestTestCase.verifyInterestRegistration());
   }
 
   /**
@@ -114,12 +114,12 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
 
     createEntriesK1andK2();
-    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    server3.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
 
     VM backup = getBackupVM();
-    backup.invoke(HAInterestTestCase.class, "stopServer");
+    backup.invoke(() -> HAInterestTestCase.stopServer());
     verifyDeadAndLiveServers(1, 2);
 
     setClientServerObserverForAfterRegistration(backup);
@@ -130,9 +130,9 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
       unSetClientServerObserverForRegistrationCallback();
     }
 
-    server1.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
-    server2.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
-    server3.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
+    server1.invoke(() -> HAInterestTestCase.verifyInterestRegistration());
+    server2.invoke(() -> HAInterestTestCase.verifyInterestRegistration());
+    server3.invoke(() -> HAInterestTestCase.verifyInterestRegistration());
   }
 
   /**
@@ -145,16 +145,16 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   public void testRefreshEntriesFromPrimaryWhenDSMDetectsServerLive() throws Exception {
     IgnoredException.addIgnoredException(ServerConnectivityException.class.getName());
     
-    PORT1 = ((Integer) server1.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
-    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
+    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     createClientPoolCacheConnectionToSingleServer(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
 
-    server1.invoke(HAInterestTestCase.class, "stopServer");
+    server1.invoke(() -> HAInterestTestCase.stopServer());
     verifyDeadAndLiveServers(1, 0);
-    server1.invoke(HAInterestTestCase.class, "putK1andK2");
-    server1.invoke(HAInterestTestCase.class, "startServer");
+    server1.invoke(() -> HAInterestTestCase.putK1andK2());
+    server1.invoke(() -> HAInterestTestCase.startServer());
     verifyDeadAndLiveServers(0, 1);
     final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     assertNotNull(r1);
@@ -213,29 +213,29 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * refreshes registered entries from the server, because it is secondary
    */
   public void testGIIFromSecondaryWhenDSMDetectsServerLive() throws Exception {
-    server1.invoke(HAInterestTestCase.class, "closeCache");
-    server2.invoke(HAInterestTestCase.class, "closeCache");
-    server3.invoke(HAInterestTestCase.class, "closeCache");
+    server1.invoke(() -> HAInterestTestCase.closeCache());
+    server2.invoke(() -> HAInterestTestCase.closeCache());
+    server3.invoke(() -> HAInterestTestCase.closeCache());
 
-    PORT1 = ((Integer) server1.invoke(HAInterestTestCase.class, "createServerCacheWithLocalRegion")).intValue();
-    PORT2 = ((Integer) server2.invoke(HAInterestTestCase.class, "createServerCacheWithLocalRegion")).intValue();
-    PORT3 = ((Integer) server3.invoke(HAInterestTestCase.class, "createServerCacheWithLocalRegion")).intValue();
+    PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCacheWithLocalRegion())).intValue();
+    PORT2 = ((Integer) server2.invoke(() -> HAInterestTestCase.createServerCacheWithLocalRegion())).intValue();
+    PORT3 = ((Integer) server3.invoke(() -> HAInterestTestCase.createServerCacheWithLocalRegion())).intValue();
 
-    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    server3.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
 
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
 
     VM backup1 = getBackupVM();
     VM backup2 = getBackupVM(backup1);
-    backup1.invoke(HAInterestTestCase.class, "stopServer");
-    backup2.invoke(HAInterestTestCase.class, "stopServer");
+    backup1.invoke(() -> HAInterestTestCase.stopServer());
+    backup2.invoke(() -> HAInterestTestCase.stopServer());
     verifyDeadAndLiveServers(2, 1);
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
-    backup1.invoke(HAInterestTestCase.class, "putK1andK2");
-    backup1.invoke(HAInterestTestCase.class, "startServer");
+    backup1.invoke(() -> HAInterestTestCase.putK1andK2());
+    backup1.invoke(() -> HAInterestTestCase.startServer());
     verifyDeadAndLiveServers(1, 2);
     verifyRefreshedEntriesFromServer();
   }
@@ -248,19 +248,19 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * @throws Exception
    */
   public void testBug35945() throws Exception {
-    PORT1 = ((Integer) server1.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
-    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
+    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     createClientPoolCacheConnectionToSingleServer(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
 
-    server1.invoke(HAInterestTestCase.class, "stopServer");
+    server1.invoke(() -> HAInterestTestCase.stopServer());
     verifyDeadAndLiveServers(1, 0);
     // put on stopped server
-    server1.invoke(HAInterestTestCase.class, "putK1andK2");
+    server1.invoke(() -> HAInterestTestCase.putK1andK2());
     // spawn a thread to put on server , which will acquire a lock on entry
     setClientServerObserverForBeforeInterestRecovery();
-    server1.invoke(HAInterestTestCase.class, "startServer");
+    server1.invoke(() -> HAInterestTestCase.startServer());
     verifyDeadAndLiveServers(0, 1);
     waitForBeforeInterestRecoveryCallBack();
     // verify updated value of k1 as a refreshEntriesFromServer
@@ -316,23 +316,23 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   public void testInterestRecoveryFailure() throws Exception {
     IgnoredException.addIgnoredException("Server unreachable");
     
-    PORT1 = ((Integer) server1.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
-    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
-    PORT2 = ((Integer) server2.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
-    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
+    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    PORT2 = ((Integer) server2.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
+    server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     createClientPoolCacheWithSmallRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
     VM backup = getBackupVM();
     VM primary = getPrimaryVM();
 
-    backup.invoke(HAInterestTestCase.class, "stopServer");
-    primary.invoke(HAInterestTestCase.class, "stopServer");
+    backup.invoke(() -> HAInterestTestCase.stopServer());
+    primary.invoke(() -> HAInterestTestCase.stopServer());
     verifyDeadAndLiveServers(2, 0);
 
-    primary.invoke(HAInterestTestCase.class, "putK1andK2");
+    primary.invoke(() -> HAInterestTestCase.putK1andK2());
     setClientServerObserverForBeforeInterestRecoveryFailure();
-    primary.invoke(HAInterestTestCase.class, "startServer");
+    primary.invoke(() -> HAInterestTestCase.startServer());
     waitForBeforeInterestRecoveryCallBack();
     if (exceptionOccured) {
       fail("The DSM could not ensure that server 1 is started & serevr 2 is stopped");

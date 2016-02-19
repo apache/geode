@@ -63,10 +63,6 @@ public class HAClearDUnitTest extends DistributedTestCase
 
   static VM client2 = null;
 
-  public static int PORT1;
-
-  public static int PORT2;
-
   private static final String REGION_NAME = "HAClearDUnitTest_Region";
 
   protected static Cache cache = null;
@@ -95,10 +91,10 @@ public class HAClearDUnitTest extends DistributedTestCase
     final Host host = Host.getHost(0);
 
     server1 = host.getVM(0);
-    server1.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
+    server1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
 
     server2 = host.getVM(1);
-    server2.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
+    server2.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
 
     client1 = host.getVM(2);
 
@@ -110,10 +106,10 @@ public class HAClearDUnitTest extends DistributedTestCase
 
   @Override
   protected final void preTearDown() throws Exception {
-    client1.invoke(HAClearDUnitTest.class, "closeCache");
-    client2.invoke(HAClearDUnitTest.class, "closeCache");
-    server1.invoke(HAClearDUnitTest.class, "closeCache");
-    server2.invoke(HAClearDUnitTest.class, "closeCache");
+    client1.invoke(() -> HAClearDUnitTest.closeCache());
+    client2.invoke(() -> HAClearDUnitTest.closeCache());
+    server1.invoke(() -> HAClearDUnitTest.closeCache());
+    server2.invoke(() -> HAClearDUnitTest.closeCache());
     closeCache();
   }
 
@@ -554,19 +550,18 @@ public class HAClearDUnitTest extends DistributedTestCase
   // function to create 2servers and 3 clients
   private void createClientServerConfigurationForClearTest() throws Exception
   {
-    PORT1 = ((Integer)server1.invoke(HAClearDUnitTest.class,
-        "createServerCache")).intValue();
-    PORT2 = ((Integer)server2.invoke(HAClearDUnitTest.class,
-        "createServerCache")).intValue();
-    client1.invoke(HAClearDUnitTest.class, "createClientCache", new Object[] {
-        NetworkUtils.getServerHostName(Host.getHost(0)),
+    int PORT1 = ((Integer)server1.invoke(() -> HAClearDUnitTest.createServerCache())).intValue();
+    int PORT2 = ((Integer)server2.invoke(() -> HAClearDUnitTest.createServerCache())).intValue();
+    String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
+    client1.invoke(() -> HAClearDUnitTest.createClientCache(
+        hostname,
         new Integer(PORT1), new Integer(PORT2), new Boolean(true),
-        new Boolean(true) });
-    client2.invoke(HAClearDUnitTest.class, "createClientCache", new Object[] {
-        NetworkUtils.getServerHostName(Host.getHost(0)),
+        new Boolean(true) ));
+    client2.invoke(() -> HAClearDUnitTest.createClientCache(
+        hostname,
         new Integer(PORT1), new Integer(PORT2), new Boolean(true),
-        new Boolean(true) });
-    createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)),
+        new Boolean(true) ));
+    createClientCache(hostname,
         new Integer(PORT1), new Integer(PORT2),
         new Boolean(true), new Boolean(true));
   }
@@ -601,8 +596,8 @@ public class HAClearDUnitTest extends DistributedTestCase
   public static void createClientCache(String hostName, Integer port1, Integer port2,
       Boolean listenerAttached, Boolean registerInterest) throws Exception
   {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    int PORT1 = port1.intValue();
+    int PORT2 = port2.intValue();
     boolean isListenerAttached = listenerAttached.booleanValue();
     boolean isRegisterInterest = registerInterest.booleanValue();
     Properties props = new Properties();

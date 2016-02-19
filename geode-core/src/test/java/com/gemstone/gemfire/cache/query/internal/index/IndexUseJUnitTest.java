@@ -14,11 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * IndexTest.java
- *
- * Created on February 23, 2005, 3:17 PM
- */
 package com.gemstone.gemfire.cache.query.internal.index;
 
 import static org.junit.Assert.assertEquals;
@@ -39,8 +34,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.query.CacheUtils;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexType;
@@ -110,7 +107,7 @@ public class IndexUseJUnitTest
         QueryObserverHolder.setInstance(observer);
         q.execute();
         if (!observer.isIndexesUsed) {
-          fail("Index not uesd for operator '" + operator + "'");
+          fail("Index not used for operator '" + operator + "'");
         }
       }
     }
@@ -170,14 +167,14 @@ public class IndexUseJUnitTest
           QueryObserverHolder.setInstance(observer);
           q.execute(new Object[] { CacheUtils.getRegion("/pos") });
           if (!observer.isIndexesUsed) {
-            fail("Index not uesd for operator '" + operator + "'");
+            fail("Index not used for operator '" + operator + "'");
           }
         }
       }
     }
     catch (Exception e) {
       CacheUtils.getLogger().error(e);
-      fail("Test faield due to exception =" + e);
+      fail("Test failed due to exception =" + e);
     }
   }
 
@@ -200,7 +197,7 @@ public class IndexUseJUnitTest
           CacheUtils.getRegion("/pos").query(
               testData[j][0] + " " + operator + " " + testData[j][1]);
           if (!observer.isIndexesUsed) {
-            fail("Index not uesd for operator '" + operator + "'");
+            fail("Index not used for operator '" + operator + "'");
           }
         }
       }
@@ -241,7 +238,7 @@ public class IndexUseJUnitTest
       QueryObserverHolder.setInstance(observer);
       q.execute(new Object[] { CacheUtils.getRegion("/pos1") });
       if (!observer.isIndexesUsed) {
-        fail("Index not uesd for operator'='");
+        fail("Index not used for operator'='");
       }
       assertTrue(observer.indexesUsed.get(0).equals("statusIndex1"));
 
@@ -276,7 +273,7 @@ public class IndexUseJUnitTest
       QueryObserverHolder.setInstance(observer);
       rs = CacheUtils.getRegion("/pos").query("pk = '7'");
       if (!observer.isIndexesUsed) {
-        fail("Index not uesd for operator '='");
+        fail("Index not used for operator '='");
       }
       assertTrue(rs.size() == 1);
       assertTrue(((Portfolio)rs.iterator().next()).pkid.equals("7"));
@@ -290,6 +287,16 @@ public class IndexUseJUnitTest
   
   @Test
   public void testMapIndexUsageAllKeys() throws Exception {
+    try {
+      IndexManager.TEST_RANGEINDEX_ONLY = true;
+      evaluateMapTypeIndexUsageAllKeys();
+    }
+    finally {
+      IndexManager.TEST_RANGEINDEX_ONLY = false;
+    }
+  }
+  
+  private void evaluateMapTypeIndexUsageAllKeys() throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     LocalRegion testRgn = (LocalRegion)CacheUtils.createRegion("testRgn", null);
@@ -345,7 +352,7 @@ public class IndexUseJUnitTest
               r[i][1] = q.execute();
               CacheUtils.log("Executing query: " + queries[i] + " with index created");
               if(!observer.isIndexesUsed){
-                  fail("Index is NOT uesd");
+                  fail("Index is NOT used");
               }              
               Iterator itr = observer.indexesUsed.iterator();
               assertTrue(itr.hasNext());
@@ -385,8 +392,12 @@ public class IndexUseJUnitTest
   @Test
   public void testCompactMapIndexUsageWithIndexOnSingleKey() throws Exception
   {
-    QueryService qs;
-    qs = CacheUtils.getQueryService();
+    String queries[] = {
+        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key2'] >= 3"};
+    String queriesIndexNotUsed[] = {
+        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap.get('key2') >= 3"};
+
+    
     LocalRegion testRgn = (LocalRegion)CacheUtils.createRegion("testRgn", null);
     int ID = 1;
     // Add some test data now
@@ -401,84 +412,8 @@ public class IndexUseJUnitTest
       }
       testRgn.put(ID, mkid);
     }
-
-    qs = CacheUtils.getQueryService();
-    String queries[] = { "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key2'] >= 3" };
-
-    String queriesIndexNotUsed[] = {
-        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap.get('key2') >= 3",
-        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key3'] >= 3", };
-
-    Object r[][] = new Object[queries.length][2];
-
-    // Execute Queries without Indexes
-    for (int i = 0; i < queries.length; i++) {
-      Query q = null;
-      try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
-        CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        r[i][0] = q.execute();
-        CacheUtils.log("Executed query: " + queries[i]);
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
-      }
-    }
-
-    Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL,
-        "objs.maap['key2']", "/testRgn objs");
-    assertTrue(i1 instanceof CompactRangeIndex);
-    // Execute Queries with Indexes
-    for (int i = 0; i < queries.length; i++) {
-      Query q = null;
-      try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
-        CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        QueryObserverImpl observer = new QueryObserverImpl();
-        QueryObserverHolder.setInstance(observer);
-        r[i][1] = q.execute();
-        CacheUtils.log("Executing query: " + queries[i]
-            + " with index created");
-        if (!observer.isIndexesUsed) {
-          fail("Index is NOT uesd");
-        }
-        Iterator itr = observer.indexesUsed.iterator();
-        assertTrue(itr.hasNext());
-        String temp = itr.next().toString();
-        assertEquals(temp, "Index1");
-
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
-      }
-    }
-    StructSetOrResultsSet ssOrrs = new StructSetOrResultsSet();
-    ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length,queries);
-
-    // Test queries index not used
-    for (int i = 0; i < queriesIndexNotUsed.length; i++) {
-      Query q = null;
-      try {
-        q = CacheUtils.getQueryService().newQuery(queriesIndexNotUsed[i]);
-        CacheUtils.getLogger().info(
-            "Executing query: " + queriesIndexNotUsed[i]);
-        QueryObserverImpl observer = new QueryObserverImpl();
-        QueryObserverHolder.setInstance(observer);
-        CacheUtils.log("Executing query: " + queriesIndexNotUsed[i]
-            + " with index created");
-        q.execute();
-        assertFalse(observer.isIndexesUsed);
-        Iterator itr = observer.indexesUsed.iterator();
-        assertFalse(itr.hasNext());
-
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
-      }
-    }
+    
+    evaluateMapTypeIndexUsage("objs.maap['key2']", "/testRgn objs", queries, queriesIndexNotUsed, CompactRangeIndex.class);
 
     String query = "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.liist[0] >= 2";
     SelectResults withoutIndex, withIndex;
@@ -503,7 +438,7 @@ public class IndexUseJUnitTest
     String temp = itr.next().toString();
     assertEquals(temp, "Index2");
 
-    ssOrrs = new StructSetOrResultsSet();
+    StructSetOrResultsSet ssOrrs = new StructSetOrResultsSet();
     ssOrrs.CompareQueryResultsWithoutAndWithIndexes(new Object[][] { {
         withoutIndex, withIndex } }, 1,queries);
 
@@ -511,8 +446,13 @@ public class IndexUseJUnitTest
   @Test
   public void testCompactMapIndexUsageWithIndexOnMultipleKeys() throws Exception
   {
-    QueryService qs;
-    qs = CacheUtils.getQueryService();
+    String queries[] = {
+        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key2'] >= 3",
+        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key3'] >= 3" };
+    String queriesIndexNotUsed[] = {
+        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap.get('key2') >= 16",
+        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key4'] >= 16", };
+
     LocalRegion testRgn = (LocalRegion)CacheUtils.createRegion("testRgn", null);
     int ID = 1;
     // Add some test data now
@@ -527,119 +467,47 @@ public class IndexUseJUnitTest
       }
       testRgn.put(ID, mkid);
     }
-
-    qs = CacheUtils.getQueryService();
-    String queries[] = {
-        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key2'] >= 3",
-        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key3'] >= 3" };
-
-    String queriesIndexNotUsed[] = {
-        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap.get('key2') >= 16",
-        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key4'] >= 16", };
-
-    Object r[][] = new Object[queries.length][2];
-
-    // Execute Queries without Indexes
-    for (int i = 0; i < queries.length; i++) {
-      Query q = null;
-      try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
-        CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        r[i][0] = q.execute();
-        CacheUtils.log("Executed query: " + queries[i]);
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
-      }
-    }
-
-    Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL,
-        "objs.maap['key2','key3']", "/testRgn objs");
-    assertTrue(i1 instanceof CompactMapRangeIndex);
-    // Execute Queries with Indexes
-    for (int i = 0; i < queries.length; i++) {
-      Query q = null;
-      try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
-        CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        QueryObserverImpl observer = new QueryObserverImpl();
-        QueryObserverHolder.setInstance(observer);
-        r[i][1] = q.execute();
-        CacheUtils.log("Executing query: " + queries[i]
-            + " with index created");
-        if (!observer.isIndexesUsed) {
-          fail("Index is NOT uesd");
-        }
-        Iterator itr = observer.indexesUsed.iterator();
-        assertTrue(itr.hasNext());
-        String temp = itr.next().toString();
-        assertEquals(temp, "Index1");
-
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
-      }
-    }
-    StructSetOrResultsSet ssOrrs = new StructSetOrResultsSet();
-    ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length,queries);
-
-    // Test queries index not used
-    for (int i = 0; i < queriesIndexNotUsed.length; i++) {
-      Query q = null;
-      try {
-        q = CacheUtils.getQueryService().newQuery(queriesIndexNotUsed[i]);
-        CacheUtils.getLogger().info(
-            "Executing query: " + queriesIndexNotUsed[i]);
-        QueryObserverImpl observer = new QueryObserverImpl();
-        QueryObserverHolder.setInstance(observer);
-        CacheUtils.log("Executing query: " + queriesIndexNotUsed[i]
-            + " with index created");
-        q.execute();
-        assertFalse(observer.isIndexesUsed);
-        Iterator itr = observer.indexesUsed.iterator();
-        assertFalse(itr.hasNext());
-
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
-      }
-    }
-
+    evaluateMapTypeIndexUsage("objs.maap['key2','key3']", "/testRgn objs", queries, queriesIndexNotUsed, CompactMapRangeIndex.class);
   }
       
   @Test
   public void testMapIndexUsageWithIndexOnMultipleKeys() throws Exception
   {
-    IndexManager.TEST_RANGEINDEX_ONLY = true;
-    QueryService qs;
-    qs = CacheUtils.getQueryService();
-    LocalRegion testRgn = (LocalRegion)CacheUtils.createRegion("testRgn", null);
-    int ID = 1;
-    // Add some test data now
-    // Add 5 main objects. 1 will contain key1, 2 will contain key1 & key2
-    // and so on
-    for (; ID <= 30; ++ID) {
-      MapKeyIndexData mkid = new MapKeyIndexData(ID);
-      for (int j = 1; j <= ID; ++j) {
-        mkid.addKeyValue("key1", j * 1);
-        mkid.addKeyValue("key2", j * 2);
-        mkid.addKeyValue("key3", j * 3);
+    try {
+      IndexManager.TEST_RANGEINDEX_ONLY = true;
+      String queries[] = {
+          "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key2'] >= 3",
+          "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key3'] >= 3" };
+      String queriesIndexNotUsed[] = {
+          "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap.get('key2') >= 16",
+          "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key4'] >= 16", };
+
+      
+      LocalRegion testRgn = (LocalRegion)CacheUtils.createRegion("testRgn", null);
+      int ID = 1;
+      // Add some test data now
+      // Add 5 main objects. 1 will contain key1, 2 will contain key1 & key2
+      // and so on
+      for (; ID <= 30; ++ID) {
+        MapKeyIndexData mkid = new MapKeyIndexData(ID);
+        for (int j = 1; j <= ID; ++j) {
+          mkid.addKeyValue("key1", j * 1);
+          mkid.addKeyValue("key2", j * 2);
+          mkid.addKeyValue("key3", j * 3);
+        }
+        testRgn.put(ID, mkid);
       }
-      testRgn.put(ID, mkid);
+      
+      evaluateMapTypeIndexUsage("objs.maap['key2','key3']", "/testRgn objs", queries, queriesIndexNotUsed, MapRangeIndex.class);
     }
-
-    qs = CacheUtils.getQueryService();
-    String queries[] = {
-        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key2'] >= 3",
-        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key3'] >= 3" };
-
-    String queriesIndexNotUsed[] = {
-        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap.get('key2') >= 16",
-        "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.maap['key4'] >= 16", };
-
+    finally {
+      IndexManager.TEST_RANGEINDEX_ONLY = false;
+    }
+  }
+  
+  private void evaluateMapTypeIndexUsage(String indexExpression, String fromClause, String[] queries, String[] queriesIndexNotUsed, Class expectedIndexClass) throws Exception {
+    QueryService qs = CacheUtils.getQueryService();
+   
     Object r[][] = new Object[queries.length][2];
 
     // Execute Queries without Indexes
@@ -658,8 +526,9 @@ public class IndexUseJUnitTest
     }
 
     Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL,
-        "objs.maap['key2','key3']", "/testRgn objs");
-    assertTrue(i1 instanceof MapRangeIndex);
+        indexExpression, fromClause);
+    assertTrue(i1.getClass().equals(expectedIndexClass));
+    
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -672,7 +541,7 @@ public class IndexUseJUnitTest
         CacheUtils.log("Executing query: " + queries[i]
             + " with index created");
         if (!observer.isIndexesUsed) {
-          fail("Index is NOT uesd");
+          fail("Index is NOT used");
         }
         Iterator itr = observer.indexesUsed.iterator();
         assertTrue(itr.hasNext());
@@ -710,7 +579,6 @@ public class IndexUseJUnitTest
         fail(q.getQueryString());
       }
     }
-
   }
 
   @Test
@@ -1180,7 +1048,7 @@ public class IndexUseJUnitTest
   @Test
   public void testMapIndexUsableQueryOnEmptyRegion() throws Exception
   {
-
+    IndexManager.TEST_RANGEINDEX_ONLY = true;
     QueryService qs;
     qs = CacheUtils.getQueryService();
     LocalRegion testRgn = (LocalRegion)CacheUtils.createRegion("testRgn", null);
@@ -1329,74 +1197,7 @@ public class IndexUseJUnitTest
           "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.testFields.get('integer') > 1",         
           "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.testFields.get('long') > 1L"         
        };
-      Object r[][]= new Object[queries.length][2];
-      
-      qs = CacheUtils.getQueryService();
-      
-    //Execute Queries without Indexes
-      for (int i = 0; i < queries.length; i++) {
-          Query q = null;
-          try {
-              q = CacheUtils.getQueryService().newQuery(queries[i]);
-              CacheUtils.getLogger().info("Executing query: " + queries[i]);              
-              r[i][0] = q.execute();         
-            CacheUtils.log("Executed query: " + queries[i] );
-          } catch (Exception e) {
-              e.printStackTrace();
-              fail(q.getQueryString());
-          }
-      }  
-      
-      Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "itr1.testFields[*]",
-          "/testRgn itr1");
-      
-      assertTrue(i1 instanceof CompactMapRangeIndex);
-      
-            //Execute Queries with Indexes
-        for (int i = 0; i < queries.length; i++) {
-            Query q = null;
-            try {
-                q = CacheUtils.getQueryService().newQuery(queries[i]);
-                CacheUtils.getLogger().info("Executing query: " + queries[i]);
-                QueryObserverImpl observer = new QueryObserverImpl();
-                QueryObserverHolder.setInstance(observer);
-                r[i][1] = q.execute();
-                CacheUtils.log("Executing query: " + queries[i] + " with index created");
-                if(!observer.isIndexesUsed){
-                    fail("Index is NOT uesd");
-                }              
-                Iterator itr = observer.indexesUsed.iterator();
-                assertTrue(itr.hasNext());
-                String temp = itr.next().toString();
-                assertEquals(temp,"Index1");       
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail(q.getQueryString());
-            }
-        }
-        StructSetOrResultsSet ssOrrs = new StructSetOrResultsSet();
-        ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r,queries.length,queries);
-        
-        //Test queries index not used
-        for (int i = 0; i < queriesIndexNotUsed.length; i++) {
-          Query q = null;
-          try {
-              q = CacheUtils.getQueryService().newQuery(queriesIndexNotUsed[i]);
-              CacheUtils.getLogger().info("Executing query: " + queriesIndexNotUsed[i]);
-              QueryObserverImpl observer = new QueryObserverImpl();
-              QueryObserverHolder.setInstance(observer);            
-              CacheUtils.log("Executing query: " + queriesIndexNotUsed[i] + " with index created");
-              q.execute();
-              assertFalse(observer.isIndexesUsed);                          
-              Iterator itr = observer.indexesUsed.iterator();
-              assertFalse(itr.hasNext());                   
-              
-          } catch (Exception e) {
-              e.printStackTrace();
-              fail(q.getQueryString());
-          }
-      }
+      this.evaluateMapTypeIndexUsage("itr1.testFields[*]", "/testRgn itr1", queries, queriesIndexNotUsed, CompactMapRangeIndex.class);
     }
     
     @Test
@@ -1421,74 +1222,7 @@ public class IndexUseJUnitTest
           "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.testFields.get('integer') > 1",         
           "SELECT DISTINCT * FROM /testRgn itr1  WHERE itr1.testFields.get('long') > 1L"         
        };
-      Object r[][]= new Object[queries.length][2];
-      
-      qs = CacheUtils.getQueryService();
-      
-    //Execute Queries without Indexes
-      for (int i = 0; i < queries.length; i++) {
-          Query q = null;
-          try {
-              q = CacheUtils.getQueryService().newQuery(queries[i]);
-              CacheUtils.getLogger().info("Executing query: " + queries[i]);              
-              r[i][0] = q.execute();         
-            CacheUtils.log("Executed query: " + queries[i] );
-          } catch (Exception e) {
-              e.printStackTrace();
-              fail(q.getQueryString());
-          }
-      }  
-      
-      Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "itr1.testFields['string','double','integer','long']",
-          "/testRgn itr1");
-      
-      assertTrue(i1 instanceof CompactMapRangeIndex);
-      
-            //Execute Queries with Indexes
-        for (int i = 0; i < queries.length; i++) {
-            Query q = null;
-            try {
-                q = CacheUtils.getQueryService().newQuery(queries[i]);
-                CacheUtils.getLogger().info("Executing query: " + queries[i]);
-                QueryObserverImpl observer = new QueryObserverImpl();
-                QueryObserverHolder.setInstance(observer);
-                r[i][1] = q.execute();
-                CacheUtils.log("Executing query: " + queries[i] + " with index created");
-                if(!observer.isIndexesUsed){
-                    fail("Index is NOT uesd");
-                }              
-                Iterator itr = observer.indexesUsed.iterator();
-                assertTrue(itr.hasNext());
-                String temp = itr.next().toString();
-                assertEquals(temp,"Index1");       
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail(q.getQueryString());
-            }
-        }
-        StructSetOrResultsSet ssOrrs = new StructSetOrResultsSet();
-        ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r,queries.length,queries);
-        
-        //Test queries index not used
-        for (int i = 0; i < queriesIndexNotUsed.length; i++) {
-          Query q = null;
-          try {
-              q = CacheUtils.getQueryService().newQuery(queriesIndexNotUsed[i]);
-              CacheUtils.getLogger().info("Executing query: " + queriesIndexNotUsed[i]);
-              QueryObserverImpl observer = new QueryObserverImpl();
-              QueryObserverHolder.setInstance(observer);            
-              CacheUtils.log("Executing query: " + queriesIndexNotUsed[i] + " with index created");
-              q.execute();
-              assertFalse(observer.isIndexesUsed);                          
-              Iterator itr = observer.indexesUsed.iterator();
-              assertFalse(itr.hasNext());                   
-              
-          } catch (Exception e) {
-              e.printStackTrace();
-              fail(q.getQueryString());
-          }
-      }
+     evaluateMapTypeIndexUsage("itr1.testFields['string','double','integer','long']", "/testRgn itr1", queries, queriesIndexNotUsed, CompactMapRangeIndex.class);
     }
     
     @Test
@@ -1733,7 +1467,7 @@ public class IndexUseJUnitTest
     }
 
     @Test
-  public void testUndefinedInResults() throws Exception {
+  public void testUndefinedResultsAreReturnedWhenANotEqualsQueryIsExecuted() throws Exception {
       Portfolio p1 = new Portfolio(0);
       p1.position1 = null;
       region.put("0", p1);
@@ -1752,12 +1486,12 @@ public class IndexUseJUnitTest
     }
 
     @Test
-    public void testBug52444() throws Exception {
+    public void testIndexesRemainInUseAfterARebalance() throws Exception {
         // Create partitioned region
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         AttributesFactory af = new AttributesFactory();
         af.setPartitionAttributes(paf.create());
-        Region region = CacheUtils.createRegion("testBug52444", af.create(), false);
+        Region region = CacheUtils.createRegion("testIndexesRemainInUseAfterARebalance", af.create(), false);
 
         // Add index
         PartitionedIndex index = (PartitionedIndex) qs.createIndex("statusIndex", "status", region.getFullPath());
@@ -1795,6 +1529,36 @@ public class IndexUseJUnitTest
         // Verify index was still used
         assertTrue(observer.isIndexesUsed);
       }
+    
+  @Test
+  public void testPKIndexUseWithPR() throws Exception {
+    evaluatePKIndexUsetest(RegionShortcut.PARTITION, "pkTest");
+  }
+
+  @Test
+  public void testPKIndexUseWithReplicate() throws Exception {
+    evaluatePKIndexUsetest(RegionShortcut.REPLICATE, "pkTest");
+  }
+    
+  private void evaluatePKIndexUsetest(RegionShortcut regionShortcut, String regionName) throws Exception {
+    Cache cache = CacheUtils.getCache();
+    Region r = cache.createRegionFactory(regionShortcut).create(regionName);
+    Map map0 = new HashMap();
+    Map map1 = new HashMap();
+    Map map2 = new HashMap();
+    r.put("A0", map0);
+    r.put("A1", map1);
+    r.put("A2", map2);
+    qs.createIndex("pkIndex", IndexType.PRIMARY_KEY, "p.pk", "/" + regionName + " p");
+    QueryObserverImpl observer = new QueryObserverImpl();
+    QueryObserverHolder.setInstance(observer);
+    SelectResults sr = (SelectResults) qs.newQuery("select * from /" + regionName + " p where p.pk = 'A1'").execute();
+    assertEquals(1, sr.size());
+
+    if (!observer.isIndexesUsed) {
+      fail("Index not used for operator '='");
+    }
+  }
 
   class QueryObserverImpl extends QueryObserverAdapter
   {

@@ -75,7 +75,7 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
   /** name of the test region */
   private static final String REGION_NAME = "ClientHealthStatsDUnitTest_Region";
 
-  private static VM server = null;
+  private VM server = null;
 
   private static VM client = null;
   
@@ -132,18 +132,18 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     helper.createManagementCache(managingNode);
     helper.startManagingNode(managingNode);
 
-    int port = (Integer) server.invoke(ClientHealthStatsDUnitTest.class, "createServerCache");
+    int port = (Integer) server.invoke(() -> ClientHealthStatsDUnitTest.createServerCache());
 
     DistributedMember serverMember = helper.getMember(server);
 
-    client.invoke(ClientHealthStatsDUnitTest.class, "createClientCache", new Object[] {server.getHost(), port, 1, true, false});
+    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, false));
     
-    client2.invoke(ClientHealthStatsDUnitTest.class, "createClientCache", new Object[] {server.getHost(), port, 2, true, false});
+    client2.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 2, true, false));
 
-    client.invoke(ClientHealthStatsDUnitTest.class, "put");
-    client2.invoke(ClientHealthStatsDUnitTest.class, "put");
+    client.invoke(() -> ClientHealthStatsDUnitTest.put());
+    client2.invoke(() -> ClientHealthStatsDUnitTest.put());
     
-    managingNode.invoke(ClientHealthStatsDUnitTest.class, "verifyClientStats", new Object[] {serverMember, port, 2});
+    managingNode.invoke(() -> ClientHealthStatsDUnitTest.verifyClientStats(serverMember, port, 2));
     helper.stopManagingNode(managingNode);
   }
   
@@ -152,18 +152,18 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     helper.createManagementCache(managingNode);
     helper.startManagingNode(managingNode);
 
-    int port = (Integer) server.invoke(ClientHealthStatsDUnitTest.class, "createServerCache");
+    int port = (Integer) server.invoke(() -> ClientHealthStatsDUnitTest.createServerCache());
 
     DistributedMember serverMember = helper.getMember(server);
 
-    client.invoke(ClientHealthStatsDUnitTest.class, "createClientCache", new Object[] {server.getHost(), port, 1, false, false});
+    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, false, false));
     
-    client2.invoke(ClientHealthStatsDUnitTest.class, "createClientCache", new Object[] {server.getHost(), port, 2, false, false});
+    client2.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 2, false, false));
 
-    client.invoke(ClientHealthStatsDUnitTest.class, "put");
-    client2.invoke(ClientHealthStatsDUnitTest.class, "put");
+    client.invoke(() -> ClientHealthStatsDUnitTest.put());
+    client2.invoke(() -> ClientHealthStatsDUnitTest.put());
     
-    managingNode.invoke(ClientHealthStatsDUnitTest.class, "verifyClientStats", new Object[] {serverMember, port, 0});
+    managingNode.invoke(() -> ClientHealthStatsDUnitTest.verifyClientStats(serverMember, port, 0));
     helper.stopManagingNode(managingNode);
   }
   
@@ -172,42 +172,42 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     helper.createManagementCache(managingNode);
     helper.startManagingNode(managingNode);
 
-    int port = (Integer) server.invoke(ClientHealthStatsDUnitTest.class, "createServerCache");
+    int port = (Integer) server.invoke(() -> ClientHealthStatsDUnitTest.createServerCache());
 
     DistributedMember serverMember = helper.getMember(server);
 
-    client.invoke(ClientHealthStatsDUnitTest.class, "createClientCache", new Object[] {server.getHost(), port, 1, true, true});
+    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, true));
     
-    client2.invoke(ClientHealthStatsDUnitTest.class, "createClientCache", new Object[] {server.getHost(), port, 2, true, true});
+    client2.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 2, true, true));
 
-    client.invoke(ClientHealthStatsDUnitTest.class, "put");
-    client2.invoke(ClientHealthStatsDUnitTest.class, "put");
+    client.invoke(() -> ClientHealthStatsDUnitTest.put());
+    client2.invoke(() -> ClientHealthStatsDUnitTest.put());
     
-    client.invoke(ClientHealthStatsDUnitTest.class, "closeClientCache");
+    client.invoke(() -> ClientHealthStatsDUnitTest.closeClientCache());
     
-    client2.invoke(ClientHealthStatsDUnitTest.class, "closeClientCache");
+    client2.invoke(() -> ClientHealthStatsDUnitTest.closeClientCache());
     
-    managingNode.invoke(ClientHealthStatsDUnitTest.class, "verifyClientStats", new Object[] {serverMember, port, 2});
+    managingNode.invoke(() -> ClientHealthStatsDUnitTest.verifyClientStats(serverMember, port, 2));
     helper.stopManagingNode(managingNode);
   }
   
   public void testStatsMatchWithSize() throws Exception {
     // start a server
-    int port = (Integer) server.invoke(ClientHealthStatsDUnitTest.class, "createServerCache");
+    int port = (Integer) server.invoke(() -> ClientHealthStatsDUnitTest.createServerCache());
     // create durable client, with durable RI
-    client.invoke(ClientHealthStatsDUnitTest.class, "createClientCache", new Object[] {server.getHost(), port, 1, true, false});
+    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, false));
     // do puts on server from three different threads, pause after 500 puts each.
-    server.invoke(ClientHealthStatsDUnitTest.class, "doPuts");
+    server.invoke(() -> ClientHealthStatsDUnitTest.doPuts());
     // close durable client
-    client.invoke(ClientHealthStatsDUnitTest.class, "closeClientCache");
+    client.invoke(() -> ClientHealthStatsDUnitTest.closeClientCache());
     // resume puts on server, add another 100.
-    server.invokeAsync(ClientHealthStatsDUnitTest.class, "resumePuts");
+    server.invokeAsync(() -> ClientHealthStatsDUnitTest.resumePuts());
     // start durable client
-    client.invoke(ClientHealthStatsDUnitTest.class, "createClientCache", new Object[] {server.getHost(), port, 1, true, false});
+    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, false));
     // wait for full queue dispatch
-    client.invoke(ClientHealthStatsDUnitTest.class, "waitForLastKey");
+    client.invoke(() -> ClientHealthStatsDUnitTest.waitForLastKey());
     // verify the stats
-    server.invoke(ClientHealthStatsDUnitTest.class, "verifyStats",new Object[] {port});
+    server.invoke(() -> ClientHealthStatsDUnitTest.verifyStats(port));
   }
   
   public static int createServerCache() throws Exception {

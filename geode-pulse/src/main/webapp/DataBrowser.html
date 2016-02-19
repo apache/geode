@@ -48,8 +48,7 @@
 <script type="text/javascript" src='scripts/lib/common.js'></script>
 
 <!--Splitter-->
-<script src="scripts/lib/jquery.splitter-0.5.js"></script>
-<link href="css/jquery.splitter.css" rel="stylesheet" />
+<script src="scripts/lib/split.js"></script>
 
 <!--Custom Scroll Bar-->
 <!-- styles needed by jScrollPane - include in your own sites -->
@@ -74,8 +73,6 @@
 
 <!-- popups-->
 <link href="css/popup.css" rel="stylesheet" type="text/css" />
-<!-- Customize checkbox & radiobutton -->
-<script type="text/javascript" src="scripts/lib/checkBox-RadioButton.js"></script>
 <!-- Treeview JSON -->
 <script type="text/javascript" src="scripts/lib/jquery.ztree.core-3.5.js"></script>
 <script type="text/javascript" src="scripts/lib/jquery.ztree.excheck-3.5.js"></script>
@@ -121,36 +118,21 @@
 	        <div id="detailsAbout" class="aboutBlock display-none">
 	          <div class="aboutDetailsBlock">
 	            <div class="left widthfull-100per marginBottom30">
-	              <div class="left"><img src="images/about.png">
+	              <div class="left"><img src="images/about-geode.png">
 	                <div>
 	                 <div class="aboutVersionBlock left" id="pulseVersion"></div>
 	                 <div class="left termsBlock">&nbsp;<a id="pulseVersionDetailsLink" href="#dialog1" class="display-none" >Version Details</a></div>
 	                </div>
 	              </div>
-	              <div class="right aboutText">The Pulse tool monitors Pivotal&#0153; GemFire&#0169; system in real time. It provides health information, detailed operational and configuration data, system alerts, throughput performance and statistics for system members and connected clients.</div>
+	              <div class="right aboutText">The Pulse tool monitors Apache Geode system in real time. It provides health information, detailed operational and configuration data, system alerts, throughput performance and statistics for system members and connected clients.</div>
 	            </div>
-	            <div class="left widthfull-100per">
-	                <div class="left copyright">
-	                  Copyright &#0169; 2012-2014 Pivotal Software, Inc. All Rights Reserved. 
-                  This product is protected by U.S. and international copyright 
-                  and intellectual property laws. Pivotal products are covered by 
-                  one or more patents listed at <a href="http://www.pivotal.io/patents"
-                  target="_blank" class="termsBlockLink text-center">http://www.pivotal.io/patents</a>.
-	                </div>
-	               
-	                <div class="left copyright">Pivotal is a registered
-	                  trademark or trademark of Pivotal Software, Inc. in the United States and
-	                  other jurisdictions. All other marks and names mentioned herein
-	                  may be trademarks of their respective companies.</div>
-	               
-	                <div class="left termsBlock">
-	                  <a href="oslicenses.txt" target="_blank">Open Source
-	                    Licenses</a>
-	                </div>
-	               <!--  <div class="right termsBlock">
-	                  Pulse <a href="#.">Terms of Service</a>
-	                </div>-->
-	              </div>
+				  <div class="left widthfull-100per copyright">
+					  <p>Apache Geode (incubating)<br>
+						  Copyright 2016 The Apache Software Foundation.</p>
+					  <p>&nbsp;</p>
+					  <p>This product includes software developed at
+						  The Apache Software Foundation (http://www.apache.org/).</p>
+				  </div>
 	            </div>
 	        </div>
 				</div>
@@ -169,7 +151,7 @@
         <a id="clusterNameLink" href="#." class="left textbold HeaderLink HeaderLinkActive" onclick="openClusterDetail();">Cluster View</a>
       </div>
 			<div class="textbold right logoBlock">
-				<a href="#.">[LOGO]</a>
+				<img src="images/apache_geode_logo.png"/><a href="#.">[LOGO]</a>
 			</div>
 		</header>
 		<div class="clear"></div>
@@ -199,12 +181,10 @@
 			<!--Middle Block 1-->
 			<div class="left leftBlockCanvas">
 				<!-- Splitter Master-->
-				<div class="splitterMaster">
-					<div class="splitterInnerBlock">
 						<div id="widget">
 							<!-- Left splitter-->
-							<div id="leftBlock">
-								<div class="leftTopSplitterSpacing">
+							<div id="leftBlock" class="split split-horizontal">
+								<div id="dataRegion" class="split split-vertical">
 								  <div class="rightInnerBlocks">
 								    <a class="active" href="#.">Data Regions</a>
 								  </div>
@@ -240,7 +220,7 @@
 									</div>
 								</div>
 								<!-- Members List Block-->
-								<div class="">
+								<div id="regionMember" class="split split-vertical">
 								  <div class="rightInnerBlocks btm_pnl">
 								    <a href="#." class="active">Region Members</a>
 								  </div>
@@ -254,7 +234,7 @@
 								</div>
 							</div>
 							<!--Right splitter -->
-							<div id="rightBlock">
+							<div id="rightBlock" class="split split-horizontal">
 								<!-- Tab links-->
 								<div class="rightInnerBlocks ">
 								  <a href="#." class="active">Queries</a>
@@ -303,8 +283,6 @@
 							</div>
 						</div>
 					</div>
-				</div>
-			</div>
 		</div>
 	</div>
 	<!--Popups Block-->

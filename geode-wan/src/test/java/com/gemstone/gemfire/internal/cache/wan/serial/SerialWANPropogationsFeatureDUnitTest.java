@@ -34,340 +34,320 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
   
   public void testSerialReplicatedWanWithOverflow() {
 
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class, "createFirstLocatorWithDSId",
-        new Object[] { 1 });
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(WANTestBase.class, "createReceiver",
-        new Object[] {nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiver",
-        new Object[] {nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver(nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver(nyPort ));
 
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
+    vm4.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache(lnPort ));
 
-    vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-        false, 100, 10, false, false, null, true });
-    vm5.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-        false, 100, 10, false, false, null, true });
+    vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
+        false, 100, 10, false, false, null, true ));
+    vm5.invoke(() -> WANTestBase.createSender( "ln", 2,
+        false, 100, 10, false, false, null, true ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", null, isOffHeap()  });
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", null, isOffHeap()  });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap()  ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm6.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm7.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "doHeavyPuts", new Object[] {
-        getTestMethodName() + "_RR", 120 });
+    vm4.invoke(() -> WANTestBase.doHeavyPuts(
+        getTestMethodName() + "_RR", 120 ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 120 });
-    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 120 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 120 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 120 ));
   }
 
   public void testSerialReplicatedWanWithPersistence() {
 
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
+    vm4.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache(lnPort ));
 
-    vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-        false, 100, 10, false, true, null, true });
-    vm5.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-        false, 100, 10, false, true, null, true });
+    vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
+        false, 100, 10, false, true, null, true ));
+    vm5.invoke(() -> WANTestBase.createSender( "ln", 2,
+        false, 100, 10, false, true, null, true ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", null, isOffHeap()  });
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", null, isOffHeap()  });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap()  ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm6.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm7.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
-        1000 });
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR",
+        1000 ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 1000 });
-    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 1000 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 1000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 1000 ));
 
   }
 
   public void testReplicatedSerialPropagationWithConflation() throws Exception {
 
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
+    vm4.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache(lnPort ));
 
-    vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-        false, 100, 1000, true, false, null, true });
-    vm5.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-        false, 100, 1000, true, false, null, true });
+    vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
+        false, 100, 1000, true, false, null, true ));
+    vm5.invoke(() -> WANTestBase.createSender( "ln", 2,
+        false, 100, 1000, true, false, null, true ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", null, isOffHeap()  });
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", null, isOffHeap()  });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap()  ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm6.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm7.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_RR",
-        1000 });
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR",
+        1000 ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 1000 });
-    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 1000 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 1000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 1000 ));
   }
   
   public void testReplicatedSerialPropagationWithParallelThreads()
       throws Exception {
 
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
 
-    vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-        false, 100, 10, false, false, null, true });
-    vm5.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
-        false, 100, 10, false, false, null, true });
+    vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
+        false, 100, 10, false, false, null, true ));
+    vm5.invoke(() -> WANTestBase.createSender( "ln", 2,
+        false, 100, 10, false, false, null, true ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", null, isOffHeap()  });
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", null, isOffHeap()  });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap()  ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", null, isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm6.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
-    vm7.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName() + "_RR", "ln", isOffHeap()  });
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName() + "_RR", "ln", isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "doMultiThreadedPuts", new Object[] {
-        getTestMethodName() + "_RR", 1000 });
+    vm4.invoke(() -> WANTestBase.doMultiThreadedPuts(
+        getTestMethodName() + "_RR", 1000 ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 1000 });
-    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_RR", 1000 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 1000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_RR", 1000 ));
   }
   
   public void testSerialPropogationWithFilter() throws Exception {
 
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class, "createFirstLocatorWithDSId",
-        new Object[] {1});
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] {2,lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));
 
-    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
+    vm4.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache(lnPort ));
 
-    vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
+    vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false,
-        new MyGatewayEventFilter(), true });
-    vm5.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
+        new MyGatewayEventFilter(), true ));
+    vm5.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false,
-        new MyGatewayEventFilter(), true });
+        new MyGatewayEventFilter(), true ));
 
-    vm4.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName(), "ln", 1, 100, isOffHeap()  });
-    vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName(), "ln", 1, 100, isOffHeap()  });
-    vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName(), "ln", 1, 100, isOffHeap()  });
-    vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName(), "ln", 1, 100, isOffHeap()  });
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName(), "ln", 1, 100, isOffHeap()  ));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName(), "ln", 1, 100, isOffHeap()  ));
+    vm6.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName(), "ln", 1, 100, isOffHeap()  ));
+    vm7.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName(), "ln", 1, 100, isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName(), null, 1, 100, isOffHeap()  });
-    vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName(), null, 1, 100, isOffHeap()  });
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName(), null, 1, 100, isOffHeap()  ));
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName(), null, 1, 100, isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName(), 1000 });
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName(), 1000 ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName(), 800 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName(), 800 ));
   }
 
   public void testReplicatedSerialPropagationWithFilter() throws Exception {
 
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm6.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
-    vm7.invoke(WANTestBase.class, "createCache", new Object[] {lnPort });
+    vm4.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm6.invoke(() -> WANTestBase.createCache(lnPort ));
+    vm7.invoke(() -> WANTestBase.createCache(lnPort ));
 
-    vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
+    vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false,
-        new MyGatewayEventFilter(), true });
-    vm5.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
+        new MyGatewayEventFilter(), true ));
+    vm5.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false,
-        new MyGatewayEventFilter(), true });
+        new MyGatewayEventFilter(), true ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), null, isOffHeap()  });
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), null, isOffHeap()  });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), null, isOffHeap()  ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), null, isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), "ln", isOffHeap()  });
-    vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), "ln", isOffHeap()  });
-    vm6.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), "ln", isOffHeap()  });
-    vm7.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), "ln", isOffHeap()  });
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), "ln", isOffHeap()  ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), "ln", isOffHeap()  ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), "ln", isOffHeap()  ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), "ln", isOffHeap()  ));
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName(), 1000 });
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName(), 1000 ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName(), 800 });
-    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName(), 800 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName(), 800 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName(), 800 ));
   }
   
   public void testReplicatedSerialPropagationWithFilter_AfterAck()
       throws Exception {
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm6.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
-    vm7.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm6.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm7.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    vm2.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm3.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm3.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
 
-    vm4.invoke(WANTestBase.class, "createSender",
-        new Object[] { "ln", 2, false, 100, 10, false, false,
-            new MyGatewayEventFilter_AfterAck(), true });
-    vm5.invoke(WANTestBase.class, "createSender",
-        new Object[] { "ln", 2, false, 100, 10, false, false,
-            new MyGatewayEventFilter_AfterAck(), true });
+    vm4.invoke(() -> WANTestBase.createSender( "ln", 2, false, 100, 10, false, false,
+            new MyGatewayEventFilter_AfterAck(), true ));
+    vm5.invoke(() -> WANTestBase.createSender( "ln", 2, false, 100, 10, false, false,
+            new MyGatewayEventFilter_AfterAck(), true ));
 
-    vm6.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), null, isOffHeap() });
-    vm7.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), null, isOffHeap() });
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), null, isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), null, isOffHeap() ));
 
-    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
-    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
 
-    vm2.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), "ln", isOffHeap() });
-    vm3.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), "ln", isOffHeap() });
-    vm4.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), "ln", isOffHeap() });
-    vm5.invoke(WANTestBase.class, "createReplicatedRegion", new Object[] {
-        getTestMethodName(), "ln", isOffHeap() });
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), "ln", isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), "ln", isOffHeap() ));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), "ln", isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
+        getTestMethodName(), "ln", isOffHeap() ));
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName(), 1000 });
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName(), 1000 ));
 
-    vm4.invoke(WANTestBase.class, "validateQueueContents", new Object[] { "ln",
-        0 });
-    vm5.invoke(WANTestBase.class, "validateQueueContents", new Object[] { "ln",
-        0 });
+    vm4.invoke(() -> WANTestBase.validateQueueContents( "ln",
+        0 ));
+    vm5.invoke(() -> WANTestBase.validateQueueContents( "ln",
+        0 ));
 
-    Integer vm4Acks = (Integer)vm4.invoke(WANTestBase.class,
-        "validateAfterAck", new Object[] { "ln"});
-    Integer vm5Acks = (Integer)vm5.invoke(WANTestBase.class,
-        "validateAfterAck", new Object[] { "ln"});
+    Integer vm4Acks = (Integer)vm4.invoke(() -> WANTestBase.validateAfterAck( "ln"));
+    Integer vm5Acks = (Integer)vm5.invoke(() -> WANTestBase.validateAfterAck( "ln"));
 
     assertEquals(2000, (vm4Acks + vm5Acks));
 
-    vm6.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName(), 1000 });
-    vm7.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName(), 1000 });
+    vm6.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName(), 1000 ));
+    vm7.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName(), 1000 ));
   }
 }

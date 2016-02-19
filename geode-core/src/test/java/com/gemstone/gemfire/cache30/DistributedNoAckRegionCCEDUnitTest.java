@@ -122,18 +122,18 @@ public class DistributedNoAckRegionCCEDUnitTest extends
     createRegionWithAttribute(vm1, name, false);
     createRegionWithAttribute(vm2, name, false);
     createRegionWithAttribute(vm3, name, false);
-    vm0.invoke(DistributedNoAckRegionCCEDUnitTest.class, "addBlockingListener");
-    vm1.invoke(DistributedNoAckRegionCCEDUnitTest.class, "addBlockingListener");
-    vm2.invoke(DistributedNoAckRegionCCEDUnitTest.class, "addBlockingListener");
-    AsyncInvocation vm0Ops = vm0.invokeAsync(DistributedNoAckRegionCCEDUnitTest.class, "doManyOps");
-    AsyncInvocation vm1Ops = vm1.invokeAsync(DistributedNoAckRegionCCEDUnitTest.class, "doManyOps");
-    AsyncInvocation vm2Ops = vm2.invokeAsync(DistributedNoAckRegionCCEDUnitTest.class, "doManyOps");
+    vm0.invoke(() -> DistributedNoAckRegionCCEDUnitTest.addBlockingListener());
+    vm1.invoke(() -> DistributedNoAckRegionCCEDUnitTest.addBlockingListener());
+    vm2.invoke(() -> DistributedNoAckRegionCCEDUnitTest.addBlockingListener());
+    AsyncInvocation vm0Ops = vm0.invokeAsync(() -> DistributedNoAckRegionCCEDUnitTest.doManyOps());
+    AsyncInvocation vm1Ops = vm1.invokeAsync(() -> DistributedNoAckRegionCCEDUnitTest.doManyOps());
+    AsyncInvocation vm2Ops = vm2.invokeAsync(() -> DistributedNoAckRegionCCEDUnitTest.doManyOps());
     // pause to let a bunch of operations build up
     Wait.pause(5000);
-    AsyncInvocation a0 = vm3.invokeAsync(DistributedNoAckRegionCCEDUnitTest.class, "clearRegion");
-    vm0.invoke(DistributedNoAckRegionCCEDUnitTest.class, "unblockListener");
-    vm1.invoke(DistributedNoAckRegionCCEDUnitTest.class, "unblockListener");
-    vm2.invoke(DistributedNoAckRegionCCEDUnitTest.class, "unblockListener");
+    AsyncInvocation a0 = vm3.invokeAsync(() -> DistributedNoAckRegionCCEDUnitTest.clearRegion());
+    vm0.invoke(() -> DistributedNoAckRegionCCEDUnitTest.unblockListener());
+    vm1.invoke(() -> DistributedNoAckRegionCCEDUnitTest.unblockListener());
+    vm2.invoke(() -> DistributedNoAckRegionCCEDUnitTest.unblockListener());
     waitForAsyncProcessing(a0, "");
     waitForAsyncProcessing(vm0Ops, "");
     waitForAsyncProcessing(vm1Ops, "");
@@ -144,10 +144,10 @@ public class DistributedNoAckRegionCCEDUnitTest extends
 //    }
     Wait.pause(2000);//this test has with noack, thus we should wait before validating entries
     // check consistency of the regions
-    Map r0Contents = (Map)vm0.invoke(this.getClass(), "getCCRegionContents");
-    Map r1Contents = (Map)vm1.invoke(this.getClass(), "getCCRegionContents");
-    Map r2Contents = (Map)vm2.invoke(this.getClass(), "getCCRegionContents");
-    Map r3Contents = (Map)vm3.invoke(this.getClass(), "getCCRegionContents");
+    Map r0Contents = (Map)vm0.invoke(() -> this.getCCRegionContents());
+    Map r1Contents = (Map)vm1.invoke(() -> this.getCCRegionContents());
+    Map r2Contents = (Map)vm2.invoke(() -> this.getCCRegionContents());
+    Map r3Contents = (Map)vm3.invoke(() -> this.getCCRegionContents());
     
     for (int i=0; i<10; i++) {
       String key = "cckey" + i;

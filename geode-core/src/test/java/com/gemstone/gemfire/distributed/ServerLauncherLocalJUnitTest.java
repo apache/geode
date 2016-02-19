@@ -406,7 +406,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
     
     // create existing pid file
     this.pidFile = new File(ProcessType.SERVER.getPidFileName());
-    final int realPid = Host.getHost(0).getVM(3).invokeInt(ProcessUtils.class, "identifyPid");
+    final int realPid = Host.getHost(0).getVM(3).invoke(() -> ProcessUtils.identifyPid());
     assertFalse(realPid == ProcessUtils.identifyPid());
     writePid(this.pidFile, realPid);
 
@@ -686,7 +686,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
   public void testStartWithExistingPidFileFails() throws Throwable {
   }/*
     // create existing pid file
-    final int realPid = Host.getHost(0).getVM(3).invokeInt(ProcessUtils.class, "identifyPid");
+    final int realPid = Host.getHost(0).getVM(3).invoke(() -> ProcessUtils.identifyPid());
     assertFalse("Remote pid shouldn't be the same as local pid " + realPid, realPid == ProcessUtils.identifyPid());
 
     this.pidFile = new File(ProcessType.SERVER.getPidFileName());

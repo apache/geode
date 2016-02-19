@@ -71,7 +71,7 @@ public class ConflationDUnitTest extends DistributedTestCase
   VM vm0 = null;
   VM vm2 = null;
   private static Cache cache = null;
-  private static int PORT ;
+  private int PORT ;
   private static final String REGION_NAME1 = "ConflationDUnitTest_region1" ;
   private static final String REGION_NAME2 = "ConflationDUnitTest_region2" ;
   final static String MARKER = "markerKey";
@@ -90,7 +90,7 @@ public class ConflationDUnitTest extends DistributedTestCase
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm2 = host.getVM(2);
-    PORT =  ((Integer)vm0.invoke(ConflationDUnitTest.class, "createServerCache" )).intValue();
+    PORT =  ((Integer)vm0.invoke(() -> ConflationDUnitTest.createServerCache())).intValue();
   }
 
   private Cache createCache(Properties props) throws Exception
@@ -140,24 +140,24 @@ public class ConflationDUnitTest extends DistributedTestCase
   public void testTwoRegionsTwoWriters()
   {
     try {
-      vm0.invoke(ConflationDUnitTest.class, "setIsSlowStart");
+      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
       createClientCache1UniqueWriter ( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT));
-      vm2.invoke(ConflationDUnitTest.class, "createClientCache2UniqueWriter",
-          new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)});
-      vm2.invoke(ConflationDUnitTest.class, "setClientServerObserverForBeforeInterestRecovery");
-      vm2.invoke(ConflationDUnitTest.class, "setAllCountersZero");
-      vm2.invoke(ConflationDUnitTest.class, "assertAllCountersZero");
-      vm2.invoke(ConflationDUnitTest.class, "registerInterest");
+      Host host = Host.getHost(0);
+      vm2.invoke(() -> ConflationDUnitTest.createClientCache2UniqueWriter( NetworkUtils.getServerHostName(host), new Integer(PORT)));
+      vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
+      vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
+      vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
+      vm2.invoke(() -> ConflationDUnitTest.registerInterest());
       create();
       put();
       createMarker();
-      vm2.invoke(ConflationDUnitTest.class, "waitForMarker");
-      vm2.invoke(ConflationDUnitTest.class, "assertValue");
-      vm2.invoke(ConflationDUnitTest.class, "destroyMarker");
+      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
+      vm2.invoke(() -> ConflationDUnitTest.assertValue());
+      vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
       destroy();
       createMarker();
-      vm2.invoke(ConflationDUnitTest.class, "waitForMarker");
-      vm2.invoke(ConflationDUnitTest.class, "assertCounterSizes");
+      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
+      vm2.invoke(() -> ConflationDUnitTest.assertCounterSizes());
     }
     catch( Exception e ) {
       Assert.fail("Test failed due to exception", e);
@@ -168,31 +168,26 @@ public class ConflationDUnitTest extends DistributedTestCase
    * two regions with a common bridgewriter
    *
    */
-  public void testTwoRegionsOneWriter()
+  public void testTwoRegionsOneWriter() throws Exception
   {
-    try {
-      vm0.invoke(ConflationDUnitTest.class, "setIsSlowStart");
-      createClientCache1CommonWriter( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT));
-      vm2.invoke(ConflationDUnitTest.class, "createClientCache2CommonWriter",
-          new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT)});
-      vm2.invoke(ConflationDUnitTest.class, "setClientServerObserverForBeforeInterestRecovery");
-      vm2.invoke(ConflationDUnitTest.class, "setAllCountersZero");
-      vm2.invoke(ConflationDUnitTest.class, "assertAllCountersZero");
-      vm2.invoke(ConflationDUnitTest.class, "registerInterest");
+      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+      Host host = Host.getHost(0);
+      createClientCache1CommonWriter( NetworkUtils.getServerHostName(host), new Integer(PORT));
+      vm2.invoke(() -> ConflationDUnitTest.createClientCache2CommonWriter( NetworkUtils.getServerHostName(host), new Integer(PORT)));
+      vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
+      vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
+      vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
+      vm2.invoke(() -> ConflationDUnitTest.registerInterest());
       create();
       put();
       createMarker();
-      vm2.invoke(ConflationDUnitTest.class, "waitForMarker");
-      vm2.invoke(ConflationDUnitTest.class, "assertValue");
-      vm2.invoke(ConflationDUnitTest.class, "destroyMarker");
+      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
+      vm2.invoke(() -> ConflationDUnitTest.assertValue());
+      vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
       destroy();
       createMarker();
-      vm2.invoke(ConflationDUnitTest.class, "waitForMarker");
-      vm2.invoke(ConflationDUnitTest.class, "assertCounterSizes");
-    }
-    catch( Exception e ) {
-      Assert.fail("Test failed due to exception", e);
-    }
+      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
+      vm2.invoke(() -> ConflationDUnitTest.assertCounterSizes());
   }
 
 
@@ -200,34 +195,29 @@ public class ConflationDUnitTest extends DistributedTestCase
    * test more messages are not sent to client from server
    *
    */
-  public void testNotMoreMessagesSent()
+  public void testNotMoreMessagesSent() throws Exception
   {
-    try {
-      vm0.invoke(ConflationDUnitTest.class, "setIsSlowStart");
-      createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT));
-      vm2.invoke(ConflationDUnitTest.class,
-          "createClientCache2CommonWriterTest3", new Object[] {
-        NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT) });
-      vm2.invoke(ConflationDUnitTest.class, "setClientServerObserverForBeforeInterestRecovery");
-      vm2.invoke(ConflationDUnitTest.class, "setAllCountersZero");
-      vm2.invoke(ConflationDUnitTest.class, "assertAllCountersZero");
-      vm2.invoke(ConflationDUnitTest.class, "registerInterest");
+      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+      Host host = Host.getHost(0);
+      createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(host), new Integer(PORT));
+      vm2.invoke(() -> ConflationDUnitTest.createClientCache2CommonWriterTest3(
+        NetworkUtils.getServerHostName(host), new Integer(PORT) ));
+      vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
+      vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
+      vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
+      vm2.invoke(() -> ConflationDUnitTest.registerInterest());
       create();
       put200();
       createMarker();
-      vm2.invoke(ConflationDUnitTest.class, "waitForMarker");
-      vm2.invoke(ConflationDUnitTest.class, "assertValue");
-      vm2.invoke(ConflationDUnitTest.class, "destroyMarker");
+      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
+      vm2.invoke(() -> ConflationDUnitTest.assertValue());
+      vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
       destroy();
       createMarker();
-      vm2.invoke(ConflationDUnitTest.class, "waitForMarker");
-      vm2.invoke(ConflationDUnitTest.class, "assertCounterSizesLessThan200");
-      vm0.invoke(ConflationDUnitTest.class, "getStatsOnServer");
-      vm0.invoke(ConflationDUnitTest.class, "assertConflationStatus");
-    }
-    catch (Exception e) {
-      Assert.fail("Test failed due to exception", e);
-    }
+      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
+      vm2.invoke(() -> ConflationDUnitTest.assertCounterSizesLessThan200());
+      vm0.invoke(() -> ConflationDUnitTest.getStatsOnServer());
+      vm0.invoke(() -> ConflationDUnitTest.assertConflationStatus());
   }
   /**
    * create properties for a loner VM
@@ -912,9 +902,9 @@ public class ConflationDUnitTest extends DistributedTestCase
   protected final void preTearDown() throws Exception {
     // close client
     closeCache();
-    vm2.invoke(ConflationDUnitTest.class, "closeCache");
+    vm2.invoke(() -> ConflationDUnitTest.closeCache());
     // close server
-    vm0.invoke(ConflationDUnitTest.class, "closeCache");
+    vm0.invoke(() -> ConflationDUnitTest.closeCache());
   }
 }
 

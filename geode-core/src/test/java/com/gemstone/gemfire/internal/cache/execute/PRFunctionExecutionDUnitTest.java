@@ -968,8 +968,7 @@ public class PRFunctionExecutionDUnitTest extends
 
     int AsyncInvocationArrSize = 1;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = accessor.invokeAsync(PRFunctionExecutionDUnitTest.class,
-        "executeFunction");
+    async[0] = accessor.invokeAsync(() -> PRFunctionExecutionDUnitTest.executeFunction());
 
     o = datastore0.invoke(new SerializableCallable("close cache") {
       public Object call() throws Exception {
@@ -1066,8 +1065,7 @@ public class PRFunctionExecutionDUnitTest extends
 
     int AsyncInvocationArrSize = 1;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = accessor.invokeAsync(PRFunctionExecutionDUnitTest.class,
-        "executeFunction");
+    async[0] = accessor.invokeAsync(() -> PRFunctionExecutionDUnitTest.executeFunction());
 
     o = datastore0.invoke(new SerializableCallable("disconnect") {
       public Object call() throws Exception {
@@ -2994,7 +2992,7 @@ public class PRFunctionExecutionDUnitTest extends
   public void testBug41118() {
     Host host = Host.getHost(0);
     final VM lonerVM = host.getVM(1);
-    lonerVM.invoke(PRFunctionExecutionDUnitTest.class, "bug41118");
+    lonerVM.invoke(() -> PRFunctionExecutionDUnitTest.bug41118());
   }
  
   public static void bug41118(){

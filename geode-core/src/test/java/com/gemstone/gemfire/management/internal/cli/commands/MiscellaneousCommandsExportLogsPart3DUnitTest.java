@@ -126,7 +126,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     String end = sf.format(enddate);
 
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(MiscellaneousCommandsDUnitTest.class, "getMemberId");
+    final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
     String dir = getCurrentTimeString();
 
     String logLevel = LogWriterImpl.levelToString(LogWriterImpl.INFO_LEVEL);

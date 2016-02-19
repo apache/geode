@@ -81,7 +81,7 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   
   private static Host host = null;
 
-  private static VM server1 = null;
+  private VM server1 = null;
 
   private static VM server2 = null;
 
@@ -115,30 +115,26 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   public void testOneServerToClientTransactionsPropagation()
   {
     Integer port1 = initServerCache(server1);
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1 });
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1 });
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
     Wait.pause(PAUSE);
 
     server1.invoke(resetFlags());
     client1.invoke(resetFlags());
     client2.invoke(resetFlags());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "putInTransaction",
-        new Object[] { "server1" });
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.putInTransaction( "server1" ));
     Wait.pause(PAUSE);
     
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyNotUpdated");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyNotUpdated");
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class,
-        "commitTransactionOnServer1");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
     Wait.pause(PAUSE);
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
   }
 
   
@@ -152,10 +148,8 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   {
     Integer port1 = initServerCache(server1);
     Integer port2 = initServerCache(server2);
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1, port2 ));
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1, port2 ));
     Wait.pause(PAUSE);
 
     server1.invoke(resetFlags());
@@ -163,22 +157,20 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
     client1.invoke(resetFlags());
     client2.invoke(resetFlags());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "putInTransaction",
-        new Object[] { "server1" });
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.putInTransaction( "server1" ));
     Wait.pause(PAUSE);
 
-    server2.invoke(CacheServerTransactionsDUnitTest.class, "verifyNotUpdated");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyNotUpdated");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyNotUpdated");
+    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class,
-        "commitTransactionOnServer1");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
     Wait.pause(PAUSE);
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
-    server2.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
   }
   
   /**
@@ -190,10 +182,8 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   {
     Integer port1 = initServerCache(server1);
     Integer port2 = initServerCache(server2);
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1 });
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port2 });
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port2 ));
     Wait.pause(PAUSE);
 
     server1.invoke(resetFlags());
@@ -201,22 +191,20 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
     client1.invoke(resetFlags());
     client2.invoke(resetFlags());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "putInTransaction",
-        new Object[] { "server1" });
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.putInTransaction( "server1" ));
     Wait.pause(PAUSE);
 
-    server2.invoke(CacheServerTransactionsDUnitTest.class, "verifyNotUpdated");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyNotUpdated");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyNotUpdated");
+    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class,
-        "commitTransactionOnServer1");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
     Wait.pause(PAUSE);
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
-    server2.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdates");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
   }
   
   /**
@@ -226,25 +214,21 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   public void testInvalidatesOneServerToClientTransactionsPropagation()
   {
     Integer port1 = initServerCache(server1);
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1 });
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1 });
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
     Wait.pause(PAUSE);
 
     server1.invoke(resetFlags());
     client1.invoke(resetFlags());
     client2.invoke(resetFlags());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "invalidateInTransaction",
-        new Object[] { "server1" });
-    server1.invoke(CacheServerTransactionsDUnitTest.class,
-        "commitTransactionOnServer1");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.invalidateInTransaction( "server1" ));
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
     Wait.pause(PAUSE);
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
   }
   
   /**
@@ -255,10 +239,8 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   {
     Integer port1 = initServerCache(server1);
     Integer port2 = initServerCache(server2);
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1, port2 ));
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1, port2 ));
     Wait.pause(PAUSE);
 
     server1.invoke(resetFlags());
@@ -266,16 +248,14 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
     client1.invoke(resetFlags());
     client2.invoke(resetFlags());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "invalidateInTransaction",
-        new Object[] { "server1" });
-    server1.invoke(CacheServerTransactionsDUnitTest.class,
-        "commitTransactionOnServer1");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.invalidateInTransaction( "server1" ));
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
     Wait.pause(PAUSE);
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
-    server2.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
   }
 
   /**
@@ -287,10 +267,8 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   {
     Integer port1 = initServerCache(server1);
     Integer port2 = initServerCache(server2);
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1 });
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port2 });
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port2 ));
     Wait.pause(PAUSE);
 
     server1.invoke(resetFlags());
@@ -298,16 +276,14 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
     client1.invoke(resetFlags());
     client2.invoke(resetFlags());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "invalidateInTransaction",
-        new Object[] { "server1" });
-    server1.invoke(CacheServerTransactionsDUnitTest.class,
-        "commitTransactionOnServer1");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.invalidateInTransaction( "server1" ));
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
     Wait.pause(PAUSE);
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
-    server2.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyInvalidates");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
   }
   
   
@@ -319,25 +295,21 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   public void testDestroysOneServerToClientTransactionsPropagation()
   {
     Integer port1 = initServerCache(server1);
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1 });
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1 });
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
     Wait.pause(PAUSE);
 
     server1.invoke(resetFlags());
     client1.invoke(resetFlags());
     client2.invoke(resetFlags());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "destroyInTransaction",
-        new Object[] { "server1" });
-    server1.invoke(CacheServerTransactionsDUnitTest.class,
-        "commitTransactionOnServer1");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.destroyInTransaction( "server1" ));
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
     Wait.pause(PAUSE);
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
   }
   
   /**
@@ -348,10 +320,8 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   {
     Integer port1 = initServerCache(server1);
     Integer port2 = initServerCache(server2);
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1, port2 ));
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1, port2 ));
     Wait.pause(PAUSE);
     
     server1.invoke(resetFlags());
@@ -359,16 +329,14 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
     client1.invoke(resetFlags());
     client2.invoke(resetFlags());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "destroyInTransaction",
-        new Object[] { "server1" });
-    server1.invoke(CacheServerTransactionsDUnitTest.class,
-        "commitTransactionOnServer1");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.destroyInTransaction( "server1" ));
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
     Wait.pause(PAUSE);
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
-    server2.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
   }
 
   
@@ -380,10 +348,8 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   {
     Integer port1 = initServerCache(server1);
     Integer port2 = initServerCache(server2);
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1 });
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port2 });
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port2 ));
     Wait.pause(PAUSE);
     
     server1.invoke(resetFlags());
@@ -391,16 +357,14 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
     client1.invoke(resetFlags());
     client2.invoke(resetFlags());
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "destroyInTransaction",
-        new Object[] { "server1" });
-    server1.invoke(CacheServerTransactionsDUnitTest.class,
-        "commitTransactionOnServer1");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.destroyInTransaction( "server1" ));
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
     Wait.pause(PAUSE);
 
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
-    server2.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyDestroys");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
   }
   
   /**
@@ -409,20 +373,18 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
    *
    */
   public void YOGESH_testClientToServerCommits(){
-    Integer port1 = ((Integer)server1.invoke(
-        CacheServerTransactionsDUnitTest.class, "createServerCache"));
-    Integer port2 = ((Integer)server2.invoke(
-        CacheServerTransactionsDUnitTest.class, "createServerCache"));
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port1 });
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(server1.getHost()), port2 });
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "commitTransactionOnClient");
+    fail("Invoking bad method");
+    int port1 = 0;
+//    Integer port1 = ((Integer)server1.invoke(() -> CacheServerTransactionsDUnitTest.createServerCache()));
+//    Integer port2 = ((Integer)server2.invoke(() -> CacheServerTransactionsDUnitTest.createServerCache()));
+//    client1.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port1 ));
+//    client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), port2 ));
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnClient());
     Wait.pause(PAUSE);
     
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdatesOnServer");
-    server2.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdatesOnServer");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "verifyUpdatesOnServer");    
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdatesOnServer());
+    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdatesOnServer());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdatesOnServer());    
   }
 
   private CacheSerializableRunnable resetFlags()
@@ -846,10 +808,10 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     // close the clients first
-    client1.invoke(CacheServerTransactionsDUnitTest.class, "closeCache");
-    client2.invoke(CacheServerTransactionsDUnitTest.class, "closeCache");
+    client1.invoke(() -> CacheServerTransactionsDUnitTest.closeCache());
+    client2.invoke(() -> CacheServerTransactionsDUnitTest.closeCache());
     // then close the servers
-    server1.invoke(CacheServerTransactionsDUnitTest.class, "closeCache");
-    server2.invoke(CacheServerTransactionsDUnitTest.class, "closeCache");
+    server1.invoke(() -> CacheServerTransactionsDUnitTest.closeCache());
+    server2.invoke(() -> CacheServerTransactionsDUnitTest.closeCache());
   }
 }

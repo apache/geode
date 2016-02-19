@@ -21,13 +21,18 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import java.util.List;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.internal.*;
+import com.gemstone.gemfire.cache.query.internal.CompiledIteratorDef;
+import com.gemstone.gemfire.cache.query.internal.CompiledValue;
+import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
+import com.gemstone.gemfire.cache.query.internal.RuntimeIterator;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import java.util.List;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
@@ -67,13 +72,19 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper  {
       String definition = rIter.getDefinition();
       this.canonicalizedIteratorDefinitions = new String[1];
       this.canonicalizedIteratorDefinitions[0] = definition;
-      //    Asif: Bind the Index_Internal_ID to the RuntimeIterator
-      String name = imgr.putCanonicalizedIteratorNameIfAbsent(definition);
+      //    Asif: Bind the Index_Internal_ID to the RuntimeIterator      
+      PartitionedRegion pr = this.context.getPartitionedRegion();
+      this.canonicalizedIteratorNames = new String[1];
+      String name = null;
+      if (pr != null) {
+        name = pr.getIndexManager().putCanonicalizedIteratorNameIfAbsent(definition);
+      } else {
+        name = imgr.putCanonicalizedIteratorNameIfAbsent(definition);
+      }
       rIter.setIndexInternalID(name);
       this.canonicalizedIteratorNames = new String[1];
       this.canonicalizedIteratorNames[0] = name;
-      this.fromClause = new StringBuffer(definition).append(' ').append(name)
-          .toString();
+      this.fromClause = new StringBuffer(definition).append(' ').append(name).toString();
       context.bindIterator(rIter);
     }
     catch (IndexInvalidException e) {

@@ -83,11 +83,9 @@ public class GetPDXTypeByIdOp {
       return false;
     }
     
-    //TODO - no idea what this mumbo jumbo means, but it's on
-    //most of the other messages like this.
     @Override
     protected void sendMessage(Connection cnx) throws Exception {
-      getMessage().setEarlyAck((byte)(getMessage().getEarlyAckByte() & Message.MESSAGE_HAS_SECURE_PART));
+      getMessage().clearMessageHasSecurePartFlag();
       getMessage().send(false);
     }
   }

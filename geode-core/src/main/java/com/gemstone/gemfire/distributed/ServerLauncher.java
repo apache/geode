@@ -53,6 +53,7 @@ import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.ObjectUtils;
 import com.gemstone.gemfire.internal.lang.StringUtils;
@@ -948,6 +949,8 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       if (getHostNameForClients() != null) {
         cacheServer.setHostnameForClients(getHostNameForClients());
       }
+      
+      CacheServerHelper.setIsDefaultServer(cacheServer);
 
       cacheServer.start();
     }
@@ -1956,8 +1959,13 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       else {
         try {
           this.serverBindAddress = InetAddress.getByName(serverBindAddress);
-          this.serverBindAddressSetByUser = true;
-          return this;
+          if (SocketCreator.isLocalHost(this.serverBindAddress)) {
+            this.serverBindAddressSetByUser = true;
+            return this;
+          }
+          else {
+            throw new IllegalArgumentException(serverBindAddress + " is not an address for this machine.");
+          }
         }
         catch (UnknownHostException e) {
           throw new IllegalArgumentException(LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE

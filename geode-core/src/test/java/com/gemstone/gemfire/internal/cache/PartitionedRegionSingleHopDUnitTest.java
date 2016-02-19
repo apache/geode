@@ -252,65 +252,41 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
   // 2 peers 2 servers 1 accessor.No client.Should work without any exceptions.
   public void test_NoClient() {
-    member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
-    member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
 
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "createPeer");
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "createPeer");
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
 
     createAccessorServer();
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "clearMetadata");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "clearMetadata");
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "clearMetadata");
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "clearMetadata");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.clearMetadata());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.clearMetadata());
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.clearMetadata());
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.clearMetadata());
     clearMetadata();
 
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "putIntoPartitionedRegions");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "putIntoPartitionedRegions");
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "putIntoPartitionedRegions");
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "putIntoPartitionedRegions");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
     putIntoPartitionedRegions();
 
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "getFromPartitionedRegions");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "getFromPartitionedRegions");
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "getFromPartitionedRegions");
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "getFromPartitionedRegions");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.getFromPartitionedRegions());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.getFromPartitionedRegions());
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.getFromPartitionedRegions());
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.getFromPartitionedRegions());
     getFromPartitionedRegions();
 
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "verifyEmptyMetadata");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "verifyEmptyMetadata");
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "verifyEmptyMetadata");
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "verifyEmptyMetadata");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyMetadata());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyMetadata());
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyMetadata());
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyMetadata());
     verifyEmptyMetadata();
 
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "verifyEmptyStaticData");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "verifyEmptyStaticData");
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "verifyEmptyStaticData");
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "verifyEmptyStaticData");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyStaticData());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyStaticData());
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyStaticData());
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyStaticData());
     verifyEmptyStaticData();
   }
 
@@ -318,14 +294,12 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   // 1 Client connected to 2 AccessorServers. Hence metadata should not be
   // fetched.
   public void test_ClientConnectedToAccessors() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createAccessorServer");
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createAccessorServer");
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createAccessorServer());
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createAccessorServer());
 
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "createPeer");
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
 
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "createPeer");
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
 
     createClient(port0, port1);
 
@@ -341,15 +315,12 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   // 1 server 2 accesorservers 2 peers.i client connected to the server
   // Since only 1 server hence Metadata should not be fetched.
   public void test_ClientConnectedTo1Server() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
 
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "createPeer");
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "createPeer");
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
 
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "createAccessorServer");
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createAccessorServer());
 
     createClient(port0);
 
@@ -367,28 +338,20 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   // Now verify that metadata has all 8 buckets info.
   // Now update and ensure the fetch service is never called.
   public void test_MetadataContents() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
-    Integer port2 = (Integer)member2.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
-    Integer port3 = (Integer)member3.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
+    Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
+    Integer port3 = (Integer)member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
     createClient(port0, port1, port2, port3);
 
     putIntoPartitionedRegions();
 
     getFromPartitionedRegions();
 
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
 
     verifyMetadata();
     updateIntoSinglePR();
@@ -400,22 +363,17 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   // fetchservice has to be triggered.
   // Now put again from c2.There should be no hop at all.
   public void test_MetadataServiceCallAccuracy() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
 
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "createClient",
-        new Object[] { port0 });
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createClient( port0 ));
     createClient(port1);
 
     member2
-        .invoke(PartitionedRegionSingleHopDUnitTest.class, "putIntoSinglePR");
+        .invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
 
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
     final ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     
@@ -459,22 +417,17 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   public void test_MetadataServiceCallAccuracy_FromDestroyOp() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
 
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "createClient",
-        new Object[] { port0 });
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createClient( port0 ));
     createClient(port1);
 
     member2
-        .invoke(PartitionedRegionSingleHopDUnitTest.class, "putIntoSinglePR");
+        .invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
 
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
     final ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     
@@ -500,22 +453,16 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   public void test_MetadataServiceCallAccuracy_FromGetOp() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
 
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "createClient",
-        new Object[] { port0 });
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createClient( port0 ));
     createClient(port1);
 
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "putIntoSinglePR");
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
 
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
     final ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
 
@@ -552,18 +499,10 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   public void test_SingleHopWithHA() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 8 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 8 });
-    Integer port2 = (Integer)member2.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 8 });
-    Integer port3 = (Integer)member3.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 8 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 8 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 8 ));
+    Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 8 ));
+    Integer port3 = (Integer)member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 8 ));
     createClient(port0, port1, port2, port3);
     final ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
@@ -593,7 +532,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     Wait.waitForCriterion(wc, 60000, 1000, true);
 
     // kill server
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "stopServer");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
 
     // again update
     for (int i = 1; i <= 16; i++) {
@@ -605,19 +544,12 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "startLocatorInVM", new Object[] { port3 });
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.startLocatorInVM( port3 ));
     try {
 
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServerWithLocator",
-        new Object[] { locator, 0, 8 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServerWithLocator",
-        new Object[] { locator, 0, 8 });
-    Integer port2 = (Integer)member2.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServerWithLocator",
-        new Object[] { locator, 0, 8 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator( locator, 0, 8 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator( locator, 0, 8 ));
+    Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator( locator, 0, 8 ));
 
     createClientWithLocator(host0, port3);
 
@@ -632,7 +564,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     }
 
     // kill server
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "stopServer");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
 
     // again update
     for (int i = 1; i <= 16; i++) {
@@ -640,29 +572,23 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     }
 
     } finally {
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "stopLocator");
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopLocator());
     }
   }
 
   
   public void test_NoMetadataServiceCall_ForGetOp() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
 
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "createClientWithoutPRSingleHopEnabled",
-        new Object[] { port0 });
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createClientWithoutPRSingleHopEnabled( port0 ));
     createClientWithoutPRSingleHopEnabled(port1);
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class,
-        "putIntoSinglePR");
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
 
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
 
     region.get(new Integer(0));
     region.get(new Integer(1));
@@ -683,24 +609,19 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
 
  public void test_NoMetadataServiceCall() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 1, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
 
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "createClientWithoutPRSingleHopEnabled",
-        new Object[] { port0 });
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createClientWithoutPRSingleHopEnabled( port0 ));
     createClientWithoutPRSingleHopEnabled(port1);
 
     member2
-        .invoke(PartitionedRegionSingleHopDUnitTest.class, "putIntoSinglePR");
+        .invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
 
  
     region.put(new Integer(0), "create0");
@@ -737,22 +658,17 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   public void test_NoMetadataServiceCall_ForDestroyOp() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 0, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
 
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "createClientWithoutPRSingleHopEnabled",
-        new Object[] { port0 });
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createClientWithoutPRSingleHopEnabled( port0 ));
     createClientWithoutPRSingleHopEnabled(port1);
 
     member2
-        .invoke(PartitionedRegionSingleHopDUnitTest.class, "putIntoSinglePR");
+        .invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
 
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "printView");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     region.destroy(new Integer(0));
@@ -764,18 +680,10 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   public void testServerLocationRemovalThroughPing() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port2 = (Integer)member2.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port3 = (Integer)member3.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port3 = (Integer)member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     createClient(port0, port1, port2, port3);
     putIntoPartitionedRegions();    
     getFromPartitionedRegions();
@@ -794,8 +702,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
       assertEquals(4, ((List)entry.getValue()).size());
     }
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "stopServer");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "stopServer");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
     Wait.pause(5000);//make sure that ping detects the dead servers
     getFromPartitionedRegions();
     verifyDeadServer(regionMetaData, customerRegion, port0, port1);
@@ -805,18 +713,10 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   public void testMetadataFetchOnlyThroughFunctions() {
     //Workaround for 52004
     IgnoredException.addIgnoredException("InternalFunctionInvocationTargetException");
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port2 = (Integer)member2.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port3 = (Integer)member3.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port3 = (Integer)member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     createClient(port0, port1, port2, port3);
     executeFunctions();
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
@@ -870,18 +770,10 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   public void testMetadataFetchOnlyThroughputAll() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port2 = (Integer)member2.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port3 = (Integer)member3.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port3 = (Integer)member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     createClient(port0, port1, port2, port3);
     putAll();
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
@@ -916,24 +808,16 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   
   @Ignore("Bug 47950")
   public void DISABLED_testMetadataIsSameOnAllServersAndClients() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port2 = (Integer)member2.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
-    Integer port3 = (Integer)member3.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 3, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
+    Integer port3 = (Integer)member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     createClient(port0, port1, port2, port3);
     put();
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     
     
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
@@ -958,21 +842,21 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     for (Entry entry : clientMap.entrySet()) {
       assertEquals(4, ((List)entry.getValue()).size());
     }
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "stopServer");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "stopServer");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
     
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "startServerOnPort",  new Object[] { port0 });
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "startServerOnPort",  new Object[] { port1 });
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.startServerOnPort( port0 ));
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.startServerOnPort( port1 ));
     put();
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     
     cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     
@@ -1024,16 +908,16 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       assertEquals(4, ((List)entry.getValue()).size());
     }
     
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
     
-//    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "createServerOnPort",  new Object[] {3,4,port0 });
-//    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "createServerOnPort",  new Object[] {3,4,port1 });
+//    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerOnPort(3,4,port0 ));
+//    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerOnPort(3,4,port1 ));
     put();
     member2.invoke(new CacheSerializableRunnable("aba") {
       @Override
@@ -1053,10 +937,10 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       }
     });
     
-//    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-//    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
+//    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+//    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     
     cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion)region);
@@ -1085,10 +969,10 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
       public boolean done() {
         try {
-          //member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{fclientMap});
-          //member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{fclientMap});
-          member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{fclientMap});
-          member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{fclientMap});
+          //member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(fclientMap));
+          //member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(fclientMap));
+          member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(fclientMap));
+          member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(fclientMap));
         } catch (Exception e) {
           LogWriterUtils.getLogWriter().info("verification failed", e);
           return false;
@@ -1104,12 +988,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
   
   public void testMetadataIsSameOnAllServersAndClientsHA() {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 2, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createServer",
-        new Object[] { 2, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 2, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 2, 4 ));
     
     createClient(port0, port1, port0, port1);
     put();
@@ -1166,17 +1046,17 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     for (Entry entry : clientMap.entrySet()) {
       assertEquals(2, ((List)entry.getValue()).size());
     }
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "stopServer");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
     
     put();
     
     cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion)region);
     
-    //member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "verifyMetadata", new Object[]{clientMap});
+    //member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     
     assertEquals(4/*numBuckets*/, clientMap.size());
     for (Entry entry : clientMap.entrySet()) {
@@ -1220,37 +1100,29 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   // This test is disabled due to intermittent failures in unit test runs
   // Please see ticket #52203
   public void disabledtestClientMetadataForPersistentPrs() throws Exception {
-    Integer port0 = (Integer)member0.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createPersistentPrsAndServer",
-        new Object[] { 3, 4 });
-    Integer port1 = (Integer)member1.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createPersistentPrsAndServer",
-        new Object[] { 3, 4 });
-    Integer port2 = (Integer)member2.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createPersistentPrsAndServer",
-        new Object[] { 3, 4 });
-    Integer port3 = (Integer)member3.invoke(
-        PartitionedRegionSingleHopDUnitTest.class, "createPersistentPrsAndServer",
-        new Object[] { 3, 4 });
+    Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));
+    Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));
+    Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));
+    Integer port3 = (Integer)member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));
     
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "putIntoPartitionedRegions");
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
     
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "waitForLocalBucketsCreation", new Object[]{4});
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     
     createClient(port0, port1, port2, port3);
     fetchAndValidateMetadata();
-    member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
-    member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
-    member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
-    member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
     Wait.pause(1000); //let client detect that servers are dead through ping
-    AsyncInvocation m3 = member3.invokeAsync(PartitionedRegionSingleHopDUnitTest.class, "createPersistentPrsAndServerOnPort",new Object[] { 3, 4,port3 });
-    AsyncInvocation m2 = member2.invokeAsync(PartitionedRegionSingleHopDUnitTest.class, "createPersistentPrsAndServerOnPort",new Object[] { 3, 4,port2 });
-    AsyncInvocation m1 = member1.invokeAsync(PartitionedRegionSingleHopDUnitTest.class, "createPersistentPrsAndServerOnPort",new Object[] { 3, 4,port1 });
-    AsyncInvocation m0 = member0.invokeAsync(PartitionedRegionSingleHopDUnitTest.class, "createPersistentPrsAndServerOnPort",new Object[] { 3, 4,port0 });
+    AsyncInvocation m3 = member3.invokeAsync(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort( 3, 4,port3 ));
+    AsyncInvocation m2 = member2.invokeAsync(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort( 3, 4,port2 ));
+    AsyncInvocation m1 = member1.invokeAsync(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort( 3, 4,port1 ));
+    AsyncInvocation m0 = member0.invokeAsync(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort( 3, 4,port0 ));
     m3.join();
     m2.join();
     m1.join();

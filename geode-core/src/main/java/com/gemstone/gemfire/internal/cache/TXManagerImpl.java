@@ -777,7 +777,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
     if (val == null) {
       synchronized(this.hostedTXStates) {
         val = this.hostedTXStates.get(key);
-        if (val == null && msg.canStartRemoteTransaction()) {
+        if (val == null) {
           // [sjigyasu] TODO: Conditionally create object based on distributed or non-distributed tx mode 
           if (msg instanceof TransactionMessage && ((TransactionMessage)msg).isTransactionDistributed()) {
             val = new DistTXStateProxyImplOnDatanode(this, key, memberId);

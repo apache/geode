@@ -84,7 +84,7 @@ public class TXOrderDUnitTest extends CacheTestCase {
           getCache();
         }
       });
-    this.otherId = (DistributedMember)vm.invoke(TXOrderDUnitTest.class, "getVMDistributedMember");
+    this.otherId = (DistributedMember)vm.invoke(() -> TXOrderDUnitTest.getVMDistributedMember());
   }
   private void doCommitOtherVm() {
     VM vm = getOtherVm();

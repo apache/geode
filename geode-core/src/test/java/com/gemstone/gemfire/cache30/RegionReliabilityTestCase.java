@@ -67,6 +67,7 @@ import com.gemstone.gemfire.internal.cache.TXStateInterface;
 import com.gemstone.gemfire.internal.cache.TXStateProxyImpl;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
@@ -1118,7 +1119,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     });
     
     // define the afterReleaseLocalLocks callback
-    Runnable removeRequiredRole = new SerializableRunnable() {
+    SerializableRunnableIF removeRequiredRole = new SerializableRunnableIF() {
       public void run() {
         Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
           public void run() {
@@ -1161,7 +1162,13 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     TXStateInterface txStateProxy = ((TXManagerImpl)ctm).getTXState();
     ((TXStateProxyImpl)txStateProxy).forceLocalBootstrap();
     TXState txState = (TXState)((TXStateProxyImpl)txStateProxy).getRealDeal(null,null);
-    txState.setBeforeSend(removeRequiredRole);
+    txState.setBeforeSend(() -> {
+      try { 
+        removeRequiredRole.run(); 
+      } catch(Exception e) {
+        throw new RuntimeException(e);
+      }
+    });
     
     // now start a transaction and commit it
     region.put("KEY", "VAL");
@@ -1240,7 +1247,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     region.put("INVALIDATE_ME", "VAL");
       
     // define the afterReleaseLocalLocks callback
-    Runnable removeRequiredRole = new SerializableRunnable() {
+    SerializableRunnable removeRequiredRole = new SerializableRunnable() {
       public void run() {
         Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
           public void run() {
@@ -1257,7 +1264,13 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 //        catch (InterruptedException e) {}
       }
     };
-    DistributedCacheOperation.setBeforePutOutgoing(removeRequiredRole);
+    DistributedCacheOperation.setBeforePutOutgoing(() -> {
+     try {
+       removeRequiredRole.run();
+     } catch(Exception e) {
+       throw new RuntimeException(e);
+     }
+    });
 
     Runnable reset = new Runnable() {
       public void run() {

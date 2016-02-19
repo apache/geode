@@ -45,7 +45,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.redis.executor.ExpirationExecutor;
 import com.gemstone.gemfire.internal.redis.executor.ListQuery;
 import com.gemstone.gemfire.internal.redis.executor.SortedSetQuery;
-import com.gemstone.gemfire.internal.redis.executor.hll.HyperLogLogPlus;
+import com.gemstone.gemfire.internal.hll.HyperLogLogPlus;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.commands.CreateAlterDestroyRegionCommands;

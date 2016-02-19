@@ -58,7 +58,7 @@ public class Bug36805DUnitTest extends DistributedTestCase
 {
   private static Cache cache = null;
 
-  private static VM server1 = null;
+  private VM server1 = null;
 
   private static VM server2 = null;
 
@@ -136,11 +136,11 @@ public class Bug36805DUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     // close the clients first
-    client1.invoke(Bug36805DUnitTest.class, "closeCache");
-    client2.invoke(Bug36805DUnitTest.class, "closeCache");
+    client1.invoke(() -> Bug36805DUnitTest.closeCache());
+    client2.invoke(() -> Bug36805DUnitTest.closeCache());
     // then close the servers
-    server1.invoke(Bug36805DUnitTest.class, "closeCache");
-    server2.invoke(Bug36805DUnitTest.class, "closeCache");
+    server1.invoke(() -> Bug36805DUnitTest.closeCache());
+    server2.invoke(() -> Bug36805DUnitTest.closeCache());
   }
 
   public static void closeCache()
@@ -153,28 +153,24 @@ public class Bug36805DUnitTest extends DistributedTestCase
 
   public void testBug36805()
   {
-    Integer port1 = ((Integer)server1.invoke(Bug36805DUnitTest.class,
-        "createServerCache"));
-    Integer port2 = ((Integer)server2.invoke(Bug36805DUnitTest.class,
-        "createServerCache"));
-    client1.invoke(Bug36805DUnitTest.class, "createClientCache", new Object[] {
-        NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
-    client2.invoke(Bug36805DUnitTest.class, "createClientCache", new Object[] {
-        NetworkUtils.getServerHostName(server1.getHost()), port1, port2 });
+    Integer port1 = ((Integer)server1.invoke(() -> Bug36805DUnitTest.createServerCache()));
+    Integer port2 = ((Integer)server2.invoke(() -> Bug36805DUnitTest.createServerCache()));
+    client1.invoke(() -> Bug36805DUnitTest.createClientCache(
+        NetworkUtils.getServerHostName(server1.getHost()), port1, port2 ));
+    client2.invoke(() -> Bug36805DUnitTest.createClientCache(
+        NetworkUtils.getServerHostName(server1.getHost()), port1, port2 ));
     // set a cllabck so that we come to know that whether a failover is called
     // or not
     // if failover is called means this bug is present.
-    // client2.invoke(Bug36805DUnitTest.class, "setClientServerObserver");
-    client1.invoke(Bug36805DUnitTest.class, "registerInterest"); // register
+    // client2.invoke(() -> Bug36805DUnitTest.setClientServerObserver());
+    client1.invoke(() -> Bug36805DUnitTest.registerInterest()); // register
                                                                   // interest
                                                                   // shoud not
                                                                   // cause any
                                                                   // failure
 
-    client2.invoke(Bug36805DUnitTest.class, "verifyDeadAndLiveServers",
-        new Object[] { new Integer(0), new Integer(2) });
-    client1.invoke(Bug36805DUnitTest.class, "verifyDeadAndLiveServers",
-        new Object[] { new Integer(0), new Integer(2) });
+    client2.invoke(() -> Bug36805DUnitTest.verifyDeadAndLiveServers( new Integer(0), new Integer(2) ));
+    client1.invoke(() -> Bug36805DUnitTest.verifyDeadAndLiveServers( new Integer(0), new Integer(2) ));
 
   }
 

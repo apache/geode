@@ -205,8 +205,8 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    final String vm1MemberId = (String) vm1.invoke(GemfireDataCommandsDUnitTest.class, "getMemberId");
-    final String vm2MemberId = (String) vm2.invoke(GemfireDataCommandsDUnitTest.class, "getMemberId");
+    final String vm1MemberId = (String) vm1.invoke(() -> GemfireDataCommandsDUnitTest.getMemberId());
+    final String vm2MemberId = (String) vm2.invoke(() -> GemfireDataCommandsDUnitTest.getMemberId());
     LogWriterUtils.getLogWriter().info("Vm1 ID : " + vm1MemberId);
     LogWriterUtils.getLogWriter().info("Vm2 ID : " + vm2MemberId);
 

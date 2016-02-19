@@ -77,7 +77,7 @@ import com.gemstone.gemfire.internal.util.StopWatch;
  * @author Kirk Lund
  */
 @SuppressWarnings("synthetic-access")
-public final class BucketAdvisor extends CacheDistributionAdvisor  {
+public class BucketAdvisor extends CacheDistributionAdvisor  {
   private static final Logger logger = LogService.getLogger();
 
   public static final boolean ENFORCE_SAFE_CLOSE = false;

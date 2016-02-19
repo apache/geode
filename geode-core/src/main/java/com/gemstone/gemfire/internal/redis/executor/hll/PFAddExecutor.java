@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.redis.executor.hll;
 import java.util.List;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.hll.HyperLogLogPlus;
 import com.gemstone.gemfire.internal.redis.ByteArrayWrapper;
 import com.gemstone.gemfire.internal.redis.Command;
 import com.gemstone.gemfire.internal.redis.Coder;

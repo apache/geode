@@ -66,7 +66,7 @@ public class PingOp {
 
     @Override
     protected void sendMessage(Connection cnx) throws Exception {
-      getMessage().setEarlyAck((byte)(getMessage().getEarlyAckByte() & Message.MESSAGE_HAS_SECURE_PART));
+      getMessage().clearMessageHasSecurePartFlag();
       startTime = System.currentTimeMillis();
       getMessage().send(false);
       Message.messageType.set(MessageType.PING);

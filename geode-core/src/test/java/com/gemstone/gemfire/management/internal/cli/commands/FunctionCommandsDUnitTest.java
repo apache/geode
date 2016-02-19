@@ -250,7 +250,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(FunctionCommandsDUnitTest.class, "getMemberId");
+    final String vm1MemberId = (String) vm1.invoke(() -> FunctionCommandsDUnitTest.getMemberId());
 
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
@@ -404,7 +404,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(FunctionCommandsDUnitTest.class, "getMemberId");
+    final String vm1MemberId = (String) vm1.invoke(() -> FunctionCommandsDUnitTest.getMemberId());
     String command = "destroy function --id=" + function.getId() + " --member=" + vm1MemberId;
     LogWriterUtils.getLogWriter().info("testDestroyOnMember command=" + command);
     CommandResult cmdResult = executeCommand(command);

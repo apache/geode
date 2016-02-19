@@ -49,11 +49,14 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
+import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.SerialAckedMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
@@ -78,6 +81,8 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
+import junit.framework.Assert;
+
 @Category(IntegrationTest.class)
 public class JGroupsMessengerJUnitTest {
   private Services services;
@@ -87,7 +92,7 @@ public class JGroupsMessengerJUnitTest {
   private Stopper stopper;
   private HealthMonitor healthMonitor;
   private InterceptUDP interceptor;
-
+  private long statsId = 123;
 
   /**
    * Create stub and mock objects
@@ -127,7 +132,9 @@ public class JGroupsMessengerJUnitTest {
     when(services.getHealthMonitor()).thenReturn(healthMonitor);
     when(services.getManager()).thenReturn(manager);
     when(services.getJoinLeave()).thenReturn(joinLeave);
-    when(services.getStatistics()).thenReturn(mock(DMStats.class));
+    DM dm = mock(DM.class);
+    InternalDistributedSystem system = InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
+    when(services.getStatistics()).thenReturn(new DistributionStats(system, statsId));
     
     messenger = new JGroupsMessenger();
     messenger.init(services);
@@ -747,40 +754,47 @@ public class JGroupsMessengerJUnitTest {
   
   @Test
   public void testReceiver() throws Exception {
-    initMocks(false);
-    JGroupsReceiver receiver = (JGroupsReceiver)messenger.myChannel.getReceiver();
-    
-    // a zero-length message is ignored
-    Message msg = new Message(new JGAddress(messenger.getMemberID()));
-    Object result = messenger.readJGMessage(msg);
-    assertNull(result);
-    
-    // for code coverage we need to pump this message through the receiver
-    receiver.receive(msg);
-    
-    // for more code coverage we need to actually set a buffer in the message
-    msg.setBuffer(new byte[0]);
-    result = messenger.readJGMessage(msg);
-    assertNull(result);
-    receiver.receive(msg);
-    
-    // now create a view and a real distribution-message
-    InternalDistributedMember myAddress = messenger.getMemberID();
-    InternalDistributedMember other = createAddress(8888);
-    NetView v = new NetView(myAddress);
-    v.add(other);
-    when(joinLeave.getView()).thenReturn(v);
-    messenger.installView(v);
-
-    List<InternalDistributedMember> recipients = v.getMembers();
-    SerialAckedMessage dmsg = new SerialAckedMessage();
-    dmsg.setRecipients(recipients);
-
-    // a message is ignored during manager shutdown
-    msg = messenger.createJGMessage(dmsg, new JGAddress(other), Version.CURRENT_ORDINAL);
-    when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
-    receiver.receive(msg);
-    verify(manager, never()).processMessage(isA(DistributionMessage.class));
+    try {
+      DistributionStats.enableClockStats = true;
+      initMocks(false);
+      JGroupsReceiver receiver = (JGroupsReceiver)messenger.myChannel.getReceiver();
+      
+      // a zero-length message is ignored
+      Message msg = new Message(new JGAddress(messenger.getMemberID()));
+      Object result = messenger.readJGMessage(msg);
+      assertNull(result);
+      
+      // for code coverage we need to pump this message through the receiver
+      receiver.receive(msg);
+      
+      // for more code coverage we need to actually set a buffer in the message
+      msg.setBuffer(new byte[0]);
+      result = messenger.readJGMessage(msg);
+      assertNull(result);
+      receiver.receive(msg);
+      
+      // now create a view and a real distribution-message
+      InternalDistributedMember myAddress = messenger.getMemberID();
+      InternalDistributedMember other = createAddress(8888);
+      NetView v = new NetView(myAddress);
+      v.add(other);
+      when(joinLeave.getView()).thenReturn(v);
+      messenger.installView(v);
+  
+      List<InternalDistributedMember> recipients = v.getMembers();
+      SerialAckedMessage dmsg = new SerialAckedMessage();
+      dmsg.setRecipients(recipients);
+  
+      // a message is ignored during manager shutdown
+      msg = messenger.createJGMessage(dmsg, new JGAddress(other), Version.CURRENT_ORDINAL);
+      when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
+      receiver.receive(msg);
+      verify(manager, never()).processMessage(isA(DistributionMessage.class));
+      
+      assertTrue("There should be UDPDispatchRequestTime stats", services.getStatistics().getUDPDispatchRequestTime() > 0);
+    }finally {
+      DistributionStats.enableClockStats = false;
+    }
   }
   
   @Test

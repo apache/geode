@@ -61,7 +61,7 @@ public class Bug37210DUnitTest extends DistributedTestCase
   private static Cache cache = null;
 
   /** port for the cache server */
-  private static int PORT;
+  private int PORT;
 
   /** name of the test region */
   private static final String REGION_NAME = "Bug37210DUnitTest_Region";
@@ -92,7 +92,7 @@ public class Bug37210DUnitTest extends DistributedTestCase
     server = host.getVM(0);
     client = host.getVM(2);
     PORT = ((Integer)server
-        .invoke(Bug37210DUnitTest.class, "createServerCache")).intValue();
+        .invoke(() -> Bug37210DUnitTest.createServerCache())).intValue();
   }
 
   /**
@@ -126,10 +126,10 @@ public class Bug37210DUnitTest extends DistributedTestCase
   @Override
   protected final void preTearDown() throws Exception {
     // close client
-    client.invoke(Bug37210DUnitTest.class, "closeCache");
+    client.invoke(() -> Bug37210DUnitTest.closeCache());
 
     // close server
-    server.invoke(Bug37210DUnitTest.class, "closeCache");
+    server.invoke(() -> Bug37210DUnitTest.closeCache());
   }
 
   /**
@@ -146,20 +146,18 @@ public class Bug37210DUnitTest extends DistributedTestCase
    */
   public void testHAStatsCleanup() throws Exception
   {
+    Host host = Host.getHost(0);
     LogWriterUtils.getLogWriter().info("testHAStatsCleanup : BEGIN");
     IgnoredException.addIgnoredException("java.net.SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");
-    client.invoke(Bug37210DUnitTest.class, "createClientCache",
-        new Object[] { NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT) });
-    server.invoke(Bug37210DUnitTest.class, "doEntryOperations");
+    client.invoke(() -> Bug37210DUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT) ));
+    server.invoke(() -> Bug37210DUnitTest.doEntryOperations());
     
-    server.invoke(Bug37210DUnitTest.class,
-        "closeCacheClientProxyAndVerifyStats");
-    client.invoke(Bug37210DUnitTest.class, "closeCache");
+    server.invoke(() -> Bug37210DUnitTest.closeCacheClientProxyAndVerifyStats());
+    client.invoke(() -> Bug37210DUnitTest.closeCache());
   //we don't send close response thus needs to wait for client termination
     Thread.currentThread().sleep(1000);
-    server.invoke(Bug37210DUnitTest.class,
-            "closeCacheClientProxyAndVerifyStats2");
+    server.invoke(() -> Bug37210DUnitTest.closeCacheClientProxyAndVerifyStats2());
     LogWriterUtils.getLogWriter().info("testHAStatsCleanup : END");
   }
 

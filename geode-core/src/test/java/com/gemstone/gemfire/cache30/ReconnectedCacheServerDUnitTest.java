@@ -16,8 +16,10 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 
@@ -65,4 +67,29 @@ public class ReconnectedCacheServerDUnitTest extends CacheTestCase {
     assertNotNull(gc.getCacheConfig().getCacheServerCreation());
   }
 
+  public void testDefaultCacheServerNotCreatedOnReconnect() {
+    
+    assertFalse(Boolean.getBoolean("gemfire.autoReconnect-useCacheXMLFile"));
+    
+    GemFireCacheImpl gc = (GemFireCacheImpl)cache;
+
+    // fool the system into thinking cluster-config is being used
+    GMSMembershipManager mgr = (GMSMembershipManager)MembershipManagerHelper
+        .getMembershipManager(gc.getDistributedSystem());
+    final boolean sharedConfigEnabled = true;
+    mgr.saveCacheXmlForReconnect(sharedConfigEnabled);
+
+    // the cache server config should now be stored in the cache's config
+    assertFalse(gc.getCacheServers().isEmpty());
+    int numServers = gc.getCacheServers().size();
+
+    assertNotNull(gc.getCacheConfig().getCacheServerCreation());
+
+    InternalDistributedSystem system = gc.getDistributedSystem();
+    system.createAndStartCacheServers(gc.getCacheConfig().getCacheServerCreation(), gc);
+
+    assertEquals("found these cache servers:" + gc.getCacheServers(),
+        numServers, gc.getCacheServers().size());
+      
+  }
 }

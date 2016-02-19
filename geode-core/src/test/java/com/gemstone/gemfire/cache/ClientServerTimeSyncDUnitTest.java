@@ -113,7 +113,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
       Wait.waitForCriterion(wc, 60000, 1000, true);
     } finally {
       cache.close();
-      vm1.invoke(CacheTestCase.class, "disconnectFromDS");
+      vm1.invoke(() -> CacheTestCase.disconnectFromDS());
     }
   }
   
@@ -196,7 +196,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
       Wait.waitForCriterion(wc, 60000, 1000, true);
     } finally {
       cache.close();
-      vm1.invoke(CacheTestCase.class, "disconnectFromDS");
+      vm1.invoke(() -> CacheTestCase.disconnectFromDS());
     }
   }
 

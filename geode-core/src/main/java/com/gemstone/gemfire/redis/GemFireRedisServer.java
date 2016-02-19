@@ -64,7 +64,7 @@ import com.gemstone.gemfire.internal.redis.Coder;
 import com.gemstone.gemfire.internal.redis.ExecutionHandlerContext;
 import com.gemstone.gemfire.internal.redis.RedisDataType;
 import com.gemstone.gemfire.internal.redis.RegionProvider;
-import com.gemstone.gemfire.internal.redis.executor.hll.HyperLogLogPlus;
+import com.gemstone.gemfire.internal.hll.HyperLogLogPlus;
 
 /**
  * The GemFireRedisServer is a server that understands the Redis protocol. As

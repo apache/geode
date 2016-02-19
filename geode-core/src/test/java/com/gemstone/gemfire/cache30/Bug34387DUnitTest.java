@@ -74,7 +74,7 @@ public class Bug34387DUnitTest extends CacheTestCase {
           getCache();
         }
       });
-    vm.invoke(Bug34387DUnitTest.class, "getVMDistributedMember");
+    vm.invoke(() -> Bug34387DUnitTest.getVMDistributedMember());
   }
   private void doCommitOtherVm(final boolean doDestroy) {
     VM vm = getOtherVm();

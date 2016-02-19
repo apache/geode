@@ -123,21 +123,21 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
     super.setUp();
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TransactionTimeOutDUnitTest.class, "init");
+    vm0.invoke(() -> TransactionTimeOutDUnitTest.init());
   }
 
   @Override
   protected final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TransactionTimeOutDUnitTest.class, "closeCache");
+    vm0.invoke(() -> TransactionTimeOutDUnitTest.closeCache());
   }
 
   public static void testTimeOut() throws Throwable{
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation async1 = vm0.invokeAsync(TransactionTimeOutDUnitTest.class, "runTest1");
-    AsyncInvocation async2 =vm0.invokeAsync(TransactionTimeOutDUnitTest.class, "runTest2");
+    AsyncInvocation async1 = vm0.invokeAsync(() -> TransactionTimeOutDUnitTest.runTest1());
+    AsyncInvocation async2 =vm0.invokeAsync(() -> TransactionTimeOutDUnitTest.runTest2());
     
     ThreadUtils.join(async1, 30 * 1000);
     ThreadUtils.join(async2, 30 * 1000);
@@ -152,49 +152,49 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
   public static void test1() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TransactionTimeOutDUnitTest.class, "runTest3");
+    vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest3());
   }
 
   public static void test2() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TransactionTimeOutDUnitTest.class, "runTest4");
+    vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest4());
   }
 
   public static void test3() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TransactionTimeOutDUnitTest.class, "runTest5");
+    vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest5());
   }
 
   public static void test4() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TransactionTimeOutDUnitTest.class, "runTest6");
+    vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest6());
   }
 
   public static void test5() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TransactionTimeOutDUnitTest.class, "runTest7");
+    vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest7());
   }
 
   public static void test6() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TransactionTimeOutDUnitTest.class, "runTest8");
+    vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest8());
   }
 
   public static void test7() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TransactionTimeOutDUnitTest.class, "runTest9");
+    vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest9());
   }
 
   public static void test8() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(TransactionTimeOutDUnitTest.class, "runTest10");
+    vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest10());
   }
 
   public static void runTest1() throws Exception {

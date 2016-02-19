@@ -83,10 +83,8 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
     vm2 = Host.getHost(0).getVM(2);
     vm3 = Host.getHost(0).getVM(3);
 
-    port0 = (Integer) vm0.invoke(DurableClientQueueSizeDUnitTest.class,
-        "createCacheServer", new Object[] { });
-    port1 = (Integer) vm1.invoke(DurableClientQueueSizeDUnitTest.class,
-        "createCacheServer", new Object[] { });
+    port0 = (Integer) vm0.invoke(() -> DurableClientQueueSizeDUnitTest.createCacheServer( ));
+    port1 = (Integer) vm1.invoke(() -> DurableClientQueueSizeDUnitTest.createCacheServer( ));
     IgnoredException.addIgnoredException("java.net.SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");
   }
@@ -95,19 +93,18 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
   protected final void preTearDown() throws Exception {
     closeCache();
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache");
-    vm3.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache");
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache());
+    vm3.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache());
 
-    vm0.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache");
-    vm1.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache");
+    vm0.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache());
+    vm1.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache());
   }
 
   public void testNonDurableClientFails() throws Exception {
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 }, false });
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { EXCEPTION });
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( EXCEPTION ));
   }
 
   // this test is disabled due to a high rate of failure.  It fails with
@@ -117,23 +114,20 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
     int num = 10;
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 }});
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE });
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "doRI");
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "readyForEvents");
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE ));
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.doRI());
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.readyForEvents());
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache", new Object[] {Boolean.TRUE});
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache(Boolean.TRUE));
 
-    vm0.invoke(DurableClientQueueSizeDUnitTest.class, "doPuts", new Object[] {num});
+    vm0.invoke(() -> DurableClientQueueSizeDUnitTest.doPuts(num));
     
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 }});
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { num + 1 /* +1 for marker */});
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "readyForEvents");
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { EXCEPTION });
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( num + 1 /* +1 for marker */));
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.readyForEvents());
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( EXCEPTION ));
 
   }
 
@@ -145,55 +139,48 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
         "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 },
             String.valueOf(timeoutSeconds), true });
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "doRI");
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "readyForEvents");
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.doRI());
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.readyForEvents());
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache", new Object[] {Boolean.TRUE});
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache(Boolean.TRUE));
 
-    vm0.invoke(DurableClientQueueSizeDUnitTest.class, "doPuts", new Object[] {num});
+    vm0.invoke(() -> DurableClientQueueSizeDUnitTest.doPuts(num));
     Thread.sleep(timeoutSeconds * 1000); // TODO use a waitCriterion
 
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 }});
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { PoolImpl.PRIMARY_QUEUE_TIMED_OUT });
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( PoolImpl.PRIMARY_QUEUE_TIMED_OUT ));
   }
 
   public void testPrimaryServerRebootReturnsCorrectResponse() throws Exception {
     int num = 10;
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 } });
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "doRI");
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "readyForEvents");
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.doRI());
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.readyForEvents());
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache",
-        new Object[] { Boolean.TRUE });
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache( Boolean.TRUE ));
 
-    vm0.invoke(DurableClientQueueSizeDUnitTest.class, "doPuts",
-        new Object[] { num });
+    vm0.invoke(() -> DurableClientQueueSizeDUnitTest.doPuts( num ));
 
     // Identify primary and restart it
-    boolean isVM0Primary = (Boolean) vm0.invoke(
-        DurableClientQueueSizeDUnitTest.class, "isPrimary");
+    boolean isVM0Primary = (Boolean) vm0.invoke(() -> DurableClientQueueSizeDUnitTest.isPrimary());
     int port = 0;
     if (isVM0Primary) {
-      vm0.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache");
-      vm0.invoke(DurableClientQueueSizeDUnitTest.class, "createCacheServer",
-          new Object[] { port0 });
+      vm0.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache());
+      vm0.invoke(() -> DurableClientQueueSizeDUnitTest.createCacheServer( port0 ));
       port = port0;
     } else { // vm1 is primary
-      vm1.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache");
-      vm1.invoke(DurableClientQueueSizeDUnitTest.class, "createCacheServer",
-          new Object[] { port1 });
+      vm1.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache());
+      vm1.invoke(() -> DurableClientQueueSizeDUnitTest.createCacheServer( port1 ));
       port = port1;
     }
 
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port } });
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE });
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE ));
   }
 
   public void bug51854_testMultiPoolClientReconnectsBeforeTimeOut() throws Exception {
@@ -201,24 +188,21 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 }, "300",
             true/* durable */, true /* multiPool */});
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE, PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE });
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "doRI");
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "readyForEvents");
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE, PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE ));
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.doRI());
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.readyForEvents());
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache", new Object[] {Boolean.TRUE});
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache(Boolean.TRUE));
 
-    vm0.invoke(DurableClientQueueSizeDUnitTest.class, "doPuts", new Object[] {num});
+    vm0.invoke(() -> DurableClientQueueSizeDUnitTest.doPuts(num));
     
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 }, "300",
             true/* durable */, true /* multiPool */});
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { num + 1 /* +1 for marker */, (num * 2) + 1});
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "readyForEvents");
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { EXCEPTION, EXCEPTION });
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( num + 1 /* +1 for marker */, (num * 2) + 1));
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.readyForEvents());
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( EXCEPTION, EXCEPTION ));
   }
 
   public void bug51854_testMultiPoolClientReconnectsAfterTimeOut() throws Exception {
@@ -229,14 +213,13 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
         "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 },
             String.valueOf(timeout), true/* durable */, true /* multiPool */});
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE, PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE });
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "doRI");
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "readyForEvents");
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE, PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE ));
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.doRI());
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.readyForEvents());
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "closeCache", new Object[] {Boolean.TRUE});
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache(Boolean.TRUE));
 
-    vm0.invoke(DurableClientQueueSizeDUnitTest.class, "doPuts", new Object[] {num});
+    vm0.invoke(() -> DurableClientQueueSizeDUnitTest.doPuts(num));
 //    vm0.invoke(DurableClientQueueSizeDUnitTest.class,
 //        "verifyQueueSizeAtServer", new Object[] { DEFAULT_POOL_NAME, num + 1 });
 //    vm0.invoke(DurableClientQueueSizeDUnitTest.class,
@@ -247,8 +230,7 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 }, "300",
             true/* durable */, true /* multiPool */});
 
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "verifyQueueSize",
-        new Object[] { PoolImpl.PRIMARY_QUEUE_TIMED_OUT, PoolImpl.PRIMARY_QUEUE_TIMED_OUT});
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( PoolImpl.PRIMARY_QUEUE_TIMED_OUT, PoolImpl.PRIMARY_QUEUE_TIMED_OUT));
   }
 
   public void _testMultiPoolClientFailsOver() throws Exception {

@@ -793,15 +793,12 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     });
     
     // gather details for later creation of ConnectionPool...
-    ports[0] = vm0.invokeInt(ClientMembershipDUnitTest.class, 
-                             "getTestClientMembershipEventsInClient_port");
+    ports[0] = vm0.invoke(() -> ClientMembershipDUnitTest.getTestClientMembershipEventsInClient_port());
     assertTrue(ports[0] != 0);
 
-    DistributedMember serverMember = (DistributedMember) vm0.invoke(ClientMembershipDUnitTest.class,
-    "getDistributedMember");
+    DistributedMember serverMember = (DistributedMember) vm0.invoke(() -> ClientMembershipDUnitTest.getDistributedMember());
 
-    String serverMemberId = (String) vm0.invoke(ClientMembershipDUnitTest.class,
-                                                "getMemberId");
+    String serverMemberId = (String) vm0.invoke(() -> ClientMembershipDUnitTest.getMemberId());
 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] ports[0]=" + ports[0]);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] serverMember=" + serverMember);
@@ -1078,10 +1075,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // create bridge client in vm0...
     vm0.invoke(createConnectionPool);
-    String clientMemberId = (String) vm0.invoke(ClientMembershipDUnitTest.class,
-                                                "getMemberId");
-    DistributedMember clientMember = (DistributedMember) vm0.invoke(ClientMembershipDUnitTest.class,
-                                                "getDistributedMember");
+    String clientMemberId = (String) vm0.invoke(() -> ClientMembershipDUnitTest.getMemberId());
+    DistributedMember clientMember = (DistributedMember) vm0.invoke(() -> ClientMembershipDUnitTest.getDistributedMember());
                                                 
     synchronized(listener) {
       if (!fired[JOINED] && !fired[LEFT] && !fired[CRASHED]) {
@@ -1144,8 +1139,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // reconnect bridge client to test for crashed event
     vm0.invoke(createConnectionPool);
-    clientMemberId = (String) vm0.invoke(ClientMembershipDUnitTest.class,
-                                         "getMemberId");
+    clientMemberId = (String) vm0.invoke(() -> ClientMembershipDUnitTest.getMemberId());
                                                 
     synchronized(listener) {
       if (!fired[JOINED] && !fired[LEFT] && !fired[CRASHED]) {
@@ -1357,8 +1351,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       final VM vm = Host.getHost(0).getVM(i);
       System.out.println("creating pool in vm_"+i);
       vm.invoke(createPool);
-      clientMemberIdArray[i] =  String.valueOf(vm.invoke(
-        ClientMembershipDUnitTest.class, "getMemberId"));
+      clientMemberIdArray[i] =  String.valueOf(vm.invoke(() -> ClientMembershipDUnitTest.getMemberId()));
     }
     Collection clientMemberIds = Arrays.asList(clientMemberIdArray);
                                                 
@@ -1436,8 +1429,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
             getDistributedMember());
         }
       });
-      ports[whichVM] = vm.invokeInt(ClientMembershipDUnitTest.class, 
-                                    "getTestGetConnectedServers_port");
+      ports[whichVM] = vm.invoke(() -> ClientMembershipDUnitTest.getTestGetConnectedServers_port());
       assertTrue(ports[whichVM] != 0);
     }
     
@@ -1543,8 +1535,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
             getMemberId());
         }
       });
-      ports[whichVM] = vm.invokeInt(ClientMembershipDUnitTest.class, 
-                                    "getTestGetNotifiedClients_port");
+      ports[whichVM] = vm.invoke(() -> ClientMembershipDUnitTest.getTestGetNotifiedClients_port());
       assertTrue(ports[whichVM] != 0);
     }
     
@@ -1587,8 +1578,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           }
         }
       });
-      clientCounts[whichVM] = vm.invokeInt(ClientMembershipDUnitTest.class, 
-                              "getTestGetNotifiedClients_clientCount");
+      clientCounts[whichVM] = vm.invoke(() -> ClientMembershipDUnitTest.getTestGetNotifiedClients_clientCount());
     }
     
     // only one server should have a notifier for this client...

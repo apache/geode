@@ -87,8 +87,8 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(PutAllGlobalDUnitTest.class, "createCacheForVM0");
-      vm1.invoke(PutAllGlobalDUnitTest.class, "createCacheForVM1");
+      vm0.invoke(() -> PutAllGlobalDUnitTest.createCacheForVM0());
+      vm1.invoke(() -> PutAllGlobalDUnitTest.createCacheForVM1());
       LogWriterUtils.getLogWriter().fine("Cache created successfully");
     }
     
@@ -97,8 +97,8 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
-      vm0.invoke(PutAllGlobalDUnitTest.class, "closeCache");
-      vm1.invoke(PutAllGlobalDUnitTest.class, "closeCache");
+      vm0.invoke(() -> PutAllGlobalDUnitTest.closeCache());
+      vm1.invoke(() -> PutAllGlobalDUnitTest.closeCache());
       cache = null;
       Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
     }
@@ -156,9 +156,9 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
         VM vm0 = host.getVM(0);
         VM vm1 = host.getVM(1);
         
-        final int socketPort = vm0.invokeInt(this.getClass(), "openSocket");
+        final int socketPort = vm0.invoke(() -> this.openSocket());
         
-        AsyncInvocation async1 = vm0.invokeAsync(this.getClass(),"putAllMethod");
+        AsyncInvocation async1 = vm0.invokeAsync(() -> this.putAllMethod());
         
         AsyncInvocation async2 = vm1.invokeAsync( new CacheSerializableRunnable("put from another vm") {
             public void run2() throws CacheException {

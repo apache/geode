@@ -34,7 +34,7 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
   @Override
   protected final void preTearDownDurableClientTestCase() throws Exception {
     //ensure that the test flag is no longer set in this vm
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "reconnectClient");
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.reconnectClient());
   }
 
   public void setPrimaryRecoveryCheck() {}
@@ -47,13 +47,13 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
   
   public void closeDurableClient()
   {
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "reconnectClient");
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "closeCache");
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.reconnectClient());
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
   }
   
   public void disconnectDurableClient()
   {
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "disconnectClient");
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.disconnectClient());
   }
 
   public void disconnectDurableClient(boolean keepAlive)
@@ -63,7 +63,7 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
   
   public void restartDurableClient(Object[] args)
   {
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "reconnectClient");  
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.reconnectClient());  
   }
   
   public void verifyListenerUpdatesDisconnected(int numberOfEntries)

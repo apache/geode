@@ -56,6 +56,7 @@ import com.gemstone.gemfire.admin.AlertLevel;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.internal.FunctionServiceManager;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
@@ -2813,21 +2814,9 @@ public class InternalDistributedSystem
               config.setCacheXMLDescription(cacheXML);
             }
             cache = GemFireCacheImpl.create(this.reconnectDS, config);
-            if (cacheServerCreation != null) {
-              for (CacheServerCreation bridge: cacheServerCreation) {
-                CacheServerImpl impl = (CacheServerImpl)cache.addCacheServer();
-                impl.configureFrom(bridge);
-                try {
-                  if (!impl.isRunning()) {
-                    impl.start();
-                  }
-                } catch (IOException ex) {
-                  throw new GemFireIOException(
-                      LocalizedStrings.CacheCreation_WHILE_STARTING_CACHE_SERVER_0
-                          .toLocalizedString(impl), ex);
-                }
-              }
-            }
+            
+            createAndStartCacheServers(cacheServerCreation, cache);
+
             if (cache.getCachePerfStats().getReliableRegionsMissing() == 0){
               reconnectAttemptCounter = 0;
               logger.info("Reconnected properly");
@@ -2849,6 +2838,40 @@ public class InternalDistributedSystem
     } finally {
       attemptingToReconnect = false;
     }
+  }
+
+
+  /**
+   * after an auto-reconnect we may need to recreate a cache server
+   * and start it
+   */
+  public void createAndStartCacheServers(
+      List<CacheServerCreation> cacheServerCreation, GemFireCacheImpl cache) {
+
+    List<CacheServer> servers = cache.getCacheServers();
+    
+    // if there used to be a cache server but now there isn't one we need
+    // to recreate it.
+    if (servers.isEmpty() && cacheServerCreation != null) {
+      for (CacheServerCreation bridge: cacheServerCreation) {
+        CacheServerImpl impl = (CacheServerImpl)cache.addCacheServer();
+        impl.configureFrom(bridge);
+      }
+    }
+    
+    servers = cache.getCacheServers();
+    for (CacheServer server: servers) {
+      try {
+        if (!server.isRunning()) {
+          server.start();
+        }
+      } catch (IOException ex) {
+        throw new GemFireIOException(
+            LocalizedStrings.CacheCreation_WHILE_STARTING_CACHE_SERVER_0
+                .toLocalizedString(server), ex);
+      }
+    }
+    
   }
 
   /**

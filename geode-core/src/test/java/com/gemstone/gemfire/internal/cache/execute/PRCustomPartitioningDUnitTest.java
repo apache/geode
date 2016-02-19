@@ -443,10 +443,10 @@ public class PRCustomPartitioningDUnitTest extends
     final VM accessor = vm3;
     //create cache in all vms
     
-    vm0.invoke(PRCustomPartitioningDUnitTest.class, "createCacheInVm");
-    vm1.invoke(PRCustomPartitioningDUnitTest.class, "createCacheInVm");
-    vm2.invoke(PRCustomPartitioningDUnitTest.class, "createCacheInVm");
-    accessor.invoke(PRCustomPartitioningDUnitTest.class, "createCacheInVm");
+    vm0.invoke(() -> PRCustomPartitioningDUnitTest.createCacheInVm());
+    vm1.invoke(() -> PRCustomPartitioningDUnitTest.createCacheInVm());
+    vm2.invoke(() -> PRCustomPartitioningDUnitTest.createCacheInVm());
+    accessor.invoke(() -> PRCustomPartitioningDUnitTest.createCacheInVm());
 
     
 

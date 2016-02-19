@@ -17,14 +17,13 @@
 package com.gemstone.gemfire.cache;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.cache30.CacheXmlTestCase;
-import com.gemstone.gemfire.cache30.MyGatewayTransportFilter1;
-import com.gemstone.gemfire.cache30.MyGatewayTransportFilter2;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
+import com.gemstone.gemfire.cache.wan.*;
+import com.gemstone.gemfire.cache30.*;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 
@@ -69,9 +68,70 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     }
   }
 
+  public void testAsyncEventQueueWithSubstitutionFilter() {
+    getSystem();
+    CacheCreation cache = new CacheCreation();
+
+    // Create an AsyncEventQueue with GatewayEventSubstitutionFilter.
+    String id = getName();
+    AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
+    factory.setGatewayEventSubstitutionListener(new MyGatewayEventSubstitutionFilter());
+    AsyncEventQueue queue = factory.create(id, new CacheXml70DUnitTest.MyAsyncEventListener());
+
+    // Verify the GatewayEventSubstitutionFilter is set on the AsyncEventQueue.
+    assertNotNull(queue.getGatewayEventSubstitutionFilter());
+
+    testXml(cache);
+    Cache c = getCache();
+    assertNotNull(c);
+
+    // Get the AsyncEventQueue. Verify the GatewayEventSubstitutionFilter is not null.
+    AsyncEventQueue queueOnCache = c.getAsyncEventQueue(id);
+    assertNotNull(queueOnCache);
+    assertNotNull(queueOnCache.getGatewayEventSubstitutionFilter());
+  }
+
+  public void testGatewaySenderWithSubstitutionFilter() {
+    getSystem();
+    CacheCreation cache = new CacheCreation();
+
+    // Create a GatewaySender with GatewayEventSubstitutionFilter.
+    // Don't start the sender to avoid 'Locators must be configured before starting gateway-sender' exception.
+    String id = getName();
+    GatewaySenderFactory factory = cache.createGatewaySenderFactory();
+    factory.setManualStart(true);
+    factory.setGatewayEventSubstitutionFilter(new MyGatewayEventSubstitutionFilter());
+    GatewaySender sender = factory.create(id, 2);
+
+    // Verify the GatewayEventSubstitutionFilter is set on the GatewaySender.
+    assertNotNull(sender.getGatewayEventSubstitutionFilter());
+
+    testXml(cache);
+    Cache c = getCache();
+    assertNotNull(c);
+
+    // Get the GatewaySender. Verify the GatewayEventSubstitutionFilter is not null.
+    GatewaySender senderOnCache = c.getGatewaySender(id);
+    assertNotNull(senderOnCache);
+    assertNotNull(senderOnCache.getGatewayEventSubstitutionFilter());
+  }
+
   protected void validateGatewayReceiver(GatewayReceiver receiver1,
       GatewayReceiver gatewayReceiver){
     CacheXml70GatewayDUnitTest.validateGatewayReceiver(receiver1, gatewayReceiver);
     assertEquals(receiver1.isManualStart(), gatewayReceiver.isManualStart());
+  }
+
+  public static class MyGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter, Declarable {
+
+    public Object getSubstituteValue(EntryEvent event) {
+      return event.getKey();
+    }
+
+    public void close() {
+    }
+
+    public void init(Properties properties) {
+    }
   }
 }

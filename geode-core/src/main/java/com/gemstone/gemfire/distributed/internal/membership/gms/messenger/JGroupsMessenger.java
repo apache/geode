@@ -70,6 +70,7 @@ import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
@@ -1024,58 +1025,64 @@ public class JGroupsMessenger implements Messenger {
   
     @Override
     public void receive(Message jgmsg) {
-      if (services.getManager().shutdownInProgress()) {
-        return;
-      }
-
-      if (logger.isTraceEnabled()) {
-        logger.trace("JGroupsMessenger received {} headers: {}", jgmsg, jgmsg.getHeaders());
-      }
-      
-      //Respond to ping messages sent from other systems that are in a auto reconnect state
-      byte[] contents = jgmsg.getBuffer();
-      if (contents == null) {
-        return;
-      }
-      if (pingPonger.isPingMessage(contents)) {
-        try {
-          pingPonger.sendPongMessage(myChannel, jgAddress, jgmsg.getSrc());
-        }
-        catch (Exception e) {
-          logger.info("Failed sending Pong response to " + jgmsg.getSrc());
-        }
-        return;
-      } else if (pingPonger.isPongMessage(contents)) {
-        pongsReceived.incrementAndGet();
-        return;
-      }
-      
-      Object o = readJGMessage(jgmsg);
-      if (o == null) {
-        return;
-      }
-
-      DistributionMessage msg = (DistributionMessage)o;
-      assert msg.getSender() != null;
-      
-      // admin-only VMs don't have caches, so we ignore cache operations
-      // multicast to them, avoiding deserialization cost and classpath
-      // problems
-      if ( (services.getConfig().getTransport().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE)
-           && (msg instanceof DistributedCacheOperation.CacheOperationMessage)) {
-        return;
-      }
-
-      msg.resetTimestamp();
-      msg.setBytesRead(jgmsg.getLength());
-            
+      long startTime = DistributionStats.getStatTime();
       try {
-        logger.trace("JGroupsMessenger dispatching {} from {}", msg, msg.getSender());
-        filterIncomingMessage(msg);
-        getMessageHandler(msg).processMessage(msg);
-      }
-      catch (MemberShunnedException e) {
-        // message from non-member - ignore
+        if (services.getManager().shutdownInProgress()) {
+          return;
+        }
+  
+        if (logger.isTraceEnabled()) {
+          logger.trace("JGroupsMessenger received {} headers: {}", jgmsg, jgmsg.getHeaders());
+        }
+        
+        //Respond to ping messages sent from other systems that are in a auto reconnect state
+        byte[] contents = jgmsg.getBuffer();
+        if (contents == null) {
+          return;
+        }
+        if (pingPonger.isPingMessage(contents)) {
+          try {
+            pingPonger.sendPongMessage(myChannel, jgAddress, jgmsg.getSrc());
+          }
+          catch (Exception e) {
+            logger.info("Failed sending Pong response to " + jgmsg.getSrc());
+          }
+          return;
+        } else if (pingPonger.isPongMessage(contents)) {
+          pongsReceived.incrementAndGet();
+          return;
+        }
+        
+        Object o = readJGMessage(jgmsg);
+        if (o == null) {
+          return;
+        }
+  
+        DistributionMessage msg = (DistributionMessage)o;
+        assert msg.getSender() != null;
+        
+        // admin-only VMs don't have caches, so we ignore cache operations
+        // multicast to them, avoiding deserialization cost and classpath
+        // problems
+        if ( (services.getConfig().getTransport().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE)
+             && (msg instanceof DistributedCacheOperation.CacheOperationMessage)) {
+          return;
+        }
+  
+        msg.resetTimestamp();
+        msg.setBytesRead(jgmsg.getLength());
+              
+        try {
+          logger.trace("JGroupsMessenger dispatching {} from {}", msg, msg.getSender());
+          filterIncomingMessage(msg);
+          getMessageHandler(msg).processMessage(msg);
+        }
+        catch (MemberShunnedException e) {
+          // message from non-member - ignore
+        }
+      }finally {
+        long delta = DistributionStats.getStatTime() - startTime ;
+        JGroupsMessenger.this.services.getStatistics().incUDPDispatchRequestTime(delta);
       }
     }
     

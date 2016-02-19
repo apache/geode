@@ -77,7 +77,7 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
       Host host = Host.getHost(h);
 
       for (int v = 0; v < host.getVMCount(); v++) {
-        //host.getVM(v).invoke(TXLockServiceDUnitTest.class, "dumpStack");
+        //host.getVM(v).invoke(() -> TXLockServiceDUnitTest.dumpStack());
         host.getVM(v).invoke(
           TXLockServiceDUnitTest.class, "connectDistributedSystem", null);
       }
@@ -249,9 +249,7 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
     });
     
     /* try {
-      Host.getHost(0).getVM(clientB).invoke(
-        TXLockServiceDUnitTest.class, "txLock_DTLS", 
-        new Object[] { regionLockReqs, participants });
+      Host.getHost(0).getVM(clientB).invoke(() -> TXLockServiceDUnitTest.txLock_DTLS( regionLockReqs, participants ));
       fail("expected CommitConflictException");
     } catch (RMIException expected) {
       assertTrue(expected.getCause() instanceof CommitConflictException);
@@ -314,8 +312,7 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
     final Set participants = new HashSet();
     for (int i = 1; i <= particpantB; i++) {
       final int finalvm = i;
-      dmId = (InternalDistributedMember)Host.getHost(0).getVM(finalvm).invoke(
-          TXLockServiceDUnitTest.class, "fetchDistributionManagerId", new Object[] {});
+      dmId = (InternalDistributedMember)Host.getHost(0).getVM(finalvm).invoke(() -> TXLockServiceDUnitTest.fetchDistributionManagerId());
       assertEquals("dmId should not be null for vm " + finalvm, 
                    false, dmId == null);
       participants.add(dmId);
@@ -330,11 +327,9 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
       }
     });
     
-    Host.getHost(0).getVM(grantorVM).invoke(
-        TXLockServiceDUnitTest.class, "identifyLockGrantor_DTLS", new Object[] {});
+    Host.getHost(0).getVM(grantorVM).invoke(() -> TXLockServiceDUnitTest.identifyLockGrantor_DTLS());
         
-    Boolean isGrantor = (Boolean)Host.getHost(0).getVM(grantorVM).invoke(
-        TXLockServiceDUnitTest.class, "isLockGrantor_DTLS", new Object[] {});
+    Boolean isGrantor = (Boolean)Host.getHost(0).getVM(grantorVM).invoke(() -> TXLockServiceDUnitTest.isLockGrantor_DTLS());
     assertEquals("isLockGrantor should not be false for DTLS", 
                  Boolean.TRUE, isGrantor);
     
@@ -392,9 +387,7 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
         TXLockService.destroyServices();
       }
     });
-    Host.getHost(0).getVM(originatorVM).invoke(
-        DistributedTestCase.class, "disconnectFromDS", 
-        new Object[] {});
+    Host.getHost(0).getVM(originatorVM).invoke(() -> DistributedTestCase.disconnectFromDS());
     
     
     // grantor sends TXOriginatorRecoveryMessage...
@@ -439,22 +432,19 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
       });
           
       // assert that isDistributed returns false
-      Boolean isDistributed = (Boolean)host.getVM(finalvm).invoke(
-          TXLockServiceDUnitTest.class, "isDistributed_DTLS", new Object[] {});
+      Boolean isDistributed = (Boolean)host.getVM(finalvm).invoke(() -> TXLockServiceDUnitTest.isDistributed_DTLS());
       assertEquals("isDistributed should be true for DTLS", 
                    Boolean.TRUE, isDistributed);
       LogWriterUtils.getLogWriter().info("[testDTLSIsDistributed] isDistributed=" + isDistributed);
                    
       // lock a key...                
-      Boolean gotLock = (Boolean)host.getVM(finalvm).invoke(
-          TXLockServiceDUnitTest.class, "lock_DTLS", new Object[] {"KEY"});
+      Boolean gotLock = (Boolean)host.getVM(finalvm).invoke(() -> TXLockServiceDUnitTest.lock_DTLS("KEY"));
       assertEquals("gotLock is false after calling lock_DTLS", 
                    Boolean.TRUE, gotLock);
       LogWriterUtils.getLogWriter().info("[testDTLSIsDistributed] gotLock=" + gotLock);
       
       // unlock it...                
-      Boolean unlock = (Boolean)host.getVM(finalvm).invoke(
-          TXLockServiceDUnitTest.class, "unlock_DTLS", new Object[] {"KEY"});
+      Boolean unlock = (Boolean)host.getVM(finalvm).invoke(() -> TXLockServiceDUnitTest.unlock_DTLS("KEY"));
       assertEquals("unlock is false after calling unlock_DTLS", 
                    Boolean.TRUE, unlock);
       LogWriterUtils.getLogWriter().info("[testDTLSIsDistributed] unlock=" + unlock);

@@ -48,8 +48,8 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.PureJavaMode;
 import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.PureLogWriter;
 import com.gemstone.gemfire.internal.process.StartupStatus;
 import com.gemstone.gemfire.internal.process.StartupStatusListener;
 import com.gemstone.gemfire.internal.util.IOUtils;
@@ -876,6 +876,8 @@ public class CacheServerLauncher  {
     if ((disable == null || !disable) && cache.getCacheServers().size() == 0) {
       // Create and add a cache server
       CacheServer server = cache.addCacheServer();
+      
+      CacheServerHelper.setIsDefaultServer(server);
 
       // Set its port if necessary
       Integer serverPort = CacheServerLauncher.getServerPort();

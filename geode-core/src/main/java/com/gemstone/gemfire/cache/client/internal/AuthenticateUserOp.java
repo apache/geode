@@ -121,7 +121,7 @@ public class AuthenticateUserOp {
           tmpSecurityProperties, server, false, (InternalLogWriter)sys.getLogWriter(), (InternalLogWriter)sys
               .getSecurityLogWriter());
       
-      getMessage().setEarlyAck(Message.MESSAGE_HAS_SECURE_PART);
+      getMessage().setMessageHasSecurePartFlag();
       HeapDataOutputStream heapdos = new HeapDataOutputStream(Version.CURRENT);
       try {
         DataSerializer.writeProperties(credentials, heapdos);
@@ -144,7 +144,7 @@ public class AuthenticateUserOp {
       this.securityProperties = securityProps;
       this.needsServerLocation = needsServer;
 
-      getMessage().setEarlyAck(Message.MESSAGE_HAS_SECURE_PART);
+      getMessage().setMessageHasSecurePartFlag();
     }
 
     @Override

@@ -96,8 +96,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     this.createServer(server, 0, false);
 
-    final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
-        "getCacheServerPort");
+    final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server. 
@@ -142,8 +141,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     this.createServer(server, 0, false);
 
-    final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
-        "getCacheServerPort");
+    final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testClientIndexUpdateWithRegisterInterest";
@@ -193,8 +191,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     this.createServer(server, 0, false);
 
-    final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
-        "getCacheServerPort");
+    final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     //Init values at server. 
@@ -234,8 +231,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     this.createServer(server, 0, false);
 
-    final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
-        "getCacheServerPort");
+    final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     //Init values at server. 
@@ -281,8 +277,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     this.createServer(server, 0, false);
 
-    final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
-        "getCacheServerPort");
+    final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     //Init values at server. 
@@ -338,8 +333,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     this.createServer(server, 0, true);
 
-    final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
-        "getCacheServerPort");
+    final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server. 
@@ -379,8 +373,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     this.createServer(server, 0, true);
 
-    final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
-        "getCacheServerPort");
+    final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server. 
@@ -420,8 +413,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
     this.createServer(server, 0, true);
 
-    final int port = server.invokeInt(QueryIndexUpdateRIDUnitTest.class,
-        "getCacheServerPort");
+    final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server. 

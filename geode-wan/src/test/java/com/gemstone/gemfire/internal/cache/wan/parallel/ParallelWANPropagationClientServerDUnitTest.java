@@ -40,75 +40,69 @@ public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
    * @throws Exception
    */
   public void testParallelPropagationWithClientServer() throws Exception {
-    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-        "createFirstLocatorWithDSId", new Object[] { 1 });
-    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
-        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(WANTestBase.class, "createReceiverAndServer", new Object[] { nyPort });
-    vm3.invoke(WANTestBase.class, "createReceiverAndServer", new Object[] { nyPort });
-    vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() });
-    vm3.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() });
+    vm2.invoke(() -> WANTestBase.createReceiverAndServer( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiverAndServer( nyPort ));
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
 
-    vm4.invoke(WANTestBase.class, "createClientWithLocator", new Object[] {
-        nyPort, "localhost", getTestMethodName() + "_PR" });
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
-      100 });
+    vm4.invoke(() -> WANTestBase.createClientWithLocator(
+        nyPort, "localhost", getTestMethodName() + "_PR" ));
+    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR",
+      100 ));
 
-    vm5.invoke(WANTestBase.class, "createServer", new Object[] { lnPort });
-    vm6.invoke(WANTestBase.class, "createServer", new Object[] { lnPort });
-    vm5.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2, true,
-         100, 10, false, false, null, true });
-    vm6.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2, true,
-         100, 10, false, false, null, true });
-    vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
-    vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() });
+    vm5.invoke(() -> WANTestBase.createServer( lnPort ));
+    vm6.invoke(() -> WANTestBase.createServer( lnPort ));
+    vm5.invoke(() -> WANTestBase.createSender( "ln", 2, true,
+         100, 10, false, false, null, true ));
+    vm6.invoke(() -> WANTestBase.createSender( "ln", 2, true,
+         100, 10, false, false, null, true ));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
+    vm6.invoke(() -> WANTestBase.createPartitionedRegion(
+        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
 
-    vm7.invoke(WANTestBase.class, "createClientWithLocator", new Object[] {
-      lnPort, "localhost", getTestMethodName() + "_PR" });
+    vm7.invoke(() -> WANTestBase.createClientWithLocator(
+      lnPort, "localhost", getTestMethodName() + "_PR" ));
     
-    AsyncInvocation inv1 = vm5.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
-    AsyncInvocation inv2 = vm6.invokeAsync(WANTestBase.class, "startSender", new Object[] { "ln" });
+    AsyncInvocation inv1 = vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    AsyncInvocation inv2 = vm6.invokeAsync(() -> WANTestBase.startSender( "ln" ));
 
     inv1.join();
     inv2.join();
     // before doing any puts, let the senders be running in order to ensure that
     // not a single event will be lost
     
-    vm5.invoke(WANTestBase.class, "waitForSenderRunningState",
-        new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class, "waitForSenderRunningState",
-        new Object[] { "ln" });
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     
-    vm7.invoke(WANTestBase.class, "doPuts", new Object[] { getTestMethodName() + "_PR",
-        10000 });
+    vm7.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR",
+        10000 ));
 
     
     // verify all buckets drained on all sender nodes.
-    vm5.invoke(WANTestBase.class,
-        "validateParallelSenderQueueAllBucketsDrained", new Object[] { "ln" });
-    vm6.invoke(WANTestBase.class,
-        "validateParallelSenderQueueAllBucketsDrained", new Object[] { "ln" });
+    vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained( "ln" ));
+    vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained( "ln" ));
 
-    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_PR", 10000 });
-    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_PR", 10000 });
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_PR", 10000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_PR", 10000 ));
 
-    vm5.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_PR", 10000 });
-    vm6.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        getTestMethodName() + "_PR", 10000 });
+    vm5.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_PR", 10000 ));
+    vm6.invoke(() -> WANTestBase.validateRegionSize(
+        getTestMethodName() + "_PR", 10000 ));
 
-    vm7.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_PR", 10000 });
+    vm7.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 10000 ));
     
-    vm4.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      getTestMethodName() + "_PR", 10000 });
+    vm4.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 10000 ));
 
   }
 }

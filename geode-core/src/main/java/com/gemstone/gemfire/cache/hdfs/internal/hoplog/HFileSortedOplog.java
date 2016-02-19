@@ -29,6 +29,8 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.gemstone.gemfire.internal.hll.HyperLogLog;
+import com.gemstone.gemfire.internal.hll.ICardinality;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.ipc.RemoteException;
@@ -37,8 +39,6 @@ import org.apache.hadoop.util.ShutdownHookManager;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.hdfs.HDFSIOException;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
-import com.gemstone.gemfire.cache.hdfs.internal.cardinality.HyperLogLog;
-import com.gemstone.gemfire.cache.hdfs.internal.cardinality.ICardinality;
 import com.gemstone.gemfire.internal.cache.persistence.soplog.DelegatingSerializedComparator;
 import com.gemstone.gemfire.internal.cache.persistence.soplog.HFileStoreStatistics;
 import com.gemstone.gemfire.internal.cache.persistence.soplog.SortedOplogStatistics;

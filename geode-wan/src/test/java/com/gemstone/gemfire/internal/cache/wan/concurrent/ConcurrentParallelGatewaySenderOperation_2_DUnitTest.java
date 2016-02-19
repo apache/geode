@@ -125,8 +125,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       vm4.invoke(() -> resumeSender("ln"));
 
-      AsyncInvocation putAsync = vm4.invokeAsync(WANTestBase.class,
-          "doPutsFrom", new Object[] { getTestMethodName() + "_PR", 10, 101 });
+      AsyncInvocation putAsync = vm4.invokeAsync(() -> WANTestBase.doPutsFrom( getTestMethodName() + "_PR", 10, 101 ));
       try {
         putAsync.join();
       } catch (InterruptedException e) {
@@ -172,16 +171,14 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       createReceiverAndDoPutsInPausedSender(nyPort);
 
-      vm4.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
-      vm5.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
-      vm6.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
+      vm4.invoke(() -> WANTestBase.resumeSender( "ln" ));
+      vm5.invoke(() -> WANTestBase.resumeSender( "ln" ));
+      vm6.invoke(() -> WANTestBase.resumeSender( "ln" ));
 
       Wait.pause(200);
-      AsyncInvocation localDestroyAsync = vm4.invokeAsync(WANTestBase.class,
-          "destroyRegion", new Object[] { getTestMethodName() + "_PR" });
+      AsyncInvocation localDestroyAsync = vm4.invokeAsync(() -> WANTestBase.destroyRegion( getTestMethodName() + "_PR" ));
 
-      AsyncInvocation closeAsync = vm4.invokeAsync(WANTestBase.class,
-          "closeCache");
+      AsyncInvocation closeAsync = vm4.invokeAsync(() -> WANTestBase.closeCache());
       try {
         localDestroyAsync.join();
         closeAsync.join();
@@ -209,11 +206,8 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       createReceiverAndDoPutsInPausedSender(nyPort);
 
-      AsyncInvocation putAsync = vm4.invokeAsync(WANTestBase.class,
-          "doPutsFrom", new Object[] { getTestMethodName() + "_PR", 10, 2000 });
-      AsyncInvocation localDestroyAsync = vm4.invokeAsync(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest.class,
-          "closeRegion", new Object[] { getTestMethodName() + "_PR" });
+      AsyncInvocation putAsync = vm4.invokeAsync(() -> WANTestBase.doPutsFrom( getTestMethodName() + "_PR", 10, 2000 ));
+      AsyncInvocation localDestroyAsync = vm4.invokeAsync(() -> ConcurrentParallelGatewaySenderOperation_2_DUnitTest.closeRegion( getTestMethodName() + "_PR" ));
       try {
         putAsync.join();
         localDestroyAsync.join();
@@ -295,8 +289,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       String regionName = getTestMethodName() + "_PR";
       vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
 
-      AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class, "doPuts",
-          new Object[] { regionName, 10 });
+      AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.doPuts( regionName, 10 ));
       Wait.pause(1000);
       vm5.invoke(() -> localDestroyRegion(regionName));
 
@@ -335,17 +328,15 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       createAndStartTwoSenders(vm5, lnPort, 4);
 
       String regionName = getTestMethodName() + "_PR";
-      vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-          regionName, null, 1, 100, isOffHeap() });
-      vm7.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-          regionName, null, 1, 100, isOffHeap() });
+      vm6.invoke(() -> WANTestBase.createPartitionedRegion(
+          regionName, null, 1, 100, isOffHeap() ));
+      vm7.invoke(() -> WANTestBase.createPartitionedRegion(
+          regionName, null, 1, 100, isOffHeap() ));
 
-      AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class, "doPuts",
-          new Object[] { regionName, 10 });
+      AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.doPuts( regionName, 10 ));
 
       Wait.pause(1000);
-      vm5.invoke(WANTestBase.class, "localDestroyRegion",
-          new Object[] { regionName });
+      vm5.invoke(() -> WANTestBase.localDestroyRegion( regionName ));
 
       try {
         inv1.join();
@@ -356,11 +347,11 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       validateRegionSizes(regionName, 10, vm4, vm6, vm7);
 
-      vm5.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
-          regionName, "ln1,ln2", 1, 100, isOffHeap() });
+      vm5.invoke(() -> WANTestBase.createPartitionedRegion(
+          regionName, "ln1,ln2", 1, 100, isOffHeap() ));
 
-      vm4.invoke(WANTestBase.class, "doPutsFrom", new Object[] {
-          regionName, 10, 20 });
+      vm4.invoke(() -> WANTestBase.doPutsFrom(
+          regionName, 10, 20 ));
 
       validateRegionSizes(regionName, 20, vm4, vm6, vm7);
     } finally {
@@ -384,8 +375,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       vm2.invoke(() -> createCustomerOrderShipmentPartitionedRegion(null, null, 1, 100, isOffHeap()));
 
-      AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class,
-          "putcolocatedPartitionedRegion", new Object[] { 10 });
+      AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.putcolocatedPartitionedRegion( 10 ));
       Wait.pause(1000);
 
       try {
@@ -412,7 +402,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
 
-    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
     try {
       createAndStartSenderWithCustomerOrderShipmentRegion(vm4, lnPort, 6, true);
@@ -420,17 +410,14 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       LogWriterUtils.getLogWriter().info("Created PRs on local site");
 
-      vm2.invoke(WANTestBase.class,
-          "createCustomerOrderShipmentPartitionedRegion", new Object[] { null,
-              null, 1, 100, isOffHeap() });
+      vm2.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion( null,
+              null, 1, 100, isOffHeap() ));
 
-      AsyncInvocation inv1 = vm4.invokeAsync(WANTestBase.class,
-          "putcolocatedPartitionedRegion", new Object[] { 2000 });
+      AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.putcolocatedPartitionedRegion( 2000 ));
       Wait.pause(1000);
 
       try {
-        vm5.invoke(WANTestBase.class, "destroyRegion",
-            new Object[] { customerRegionName });
+        vm5.invoke(() -> WANTestBase.destroyRegion( customerRegionName ));
       } catch (Exception ex) {
         assertTrue(ex.getCause() instanceof IllegalStateException);
         return;
