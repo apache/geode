@@ -721,13 +721,13 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           cluster.getTotalBytesOnDiskTrend().add(cluster.getTotalBytesOnDisk());
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
-          cluster.setDiskWritesRate(getFloatAttribute(attribute.getValue(),
+          cluster.setDiskWritesRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           cluster.getThroughoutWritesTrend().add(cluster.getDiskWritesRate());
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_AVERAGEWRITES:
           try {
-            cluster.setWritePerSec(getFloatAttribute(attribute.getValue(),
+            cluster.setWritePerSec(getDoubleAttribute(attribute.getValue(),
                 attribute.getName()));
           } catch (Exception e) {
             cluster.setWritePerSec(0);
@@ -737,7 +737,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_AVERAGEREADS:
           try {
-            cluster.setReadPerSec(getFloatAttribute(attribute.getValue(),
+            cluster.setReadPerSec(getDoubleAttribute(attribute.getValue(),
                 attribute.getName()));
           } catch (Exception e) {
             cluster.setReadPerSec(0);
@@ -746,12 +746,12 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           cluster.getReadPerSecTrend().add(cluster.getReadPerSec());
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_QUERYREQUESTRATE:
-          cluster.setQueriesPerSec(getFloatAttribute(attribute.getValue(),
+          cluster.setQueriesPerSec(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           cluster.getQueriesPerSecTrend().add(cluster.getQueriesPerSec());
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
-          cluster.setDiskReadsRate(getFloatAttribute(attribute.getValue(),
+          cluster.setDiskReadsRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           cluster.getThroughoutReadsTrend().add(cluster.getDiskReadsRate());
           break;
@@ -870,7 +870,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             attribute.getValue(), attribute.getName()));
       } else if (attribute.getName().equals(
           PulseConstants.MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE)) {
-        gatewayReceiver.setLinkThroughput(getFloatAttribute(
+        gatewayReceiver.setLinkThroughput(getDoubleAttribute(
             attribute.getValue(), attribute.getName()));
       } else if (attribute.getName().equals(
           PulseConstants.MBEAN_ATTRIBUTE_AVEARGEBATCHPROCESSINGTIME)) {
@@ -912,7 +912,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       String name = attribute.getName();
       switch (name){
       case PulseConstants.MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE:
-        gatewaySender.setLinkThroughput(getFloatAttribute(attribute.getValue(),
+        gatewaySender.setLinkThroughput(getDoubleAttribute(attribute.getValue(),
             attribute.getName()));
         break;
       case PulseConstants.MBEAN_ATTRIBUTE_BATCHSIZE:
@@ -1292,22 +1292,22 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
                   LOGGER.fine("updateRegionOnMembers : anRom.getEntryCount() = " + anRom.getEntryCount());
                   break;
                 case PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE:
-                  anRom.setPutsRate(getFloatAttribute(attribute.getValue(),
+                  anRom.setPutsRate(getDoubleAttribute(attribute.getValue(),
                       attribute.getName()));
                   LOGGER.fine("updateRegionOnMembers : anRom.getPutsRate() = " + anRom.getPutsRate());
                   break;
                 case PulseConstants.MBEAN_ATTRIBUTE_GETSRATE:
-                  anRom.setGetsRate(getFloatAttribute(attribute.getValue(),
+                  anRom.setGetsRate(getDoubleAttribute(attribute.getValue(),
                       attribute.getName()));
                   LOGGER.fine("updateRegionOnMembers : anRom.getGetsRate() = " + anRom.getGetsRate());
                   break;
                 case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
-                  anRom.setDiskGetsRate(getFloatAttribute(attribute.getValue(),
+                  anRom.setDiskGetsRate(getDoubleAttribute(attribute.getValue(),
                       attribute.getName()));
                   LOGGER.fine("updateRegionOnMembers : anRom.getDiskGetsRate() = " + anRom.getDiskGetsRate());
                   break;
                 case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
-                  anRom.setDiskPutsRate(getFloatAttribute(attribute.getValue(),
+                  anRom.setDiskPutsRate(getDoubleAttribute(attribute.getValue(),
                       attribute.getName()));
                   LOGGER.fine("updateRegionOnMembers : anRom.getDiskPutsRate() = " + anRom.getDiskPutsRate());
                   break;
@@ -1358,19 +1358,19 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
                   attribute.getName()));
               break;
             case PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE:
-              regionOnMember.setPutsRate(getFloatAttribute(attribute.getValue(),
+              regionOnMember.setPutsRate(getDoubleAttribute(attribute.getValue(),
                   attribute.getName()));
               break;
             case PulseConstants.MBEAN_ATTRIBUTE_GETSRATE:
-              regionOnMember.setGetsRate(getFloatAttribute(attribute.getValue(),
+              regionOnMember.setGetsRate(getDoubleAttribute(attribute.getValue(),
                   attribute.getName()));
               break;
             case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
-              regionOnMember.setDiskGetsRate(getFloatAttribute(attribute.getValue(),
+              regionOnMember.setDiskGetsRate(getDoubleAttribute(attribute.getValue(),
                   attribute.getName()));
               break;
             case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
-              regionOnMember.setDiskPutsRate(getFloatAttribute(attribute.getValue(),
+              regionOnMember.setDiskPutsRate(getDoubleAttribute(attribute.getValue(),
                   attribute.getName()));
               break;
             case PulseConstants.MBEAN_ATTRIBUTE_LOCALMAXMEMORY:
@@ -1454,11 +1454,11 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
-          region.setDiskReadsRate(getFloatAttribute(attribute.getValue(),
+          region.setDiskReadsRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
-          region.setDiskWritesRate(getFloatAttribute(attribute.getValue(),
+          region.setDiskWritesRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_EMPTYNODES:
@@ -1466,15 +1466,15 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_GETSRATE:
-          region.setGetsRate(getFloatAttribute(attribute.getValue(),
+          region.setGetsRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_LRUEVICTIONRATE:
-          region.setLruEvictionRate(getFloatAttribute(attribute.getValue(),
+          region.setLruEvictionRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE:
-          region.setPutsRate(getFloatAttribute(attribute.getValue(),
+          region.setPutsRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_REGIONTYPE:
@@ -1784,12 +1784,12 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             attribute.getName()));
         break;
       case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
-        member.setThroughputWrites(getFloatAttribute(attribute.getValue(),
+        member.setThroughputWrites(getDoubleAttribute(attribute.getValue(),
             attribute.getName()));
         member.getThroughputWritesTrend().add(member.getThroughputWrites());
         break;
       case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
-        member.setThroughputReads(getFloatAttribute(attribute.getValue(),
+        member.setThroughputReads(getDoubleAttribute(attribute.getValue(),
             attribute.getName()));
         member.getThroughputReadsTrend().add(member.getThroughputReads());
         break;
@@ -1837,14 +1837,14 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         member.getTotalBytesOnDiskSamples().add(member.getTotalBytesOnDisk());
         break;
       case PulseConstants.MBEAN_ATTRIBUTE_CPUUSAGE:
-        member.setCpuUsage(getFloatAttribute(attribute.getValue(),
+        member.setCpuUsage(getDoubleAttribute(attribute.getValue(),
             attribute.getName()));
         member.getCpuUsageSamples().add(member.getCpuUsage());
         break;
       case PulseConstants.MBEAN_ATTRIBUTE_HOSTCPUUSAGE:
         // Float value is expected for host cpu usage.
         // TODO Remove Float.valueOf() when float value is provided in mbean
-        member.setHostCpuUsage(Float.valueOf(getIntegerAttribute(
+        member.setHostCpuUsage(Double.valueOf(getIntegerAttribute(
             attribute.getValue(), attribute.getName())));
         break;
       case PulseConstants.MBEAN_ATTRIBUTE_MEMBER:
@@ -1856,12 +1856,12 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             attribute.getName()));
         break;
       case PulseConstants.MBEAN_ATTRIBUTE_AVERAGEREADS:
-        member.setGetsRate(getFloatAttribute(attribute.getValue(),
+        member.setGetsRate(getDoubleAttribute(attribute.getValue(),
             attribute.getName()));
         member.getGetsPerSecond().add(member.getGetsRate());
         break;
       case PulseConstants.MBEAN_ATTRIBUTE_AVERAGEWRITES:
-        member.setPutsRate(getFloatAttribute(attribute.getValue(),
+        member.setPutsRate(getDoubleAttribute(attribute.getValue(),
             attribute.getName()));
         member.getPutsPerSecond().add(member.getPutsRate());
         break;
@@ -2225,23 +2225,23 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
-          region.setDiskReadsRate(getFloatAttribute(attribute.getValue(),
+          region.setDiskReadsRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
-          region.setDiskWritesRate(getFloatAttribute(attribute.getValue(),
+          region.setDiskWritesRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_GETSRATE:
-          region.setGetsRate(getFloatAttribute(attribute.getValue(),
+          region.setGetsRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_LRUEVICTIONRATE:
-          region.setLruEvictionRate(getFloatAttribute(attribute.getValue(),
+          region.setLruEvictionRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE:
-          region.setPutsRate(getFloatAttribute(attribute.getValue(),
+          region.setPutsRate(getDoubleAttribute(attribute.getValue(),
               attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_REGIONTYPE:

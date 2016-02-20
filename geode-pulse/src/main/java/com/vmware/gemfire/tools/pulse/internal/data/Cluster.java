@@ -75,7 +75,7 @@ public class Cluster extends Thread {
   private String serverName;
   private String port;
   private int stale = 0;
-  private float loadPerSec;
+  private double loadPerSec;
 
   // start: fields defined in System MBean
   private IClusterUpdater updater = null;
@@ -84,25 +84,25 @@ public class Cluster extends Thread {
   private long clientConnectionCount;
   private int locatorCount;
   private int totalRegionCount;
-  private Long totalHeapSize = 0L;
-  private Long totalRegionEntryCount;
+  private long totalHeapSize = 0L;
+  private long totalRegionEntryCount;
   private int currentQueryCount;
-  private Long totalBytesOnDisk;
-  private float diskReadsRate;
-  private float diskWritesRate;
-  private float writePerSec;
-  private float readPerSec;
-  private float queriesPerSec;
+  private long totalBytesOnDisk;
+  private double diskReadsRate;
+  private double diskWritesRate;
+  private double writePerSec;
+  private double readPerSec;
+  private double queriesPerSec;
   private int avgDiskStorage;
   private int avgDiskWritesRate;
   private int runningFunctionCount;
-  private Long registeredCQCount;
+  private long registeredCQCount;
   private int subscriptionCount;
   private int serverCount;
   private int txnCommittedCount;
   private int txnRollbackCount;
-  private Long usedHeapSize = 0L;
-  private Long garbageCollectionCount = 0L;
+  private long usedHeapSize = 0L;
+  private long garbageCollectionCount = 0L;
   private int clusterId;
   private int notificationPageNumber = 1;
   private boolean connectedFlag;
@@ -135,7 +135,7 @@ public class Cluster extends Thread {
       MAX_SAMPLE_SIZE);
   private CircularFifoBuffer garbageCollectionTrend = new CircularFifoBuffer(
       MAX_SAMPLE_SIZE);
-  private Long previousJVMPauseCount = 0L;
+  private long previousJVMPauseCount = 0L;
 
   private HashMap<String, Boolean> wanInformation = new HashMap<String, Boolean>();
   private Map<String, Cluster.Statement> clusterStatementMap = new ConcurrentHashMap<String, Cluster.Statement>();
@@ -246,22 +246,22 @@ public class Cluster extends Thread {
     private long totalBytesOnDisk;
     private String memberPort;
 
-    private Float cpuUsage = 0.0f;
-    private Float hostCpuUsage = 0.0f;
-    private Long uptime;
+    private double cpuUsage = 0.0d;
+    private double hostCpuUsage = 0.0d;
+    private long uptime;
     private String name;
-    private float getsRate;
-    private float putsRate;
+    private double getsRate;
+    private double putsRate;
     private boolean isCache;
     private boolean isGateway;
     private boolean isLocator;
     private boolean isServer;
-    private Double loadAverage;
+    private double loadAverage;
     private int numThreads;
-    private Long totalFileDescriptorOpen;
-    private Long garbageCollectionCount = 0L;
-    private float throughputWrites;
-    private float throughputReads;
+    private long totalFileDescriptorOpen;
+    private long garbageCollectionCount = 0L;
+    private double throughputWrites;
+    private double throughputReads;
     private long totalDiskUsage;
     private String queueBacklog;
     private String id;
@@ -288,7 +288,7 @@ public class Cluster extends Thread {
         MAX_SAMPLE_SIZE);
     private CircularFifoBuffer garbageCollectionSamples = new CircularFifoBuffer(
         MAX_SAMPLE_SIZE);
-    private Long previousJVMPauseCount = 0L;
+    private long previousJVMPauseCount = 0L;
 
     private Cluster.GatewayReceiver gatewayReceiver = null;
     private List<Cluster.GatewaySender> gatewaySenderList = new ArrayList<Cluster.GatewaySender>();
@@ -407,19 +407,19 @@ public class Cluster extends Thread {
       this.memberPort = memberPort;
     }
 
-    public float getThroughputWrites() {
+    public double getThroughputWrites() {
       return this.throughputWrites;
     }
 
-    public void setThroughputWrites(float throughputWrites) {
+    public void setThroughputWrites(double throughputWrites) {
       this.throughputWrites = throughputWrites;
     }
 
-    public float getThroughputReads() {
+    public double getThroughputReads() {
       return this.throughputReads;
     }
 
-    public void setThroughputReads(float throughputReads) {
+    public void setThroughputReads(double throughputReads) {
       this.throughputReads = throughputReads;
     }
 
@@ -439,7 +439,7 @@ public class Cluster extends Thread {
       return this.name;
     }
 
-    public Double getLoadAverage() {
+    public double getLoadAverage() {
       return this.loadAverage;
     }
 
@@ -459,7 +459,7 @@ public class Cluster extends Thread {
       return null;
     }
 
-    public Long getUptime() {
+    public long getUptime() {
       return this.uptime;
     }
 
@@ -543,7 +543,7 @@ public class Cluster extends Thread {
       this.bindAddress = bindAddress;
     }
 
-    public void setUptime(Long uptime) {
+    public void setUptime(long uptime) {
       this.uptime = uptime;
     }
 
@@ -567,35 +567,35 @@ public class Cluster extends Thread {
       this.totalBytesOnDisk = totalBytesOnDisk;
     }
 
-    public Float getCpuUsage() {
+    public double getCpuUsage() {
       return this.cpuUsage;
     }
 
-    public void setCpuUsage(Float cpuUsage) {
+    public void setCpuUsage(double cpuUsage) {
       this.cpuUsage = cpuUsage;
     }
 
-    public Float getHostCpuUsage() {
+    public double getHostCpuUsage() {
       return this.hostCpuUsage;
     }
 
-    public void setHostCpuUsage(Float hostCpuUsage) {
+    public void setHostCpuUsage(double hostCpuUsage) {
       this.hostCpuUsage = hostCpuUsage;
     }
 
-    public float getGetsRate() {
+    public double getGetsRate() {
       return this.getsRate;
     }
 
-    public void setGetsRate(float getsRate) {
+    public void setGetsRate(double getsRate) {
       this.getsRate = getsRate;
     }
 
-    public float getPutsRate() {
+    public double getPutsRate() {
       return this.putsRate;
     }
 
-    public void setPutsRate(float putsRate) {
+    public void setPutsRate(double putsRate) {
       this.putsRate = putsRate;
     }
 
@@ -632,19 +632,19 @@ public class Cluster extends Thread {
       this.numThreads = numThreads;
     }
 
-    public Long getTotalFileDescriptorOpen() {
+    public long getTotalFileDescriptorOpen() {
       return this.totalFileDescriptorOpen;
     }
 
-    public void setTotalFileDescriptorOpen(Long totalFileDescriptorOpen) {
+    public void setTotalFileDescriptorOpen(long totalFileDescriptorOpen) {
       this.totalFileDescriptorOpen = totalFileDescriptorOpen;
     }
 
-    public Long getGarbageCollectionCount() {
+    public long getGarbageCollectionCount() {
       return this.garbageCollectionCount;
     }
 
-    public void setGarbageCollectionCount(Long garbageCollectionCount) {
+    public void setGarbageCollectionCount(long garbageCollectionCount) {
       this.garbageCollectionCount = garbageCollectionCount;
     }
 
@@ -773,11 +773,11 @@ public class Cluster extends Thread {
       this.garbageCollectionSamples = garbageCollectionSamples;
     }
 
-    public Long getPreviousJVMPauseCount() {
+    public long getPreviousJVMPauseCount() {
       return this.previousJVMPauseCount;
     }
 
-    public void setPreviousJVMPauseCount(Long previousJVMPauseCount) {
+    public void setPreviousJVMPauseCount(long previousJVMPauseCount) {
       this.previousJVMPauseCount = previousJVMPauseCount;
     }
 
@@ -825,10 +825,10 @@ public class Cluster extends Thread {
           long currCPUTime = 0;
           currCPUTime = updatedClient.getProcessCpuTime();
 
-          float newCPUTime = (float) (currCPUTime - lastCPUTime)
+          double newCPUTime = (double) (currCPUTime - lastCPUTime)
               / (elapsedTime * 1000000000);
 
-          float newCPUUsage = 0;
+          double newCPUUsage = 0;
           int availableCpus = updatedClient.getCpus();
           if (availableCpus > 0) {
             newCPUUsage = newCPUTime / availableCpus;
@@ -1261,10 +1261,10 @@ public class Cluster extends Thread {
     private String memberName;
     private long entrySize;
     private long entryCount;
-    private float getsRate;
-    private float putsRate;
-    private float diskGetsRate;
-    private float diskPutsRate;
+    private double getsRate;
+    private double putsRate;
+    private double diskGetsRate;
+    private double diskPutsRate;
     private int localMaxMemory;
 
     private CircularFifoBuffer getsPerSecTrend = new CircularFifoBuffer(
@@ -1307,56 +1307,56 @@ public class Cluster extends Thread {
     /**
      * @return the putsRate
      */
-    public float getPutsRate() {
+    public double getPutsRate() {
       return putsRate;
     }
 
     /**
      * @param putsRate the putsRate to set
      */
-    public void setPutsRate(float putsRate) {
+    public void setPutsRate(double putsRate) {
       this.putsRate = putsRate;
     }
 
     /**
      * @return the getsRate
      */
-    public float getGetsRate() {
+    public double getGetsRate() {
       return getsRate;
     }
 
     /**
      * @param getsRate the getsRate to set
      */
-    public void setGetsRate(float getsRate) {
+    public void setGetsRate(double getsRate) {
       this.getsRate = getsRate;
     }
 
     /**
      * @return the diskGetsRate
      */
-    public float getDiskGetsRate() {
+    public double getDiskGetsRate() {
       return diskGetsRate;
     }
 
     /**
      * @param diskGetsRate the diskGetsRate to set
      */
-    public void setDiskGetsRate(float diskGetsRate) {
+    public void setDiskGetsRate(double diskGetsRate) {
       this.diskGetsRate = diskGetsRate;
     }
 
     /**
      * @return the diskPutsRate
      */
-    public float getDiskPutsRate() {
+    public double getDiskPutsRate() {
       return diskPutsRate;
     }
 
     /**
      * @param diskPutsRate the diskPutsRate to set
      */
-    public void setDiskPutsRate(float diskPutsRate) {
+    public void setDiskPutsRate(double diskPutsRate) {
       this.diskPutsRate = diskPutsRate;
     }
 
@@ -1500,11 +1500,11 @@ public class Cluster extends Thread {
   public static class Region {
     // start: fields defined in MBean
     private String fullPath;
-    private float diskReadsRate;
-    private float diskWritesRate;
-    private float getsRate;
-    private float putsRate;
-    private float lruEvictionRate;
+    private double diskReadsRate;
+    private double diskWritesRate;
+    private double getsRate;
+    private double putsRate;
+    private double lruEvictionRate;
     private String regionType;
     private long systemRegionEntryCount;
     private int memberCount;
@@ -1659,19 +1659,19 @@ public class Cluster extends Thread {
       this.fullPath = fullPath;
     }
 
-    public float getDiskReadsRate() {
+    public double getDiskReadsRate() {
       return this.diskReadsRate;
     }
 
-    public void setDiskReadsRate(float diskReadsRate) {
+    public void setDiskReadsRate(double diskReadsRate) {
       this.diskReadsRate = diskReadsRate;
     }
 
-    public float getDiskWritesRate() {
+    public double getDiskWritesRate() {
       return this.diskWritesRate;
     }
 
-    public void setDiskWritesRate(float diskWritesRate) {
+    public void setDiskWritesRate(double diskWritesRate) {
       this.diskWritesRate = diskWritesRate;
     }
 
@@ -1692,19 +1692,19 @@ public class Cluster extends Thread {
       this.diskWritesPerSecTrend = diskWritesPerSecTrend;
     }
 
-    public float getGetsRate() {
+    public double getGetsRate() {
       return this.getsRate;
     }
 
-    public void setGetsRate(float getsRate) {
+    public void setGetsRate(double getsRate) {
       this.getsRate = getsRate;
     }
 
-    public float getLruEvictionRate() {
+    public double getLruEvictionRate() {
       return this.lruEvictionRate;
     }
 
-    public void setLruEvictionRate(float lruEvictionRate) {
+    public void setLruEvictionRate(double lruEvictionRate) {
       this.lruEvictionRate = lruEvictionRate;
     }
 
@@ -1732,11 +1732,11 @@ public class Cluster extends Thread {
       this.memberCount = memberCount;
     }
 
-    public float getPutsRate() {
+    public double getPutsRate() {
       return this.putsRate;
     }
 
-    public void setPutsRate(float putsRate) {
+    public void setPutsRate(double putsRate) {
       this.putsRate = putsRate;
     }
 
@@ -1907,7 +1907,7 @@ public class Cluster extends Thread {
     private String name;
     private String host;
     private int queueSize;
-    private float cpuUsage;
+    private double cpuUsage;
     private long uptime;
     private int threads;
     private int gets;
@@ -1975,11 +1975,11 @@ public class Cluster extends Thread {
       this.queueSize = queueSize;
     }
 
-    public float getCpuUsage() {
+    public double getCpuUsage() {
       return this.cpuUsage;
     }
 
-    public void setCpuUsage(float cpuUsage) {
+    public void setCpuUsage(double cpuUsage) {
       this.cpuUsage = cpuUsage;
     }
 
@@ -2050,8 +2050,8 @@ public class Cluster extends Thread {
   public static class GatewayReceiver {
 
     private int listeningPort;
-    private Float linkThroughput;
-    private Long avgBatchProcessingTime;
+    private double linkThroughput;
+    private long avgBatchProcessingTime;
     private String id;
     private int queueSize;
     private Boolean status;
@@ -2065,19 +2065,19 @@ public class Cluster extends Thread {
       this.listeningPort = listeningPort;
     }
 
-    public Float getLinkThroughput() {
+    public double getLinkThroughput() {
       return this.linkThroughput;
     }
 
-    public void setLinkThroughput(Float linkThroughput) {
+    public void setLinkThroughput(double linkThroughput) {
       this.linkThroughput = linkThroughput;
     }
 
-    public Long getAvgBatchProcessingTime() {
+    public long getAvgBatchProcessingTime() {
       return this.avgBatchProcessingTime;
     }
 
-    public void setAvgBatchProcessingTime(Long avgBatchProcessingTime) {
+    public void setAvgBatchProcessingTime(long avgBatchProcessingTime) {
       this.avgBatchProcessingTime = avgBatchProcessingTime;
     }
 
@@ -2122,7 +2122,7 @@ public class Cluster extends Thread {
    */
   public static class GatewaySender {
 
-    private Float linkThroughput;
+    private double linkThroughput;
     private String id;
     private int queueSize;
     private Boolean status;
@@ -2133,11 +2133,11 @@ public class Cluster extends Thread {
     private int remoteDSId;
     private int eventsExceedingAlertThreshold;
 
-    public Float getLinkThroughput() {
+    public double getLinkThroughput() {
       return this.linkThroughput;
     }
 
-    public void setLinkThroughput(Float linkThroughput) {
+    public void setLinkThroughput(double linkThroughput) {
       this.linkThroughput = linkThroughput;
     }
 
@@ -2505,35 +2505,35 @@ public class Cluster extends Thread {
     return this.stale;
   }
 
-  public float getWritePerSec() {
+  public double getWritePerSec() {
     return this.writePerSec;
   }
 
-  public void setWritePerSec(float writePerSec) {
+  public void setWritePerSec(double writePerSec) {
     this.writePerSec = writePerSec;
   }
 
-  public float getReadPerSec() {
+  public double getReadPerSec() {
     return this.readPerSec;
   }
 
-  public void setReadPerSec(float readPerSec) {
+  public void setReadPerSec(double readPerSec) {
     this.readPerSec = readPerSec;
   }
 
-  public float getQueriesPerSec() {
+  public double getQueriesPerSec() {
     return this.queriesPerSec;
   }
 
-  public void setQueriesPerSec(float queriesPerSec) {
+  public void setQueriesPerSec(double queriesPerSec) {
     this.queriesPerSec = queriesPerSec;
   }
 
-  public float getLoadPerSec() {
+  public double getLoadPerSec() {
     return this.loadPerSec;
   }
 
-  public void setLoadPerSec(float loadPerSec) {
+  public void setLoadPerSec(double loadPerSec) {
     this.loadPerSec = loadPerSec;
   }
 
@@ -2557,11 +2557,11 @@ public class Cluster extends Thread {
     this.stopUpdates = stopUpdates;
   }
 
-  public Long getUsedHeapSize() {
+  public long getUsedHeapSize() {
     return this.usedHeapSize;
   }
 
-  public void setUsedHeapSize(Long usedHeapSize) {
+  public void setUsedHeapSize(long usedHeapSize) {
     this.usedHeapSize = usedHeapSize;
   }
 
@@ -2593,7 +2593,7 @@ public class Cluster extends Thread {
     return this.runningFunctionCount;
   }
 
-  public Long getRegisteredCQCount() {
+  public long getRegisteredCQCount() {
     return this.registeredCQCount;
   }
 
@@ -2605,7 +2605,7 @@ public class Cluster extends Thread {
     this.subscriptionCount = subscriptionCount;
   }
 
-  public void setRegisteredCQCount(Long registeredCQCount) {
+  public void setRegisteredCQCount(long registeredCQCount) {
     this.registeredCQCount = registeredCQCount;
   }
 
@@ -2725,19 +2725,19 @@ public class Cluster extends Thread {
     this.totalRegionCount = totalRegionCount;
   }
 
-  public Long getTotalHeapSize() {
+  public long getTotalHeapSize() {
     return this.totalHeapSize;
   }
 
-  public void setTotalHeapSize(Long totalHeapSize) {
+  public void setTotalHeapSize(long totalHeapSize) {
     this.totalHeapSize = totalHeapSize;
   }
 
-  public Long getTotalRegionEntryCount() {
+  public long getTotalRegionEntryCount() {
     return this.totalRegionEntryCount;
   }
 
-  public void setTotalRegionEntryCount(Long totalRegionEntryCount) {
+  public void setTotalRegionEntryCount(long totalRegionEntryCount) {
     this.totalRegionEntryCount = totalRegionEntryCount;
   }
 
@@ -2749,27 +2749,27 @@ public class Cluster extends Thread {
     this.currentQueryCount = currentQueryCount;
   }
 
-  public Long getTotalBytesOnDisk() {
+  public long getTotalBytesOnDisk() {
     return this.totalBytesOnDisk;
   }
 
-  public void setTotalBytesOnDisk(Long totalBytesOnDisk) {
+  public void setTotalBytesOnDisk(long totalBytesOnDisk) {
     this.totalBytesOnDisk = totalBytesOnDisk;
   }
 
-  public float getDiskReadsRate() {
+  public double getDiskReadsRate() {
     return this.diskReadsRate;
   }
 
-  public void setDiskReadsRate(float diskReadsRate) {
+  public void setDiskReadsRate(double diskReadsRate) {
     this.diskReadsRate = diskReadsRate;
   }
 
-  public float getDiskWritesRate() {
+  public double getDiskWritesRate() {
     return this.diskWritesRate;
   }
 
-  public void setDiskWritesRate(float diskWritesRate) {
+  public void setDiskWritesRate(double diskWritesRate) {
     this.diskWritesRate = diskWritesRate;
   }
 
@@ -2797,11 +2797,11 @@ public class Cluster extends Thread {
     this.writePerSecTrend = writePerSecTrend;
   }
 
-  public Long getGarbageCollectionCount() {
+  public long getGarbageCollectionCount() {
     return this.garbageCollectionCount;
   }
 
-  public void setGarbageCollectionCount(Long garbageCollectionCount) {
+  public void setGarbageCollectionCount(long garbageCollectionCount) {
     this.garbageCollectionCount = garbageCollectionCount;
   }
 
@@ -2862,11 +2862,11 @@ public class Cluster extends Thread {
     this.garbageCollectionTrend = garbageCollectionSamples;
   }
 
-  public Long getPreviousJVMPauseCount() {
+  public long getPreviousJVMPauseCount() {
     return this.previousJVMPauseCount;
   }
 
-  public void setPreviousJVMPauseCount(Long previousJVMPauseCount) {
+  public void setPreviousJVMPauseCount(long previousJVMPauseCount) {
     this.previousJVMPauseCount = previousJVMPauseCount;
   }
 
@@ -3301,7 +3301,7 @@ public class Cluster extends Thread {
         m.gatewayReceiver = new Cluster.GatewayReceiver();
       }
       m.gatewayReceiver.listeningPort = Integer.parseInt(port);
-      m.gatewayReceiver.linkThroughput = (float) Math.abs(r.nextInt(10));
+      m.gatewayReceiver.linkThroughput = Math.abs(r.nextInt(10));
       m.gatewayReceiver.avgBatchProcessingTime = (long) Math.abs(r.nextInt(10));
       m.gatewayReceiver.id = String.valueOf(Math.abs(r.nextInt(10)));
       m.gatewayReceiver.queueSize = Math.abs(r.nextInt(10));
@@ -3353,7 +3353,7 @@ public class Cluster extends Thread {
 
       gatewaySender.batchSize = Math.abs(r.nextInt(10));
       gatewaySender.id = String.valueOf(Math.abs(r.nextInt(10)));
-      gatewaySender.linkThroughput = (float) Math.abs(r.nextInt(10));
+      gatewaySender.linkThroughput = Math.abs(r.nextInt(10));
       gatewaySender.persistenceEnabled = true;
       gatewaySender.primary = true;
       gatewaySender.queueSize = Math.abs(r.nextInt(10));
@@ -3418,10 +3418,10 @@ public class Cluster extends Thread {
       m.OffHeapUsedSize = Math.abs(r.nextInt(Math.abs((int) m.maxHeapSize)));
       m.totalDiskUsage = Math.abs(r.nextInt(100));
 
-      Float cpuUsage = r.nextFloat() * 100;
+      double cpuUsage = r.nextDouble() * 100;
       m.cpuUsageSamples.add(cpuUsage);
       m.cpuUsage = cpuUsage;
-      m.hostCpuUsage = r.nextFloat() * 200;
+      m.hostCpuUsage = r.nextDouble() * 200;
 
       m.heapUsageSamples.add(m.currentHeapSize);
       m.loadAverage = (double) Math.abs(r.nextInt(100));

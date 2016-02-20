@@ -131,8 +131,6 @@ public class PulseTest {
   private static final String MEMBER_DROPDOWN_ID = "Members";
   private static final String DATA_DROPDOWN_ID = "Data";
 
-  private static WebDriver initdriver = null;
-
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
       ClassLoader classLoader = Thread.currentThread().getContextClassLoader();

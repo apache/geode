@@ -468,13 +468,13 @@ public class PulseBaseTest extends PulseTest {
 	}
 
 	public void assertMemberSortingByCpuUsage(){
-		Map<Float, String> memberMap = new TreeMap<Float,String>(Collections.reverseOrder());
+		Map<Double, String> memberMap = new TreeMap<>(Collections.reverseOrder());
 		String [] membersNames = splitString(JMXProperties.getInstance().getProperty("members"), " ");
 		for (String member : membersNames) {
 			Member thisMember = new Member(member);
 			memberMap.put(thisMember.getCpuUsage(), thisMember.getMember());
 		}
-		for(Map.Entry<Float,String> entry : memberMap.entrySet()) {
+		for(Map.Entry<Double,String> entry : memberMap.entrySet()) {
 			//here matching painting style to validation that the members are painted according to their cpu usage
 			String refMemberCPUUsage = null;
 			if(entry.getValue().equalsIgnoreCase("M1")){
@@ -510,13 +510,13 @@ public class PulseBaseTest extends PulseTest {
 	}
 
 	public void assertMemberSortingBySGCpuUsage(){
-		Map<Float, String> memberMap = new TreeMap<Float,String>(Collections.reverseOrder());
+		Map<Double, String> memberMap = new TreeMap<>(Collections.reverseOrder());
 		String [] membersNames = splitString(JMXProperties.getInstance().getProperty("members"), " ");
 		for (String member : membersNames) {
 			Member thisMember = new Member(member);
 			memberMap.put(thisMember.getCpuUsage(), thisMember.getMember());
 		}
-		for(Map.Entry<Float,String> entry : memberMap.entrySet()) {
+		for(Map.Entry<Double,String> entry : memberMap.entrySet()) {
 			//here matching painting style to validation that the members are painted according to their cpu usage
 			String refMemberCPUUsage = null;
 			if(entry.getValue().equalsIgnoreCase("M1")){
@@ -588,7 +588,7 @@ public class PulseBaseTest extends PulseTest {
 				sgMembers.put(thisMember.getMember(), thisMember);
 			}
 		}
-		Map<Float, String> memberMap = new TreeMap<Float,String>(Collections.reverseOrder());
+		Map<Double, String> memberMap = new TreeMap<>(Collections.reverseOrder());
 		//SG3(!)M3
 		for(int sgId=1; sgId<=3; sgId++){
 			String sgName = "SG1";
@@ -597,7 +597,7 @@ public class PulseBaseTest extends PulseTest {
 			memberMap.put(m.getCpuUsage(), m.getMember());
 		}
 
-		for(Map.Entry<Float,String> entry : memberMap.entrySet()) {
+		for(Map.Entry<Double,String> entry : memberMap.entrySet()) {
 			//here matching painting style to validation that the members are painted according to their cpu usage
 			String refMemberCPUUsage = null;
 			if(entry.getValue().equalsIgnoreCase("M1")){
@@ -661,13 +661,13 @@ public class PulseBaseTest extends PulseTest {
 
 				rzMembers.put(thisMember.getMember(), thisMember);
 		}
-		Map<Float, String> memberMap = new TreeMap<Float,String>(Collections.reverseOrder());
+		Map<Double, String> memberMap = new TreeMap<>(Collections.reverseOrder());
 		String rzName = "RZ1 RZ2";
 		String memName = "M1" ;
 		Member m = rzMap.get(rzName).get(memName);
 		memberMap.put(m.getCpuUsage(), m.getMember());
 
-		for(Map.Entry<Float,String> entry : memberMap.entrySet()) {
+		for(Map.Entry<Double,String> entry : memberMap.entrySet()) {
 			//here matching painting style to validation that the members are painted according to their cpu usage
 			String refMemberCPUUsage = null;
 			if(entry.getValue().equalsIgnoreCase("M1")){

@@ -89,25 +89,22 @@ public class ClusterMemberService implements PulseService {
       }
       memberJSON.put("redundancyZones", mapper.valueToTree(redundancyZones));
 
-      DecimalFormat df2 = new DecimalFormat(
-          PulseConstants.DECIMAL_FORMAT_PATTERN);
+      DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
 
       long usedHeapSize = cluster.getUsedHeapSize();
       long currentHeap = clusterMember.getCurrentHeapSize();
       if (usedHeapSize > 0) {
-        float heapUsage = ((float) currentHeap / (float) usedHeapSize) * 100;
-        memberJSON
-            .put(this.HEAP_USAGE, Double.valueOf(df2.format(heapUsage)));
+        double heapUsage = ((double) currentHeap / (double) usedHeapSize) * 100;
+        memberJSON.put(this.HEAP_USAGE, Double.valueOf(df2.format(heapUsage)));
       } else {
         memberJSON.put(this.HEAP_USAGE, 0);
       }
-      Float currentCPUUsage = clusterMember.getCpuUsage();
+      double currentCPUUsage = clusterMember.getCpuUsage();
 
-      memberJSON.put("cpuUsage", Float.valueOf(df2.format(currentCPUUsage)));
+      memberJSON.put("cpuUsage", df2.format(currentCPUUsage));
       memberJSON.put("currentHeapUsage", clusterMember.getCurrentHeapSize());
       memberJSON.put("isManager", clusterMember.isManager());
-      memberJSON.put("uptime",
-          TimeUtils.convertTimeSecondsToHMS(clusterMember.getUptime()));
+      memberJSON.put("uptime", TimeUtils.convertTimeSecondsToHMS(clusterMember.getUptime()));
       memberJSON.put("loadAvg", clusterMember.getLoadAverage());
       memberJSON.put("sockets", clusterMember.getTotalFileDescriptorOpen());
       memberJSON.put("threads", clusterMember.getNumThreads());

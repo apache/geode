@@ -27,17 +27,17 @@ public interface RegionMBean {
 
   String getFullPath();
 
-  float getDiskReadsRate();
+  double getDiskReadsRate();
 
-  float getDiskWritesRate();
+  double getDiskWritesRate();
 
   int getEmptyNodes();
 
-  float getGetsRate();
+  double getGetsRate();
 
-  float getLruEvictionRate();
+  double getLruEvictionRate();
 
-  float getPutsRate();
+  double getPutsRate();
 
   String getRegionType();
 

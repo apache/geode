@@ -72,13 +72,13 @@ public class Region extends JMXBaseBean implements RegionMBean {
   }
 
   @Override
-  public float getDiskReadsRate() {
-    return getFloat("diskReadsRate");
+  public double getDiskReadsRate() {
+    return getDouble("diskReadsRate");
   }
 
   @Override
-  public float getDiskWritesRate() {
-    return getFloat("diskWritesRate");
+  public double getDiskWritesRate() {
+    return getDouble("diskWritesRate");
   }
 
   @Override
@@ -87,18 +87,18 @@ public class Region extends JMXBaseBean implements RegionMBean {
   }
 
   @Override
-  public float getGetsRate() {
-    return getFloat("getsRate");
+  public double getGetsRate() {
+    return getDouble("getsRate");
   }
 
   @Override
-  public float getLruEvictionRate() {
-    return getFloat("lruEvictionRate");
+  public double getLruEvictionRate() {
+    return getDouble("lruEvictionRate");
   }
 
   @Override
-  public float getPutsRate() {
-    return getFloat("putsRate");
+  public double getPutsRate() {
+    return getDouble("putsRate");
   }
 
   @Override

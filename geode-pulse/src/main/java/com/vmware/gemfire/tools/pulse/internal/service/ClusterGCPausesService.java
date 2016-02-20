@@ -58,7 +58,9 @@ public class ClusterGCPausesService implements PulseService {
 
     ArrayNode pauses = mapper.createArrayNode();
     for (Object obj : cluster.getStatisticTrend(Cluster.CLUSTER_STAT_GARBAGE_COLLECTION)) {
-      pauses.add(obj.toString());
+      if (obj instanceof Number) {
+        pauses.add(((Number) obj).longValue());
+      }
     }
     responseJSON.put("currentGCPauses", cluster.getGarbageCollectionCount());
     responseJSON.put("gCPausesTrend", pauses);

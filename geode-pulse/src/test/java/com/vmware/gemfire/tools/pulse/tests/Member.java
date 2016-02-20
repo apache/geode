@@ -80,8 +80,8 @@ public class Member extends JMXBaseBean implements MemberMBean {
   }
 
   @Override
-  public float getDiskWritesRate() {
-    return getFloat("diskWritesRate");
+  public double getDiskWritesRate() {
+    return getDouble("diskWritesRate");
   }
 
   @Override
@@ -132,8 +132,8 @@ public class Member extends JMXBaseBean implements MemberMBean {
   }
 
   @Override
-  public float getCpuUsage() {
-    return getFloat("cpuUsage");
+  public double getCpuUsage() {
+    return getDouble("cpuUsage");
   }
 
   @Override
@@ -147,13 +147,13 @@ public class Member extends JMXBaseBean implements MemberMBean {
   }
 
   @Override
-  public float getAverageReads() {
-    return getFloat("averageReads");
+  public double getAverageReads() {
+    return getDouble("averageReads");
   }
 
   @Override
-  public float getAverageWrites() {
-    return getFloat("averageWrites");
+  public double getAverageWrites() {
+    return getDouble("averageWrites");
   }
 
   @Override

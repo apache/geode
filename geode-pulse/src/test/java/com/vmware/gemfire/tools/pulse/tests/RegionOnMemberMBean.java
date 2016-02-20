@@ -38,13 +38,13 @@ public interface RegionOnMemberMBean {
 
   long getEntryCount();
 
-  float getGetsRate();
+  double getGetsRate();
 
-  float getPutsRate();
+  double getPutsRate();
 
-  float getDiskReadsRate();
+  double getDiskReadsRate();
 
-  float getDiskWritesRate();
+  double getDiskWritesRate();
 
   int getLocalMaxMemory();
 }

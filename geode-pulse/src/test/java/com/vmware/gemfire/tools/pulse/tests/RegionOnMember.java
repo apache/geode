@@ -70,23 +70,23 @@ public class RegionOnMember extends JMXBaseBean implements RegionOnMemberMBean {
   }
 
   @Override
-  public float getGetsRate(){
-    return getFloat("getsRate");
+  public double getGetsRate(){
+    return getDouble("getsRate");
   }
 
   @Override
-  public float getPutsRate(){
-    return getFloat("putsRate");
+  public double getPutsRate(){
+    return getDouble("putsRate");
   }
 
   @Override
-  public float getDiskReadsRate(){
-    return getFloat("diskGetsRate");
+  public double getDiskReadsRate(){
+    return getDouble("diskGetsRate");
   }
 
   @Override
-  public float getDiskWritesRate(){
-    return getFloat("diskPutsRate");
+  public double getDiskWritesRate(){
+    return getDouble("diskPutsRate");
   }
 
   @Override

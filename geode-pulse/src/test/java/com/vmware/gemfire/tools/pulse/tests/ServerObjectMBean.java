@@ -59,15 +59,15 @@ public interface ServerObjectMBean {
 
   long getTotalDiskUsage();
 
-  float getDiskWritesRate();
+  double getDiskWritesRate();
 
-  float getAverageWrites();
+  double getAverageWrites();
 
-  float getAverageReads();
+  double getAverageReads();
 
-  float getQueryRequestRate();
+  double getQueryRequestRate();
 
-  float getDiskReadsRate();
+  double getDiskReadsRate();
 
   long getJVMPauses();
 

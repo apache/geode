@@ -133,11 +133,11 @@ public class ClusterMembersRGraphService implements PulseService {
 
     for (Map.Entry<String, List<Cluster.Member>> physicalToMem : physicalToMember.entrySet()) {
       String hostName = physicalToMem.getKey();
-      Float hostCpuUsage = 0.0F;
-      Long hostMemoryUsage = (long) 0;
-      Double hostLoadAvg = 0.0;
+      double hostCpuUsage = 0.0;
+      long hostMemoryUsage = 0;
+      double hostLoadAvg = 0.0;
       int hostNumThreads = 0;
-      Long hostSockets = (long) 0;
+      long hostSockets = 0;
       boolean hostSevere = false;
       boolean hostError = false;
       boolean hostWarning = false;
@@ -163,18 +163,17 @@ public class ClusterMembersRGraphService implements PulseService {
         Long usedHeapSize = cluster.getUsedHeapSize();
 
         if (usedHeapSize > 0) {
-          float heapUsage = (currentHeap.floatValue() / usedHeapSize
-              .floatValue()) * 100;
+          double heapUsage = (currentHeap.doubleValue() / usedHeapSize.doubleValue()) * 100;
 
           memberData.put(this.MEMORY_USAGE,
               Double.valueOf(df2.format(heapUsage)));
         } else
           memberData.put(this.MEMORY_USAGE, 0);
 
-        Float currentCPUUsage = member.getCpuUsage();
+        double currentCPUUsage = member.getCpuUsage();
 
         memberData.put(this.CPU_USAGE,
-            Float.valueOf(df2.format(currentCPUUsage)));
+            Double.valueOf(df2.format(currentCPUUsage)));
         memberData.put(this.REGIONS, member.getMemberRegions().size());
         memberData.put(this.HOST, member.getHost());
         if ((member.getMemberPort() == null)

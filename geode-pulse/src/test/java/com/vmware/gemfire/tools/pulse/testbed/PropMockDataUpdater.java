@@ -89,7 +89,7 @@ public class PropMockDataUpdater implements IClusterUpdater {
     cluster.setTotalHeapSize(totalHeapSize);
     long usedHeapSize  = Math.abs(r.nextInt(2048));
     cluster.setUsedHeapSize(usedHeapSize);
-    float writePerSec = Math.abs(r.nextInt(100));
+    double writePerSec = Math.abs(r.nextInt(100));
     cluster.setWritePerSec(writePerSec);
 
     //propfile
@@ -342,7 +342,7 @@ public class PropMockDataUpdater implements IClusterUpdater {
     if(port==null || "".equals(port))
       port = "1099";
     gatewayReceiver.setListeningPort(Integer.parseInt(port));
-    gatewayReceiver.setLinkThroughput((float) Math.abs(r.nextInt(10)));
+    gatewayReceiver.setLinkThroughput(Math.abs(r.nextInt(10)));
     gatewayReceiver.setAvgBatchProcessingTime((long) Math.abs(r.nextInt(10)));
     gatewayReceiver.setId(String.valueOf(Math.abs(r.nextInt(10))));
     gatewayReceiver.setQueueSize(Math.abs(r.nextInt(10)));
@@ -378,7 +378,7 @@ public class PropMockDataUpdater implements IClusterUpdater {
 
     gatewaySender.setBatchSize(Math.abs(r.nextInt(10)));
     gatewaySender.setId(String.valueOf(Math.abs(r.nextInt(10))));
-    gatewaySender.setLinkThroughput((float) Math.abs(r.nextInt(10)));
+    gatewaySender.setLinkThroughput(Math.abs(r.nextInt(10)));
     gatewaySender.setPersistenceEnabled(true);
     gatewaySender.setPrimary(true);
     gatewaySender.setQueueSize(Math.abs(r.nextInt(10)));
@@ -427,7 +427,7 @@ public class PropMockDataUpdater implements IClusterUpdater {
     m.setCurrentHeapSize(Math.abs(r.nextInt(Math.abs((int) m.getMaxHeapSize()))));
     m.setTotalDiskUsage(Math.abs(r.nextInt(100)));
 
-    Float cpuUsage = r.nextFloat() * 100;
+    double cpuUsage = r.nextDouble() * 100;
     m.getCpuUsageSamples().add(cpuUsage);
     m.setCpuUsage(cpuUsage);
 

@@ -86,6 +86,7 @@ public class ClusterRegionService implements PulseService {
     responseJSON.put("clusterName", cluster.getServerName());
     responseJSON.put("userName", userName);
     responseJSON.put("region", getRegionJson(cluster));
+
     // Send json response
     return responseJSON;
   }

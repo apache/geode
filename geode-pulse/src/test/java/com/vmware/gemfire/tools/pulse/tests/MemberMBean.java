@@ -40,7 +40,7 @@ public interface MemberMBean {
 
   double getLoadAverage();
 
-  float getDiskWritesRate();
+  double getDiskWritesRate();
 
   long getJVMPauses();
 
@@ -60,15 +60,15 @@ public interface MemberMBean {
 
   long getTotalBytesOnDisk();
 
-  float getCpuUsage();
+  double getCpuUsage();
 
   String getMember();
 
   String getId();
 
-  float getAverageReads();
+  double getAverageReads();
 
-  float getAverageWrites();
+  double getAverageWrites();
 
   int getPort();
 

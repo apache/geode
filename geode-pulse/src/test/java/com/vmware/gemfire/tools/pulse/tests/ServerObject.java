@@ -202,32 +202,35 @@ public class ServerObject extends NotificationBroadcasterSupport implements
   }
 
   @Override
-  public float getDiskWritesRate() {
-    return Float.parseFloat(JMXProperties.getInstance().getProperty(
+  public double getDiskWritesRate() {
+    return Double.parseDouble(JMXProperties.getInstance().getProperty(
         getKey("diskWritesRate")));
   }
 
   @Override
-  public float getAverageWrites() {
-    return Float.parseFloat(JMXProperties.getInstance().getProperty(
-        getKey("averageWrites"), ""));
+  public double getAverageWrites() {
+    String val = JMXProperties.getInstance().getProperty(getKey("averageWrites"), "");
+    double ret = Double.parseDouble(val);
+    return ret;
+//    return Double.parseDouble(JMXProperties.getInstance().getProperty(
+//        getKey("averageWrites"), ""));
   }
 
   @Override
-  public float getAverageReads() {
-    return Float.parseFloat(JMXProperties.getInstance().getProperty(
+  public double getAverageReads() {
+    return Double.parseDouble(JMXProperties.getInstance().getProperty(
         getKey("averageReads"), ""));
   }
 
   @Override
-  public float getQueryRequestRate() {
-    return Float.parseFloat(JMXProperties.getInstance().getProperty(
+  public double getQueryRequestRate() {
+    return Double.parseDouble(JMXProperties.getInstance().getProperty(
         getKey("queryRequestRate"), ""));
   }
 
   @Override
-  public float getDiskReadsRate() {
-    return Float.parseFloat(JMXProperties.getInstance().getProperty(
+  public double getDiskReadsRate() {
+    return Double.parseDouble(JMXProperties.getInstance().getProperty(
         getKey("diskReadsRate"), ""));
   }
 

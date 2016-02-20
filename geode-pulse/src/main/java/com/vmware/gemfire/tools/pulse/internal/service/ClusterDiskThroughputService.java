@@ -55,8 +55,8 @@ public class ClusterDiskThroughputService implements PulseService {
     // cluster's Throughout Writes trend added to json response object
     // CircularFifoBuffer throughoutWritesTrend =
     // cluster.getThroughoutWritesTrend();
-    Float currentThroughputWrites = cluster.getDiskWritesRate();
-    Float currentThroughputReads = cluster.getDiskReadsRate();
+    double currentThroughputWrites = cluster.getDiskWritesRate();
+    double currentThroughputReads = cluster.getDiskReadsRate();
 
     responseJSON.put("currentThroughputReads", currentThroughputReads);
     responseJSON.put("throughputReads",
