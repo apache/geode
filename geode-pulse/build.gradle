@@ -36,6 +36,9 @@ dependencies {
   compile 'org.springframework.security:spring-security-ldap:' + project.'spring-security.version'
   compile 'org.springframework.security:spring-security-web:' + project.'spring-security.version'
   compile 'org.springframework:spring-tx:' + project.'spring-tx.version'
+  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
+  compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
+  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
 
   providedCompile 'commons-logging:commons-logging:' + project.'commons-logging.version'
 

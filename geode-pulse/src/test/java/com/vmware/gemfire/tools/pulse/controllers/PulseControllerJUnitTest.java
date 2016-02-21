@@ -3,7 +3,6 @@ package com.vmware.gemfire.tools.pulse.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import com.vmware.gemfire.tools.pulse.internal.PulseAppListener;
-import com.vmware.gemfire.tools.pulse.internal.ServiceConfiguration;
 import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
 import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConfig;
@@ -123,7 +122,7 @@ public class PulseControllerJUnitTest {
     member.setUptime(1L);
     member.setHost(PHYSICAL_HOST_NAME);
     member.setGemfireVersion(GEMFIRE_VERSION);
-    member.setCpuUsage(55.77D);
+    member.setCpuUsage(55.77123D);
 
     member.setMemberRegions(new HashMap<String, Cluster.Region>() {{
       put(REGION_NAME, region);

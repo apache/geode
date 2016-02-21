@@ -32,6 +32,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,19 +91,17 @@ public class ClusterMemberService implements PulseService {
       }
       memberJSON.put("redundancyZones", mapper.valueToTree(redundancyZones));
 
-      DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
-
       long usedHeapSize = cluster.getUsedHeapSize();
       long currentHeap = clusterMember.getCurrentHeapSize();
       if (usedHeapSize > 0) {
         double heapUsage = ((double) currentHeap / (double) usedHeapSize) * 100;
-        memberJSON.put(this.HEAP_USAGE, Double.valueOf(df2.format(heapUsage)));
+        memberJSON.put(this.HEAP_USAGE, truncate(heapUsage, 2));
       } else {
         memberJSON.put(this.HEAP_USAGE, 0);
       }
       double currentCPUUsage = clusterMember.getCpuUsage();
 
-      memberJSON.put("cpuUsage", df2.format(currentCPUUsage));
+      memberJSON.put("cpuUsage", truncate(currentCPUUsage, 2));
       memberJSON.put("currentHeapUsage", clusterMember.getCurrentHeapSize());
       memberJSON.put("isManager", clusterMember.isManager());
       memberJSON.put("uptime", TimeUtils.convertTimeSecondsToHMS(clusterMember.getUptime()));
@@ -124,5 +124,9 @@ public class ClusterMemberService implements PulseService {
     responseJSON.put("members", memberListJson);
     // Send json response
     return responseJSON;
+  }
+
+  private double truncate(double value, int places) {
+    return new BigDecimal(value).setScale(places, RoundingMode.HALF_UP).doubleValue();
   }
 }
