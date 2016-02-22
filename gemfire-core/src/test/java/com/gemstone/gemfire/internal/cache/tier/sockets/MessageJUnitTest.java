@@ -38,15 +38,17 @@ public class MessageJUnitTest {
   Socket mockSocket;
   MessageStats mockStats;
   ByteBuffer msgBuffer;
+  ServerConnection mockServerConnection;
   
   @Before
   public void setUp() throws Exception {
     mockSocket = mock(Socket.class);
-    message = new Message(5, Version.CURRENT);
-    assertEquals(5, message.getNumberOfParts());
+    message = new Message(2, Version.CURRENT);
+    assertEquals(2, message.getNumberOfParts());
     mockStats = mock(MessageStats.class);
     msgBuffer = ByteBuffer.allocate(1000);
-    message.setComms(mockSocket, msgBuffer, mockStats);
+    mockServerConnection = mock(ServerConnection.class);
+    message.setComms(mockServerConnection, mockSocket, msgBuffer, mockStats);
   }
 
   @Test
@@ -60,8 +62,8 @@ public class MessageJUnitTest {
   @Test
   public void numberOfPartsIsAdjusted() {
     int numParts = message.getNumberOfParts();
-    message.setNumberOfParts(2*numParts);
-    assertEquals(2*numParts, message.getNumberOfParts());
+    message.setNumberOfParts(2*numParts+1);
+    assertEquals(2*numParts+1, message.getNumberOfParts());
     message.addBytesPart(new byte[1]);
     message.addIntPart(2);
     message.addLongPart(3);
@@ -69,6 +71,41 @@ public class MessageJUnitTest {
     message.addStringPart("5");
     assertEquals(5, message.getNextPartNumber());
   }
+  
+  @Test
+  public void messageLongerThanMaxIntIsRejected() throws Exception {
+    Part[] parts = new Part[2];
+    Part mockPart1 = mock(Part.class);
+    when(mockPart1.getLength()).thenReturn(Integer.MAX_VALUE/2);
+    parts[0] = mockPart1;
+    parts[1] = mockPart1;
+    message.setParts(parts);
+    try {
+      message.send();
+    } catch (MessageTooLargeException e) {
+      assertTrue(e.getMessage().contains("exceeds maximum integer value"));
+      return;
+    }
+    fail("expected an exception but none was thrown");
+  }
+  
+  @Test
+  public void maxMessageSizeIsRespected() throws Exception {
+    Part[] parts = new Part[2];
+    Part mockPart1 = mock(Part.class);
+    when(mockPart1.getLength()).thenReturn(Message.MAX_MESSAGE_SIZE/2);
+    parts[0] = mockPart1;
+    parts[1] = mockPart1;
+    message.setParts(parts);
+    try {
+      message.send();
+    } catch (MessageTooLargeException e) {
+      assertFalse(e.getMessage().contains("exceeds maximum integer value"));
+      return;
+    }
+    fail("expected an exception but none was thrown");
+  }
+  
   
   // TODO many more tests are needed
 

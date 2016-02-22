@@ -114,6 +114,14 @@ public class LocatorDUnitTest extends DistributedTestCase {
   
   ////////  Test Methods
 
+  public void testRepeat() throws Exception {
+    long giveup = System.currentTimeMillis() + (120 * 60000);
+    do {
+      testCollocatedLocatorWithSecurity();
+      tearDown(); setUp();
+    } while (System.currentTimeMillis() < giveup);
+  }
+
   
   /**
    * SQLFire uses a colocated locator in a dm-type=normal VM.  This tests that
@@ -209,7 +217,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
       properties.put("start-locator", locators);
       properties.put("log-level", LogWriterUtils.getDUnitLogLevel());
       system = (InternalDistributedSystem)DistributedSystem.connect(properties);
-      System.out.println("done connecting distributed system");
+      System.out.println("done connecting distributed system.  Membership view is " +
+        MembershipManagerHelper.getMembershipManager(system).getView());
       
       assertEquals("should be the coordinator", system.getDistributedMember(), MembershipManagerHelper.getCoordinator(system));
       NetView view = MembershipManagerHelper.getMembershipManager(system).getView();

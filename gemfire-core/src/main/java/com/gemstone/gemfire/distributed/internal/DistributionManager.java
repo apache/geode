@@ -2630,7 +2630,7 @@ public class DistributionManager
     // "RMI TCP Connection(259)-10.80.10.55":
     //  waiting to lock monitor 0x080f6598 (object 0xe3bacd90, a com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager$ViewLock),
     //  which is held by "View Message Processor"
-    // NEED to sync on viewLock first.
+    // NEED to prevent view changes while installing a listener.
     DistributionChannel ch = this.channel;
     if (ch != null) {
       MembershipManager mgr = ch.getMembershipManager();

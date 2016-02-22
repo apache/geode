@@ -376,6 +376,7 @@ com/gemstone/gemfire/internal/cache/tier/BatchException,true,-670707410779130556
 com/gemstone/gemfire/internal/cache/tier/sockets/CacheClientNotifier$2,false,this$0:com/gemstone/gemfire/internal/cache/tier/sockets/CacheClientNotifier
 com/gemstone/gemfire/internal/cache/tier/sockets/CacheClientProxy$MessageDispatcher$1,true,0,this$0:com/gemstone/gemfire/internal/cache/tier/sockets/CacheClientProxy$MessageDispatcher
 com/gemstone/gemfire/internal/cache/tier/sockets/ClientTombstoneMessage$TOperation,false
+com/gemstone/gemfire/internal/cache/tier/sockets/MessageTooLargeException,true,-8970585803331525833
 com/gemstone/gemfire/internal/cache/tier/sockets/UnregisterAllInterest,true,5026160621257178459
 com/gemstone/gemfire/internal/cache/tx/TransactionalOperation$ServerRegionOperation,false
 com/gemstone/gemfire/internal/cache/versions/ConcurrentCacheModificationException,false

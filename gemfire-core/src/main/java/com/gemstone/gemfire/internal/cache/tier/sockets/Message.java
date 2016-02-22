@@ -82,6 +82,11 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  */
 public class Message  {
 
+  /**
+   * maximum size of an outgoing message.  See GEODE-478
+   */
+  static final int MAX_MESSAGE_SIZE = Integer.getInteger("gemfire.client.max-message-size", 1073741824).intValue();
+
   private static final Logger logger = LogService.getLogger();
   
   private static final int PART_HEADER_SIZE = 5; // 4 bytes for length, 1 byte for isObject
@@ -196,6 +201,14 @@ public class Message  {
       }
       this.partsList = newPartsList;
     }
+  }
+  
+  /**
+   * For boundary testing we may need to inject mock parts
+   * @param parts
+   */
+  void setParts(Part[] parts) {
+    this.partsList = parts;
   }
 
   public void setTransactionId(int transactionId) {
@@ -521,57 +534,60 @@ public class Message  {
       if (cb == null) {
         throw new IOException("No buffer");
       }
+      int msgLen = 0;
       synchronized(cb) {
-        int numOfSecureParts = 0;
-        Part securityPart = this.getSecurityPart();
-        boolean isSecurityHeader = false;
+        long totalPartLen = 0;
+        long headerLen = 0;
+        int partsToTransmit = this.numberOfParts;
         
-        if (securityPart != null) {
-          isSecurityHeader = true;
-          numOfSecureParts = 1;
-        }
-        else if (this.securePart != null) {
-          // This is a client sending this message.
-          securityPart = this.securePart;
-          isSecurityHeader = true;
-          numOfSecureParts = 1;          
-        }
-
-        int totalPartLen = 0;
-        for (int i=0;i<this.numberOfParts;i++){
+        for (int i=0; i < this.numberOfParts; i++) {
           Part part = this.partsList[i];
+          headerLen += PART_HEADER_SIZE;
           totalPartLen += part.getLength();
         }
 
-        if(numOfSecureParts == 1) {
-          totalPartLen += securityPart.getLength();
+        Part securityPart = this.getSecurityPart();
+        if (securityPart == null) {
+          securityPart = this.securePart;
         }
-        int msgLen = (PART_HEADER_SIZE * (this.numberOfParts + numOfSecureParts)) + totalPartLen;
+        if (securityPart != null) {
+          headerLen += PART_HEADER_SIZE;
+          totalPartLen += securityPart.getLength();
+          partsToTransmit++;
+        }
+
+        if ( (headerLen + totalPartLen) > Integer.MAX_VALUE ) {
+          throw new MessageTooLargeException("Message size (" + (headerLen + totalPartLen) 
+              + ") exceeds maximum integer value");
+        }
+        
+        msgLen = (int)(headerLen + totalPartLen);
+        
+        if (msgLen > MAX_MESSAGE_SIZE) {
+          throw new MessageTooLargeException("Message size(" + msgLen
+              + ") exceeds gemfire.client.max-message-size setting (" + MAX_MESSAGE_SIZE + ")");
+        }
+        
         cb.clear();
-        packHeaderInfoForSending(msgLen, isSecurityHeader);
-        for (int i=0;i<this.numberOfParts + numOfSecureParts;i++) {
-          Part part = null;
-          if(i == this.numberOfParts) {
-            part = securityPart;
-          }
-          else {
-            part = partsList[i];
-          }
+        packHeaderInfoForSending(msgLen, (securityPart != null));
+        for (int i=0; i < partsToTransmit; i++) {
+          Part part = (i == this.numberOfParts) ? securityPart : partsList[i];
+
           if (cb.remaining() < PART_HEADER_SIZE) {
             flushBuffer();
           }
+          
           int partLen = part.getLength();
           cb.putInt(partLen);
           cb.put(part.getTypeCode());
           if (partLen <= cb.remaining()) {
-            part.sendTo(cb);
+            part.writeTo(cb);
           } else {
             flushBuffer();
-            // send partBytes
             if (this.sockCh != null) {
-              part.sendTo(this.sockCh, cb);
+              part.writeTo(this.sockCh, cb);
             } else {
-              part.sendTo(this.os, cb);
+              part.writeTo(this.os, cb);
             }
             if (this.msgStats != null) {
               this.msgStats.incSentBytes(partLen);
