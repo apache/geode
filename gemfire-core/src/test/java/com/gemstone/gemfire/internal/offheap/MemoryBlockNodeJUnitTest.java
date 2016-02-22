@@ -87,8 +87,6 @@ public class MemoryBlockNodeJUnitTest {
     stats = mock(OffHeapMemoryStats.class);
     lw = mock(LogWriter.class);
     numSlabs = 3;
-//    ma = (SimpleMemoryAllocatorImpl) SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 3, OffHeapStorage.MIN_SLAB_SIZE * 3,
-//        OffHeapStorage.MIN_SLAB_SIZE);
     ma = (SimpleMemoryAllocatorImpl) SimpleMemoryAllocatorImpl.createForUnitTest(ooohml, stats, slabs);
   }
 
@@ -101,17 +99,17 @@ public class MemoryBlockNodeJUnitTest {
     return Long.valueOf(Long.MAX_VALUE);
   }
 
-  protected byte[] getValueAsByteArray() {
-    return convertValueToByteArray(getValue());
-  }
-
-  protected Object convertByteArrayToObject(byte[] valueInByteArray) {
-    return ByteBuffer.wrap(valueInByteArray).getLong();
-  }
-
-  protected Object convertSerializedByteArrayToObject(byte[] valueInSerializedByteArray) {
-    return EntryEventImpl.deserialize(valueInSerializedByteArray);
-  }
+//  protected byte[] getValueAsByteArray() {
+//    return convertValueToByteArray(getValue());
+//  }
+//
+//  protected Object convertByteArrayToObject(byte[] valueInByteArray) {
+//    return ByteBuffer.wrap(valueInByteArray).getLong();
+//  }
+//
+//  protected Object convertSerializedByteArrayToObject(byte[] valueInSerializedByteArray) {
+//    return EntryEventImpl.deserialize(valueInSerializedByteArray);
+//  }
 
   protected MemoryChunkWithRefCount createValueAsUnserializedStoredObject(Object value) {
     MemoryChunkWithRefCount createdObject = createValueAsUnserializedStoredObject(value, false);
