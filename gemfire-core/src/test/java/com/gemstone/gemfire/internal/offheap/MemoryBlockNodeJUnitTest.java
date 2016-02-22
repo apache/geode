@@ -99,18 +99,6 @@ public class MemoryBlockNodeJUnitTest {
     return Long.valueOf(Long.MAX_VALUE);
   }
 
-//  protected byte[] getValueAsByteArray() {
-//    return convertValueToByteArray(getValue());
-//  }
-//
-//  protected Object convertByteArrayToObject(byte[] valueInByteArray) {
-//    return ByteBuffer.wrap(valueInByteArray).getLong();
-//  }
-//
-//  protected Object convertSerializedByteArrayToObject(byte[] valueInSerializedByteArray) {
-//    return EntryEventImpl.deserialize(valueInSerializedByteArray);
-//  }
-
   protected MemoryChunkWithRefCount createValueAsUnserializedStoredObject(Object value) {
     MemoryChunkWithRefCount createdObject = createValueAsUnserializedStoredObject(value, false);
     return createdObject;
