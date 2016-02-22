@@ -108,7 +108,7 @@ public class CliStrings {
   public static final String TOPIC_GFSH__DESC = "The GemFire SHell";
   public static final String TOPIC_SHARED_CONFIGURATION = "Cluster Configuration";
   public static final String TOPIC_SHARED_CONFIGURATION_HELP = "Configuration for cluster and various groups. It consists of cache.xml, gemfire properties and deployed jars.\nChanges due to gfshs command are persisted to the locator hosting the cluster configuration service.";
-  public static final String TOPIC_CHANGELOGLEVEL = "User can change the log-level for a  memeber run time and generate log contents as per the need";
+  public static final String TOPIC_CHANGELOGLEVEL = "User can change the log-level for a  member run time and generate log contents as per the need";
 
   /*-*************************************************************************
    * ********* String Constants other than command name, options & help ******
@@ -1028,7 +1028,7 @@ public class CliStrings {
   public static final String HINT__MSG__SHELL_NOT_INITIALIZED = "Shell is not initialized properly. Please restart the shell. Check gfsh-<timestamp>.log for errors.";
   public static final String HINT__MSG__UNKNOWN_TOPIC = "Unknown topic: {0}. Use " + HINT
       + "; to view the list of available topics.";
-  public static final String HINT__MSG__TOPICS_AVAILABLE = "Hints are availbale for following topics. Use \"" + HINT
+  public static final String HINT__MSG__TOPICS_AVAILABLE = "Hints are available for the following topics. Use \"" + HINT
       + " <topic-name>\" for a specific hint.";
 
   /* history command */
@@ -1072,7 +1072,7 @@ public class CliStrings {
   public static final String TOPIC_LIST = "Display list of connected clients";
   public static final String LIST_CLIENT_COULD_NOT_RETRIEVE_CLIENT_LIST_0 = "Could not retrieve list of clients. Reason : {0}";
   public static final String LIST_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST = "No cache-servers were observed.";
-  public static final String LIST_COULD_NOT_RETRIEVE_CLIENT_LIST = "No clients were retrived for cache-servers.";
+  public static final String LIST_COULD_NOT_RETRIEVE_CLIENT_LIST = "No clients were retrieved for cache-servers.";
   public static final String LIST_CLIENT_COLUMN_SERVERS = "Server Name / ID";
   public static final String LIST_CLIENT_COLUMN_Clients = "Client Name / ID";
   
@@ -2063,7 +2063,7 @@ public class CliStrings {
 
   //Close Durable CQ's
   public static final String CLOSE_DURABLE_CQS = "close durable-cq";
-  public static final String CLOSE_DURABLE_CQS__HELP = "Closes the durable cq registered by the durable client and drain events held for the durable cq from the subscription queue.";
+  public static final String CLOSE_DURABLE_CQS__HELP = "Closes the durable cq registered by the durable client and drains events held for the durable cq from the subscription queue.";
   public static final String CLOSE_DURABLE_CQS__NAME = "durable-cq-name";
   public static final String CLOSE_DURABLE_CQS__NAME__HELP = "Name of the cq to be closed.";
   public static final String CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID = "durable-client-id";
