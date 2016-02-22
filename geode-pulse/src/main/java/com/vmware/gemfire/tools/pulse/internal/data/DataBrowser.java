@@ -109,12 +109,14 @@ public class DataBrowser {
       // Get user's query history list
       ObjectNode userQueries = (ObjectNode) queries.get(userId);
 
-      // Remove user's query
-      userQueries.remove(queryId);
-      queries.put(userId, userQueries);
+      if (userQueries != null) {
+        // Remove user's query
+        userQueries.remove(queryId);
+        queries.put(userId, userQueries);
 
-      // Store queries in file back
-      operationStatus = storeQueriesInFile(queries);
+        // Store queries in file back
+        operationStatus = storeQueriesInFile(queries);
+      }
     }
     
     return operationStatus;
@@ -139,15 +141,16 @@ public class DataBrowser {
       // Get user's query history list
       ObjectNode userQueries = (ObjectNode) queries.get(userId);
 
-      Iterator<String> it = userQueries.fieldNames();
-      while (it.hasNext()) {
-        String key = it.next();
-        ObjectNode queryItem = mapper.createObjectNode();
-        queryItem.put("queryId", key);
-        queryItem.put("queryText", userQueries.get(key).toString());
-        queryItem.put("queryDateTime",
-            simpleDateFormat.format(Long.valueOf(key)));
-        queryList.add(queryItem);
+      if (userQueries != null) {
+        Iterator<String> it = userQueries.fieldNames();
+        while (it.hasNext()) {
+          String key = it.next();
+          ObjectNode queryItem = mapper.createObjectNode();
+          queryItem.put("queryId", key);
+          queryItem.put("queryText", userQueries.get(key).toString());
+          queryItem.put("queryDateTime", simpleDateFormat.format(Long.valueOf(key)));
+          queryList.add(queryItem);
+        }
       }
     }
 

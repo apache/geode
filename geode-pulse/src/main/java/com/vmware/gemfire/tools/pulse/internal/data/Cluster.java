@@ -19,6 +19,7 @@
 
 package com.vmware.gemfire.tools.pulse.internal.data;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -3516,7 +3517,7 @@ public class Cluster extends Thread {
     public ObjectNode executeQuery(String queryText, String members, int limit) {
 
       BufferedReader streamReader = null;
-      ObjectNode jsonObject = mapper.createObjectNode();
+      JsonNode jsonObject = null;
       Random rand = new Random();
       int min = 1, max = 5;
       int randomNum = rand.nextInt(max - min + 1) + min;
@@ -3641,8 +3642,7 @@ public class Cluster extends Thread {
           testQueryResultClusterSmallresponseStrBuilder.append(inputStr);
         }
 
-//        jsonObject = new JSONObject(
-//            testQueryResultClusterSmallresponseStrBuilder.toString());
+        jsonObject = mapper.readTree(testQueryResultClusterSmallresponseStrBuilder.toString());
 
         // close stream reader
         streamReader.close();
@@ -3650,7 +3650,7 @@ public class Cluster extends Thread {
         LOGGER.severe(ex.getMessage());
       }
 
-      return jsonObject;
+      return (ObjectNode) jsonObject;
     }
   }
 
