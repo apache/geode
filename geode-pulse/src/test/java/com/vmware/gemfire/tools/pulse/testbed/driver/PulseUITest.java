@@ -16,16 +16,19 @@
  */
 package com.vmware.gemfire.tools.pulse.testbed.driver;
 
-import java.net.InetAddress;
-import java.util.List;
-
+import com.gemstone.gemfire.management.internal.JettyHelper;
 import com.gemstone.gemfire.test.junit.categories.UITest;
-import com.vmware.gemfire.tools.pulse.tests.PulseTest;
+import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Locator;
+import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Peer;
+import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Region;
+import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Server;
+import com.vmware.gemfire.tools.pulse.testbed.TestBed;
 import junit.framework.Assert;
-
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.startup.Tomcat;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -34,11 +37,10 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Locator;
-import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Peer;
-import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Region;
-import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Server;
-import com.vmware.gemfire.tools.pulse.testbed.TestBed;
+import java.net.InetAddress;
+import java.util.List;
+
+import static com.vmware.gemfire.tools.pulse.tests.PulseTest.getPulseWarPath;
 
 /**
  * @author Sushant Rawal
@@ -53,6 +55,7 @@ public class PulseUITest {
   private static TestBed testBed;
   private static String pulseURL;
   private static String path;
+  private static org.eclipse.jetty.server.Server jetty = null;
 
   private static final String userName = "admin";
   private static final String pasword = "admin";
@@ -62,25 +65,37 @@ public class PulseUITest {
   private static final String CLUSTER_VIEW_SERVERS_ID = "clusterServersText";
   private static final String CLUSTER_VIEW_LOCATORS_ID = "clusterLocatorsText";
   private static final String CLUSTER_VIEW_REGIONS_ID = "clusterTotalRegionsText";
-  
-  private static Tomcat tomcat = null;
-  
-  @BeforeClass
-  public static void setUpTomcat() throws Exception{
-      String host = InetAddress.getLocalHost().getHostAddress();
-      int port = 8080;      
-      String context = "/pulse";
-      path = PulseTest.getPulseWarPath();
-      //System.setProperty("pulse.propMockDataUpdaterClass", "com.vmware.gemfire.tools.pulse.testbed.PropMockDataUpdater");      
-      tomcat = TomcatHelper.startTomcat(host, port, context, path);
-      pulseURL = "http://" + host  + ":" + port + context;
-      Thread.sleep(1000); //wait till tomcat settles down
-      driver = new FirefoxDriver();
-      driver.manage().window().maximize();//required to make all elements visible
 
-      Thread.sleep(5000); //wait till pulse starts polling threads...
-      testBed = new TestBed();
-      loginToPulse(driver, userName, pasword);
+  @BeforeClass
+  public static void setUpJetty() throws Exception {
+    String host = InetAddress.getLocalHost().getHostAddress();
+    int port = 8080;
+    String context = "/pulse";
+    path = getPulseWarPath();
+    //System.setProperty("pulse.propMockDataUpdaterClass", "com.vmware.gemfire.tools.pulse.testbed.PropMockDataUpdater");
+
+    jetty = JettyHelper.initJetty(host, port, false, false, null, null, null);
+    JettyHelper.addWebApplication(jetty, context, getPulseWarPath());
+    jetty.start();
+
+    pulseURL = "http://" + host + ":" + port + context;
+    Thread.sleep(1000); //wait till tomcat settles down
+    driver = new FirefoxDriver();
+    driver.manage().window().maximize();//required to make all elements visible
+
+    Thread.sleep(5000); //wait till pulse starts polling threads...
+    testBed = new TestBed();
+    loginToPulse(driver, userName, pasword);
+  }
+
+  @AfterClass
+  public static void stopJetty() throws Exception {
+    jetty.stop();
+  }
+
+  @After
+  public void closeSession() {
+    driver.close();
   }
 
   private static void loginToPulse(WebDriver driver, String userName,String password){
@@ -263,22 +278,4 @@ public class PulseUITest {
         });
     Assert.assertNotNull(memberNameOnPulsePage);    
   }  
-
-  @After
-  public void closeSession() {      
-    driver.close();
-  }
-  
-  @AfterClass
-  public static void stopTomcat(){
-    try {
-      if(tomcat!=null){
-        tomcat.stop();
-        tomcat.destroy();
-      }
-    } catch (LifecycleException e) {     
-      e.printStackTrace();
-    }
-  }
-
 }

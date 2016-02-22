@@ -18,10 +18,14 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
+import com.gemstone.gemfire.management.internal.JettyHelper;
 import com.gemstone.gemfire.test.junit.categories.UITest;
 import junit.framework.Assert;
-import org.apache.catalina.startup.Tomcat;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
@@ -49,7 +53,7 @@ public class PulseTest {
   private static String jmxPropertiesFile;
   private static String path;
 
-  private static Tomcat tomcat = null;
+  private static org.eclipse.jetty.server.Server jetty = null;
   private static Server server = null;
   private static String pulseURL = null;
   public static WebDriver driver;
@@ -133,20 +137,22 @@ public class PulseTest {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-      ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-      jmxPropertiesFile = classLoader.getResource("test.properties").getPath();
-      path = getPulseWarPath();
-      server = Server.createServer(9999, jmxPropertiesFile);
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    jmxPropertiesFile = classLoader.getResource("test.properties").getPath();
+    path = getPulseWarPath();
+    server = Server.createServer(9999, jmxPropertiesFile);
 
-      String host = "localhost";// InetAddress.getLocalHost().getHostAddress();
-      int port = 8080;
-      String context = "/pulse";
-      
-      tomcat = TomcatHelper.startTomcat(host, port, context, path);
-      pulseURL = "http://" + host + ":" + port + context;
+    String host = "localhost";// InetAddress.getLocalHost().getHostAddress();
+    int port = 8080;
+    String context = "/pulse";
 
-      Thread.sleep(5000); // wait till tomcat settles down
+    jetty = JettyHelper.initJetty(host, port, false, false, null, null, null);
+    JettyHelper.addWebApplication(jetty, context, getPulseWarPath());
+    jetty.start();
 
+    pulseURL = "http://" + host + ":" + port + context;
+
+    Thread.sleep(5000); // wait till tomcat settles down
 
     driver = new FirefoxDriver();
     driver.manage().window().maximize();
@@ -171,19 +177,24 @@ public class PulseTest {
     Thread.sleep(7000);
   }
 
-    public static String getPulseWarPath() throws Exception{
-        String warPath = null;
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        InputStream inputStream = classLoader
-                .getResourceAsStream("GemFireVersion.properties");
-        Properties properties = new Properties();
-        properties.load(inputStream);
-        String version = properties.getProperty("Product-Version");
-        warPath = "geode-pulse-"+version+".war";
-        String propFilePath = classLoader.getResource("GemFireVersion.properties").getPath();
-        warPath = propFilePath.substring(0, propFilePath.indexOf("generated-resources"))+"libs/"+warPath;
-        return warPath;
-    }
+  @AfterClass
+  public static void tearDownAfterClass() throws Exception {
+    driver.close();
+    jetty.stop();
+  }
+
+  public static String getPulseWarPath() throws Exception {
+    String warPath = null;
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    InputStream inputStream = classLoader.getResourceAsStream("GemFireVersion.properties");
+    Properties properties = new Properties();
+    properties.load(inputStream);
+    String version = properties.getProperty("Product-Version");
+    warPath = "gemfire-pulse-" + version + ".war";
+    String propFilePath = classLoader.getResource("GemFireVersion.properties").getPath();
+    warPath = propFilePath.substring(0, propFilePath.indexOf("generated-resources")) + "libs/" + warPath;
+    return warPath;
+  }
 
   protected void searchByLinkAndClick(String linkText) {
     WebElement element = By.linkText(linkText).findElement(driver);
@@ -1015,40 +1026,11 @@ public class PulseTest {
 	  
 	  Assert.assertTrue(driver.findElement(By.id("historyIcon")).isDisplayed());
 	  
-	  //Acutal query execution
+	  //Actual query execution
 	  
 	  driver.findElement(By.id("dataBrowserQueryText")).sendKeys("Query1");
-	  
-	  
-	  
-	 
+
 	  // Assert data regions are displayed 
 	  Assert.assertTrue(driver.findElement(By.id("treeDemo_1")).isDisplayed());
-	
-	  
   }
-
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
-	  //Thread.sleep(200000000);
-    driver.close();
-    /*try {
-      if (tomcat != null) {
-        tomcat.stop();
-        tomcat.destroy();
-      }
-
-      System.out.println("Tomcat Stopped");
-
-      if (server != null) {
-        server.stop();
-      }
-
-      System.out.println("Server Stopped");
-    } catch (LifecycleException e) {
-      e.printStackTrace();
-    }
-*/
-  }
-
 }

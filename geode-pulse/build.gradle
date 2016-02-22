@@ -46,10 +46,8 @@ dependencies {
   provided 'com.google.guava:guava:' + project.'guava.version'
 
   testCompile project(':geode-junit')
+  testCompile project(':geode-core')
 
-  testCompile 'org.apache.tomcat.embed:tomcat-embed-core:' + project.'tomcat7.version'
-  testCompile 'org.apache.tomcat.embed:tomcat-embed-jasper:' + project.'tomcat7.version'
-  testCompile 'org.apache.tomcat.embed:tomcat-embed-logging-juli:' + project.'tomcat7.version'
   testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:' + project.'selenium.version'
   testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
   testCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
