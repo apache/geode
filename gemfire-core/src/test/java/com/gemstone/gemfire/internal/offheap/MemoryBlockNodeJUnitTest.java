@@ -44,13 +44,18 @@ import com.gemstone.gemfire.internal.offheap.MemoryBlock.State;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
+public class MemoryBlockNodeJUnitTest {
 
   private SimpleMemoryAllocatorImpl ma;
   private OutOfOffHeapMemoryListener ooohml;
   private OffHeapMemoryStats stats;
   private LogWriter lw;
   private int numSlabs;
+  private AddressableMemoryChunk[] slabs = {
+      new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE), 
+      new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE), 
+      new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE)
+  };
   private MemoryChunkWithRefCount storedObject = null;
 
   static {
@@ -82,8 +87,9 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
     stats = mock(OffHeapMemoryStats.class);
     lw = mock(LogWriter.class);
     numSlabs = 3;
-    ma = (SimpleMemoryAllocatorImpl) SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 3, OffHeapStorage.MIN_SLAB_SIZE * 3,
-        OffHeapStorage.MIN_SLAB_SIZE);
+//    ma = (SimpleMemoryAllocatorImpl) SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 3, OffHeapStorage.MIN_SLAB_SIZE * 3,
+//        OffHeapStorage.MIN_SLAB_SIZE);
+    ma = (SimpleMemoryAllocatorImpl) SimpleMemoryAllocatorImpl.createForUnitTest(ooohml, stats, slabs);
   }
 
   @After
@@ -130,7 +136,7 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
   }
 
   private MemoryChunkWithRefCount createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
-    MemoryChunkWithRefCount chunk = (MemoryChunkWithRefCount) ma.allocateAndInitialize(v, isSerialized, isCompressed, null);
+    MemoryChunkWithRefCount chunk = (MemoryChunkWithRefCount) ma.allocateAndInitialize(v, isSerialized, isCompressed);
     return chunk;
   }
 
@@ -168,13 +174,13 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
   public void zeroLengthMemoryBlockCausesAssertionErrorInConstructor() {
     expectedException.expect(AssertionError.class);
     
-    MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock)ma.allocate(0, null));
+    MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock)ma.allocate(0));
     softly.assertThat(mb.getBlockSize()).isEqualTo(0);
   }
 
   @Test
   public void getStateReturnsStateOfBlock() {
-    Fragment fragment = new Fragment(ma.getSlabs()[0].getMemoryAddress(), ma.getSlabs()[0].getSize());
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     MemoryBlock mb = new MemoryBlockNode(ma, fragment);
     allocateOffHeapDeserialized();
     softly.assertThat(mb.getState()).isEqualTo(fragment.getState());
@@ -182,29 +188,29 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
   
   @Test
   public void getMemoryAddressReturnsAddressOfBlock() {
-    Fragment fragment = new Fragment(ma.getSlabs()[0].getMemoryAddress(), ma.getSlabs()[0].getSize());
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     MemoryBlock mb = new MemoryBlockNode(ma, fragment);
     softly.assertThat(mb.getMemoryAddress()).isEqualTo(fragment.getMemoryAddress());
  }
   
   @Test
   public void getBlockSizeReturnsSizeOfBlock() {
-    Fragment fragment = new Fragment(ma.getSlabs()[0].getMemoryAddress(), ma.getSlabs()[0].getSize());
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     MemoryBlock mb = new MemoryBlockNode(ma, fragment);
     softly.assertThat(mb.getBlockSize()).isEqualTo(fragment.getBlockSize());
   }
   
   @Test
   public void getNextBlockOfSingleBlockReturnsNull() {
-    Fragment fragment = new Fragment(ma.getSlabs()[0].getMemoryAddress(), ma.getSlabs()[0].getSize());
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     MemoryBlock mb = new MemoryBlockNode(ma, fragment);
     softly.assertThat(mb.getNextBlock()).isNull();
   }
   
   @Test
   public void getSlabIdReturnsIdOfSlabBlockWasConstructedFrom() {
-    for (int i = 0; i < ma.getSlabs().length; ++i) {
-      Fragment fragment = new Fragment(ma.getSlabs()[i].getMemoryAddress(), ma.getSlabs()[i].getSize());
+    for (int i = 0; i < slabs.length; ++i) {
+      Fragment fragment = new Fragment(slabs[i].getMemoryAddress(), slabs[i].getSize());
       MemoryBlock mb = new MemoryBlockNode(ma, fragment);
       softly.assertThat(mb.getSlabId()).isEqualTo(i);
     }
@@ -212,14 +218,14 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
   
   @Test
   public void getFreeListIdReturnsIdFromUnderlyingBlock() {
-    Fragment fragment = new Fragment(ma.getSlabs()[0].getMemoryAddress(), ma.getSlabs()[0].getSize());
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     MemoryBlock mb = new MemoryBlockNode(ma, fragment);
     softly.assertThat(mb.getFreeListId()).isEqualTo(-1);
   }
   
   @Test
   public void getRefCountReturnsRefCountFromUnderlyingBlock() {
-    Fragment fragment = new Fragment(ma.getSlabs()[0].getMemoryAddress(), ma.getSlabs()[0].getSize());
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     MemoryBlock mb = new MemoryBlockNode(ma, fragment);
     softly.assertThat(mb.getRefCount()).isEqualTo(0);
     Object obj = getValue();
@@ -246,7 +252,7 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
   
   @Test
   public void equalsComparisonWithNonMemoryBlockNodeReturnsFalse() {
-    Fragment fragment = new Fragment(ma.getSlabs()[0].getMemoryAddress(), ma.getSlabs()[0].getSize());
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     Object obj = getValue();
     storedObject = createValueAsSerializedStoredObject(obj);
     MemoryBlock mb2 = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
@@ -255,7 +261,7 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
   
   @Test
   public void equalsComparisonWithAnotherMemoryBlockReturnsFalse() {
-    Fragment fragment = new Fragment(ma.getSlabs()[0].getMemoryAddress(), ma.getSlabs()[0].getSize());
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     MemoryBlock mb = new MemoryBlockNode(ma, fragment);
     Object obj = getValue();
     storedObject = createValueAsSerializedStoredObject(obj);
@@ -309,7 +315,7 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
   
   @Test
   public void getDataValueSerializedNotCompressedReturnsFromUnderlyingBlock() {
-    Fragment fragment = new Fragment(ma.getSlabs()[0].getMemoryAddress(), ma.getSlabs()[0].getSize());
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     MemoryBlock mb = new MemoryBlockNode(ma, fragment);
     softly.assertThat(mb.getDataValue()).isNull();
     Object obj = getValue();
@@ -365,7 +371,7 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
     storedObject = createValueAsSerializedStoredObject(obj);
     StoredObject spyStoredObject = spy(storedObject);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) spyStoredObject);
-    when(((Chunk)spyStoredObject).getRawBytes()).thenCallRealMethod().thenThrow(new CacheClosedException("Unit test forced exception"));
+    when(((ObjectChunk)spyStoredObject).getRawBytes()).thenCallRealMethod().thenThrow(new CacheClosedException("Unit test forced exception"));
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
     softly.assertThat(mb.getDataValue()).isEqualTo("CacheClosedException:Unit test forced exception");
@@ -378,7 +384,7 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
     storedObject = createValueAsSerializedStoredObject(obj);
     StoredObject spyStoredObject = spy(storedObject);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) spyStoredObject);
-    when(((Chunk)spyStoredObject).getRawBytes()).thenCallRealMethod().thenThrow(ClassNotFoundException.class);
+    when(((ObjectChunk)spyStoredObject).getRawBytes()).thenCallRealMethod().thenThrow(ClassNotFoundException.class);
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
     softly.assertThat(mb.getDataValue()).isEqualTo("ClassNotFoundException:null");
@@ -386,7 +392,7 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
   
   @Test
   public void toStringOfUnusedBlockReturnsStateUnusedAndTypeNA() {
-    Fragment fragment = new Fragment(ma.getSlabs()[0].getMemoryAddress(), ma.getSlabs()[0].getSize());
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     MemoryBlock mb = new MemoryBlockNode(ma, fragment);
     softly.assertThat(mb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=UNUSED, BlockSize=1024, SlabId=0, FreeListId=NONE, RefCount=0, isSerialized=false, isCompressed=false, DataType=N/A, DataValue=null}");
   }
@@ -396,7 +402,7 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
     Object obj = getValue();
     storedObject = createValueAsSerializedStoredObject(obj);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
-    softly.assertThat(mb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1, com\\..*GemFireChunk\\$\\d*\\@[0-9a-f]*, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
+    softly.assertThat(mb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
   }
   
   @Test
@@ -404,7 +410,7 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
     Object obj = getValue();
     storedObject = createValueAsUnserializedStoredObject(obj);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
-    softly.assertThat(mb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1, com\\..*GemFireChunk\\$\\d*\\@[0-9a-f]*, isSerialized=false, isCompressed=false, DataType=byte\\[8], DataValue=\\[127, -1, -1, -1, -1, -1, -1, -1]}");
+    softly.assertThat(mb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1, isSerialized=false, isCompressed=false, DataType=byte\\[8], DataValue=\\[127, -1, -1, -1, -1, -1, -1, -1]}");
   }
   
   @Test
@@ -413,10 +419,10 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
     storedObject = createValueAsSerializedStoredObject(obj);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
     MemoryBlock spyMb = spy(mb);
-    softly.assertThat(spyMb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1, com\\..*GemFireChunk\\$\\d*\\@[0-9a-f]*, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
+    softly.assertThat(spyMb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
     when(spyMb.getState()).thenReturn(State.DEALLOCATED);
     when(spyMb.getRefCount()).thenReturn(0);
-    softly.assertThat(spyMb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=DEALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=HUGE, RefCount=0, .*Chunk\\$\\d*\\@[0-9a-f]*, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
+    softly.assertThat(spyMb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=DEALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=HUGE, RefCount=0, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
   }
 
   @Test
@@ -425,12 +431,12 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
     storedObject = createValueAsSerializedStoredObject(obj);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
     MemoryBlock spyMb = spy(mb);
-    softly.assertThat(spyMb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1, com\\..*GemFireChunk\\$\\d*\\@[0-9a-f]*, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
+    softly.assertThat(spyMb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
     when(spyMb.getState()).thenReturn(State.DEALLOCATED);
     when(spyMb.getRefCount()).thenReturn(0);
-    softly.assertThat(spyMb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=DEALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=HUGE, RefCount=0, .*Chunk\\$\\d*\\@[0-9a-f]*, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
+    softly.assertThat(spyMb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=DEALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=HUGE, RefCount=0, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
     when(spyMb.getFreeListId()).thenReturn(0);
-    softly.assertThat(spyMb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=DEALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=0, RefCount=0, .*Chunk\\$\\d*\\@[0-9a-f]*, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
+    softly.assertThat(spyMb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=DEALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=0, RefCount=0, isSerialized=true, isCompressed=false, DataType=java.lang.Long, DataValue=9223372036854775807}");
   }
 
   @Test
@@ -441,6 +447,7 @@ public class MemoryBlockNodeJUnitTest /*extends AbstractStoredObjectTestBase*/ {
     Object obj = new byte[1024];
     storedObject = createValueAsUnserializedStoredObject(obj);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
-    softly.assertThat(mb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1, com\\..*GemFireChunk\\$\\d*\\@[0-9a-f]*, isSerialized=false, isCompressed=false, DataType=byte\\[1024], DataValue=<byte array of length 1024>}");
+    softly.assertThat(mb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1,"
+        + " isSerialized=false, isCompressed=false, DataType=byte\\[1024], DataValue=<byte array of length 1024>}");
   }
 }
