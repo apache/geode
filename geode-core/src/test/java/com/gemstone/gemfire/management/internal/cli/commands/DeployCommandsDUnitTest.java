@@ -326,8 +326,6 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
    * Does an end-to-end test using the complete CLI framework while ensuring that the shared configuration is updated.
    */
   public void testEndToEnd() throws IOException {
-    disconnectAllFromDS();
-
     final String groupName = "testDeployEndToEndGroup";
 
     // Start the Locator and wait for shared configuration to be available
