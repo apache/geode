@@ -39,7 +39,7 @@ Extract the source archive and build from the expanded directory:
 
 Start a locator and server:
 
-    $ cd gemfire-assembly/build/install/apache-geode
+    $ cd geode-assembly/build/install/apache-geode
     $ ./bin/gfsh
     gfsh> start locator --name=locator
     gfsh> start server --name=server
@@ -77,8 +77,8 @@ _HelloWorld.java_
 
 Compile and run `HelloWorld.java`.  The classpath should include `geode-dependencies.jar`.
 
-    javac -cp /some/path/geode/gemfire-assembly/build/install/apache-geode/lib/geode-dependencies.jar HelloWorld.java
-    java -cp .:/some/path/geode/gemfire-assembly/build/install/apache-geode/lib/geode-dependencies.jar HelloWorld
+    javac -cp /some/path/geode/geode-assembly/build/install/apache-geode/lib/geode-dependencies.jar HelloWorld.java
+    java -cp .:/some/path/geode/geode-assembly/build/install/apache-geode/lib/geode-dependencies.jar HelloWorld
 
 #Application Development
 
