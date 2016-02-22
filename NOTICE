@@ -19,3 +19,6 @@ This product also includes code adapted from:
 
 Apache Solr (http://lucene.apache.org/solr/)
 Copyright 2014 The Apache Software Foundation
+
+fastutil
+Copyright (C) 2002-2014 Sebastiano Vigna 
