@@ -2616,8 +2616,9 @@ public class CacheClientProxy implements ClientSession {
             }
           }
           clientMessage = null;
-        }
-        catch (IOException e) {
+        } catch (MessageTooLargeException e) {
+          logger.warn("Message too large to send to client: {}, {}", clientMessage, e.getMessage());
+        } catch (IOException e) {
           // Added the synchronization below to ensure that exception handling
           // does not occur while stopping the dispatcher and vice versa.
           synchronized (this._stopDispatchingLock) {
@@ -2960,6 +2961,9 @@ public class CacheClientProxy implements ClientSession {
         }
         // The exception handling code was modeled after the MessageDispatcher
         // run method
+      } catch (MessageTooLargeException e) {
+        logger.warn("Message too large to send to client: {}, {}", clientMessage, e.getMessage());
+
       } catch (IOException e) {
         synchronized (this._stopDispatchingLock) {
           // Pause or unregister proxy

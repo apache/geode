@@ -30,6 +30,7 @@ import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 
@@ -153,8 +154,8 @@ public class TXSynchronizationCommand extends BaseCommand {
                       txMgr.removeHostedTXState(txState.getTxId());
                     } catch (IOException e) {
                       // not much can be done here
-                      if (isDebugEnabled) {
-                        logger.debug("Problem writing reply to client", e);
+                      if (isDebugEnabled || (e instanceof MessageTooLargeException)) {
+                        logger.warn("Problem writing reply to client", e);
                       }
                     }
                     servConn.setAsTrue(RESPONDED);

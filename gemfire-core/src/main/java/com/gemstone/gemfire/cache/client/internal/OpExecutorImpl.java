@@ -35,6 +35,7 @@ import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.CopyException;
 import com.gemstone.gemfire.GemFireException;
+import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.cache.CacheRuntimeException;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
@@ -59,6 +60,7 @@ import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
 import com.gemstone.gemfire.internal.cache.execute.InternalFunctionInvocationTargetException;
 import com.gemstone.gemfire.internal.cache.tier.BatchException;
+import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException;
 import com.gemstone.gemfire.internal.cache.wan.BatchException70;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
@@ -167,6 +169,8 @@ public class OpExecutorImpl implements ExecutablePool {
           Object result = executeWithPossibleReAuthentication(conn, op);
           success = true;
           return result;
+        } catch (MessageTooLargeException e) {
+          throw new GemFireIOException("unable to transmit message to server", e);
         }
         catch (Exception e) {
           //This method will throw an exception if we need to stop
@@ -655,7 +659,15 @@ public class OpExecutorImpl implements ExecutablePool {
         logger.debug("OpExecutor.handleException on Connection to {}", conn.getServer(),e);
       }
     }
-    if (e instanceof NotSerializableException) {
+    
+    // first take care of all exceptions that should not invalidate the
+    // connection and do not need to be logged
+    
+    if (e instanceof MessageTooLargeException) {
+      title = null;
+      exToThrow = new GemFireIOException("message is too large to transmit", e);
+    }
+    else if (e instanceof NotSerializableException) {
       title = null; //no message
       exToThrow = new SerializationException("Pool message failure", e);
     }

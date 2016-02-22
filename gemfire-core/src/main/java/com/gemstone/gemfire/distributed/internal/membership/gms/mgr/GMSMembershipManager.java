@@ -1393,9 +1393,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * @return the current membership view coordinator
    */
   public DistributedMember getCoordinator() {
-    // note - we go straight to JoinLeave because the
-    // DistributionManager queues view changes in a serial executor, where
-    // they're asynchronously installed.  The DS may still see the old coordinator
     latestViewLock.readLock().lock();
     try {
       return latestView == null? null : latestView.getCoordinator();

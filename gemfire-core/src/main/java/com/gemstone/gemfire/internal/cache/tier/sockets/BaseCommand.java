@@ -176,6 +176,16 @@ public abstract class BaseCommand implements Command {
       }
       
     }   
+    catch (TransactionException
+        | CopyException
+        | SerializationException
+        | CacheWriterException
+        | CacheLoaderException
+        | GemFireSecurityException
+        | PartitionOfflineException
+        | MessageTooLargeException e) {
+      handleExceptionNoDisconnect(msg, servConn, e);
+    }
     catch (EOFException eof) {
       BaseCommand.handleEOFException(msg, servConn, eof);
       // TODO:Asif: Check if there is any need for explicitly returning
@@ -183,35 +193,13 @@ public abstract class BaseCommand implements Command {
     }
     catch (InterruptedIOException e) { // Solaris only
       BaseCommand.handleInterruptedIOException(msg, servConn, e);
-      return;
     }
     catch (IOException e) {
       BaseCommand.handleIOException(msg, servConn, e);
-      return;
     }
     catch (DistributedSystemDisconnectedException e) {
       BaseCommand.handleShutdownException(msg, servConn, e);
-      return;
     }
-    catch (PartitionOfflineException e) { // fix for bug #42225
-      handleExceptionNoDisconnect(msg, servConn, e);
-    }
-    catch (GemFireSecurityException e) {
-      handleExceptionNoDisconnect(msg, servConn, e);
-    }
-    catch (CacheLoaderException e) {
-      handleExceptionNoDisconnect(msg, servConn, e);
-    }
-    catch (CacheWriterException e) {
-      handleExceptionNoDisconnect(msg, servConn, e);
-    } catch (SerializationException e) {
-      handleExceptionNoDisconnect(msg, servConn, e);
-    } catch (CopyException e) {
-      handleExceptionNoDisconnect(msg, servConn, e);
-    } catch (TransactionException e) {
-      handleExceptionNoDisconnect(msg, servConn, e);
-    }
-    
     catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error.  We're poisoned
@@ -223,11 +211,6 @@ public abstract class BaseCommand implements Command {
     } finally {
       EntryLogger.clearSource();
     }
-    /*
-     * finally { // Keep track of the fact that a message is no longer being //
-     * processed. servConn.setNotProcessingMessage();
-     * servConn.clearRequestMsg(); }
-     */
   }
 
   /**
@@ -655,6 +638,9 @@ public abstract class BaseCommand implements Command {
     errorMsg.send(servConn);
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Wrote exception: {}", servConn.getName(), e.getMessage(), e);
+    }
+    if (e instanceof MessageTooLargeException) {
+      throw (IOException)e;
     }
   }
 

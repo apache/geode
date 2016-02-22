@@ -284,7 +284,7 @@ public class Part {
    * A stream is used because the client is configured for old IO (instead of nio).
    * @param buf the buffer to use if any data needs to be copied to one
    */
-  public final void sendTo(OutputStream out, ByteBuffer buf) throws IOException {
+  public final void writeTo(OutputStream out, ByteBuffer buf) throws IOException {
     if (getLength() > 0) {
       if (this.part instanceof byte[]) {
         byte[] bytes = (byte[])this.part;
@@ -318,7 +318,7 @@ public class Part {
    * Precondition: caller has already checked the length of this part
    * and it will fit into "buf".
    */
-  public final void sendTo(ByteBuffer buf) {
+  public final void writeTo(ByteBuffer buf) {
     if (getLength() > 0) {
       if (this.part instanceof byte[]) {
         buf.put((byte[])this.part);
@@ -350,7 +350,7 @@ public class Part {
    * so they need to be written directly to the socket.
    * Precondition: buf contains nothing that needs to be sent
    */
-  public final void sendTo(SocketChannel sc, ByteBuffer buf) throws IOException {
+  public final void writeTo(SocketChannel sc, ByteBuffer buf) throws IOException {
     if (getLength() > 0) {
       final int BUF_MAX = buf.capacity();
       if (this.part instanceof byte[]) {
