@@ -26,12 +26,12 @@ LABEL version=unstable
 RUN	git clone -b develop https://github.com/apache/incubator-geode.git \
 	&& cd incubator-geode \
 	&& ./gradlew build -Dskip.tests=true \
-	&& ls /incubator-geode | grep -v gemfire-assembly | xargs rm -rf \
+	&& ls /incubator-geode | grep -v geode-assembly | xargs rm -rf \
 	&& rm -rf /root/.gradle/ \
-	&& rm -rf /incubator-geode/gemfire-assembly/build/distributions/ \
+	&& rm -rf /incubator-geode/geode-assembly/build/distributions/ \
     && yum remove -y perl
 
-ENV GEODE_HOME /incubator-geode/gemfire-assembly/build/install/apache-geode
+ENV GEODE_HOME /incubator-geode/geode-assembly/build/install/apache-geode
 ENV PATH $PATH:$GEODE_HOME/bin
 
 # Default ports:

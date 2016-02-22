@@ -15,7 +15,7 @@ or
 
 ./gradlew distZip
 
-the distribution archives will be located in gemfire-assembly/build/distributions/.
+the distribution archives will be located in geode-assembly/build/distributions/.
 
 To create an unzipped distribution run
 
