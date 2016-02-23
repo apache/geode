@@ -114,15 +114,6 @@ public class LocatorDUnitTest extends DistributedTestCase {
   
   ////////  Test Methods
 
-  public void testRepeat() throws Exception {
-    long giveup = System.currentTimeMillis() + (120 * 60000);
-    do {
-      testCollocatedLocatorWithSecurity();
-      tearDown(); setUp();
-    } while (System.currentTimeMillis() < giveup);
-  }
-
-  
   /**
    * SQLFire uses a colocated locator in a dm-type=normal VM.  This tests that
    * the locator can resume control as coordinator after all locators have been
