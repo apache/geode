@@ -53,8 +53,7 @@ public class MemoryBlockNodeJUnitTest {
   private int numSlabs;
   private AddressableMemoryChunk[] slabs = {
       new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE), 
-      new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE), 
-      new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE)
+      new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE * 2)
   };
   private MemoryChunkWithRefCount storedObject = null;
 
@@ -427,13 +426,12 @@ public class MemoryBlockNodeJUnitTest {
 
   @Test
   public void toStringOfAllocatedBlockWithLargeByteArrayValueShowsValueAsArraySize() {
-    SimpleMemoryAllocatorImpl.resetForTesting();
     ma = (SimpleMemoryAllocatorImpl) SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 1, OffHeapStorage.MIN_SLAB_SIZE * 2,
         OffHeapStorage.MIN_SLAB_SIZE * 2);
     Object obj = new byte[1024];
     storedObject = createValueAsUnserializedStoredObject(obj);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
-    softly.assertThat(mb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=0, FreeListId=NONE, RefCount=1,"
+    softly.assertThat(mb.toString()).matches("MemoryBlock\\{MemoryAddress=\\d*, State=ALLOCATED, BlockSize=\\d*, SlabId=1, FreeListId=NONE, RefCount=1,"
         + " isSerialized=false, isCompressed=false, DataType=byte\\[1024], DataValue=<byte array of length 1024>}");
   }
 }

@@ -87,11 +87,6 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
 
   private static final boolean DO_EXPENSIVE_VALIDATION = Boolean.getBoolean("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION");
   
-  static void resetForTesting() {
-    freeOffHeapMemory();
-    singleton = null;
-  }
-  
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, LogWriter lw, 
       int slabCount, long offHeapMemorySize, long maxSlabSize) {
     return create(ooohml, stats, lw, slabCount, offHeapMemorySize, maxSlabSize,
