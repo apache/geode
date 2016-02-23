@@ -152,7 +152,7 @@ public class PulseTest {
 
     pulseURL = "http://" + host + ":" + port + context;
 
-    Thread.sleep(5000); // wait till tomcat settles down
+    Thread.sleep(5000); // wait till the container settles down
 
     driver = new FirefoxDriver();
     driver.manage().window().maximize();
@@ -190,7 +190,7 @@ public class PulseTest {
     Properties properties = new Properties();
     properties.load(inputStream);
     String version = properties.getProperty("Product-Version");
-    warPath = "gemfire-pulse-" + version + ".war";
+    warPath = "geode-pulse-" + version + ".war";
     String propFilePath = classLoader.getResource("GemFireVersion.properties").getPath();
     warPath = propFilePath.substring(0, propFilePath.indexOf("generated-resources")) + "libs/" + warPath;
     return warPath;
