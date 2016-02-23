@@ -16,12 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+
+import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheWriterException;
 import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
@@ -29,34 +33,27 @@ import com.gemstone.gemfire.cache.client.NoAvailableServersException;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
+import com.gemstone.gemfire.cache.client.internal.Op;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.RegisterInterestTracker;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.cache30.LRUEvictionControllerDUnitTest;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import junit.framework.AssertionFailedError;
 
 /**
  * Tests client server corner cases between Region and Pool
@@ -511,9 +508,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
    * client's cache.  This turned out to be expected behavior, but we
    * now have this test to guarantee that the product behaves as expected.
    */
-  public void testBug43407()
-      throws Exception
-  {
+  public void testGetInClientCreatesEntry() throws Exception {
     // start server first
     PORT1 = initServerCache(false);
     createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1);
@@ -541,6 +536,32 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     if (region.containsKey("invalidationKey")) {
       fail("expected no entry after invalidation when entry was not in client but was on server");
     }
+  }
+
+  /**
+   * GEODE-478 - large payloads are rejected by client->server
+   */
+  public void testLargeMessageIsRejected() throws Exception {
+    PORT1 = initServerCache(false);
+    createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1);
+    Region region = static_cache.getRegion(REGION_NAME1);
+    Op operation = new Op() {
+      @Override
+      public Object attempt(Connection cnx) throws Exception {
+        throw new MessageTooLargeException("message is too big");
+      }
+      @Override
+      public boolean useThreadLocalConnection() {
+        return false;
+      }
+    };
+    try {
+      ((LocalRegion)region).getServerProxy().getPool().execute(operation);
+    } catch (GemFireIOException e) {
+      assertTrue(e.getCause() instanceof MessageTooLargeException);
+      return;
+    }
+    fail("expected an exception to be thrown");
   }
 
   /**
@@ -693,7 +714,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
   }
   /**
    * 
-   * Cycling a DistributedSystem with an initialized pool causes interest registration NPE
+   * bug 35380: Cycling a DistributedSystem with an initialized pool causes interest
+   * registration NPE
    * 
    * Test Scenario:
    *  
@@ -704,7 +726,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
    *  
    * @throws Exception
    */
-  public void testBug35380() throws Exception
+  public void testSystemCanBeCycledWithAnInitializedPool() throws Exception
   {
     //work around GEODE-477
     IgnoredException.addIgnoredException("Connection reset");
