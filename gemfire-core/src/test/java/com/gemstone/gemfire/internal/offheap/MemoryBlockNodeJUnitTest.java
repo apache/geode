@@ -426,8 +426,6 @@ public class MemoryBlockNodeJUnitTest {
 
   @Test
   public void toStringOfAllocatedBlockWithLargeByteArrayValueShowsValueAsArraySize() {
-    ma = (SimpleMemoryAllocatorImpl) SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 1, OffHeapStorage.MIN_SLAB_SIZE * 2,
-        OffHeapStorage.MIN_SLAB_SIZE * 2);
     Object obj = new byte[1024];
     storedObject = createValueAsUnserializedStoredObject(obj);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
