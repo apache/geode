@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -156,15 +157,16 @@ public class FileUtil {
    *           which just returns false.
    */
   public static void delete(File file) throws IOException {
-    if(file.exists() && file.isDirectory()) {
+    if(!file.exists())
+      return;
+
+    if(file.isDirectory()) {
       for(File child: listFiles(file)) {
         delete(child);
       }
     }
-    
-    if(file.exists() && !file.delete()) {
-      throw new IOException("Could not delete " + file);
-    }
+
+    Files.delete(file.toPath());
   }
   
   /**
@@ -175,15 +177,24 @@ public class FileUtil {
    * This method tries to delete as much as possible.
    */
   public static void delete(File file, StringBuilder failures) {
-    if(file.exists() && file.isDirectory()) {
+    if(!file.exists())
+      return;
+
+    if(file.isDirectory()) {
       for(File child: listFiles(file)) {
         delete(child, failures);
       }
     }
-    
-    if(file.exists() && !file.delete()) {
+
+    try{
+      Files.delete(file.toPath());
+    } catch (IOException e) {
       if (failures != null) {
-        failures.append("Could not delete ").append(file).append('\n');
+        failures.append("Could not delete ")
+            .append(file)
+            .append(" due to ")
+            .append(e.getMessage())
+            .append('\n');
       }
     }
   }

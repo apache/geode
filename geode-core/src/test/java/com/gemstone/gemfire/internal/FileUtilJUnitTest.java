@@ -84,4 +84,24 @@ public class FileUtilJUnitTest {
     fileName = "/dir/dir/dir/dir/filename.txt.log";
     assertEquals("/dir/dir/dir/dir/filename.txt", FileUtil.stripOffExtension(fileName));
   }
+
+  @Test
+  public void testDeleteFile() throws IOException {
+    File file = File.createTempFile("FileUtilJUnitTest", null);
+    assertTrue(file.exists());
+    FileUtil.delete(file);
+    assertFalse(file.exists());
+  }
+
+  @Test
+  public void testDeleteDir() throws IOException {
+    File dir = new File("testDirName");
+    dir.mkdir();
+    File file = File.createTempFile("testFile", null, dir);
+    assertTrue(dir.exists());
+    assertTrue(file.exists());
+    FileUtil.delete(dir);
+    assertFalse(file.exists());
+    assertFalse(dir.exists());
+  }
 }
