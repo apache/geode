@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.statistics;
 
 /**
- * @author Kirk Lund
  * @since 7.0
  */
 public interface StatisticsListener {

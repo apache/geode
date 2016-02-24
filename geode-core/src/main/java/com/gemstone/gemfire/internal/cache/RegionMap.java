@@ -43,7 +43,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  *
  * @since 3.5.1
  *
- * @author Darrel Schneider
  *
  */
 public interface RegionMap extends LRUMapCallbacks {

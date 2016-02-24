@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.Assert;
  * instigate a retry of some sort.
  * 
  * @see com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage
- * @author mthomas
  * @since 5.0
  */
 public class ForceReattemptException extends

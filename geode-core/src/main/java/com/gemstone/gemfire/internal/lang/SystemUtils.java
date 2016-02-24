@@ -26,7 +26,6 @@ import java.util.StringTokenizer;
  * The SystemUtils class is an abstract utility class for working with, invoking methods and accessing properties
  * of the Java System class.
  * 
- * @author John Blum
  * @see java.lang.System
  * @since 6.8
  */

@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.cache.Token;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#PUTALL} operation for both the
  * pre-operation and post-operation cases.
  * 
- * @author Gester Zhou
  * @since 5.7
  */
 public class PutAllOperationContext extends OperationContext {
@@ -148,7 +147,6 @@ public class PutAllOperationContext extends OperationContext {
    * It was added to fix bug 51604.
    * It also make sure that customers do not see Token.INVALID and
    * CachedDeserializable to fix bug 51625.
-   * @author dschneider
    */
   private static class UpdateOnlyMap implements Map, Serializable {
     private static final long serialVersionUID = -1034234728574286014L;

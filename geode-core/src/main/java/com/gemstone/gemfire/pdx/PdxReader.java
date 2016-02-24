@@ -31,7 +31,6 @@ import java.util.Date;
  * <P> The methods on this interface are not thread safe so do not
  * call them concurrently, on the same instance, from more than one thread.
  * 
- * @author darrel
  * @since 6.6
  */
 public interface PdxReader {

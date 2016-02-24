@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.redis;
 /**
  * This exception is used when an error happens while creating a {@link com.gemstone.gemfire.cache.Region} globally
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public class RegionCreationException extends RuntimeException {

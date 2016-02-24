@@ -90,7 +90,6 @@ import com.gemstone.gemfire.internal.util.concurrent.ReentrantSemaphore;
     message objects.  A Connection may be closed to preserve system
     resources and will automatically be reopened when it's needed.</p>
 
-    @author Bruce Schuchardt
     @since 2.0
 
 */

@@ -18,7 +18,6 @@ package com.gemstone.gemfire.management.internal.beans.stats;
 
 /**
  * All the stats name which we will require from various MBean
- * @author rishim
  *
  */
 public class StatsKey {

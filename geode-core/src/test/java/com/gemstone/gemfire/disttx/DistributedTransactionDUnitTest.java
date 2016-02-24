@@ -67,7 +67,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Port of GemFireXD's corresponding test for distributed transactions
  * 
- * @author sjigyasu
  *
  */
 @SuppressWarnings("deprecation")

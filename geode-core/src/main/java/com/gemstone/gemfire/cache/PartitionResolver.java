@@ -56,8 +56,6 @@ package com.gemstone.gemfire.cache;
  * guaranteed to be colocated.
  * </p>
  * 
- * @author Yogesh Mahajan
- * @author Mitch Thomas
  * 
  * @since 6.0
  */

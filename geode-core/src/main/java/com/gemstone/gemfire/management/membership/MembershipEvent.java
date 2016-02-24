@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * Instances of this are delivered to a {@link MembershipListener} when a member
  * has joined or left the distributed system.
  *
- * @author rishim
  * @since 8.0
  */
 public interface MembershipEvent {

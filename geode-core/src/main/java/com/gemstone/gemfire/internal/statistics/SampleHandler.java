@@ -22,7 +22,6 @@ import java.util.List;
  * Defines the operations required to handle statistics samples and receive
  * notifications of ResourceTypes and ResourceInstances.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public interface SampleHandler {

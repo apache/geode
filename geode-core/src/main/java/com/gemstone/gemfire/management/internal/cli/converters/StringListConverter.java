@@ -28,7 +28,6 @@ import com.gemstone.gemfire.management.internal.cli.MultipleValueAdapter;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

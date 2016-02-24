@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
  * During validation all region operations are paused for a while. Validation
  * happens multiple time during one test run on a fixed time interval.
  * 
- * @author shobhit
  * 
  */
 public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends
@@ -332,7 +331,6 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends
    * This validator will iterate over RegionEntries and verify their corresponding
    * index key and entry presence in index valuesToEntriesMap.
    * 
-   * @author shobhit
    *
    */
   public class IndexValidator {

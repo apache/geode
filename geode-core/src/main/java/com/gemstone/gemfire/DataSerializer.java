@@ -185,7 +185,6 @@ public class CompanySerializer extends DataSerializer {
  * @see #writeObject(Object, DataOutput)
  * @see #readObject
  *
- * @author David Whitlock
  * @since 3.5 */
 public abstract class DataSerializer {
   

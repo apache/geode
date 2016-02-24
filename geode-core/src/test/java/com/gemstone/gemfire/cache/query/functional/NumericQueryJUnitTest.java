@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * 
- * @author jhuynh
  *
  */
 @Category(IntegrationTest.class)

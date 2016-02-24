@@ -1271,7 +1271,6 @@ public class SystemAdmin {
   /**
    * Represents a list of ResourceInst that have been combined together.
    * Note the most common case is for this class to only own a single ResourceInst.
-   * @author darrel
    *
    */
   @SuppressWarnings("serial")

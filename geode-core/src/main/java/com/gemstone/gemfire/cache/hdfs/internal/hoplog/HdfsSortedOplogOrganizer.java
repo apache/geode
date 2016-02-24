@@ -80,7 +80,6 @@ import org.apache.hadoop.hbase.util.FSUtils;
  * Manages sorted oplog files for a bucket. An instance per bucket will exist in
  * each PR
  * 
- * @author ashvina
  */
 public class HdfsSortedOplogOrganizer extends AbstractHoplogOrganizer<SortedHoplogPersistedEvent> {
   public static final int AVG_NUM_KEYS_PER_INDEX_BLOCK = 200;
@@ -1533,7 +1532,6 @@ public class HdfsSortedOplogOrganizer extends AbstractHoplogOrganizer<SortedHopl
    * will not face race condition. Read and scan operations on the bucket will
    * be affected. So reference counter is incremented for each read and scan.
    * 
-   * @author ashvina
    */
   private class HoplogReadersController implements HoplogReaderActivityListener {
     private Integer maxOpenFilesLimit;
@@ -1970,7 +1968,6 @@ public class HdfsSortedOplogOrganizer extends AbstractHoplogOrganizer<SortedHopl
    * This utility class is used to filter temporary hoplogs in a bucket
    * directory
    * 
-   * @author ashvina
    */
   private static class TmpFilePathFilter implements PathFilter {
     @Override

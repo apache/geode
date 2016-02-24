@@ -30,7 +30,6 @@ import java.util.Comparator;
  * @see SortedResultSet
  * @see LinkedResultSet
  * @see LinkedStructSet
- * @author ashahid
  *
  */
 public interface Ordered {

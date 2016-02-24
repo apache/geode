@@ -166,7 +166,6 @@ public class AbortableTaskServiceJUnitTest {
    * invocation to the underlying methodName until after CountDownLatch is 
    * opened.
    * 
-   * @author Kirk Lund
    */
   private class DelayedExecutorHandler implements InvocationHandler {
     private final Executor executor;

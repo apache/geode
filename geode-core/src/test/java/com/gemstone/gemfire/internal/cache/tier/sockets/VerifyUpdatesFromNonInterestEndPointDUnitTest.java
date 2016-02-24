@@ -50,8 +50,6 @@ import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
  * Now Client does a put on server1 .
  * The Client should not receive callback of his own put.
 
- * @author Yogesh Mahajan
- * @author Suyog Bhokare
  *
  */
 public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTestCase

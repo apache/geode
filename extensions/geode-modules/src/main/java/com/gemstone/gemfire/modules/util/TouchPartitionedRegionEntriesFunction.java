@@ -31,7 +31,6 @@ import java.util.Set;
 /**
  * Touches the keys contained in the set of keys by performing a get on the partitioned region.
  *
- * @author Barry Oglesby
  */
 public class TouchPartitionedRegionEntriesFunction implements Function, Declarable {
 

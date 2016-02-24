@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
  * Implementation of {@link StatAlertDefinition}, represents threshold as
  * number
  * 
- * @author hgadre
  */
 public final class NumberThresholdDecoratorImpl extends BaseDecoratorImpl 
   implements DataSerializableFixedID {

@@ -53,7 +53,6 @@ import java.util.Properties;
  *
  * See <a href="package-summary.html#declarative">package introduction</a>.
  *
- * @author Darrel Schneider
  *
  * 
  * @since 2.0

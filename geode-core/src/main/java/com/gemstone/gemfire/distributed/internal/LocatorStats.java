@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 
 /**
  * This class maintains statistics for the locator
- * @author dsmith
  * @since 5.7
  */
 public class LocatorStats {

@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache;
  * its identity and the circumstances of the event.
  * This is passed in to <code>CacheListener</code> and <code>CacheWriter</code>.
  *
- * @author Eric Zoerner
  *
  *
  * @see CacheListener

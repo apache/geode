@@ -37,7 +37,6 @@ import java.util.*;
  *
  * @since 3.0
  *
- * @author bruce
  */
 
 public class ThrottlingMemLinkedQueueWithDMStats extends OverflowQueueWithDMStats {

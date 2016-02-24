@@ -22,7 +22,6 @@ import java.beans.ConstructorProperties;
  * Composite data type used to distribute metrics for the operating system hosting
  * a member of the distributed system.
  * 
- * @author rishim
  * @since 7.0
  *
  */

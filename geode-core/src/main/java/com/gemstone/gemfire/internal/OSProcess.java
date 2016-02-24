@@ -51,7 +51,6 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
  * Use <code>exec</code> to create a new process by executing a command.
  * Use <code>kill</code> to kill a process.
  *
- * @author darrel
  *
  */
 public class OSProcess {

@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import java.util.Set;
 
 /**
- * @author skumar
  *
  */
 public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {

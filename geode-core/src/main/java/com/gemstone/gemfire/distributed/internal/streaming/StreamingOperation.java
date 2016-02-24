@@ -65,7 +65,6 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * recipient requesting a potentially large amount of data and receiving the reply
  * with data chunked into several messages.
  *
- * @author Eric Zoerner
  */
 public abstract class StreamingOperation {
   private static final Logger logger = LogService.getLogger();

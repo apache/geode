@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Make sure that create are distributed and done in
  * remote regions that are CACHED_ALL_EVENTS*.
  *
- * @author darrel
  * @since 5.0
  */
 public class CachedAllEventsDUnitTest extends CacheTestCase {

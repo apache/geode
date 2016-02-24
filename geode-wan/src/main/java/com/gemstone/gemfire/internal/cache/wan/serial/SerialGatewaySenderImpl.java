@@ -49,8 +49,6 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * @since 7.0
  *
  */

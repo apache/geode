@@ -45,7 +45,6 @@ import java.util.Set;
  * their Filters (CQs and Interest List) that are satisfied by the 
  * cache update operation.
  * @since 6.5
- * @author agingade
  */
 public class FilterRoutingInfo implements VersionedDataSerializable {
   

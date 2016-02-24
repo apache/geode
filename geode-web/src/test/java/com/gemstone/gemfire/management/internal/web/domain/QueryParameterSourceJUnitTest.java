@@ -35,7 +35,6 @@ import org.junit.experimental.categories.Category;
  * The QueryParameterSourceJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * QueryParameterSource class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.web.domain.QueryParameterSource
  * @see org.junit.Assert
  * @see org.junit.Test

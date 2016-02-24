@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * @author kneeraj
  * 
  */
 public class PKCSAuthenticator implements Authenticator {

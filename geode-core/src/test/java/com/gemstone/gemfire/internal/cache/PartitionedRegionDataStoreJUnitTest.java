@@ -58,7 +58,6 @@ import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserver
  * 
  * Created on Dec 23, 2005
  * 
- * @author rreja, modified by Girish
  *  
  */
 @Category(IntegrationTest.class)

@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
- * @author ymahajan
  *
  */
 public class PartitionedRegionFunctionExecutor extends AbstractExecution {

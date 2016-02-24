@@ -34,7 +34,6 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 
 /***
  * Function to create index in a member, based on different arguments passed to it
- * @author bansods
  *
  */
 public class CreateIndexFunction extends FunctionAdapter implements

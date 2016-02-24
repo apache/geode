@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
  * 
  * Used in {@link CacheXml} to read and write cache xml configurations.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

@@ -18,7 +18,6 @@ package com.gemstone.gemfire.management.internal.cli.remote;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * 
  * @param <T>
  *          Type of ThreadLocal variable

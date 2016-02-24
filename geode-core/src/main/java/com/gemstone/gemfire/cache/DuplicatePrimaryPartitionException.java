@@ -23,7 +23,6 @@ import com.gemstone.gemfire.GemFireException;
  * partitions
  * 
  * @since 6.6
- * @author kbachhhav
  */
 public class DuplicatePrimaryPartitionException extends GemFireException {
 

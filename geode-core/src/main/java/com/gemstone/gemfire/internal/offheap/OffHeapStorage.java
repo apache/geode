@@ -36,8 +36,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Enables off-heap storage by creating a MemoryAllocator.
  * 
- * @author Darrel Schneider
- * @author Kirk Lund
  * @since 9.0
  */
 public class OffHeapStorage implements OffHeapMemoryStats {

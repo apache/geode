@@ -23,7 +23,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.Preproce
 /**
  * Parameter of a Command
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  */
 public abstract class Parameter {

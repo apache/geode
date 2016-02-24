@@ -79,7 +79,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * This test mimics hydratest/locators/cacheDS.conf in an attempt to reproduce
  * bug #45478. So far this test passes consistently.
  *
- * @author Kirk Lund
  * @since 7.0
  */
 @SuppressWarnings("serial")
@@ -612,7 +611,6 @@ public class StatisticsDUnitTest extends CacheTestCase {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   static class PubSubStats {
@@ -730,7 +728,6 @@ public class StatisticsDUnitTest extends CacheTestCase {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   static class UpdateListener extends CacheListenerAdapter<String, Number> {
@@ -748,7 +745,6 @@ public class StatisticsDUnitTest extends CacheTestCase {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   static class RegionMembershipListener extends RegionMembershipListenerAdapter<String, Number> {

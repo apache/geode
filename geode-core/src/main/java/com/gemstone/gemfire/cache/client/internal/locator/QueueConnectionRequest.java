@@ -29,8 +29,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
  * A request from a client to locator asking for a server
  * to host a queue. If the durable client Id is specified, the locator
  * will attempt to discover a pre-existing queue.
- * @author dsmith
- * @author gregp
  *
  */
 public class QueueConnectionRequest extends ServerLocationRequest {

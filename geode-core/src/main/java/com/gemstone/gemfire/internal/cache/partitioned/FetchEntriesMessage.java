@@ -448,7 +448,6 @@ public final class FetchEntriesMessage extends PartitionMessage
   /**
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.partitioned.GetMessage.GetReplyMessage}
-   * @author mthomas
    * @since 5.0
    */
   public static class FetchEntriesResponse extends ReplyProcessor21  {

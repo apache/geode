@@ -22,7 +22,6 @@ package com.gemstone.gemfire.management.membership;
  *
  * @see com.gemstone.gemfire.management.ManagementService#addMembershipListener
  *
- * @author rishim
  * @since 8.0
  */
 public interface MembershipListener {

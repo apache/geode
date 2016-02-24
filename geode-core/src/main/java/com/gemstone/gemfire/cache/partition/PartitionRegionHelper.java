@@ -69,8 +69,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  *  // ...
  * </pre>
  *
- * @author Mitch Thomas
- * @author Yogesh Mahajan
  * 
  * @since 6.0
  * @see FunctionService#onRegion(Region)

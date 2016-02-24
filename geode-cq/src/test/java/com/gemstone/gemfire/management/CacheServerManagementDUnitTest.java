@@ -61,7 +61,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Cache Server related management test cases
  * 
- * @author rishim
  * 
  */
 public class CacheServerManagementDUnitTest extends LocatorTestBase {
@@ -557,7 +556,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   /**
    * Notification handler
    * 
-   * @author rishim
    * 
    */
   private static class TestCacheServerNotif implements

@@ -115,12 +115,7 @@ import java.util.TreeMap;
  * correctness: <i>the fail-fast behavior of iterators should be used only to
  * detect bugs.</i>
  * 
- * @author Doug Lea
- * @author Josh Bloch
- * @author Arthur van Hoff
- * @author Neal Gafter
  * 
- * @author Shobhit Agarwal // GemFire Team
  * 
  * @version %I%, %G%
  * @see Object#hashCode()

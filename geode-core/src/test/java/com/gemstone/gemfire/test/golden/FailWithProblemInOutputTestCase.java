@@ -26,7 +26,6 @@ import com.gemstone.gemfire.test.process.ProcessWrapper;
  * Abstract test case for tests verifying that test output with a
  * log message of warning/error/severe will cause expected failures.
  * 
- * @author Kirk Lund
  */
 public abstract class FailWithProblemInOutputTestCase extends FailOutputTestCase {
 

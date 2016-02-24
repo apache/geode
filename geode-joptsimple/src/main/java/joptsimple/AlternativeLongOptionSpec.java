@@ -33,8 +33,6 @@ import static joptsimple.ParserRules.*;
 /**
  * Represents the <kbd>"-W"</kbd> form of long option specification.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @author Nikhil Jadhav
  */
 class AlternativeLongOptionSpec extends ArgumentAcceptingOptionSpec<String> {
     AlternativeLongOptionSpec() {

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.cache.query.internal.*;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager.TestHook;
 
 /**
- * @author vaibhav
  */
 public class IndexUtils  {
 

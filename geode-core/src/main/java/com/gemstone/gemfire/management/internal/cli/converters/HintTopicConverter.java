@@ -28,7 +28,6 @@ import com.gemstone.gemfire.management.internal.cli.CommandManager;
 
 /**
  * 
- * @author Abhishek Chaudhari 
  * @since 7.0
  */
 public class HintTopicConverter implements Converter<String> {

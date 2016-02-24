@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
  * Tests 8.1 schema based configuration. From this point all config test cases
  * should extend this test case where {@link #getUseSchema()} will return true.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

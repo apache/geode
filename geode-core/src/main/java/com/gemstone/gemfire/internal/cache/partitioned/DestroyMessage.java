@@ -69,8 +69,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * frequently, if they are not then it makes sense to fold the destroy and the
  * invalidate into the same message and use an extra bit to differentiate
  * 
- * @author mthomas
- * @author bruce
  * @since 5.0
  *  
  */

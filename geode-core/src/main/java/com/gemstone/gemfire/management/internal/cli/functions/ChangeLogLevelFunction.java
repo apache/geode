@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
  * 
  * Class for change log level function
  * 
- * @author apande
  * since 8.0 
  * 
  */

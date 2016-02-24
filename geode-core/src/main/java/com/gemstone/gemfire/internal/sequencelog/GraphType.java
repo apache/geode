@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.sequencelog;
 import java.util.EnumSet;
 
 /**
- * @author dsmith
  *
  */
 public enum GraphType {

@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * 
  * TODO: this is broken on Windows: see bug #52036
  * 
- * @author bansods
  */
 @Category(UnitTest.class)
 public class ZipUtilsJUnitTest {

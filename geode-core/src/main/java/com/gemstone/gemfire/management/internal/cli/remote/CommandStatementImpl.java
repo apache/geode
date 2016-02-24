@@ -26,7 +26,6 @@ import com.gemstone.gemfire.management.cli.Result;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

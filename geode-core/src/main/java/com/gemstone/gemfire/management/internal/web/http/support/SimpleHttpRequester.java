@@ -27,7 +27,6 @@ import org.springframework.web.client.RestTemplate;
  * The SimpleHttpRequester class is a Adapter/facade for the Spring RestTemplate class for abstracting HTTP requests
  * and operations.
  * <p/>
- * @author John Blum
  * @see org.springframework.http.client.SimpleClientHttpRequestFactory
  * @see org.springframework.web.client.RestTemplate
  * @since 8.0

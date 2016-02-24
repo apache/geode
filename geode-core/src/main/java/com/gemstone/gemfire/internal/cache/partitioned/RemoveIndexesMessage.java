@@ -50,7 +50,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * extends PartitionMessage
  * {@link com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage}
  * 
- * @author rdubey
  * 
  */
 public final class RemoveIndexesMessage extends PartitionMessage
@@ -333,7 +332,6 @@ public final class RemoveIndexesMessage extends PartitionMessage
    * information for successful or unsucessful remove index on the member of
    * the partitioned region.
    * 
-   * @author rdubey
    * 
    */
   public static class RemoveIndexesResponse extends PartitionResponse
@@ -411,7 +409,6 @@ public final class RemoveIndexesMessage extends PartitionMessage
   /**
    * Class representing remove index results on pr.
    * 
-   * @author rdubey
    */
   public static class RemoveIndexesResult
    {
@@ -438,7 +435,6 @@ public final class RemoveIndexesMessage extends PartitionMessage
   /**
    * Class for index creation reply. This class has the information about sucessful
    * or unsucessful index creation.
-   * @author rdubey
    *
    */
   public static final class RemoveIndexesReplyMessage extends ReplyMessage  {

@@ -190,8 +190,6 @@ import static joptsimple.ParserRules.*;
  *   (<kbd>"+"</kbd>)</li>
  * </ol>
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @author Nikhil Jadhav
  * @see <a href="http://www.gnu.org/software/libc/manual">The GNU C Library</a>
  */
 public class OptionParser {

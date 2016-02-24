@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 
 /***
  * Function to close a durable cq
- * @author bansods
  *
  */
 public class CloseDurableCqFunction extends FunctionAdapter implements

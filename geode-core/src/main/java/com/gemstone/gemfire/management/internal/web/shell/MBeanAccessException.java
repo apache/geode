@@ -20,7 +20,6 @@ package com.gemstone.gemfire.management.internal.web.shell;
  * The MBeanAccessException class is a RuntimeException indicating that an attempt to access an MBean attribute or
  * invocation of an MBean operation failed.
  * <p/>
- * @author John Blum
  * @see java.lang.RuntimeException
  * @since 8.0
  */

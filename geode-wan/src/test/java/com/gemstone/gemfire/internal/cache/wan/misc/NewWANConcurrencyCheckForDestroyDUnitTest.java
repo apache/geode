@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
- * @author shobhit
  *
  * Test verifies that version tag for destroyed entry is propagated back to
  * origin distributed system if the version tag is applied and replaces old

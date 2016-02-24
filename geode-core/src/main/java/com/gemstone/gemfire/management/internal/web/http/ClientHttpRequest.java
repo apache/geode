@@ -51,7 +51,6 @@ import org.springframework.web.util.UriTemplate;
  * org.springframework.http.client.ClientHttpRequest interface, which is often created by factory using a specific
  * HTTP client technology, like the Java HttpURLConnection or Apache's HTTP components, and so on.
  * <p/>
- * @author John Blum
  * @see java.net.URI
  * @see com.gemstone.gemfire.management.internal.web.http.HttpHeader
  * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod

@@ -58,7 +58,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
  * transaction manager is tested.
  * 
  * 
- * @author Prafulla Chaudhari
  *  
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

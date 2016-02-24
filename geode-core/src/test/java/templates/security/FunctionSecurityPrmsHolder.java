@@ -23,7 +23,6 @@ import java.util.HashSet;
  * This is a sample class for objects which hold information of the authorized
  * function names and authorized value for the optimizeForWrite.
  * 
- * @author Aneesh Karayil
  * @since 6.0
  */
 public class FunctionSecurityPrmsHolder {

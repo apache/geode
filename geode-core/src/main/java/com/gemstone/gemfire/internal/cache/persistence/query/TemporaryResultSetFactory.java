@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.cache.persistence.query.mock.SortedResultSe
  * 
  * The result sets will not be recovered when the member restarts.
  * Any temporary results still on disk when a member restarts will be deleted.
- * @author dsmith
  *
  */
 public class TemporaryResultSetFactory {

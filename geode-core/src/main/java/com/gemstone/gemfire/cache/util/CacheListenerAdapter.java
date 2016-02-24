@@ -29,7 +29,6 @@ import com.gemstone.gemfire.cache.RegionEvent;
  * <p>Subclasses declared in a Cache XML file, it must also implement {@link Declarable}
  * </p>
  * 
- * @author Eric Zoerner
  * 
  * @since 3.0
  */

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown if an exception is thrown when a method is invoked during query execution.
  *
- * @author      Eric Zoerner
  * @since 4.0
  */
 

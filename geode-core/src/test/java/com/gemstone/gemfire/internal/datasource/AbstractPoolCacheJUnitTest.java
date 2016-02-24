@@ -50,7 +50,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author tnegi
  */
 @Category(IntegrationTest.class)
 public class AbstractPoolCacheJUnitTest {
@@ -202,7 +201,6 @@ public class AbstractPoolCacheJUnitTest {
   /**
    * Tests if an XAresource obtained from an XAConnection which is already
    * closed , can return null or not.
-   * @author Asif 
    */
   @Test
   public void testEffectOfBlockingTimeoutOnXAConnection()

@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Test for Bug 44418.
  * 
- * @author darrel
  * @since 7.0
  */
 @Category(IntegrationTest.class)

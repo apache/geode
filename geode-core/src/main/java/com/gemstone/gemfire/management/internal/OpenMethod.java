@@ -28,7 +28,6 @@ import javax.management.openmbean.OpenType;
 /**
  * Each data type in corresponding to an Open type will have a
  * 
- * @author rishim
  * 
  */
 public class OpenMethod {

@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author dsmith
  *
  */
 public class EndpointManagerImpl implements EndpointManager {

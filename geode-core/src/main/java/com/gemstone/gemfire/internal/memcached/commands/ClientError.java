@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.memcached.commands;
  * when this exception is thrown "CLIENT_ERROR <error>\r\n"
  * is sent to the client 
  * 
- * @author Swapnil Bawaskar
  */
 public class ClientError extends RuntimeException {
   private static final long serialVersionUID = -2426928000696680541L;

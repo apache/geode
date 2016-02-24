@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  *
- * @author Eric Zoerner
  *
  */
 public class DistributionAdvisorDUnitTest extends DistributedTestCase {

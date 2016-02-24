@@ -38,7 +38,6 @@ import org.junit.experimental.categories.Category;
 
 /**
  * This test is to baseline and compare the performance figures for index usage benchmarks.
- * @author  prafulla
  */
 @Category(IntegrationTest.class)
 public class BaseLineAndCompareQueryPerfJUnitTest {

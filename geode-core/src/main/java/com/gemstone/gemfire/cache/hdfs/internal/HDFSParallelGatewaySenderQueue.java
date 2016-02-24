@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQue
 /**
  * Parallel Gateway Sender Queue extended for HDFS functionality 
  *
- * @author Hemant Bhanawat
  */
 public class HDFSParallelGatewaySenderQueue extends ParallelGatewaySenderQueue {
 
@@ -437,7 +436,6 @@ public class HDFSParallelGatewaySenderQueue extends ParallelGatewaySenderQueue {
    * other put threads and peek thread that would hamper the put latency. 
    * Peek thread cannot do it because if the event insert rate is too high
    * the list size can go way beyond what its size. 
-   * @author hemantb
    *
    */
   class RollSortedListsTimerTask extends SystemTimerTask {

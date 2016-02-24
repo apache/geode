@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.query.internal.QCompiler;
 
 /**
  * 
- * @author ashahid
  *
  */
 public class ASTAggregateFunc extends GemFireAST {

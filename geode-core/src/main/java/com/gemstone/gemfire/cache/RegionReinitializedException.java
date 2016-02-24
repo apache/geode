@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache;
  * A new reference must be acquired from the Cache the region's parent
  * region.
  *
- * @author Eric Zoerner
  *
  * @since 4.0
  */

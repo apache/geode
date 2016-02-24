@@ -63,7 +63,6 @@ import org.junit.experimental.categories.Category;
  * The DescribeDiskStoreFunctionJUnitTest test suite class tests the contract and functionality of the
  * DescribeDiskStoreFunction class.
  *
- * @author jblum
  * @see com.gemstone.gemfire.cache.DiskStore
  * @see com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails
  * @see com.gemstone.gemfire.management.internal.cli.functions.DescribeDiskStoreFunction

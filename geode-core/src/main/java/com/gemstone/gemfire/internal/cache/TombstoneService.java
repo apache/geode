@@ -57,7 +57,6 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
  * The cache holds a tombstone service that is responsible for tracking
  * and timing out tombstones.
  * 
- * @author bruce
  */
 public class TombstoneService  implements ResourceListener<MemoryEvent> {
   private static final Logger logger = LogService.getLogger();

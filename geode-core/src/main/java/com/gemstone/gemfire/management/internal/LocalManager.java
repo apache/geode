@@ -60,7 +60,6 @@ import com.gemstone.gemfire.management.ManagementException;
  * regions for MBean and notification federation.
  * 
  * 
- * @author rishim
  * 
  */
 
@@ -340,7 +339,6 @@ public class LocalManager extends Manager {
    * executor is guaranteed not to be reconfigurable to use additional threads.
    * 
    * 
-   * @author rishim
    * 
    */
 

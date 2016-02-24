@@ -27,7 +27,6 @@ import com.gemstone.gemfire.management.ManagementException;
  * Have made it a chain to support future filters
  * which should be evaluated locally before registering 
  * an MBean
- * @author rishim
  *
  */
 

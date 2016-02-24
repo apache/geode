@@ -47,7 +47,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * 
- * @author ashahid
  *
  */
 @Category(UnitTest.class)

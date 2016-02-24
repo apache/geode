@@ -56,8 +56,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Provides access to a remote gemfire VM for purposes of gathering statistics
  * and other info specific to that VM.
  *
- * @author Darrel Schneider
- * @author Kirk Lund
  */
 public abstract class RemoteGemFireVM implements GemFireVM {
 

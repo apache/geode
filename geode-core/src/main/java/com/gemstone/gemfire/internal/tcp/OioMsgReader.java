@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * A message reader which reads from the socket using
  * the old io.
- * @author dsmith
  *
  */
 public class OioMsgReader extends MsgReader {

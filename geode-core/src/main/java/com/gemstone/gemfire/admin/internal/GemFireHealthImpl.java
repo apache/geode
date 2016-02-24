@@ -33,7 +33,6 @@ import java.util.*;
  * GemFireHealthConfig}s to the remote member VM in which the health
  * is calcualted.
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

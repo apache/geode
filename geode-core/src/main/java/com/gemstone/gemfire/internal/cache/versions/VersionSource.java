@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
  * 
  * VersionMembers should implement equals and hashcode.
  * 
- * @author dsmith
  *
  */
 public interface VersionSource<T> extends DataSerializableFixedID, Comparable<T> {

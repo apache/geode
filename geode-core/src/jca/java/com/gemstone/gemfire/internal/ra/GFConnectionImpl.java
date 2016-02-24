@@ -25,7 +25,6 @@ import com.gemstone.gemfire.ra.GFConnection;
 
 /**
  * 
- * @author asif
  *
  */
 public class GFConnectionImpl implements GFConnection

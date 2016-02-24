@@ -29,7 +29,6 @@ import junit.framework.TestCase;
 
 /**
  * 
- * @author sbawaska
  */
 @Category(UnitTest.class)
 public class SemaphoreReadWriteLockJUnitTest extends TestCase {

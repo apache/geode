@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.util;
  * do with an event received from another distributed system that is going to overwrite
  * the current cache state.
  * @since 7.0
- * @author Bruce Schuchardt
  */
 public interface GatewayConflictHelper {
   /** disallow the event */

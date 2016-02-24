@@ -30,8 +30,6 @@ import java.util.Collection;
 /**
  * Thrown when asking an {@link OptionSet} for a single argument of an option when many have been specified.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @author Nikhil Jadhav
  */
 public class MultipleArgumentsForOptionException extends OptionException {
     private static final long serialVersionUID = -1L;

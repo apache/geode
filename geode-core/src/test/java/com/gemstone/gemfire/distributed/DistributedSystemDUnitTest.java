@@ -55,7 +55,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  * @see InternalDistributedSystemJUnitTest
  *
- * @author David Whitlock
  */
 public class DistributedSystemDUnitTest extends DistributedTestCase {
 

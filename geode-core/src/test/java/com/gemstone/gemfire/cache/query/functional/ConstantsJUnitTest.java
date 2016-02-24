@@ -42,7 +42,6 @@ import junit.framework.*;
 
 /**
  *
- * @author vaibhav
  */
 @Category(IntegrationTest.class)
 public class ConstantsJUnitTest {

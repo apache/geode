@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
 /**
  * The MissingPersistentIdResonse we return 662 peers. This response
  * includes this list of ids that we have locally.
- * @author dsmith
  *
  */
 public class MissingPersistentIDsResponse extends AdminResponse {

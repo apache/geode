@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
  * Note that it is imperative to send a new manager a postConnect message
  * after instantiation.
  * 
- * @author jpenney
  * 
  */
 public interface MembershipManager {

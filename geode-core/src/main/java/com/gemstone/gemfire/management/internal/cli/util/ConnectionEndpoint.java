@@ -21,7 +21,6 @@ package com.gemstone.gemfire.management.internal.cli.util;
 
 /**
  *  
- * @author abhishek
  *
  */
 public class ConnectionEndpoint {

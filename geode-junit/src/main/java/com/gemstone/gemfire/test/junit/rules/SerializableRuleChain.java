@@ -60,7 +60,6 @@ import org.junit.runners.model.Statement;
  * finished outer rule
  * </pre>
  *
- * @author Kirk Lund
  */
 @SuppressWarnings("serial")
 public class SerializableRuleChain implements SerializableTestRule {

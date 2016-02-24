@@ -104,7 +104,6 @@ import junit.framework.TestCase;
  *
  * </ul>
  *
- * @author Eric Zoerner
  *
  * @version Based on JSR166 TCK version 1.8
  */

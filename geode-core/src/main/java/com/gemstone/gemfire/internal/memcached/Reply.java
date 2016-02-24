@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.memcached;
 /**
  * Represents the reply messages sent to the client.
  * All reply types override toString to send "\r\n"
- * @author Swapnil Bawaskar
  */
 public enum Reply {
   

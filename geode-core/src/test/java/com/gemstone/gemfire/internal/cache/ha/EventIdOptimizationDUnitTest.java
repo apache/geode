@@ -62,7 +62,6 @@ import com.gemstone.gemfire.cache.client.internal.QueueStateImpl.SequenceIdAndEx
  * It is verified that client-2 recieves the same values for thread-id and
  * sequence-id.
  * 
- * @author Dinesh Patel
  * 
  */
 public class EventIdOptimizationDUnitTest extends DistributedTestCase

@@ -32,7 +32,6 @@ import templates.security.UsernamePrincipal;
  * user name and password allowing authentication depending on the format of the
  * user name.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class DummyAuthenticator implements Authenticator {

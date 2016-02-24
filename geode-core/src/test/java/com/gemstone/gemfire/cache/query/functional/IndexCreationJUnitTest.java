@@ -23,7 +23,6 @@
 
 
 /**
- * @author vikramj
  */
 package com.gemstone.gemfire.cache.query.functional;
 
@@ -504,7 +503,6 @@ public class IndexCreationJUnitTest{
      * Creation of index on a path derived from Region.Entry object obtained
      * via entrySet , fails as that function was not supported in the
      * QRegion & DummyQRegion
-     * @author Asif
      */
     @Test
   public void testBug36823() {
@@ -529,7 +527,6 @@ public class IndexCreationJUnitTest{
      * Creation of index on key path derived from Region.Entry object obtained
      * via keySet , fails as that function was not supported in the
      * QRegion & DummyQRegion
-     * @author Asif
      */
     @Test
   public void testBug36590() {
@@ -553,7 +550,6 @@ public class IndexCreationJUnitTest{
      * The Index maiantenance has a bug as it does not re-evaluate the 
      * index maintenance collection in the IMQEvaluator when an entry
      * gets modified & so the index resultset is messed up
-     * @author Asif
      */
     @Test
   public void testBug36591() {
@@ -579,7 +575,6 @@ public class IndexCreationJUnitTest{
      * Creation of index on a path derived from Region.Entry object obtained
      * via entrySet , fails as that function was not supported in the
      * QRegion & DummyQRegion
-     * @author Asif
      */
     @Test
   public void testBug43519() {
@@ -613,7 +608,6 @@ public class IndexCreationJUnitTest{
     /**
      * Test the Index maiantenance as it may use the method keys() of QRegion
      * instead of DummyQRegion while running an IndexMaintenanceQuery
-     * @author Asif
      */
     @Test
   public void testIMQFailureAsMethodKeysNAInDummyQRegion() {

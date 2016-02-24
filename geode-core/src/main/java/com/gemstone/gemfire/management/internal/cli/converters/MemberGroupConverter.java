@@ -30,7 +30,6 @@ import org.springframework.shell.core.MethodTarget;
 
 /**
  * 
- * @author Abhishek Chaudhari 
  * @since 7.0
  */
 public class MemberGroupConverter implements Converter<String> {

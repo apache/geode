@@ -32,7 +32,6 @@ import static java.lang.Character.*;
 /**
  * Can tell whether or not options are well-formed.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 final class ParserRules {
     static final char HYPHEN_CHAR = '-';

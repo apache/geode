@@ -54,7 +54,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * GfshParserJUnitTest - Includes tests to check the parsing and auto-completion
  * capabilities of {@link GfshParser}
  *
- * @author njadhav
  */
 @Category(UnitTest.class)
 public class GfshParserJUnitTest {

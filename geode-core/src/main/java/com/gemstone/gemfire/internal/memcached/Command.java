@@ -55,7 +55,6 @@ import com.gemstone.gemfire.internal.memcached.commands.VersionCommand;
 /**
  * Represents all commands a memcached client
  * can issue
- * @author Swapnil Bawaskar
  *
  */
 public enum Command {

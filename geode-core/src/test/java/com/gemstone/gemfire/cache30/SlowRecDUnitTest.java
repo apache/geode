@@ -51,7 +51,6 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 /**
  * Test to make sure slow receiver queuing is working
  *
- * @author darrel
  * @since 4.2.1
  */
 @Category(DistributedTest.class)

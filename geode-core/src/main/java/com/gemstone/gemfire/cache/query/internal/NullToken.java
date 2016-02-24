@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.Version;
 
 /**
  * A Token representing null.
- * @author Tejas Nomulwar
  * @since cedar
  *
  */

@@ -36,7 +36,6 @@ import com.gemstone.gemfire.pdx.WritablePdxInstance;
 import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 /**
  * Used to represent an enum value as a PdxInstance
- * @author darrel
  * @since 6.6.2
  */
 public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToBytes, ComparableEnum {

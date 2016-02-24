@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
- * @author gthombar This class tests regions created by xml files
  */
 public class PartitionedRegionCacheXMLExampleDUnitTest extends
 		PartitionedRegionDUnitTestCase {

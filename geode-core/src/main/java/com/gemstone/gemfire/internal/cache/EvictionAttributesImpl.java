@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
  * @see com.gemstone.gemfire.cache.RegionAttributes
  * @see com.gemstone.gemfire.cache.AttributesMutator
  * 
- * @author Mitch Thomas
  * @since 5.0
  */
 public final class EvictionAttributesImpl extends EvictionAttributes 

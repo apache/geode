@@ -67,7 +67,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * 
- * @author Asif
  */
 @Category(IntegrationTest.class)
 public class IndexMaintenanceJUnitTest
@@ -116,7 +115,6 @@ public class IndexMaintenanceJUnitTest
 
   /** 
    * Tests Index maintenance on heterogenous objects  
-   * @author Asif 
    */ 
   @Test
   public void testIndexMaintenanceWithHeterogenousObjects() { 
@@ -210,7 +208,6 @@ public class IndexMaintenanceJUnitTest
 
   /** 
    * Tests query on region containing heterogenous objects 
-   * @author Asif 
    */ 
   @Test
   public void testQueryOnHeterogenousObjects() { 
@@ -298,7 +295,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method Keys() as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodKeys() {
@@ -322,7 +318,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method asList() as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodAsList() {
@@ -345,7 +340,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method values() as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodValues() {
@@ -369,7 +363,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method getValues() as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodGetValues() {
@@ -393,7 +386,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method toArray() as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodtoArray() {
@@ -417,7 +409,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method asSet() as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodAsSet() {
@@ -440,7 +431,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method keySet() as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodKeySet() {
@@ -463,7 +453,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method getKeys() as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodGetKeys() {
@@ -486,7 +475,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method entrySet() as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodEntrySet() {
@@ -509,7 +497,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method entries(boolean ) as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodEntries() {
@@ -532,7 +519,6 @@ public class IndexMaintenanceJUnitTest
   /**
    * Tests Index maintenance on method getEntries( ) as iterator ( with focus on
    * behaviour if not implemented in DummyQRegion 
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodGetEntries() {
@@ -1230,7 +1216,6 @@ public class IndexMaintenanceJUnitTest
    
   /**
    * Tests Index maintenance on  data loaded via cache loader
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceOnCacheLoadedData() {
@@ -1274,7 +1259,6 @@ public class IndexMaintenanceJUnitTest
   
   /**
    * Tests Index maintenance on  data loaded via cache loader
-   * @author Asif
    */
   @Test
   public void testIndexMaintenanceOnPutAll() {

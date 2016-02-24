@@ -30,8 +30,6 @@ import static java.util.Collections.*;
 /**
  * Thrown when the option parser is asked to recognize an option with illegal characters in it.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @author Nikhil Jadhav
  */
 public class IllegalOptionSpecificationException extends OptionException {
     private static final long serialVersionUID = -1L;

@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
  * The EvictionAttributesMutator allows changes to be made to a 
  * {@link com.gemstone.gemfire.cache.EvictionAttributes}. It is returned
  * by {@link com.gemstone.gemfire.cache.AttributesMutator#getEvictionAttributesMutator()}
- * @author Mitch Thomas
  * @since 5.0
  */
 public interface EvictionAttributesMutator

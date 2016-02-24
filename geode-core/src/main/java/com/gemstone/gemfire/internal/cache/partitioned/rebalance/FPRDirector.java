@@ -26,7 +26,6 @@ package com.gemstone.gemfire.internal.cache.partitioned.rebalance;
  *  Note that unlike other directors, this director performs all the work in
  *  a call to nextStep.
  *  
- * @author dsmith
  *
  */
 public class FPRDirector extends RebalanceDirectorAdapter {

@@ -23,7 +23,6 @@ import java.io.Serializable;
  * The Identifiable interface defines a contract for classes whose Object instances can be uniquely identified relative
  * to other Object instances within the same class type hierarchy.
  * <p/>
- * @author John Blum
  * @param <T> the class type of the identifier.
  * @see java.lang.Comparable
  * @since 7.0

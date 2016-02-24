@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.offheap.Releasable;
  * time than the specified period then another iteration is scheduled
  * immediately.
  * 
- * @author skumar
  * 
  */
 

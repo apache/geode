@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.util;
  * The SunAPINotFoundException class is a RuntimeException indicating that the Sun API classes and components could
  * not be found, which is most likely the case when we are not running a Sun JVM (like HotSpot).
  * </p>
- * @author John Blum
  * @see java.lang.RuntimeException
  * @since 7.0
  */

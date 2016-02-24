@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.*;
 /**
  * subclass of UpdatePropagationDUnitTest to exercise partitioned regions
  *
- * @author Bruce Schuchardt
  */
 public class UpdatePropagationPRDUnitTest extends UpdatePropagationDUnitTest {
 

@@ -53,7 +53,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  *   // recipient became primary for the bucket
  * }
  * 
- * @author Kirk Lund
  */
 public class BecomePrimaryBucketMessage extends PartitionMessage {
 

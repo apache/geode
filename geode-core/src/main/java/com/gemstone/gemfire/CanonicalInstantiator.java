@@ -33,7 +33,6 @@ import java.io.*;
  * Note that {@link DataSerializer#fromData} is always called on the instance
  * returned from <code>newInstance(DataInput)</code>.
  *
- * @author darrel
  * @since 5.1
  */
 public abstract class CanonicalInstantiator extends Instantiator {

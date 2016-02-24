@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  *
- * @author Eric Zoerner
  *
  */
 public abstract class DebuggerSupport  {

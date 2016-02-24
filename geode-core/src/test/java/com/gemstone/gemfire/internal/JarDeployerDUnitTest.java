@@ -53,7 +53,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Unit tests for the JarDeployer class
  * 
- * @author David Hoots
  * @since 7.0
  */
 public class JarDeployerDUnitTest extends CacheTestCase {

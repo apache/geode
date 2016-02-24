@@ -27,7 +27,6 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
  * Extends Logger interface with convenience methods for the FINEST, FINER,
  * FINE, CONFIG, INFO, WARNING, ERROR and SEVERE custom log levels.
  * 
- * @author Kirk Lund
  */
 public interface GemFireLogger extends Logger {
 

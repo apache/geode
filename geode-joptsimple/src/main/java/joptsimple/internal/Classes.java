@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public final class Classes {
     private static final Map<Class<?>, Class<?>> WRAPPERS = new HashMap<Class<?>, Class<?>>( 13 );

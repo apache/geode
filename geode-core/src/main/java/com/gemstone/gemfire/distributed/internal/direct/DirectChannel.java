@@ -70,8 +70,6 @@ import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.internal.util.concurrent.ReentrantSemaphore;
 
 /**
- * @author Bruce Schuchardt
- * @author Darrel Schneider
  * DirectChannel is used to interact directly with other Direct servers to
  * distribute GemFire messages to other nodes.  It is held by a
  * com.gemstone.gemfire.internal.cache.distribution.DistributionChannel,

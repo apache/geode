@@ -26,7 +26,6 @@
 package joptsimple.internal;
 
 /**
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 class ColumnWidthCalculator {
     int calculate( int totalWidth, int numberOfColumns ) {

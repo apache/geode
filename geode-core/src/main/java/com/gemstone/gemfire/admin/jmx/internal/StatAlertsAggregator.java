@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
  * <li> Aggregate stats & make available for clients thro' JMXAgent
  * </ol>
  * 
- * @author abhishek
  */
 public interface StatAlertsAggregator {
 

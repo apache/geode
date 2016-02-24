@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Tests PartitionedRegion localMaxMemory with Off-Heap memory.
  * 
- * @author Kirk Lund
  * @since 9.0
  */
 @SuppressWarnings({ "deprecation", "serial" })

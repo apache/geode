@@ -40,7 +40,6 @@ import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfi
 
 /********
  * 
- * @author bansods
  *
  */
 

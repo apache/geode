@@ -26,7 +26,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 
 /**
  * Holds the results of a persistent state query
- * @author dsmith
  *
  */
 class PersistentStateQueryResults {

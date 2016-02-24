@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.wan.serial.SerialGatewaySenderOperati
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author skumar
  *
  */
 public class ConcurrentSerialGatewaySenderOperationsDUnitTest  extends SerialGatewaySenderOperationsDUnitTest {

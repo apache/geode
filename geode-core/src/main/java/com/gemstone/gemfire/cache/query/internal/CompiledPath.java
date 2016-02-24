@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * Represents an identifier that follows a dot operator.
  *
  * @version     $Revision: 1.1 $
- * @author      ericz
  */
 
 

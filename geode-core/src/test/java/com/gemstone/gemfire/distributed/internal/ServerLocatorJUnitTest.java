@@ -34,7 +34,6 @@ import org.junit.experimental.categories.Category;
  * The ServerLocatorJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * ServerLocator class.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.distributed.internal.ServerLocator
  * @see org.junit.Assert
  * @see org.junit.Test

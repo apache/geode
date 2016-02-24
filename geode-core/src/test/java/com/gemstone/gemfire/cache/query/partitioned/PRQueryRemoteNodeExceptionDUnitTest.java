@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * This test verifies exception handling on coordinator node for remote as
  * well as local querying.
- * @author shobhit
  *
  */
 public class PRQueryRemoteNodeExceptionDUnitTest extends PartitionedRegionDUnitTestCase {

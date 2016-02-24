@@ -45,7 +45,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * the max time. 
  * 
  * @since 6.0
- * @author agingade
  */
 public class QueryMonitor implements Runnable {
   private static final Logger logger = LogService.getLogger();
@@ -306,7 +305,6 @@ public class QueryMonitor implements Runnable {
 
   /**
    * Query Monitoring task, placed in the queue.
-   * @author agingade
    *
    */
   private class QueryThreadTask {

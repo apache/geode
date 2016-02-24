@@ -49,7 +49,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * The initial image target sends FlowControlPermitMessage to the image provider after
  * each processed chunk. Upon receiving the FlowControlPermit message, the provider
  * will increase the number of permits available.
- * @author dsmith
  *
  */
 public class InitialImageFlowControl implements MembershipListener {

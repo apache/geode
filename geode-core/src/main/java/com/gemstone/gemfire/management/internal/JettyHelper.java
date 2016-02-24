@@ -38,8 +38,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author jdeppe
- * @author jblum
  * @since 8.1
  */
 @SuppressWarnings("unused")

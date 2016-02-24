@@ -1536,7 +1536,6 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
 
   /**
    * This class can be serialized but its deserialization will always fail
-   * @author darrel
    *
    */
   private static class UnDeserializable implements DataSerializable {

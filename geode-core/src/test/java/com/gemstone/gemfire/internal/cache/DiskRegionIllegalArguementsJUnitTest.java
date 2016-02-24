@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * creation of the DWA object should throw a relevant exception if the
  * arguements specified are incorrect.
  * 
- * @author mbid
  *  
  */
 @Category(IntegrationTest.class)

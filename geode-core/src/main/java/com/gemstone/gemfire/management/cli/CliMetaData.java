@@ -27,7 +27,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 /**
  * An annotation to define additional meta-data for commands.
  *
- * @author Abhishek Chaudhari
  *
  * @since 7.0
  */
@@ -72,7 +71,6 @@ public @interface CliMetaData {
 
   // TODO - Abhishek - refactor to group this
 //  /**
-//   * @author Abhishek Chaudhari
 //   *
 //   * @since 8.0
 //   */
@@ -88,7 +86,6 @@ public @interface CliMetaData {
   /**
    * An annotation to define additional meta-data for availability of commands.
    * 
-   * @author Abhishek Chaudhari
    *
    * @since 8.0
    */

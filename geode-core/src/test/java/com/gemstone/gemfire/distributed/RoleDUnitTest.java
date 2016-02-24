@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Tests the functionality of the {@link DistributedMember} class.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public class RoleDUnitTest extends DistributedTestCase {

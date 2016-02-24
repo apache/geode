@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link AbstractXmlParser}.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

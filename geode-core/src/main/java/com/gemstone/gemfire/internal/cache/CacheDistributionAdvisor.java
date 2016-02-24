@@ -58,7 +58,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * Adds bookkeeping info and cache-specific behavior to DistributionAdvisor.
  * Adds bit-encoded flags in addition to object info.
- * @author Eric Zoerner
  *
  */
 @SuppressWarnings("deprecation")

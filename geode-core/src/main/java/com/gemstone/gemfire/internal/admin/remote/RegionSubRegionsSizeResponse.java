@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Admin response carrying region info for a member
  * 
- * @author Harsh Khanna
  */
 public class RegionSubRegionsSizeResponse extends AdminResponse implements
     Cancellable {

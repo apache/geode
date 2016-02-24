@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * TXStateStub lives on the accessor node when we are remoting
  * a transaction. It is a stub for {@link TXState}. 
  * 
- * @author gregp, sbawaska
  *
  */
 public abstract class TXStateStub implements TXStateInterface {

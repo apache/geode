@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.util.IOUtils;
 /**
  * Utility operations for processes such as identifying the process id (pid).
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public final class ProcessUtils {

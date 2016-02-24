@@ -43,7 +43,6 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 /**
  * Mock Extension gfsh commands.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

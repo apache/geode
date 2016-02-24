@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache.query.data;
 import java.util.Set;
 
 /**
- * @author vikramj
  */
 public class Manager extends Employee {
 

@@ -35,7 +35,6 @@ import static joptsimple.internal.Reflection.*;
 
 /**
  * @param <V> constraint on the type of values being converted to
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 class MethodInvokingValueConverter<V> implements ValueConverter<V> {
     private final Method method;

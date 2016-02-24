@@ -32,7 +32,6 @@ import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
 /**
  * Bridge class to act as an interface between JMX layer and GemFire DiskStores
  * 
- * @author rishim
  * 
  */
 public class DiskStoreMBeanBridge {

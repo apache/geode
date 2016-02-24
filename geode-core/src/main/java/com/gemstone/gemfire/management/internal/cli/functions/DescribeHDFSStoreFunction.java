@@ -35,7 +35,6 @@ import com.gemstone.gemfire.management.internal.cli.util.HDFSStoreNotFoundExcept
  *  Function used by the 'describe hdfs-store' gfsh command to collect information
  * and details about a particular hdfs store for a particular GemFire distributed system member.
  * 
- * @author Namrata Thanvi
  */
 public class DescribeHDFSStoreFunction extends FunctionAdapter implements InternalEntity {
   private static final long serialVersionUID = 1L;

@@ -64,8 +64,6 @@ import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
 /**
  * Implements the distributed locking service with distributed lock grantors.
  *
- * @author Dave Monnie
- * @author Kirk Lund
  */
 public class DLockService extends DistributedLockService {
   

@@ -53,7 +53,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  *   // bucket was moved
  * }
  * 
- * @author Kirk Lund
  */
 public class MoveBucketMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();

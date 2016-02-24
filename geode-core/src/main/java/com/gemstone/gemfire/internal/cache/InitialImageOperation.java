@@ -104,7 +104,6 @@ import com.gemstone.gemfire.internal.util.ObjectIntProcedure;
 /**
  * Handles requests for an initial image from a cache peer
  * 
- * @author Eric Zoerner
  */
 public class InitialImageOperation  {
   private static final Logger logger = LogService.getLogger();
@@ -2409,7 +2408,6 @@ public class InitialImageOperation  {
   /** 
    * RVVReplyMessage transmits the GII provider's RVV to requester 
    *  
-   * @author Gester 
    */ 
   public static class RVVReplyMessage extends ReplyMessage { 
      
@@ -3392,7 +3390,6 @@ public class InitialImageOperation  {
    * information so that a cache receiving an initial image will know what 
    * events that image represents. 
    *  
-   * @author bruce 
    */ 
   public static class RegionStateMessage extends ReplyMessage { 
      

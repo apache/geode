@@ -59,7 +59,6 @@ import com.gemstone.gemfire.management.RegionMXBean;
 /**
  * Utility class to interact with the JMX server
  * 
- * @author rishim
  * 
  */
 public class MBeanJMXAdapter implements ManagementConstants {

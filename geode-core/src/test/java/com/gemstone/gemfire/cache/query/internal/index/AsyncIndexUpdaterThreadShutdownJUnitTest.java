@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * close {@link IndexUpdaterThread} is shutdown for each region
  * (Replicated/Bucket).
  * 
- * @author shobhit
  * 
  */
 @Category(IntegrationTest.class)

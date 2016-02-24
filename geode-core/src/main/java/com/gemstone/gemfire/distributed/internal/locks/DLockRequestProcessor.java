@@ -54,7 +54,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * When the lock grantor grants or times out the request, a
  * <code>DLockResponseMessage</code> is finally sent back to the waiting client.
  *
- * @author Kirk Lund
  */
 public class DLockRequestProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();

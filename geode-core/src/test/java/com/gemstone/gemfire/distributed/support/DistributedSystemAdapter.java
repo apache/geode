@@ -35,7 +35,6 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
  * The DistributedSystemAdapter class is an adapter extending DistributedSystem to provide default behavior for the
  * abstract methods when testing.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.distributed.DistributedSystem
  * @since 8.0
  */

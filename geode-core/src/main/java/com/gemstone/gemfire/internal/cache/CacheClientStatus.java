@@ -25,7 +25,6 @@ import java.util.List;
  * Class <code>CacheClientStatus</code> provides status about a client
  * from the server's perspective. This class is used by the monitoring tool.
  *
- * @author Barry Oglesby
  *
  * @since 4.3
  */

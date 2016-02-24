@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.DiskStore;
  * MBean that provides access to information and management functionality for a
  * {@link DiskStore}.
  * 
- * @author rishim
  * @since 7.0
  * 
  */

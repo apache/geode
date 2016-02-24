@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * Iterates over the records in part of a hoplog. This iterator
  * is passed from the map reduce job into the gemfirexd LanguageConnectionContext
  * for gemfirexd to use as the iterator during the map phase.
- * @author dsmith
  *
  */
 public abstract class HDFSSplitIterator {

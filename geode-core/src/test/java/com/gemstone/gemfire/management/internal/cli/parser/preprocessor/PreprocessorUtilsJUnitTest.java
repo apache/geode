@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Includes tests for all utility methods in {@link PreprocessorUtils}
  * 
- * @author njadhav
  * 
  */
 @Category(UnitTest.class)

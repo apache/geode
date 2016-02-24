@@ -35,7 +35,6 @@ import org.apache.commons.io.IOUtils;
 
 /****
  * Utilities class to zip/unzip folder
- * @author bansods
  *
  */
 public class ZipUtils {

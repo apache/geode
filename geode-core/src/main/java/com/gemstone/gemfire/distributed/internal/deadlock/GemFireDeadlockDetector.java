@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
  * {@link DeadlockDetector} class to determine if any deadlocks exist within
  * those dependencies.
  * 
- * @author dsmith
  * 
  */
 public class GemFireDeadlockDetector {

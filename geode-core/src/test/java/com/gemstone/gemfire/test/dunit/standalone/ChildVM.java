@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher.MasterRemote;
 
 /**
- * @author dsmith
  *
  */
 public class ChildVM {

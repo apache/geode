@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache;
  * after multiple attempts.
  *
  * @since 5.1
- * @author Mitch Thomas
  */
 public class PartitionedRegionDistributionException extends
    CacheRuntimeException

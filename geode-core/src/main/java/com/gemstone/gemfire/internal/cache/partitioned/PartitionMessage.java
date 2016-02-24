@@ -71,8 +71,6 @@ import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
  * The base PartitionedRegion message type upon which other messages should be
  * based.
  * 
- * @author mthomas
- * @author bruce
  * @since 5.0
  */
 public abstract class PartitionMessage extends DistributionMessage implements 
@@ -702,7 +700,6 @@ public abstract class PartitionMessage extends DistributionMessage implements
    * recipient, capturing any CacheException thrown by the recipient and handle
    * it as an expected exception.
    * 
-   * @author Mitch Thomas
    * @since 5.0
    * @see #waitForCacheException()
    */

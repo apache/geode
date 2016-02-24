@@ -27,7 +27,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 /**
  * Annotation for Argument of a Command
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  */
 @Retention(RetentionPolicy.RUNTIME)

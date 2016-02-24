@@ -30,8 +30,6 @@ import java.util.Collection;
 /**
  * Thrown when an option is marked as required, but not specified on the command line.
  *
- * @author <a href="https://github.com/TC1">Emils Solmanis</a>
- * @author Nikhil Jadhav
  */
 public class MissingRequiredOptionException extends OptionException {
     private static final long serialVersionUID = -1L;

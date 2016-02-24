@@ -39,7 +39,6 @@ import junit.framework.Assert;
  * This class tests the response of GemFire to various
  * occurrences of {@link VirtualMachineError}
  * 
- * @author jpenney
  * @since 5.1
  */
 public class SystemFailureDUnitTest extends DistributedCacheTestCase {
@@ -254,7 +253,6 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   /**
    * This class can never be successfully loaded.
    * 
-   * @author jpenney
    */
   static class SickoClass {
     static private boolean threeCardMonte() {

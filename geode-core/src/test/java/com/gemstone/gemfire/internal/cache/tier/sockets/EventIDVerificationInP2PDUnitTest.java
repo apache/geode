@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * operation. In case of NO-ACK EventIDs should be different.Currently this test
  * is commented because of a bug.
  * 
- * @author Suyog Bhokare
  * 
  */
 

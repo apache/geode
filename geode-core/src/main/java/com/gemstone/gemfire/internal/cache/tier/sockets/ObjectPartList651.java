@@ -32,7 +32,6 @@ import java.util.ArrayList;
  * 
  * [bruce] THIS CLASS IS OBSOLETE AS OF V7.0.  It is replaced with VersionedObjectList
  *  
- * @author Suranjan Kumar
  *
  */
 public class ObjectPartList651 extends ObjectPartList {

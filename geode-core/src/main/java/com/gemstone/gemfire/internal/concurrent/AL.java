@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.concurrent;
  * the JDK 5 version java.util.concurrent.atomic.AtomicLong.
  * Note that unlike AtomicLong this interface does not support
  * <code>java.lang.Number</code>.
- * @author darrel
  * @deprecated used AtomicLong instead
  */
 public interface AL {

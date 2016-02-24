@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
 /**
  * Interface used for objects wishing to extend and {@link Extensible} object.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

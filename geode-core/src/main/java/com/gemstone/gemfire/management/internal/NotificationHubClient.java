@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * This class actually distribute the notification with the help of the actual
  * broadcaster proxy.
  * 
- * @author rishim
  * 
  */
 

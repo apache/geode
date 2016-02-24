@@ -21,7 +21,6 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

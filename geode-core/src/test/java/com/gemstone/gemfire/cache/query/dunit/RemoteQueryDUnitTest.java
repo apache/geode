@@ -57,8 +57,6 @@ import cacheRunner.Position;
 /**
  * Tests remote (client/server) query execution.
  *
- * @author Barry Oglesby
- * @author Asif
  * @since 5.0.1
  */
 public class RemoteQueryDUnitTest extends CacheTestCase {

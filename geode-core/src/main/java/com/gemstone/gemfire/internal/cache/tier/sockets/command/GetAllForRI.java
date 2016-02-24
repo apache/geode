@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.SerializedObjectPartList
  * [bruce] this class is superceded by GetAll70, which merges GetAll651 and
  * GetAllForRI
  * 
- * @author dsmith
  * 
  */
 public class GetAllForRI extends GetAll651 {

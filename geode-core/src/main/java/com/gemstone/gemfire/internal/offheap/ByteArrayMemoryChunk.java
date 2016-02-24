@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.offheap;
  * The read and write methods on this implementation will throw ArrayIndexOutOfBoundsException
  * if the offset extends past the end of the underlying array of if an attempt is made to read or write past the end of the array.
  * 
- * @author darrel
  * @since 9.0
  */
 public class ByteArrayMemoryChunk implements MemoryChunk {

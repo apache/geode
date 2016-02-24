@@ -30,8 +30,6 @@ import java.util.Collection;
 /**
  * Thrown when a problem occurs converting an argument of an option from {@link String} to another type.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @author Nikhil Jadhav
  */
 public class OptionArgumentConversionException extends OptionException {
     private static final long serialVersionUID = -1L;

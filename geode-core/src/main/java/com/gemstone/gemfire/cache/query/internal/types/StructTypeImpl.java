@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of StructType
- * @author Eric Zoerner
  * @since 4.0
  */
 public final class StructTypeImpl extends ObjectTypeImpl implements StructType {

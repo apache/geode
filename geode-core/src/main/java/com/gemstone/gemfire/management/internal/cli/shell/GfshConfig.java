@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.util.IOUtils;
 
 /**
  *
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 // According to 8.0 discussions, gfsh should have as less confing as possible

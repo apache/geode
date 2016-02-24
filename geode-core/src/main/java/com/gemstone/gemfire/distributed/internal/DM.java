@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.Version;
  * This interface defines the services provided  by any class that
  * is a distribution manager.
  *
- * @author Darrel Schneider
  *
  *
  */

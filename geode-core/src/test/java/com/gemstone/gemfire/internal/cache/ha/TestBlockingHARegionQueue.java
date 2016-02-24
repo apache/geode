@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Test class for Blocking HA region queue functionalities
  *  
  * 
- * @author Suyog Bhokare
  * 
  */
 

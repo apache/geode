@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing server count details from MBean
- * @author ajayp
  * 
  */
 

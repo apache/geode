@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author ashetkar
  *
  */
 @SuppressWarnings("serial")

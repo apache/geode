@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.support.IgnoreConditionEvaluationExceptio
 /**
  * The ConditionalIgnoreRule class...
  *
- * @author John Blum
  * @see org.junit.rules.TestRule
  * @see org.junit.runner.Description
  * @see org.junit.runners.model.Statement

@@ -64,7 +64,6 @@ package com.gemstone.gemfire.cache.server;
  * 
  * 
  * @since 5.7
- * @author aingle
  */
 
 public interface ClientSubscriptionConfig {

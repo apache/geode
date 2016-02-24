@@ -29,7 +29,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * @author Kirk Lund
  * @since 8.0
  */
 @Category(UnitTest.class)

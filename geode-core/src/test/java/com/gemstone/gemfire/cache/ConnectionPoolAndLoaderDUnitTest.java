@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * This tests cases where we have both 
  * a connection pool and a bridge loader.
- * @author dsmith
  *
  */
 public class ConnectionPoolAndLoaderDUnitTest  extends CacheTestCase {

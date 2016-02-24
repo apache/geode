@@ -79,7 +79,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /** TXCommitMessage is the message that contains all the information
  * that needs to be distributed, on commit, to other cache members.
  *
- * @author Darrel Schneider
  * @since 4.0
  * 
  */
@@ -2225,7 +2224,6 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
   /**
    * Reply processor which collects all CommitReplyExceptions and emits
    * a detailed failure exception if problems occur
-   * @author Mitch Thomas
    * @since 5.7
    */
   private class CommitReplyProcessor extends ReliableReplyProcessor21 {
@@ -2291,7 +2289,6 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
 
   /**
    * An Exception that collects many remote CommitExceptions
-   * @author Mitch Thomas
    * @since 5.7
    */
   public static class CommitExceptionCollectingException extends ReplyException {

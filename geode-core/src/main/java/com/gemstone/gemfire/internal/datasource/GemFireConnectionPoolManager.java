@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.datasource;
 
 /**
- * @author tnegi
  */
 import java.io.Serializable;
 import javax.sql.*;
@@ -26,7 +25,6 @@ import javax.sql.*;
  * GemFireConnectionPoolManager implements ConnectionProvider interface for
  * managing the the conection pools(with and wothout transactions).
  * 
- * @author tnegi
  */
 public class GemFireConnectionPoolManager implements ConnectionProvider,
     Serializable {

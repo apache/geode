@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.process;
 /**
  * A MBeanInvocationFailedException is thrown if invocation of the mbean failed.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public final class MBeanInvocationFailedException extends Exception {

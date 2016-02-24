@@ -29,7 +29,6 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
  * This is the second part of the test which had become long enough to
  * occasionally go beyond the 10min limit.
  * 
- * @author sumedh
  * @since 5.5
  */
 public class ClientAuthorizationTwoDUnitTest extends

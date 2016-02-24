@@ -27,8 +27,6 @@ import com.gemstone.gemfire.cache.LowMemoryException;
  * take place.
  * <p>This interface is implemented by GemFire. To obtain an instance of it use {@link FunctionService}.
  * 
- * @author Yogesh Mahajan
- * @author Mitch Thomas
  * 
  * @since 6.0
  * 

@@ -23,7 +23,6 @@ package com.gemstone.gemfire.distributed.internal;
     Instances/subclasses must provide the run() method to complete the
     Runnable interface.<p>
     
-    @author Bruce Schuchardt
     @since 5.0
  */
 

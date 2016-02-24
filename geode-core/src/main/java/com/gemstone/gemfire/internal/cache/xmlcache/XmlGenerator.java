@@ -24,7 +24,6 @@ import org.xml.sax.SAXException;
  * to generate entities defined in the XML Namespace returned by
  * {@link #getNamspaceUri()} .
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

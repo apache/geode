@@ -23,7 +23,6 @@ import java.io.IOException;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 /**
  * 
- * @author ymahajan
  *
  */
 

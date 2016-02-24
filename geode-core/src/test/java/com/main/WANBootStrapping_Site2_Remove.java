@@ -29,7 +29,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
  * is removed from site 1's locator and at the same time
  * MyDistributedSystemListener's removeDistributedSystem is invoked on site 1's locator which will stop the GatewaySender
  * 
- * @author kbachhav
  * 
  */
 

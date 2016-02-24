@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * each participant if it's ok to release the leases. Upon receipt of all
  * replies the lease will be automatically released.
  *
- * @author Kirk Lund
  */
 public class TXLessorDepartureHandler
 implements DLockLessorDepartureHandler {

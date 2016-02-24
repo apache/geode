@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessage;
  * A message that can reply directly to the sender
  * 
  * 
- * @author dsmith
  *
  */
 public interface DirectReplyMessage {

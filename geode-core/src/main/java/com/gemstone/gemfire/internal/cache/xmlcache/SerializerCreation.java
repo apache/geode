@@ -33,7 +33,6 @@ import java.util.HashMap;
 import org.apache.logging.log4j.Logger;
 
 /**
- * @author shaley
  *
  */
 public class SerializerCreation {

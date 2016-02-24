@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.io;
 import java.io.PrintStream;
 
 /**
- * @author Kirk Lund
  * @since 7.0
  */
 public class TeePrintStream extends PrintStream {

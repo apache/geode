@@ -36,7 +36,6 @@ import java.util.Properties;
 /**
  * Unit tests for configuring user commands.
  *
- * @author David Hoots
  * @since 8.0
  */
 public class UserCommandsDUnitTest extends CliCommandTestBase {

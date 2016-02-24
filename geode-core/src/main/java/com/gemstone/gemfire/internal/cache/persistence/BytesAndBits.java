@@ -21,7 +21,6 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * Used to fetch a record's raw bytes and user bits.
  *
- * @author Darrel Schneider
  * @since prPersistSprint1
  */
 public class BytesAndBits {

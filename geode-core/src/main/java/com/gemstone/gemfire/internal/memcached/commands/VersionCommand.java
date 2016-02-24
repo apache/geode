@@ -26,7 +26,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
 /**
  * Sends current version of gemcached server to the client
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class VersionCommand extends AbstractCommand {

@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.ClassPathLoader;
 /**
  * Default behavior for EntityResolver2 implementations.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

@@ -55,7 +55,6 @@ import com.gemstone.gemfire.pdx.internal.PdxUnreadData;
  * @see com.gemstone.gemfire.cache.Cache#setCopyOnRead
  * @see com.gemstone.gemfire.cache.CacheTransactionManager
  *
- * @author Mitch Thomas
  * @since 4.0
  */
 

@@ -44,7 +44,6 @@ import org.json.JSONObject;
  * This class contains utility methods for JSON (http://www.json.org/) which is 
  * used by classes used for the Command Line Interface (CLI).
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

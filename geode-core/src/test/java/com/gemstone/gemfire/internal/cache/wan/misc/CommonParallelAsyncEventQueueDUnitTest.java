@@ -21,7 +21,6 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 /**
- * @author skumar
  *
  */
 public class CommonParallelAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {

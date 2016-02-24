@@ -30,7 +30,6 @@ import java.util.*;
  * {@link MembershipAttributes#getRequiredRoles required roles} are provided
  *  in each RegionDistributionException.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public class CommitDistributionException extends TransactionException {

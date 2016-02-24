@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Provides an implementation for cache snapshots.  Most of the implementation
  * delegates to {@link RegionSnapshotService}.
  * 
- * @author bakera
  */
 public class CacheSnapshotServiceImpl implements CacheSnapshotService {
   /** the cache */

@@ -23,7 +23,6 @@ import java.util.Map;
 /**
  * Stores the result after parsing
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  *
  */

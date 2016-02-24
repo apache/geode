@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * This test does a put with the bad to data from an accessor
  * to see if it will keep trying to resend the put to the data store
  * 
- * @author darrel
  * 
  */
 public class PRBadToDataDUnitTest extends CacheTestCase {

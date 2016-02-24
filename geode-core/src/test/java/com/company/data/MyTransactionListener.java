@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.*;
 /**
  * A <code>TransactionListener</code> that is <code>Declarable</code>
  *
- * @author Mitch Thomas
  * @since 4.0
  */
 public class MyTransactionListener implements TransactionListener, Declarable {

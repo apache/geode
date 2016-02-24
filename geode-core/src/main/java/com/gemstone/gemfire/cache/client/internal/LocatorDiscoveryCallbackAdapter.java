@@ -20,7 +20,6 @@ import java.util.List;
 
 /**
  * A locator discovery callback that does nothing.
- * @author dsmith
  * @since 5.7
  *
  */

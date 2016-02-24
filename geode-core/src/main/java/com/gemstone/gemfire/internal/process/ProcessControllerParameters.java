@@ -23,7 +23,6 @@ package com.gemstone.gemfire.internal.process;
  * implement <code>ProcessControllerArguments</code> would typically be in a different
  * package.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 public interface ProcessControllerParameters extends FileControllerParameters, MBeanControllerParameters {

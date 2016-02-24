@@ -33,7 +33,6 @@ import org.junit.rules.TestName;
 /**
  * Contains simple tests for the {@link CacheHealthEvaluator}
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

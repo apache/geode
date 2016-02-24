@@ -28,7 +28,6 @@ package joptsimple;
 /**
  * Thrown by {@link ValueConverter}s when problems occur in converting string values to other Java types.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public class ValueConversionException extends RuntimeException {
     private static final long serialVersionUID = -1L;

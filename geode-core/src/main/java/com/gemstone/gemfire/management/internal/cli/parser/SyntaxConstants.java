@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.cli.parser;
 /**
  * Syntax constants for the parser
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  *
  */

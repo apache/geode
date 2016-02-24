@@ -28,8 +28,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Class Description
  * 
  * @version $Revision: 1.1 $
- * @author ericz
- * @author asif
  */
 public abstract class AbstractCompiledValue implements CompiledValue, Filter,
     OQLLexerTokenTypes {

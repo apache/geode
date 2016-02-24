@@ -44,7 +44,6 @@ import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author dsmith
  *
  */
 @Category(IntegrationTest.class)

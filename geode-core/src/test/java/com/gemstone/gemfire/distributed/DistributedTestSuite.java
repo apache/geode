@@ -30,7 +30,6 @@ import org.junit.runners.Suite;
 /**
  * Suite of tests for distributed membership dunit tests.
  * 
- * @author Kirk Lund
  */
 public class DistributedTestSuite {
 }

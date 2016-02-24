@@ -74,7 +74,6 @@ Now, create the cache telling it to read your cache.xml file:
 <p> For a complete list of all region shortcuts see {@link RegionShortcut}. 
 Applications that need to explicitly control the individual region attributes can do this declaratively in XML or using APIs.
  *
- * @author Darrel Schneider
  *
  *
  * @since 3.0

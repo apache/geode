@@ -51,7 +51,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * The CommonCrudController serves REST Requests related to listing regions, 
  * listing keys in region, delete keys or delete all data in region.
  * <p/>
- * @author Nilkanth Patel, john blum
  * @since 8.0
  */
 

@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * 
- * @author tushark
  *
  */
 public class CliUtilDUnitTest extends CacheTestCase {

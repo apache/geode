@@ -65,9 +65,6 @@ import com.gemstone.gemfire.test.process.ProcessWrapper;
 /**
  * Integration tests for launching a Server in a forked process.
  *
- * @author Kirk Lund
- * @author David Hoots
- * @author John Blum
  * @see com.gemstone.gemfire.distributed.AbstractLauncher
  * @see com.gemstone.gemfire.distributed.ServerLauncher
  * @see com.gemstone.gemfire.distributed.ServerLauncher.Builder

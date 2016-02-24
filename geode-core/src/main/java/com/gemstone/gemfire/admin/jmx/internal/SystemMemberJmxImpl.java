@@ -57,7 +57,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Wrap all delegate calls w/ e.printStackTrace() since the HttpAdaptor devours 
  * them
  *
- * @author    Kirk Lund
  * @since     3.5
  *
  */

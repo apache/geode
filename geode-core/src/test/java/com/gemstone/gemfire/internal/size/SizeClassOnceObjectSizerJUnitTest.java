@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * @author dsmith
  *
  */
 @Category(UnitTest.class)

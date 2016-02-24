@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.query.*;
  * for details.
  * 
  * @version $Revision: 1.2 $
- * @author derekf
  */
 public class QueryObserverAdapter implements QueryObserver {
 

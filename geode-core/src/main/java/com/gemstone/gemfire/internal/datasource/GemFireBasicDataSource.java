@@ -35,8 +35,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * GemFireBasicDataSource extends AbstractDataSource. This is a datasource class
  * which provides connections. fromthe databse without any pooling.
  * 
- * @author tnegi
- * @author Asif
  */
 public class GemFireBasicDataSource extends AbstractDataSource  {
   private static final Logger logger = LogService.getLogger();

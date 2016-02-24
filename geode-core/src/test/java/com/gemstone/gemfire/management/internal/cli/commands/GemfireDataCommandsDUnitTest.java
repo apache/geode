@@ -82,8 +82,6 @@ import java.util.Set;
 /**
  * Dunit class for testing gemfire data commands : get, put, remove, select, rebalance
  *
- * @author ajayp
- * @author tushark
  */
 
 @SuppressWarnings("serial")

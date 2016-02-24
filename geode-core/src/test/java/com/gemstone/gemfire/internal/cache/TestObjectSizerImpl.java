@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
  * Test object which implements ObjectSizer, used as Key/Value in put operation
  * as well as used as a Sizer for HeapLru testing.
  * 
- * @author arajpal
  * 
  */
 public class TestObjectSizerImpl implements ObjectSizer, Serializable {

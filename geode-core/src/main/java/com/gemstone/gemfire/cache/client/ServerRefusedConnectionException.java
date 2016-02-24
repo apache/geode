@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * A <code>ServerRefusedConnectionException</code> indicates a client attempted
  * to connect to a server, but the handshake was rejected.
  *
- * @author darrel
  *
  * @since 5.7
  */

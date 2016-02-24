@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.size;
  * with jprobe, because jprobe doesn't play nicely with the -javaagent flag. If
  * we implement a 1.4 SizeOfUtil class, then we probably don't need this one.
  * 
- * @author dsmith
  * 
  */
 public class SizeOfUtil0 implements SingleObjectSizer {

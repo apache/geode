@@ -24,7 +24,6 @@ package com.gemstone.gemfire.internal.jta;
 
 /**
  *
- * @author  prabir
  */
 
 //import java.io.*;

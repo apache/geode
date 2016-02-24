@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 /**
  * GemFire statistics about a Pool 
  *
- * @author gregp
  *
  * @since 5.7
  */

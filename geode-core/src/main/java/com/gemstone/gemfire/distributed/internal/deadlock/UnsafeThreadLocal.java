@@ -26,7 +26,6 @@ import java.lang.reflect.Method;
  * tool I think it's good enough, and this class provides a very low overhead
  * way for us to record what thread holds a particular resource.
  * 
- * @author dsmith
  * 
  */
 public class UnsafeThreadLocal<T> extends ThreadLocal<T> {

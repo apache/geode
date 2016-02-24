@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache.tier;
 /**
  * Pre-defined interest list types supported by the system
  *
- * @author Sudhir Menon
  * @version $Revision: 13166 $
  * @since 2.0.2
  */

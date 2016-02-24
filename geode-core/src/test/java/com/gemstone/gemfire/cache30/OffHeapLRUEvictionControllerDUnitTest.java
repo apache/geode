@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
  * Tests the basic functionality of the lru eviction 
  * controller and its statistics using off-heap regions.
  * 
- * @author rholmes
  * @since 9.0
  */
 public class OffHeapLRUEvictionControllerDUnitTest extends

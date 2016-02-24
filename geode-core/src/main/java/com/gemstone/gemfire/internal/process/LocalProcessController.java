@@ -46,7 +46,6 @@ import com.sun.tools.attach.VirtualMachine;
 /**
  * Attaches to a local process to control it via JMX.
  * 
- * @author Kirk Lund
  * @since 7.0
  * @deprecated as of 8.0 please use {@link ControllableProcess} instead
  */

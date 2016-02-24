@@ -24,7 +24,6 @@ import java.net.Socket;
 /**
  * The SocketUtils class is utility class for performing operations on Sockets and ServerSockets.
  * <p/>
- * @author John Blum
  * @see java.net.ServerSocket
  * @see java.net.Socket
  * @since 7.0

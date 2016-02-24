@@ -26,8 +26,6 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 /**
  * Represents the {@link ServerLocation} of a {@link BucketRegion}
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * 
  * @since 6.5 
  */

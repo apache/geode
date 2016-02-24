@@ -32,7 +32,6 @@ import org.junit.experimental.categories.Category;
 
 /**
  * This class tests all basic i18n functionality.
- * @author kbanks
  */
 @Category(UnitTest.class)
 public class BasicI18nJUnitTest extends TestCase {

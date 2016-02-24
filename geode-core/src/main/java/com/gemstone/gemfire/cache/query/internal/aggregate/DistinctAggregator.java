@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * The class used to hold the distinct values. This will get instantiated on the
  * bucket node as part of distinct queries for sum, count, average.
  * 
- * @author ashahid
  *
  */
 public class DistinctAggregator extends AbstractAggregator {

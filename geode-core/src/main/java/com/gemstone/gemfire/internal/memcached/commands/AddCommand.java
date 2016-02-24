@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.memcached.ValueWrapper;
  * "add" means "store this data, but only if the server *doesn't* already
  *  hold data for this key".
  * 
- * @author Swapnil Bawaskar
  */
 public class AddCommand extends StorageCommand {
 

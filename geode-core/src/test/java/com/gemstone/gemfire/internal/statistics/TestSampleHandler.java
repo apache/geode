@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Kirk Lund
  * @since 7.0
  */
 public class TestSampleHandler implements SampleHandler {
@@ -74,7 +73,6 @@ public class TestSampleHandler implements SampleHandler {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   public static class Info {
@@ -102,7 +100,6 @@ public class TestSampleHandler implements SampleHandler {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   public static class ResourceInstanceInfo extends Info {
@@ -124,7 +121,6 @@ public class TestSampleHandler implements SampleHandler {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   public static class ResourceTypeInfo extends Info {
@@ -146,7 +142,6 @@ public class TestSampleHandler implements SampleHandler {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   public static class SampledInfo extends Info {

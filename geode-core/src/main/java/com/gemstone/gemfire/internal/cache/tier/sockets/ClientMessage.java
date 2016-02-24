@@ -26,7 +26,6 @@ import java.io.IOException;
  * Interface <code>ClientMessage</code> is a message representing a cache
  * operation that is sent from a server to an interested client. 
  *
- * @author Barry Oglesby
  *
  * @since 5.5
  */

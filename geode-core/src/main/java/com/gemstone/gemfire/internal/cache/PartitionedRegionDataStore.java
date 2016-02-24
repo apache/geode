@@ -115,9 +115,6 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQue
  * will handle remote calls to this DataStore from other nodes participating in
  * this PartitionedRegion.
  * 
- * @author rreja
- * @author tapshank
- * @author Mitch Thomas
  */
 public class PartitionedRegionDataStore implements HasCachePerfStats
 {
@@ -2586,7 +2583,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     
   /**
    * Interface for visiting buckets 
-   * @author Mitch Thomas
    */
   // public visibility for tests
   public static abstract class BucketVisitor {
@@ -2625,7 +2621,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * Test class and method for visiting Entries
    * NOTE: This class will only give a partial view if a visited bucket is moved
    * by a rebalance while a visit is in progress on that bucket.
-   * @author mthomas
    */
   protected static abstract class EntryVisitor  {
     abstract public void visit(Integer bucketId, Region.Entry re);

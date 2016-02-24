@@ -26,7 +26,6 @@ import java.util.Set;
  * is done.
  * Instances of this interface can be obtained from {@link ReliableMessageQueueFactory} which can be obtained from {@link GemFireCacheImpl#getReliableMessageQueueFactory}.
  * 
- * @author Darrel Schneider
  * @since 5.0
  */
 public interface ReliableMessageQueue {

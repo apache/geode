@@ -41,7 +41,6 @@ package com.gemstone.gemfire.cache.query.internal;
  * observer.stopMethod(arguments); }
  * 
  * @version $Revision: 1.1 $
- * @author derekf
  */
 public final class QueryObserverHolder  {
 

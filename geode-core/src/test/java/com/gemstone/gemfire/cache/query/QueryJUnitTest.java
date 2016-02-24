@@ -58,7 +58,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  *
- * @author vaibhav
  */
 @FixMethodOrder(NAME_ASCENDING)
 @Category(IntegrationTest.class)

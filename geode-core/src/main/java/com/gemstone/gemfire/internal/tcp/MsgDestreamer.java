@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * This allows us to receive a message without needing to
  * read it completely into a buffer before we can start deserializing it.
 
-    @author Darrel
     @since 5.0.2
    
     */

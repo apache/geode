@@ -24,7 +24,6 @@ import com.gemstone.gemfire.GemFireCheckedException;
  * <p/>
  * Extracted from {@link com.gemstone.gemfire.internal.StatArchiveWriter}.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public class IgnoreResourceException extends GemFireCheckedException {

@@ -75,7 +75,6 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * cache connection. Each server connection runs in its own thread to maximize
  * concurrency and improve response times to edge requests
  *
- * @author Sudhir Menon
  * @since 2.0.2
  */
 public class ServerConnection implements Runnable {

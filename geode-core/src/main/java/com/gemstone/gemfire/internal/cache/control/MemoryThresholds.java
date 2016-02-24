@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Stores eviction and critical thresholds for memory as well as the logic for
  * determining how memory transitions between states.
  * 
- * @author David Hoots
  * @since 9.0
  */
 public class MemoryThresholds {

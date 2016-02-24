@@ -46,7 +46,6 @@ import com.gemstone.gemfire.pdx.JSONFormatter;
  * Utility for managing an attribute
  *
  * @version     $Revision: 1.1 $
- * @author      ericz
  */
 
 

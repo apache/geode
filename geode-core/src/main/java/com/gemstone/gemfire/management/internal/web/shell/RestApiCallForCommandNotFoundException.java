@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.web.shell;
 /**
  * The NoRestApiCallForCommandException class...
  * <p/>
- * @author John Blum
  * @see java.lang.RuntimeException
  * @since 8.0
  */

@@ -115,7 +115,6 @@ Now, create the data region in the client cache using this new attributes ID.
   Region r = c.createClientRegionFactory("MYAPP_CACHING_PROXY_MEM_LRU").create("customers");
 </PRE>
  * @since 6.5
- * @author darrel
  */
 public class ClientCacheFactory {
 

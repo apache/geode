@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  * loner case, we'll try to be helpful and not decide
  * what type registration to give the user until they actually 
  * use it.
- * @author dsmith
  *
  */
 public class LonerTypeRegistration implements TypeRegistration {

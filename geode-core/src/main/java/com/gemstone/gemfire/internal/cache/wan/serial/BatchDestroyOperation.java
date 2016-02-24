@@ -52,7 +52,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * 
  * We iterate from key to tailKey and destroy all the keys.
  * 
- * @author Suranjan Kumar
  * 
  */
 public class BatchDestroyOperation extends DistributedCacheOperation {

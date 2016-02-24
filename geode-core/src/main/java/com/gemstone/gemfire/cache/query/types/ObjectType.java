@@ -33,7 +33,6 @@ import com.gemstone.gemfire.DataSerializable;
  * @see MapType
  *
  * @since 4.0
- * @author Eric Zoerner
  */
 public interface ObjectType extends DataSerializable {
 

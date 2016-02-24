@@ -42,7 +42,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  *
- * @author  prafulla/vjadhav
  */
 public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
     

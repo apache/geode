@@ -56,7 +56,6 @@ import java.util.concurrent.BlockingQueue;
 
 
 /**
- * @author Suranjan Kumar
  * 
  */
 public class ParallelGatewaySenderEventProcessor extends

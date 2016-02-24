@@ -33,9 +33,6 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
  * conditions belonging to other group of iterators can be a part of
  * GroupJunction only if the complete expansion flag is true.
  * 
- * @author EricZ
- * @author asif
- * @author kdeshpan
  * 
  *  
  */

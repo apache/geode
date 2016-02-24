@@ -37,7 +37,6 @@ import static org.junit.Assert.assertNotNull;
 /**
  * TODO: Add additional tests for all methods in DataCommandFunction.
  *
- * @author Jens Deppe
  */
 @Category(IntegrationTest.class)
 public class DataCommandFunctionJUnitTest {

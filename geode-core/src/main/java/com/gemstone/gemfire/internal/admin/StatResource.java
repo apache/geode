@@ -22,8 +22,6 @@ package com.gemstone.gemfire.internal.admin;
 /**
  * Interface to represent one statistic resource
  *
- * @author Darrel Schneider
- * @author Kirk Lund
  */
 public interface StatResource extends GfObject {
   

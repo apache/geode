@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 /**
- * @author ashetkar
  * @since 5.7
  */
 public interface HAContainerWrapper extends Map {

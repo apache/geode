@@ -78,7 +78,6 @@ import com.gemstone.gemfire.cache.Region;
  * 
  *      Note : Please contact support@gemstone.com before using these APIs
  * 
- * @author Yogesh Mahajan
  * @since 6.5
  * 
  */

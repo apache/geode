@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
  * Abstract test case for tests verifying that unexpected test output will
  * cause expected failures.
  * 
- * @author Kirk Lund
  */
 public abstract class FailOutputTestCase extends GoldenTestCase implements ExecutableProcess {
   

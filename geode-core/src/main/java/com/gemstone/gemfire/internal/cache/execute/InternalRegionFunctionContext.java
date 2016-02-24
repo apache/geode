@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.LocalDataSet;
  * depend on casting to {@link RegionFunctionContextImpl} directly rather should
  * use this interface.
  * 
- * @author swale
  */
 public interface InternalRegionFunctionContext extends RegionFunctionContext {
 

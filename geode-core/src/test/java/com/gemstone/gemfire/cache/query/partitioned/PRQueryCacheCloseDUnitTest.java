@@ -23,7 +23,6 @@ package com.gemstone.gemfire.cache.query.partitioned;
  * 1, and cache close is done randomly on one of the data stores and then
  * recreated, thus avoiding any data loss.
  * 
- * @author pbatra
  */
 
 import java.util.LinkedList;

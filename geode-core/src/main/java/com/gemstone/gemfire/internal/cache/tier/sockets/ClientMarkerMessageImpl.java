@@ -30,7 +30,6 @@ import java.io.*;
  * to notify the client that all of its queued updates have been sent. This is
  * to be used mostly by the durable clients, although all clients receive it.
  *
- * @author Barry Oglesby
  *
  * @since 5.5
  */

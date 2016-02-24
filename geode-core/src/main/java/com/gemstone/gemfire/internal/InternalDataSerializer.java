@@ -124,7 +124,6 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
  * distribution messaging (and shared memory management) needed to
  * support data serialization.
  *
- * @author David Whitlock
  * @since 3.5
  */
 public abstract class InternalDataSerializer extends DataSerializer implements DSCODE {
@@ -146,7 +145,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static final String serializationVersionTxt = System.getProperty("gemfire.serializationVersion");
   /**
    * Any time new serialization format is added then a new enum needs to be added here.
-   * @author darrel
    * @since 6.6.2
    */
   private static enum SERIALIZATION_VERSION {
@@ -3818,7 +3816,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
   /**
    * Just like a WellKnownDS but its type is compatible with PDX.
-   * @author darrel
    *
    */
   protected static abstract class WellKnownPdxDS extends WellKnownDS {

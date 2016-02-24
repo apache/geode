@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 
 /**
- * @author Mitch Thomas
  * @since 6.0
  */
 public class ResourceManagerCreation implements ResourceManager {

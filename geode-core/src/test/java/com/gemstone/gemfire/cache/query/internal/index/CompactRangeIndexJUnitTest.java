@@ -49,7 +49,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * 
- * @author Tejas Nomulwar
  *
  */
 @Category(IntegrationTest.class)

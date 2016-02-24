@@ -51,7 +51,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  *   // bucket was removed
  * }
  * 
- * @author Kirk Lund
  */
 public class RemoveBucketMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();

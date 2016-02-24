@@ -85,7 +85,6 @@ import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
  * over the network.
  * 
  * @since 6.5
- * @author bruce
  */
 public class FilterProfile implements DataSerializableFixedID {
   private static final Logger logger = LogService.getLogger();
@@ -1795,7 +1794,6 @@ public class FilterProfile implements DataSerializableFixedID {
    * OperationMessage synchronously propagates a change in the profile to
    * another member.  It is a serial message so that there is no chance
    * of out-of-order execution.
-   * @author bruce
    */
   public static class OperationMessage extends HighPriorityDistributionMessage 
      implements MessageWithReply {

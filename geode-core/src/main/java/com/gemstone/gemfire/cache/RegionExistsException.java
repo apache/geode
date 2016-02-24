@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache;
  * Indicates that the requested region already exists when a region is
  * being created.
  *
- * @author Eric Zoerner
  *
  * 
  * @see Region#createSubregion

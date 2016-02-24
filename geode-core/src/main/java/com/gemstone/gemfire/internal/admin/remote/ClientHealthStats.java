@@ -32,7 +32,6 @@ import com.gemstone.gemfire.DataSerializer;
 /**
  * Bean class act as container for client stats
  * 
- * @author Harsh Khanna
  */
 
 public class ClientHealthStats implements DataSerializableFixedID, Serializable {

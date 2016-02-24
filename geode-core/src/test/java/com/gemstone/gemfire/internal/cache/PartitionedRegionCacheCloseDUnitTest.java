@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * Ops are done on both the VMs. Each bucket will be created in both the nodes
  * as redundantCopies is 1.
  * 
- * @author rreja
  *  
  */
 public class PartitionedRegionCacheCloseDUnitTest extends

@@ -546,7 +546,6 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
    * Oplog to be rolled is added after function call of obtaining nextDir , a
    * dead lock occurs
    * 
-   * @author ashahid
    */
 
   @Test
@@ -1703,7 +1702,6 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
    * updating the LRULiist, then that deleted entry should not go into the
    * LRUList
    * 
-   * @author Asif
    */
   @Test
   public void testClearInteractionWithLRUList_Bug37605()
@@ -1758,7 +1756,6 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
    * we would not be able to detect the conflict. The fix was to first clear the
    * region map & then reset the Htree Ref.
    * 
-   * @author Asif
    */
   @Test
   public void testClearInteractionWithCreateOperation_Bug37606()

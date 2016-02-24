@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.query.internal.aggregate;
  * based queries. This aggregator is initialized on the PR query node & acts on
  * the results obtained from bucket nodes.
  * 
- * @author ashahid
  *
  */
 public class AvgDistinctPRQueryNode extends SumDistinctPRQueryNode {

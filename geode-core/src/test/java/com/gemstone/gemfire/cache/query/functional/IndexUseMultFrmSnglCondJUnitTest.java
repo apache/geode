@@ -18,7 +18,6 @@
  * CompareIndexUsageTest.java
  *
  * Created on April 20, 2005, 5:33 PM
- * @author vikramj
  */
 package com.gemstone.gemfire.cache.query.functional;
 

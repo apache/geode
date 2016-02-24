@@ -21,7 +21,6 @@ import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
 
 /**
- * @author Kirk Lund
  * @since 7.0
  */
 public class DummyStatistics implements Statistics {

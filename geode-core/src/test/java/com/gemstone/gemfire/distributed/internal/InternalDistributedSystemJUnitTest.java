@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Tests the functionality of the {@link InternalDistributedSystem}
  * class.  Mostly checks configuration error checking.
  *
- * @author David Whitlock
  *
  * @since 2.1
  */

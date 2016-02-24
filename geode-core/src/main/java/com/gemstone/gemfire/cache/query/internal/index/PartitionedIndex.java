@@ -51,7 +51,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * buckets.
  * 
  * @since 5.1
- * @author Rahul Dubey
  */
 
 public class PartitionedIndex extends AbstractIndex
@@ -437,7 +436,6 @@ public class PartitionedIndex extends AbstractIndex
    * Internal class for partitioned index statistics. Statistics are not
    * supported right now.
    * 
-   * @author rdubey
    */
   class PartitionedIndexStatistics extends InternalIndexStatistics {
     private IndexStats vsdStats;

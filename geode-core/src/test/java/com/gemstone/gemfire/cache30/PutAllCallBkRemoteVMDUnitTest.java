@@ -49,7 +49,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  *
- * @author vjadhav
  */
 public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
     

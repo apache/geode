@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.admin.remote;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 
 /**
- * @author dsmith
  *
  */
 public class RevokePersistentIDResponse extends AdminResponse {

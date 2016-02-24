@@ -29,7 +29,6 @@ import java.util.Collections;
  * This class also keeps a registry of all the functions which are supported,
  * which should be used during creation of alert definition.
  * 
- * @author Hrishi
  */
 
 public class FunctionHelper {

@@ -102,7 +102,6 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * {@linkplain com.gemstone.gemfire.cache.Region#localInvalidate(Object) invalidates}
  * the local cache based on the contents of those messages.
  * 
- * @author Barry Oglesby
  * @since 3.5
  */
 public class CacheClientUpdater extends Thread implements ClientUpdater,
@@ -1928,7 +1927,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
    * Stats for a CacheClientUpdater. Currently the only thing measured
    * are incoming bytes on the wire
    * @since 5.7
-   * @author darrel
    */
   public static class CCUStats implements MessageStats {
     // static fields 

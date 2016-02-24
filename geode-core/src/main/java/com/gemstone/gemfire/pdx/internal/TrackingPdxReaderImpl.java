@@ -29,7 +29,6 @@ import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.PdxFieldWrapper
  * Used to track what fields are actually read by the user's code.
  * We want to know what fields are not read so that we can preserve them.
  * 
- * @author darrel
  * @since 6.6
  */
 public class TrackingPdxReaderImpl implements InternalPdxReader {

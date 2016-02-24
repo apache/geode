@@ -22,7 +22,6 @@ import java.io.*;
  * A {@link Serializable} class that is loaded by a class loader other
  * than the one that is used to load test classes.
  *
- * @author David Whitlock
  *
  * @since 2.0.1
  */

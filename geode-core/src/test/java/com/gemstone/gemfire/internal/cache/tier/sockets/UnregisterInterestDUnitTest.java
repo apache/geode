@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author ashetkar
  */
 public class UnregisterInterestDUnitTest extends DistributedTestCase {
 

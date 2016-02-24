@@ -51,7 +51,6 @@ import com.gemstone.gemfire.internal.jta.UserTransactionImpl;
  * In such cases any occurrences of '.' are replaced with '/' before parsing.
  * This rule can be altered/modified by making changes in NameParserImpl class.
  * 
- * @author Nand Kishor Jha
  */
 public class ContextImpl implements Context {
 

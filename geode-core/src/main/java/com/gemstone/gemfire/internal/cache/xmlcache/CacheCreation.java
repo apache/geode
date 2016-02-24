@@ -129,7 +129,6 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
  * must be updated when {@link Cache} is modified.  This class is
  * public for testing purposes.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

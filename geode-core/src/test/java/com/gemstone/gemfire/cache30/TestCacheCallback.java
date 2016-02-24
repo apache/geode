@@ -26,7 +26,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *
  * @see #wasInvoked
  *
- * @author David Whitlock
  * @since 3.0
  */
 public abstract class TestCacheCallback implements CacheCallback {

@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.Version;
  * accesses address, then the result is not undefined, it is null.
  * 
  * @version $Revision: 1.1 $
- * @author ericz
  * 
  */
 

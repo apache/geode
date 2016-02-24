@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * The DiskStoreCommandsController class implements GemFire Management REST API web service endpoints for the
  * Gfsh Disk Store Commands.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

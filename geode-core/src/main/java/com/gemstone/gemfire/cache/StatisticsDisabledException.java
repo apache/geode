@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache;
  * Thrown if statistics are requested when statistics are disabled on the
  * region.
  *
- * @author Eric Zoerner
  *
  *
  * @see AttributesFactory#setStatisticsEnabled

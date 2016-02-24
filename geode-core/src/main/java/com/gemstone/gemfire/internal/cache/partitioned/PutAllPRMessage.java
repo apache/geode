@@ -78,7 +78,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * a bucket's primary owner.  In addition to updating an entry it is also used to
  * send Partitioned Region event information.
  *
- * @author Gester Zhou
  * @since 6.0
  */
 public final class PutAllPRMessage extends PartitionMessageWithDirectReply
@@ -846,7 +845,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
   
   /**
    * A processor to capture the value returned by {@link PutAllPRMessage}
-   * @author Gester Zhou
    * @since 5.8
    */
   public static class PutAllResponse extends PartitionResponse {

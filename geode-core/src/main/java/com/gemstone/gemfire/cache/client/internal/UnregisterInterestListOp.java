@@ -24,7 +24,6 @@ import java.util.List;
 
 /**
  * Does a region unregisterInterestList on a server
- * @author darrel
  * @since 5.7
  */
 public class UnregisterInterestListOp {

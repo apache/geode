@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.Version;
 
 /**
  * Implementation of ObjectType
- * @author Eric Zoerner
  * @since 4.0
  */
 public class ObjectTypeImpl implements ObjectType, DataSerializableFixedID {

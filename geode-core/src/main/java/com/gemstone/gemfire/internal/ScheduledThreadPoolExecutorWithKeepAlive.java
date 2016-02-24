@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
  * ScheduledThreadPoolExecutor in that case. This class with throw an exception
  * if you try to configure it with one thread.
  * 
- * @author dsmith
  * 
  */
 @SuppressWarnings("synthetic-access")
@@ -204,7 +203,6 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
    * A Runnable which we put in the timer which
    * simply hands off the contain task for execution
    * in the thread pool when the timer fires.
-   * @author dsmith
    *
    */
   private class HandOffTask implements Runnable {
@@ -228,7 +226,6 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
    * The future returned by the schedule* methods on this class. This future
    * will not return a value until the task has actually executed in the thread pool, 
    * but it allows us to cancel associated timer task. 
-   * @author dsmith
    *
    */
   private static class DelegatingScheduledFuture<V> extends FutureTask<V> implements ScheduledFuture<V> {
@@ -292,7 +289,6 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
 
   /** A RejectedExecutionHandler which causes the caller to block until
    * there is space in the queue for the task.
-   * @author dsmith
    */
   protected static class BlockCallerPolicy implements RejectedExecutionHandler {
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {

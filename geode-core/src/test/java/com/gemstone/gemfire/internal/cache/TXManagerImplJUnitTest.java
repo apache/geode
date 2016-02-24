@@ -45,7 +45,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * junit test for suspend and resume methods
- * @author sbawaska
  */
 @Category(IntegrationTest.class)
 public class TXManagerImplJUnitTest {

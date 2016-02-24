@@ -24,7 +24,6 @@ import java.util.Set;
  * including its identity and the circumstances of the event. This is 
  * passed in to {@link RegionRoleListener}.
  *
- * @author Kirk Lund
  * @see RegionRoleListener
  * @since 5.0
  */

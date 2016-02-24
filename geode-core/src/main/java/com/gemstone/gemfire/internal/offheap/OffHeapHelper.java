@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 /**
  * Utility class that provides static method to do some common tasks for off-heap references.
  * 
- * @author darrel
  * @since 9.0
  */
 public class OffHeapHelper {

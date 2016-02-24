@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.DiskStore;
 /**
  * Composite data type used to distribute network related metrics for a member.
  * 
- * @author rishim
  * @since 7.0
  *
  */

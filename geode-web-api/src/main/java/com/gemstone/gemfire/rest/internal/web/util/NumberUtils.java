@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.lang.ClassUtils;
  * The NumberUtils class is a utility class for working with numbers.
  * <p/>
  * 
- * @author John Blum, Nilkanth Patel.
  * @see java.lang.Number
  * @since 8.0
  */

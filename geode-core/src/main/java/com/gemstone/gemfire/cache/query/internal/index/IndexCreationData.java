@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
 
 /**
- * @author asifs
  * 
  * This class contains the information needed to create an index It will
  * contain the callback data between <index></index> invocation

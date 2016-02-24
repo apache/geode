@@ -29,7 +29,6 @@ import javax.management.modelmbean.ModelMBean;
  * MBean representation of a {@link
  * com.gemstone.gemfire.admin.SystemMemberBridgeServer}. 
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class SystemMemberBridgeServerJmxImpl

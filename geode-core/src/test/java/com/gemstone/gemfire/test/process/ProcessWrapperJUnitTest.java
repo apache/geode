@@ -27,7 +27,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Integration tests for ProcessWrapper.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class ProcessWrapperJUnitTest {

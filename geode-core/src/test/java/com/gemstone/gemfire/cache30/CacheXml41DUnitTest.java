@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 /**
  * Tests the declarative caching functionality introduced in GemFire 4.1.
  * 
- * @author David Whitlock
  * @since 4.1
  */
 

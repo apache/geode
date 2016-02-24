@@ -45,8 +45,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Test TransactionManagerImpl methods not tested by UserTransactionImplTest
  * 
- * @author Mitul Bid
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class TransactionManagerImplJUnitTest {

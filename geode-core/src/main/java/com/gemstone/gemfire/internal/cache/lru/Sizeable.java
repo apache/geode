@@ -45,7 +45,6 @@ package com.gemstone.gemfire.internal.cache.lru;
     <code>return size;</code><br>
   }<br>
  *
- * @author David Whitlock
  *
  * @since 3.2
  */

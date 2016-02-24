@@ -30,7 +30,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
  * 
  * This class is not thread safe, so it should be synchronized externally.
  * 
- * @author dsmith
  *
  */
 public class CanonicalIdHolder {

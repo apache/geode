@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Test ResultsBag, including null elements
- * @author ezoerner
  */
 @Category(UnitTest.class)
 public class ResultsBagJUnitTest extends TestCase {

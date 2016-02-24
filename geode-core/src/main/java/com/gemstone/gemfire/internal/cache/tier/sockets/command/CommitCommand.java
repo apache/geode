@@ -40,7 +40,6 @@ import java.io.IOException;
  * This is the base command which read the parts for the
  * MessageType.COMMIT.<br>
  * 
- * @author gregp
  * @since 6.6
  */
 public class CommitCommand extends BaseCommand {

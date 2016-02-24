@@ -21,7 +21,6 @@ import com.gemstone.gemfire.GemFireCheckedException;
 /**
  * An exception thrown during batch processing.
  *
- * @author Barry Oglesby
  *
  * @since 4.2
  */

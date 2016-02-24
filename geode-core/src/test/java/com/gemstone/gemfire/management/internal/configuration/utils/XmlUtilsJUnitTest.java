@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * Unit tests for {@link XmlUtils}. See Also {@link XmlUtilsAddNewNodeJUnitTest}
  * for tests related to {@link XmlUtils#addNewNode(Document, XmlEntity)}
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

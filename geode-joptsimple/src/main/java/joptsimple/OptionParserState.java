@@ -31,8 +31,6 @@ import static joptsimple.ParserRules.*;
  * Abstraction of parser state; mostly serves to model how a parser behaves depending on whether end-of-options
  * has been detected.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @author Nikhil Jadhav
  */
 abstract class OptionParserState {
     static OptionParserState noMoreOptions() {

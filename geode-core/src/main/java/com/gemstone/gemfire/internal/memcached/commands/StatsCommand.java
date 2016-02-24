@@ -33,7 +33,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
  * stats\r\n
  * it causes the server to output general-purpose statistics
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class StatsCommand extends AbstractCommand {

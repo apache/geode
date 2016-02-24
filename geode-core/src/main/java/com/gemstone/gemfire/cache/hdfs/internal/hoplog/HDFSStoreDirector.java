@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 /**
  * HDFSStoreDirector is created for managing all instances of HDFSStoreImpl.    
  *
- * @author Hemant Bhanawat
  */
 public final class HDFSStoreDirector {
   private final ConcurrentHashMap<String, HDFSStoreImpl> storeMap = new ConcurrentHashMap<String, HDFSStoreImpl>();

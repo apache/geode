@@ -20,7 +20,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
 
 
 /**
- * @author dsmith
  *
  */
 public class LocatorListRequest extends ServerLocationRequest {

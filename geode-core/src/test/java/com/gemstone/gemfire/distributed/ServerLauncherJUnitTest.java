@@ -56,8 +56,6 @@ import org.junit.rules.TestName;
  * The ServerLauncherJUnitTest class is a test suite of unit tests testing the contract, functionality and invariants
  * of the ServerLauncher class.
  *
- * @author John Blum
- * @author Kirk Lund
  * @see com.gemstone.gemfire.distributed.ServerLauncher
  * @see com.gemstone.gemfire.distributed.ServerLauncher.Builder
  * @see com.gemstone.gemfire.distributed.ServerLauncher.Command

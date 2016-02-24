@@ -45,7 +45,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  * This class tests that bucket regions can handle
  * a failure of the GII target during GII.
- * @author dsmith
  *
  */
 public class Bug41091DUnitTest extends CacheTestCase {

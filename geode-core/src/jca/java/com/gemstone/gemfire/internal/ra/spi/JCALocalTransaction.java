@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
- * @author asif
  *
  */
 public class JCALocalTransaction implements LocalTransaction

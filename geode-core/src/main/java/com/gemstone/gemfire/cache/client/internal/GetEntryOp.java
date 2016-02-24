@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 
 /**
  * does getEntry on the server
- * @author sbawaska
  */
 public class GetEntryOp {
 

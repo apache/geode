@@ -23,7 +23,6 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 public class CommandResponseBuilder {

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
  * client/server events.
  * See the documentation for class ClientServerObserverHolder for details.
  * 
- * @author Yogesh Mahajan
  * @since 5.1
  *  
  */

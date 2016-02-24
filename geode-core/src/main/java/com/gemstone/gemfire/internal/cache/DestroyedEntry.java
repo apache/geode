@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.Region;
  * instead of null.  All methods throw {@link EntryDestroyedException} except for
  * {@link #isDestroyed()}.
  * 
- * @author bakera
  */
 public class DestroyedEntry implements Region.Entry<Object, Object> {
   private final String msg;

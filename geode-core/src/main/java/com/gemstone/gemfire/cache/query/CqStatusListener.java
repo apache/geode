@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache.query;
  *  the cq is disconnected
  * 
  *
- * @author jhuynh 
  * @since 7.0
  */
 

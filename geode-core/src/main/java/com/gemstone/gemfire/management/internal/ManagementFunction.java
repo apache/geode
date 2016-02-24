@@ -44,7 +44,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 1) All setter methods 2) All operations 3) addNotificationListener 4)
  * removeNotificationListener 5) getNotificationInfo
  * 
- * @author rishim
  * 
  */
 

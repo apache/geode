@@ -48,7 +48,6 @@ import junit.framework.TestCase;
 /**
  * Integration test for the SampleCollector class.
  *   
- * @author Kirk Lund
  * @since 7.0
  */
 @Category(IntegrationTest.class)

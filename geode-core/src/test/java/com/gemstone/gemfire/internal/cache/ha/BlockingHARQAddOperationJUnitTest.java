@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Test runs all tests of HARQAddOperationJUnitTest using BlockingHARegionQueue
  * instead of HARegionQueue
  * 
- * @author Suyog Bhokare
  * 
  */
 @Category(IntegrationTest.class)
@@ -104,7 +103,6 @@ public class BlockingHARQAddOperationJUnitTest extends
    * 
    * @throws Exception
    * 
-   * @author Dinesh Patel
    */
   @Test
   public void testBlockingTakeConflationEnabled() throws Exception
@@ -129,7 +127,6 @@ public class BlockingHARQAddOperationJUnitTest extends
    *          whether conflation is enabled or not
    * @throws Exception
    * 
-   * @author Dinesh Patel
    */
   public void doBlockingTake(boolean conflationEnabled) throws Exception
   {
@@ -182,7 +179,6 @@ public class BlockingHARQAddOperationJUnitTest extends
    * 
    * @throws Exception
    * 
-   * @author Dinesh Patel
    */
   @Test
   public void testConcurrentBlockingTake() throws Exception

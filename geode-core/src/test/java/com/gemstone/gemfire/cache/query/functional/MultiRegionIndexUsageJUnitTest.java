@@ -60,7 +60,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 //TODO:TEST clean this up and add assertions
 /**
- * @author prafulla
  */
 @Category(IntegrationTest.class)
 public class MultiRegionIndexUsageJUnitTest {

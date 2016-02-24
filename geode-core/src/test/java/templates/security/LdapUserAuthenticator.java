@@ -29,7 +29,6 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
 /**
- * @author Kumar Neeraj
  * @since 5.5
  */
 public class LdapUserAuthenticator implements Authenticator {

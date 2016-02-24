@@ -23,7 +23,6 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
 
 /**
  * A factory for creating new connections.
- * @author dsmith
  * @since 5.7
  *
  */

@@ -31,7 +31,6 @@ import java.util.*;
  *
  * @see <A href="package-summary.html#statistics">Package introduction</A>
  *
- * @author Darrel Schneider
  *
  * @since 3.0
  *

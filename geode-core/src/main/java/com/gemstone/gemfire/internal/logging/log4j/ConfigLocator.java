@@ -25,7 +25,6 @@ import org.apache.logging.log4j.util.LoaderUtil;
 /**
  * Utility methods for finding the Log4J 2 configuration file.
  * 
- * @author Kirk Lund
  */
 public class ConfigLocator {
 

@@ -29,7 +29,6 @@ import javax.management.modelmbean.ModelMBeanAttributeInfo;
  * {@link javax.management.modelmbean.ModelMBeanAttributeInfo} descriptor's 
  * <i>targetObject</i> value.
  *
- * @author    Kirk Lund
  * @since     3.5
  *
  */

@@ -24,7 +24,6 @@ import java.util.*;
 /**
  * Implementation of {@link ReliableMessageQueueFactory}
  * 
- * @author Darrel Schneider
  * @since 5.0
  */
 public class ReliableMessageQueueFactoryImpl implements ReliableMessageQueueFactory {

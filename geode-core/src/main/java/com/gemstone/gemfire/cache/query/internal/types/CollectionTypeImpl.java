@@ -34,7 +34,6 @@ import com.gemstone.gemfire.cache.query.types.*;
 
 /**
  * Implementation of CollectionType
- * @author Eric Zoerner
  * @since 4.0
  */
 public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType {

@@ -53,7 +53,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * only in this class and not in {@link PartitionAttributes} are for internal
  * use only.
  *  
- * @author Mitch Thomas
  * @since 5.5
  */
 public class PartitionAttributesImpl implements PartitionAttributes,

@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.delta.Delta;
 
 /**
  * 
- * @author Neeraj
  *
  */
 public final class ListOfDeltas implements Delta {

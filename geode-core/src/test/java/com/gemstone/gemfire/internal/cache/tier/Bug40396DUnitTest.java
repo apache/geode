@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Test delta propagation for faulty delta implementation
- * @author aingle
  * @since 6.1
  */
 public class Bug40396DUnitTest extends DistributedTestCase {

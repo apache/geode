@@ -41,7 +41,6 @@ import static joptsimple.internal.Strings.*;
 
 
 /**
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 class BuiltinHelpFormatter implements HelpFormatter {
     private ColumnarData grid;

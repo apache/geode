@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.query;
  * result. In addition to the methods in the interface, implementing classes
  * must have a 0-arg public constructor.
  * 
- * @author ashahid
  *
  */
 public interface Aggregator {

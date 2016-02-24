@@ -30,7 +30,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
  * "cas" is a check and set operation which means "store this data but
  * only if no one else has updated since I last fetched it."
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class CASCommand extends AbstractCommand {

@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
  *
- * @author anil
  */
 public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
 

@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  *
- * @author Eric Zoerner
  *
  */
   

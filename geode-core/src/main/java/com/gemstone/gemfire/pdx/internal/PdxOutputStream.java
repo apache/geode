@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
 
 /**
  * Used by PdxWriterImpl to manage the raw data of a PDX.
- * @author darrel
  *
  */
 public class PdxOutputStream implements ByteBufferWriter {

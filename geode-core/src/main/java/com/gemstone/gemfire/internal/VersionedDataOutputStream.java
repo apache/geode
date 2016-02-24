@@ -24,7 +24,6 @@ import java.io.OutputStream;
  * An extension of {@link DataOutputStream} that implements
  * {@link VersionedDataStream}.
  * 
- * @author swale
  * @since 7.1
  */
 public final class VersionedDataOutputStream extends DataOutputStream implements

@@ -37,7 +37,6 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 /**
  * Function to create {@link MockCacheExtension} on a {@link Region}.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

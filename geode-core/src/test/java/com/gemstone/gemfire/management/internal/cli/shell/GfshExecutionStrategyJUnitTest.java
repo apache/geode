@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * GfshExecutionStrategyTest - Includes tests to for GfshExecutionStrategyTest
  * 
- * @author apande
  */
 @Category(UnitTest.class)
 public class GfshExecutionStrategyJUnitTest {

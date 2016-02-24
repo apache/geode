@@ -46,7 +46,6 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  * Although it has limited functionality,still a simple use of add() method
  * should suffice for most of the simple JSON use cases.
  * 
- * @author rishim
  * 
  */
 public class TypedJson {

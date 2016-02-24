@@ -55,8 +55,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
  * Class Description
  * 
  * @version $Revision: 1.2 $
- * @author ericz
- * @author asif
  */
 public class CompiledSelect extends AbstractCompiledValue {
   

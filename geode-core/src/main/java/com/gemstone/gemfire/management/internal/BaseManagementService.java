@@ -32,7 +32,6 @@ import com.gemstone.gemfire.management.ManagementService;
 /**
  * Super class to all Management Service
  * 
- * @author rishim.
  * @since 7.0
  */
 public abstract class BaseManagementService extends ManagementService {

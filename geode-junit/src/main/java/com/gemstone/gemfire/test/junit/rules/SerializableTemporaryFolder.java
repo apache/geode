@@ -27,7 +27,6 @@ import org.junit.rules.TemporaryFolder;
  * Serializable version of TemporaryFolder JUnit Rule. JUnit lifecycle is not
  * executed in remote JVMs.
  * 
- * @author Kirk Lund
  */
 @SuppressWarnings("serial")
 public class SerializableTemporaryFolder extends TemporaryFolder implements SerializableTestRule {

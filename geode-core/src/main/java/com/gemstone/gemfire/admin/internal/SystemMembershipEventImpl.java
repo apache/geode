@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * An event delivered to a {@link SystemMembershipListener} when a
  * member has joined or left the distributed system.
  *
- * @author Darrel Schneider
  * @since 5.0
  */
 public class SystemMembershipEventImpl implements SystemMembershipEvent {

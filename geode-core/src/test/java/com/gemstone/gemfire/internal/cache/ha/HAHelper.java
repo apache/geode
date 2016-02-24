@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.HARegion;
 /**
  * Helper class to access the required functions of this package from
  * outside the package.
- * @author Girish Thombare
  */
 
 public class HAHelper

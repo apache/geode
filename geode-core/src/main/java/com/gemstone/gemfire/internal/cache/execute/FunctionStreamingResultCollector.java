@@ -52,7 +52,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @author ymahajan
  *
  */
 public class FunctionStreamingResultCollector extends ReplyProcessor21 implements

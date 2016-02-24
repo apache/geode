@@ -23,7 +23,6 @@ package com.gemstone.gemfire.management.membership;
  * Applications can subclass this class and only override the methods for the
  * events of interest.
  *
- * @author rishim
  * @since 8.0
  */
 public abstract class ClientMembershipListenerAdapter implements ClientMembershipListener {

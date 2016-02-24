@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache.client;
 
 /**
  * An exception indicating that there are no active locators available to connect to.
- * @author dsmith
  * @since 5.7
  */
 public class NoAvailableLocatorsException extends ServerConnectivityException {

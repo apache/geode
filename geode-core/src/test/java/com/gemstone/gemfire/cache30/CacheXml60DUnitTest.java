@@ -42,7 +42,6 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 /**
  * Tests 6.0 cache.xml features.
  * 
- * @author skumar
  * @since 6.0
  */
 

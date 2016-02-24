@@ -57,8 +57,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author asif
- * @author vaibhav
  *
  */
 class FunctionalIndexCreationHelper extends IndexCreationHelper {

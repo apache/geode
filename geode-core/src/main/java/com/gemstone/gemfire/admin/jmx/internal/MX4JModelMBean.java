@@ -77,7 +77,6 @@ import mx4j.util.Utils;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author <a href="mailto:biorn_steedom@users.sourceforge.net">Simone Bordet</a>
  * @version $Revision: 1.14 $
  */
 public class MX4JModelMBean implements ModelMBean, MBeanRegistration, NotificationEmitter

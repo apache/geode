@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.concurrent.CompactConcurrentHashSet2;
  * for a query which can be approximate so it does NOT have to lock internal
  * segments for accurate count.
  * 
- * @author shobhit
  * @param <E>
  * @since 7.0 
  */

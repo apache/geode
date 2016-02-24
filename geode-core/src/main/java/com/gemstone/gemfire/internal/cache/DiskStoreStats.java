@@ -24,7 +24,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionStats;
 /**
  * GemFire statistics about a {@link DiskStoreImpl}.
  *
- * @author Darrel Schneider
  *
  * @since prPersistSprint2
  */

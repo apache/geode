@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * properly when PartitionedRegion is in
  * ParentRegion/ChildRegion/PartitionedRegion hierarchy.
  * 
- * @author Tushar Apshankar, Created on May 19, 2006
  *  
  */
 public class PartitionedRegionAsSubRegionDUnitTest extends

@@ -24,7 +24,6 @@ package com.gemstone.gemfire.internal.cache.wan;
  * remote side of the gateway's configuration.
  * 
  * @since 7.0
- * @author skumar
  * 
  */
 public class GatewaySenderConfigurationException extends GatewaySenderException {

@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 
 /**
- * @author Kirk Lund
  * @since 7.0
  */
 public class StatMonitorHandler implements SampleHandler {
@@ -158,7 +157,6 @@ public class StatMonitorHandler implements SampleHandler {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   class StatMonitorNotifier implements Runnable {
@@ -313,7 +311,6 @@ public class StatMonitorHandler implements SampleHandler {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   static class MonitorTask {

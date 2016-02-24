@@ -360,7 +360,6 @@ public class XmlUtils {
    * An object used by an XPath query that maps namespaces to uris.
    * 
    * @see NamespaceContext
-   * @author dsmith
    *
    */
   public static class XPathContext implements NamespaceContext {

@@ -34,9 +34,6 @@ import org.hibernate.annotations.Entity;
 /**
  * Simple JavaBean domain object representing an owner.
  * 
- * @author Ken Krebs
- * @author Juergen Hoeller
- * @author Sam Brannen
  */
 @javax.persistence.Entity
 @Entity

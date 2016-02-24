@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.datasource;
 
 /**
- * @author mitulb
  * 
  * To change the template for this generated type comment go to Window -
  * Preferences - Java - Code Generation - Code and Comments

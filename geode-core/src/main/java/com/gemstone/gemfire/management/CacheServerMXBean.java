@@ -49,7 +49,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
  * </tr>
  * </table>
  * 
- * @author rishim
  * @since 7.0
  * 
  */

@@ -37,7 +37,6 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
 /**
  * Implementation of DiskStoreFactory 
  * 
- * @author Gester
  * @since prPersistSprint2
  */
 public class DiskStoreFactoryImpl implements DiskStoreFactory

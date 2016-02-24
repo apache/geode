@@ -18,7 +18,6 @@
  * IndexUsageWithAliasAsProjAtrbt.java
  *
  * Created on May 4, 2005, 11:10 AM
- *@author vikramj
  */
 package com.gemstone.gemfire.cache.query.functional;
 

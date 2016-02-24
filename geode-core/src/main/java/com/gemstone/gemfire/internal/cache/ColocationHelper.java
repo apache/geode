@@ -50,8 +50,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * An utility class to retrieve colocated regions in a colocation hierarchy in
  * various scenarios
  * 
- * @author Yogesh Mahajan
- * @author Kishor Bachhav
  * 
  * @since 6.0
  */

@@ -47,7 +47,6 @@ import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
  * 
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.ShellCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

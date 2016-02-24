@@ -35,7 +35,6 @@ import org.springframework.util.StreamUtils;
  * The SerializableObjectHttpMessageConverter class is a Spring HttpMessageConverter for converting bytes streams to/from
  * Serializable Objects.
  * <p/>
- * @author John Blum
  * @see java.io.Serializable
  * @see org.springframework.http.HttpInputMessage
  * @see org.springframework.http.HttpMessage

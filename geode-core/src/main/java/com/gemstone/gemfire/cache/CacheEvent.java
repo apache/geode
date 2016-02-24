@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
  *
  * @see CacheListener
  *
- * @author Eric Zoerner
  *
  *
  * @since 2.0

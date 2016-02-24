@@ -46,8 +46,6 @@ import java.util.StringTokenizer;
  * <p>
  * Extends and implements DistributedSystemConfig.
  *
- * @author    Kirk Lund
- * @author    David Whitlock
  * @since     3.5 (in which it was named AgentConfig)
  */
 public class AgentConfigImpl extends DistributedSystemConfigImpl

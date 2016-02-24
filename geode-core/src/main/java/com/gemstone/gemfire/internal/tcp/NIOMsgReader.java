@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * A message reader which reads from the socket
  * using (blocking) nio.
- * @author dsmith
  *
  */
 public class NIOMsgReader extends MsgReader {

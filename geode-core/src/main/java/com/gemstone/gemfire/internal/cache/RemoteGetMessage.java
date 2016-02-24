@@ -363,7 +363,6 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.RemoteGetMessage.GetReplyMessage}
    * 
-   * @author Mitch Thomas
    * @since 5.0
    */
   public static class RemoteGetResponse extends RemoteOperationResponse {

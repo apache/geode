@@ -21,7 +21,6 @@ package com.gemstone.gemfire.admin;
  * distributed system.  It is similar to a {@linkplain
  * com.gemstone.gemfire.i18n.LogWriterI18n log message}.
  *
- * @author    Kirk Lund
  * @see       AlertListener
  * @since     3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead

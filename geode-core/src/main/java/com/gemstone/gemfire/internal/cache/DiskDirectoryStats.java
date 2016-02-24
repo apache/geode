@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.*;
 /**
  * GemFire statistics about Disk Directories
  *
- * @author Darrel Schneider
  *
  * @since 3.2
  */

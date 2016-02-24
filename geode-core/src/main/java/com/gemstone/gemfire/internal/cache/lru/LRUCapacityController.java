@@ -51,7 +51,6 @@ import java.util.*;
  *  &lt;/region-attributes&gt;
  *  </pre>
  *
- * @author Matthew Splett
  * @since 2.0.2
  */
 public final class LRUCapacityController extends LRUAlgorithm

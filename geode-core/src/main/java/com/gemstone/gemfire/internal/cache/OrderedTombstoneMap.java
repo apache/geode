@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  * 
  * This map is not threadsafe.
  * 
- * @author dsmith
  *
  */
 public class OrderedTombstoneMap<T> {
@@ -105,7 +104,6 @@ public class OrderedTombstoneMap<T> {
   /**
    * A comparator that sorts version tags based on the region version, and
    * then on the timestamp.
-   * @author dsmith
    *
    */
   public static class VersionTagComparator implements Comparator<VersionTag> {

@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletRequest;
  * This class contains implementations of getting Cluster's current Reads,
  * Writes and queries details and their trends over the time.
  * 
- * @author Anchal G
  * @since version 7.5
  */
 

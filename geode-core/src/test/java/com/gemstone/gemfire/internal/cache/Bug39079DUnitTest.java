@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Tests that if a node doing GII experiences DiskAccessException, it should
  * also not try to recover from the disk
- * @author Asif
  *
  */
 public class Bug39079DUnitTest extends CacheTestCase {

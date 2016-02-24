@@ -61,7 +61,6 @@ import com.gemstone.gemfire.internal.util.ObjectIntProcedure;
 
 /**
  * TODO this class should be moved to a different package
- * @author sbawaska
  */
 public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 

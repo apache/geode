@@ -30,8 +30,6 @@ import static java.util.Collections.*;
 /**
  * Thrown when the option parser encounters an unrecognized option.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @author Nikhil Jadhav
  */
 public class UnrecognizedOptionException extends OptionException {
     private static final long serialVersionUID = -1L;

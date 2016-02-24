@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 /**
  * Compares test output to golden text file using regex pattern matching
  * 
- * @author Kirk Lund
  */
 public class RegexGoldenComparator extends GoldenComparator {
   

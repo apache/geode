@@ -34,8 +34,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * The StatisticsManager may be implemented by LocalStatisticsFactory and does
  * not require a GemFire connection.
 
- * @author Darrel Schneider
- * @author Kirk Lund
  */
 public class SimpleStatSampler extends HostStatSampler  {
 

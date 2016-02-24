@@ -51,8 +51,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Client operations will consult this service to identify the server locations
  * on which the data for the client operation is residing
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * 
  * @since 6.5
  * 

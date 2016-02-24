@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 /**
  * This class tracks GemFire statistics related to a {@link com.gemstone.gemfire.cache.query.CqQuery}.
  * 
- * @author Rao Madduri
  * @since 5.5 
  */
 public class CqQueryVsdStats

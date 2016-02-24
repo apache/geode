@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  * State object used during getInitialImage Locked during clean up of destroyed
  * tokens.
  * 
- * @author Eric Zoerner
  */
 public interface ImageState /* extends Lock */ {
 

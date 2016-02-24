@@ -85,7 +85,6 @@ public class RedundancyLevelJUnitTest
    * only client is started and the connection-exceptions due to no live
    * servers, which appear as warnings, are ignored.)
    * 
-   * @author Dinesh Patel
    * 
    */
   @Test

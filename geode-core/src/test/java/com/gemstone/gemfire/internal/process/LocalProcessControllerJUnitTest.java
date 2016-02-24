@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for LocalProcessController.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 @Category(UnitTest.class)

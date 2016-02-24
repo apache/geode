@@ -31,7 +31,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
 
 /**
  * Implementation of Struct
- * @author Eric Zoerner
  * @since 4.0
  */
 public class StructImpl

@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.*;
  * @see AdminDistributedSystem#addCacheListener
  * @see AdminDistributedSystem#removeCacheListener
  *
- * @author Darrel Schneider
  * @since 5.0 
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */

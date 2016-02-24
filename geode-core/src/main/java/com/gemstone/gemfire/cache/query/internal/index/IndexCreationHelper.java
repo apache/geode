@@ -31,8 +31,6 @@ import com.gemstone.gemfire.cache.query.internal.QCompiler;
 
 /**
  * 
- * @author vaibhav
- * @author Asif
  */
 public abstract class IndexCreationHelper {  
   

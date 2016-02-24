@@ -45,7 +45,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * TODO This doesn't really test the optimised RI behaviour but only that RI
  * works. But there must be other tests doing the same.
  * 
- * @author ashetkar
  * 
  */
 @SuppressWarnings("serial")

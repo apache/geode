@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.admin.remote.AdminResponse;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

@@ -27,7 +27,6 @@ import org.junit.runners.model.InitializationError;
  * marked with @After and @Before (but also the Test method itself) can request
  * this name for which it is running.
  *
- * @author Rudy De Busscher
  */
 public class NamedRunner extends BlockJUnit4ClassRunner {
 

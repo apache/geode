@@ -33,7 +33,6 @@ package com.gemstone.gemfire.internal.util;
  * <tt>Runnable</tt>, however, does not return a result and cannot
  * throw a checked exception.
  *
- * @author Eric Zoerner
  *
  * @version based on JSR166 Callable version 1.6.
  */

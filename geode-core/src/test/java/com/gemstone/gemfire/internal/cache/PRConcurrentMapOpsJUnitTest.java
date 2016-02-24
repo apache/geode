@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests ConcurrentMap operations on a PartitionedRegion on a single node.
  *
- * @author Eric Zoerner
  */
 
 @Category(IntegrationTest.class)

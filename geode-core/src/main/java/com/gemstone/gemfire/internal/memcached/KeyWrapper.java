@@ -29,7 +29,6 @@ import com.gemstone.gemfire.DataSerializer;
  * class are used. Instances of this class encapsulate byte[] keys and
  * override equals and hashCode to base them on contents on byte[].
  * 
- * @author sbawaska
  */
 public class KeyWrapper implements DataSerializable {
 

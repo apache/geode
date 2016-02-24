@@ -21,7 +21,6 @@ package com.gemstone.gemfire;
  * A <code>GemFireIOException</code> is thrown when a 
  * GemFire operation failure is caused by an <code>IOException</code>.
  *
- * @author David Whitlock
  *
  */
 public class GemFireIOException extends GemFireException {

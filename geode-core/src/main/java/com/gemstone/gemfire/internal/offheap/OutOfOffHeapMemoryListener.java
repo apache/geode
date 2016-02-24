@@ -25,7 +25,6 @@ import com.gemstone.gemfire.OutOfOffHeapMemoryException;
  * connection causes the System and Cache to close in order to avoid data
  * inconsistency.
  * 
- * @author Kirk Lund
  * @since 9.0
  */
 public interface OutOfOffHeapMemoryListener {

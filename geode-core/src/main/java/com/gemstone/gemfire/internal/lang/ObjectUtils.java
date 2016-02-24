@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 /**
  * The ObjectUtils class is an abstract utility class for working with and invoking methods on Objects.
  * <p/>
- * @author John Blum
  * @see java.lang.Object
  * @since 6.8
  */

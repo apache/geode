@@ -38,7 +38,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * is the data structure that is used in the locator to compare
  * the load between multiple servers.
  * 
- * @author dsmith
  */
 @Category(UnitTest.class)
 public class LocatorLoadSnapshotJUnitTest {

@@ -53,8 +53,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * the cache server for create, update, remove and destroy operations.It also checks
  * that peer nodes also get the same EventID.
  *
- * @author Suyog Bhokare
- * @author Asif
  *
  */
 

@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
    * This class needs to keep track of any information that can be recovered
    * from the DiskInitFile.
    *
-   * @author Darrel Schneider
    *
    * @since prPersistSprint2
    */

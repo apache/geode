@@ -24,7 +24,6 @@ package com.gemstone.gemfire.internal.cache.ha;
  * This class defines the user specified attributes of the HARegion which are
  * configurable.
  * 
- * @author Mitul Bid
  *  
  */
 public class HARegionQueueAttributes

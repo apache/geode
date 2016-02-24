@@ -26,7 +26,6 @@ import java.util.ConcurrentModificationException;
  * mechanism when a conflict is detected.  It is not currently meant to be
  * exposed to customers.
  * 
- * @author Bruce Schuchardt
  * @since 7.0
  */
 public class ConcurrentCacheModificationException extends

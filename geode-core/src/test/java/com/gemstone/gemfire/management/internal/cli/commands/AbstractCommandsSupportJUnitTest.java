@@ -47,7 +47,6 @@ import org.junit.experimental.categories.Category;
  * The AbstractCommandsSupportJUnitTest class is a test suite of test cases testing the contract and functionality
  * of the AbstractCommandsSupport class for implementing GemFire shell (Gfsh) commands.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery

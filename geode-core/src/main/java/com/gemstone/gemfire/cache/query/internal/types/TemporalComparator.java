@@ -25,7 +25,6 @@ import java.util.*;
  * java.util.Date, java.sql.Date, java.sql.Time, and java.sql.Timestamp.
  *
  * @version     $Revision: 1.1 $
- * @author      ericz
  */
 
 

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.memcached.ValueWrapper;
  * "replace" means "store this data, but only if the server *does*
  * already hold data for this key".
  * 
- * @author Swapnil Bawaskar
  */
 public class ReplaceCommand extends StorageCommand {
 

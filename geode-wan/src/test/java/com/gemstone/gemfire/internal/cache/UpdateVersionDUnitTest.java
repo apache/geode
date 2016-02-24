@@ -65,7 +65,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author Shobhit Agarwal
  * @since 7.0.1
  */
 public class UpdateVersionDUnitTest extends DistributedTestCase {

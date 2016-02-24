@@ -51,7 +51,6 @@ public class User implements PdxSerializable {
 }
  * </PRE>
  * 
- * @author darrel
  * @since 6.6
  */
 

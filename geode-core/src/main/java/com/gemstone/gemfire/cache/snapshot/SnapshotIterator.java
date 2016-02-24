@@ -29,7 +29,6 @@ import java.util.Map.Entry;
  * 
  * @see SnapshotReader
  * 
- * @author bakera
  * @since 7.0
  */
 public interface SnapshotIterator<K, V> {

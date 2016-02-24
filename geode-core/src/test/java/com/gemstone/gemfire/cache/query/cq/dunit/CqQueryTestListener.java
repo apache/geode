@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author rmadduri
  *
  */
 public class CqQueryTestListener implements CqStatusListener {

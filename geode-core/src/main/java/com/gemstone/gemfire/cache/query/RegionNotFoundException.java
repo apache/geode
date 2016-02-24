@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown if a region referenced by name in a query cannot be found.
  *
- * @author      Eric Zoerner
  * @since 4.0
  */
 

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.junit.rules.IgnoreUntilRule;
 /**
  * Unit tests for IgnoreUntil JUnit Rule
  * 
- * @author Kirk Lund
  */
 @Category(UnitTest.class)
 public class IgnoreUntilRuleTest {

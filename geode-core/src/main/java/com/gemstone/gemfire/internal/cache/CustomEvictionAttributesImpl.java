@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.EvictionCriteria;
 /**
  * Concrete instance of {@link CustomEvictionAttributes}.
  * 
- * @author swale
  * @since gfxd 1.0
  */
 public final class CustomEvictionAttributesImpl extends

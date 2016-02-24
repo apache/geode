@@ -26,7 +26,6 @@ import java.lang.annotation.Target;
  * The Repeat class is a Java Annotation enabling an annotated test suite class test case method to be repeated
  * a specified number of iterations.
  *
- * @author John Blum
  * @see java.lang.annotation.Annotation
  */
 @Documented

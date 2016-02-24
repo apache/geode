@@ -40,7 +40,6 @@ import org.springframework.web.client.ResourceAccessException;
  * The SimpleHttpOperationInvokerJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * SimpleHttpOperationInvoker class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.web.AbstractWebTestCase
  * @see com.gemstone.gemfire.management.internal.web.shell.SimpleHttpOperationInvoker
  * @see org.junit.Assert

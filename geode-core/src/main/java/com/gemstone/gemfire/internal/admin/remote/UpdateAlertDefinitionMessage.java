@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.admin.StatAlertsManager;
  * {@link StatAlertDefinition} to member's alert manager
  * {@link StatAlertsManager}
  * 
- * @author mjha
  */
 public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
 

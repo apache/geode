@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache.query.data;
 
 /**
  *
- * @author vjadhav
  */
 
  // Added for the Test IUMRCompositeIteratorTest

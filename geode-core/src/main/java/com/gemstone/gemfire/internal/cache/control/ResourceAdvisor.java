@@ -53,7 +53,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * The advisor associated with a {@link ResourceManager}.  Allows knowledge of
  * remote {@link ResourceManager} state and distribution of local {@link ResourceManager} state.
  * 
- * @author Mitch Thomas
  * @since 6.0
  */
 public class ResourceAdvisor extends DistributionAdvisor {
@@ -295,8 +294,6 @@ public class ResourceAdvisor extends DistributionAdvisor {
    * Profile which shares state with other ResourceManagers.
    * The data available in this profile should be enough to 
    * deliver a {@link MemoryEvent} for any of the CRITICAL {@link MemoryState}s 
-   * @author Mitch Thomas
-   * @author David Hoots
    * @since 6.0
    */
   public static class ResourceManagerProfile extends Profile {

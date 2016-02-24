@@ -43,7 +43,6 @@ import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
  * testing and cloning query literals.
  *
  * @version     $Revision: 1.1 $
- * @author      ericz
  */
 
 public class TypeUtils implements OQLLexerTokenTypes

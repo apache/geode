@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal;
  * VersionedDataSerializable in order to furnish version information
  * to the serialization infrastructure for backward compatibility
  * 
- * @author bruces
  */
 
 public interface SerializationVersions {

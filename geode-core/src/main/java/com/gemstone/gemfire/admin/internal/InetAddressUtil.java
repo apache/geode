@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Provides static utilities for manipulating, validating, and converting
  * InetAddresses and host strings.
  *
- * @author    Kirk Lund
  * @since     3.5
  */
 public class InetAddressUtil {

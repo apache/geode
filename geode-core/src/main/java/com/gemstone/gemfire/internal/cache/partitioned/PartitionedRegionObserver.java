@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * events. See the documentation for class PartitionedRegionObserverHolder for
  * details.
  * 
- * @author Kishor Bachhav
  * 
  */
 

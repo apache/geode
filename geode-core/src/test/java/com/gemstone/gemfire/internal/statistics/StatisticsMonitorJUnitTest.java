@@ -38,7 +38,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit and integration tests for the StatisticsMonitor.
  *   
- * @author Kirk Lund
  * @since 7.0
  */
 @Category(UnitTest.class)
@@ -193,7 +192,6 @@ public class StatisticsMonitorJUnitTest {
   // TODO: test notifyListeners
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   static class TestStatisticsMonitor extends StatisticsMonitor {

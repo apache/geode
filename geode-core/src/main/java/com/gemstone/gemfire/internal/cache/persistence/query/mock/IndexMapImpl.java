@@ -32,7 +32,6 @@ import com.gemstone.gemfire.cache.query.internal.types.ExtendedNumericComparator
  * A dummy implementation of an IndexMap. Keeps all of the entries
  * in memory, but in serialized form.
  * 
- * @author dsmith
  *
  */
 public class IndexMapImpl implements IndexMap {

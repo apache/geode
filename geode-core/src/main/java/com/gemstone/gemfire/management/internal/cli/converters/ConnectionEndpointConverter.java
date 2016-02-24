@@ -28,7 +28,6 @@ import org.springframework.shell.core.MethodTarget;
 import com.gemstone.gemfire.management.internal.cli.util.ConnectionEndpoint;
 
 /**
- * @author abhishek
  *
  */
 public class ConnectionEndpointConverter implements Converter<ConnectionEndpoint> {

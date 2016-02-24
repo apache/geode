@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.datasource;
 
 /**
- * @author tnegi
  */
 import java.sql.SQLException;
 
@@ -34,7 +33,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * This class models a connection pool for transactional database connection.
  * Extends the AbstractPoolCache to inherit the pool bahavior.
  * 
- * @author tnegi
  */
 public class TranxPoolCacheImpl extends AbstractPoolCache {
   private static final long serialVersionUID = 3295652525163658888L;

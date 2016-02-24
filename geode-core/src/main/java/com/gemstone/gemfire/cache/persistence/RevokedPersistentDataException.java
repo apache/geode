@@ -30,7 +30,6 @@ import com.gemstone.gemfire.admin.AdminDistributedSystem;
  * persistent files are removed. See
  * {@link AdminDistributedSystem#revokePersistentMember(java.net.InetAddress, String)}
  * 
- * @author dsmith
  * @since 7.0
  */
 public class RevokedPersistentDataException extends GemFireException {

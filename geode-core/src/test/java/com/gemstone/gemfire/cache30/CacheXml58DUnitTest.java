@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 /**
  * Tests 5.8 cache.xml features.
  * 
- * @author skumar
  * @since 5.8
  */
 

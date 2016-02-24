@@ -53,8 +53,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Test to verify Add operation to HARegion Queue with and without conflation.
  * 
- * @author Yogesh Mahajan
- * @author Dinesh Patel
  */
 
 @Category(IntegrationTest.class)

@@ -45,7 +45,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  *
  * @see CqAttributes
  *
- * @author Anil 
  * @since 5.5
  */
 public class CqAttributesFactory {

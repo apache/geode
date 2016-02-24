@@ -48,7 +48,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
  * MyDistributedSustemListener's removedDistributedSystem will be invoked who
  * will stop a GatewaySender.)
  * 
- * @author kbachhav
  * 
  */
 

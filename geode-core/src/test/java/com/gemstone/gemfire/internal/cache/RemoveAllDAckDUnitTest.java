@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Adapted from RemoveAllDAckDUnitTest
- * @author darrel
  */
 public class RemoveAllDAckDUnitTest extends DistributedTestCase {
     

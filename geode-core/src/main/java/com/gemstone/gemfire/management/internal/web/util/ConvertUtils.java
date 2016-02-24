@@ -33,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
  * The ConvertUtils class is a support class for performing conversions used by the GemFire web application
  * and REST interface.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.CliUtil
  * @since 8.0
  */

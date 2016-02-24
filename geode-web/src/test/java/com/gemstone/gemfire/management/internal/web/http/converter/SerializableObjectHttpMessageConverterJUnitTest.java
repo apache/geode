@@ -43,7 +43,6 @@ import org.springframework.http.MediaType;
  * The SerializableObjectHttpMessageConverterJUnitTest class is a test suite of test cases testing the contract
  * and functionality of the SerializableObjectHttpMessageConverter class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.web.http.converter.SerializableObjectHttpMessageConverter
  * @see org.jmock.Mockery
  * @see org.junit.Assert

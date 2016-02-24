@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
  * BufferUnderflowException will be thrown if an attempt to read more data than exists is made.
  * BufferOverflowException will be thrown if an attempt to write past the end of the chunk is made.
  * 
- * @author darrel
  * @since 9.0
  */
 public class ByteBufferMemoryChunk implements MemoryChunk {

@@ -21,7 +21,6 @@ import com.gemstone.gemfire.admin.*;
 /**
  * The implementation of <code>CacheHealthConfig</code>
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

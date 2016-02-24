@@ -32,7 +32,6 @@ import java.io.IOException;
  * grantor. All currently held locks are represented as DLockRemoteTokens
  * and provided in response to a DLockRecoverGrantorMessage.
  * 
- * @author Kirk Lund
  */
 public class DLockRemoteToken implements DataSerializableFixedID {
 

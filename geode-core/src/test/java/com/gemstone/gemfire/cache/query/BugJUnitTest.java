@@ -47,7 +47,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Tests reported bugs
- * @author ericz
  */
 @Category(IntegrationTest.class)
 public class BugJUnitTest {
@@ -256,7 +255,6 @@ public class BugJUnitTest {
   
   /**
    * This bug was occuring in simulation of Outer Join query for Schwab
-   *@author Asif
    */
   @Test
   public void testBugResultMismatch() {
@@ -317,7 +315,6 @@ public class BugJUnitTest {
  /**
    * Tests the Bug 38422 where the index results intersection results in
    * incorrect size
-   * @author asif
    */
   @Test
   public void testBug38422() {

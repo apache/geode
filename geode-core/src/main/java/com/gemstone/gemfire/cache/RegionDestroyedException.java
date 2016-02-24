@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache;
  * Indicates that the region has been destroyed. Further operations
  * on the region object are not allowed.
  *
- * @author Eric Zoerner
  *
  * @since 2.0
  */

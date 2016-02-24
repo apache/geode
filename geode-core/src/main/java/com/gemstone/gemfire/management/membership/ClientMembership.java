@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
  * Provides utility methods for registering and unregistering
  * ClientMembershipListeners in this process.
  *
- * @author rishim
  * @since 8.0
  */
 public final class ClientMembership {

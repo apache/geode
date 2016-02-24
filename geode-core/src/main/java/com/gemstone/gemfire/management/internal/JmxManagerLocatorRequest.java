@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.Version;
  * Sent to a locator to request it to find (and possibly start)
  * a jmx manager for us. It returns a JmxManagerLocatorResponse.
  * 
- * @author darrel
  * @since 7.0
  *
  */

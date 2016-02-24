@@ -25,7 +25,6 @@ import com.gemstone.gemfire.GemFireException;
  * subclasses of this class. This class is abstract and therefore only
  * subclasses are instantiated.
  *
- * @author Eric Zoerner
  *
  * @since 2.0
  */

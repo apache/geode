@@ -63,8 +63,6 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
  * they share a common bridgewriter and in the second
  * scenario, each has a unique bridgewriter.
  *
- * @author Mitul Bid
- * @author Pratik Batra
  */
 public class ConflationDUnitTest extends DistributedTestCase
 {

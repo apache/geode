@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.cache;
 
 /**
- * @author dsmith
  *
  */
 public interface DiskStoreTask extends Runnable {

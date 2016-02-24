@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.Version;
  * The version tag class for version tags for non-persistent regions. The
  * VersionSource held in these tags is an InternalDistributedMember.
  * 
- * @author dsmith
  * 
  */
 public class VMVersionTag extends VersionTag<InternalDistributedMember> {

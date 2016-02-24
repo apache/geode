@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * reply until the commit has finished. Once all replies have come in, the
  * transaction lock (<code>TXLockId</code>) will be released.
  *
- * @author Kirk Lund
  */
 public class TXOriginatorRecoveryProcessor extends ReplyProcessor21  {
 

@@ -23,7 +23,6 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 /**
- * @author skumar
  *
  */
 public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {

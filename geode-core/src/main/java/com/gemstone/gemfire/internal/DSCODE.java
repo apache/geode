@@ -24,7 +24,6 @@ import com.gemstone.gemfire.DataSerializer;
  * It is basically an Enum and could be changed to one once we drop 1.4.
  * The allowed range of these codes is -128..127 inclusive (i.e. byte).
  *
- * @author Darrel Schneider
  * @since 5.7
  */
 public interface DSCODE {

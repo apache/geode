@@ -98,7 +98,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests the basic client-server transaction functionality
- * @author sbawaska
  */
 public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest {
 

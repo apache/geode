@@ -26,7 +26,6 @@ import com.gemstone.gemfire.pdx.PdxWriter;
 /**
  * The Item class models item entity in the real world.
  * <p/>
- * @author Nilkanth Patel
  * @since 8.0
  */
 

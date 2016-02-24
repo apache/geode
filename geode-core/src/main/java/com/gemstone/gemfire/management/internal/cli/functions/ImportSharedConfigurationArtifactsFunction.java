@@ -30,7 +30,6 @@ import com.gemstone.gemfire.management.internal.configuration.utils.ZipUtils;
 /******
  * This function copies the zipped shared configuration, renames the existing shared configuration directory
  * and unzips the shared configuration.
- * @author bansods
  *
  */
 public class ImportSharedConfigurationArtifactsFunction extends FunctionAdapter implements InternalEntity {

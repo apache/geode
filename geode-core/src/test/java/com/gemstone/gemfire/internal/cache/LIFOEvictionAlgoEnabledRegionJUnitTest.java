@@ -49,7 +49,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * This is a test verifies region is LIFO enabled by ENTRY COUNT verifies correct stats updating 
  * and faultin is not evicting another entry - not strict LIFO
  * 
- * @author aingle
  * @since 5.7
  */
 @Category(IntegrationTest.class)

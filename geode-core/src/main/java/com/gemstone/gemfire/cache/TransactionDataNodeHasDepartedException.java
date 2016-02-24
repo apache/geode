@@ -25,7 +25,6 @@ package com.gemstone.gemfire.cache;
  * is hosted on a member that is not
  * the initiator of the transaction.
  *
- * @author gregp
  * @since 6.5
  */
 public class TransactionDataNodeHasDepartedException extends TransactionException {

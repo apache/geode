@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.query;
  * about the CQs of a client.
  *
  * @since 5.5
- * @author anil
  */
 public interface CqServiceStatistics {
 

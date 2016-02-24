@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache;
  * doesn't exist in the <code>Region</code>. This exception is <i>not</i>
  * thrown by {@link com.gemstone.gemfire.cache.Region#get(Object)} or {@link Region#getEntry}.
  *
- * @author Eric Zoerner
  *
  *
  * @see com.gemstone.gemfire.cache.Region#invalidate(Object)

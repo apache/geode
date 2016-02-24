@@ -23,7 +23,6 @@ package com.gemstone.gemfire.cache.util;
  * of the system that caused the change.  It also has this information for the
  * previous change to the entry.
  * @since 7.0
- * @author Bruce Schuchardt
  */
 public interface TimestampedEntryEvent extends com.gemstone.gemfire.cache.EntryEvent {
   // note that this interface inherits the following methods, among others:

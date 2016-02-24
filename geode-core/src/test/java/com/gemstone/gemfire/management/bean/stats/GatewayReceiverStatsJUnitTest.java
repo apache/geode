@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.internal.beans.GatewayReceiverMBeanBridge
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author rishim
  */
 @Category(IntegrationTest.class)
 public class GatewayReceiverStatsJUnitTest extends MBeanStatsTestCase {

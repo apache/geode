@@ -36,7 +36,6 @@ import com.gemstone.gemfire.security.Authenticator;
  * Encapsulates obtaining valid and invalid credentials. Implementations will be
  * for different kinds of authentication schemes.
  * 
- * @author sumedh
  * @since 5.5
  */
 public abstract class CredentialGenerator {
@@ -65,7 +64,6 @@ public abstract class CredentialGenerator {
    * All security dunit tests will automagically start testing the new
    * implementation after this.
    * 
-   * @author sumedh
    * @since 5.5
    */
   public static final class ClassCode {

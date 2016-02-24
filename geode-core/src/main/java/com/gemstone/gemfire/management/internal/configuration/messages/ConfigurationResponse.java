@@ -41,7 +41,6 @@ import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils;
 
 /***
  * Response containing the configuration requested by the {@link ConfigurationRequest}
- * @author bansods
  */
 public class ConfigurationResponse implements DataSerializableFixedID {
   

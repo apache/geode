@@ -23,7 +23,6 @@ import org.junit.runners.model.InitializationError;
 import java.net.URLClassLoader;
 
 /**
- * @author StackOverflow
  */
 public class SeparateClassloaderTestRunner extends BlockJUnit4ClassRunner {
 

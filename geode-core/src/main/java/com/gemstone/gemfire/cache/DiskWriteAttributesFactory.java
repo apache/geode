@@ -25,8 +25,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 /**
  * Factory for getting DiskWriteAttribute objects
  * 
- * @author Mitul Bid
- * @author Asif
  * @since 5.1
  * @deprecated as of 6.5 use {@link DiskStoreFactory} instead
  */

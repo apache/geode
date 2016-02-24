@@ -21,7 +21,6 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Indicates that required dependencies were not found in the ClassPath.
  * 
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 public class DependenciesNotFoundException extends GemFireException {

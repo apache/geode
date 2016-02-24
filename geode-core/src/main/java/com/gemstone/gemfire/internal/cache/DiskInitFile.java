@@ -86,7 +86,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * Does all the IF file work for a DiskStoreImpl.
  *
- * @author Darrel Schneider
  *
  * @since prPersistSprint1
  */
@@ -2439,7 +2438,6 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Currently only few for GemFireXD added here but all other boolean flags also
    * be better moved here.
    * 
-   * @author swale
    * @since 7.0
    */
   public enum DiskRegionFlag {

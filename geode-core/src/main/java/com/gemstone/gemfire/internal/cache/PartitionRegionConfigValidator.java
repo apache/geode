@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * 
- * @author ymahajan
  * 
  */
 public class PartitionRegionConfigValidator {

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Thrown if the PDX system could not be successfully initialized.
  * The cause will give the detailed reason why initialization failed.
- * @author darrel
  * @since 6.6
  *
  */

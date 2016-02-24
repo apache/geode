@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.cli.ConverterHint;
 
 /**
  * 
- * @author Sourabh Bansod 
  * @since 7.0
  */
 public class LogLevelConverter implements Converter<String> {

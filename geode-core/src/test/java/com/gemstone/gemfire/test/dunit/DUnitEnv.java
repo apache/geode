@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.dunit.standalone.BounceResult;
  * through here, so that we can separate them out from depending on hydra
  * and run them on a different VM launching system.
  *   
- * @author dsmith
  */
 public abstract class DUnitEnv {
   

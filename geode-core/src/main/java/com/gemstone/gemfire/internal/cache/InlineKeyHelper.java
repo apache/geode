@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache;
 
 /**
  * No instances of this class. Just some static method having to do with inline keys.
- * @author darrel
  *
  */
 public class InlineKeyHelper {

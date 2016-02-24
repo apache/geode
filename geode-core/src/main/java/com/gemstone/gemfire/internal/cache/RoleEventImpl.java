@@ -31,7 +31,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
  * Implementation of a RoleEvent.  Super class is DataSerializable but
  * this class is probably never on the wire, however, it does support it.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public final class RoleEventImpl extends RegionEventImpl

@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
  * bridge client and connection proxies used by a
  * region.
  * 
- * @author dsmith
  *
  */
 public class ClientHelper {

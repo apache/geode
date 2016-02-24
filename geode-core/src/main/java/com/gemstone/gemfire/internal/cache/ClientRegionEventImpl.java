@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
  * region event with the client's
  * host and port for notification purposes.
  * 
- * @author Girish Thombare
  * 
  * @since 5.1
  */

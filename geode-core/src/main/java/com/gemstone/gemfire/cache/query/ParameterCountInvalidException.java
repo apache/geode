@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.query;
  * Thrown when the number of bound paramters for a query does not match the
  * number of placeholders.
  *
- * @author Eric Zoerner
  * @since 4.0
  */
 public class ParameterCountInvalidException extends QueryException {

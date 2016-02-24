@@ -26,7 +26,6 @@ import com.gemstone.gemfire.DataSerializer;
 /**
  * This is a wrapper class for doubles, similar to {@link ByteArrayWrapper}
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public class DoubleWrapper implements DataSerializable, Comparable<Object> {

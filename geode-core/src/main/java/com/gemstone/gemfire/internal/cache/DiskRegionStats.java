@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 /**
  * GemFire statistics about a {@link DiskRegion}.
  *
- * @author David Whitlock
  *
  * @since 3.2
  */

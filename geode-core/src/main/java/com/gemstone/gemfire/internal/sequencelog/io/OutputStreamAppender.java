@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.sequencelog.Transition;
 
 /**
  * Appends events logged using the SequenceLogger to a binary stream.
- * @author dsmith
  *
  */
 public class OutputStreamAppender {

@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * The implementation of <code>GemFireHealthConfig</code>
  *
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

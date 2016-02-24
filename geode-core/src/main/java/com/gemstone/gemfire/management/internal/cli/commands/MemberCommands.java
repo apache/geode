@@ -50,7 +50,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 
 /***
  *
- * @author Sourabh Bansod
  *
  * @since 7.0
  */

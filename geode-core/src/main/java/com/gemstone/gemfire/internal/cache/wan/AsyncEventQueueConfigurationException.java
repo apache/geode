@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.OperationAbortedException;
 /**
  * Exception to inform user that AsyncEventQueue is wrongly configured.
  *  
- * @author Suranjan Kumar
  *
  */
 public class AsyncEventQueueConfigurationException extends

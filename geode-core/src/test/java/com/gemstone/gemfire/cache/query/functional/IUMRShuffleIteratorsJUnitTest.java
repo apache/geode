@@ -53,7 +53,6 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author vjadhav
  */
 @Category(IntegrationTest.class)
 public class IUMRShuffleIteratorsJUnitTest {

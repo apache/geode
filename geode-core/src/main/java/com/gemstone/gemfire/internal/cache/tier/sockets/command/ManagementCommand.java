@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 /**
  * TODO: Javadoc everything and edit as needed
  *
- * @author VMware, Inc.
  * @since 7.0
  */
 public class ManagementCommand extends BaseCommand {

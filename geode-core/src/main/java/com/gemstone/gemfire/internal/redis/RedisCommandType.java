@@ -135,7 +135,6 @@ import com.gemstone.gemfire.internal.redis.executor.transactions.WatchExecutor;
  * the redis protocol and calling {@link #getExecutor()} on a type returns the executor
  * class for that command.
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public enum RedisCommandType {

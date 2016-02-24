@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.cache.extension;
 /**
  * Allows {@link Extensible} objects to add and remove {@link Extension}s.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

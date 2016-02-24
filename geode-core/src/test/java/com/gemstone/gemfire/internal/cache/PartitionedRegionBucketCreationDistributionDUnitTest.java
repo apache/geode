@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  * This class tests bucket Creation and distribution for the multiple Partition
  * regions.
- * @author gthombar, modified by Tushar (for bug#35713)
  */
 public class PartitionedRegionBucketCreationDistributionDUnitTest extends
     PartitionedRegionDUnitTestCase

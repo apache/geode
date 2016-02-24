@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * The ClusterCommandsController class implements GemFire REST API web service calls for the Gfsh Cluster
  * (System)-based commands.
  *
- * @author John Blum
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.RequestMapping
  * @see org.springframework.web.bind.annotation.RequestMethod

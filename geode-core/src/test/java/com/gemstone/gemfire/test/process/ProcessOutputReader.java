@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
  * </p>
  * Extracted from ProcessWrapper.
  * 
- * @author Kirk Lund
  */
 public class ProcessOutputReader {
 

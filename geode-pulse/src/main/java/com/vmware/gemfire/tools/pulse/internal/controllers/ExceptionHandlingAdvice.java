@@ -33,7 +33,6 @@ import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
 /**
  * For handling IO exception in our controllers
  * 
- * @author Riya Bhandekar
  * 
  */
 @ControllerAdvice

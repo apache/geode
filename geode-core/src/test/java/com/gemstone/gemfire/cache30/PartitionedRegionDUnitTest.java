@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * that has a scope of {@link Scope#DISTRIBUTED_ACK distributed ACK}
  * and {@link PartitionAttributes partition-attributes}.
  *
- * @author Bruce Schuchardt
  * @since 5.1
  */
 public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {

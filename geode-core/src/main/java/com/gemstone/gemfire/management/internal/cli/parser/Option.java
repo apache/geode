@@ -24,7 +24,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.Preproce
 /**
  * Option of a Command
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  * 
  */

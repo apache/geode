@@ -23,7 +23,6 @@ import com.gemstone.gemfire.management.internal.FederationComponent;
 
 /**
  *
- * @author rishim
  *
  */
 public class GatewaySenderClusterStatsMonitor {

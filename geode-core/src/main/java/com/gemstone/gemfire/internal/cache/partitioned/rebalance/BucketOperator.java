@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 /**
  * A BucketOperator is used by the PartitionedRegionLoadModel to perform the actual
  * operations such as moving a bucket or creating a redundant copy.
- * @author dsmith
  *
  */
 public interface BucketOperator {

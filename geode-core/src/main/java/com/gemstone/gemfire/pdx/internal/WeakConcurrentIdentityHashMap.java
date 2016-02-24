@@ -47,7 +47,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * Note: this code came from the jdk from the package: com.sun.jmx.mbeanserver.
  * I modified it to use a ConcurrentMap.
- * @author darrel
  * @since 6.6
  */
 class WeakConcurrentIdentityHashMap<K, V> {

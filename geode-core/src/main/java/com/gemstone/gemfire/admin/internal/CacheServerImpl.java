@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Implements the administrative interface to a cache server.
  *
- * @author David Whitlock
  * @since 3.5
  */
 public class CacheServerImpl extends ManagedSystemMemberImpl

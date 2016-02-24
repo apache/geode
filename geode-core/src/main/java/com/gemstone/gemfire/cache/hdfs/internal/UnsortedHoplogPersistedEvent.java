@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  * This class should only be serialized by calling toData directly, which
  * is why it does not implement DataSerializable.
  * 
- * @author dsmith
  *
  */
 public class UnsortedHoplogPersistedEvent extends PersistedEventImpl {

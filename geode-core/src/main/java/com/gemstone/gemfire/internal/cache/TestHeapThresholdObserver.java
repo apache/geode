@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache;
 /**
  * Test only hand back object passed to
  * 
- * @author Amardeep Rajpal
  * 
  */
 public class TestHeapThresholdObserver {

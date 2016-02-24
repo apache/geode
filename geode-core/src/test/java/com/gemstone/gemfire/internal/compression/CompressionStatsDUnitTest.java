@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Tests compression statistics.
- * @author rholmes
  * @since 8.0
  */
 public class CompressionStatsDUnitTest extends CacheTestCase {
@@ -651,7 +650,6 @@ public class CompressionStatsDUnitTest extends CacheTestCase {
   
   /**
    * Used to record compression statistics.
-   * @author rholmes
    */
   private static final class CompressionStats {
     long vmTotalCompressionTime = 0;     

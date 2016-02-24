@@ -24,7 +24,6 @@ package com.gemstone.gemfire.internal.cache;
  *
  * @since 3.5.1
  *
- * @author Darrel Schneider
  *
  */
 public abstract class VMStatsRegionEntry extends AbstractRegionEntry {

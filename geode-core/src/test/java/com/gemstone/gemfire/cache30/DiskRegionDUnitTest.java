@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * Tests the functionality of cache regions whose contents may be
  * written to disk.
  *
- * @author David Whitlock
  *
  * @since 3.2
  */

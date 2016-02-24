@@ -42,7 +42,6 @@ import com.gemstone.gemfire.management.internal.cli.domain.MemberInformation;
 
 /***
  * 
- * @author bansods
  * since 7.0
  */
 

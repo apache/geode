@@ -22,7 +22,6 @@ import com.gemstone.gemfire.test.junit.IgnoreCondition;
 /**
  * The DefaultIgnoreCondition class...
  *
- * @author John Blum
  * @see org.junit.runner.Description
  * @see com.gemstone.gemfire.test.junit.ConditionalIgnore
  * @see com.gemstone.gemfire.test.junit.IgnoreCondition

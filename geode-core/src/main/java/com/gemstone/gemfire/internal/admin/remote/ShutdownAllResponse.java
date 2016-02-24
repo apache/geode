@@ -23,7 +23,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * @author xzhou
  *
  */
 public class ShutdownAllResponse extends AdminResponse {

@@ -40,7 +40,6 @@ import java.util.zip.GZIPInputStream;
  * rest to stdout.
  * 
  * 
- * @author bruces
  *
  */
 

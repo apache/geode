@@ -58,7 +58,6 @@ import java.io.*;
  *
  * @see DataSerializer
  *
- * @author Darrel Schneider
  * @since 5.7
  */
 public interface DataSerializableFixedID extends SerializationVersions {

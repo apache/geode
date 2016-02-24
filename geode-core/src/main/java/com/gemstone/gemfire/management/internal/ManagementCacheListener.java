@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * It updates the last refreshed time of proxy once it gets the update request
  * from the Managed Node
  * 
- * @author rishim
  * 
  */
 public class ManagementCacheListener extends

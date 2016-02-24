@@ -138,7 +138,6 @@ import com.gemstone.gemfire.internal.hll.HyperLogLogPlus;
  * Also, you cannot watch or unwatch keys as all keys within a GemFire 
  * transaction are watched by default.</li>
  * </ul>
- * @author Vitaliy Gavrilov
  *
  */
 

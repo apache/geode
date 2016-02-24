@@ -25,7 +25,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * 
- * @author sbawaska
  */
 public class NotSupportedCommand extends AbstractCommand {
 

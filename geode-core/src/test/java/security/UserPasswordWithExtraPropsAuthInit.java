@@ -36,7 +36,6 @@ import templates.security.UserPasswordAuthInit;
  * properties provided in getCredential props argument will also be 
  * copied as new credentials.
  * 
- * @author Soubhik
  * @since 5.5
  */
 public class UserPasswordWithExtraPropsAuthInit extends UserPasswordAuthInit {

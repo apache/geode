@@ -59,7 +59,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * <code>GemFireVM</code>.  Kind of hokey, but it beats a bunch of
  * special-case code.
  *
- * @author David Whitlock
  *
  * @since 3.5
  * */

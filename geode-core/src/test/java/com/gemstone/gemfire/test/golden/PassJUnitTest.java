@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Basic unit testing of the golden testing framework. This tests an 
  * example which is expected to always pass.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class PassJUnitTest extends GoldenTestCase implements ExecutableProcess {

@@ -40,7 +40,6 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 /**
  * Gemfire function to add free items in the existing order
  * if the total price for that order is greater then the argument
- * @author Nilkanth Patel
  */
 
 public class AddFreeItemToOrders implements Function  {

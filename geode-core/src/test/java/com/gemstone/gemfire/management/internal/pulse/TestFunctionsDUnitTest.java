@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * This is for testing running functions
  * 
- * @author ajayp
  * 
  */
 public class TestFunctionsDUnitTest extends ManagementTestBase {

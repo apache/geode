@@ -57,7 +57,6 @@ import org.junit.experimental.categories.Category;
  * ListIndexFunction GemFire function.
  * </p>
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.functions.ListIndexFunction
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery

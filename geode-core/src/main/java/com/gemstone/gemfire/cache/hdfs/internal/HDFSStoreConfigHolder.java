@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * set calls and copy constructor calls this class. Moreover this config holder
  * can be entirely replaced to support alter config
  * 
- * @author ashvina
  */
 public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Serializable {  
   private String name = null;

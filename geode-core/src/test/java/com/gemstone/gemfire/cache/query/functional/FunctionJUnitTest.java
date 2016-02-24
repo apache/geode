@@ -51,8 +51,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  *
- * @author vaibhav
- * @author kdeshpan
  */
 @Category(IntegrationTest.class)
 public class FunctionJUnitTest {

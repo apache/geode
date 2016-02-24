@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * Tests <code>EventTracker</code> management.
  *
- * @author Barry Oglesby
  *
  * @since 6.5
  */

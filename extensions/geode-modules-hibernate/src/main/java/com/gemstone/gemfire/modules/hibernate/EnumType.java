@@ -36,7 +36,6 @@ import org.hibernate.HibernateException;
  *   &lt;/type&gt;
  * &lt;/property&gt;
  * </pre>
- * @author sbawaska
  */
 public class EnumType extends org.hibernate.type.EnumType {
 

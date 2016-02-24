@@ -29,7 +29,6 @@ import java.io.*;
 
 /**
  *
- * @author prafulla
  */
 public class State implements Serializable{
     public String name;

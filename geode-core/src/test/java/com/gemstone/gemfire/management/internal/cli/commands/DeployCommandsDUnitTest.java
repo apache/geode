@@ -45,7 +45,6 @@ import java.util.regex.Pattern;
 /**
  * Unit tests for the DeployCommands class
  *
- * @author David Hoots
  * @since 7.0
  */
 public class DeployCommandsDUnitTest extends CliCommandTestBase {

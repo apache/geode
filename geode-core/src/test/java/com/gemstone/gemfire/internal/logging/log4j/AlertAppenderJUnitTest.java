@@ -45,7 +45,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests the AlertAppender.
  * 
- * @author David Hoots
  */
 @Category(UnitTest.class)
 public class AlertAppenderJUnitTest {

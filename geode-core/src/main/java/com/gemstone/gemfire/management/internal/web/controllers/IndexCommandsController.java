@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * The IndexCommandsController class implements the REST API calls for the Gfsh Index commands.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.IndexCommands
  * @see com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController

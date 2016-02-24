@@ -28,7 +28,6 @@ import com.gemstone.gemfire.management.internal.ManagementConstants;
 
 /**
  *
- * @author rishim
  *
  */
 public class StatsAggregator {

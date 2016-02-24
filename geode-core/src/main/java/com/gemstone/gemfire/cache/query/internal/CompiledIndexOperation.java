@@ -28,7 +28,6 @@ import java.lang.reflect.Array;
  * Class Description
  * 
  * @version $Revision: 1.1 $
- * @author ericz
  */
 public class CompiledIndexOperation extends AbstractCompiledValue implements 
    MapIndexable 

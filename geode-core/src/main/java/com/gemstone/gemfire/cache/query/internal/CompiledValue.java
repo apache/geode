@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.query.types.*;
  * Class Description
  * 
  * @version $Revision: 1.1 $
- * @author ericz
  */
 public interface CompiledValue {
 

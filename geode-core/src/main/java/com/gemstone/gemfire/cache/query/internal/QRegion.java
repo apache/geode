@@ -28,8 +28,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author vaibhav
- * @author ericz
  * @since 4.0
  */
 public class QRegion implements SelectResults {

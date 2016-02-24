@@ -96,7 +96,6 @@ import com.gemstone.gemfire.internal.util.ArrayUtils;
  * Implements the acceptor thread on the bridge server. Accepts connections from
  * the edge and starts up threads to process requests from these.
  * 
- * @author Sudhir Menon
  * @since 2.0.2
  */
 @SuppressWarnings("deprecation")

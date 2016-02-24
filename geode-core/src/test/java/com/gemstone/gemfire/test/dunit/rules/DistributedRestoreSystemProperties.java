@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.junit.rules.SerializableTestRule;
  * Distributed version of RestoreSystemProperties which affects all DUnit 
  * JVMs including the Locator JVM.
  * 
- * @author Kirk Lund
  */
 @SuppressWarnings("serial")
 public class DistributedRestoreSystemProperties extends RestoreSystemProperties implements SerializableTestRule {

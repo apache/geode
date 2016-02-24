@@ -37,7 +37,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 /**
  * JUnit Tests for ClusterSelectedRegionsMemberService in the back-end server for region detail page
  *
- * @author rbhandekar
  *
  */
 @Ignore
@@ -46,7 +45,6 @@ public class ClusterSelectedRegionsMemberServiceTest  extends BaseServiceTest {
   /**
    * @throws java.lang.Exception
    *
-   * @author rbhandekar
    */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -57,7 +55,6 @@ public class ClusterSelectedRegionsMemberServiceTest  extends BaseServiceTest {
   /**
    * @throws java.lang.Exception
    *
-   * @author rbhandekar
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
@@ -86,7 +83,6 @@ public class ClusterSelectedRegionsMemberServiceTest  extends BaseServiceTest {
   /**
    * Tests that service returns json object
    *
-   * @author rbhandekar
    */
   @Test
   public void testResponseNotNull() {
@@ -133,7 +129,6 @@ public class ClusterSelectedRegionsMemberServiceTest  extends BaseServiceTest {
   *
   * Tests that response is for same logged in user
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseUsername() {
@@ -185,7 +180,6 @@ public class ClusterSelectedRegionsMemberServiceTest  extends BaseServiceTest {
   * Tests that response is for same region
   *
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseRegionOnMemberInfoMatches() {
@@ -248,7 +242,6 @@ public class ClusterSelectedRegionsMemberServiceTest  extends BaseServiceTest {
   * Tests that response is for same region
   *
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseNonExistentRegion() {
@@ -301,7 +294,6 @@ public class ClusterSelectedRegionsMemberServiceTest  extends BaseServiceTest {
   * Tests that response is for same region
   *
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseRegionOnMemberAccessor() {

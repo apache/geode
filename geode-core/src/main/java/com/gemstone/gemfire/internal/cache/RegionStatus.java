@@ -28,7 +28,6 @@ import java.io.Serializable;
  * Class <code>RegionStatus</code> provides information about
  * <code>Region</code>s. This class is used by the monitoring tool.
  *
- * @author Barry Oglesby
  *
  * @since 5.1
  */

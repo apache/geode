@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Make sure max-connections on cache server is enforced
  *
- * @author darrel
  *
  */
 @Category(IntegrationTest.class)

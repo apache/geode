@@ -31,8 +31,6 @@ import com.gemstone.gemfire.internal.size.SizeClassOnceObjectSizer;
  * to use a faster or more accurate method of sizing than provided by the default
  * object sizer, which is {#link {@link #SIZE_CLASS_ONCE}
  * 
- * @author Sudhir Menon
- * @author Dan Smith
  * 
  * @since 3.0
  */

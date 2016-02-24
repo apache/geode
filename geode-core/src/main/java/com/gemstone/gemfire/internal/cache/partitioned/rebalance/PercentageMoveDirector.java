@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * use the same value for load and cost, there's no need to complicate things
  * now.
  * 
- * @author dsmith
  *
  */
 public class PercentageMoveDirector extends RebalanceDirectorAdapter {
@@ -148,7 +147,6 @@ public class PercentageMoveDirector extends RebalanceDirectorAdapter {
 
   /**
    * A comparator that compares buckets by load, and then by bucket id.
-   * @author dsmith
    */
   private static class LoadComparator implements Comparator<Bucket> {
 

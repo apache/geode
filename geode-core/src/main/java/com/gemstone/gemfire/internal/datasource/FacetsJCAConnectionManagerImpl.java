@@ -50,7 +50,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * account while allocating a connection). Security related features are
  * remaining.
  * 
- * @author rreja
  */
 public class FacetsJCAConnectionManagerImpl implements ConnectionManager,
     ConnectionEventListener, Synchronization {

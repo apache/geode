@@ -61,8 +61,6 @@ import java.util.Properties;
 /**
  * Dunit class for testing GemFire config commands : export config
  *
- * @author David Hoots
- * @author Sourabh Bansod
  * @since 7.0
  */
 public class ConfigCommandsDUnitTest extends CliCommandTestBase {

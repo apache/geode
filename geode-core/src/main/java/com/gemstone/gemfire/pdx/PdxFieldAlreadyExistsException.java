@@ -29,7 +29,6 @@ import com.gemstone.gemfire.GemFireException;
  * <p>It can also be caused by {@link PdxWriter#writeUnreadFields(PdxUnreadFields) writeUnreadFields}
  * being called after a field is written.
  * 
- * @author darrel
  * @since 6.6
  *
  */

@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
    * A Region.Entry implementation for remote entries and all PR entries
    * 
    * @since 5.1
-   * @author bruce
    */
   public class EntrySnapshot implements Region.Entry, DataSerializable {
 private static final long serialVersionUID = -2139749921655693280L;

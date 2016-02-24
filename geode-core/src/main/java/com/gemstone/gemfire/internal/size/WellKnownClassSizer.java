@@ -23,7 +23,6 @@ package com.gemstone.gemfire.internal.size;
  * 
  * This will return 0 if it does not know
  * how to size the object
- * @author dsmith
  *
  */
 public class WellKnownClassSizer {

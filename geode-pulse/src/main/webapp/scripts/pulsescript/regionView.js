@@ -20,7 +20,6 @@
 /* Region Details javascript with pop-up with spark-lines opening from each tree-map cell showing member level region information.
  * This page opens from Data view on cluster page and links to member details page by clicking on tree map cell.
  *
- * @author Riya Bhandekar
  * @since version 7.5 Cedar 2014-03-01
  *
  */

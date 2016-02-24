@@ -57,7 +57,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * concurrency-control tests for client/server
  * 
- * @author bruce
  *
  */
 public class ClientServerCCEDUnitTest extends CacheTestCase {

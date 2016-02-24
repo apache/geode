@@ -27,7 +27,6 @@ import java.io.Serializable;
 
 /**
  *
- * @author vikramj
  */
 public class ComparableWrapper implements Comparable, Serializable {
     private int val;

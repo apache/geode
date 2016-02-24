@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache;
 
 /** Thrown when a commit fails due to a write conflict.
  *
- * @author Darrel Schneider
  *
  * @see CacheTransactionManager#commit
  * @since 4.0

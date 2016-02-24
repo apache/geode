@@ -18,7 +18,6 @@ package com.company.data;
 /**
  * A <code>Declarable</code> <code>ObjectSizer</code> for used for XML testing
  *
- * @author Mitch Thomas
  * @since 5.0
  */
 import java.util.Properties;

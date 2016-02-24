@@ -29,7 +29,6 @@ import com.gemstone.gemfire.cache.RegionService;
  * multiple factories or use {@link PdxInstance#createWriter()} to create subsequent instances.
  * Using {@link PdxInstance#createWriter()} is usually faster.
  * 
- * @author darrel
  * @since 6.6.2
  */
 public interface PdxInstanceFactory {

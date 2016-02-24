@@ -51,7 +51,6 @@ import java.util.List;
  *   for function execution.  This was not done for the 8.0 release because
  *   of code freeze.
  * 
- * @author darrel
  *
  */
 public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {

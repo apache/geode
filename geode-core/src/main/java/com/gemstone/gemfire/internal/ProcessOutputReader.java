@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * does not return until all output from the process has been
  * read and the process has exited.
  *
- * @author darrel
  *
  */
 public class ProcessOutputReader {

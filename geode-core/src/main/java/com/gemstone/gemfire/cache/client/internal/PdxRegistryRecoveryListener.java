@@ -39,7 +39,6 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
  * registry was lost at the server side in the interval. 
  * 
  * 
- * @author dsmith
  * 
  */
 public class PdxRegistryRecoveryListener extends EndpointManager.EndpointListenerAdapter {

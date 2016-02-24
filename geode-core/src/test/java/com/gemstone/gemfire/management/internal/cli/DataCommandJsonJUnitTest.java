@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * 
- * @author tushark
  *
  */
 @Category(UnitTest.class)

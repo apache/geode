@@ -26,7 +26,6 @@ import com.gemstone.gemfire.management.internal.beans.QueryDataFunction;
 
 /**
  * Management Related Constants are defined here
- * @author rishim
  *
  */
 public interface ManagementConstants {

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * @author dsmith
  *
  */
 @Category(UnitTest.class)

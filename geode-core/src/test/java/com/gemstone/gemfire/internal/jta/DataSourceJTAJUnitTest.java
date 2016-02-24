@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * behavior when DDL query is issued after inserts abd before commit or
  * rollback.
  *
- * @author Prafulla Chaudhari
  */
 @Category(IntegrationTest.class)
 public class DataSourceJTAJUnitTest {

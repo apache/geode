@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests PartitionedRegion DataStore currentAllocatedMemory operation.
  * 
- * @author Kirk Lund
  * @since 9.0
  */
 @Category(IntegrationTest.class)

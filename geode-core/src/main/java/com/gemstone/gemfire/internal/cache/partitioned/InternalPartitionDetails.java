@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
  * Provides load and bucket level details for internal use. Extends 
  * {@link com.gemstone.gemfire.cache.partition.PartitionMemberInfo}.
  * 
- * @author Kirk Lund
  */
 public interface InternalPartitionDetails 
 extends PartitionMemberInfo, Comparable<InternalPartitionDetails> {

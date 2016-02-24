@@ -66,7 +66,6 @@ import util.TestException;
  * This DUnit contains various tests to ensure new implementation of ha region
  * queues works as expected.
  * 
- * @author ashetkar
  * @since 5.7
  * 
  */

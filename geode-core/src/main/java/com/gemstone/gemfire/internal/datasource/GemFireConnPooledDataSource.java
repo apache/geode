@@ -35,8 +35,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * class which provides connections from the pool. The objects of these class
  * are ConnectionEventListener for connection close and error events.
  * 
- * @author tnegi
- * @author Asif Modified Exception handling & changed name of the function
  */
 public class GemFireConnPooledDataSource extends AbstractDataSource implements 
     javax.sql.ConnectionEventListener {

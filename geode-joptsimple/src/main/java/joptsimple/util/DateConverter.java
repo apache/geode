@@ -37,7 +37,6 @@ import joptsimple.ValueConverter;
 /**
  * Converts values to {@link Date}s using a {@link DateFormat} object.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public class DateConverter implements ValueConverter<Date> {
     private final DateFormat formatter;

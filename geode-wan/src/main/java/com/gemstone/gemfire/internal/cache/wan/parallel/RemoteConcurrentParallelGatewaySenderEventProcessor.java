@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventRemoteDispatche
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 /**
  * Remote version of GatewaySenderEvent Processor
- * @author skumar
  *
  */
 public class RemoteConcurrentParallelGatewaySenderEventProcessor extends ConcurrentParallelGatewaySenderEventProcessor{

@@ -23,7 +23,6 @@ package com.gemstone.sequence;
  * The most common case for this is that a lifeline represents a VM that is
  * restarted several times. Eg time, the line name changes, but we want to put
  * all of the states for that "logical" vm on the same line.
- * @author dsmith
  *
  */
 public interface LineMapper {

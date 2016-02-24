@@ -41,8 +41,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
  *
  * @see QueryExecutionContext for extended version of this ONLY for querying.
  * 
- * @author ericz
- * @author Asif
  */
 public class ExecutionContext {
 

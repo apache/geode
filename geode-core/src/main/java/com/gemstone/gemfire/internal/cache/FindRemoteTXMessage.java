@@ -46,7 +46,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Message to all the peers to ask which member hosts the transaction
  * for the given transaction id
- * @author sbawaska
  */
 public class FindRemoteTXMessage extends HighPriorityDistributionMessage implements MessageWithReply {
 
@@ -241,7 +240,6 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage impleme
    * to indicate if the recipient hosts or has recently hosted the tx state.
    * If the member did host the txState previously, reply contains
    * the complete TXCommitMessage representing the tx.
-   * @author sbawaska
    */
   public static class FindRemoteTXMessageReply extends ReplyMessage {
     protected boolean isHostingTx;

@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.management.model;
 
 /**
- * @author rishim
  */
 public class EmptyObject {
 

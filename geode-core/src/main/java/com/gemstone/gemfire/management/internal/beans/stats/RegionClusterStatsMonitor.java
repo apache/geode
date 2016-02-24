@@ -25,7 +25,6 @@ import com.gemstone.gemfire.management.internal.FederationComponent;
 /**
  * Not only statistics we can set different attributes also
  *
- * @author rishim
  *
  */
 public class RegionClusterStatsMonitor {

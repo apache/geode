@@ -49,7 +49,6 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
 
 /**
  * Implementation of PoolFactory.
- * @author darrel
  * @since 5.7
  */
 public class PoolFactoryImpl implements PoolFactory {

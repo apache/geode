@@ -25,7 +25,6 @@ import java.util.List;
  * Interface <code>RegionQueue</code> is an interface for queue
  * implementations backed by regions.
  * 
- * @author Barry Oglesby
  * 
  * @since 4.2
  */

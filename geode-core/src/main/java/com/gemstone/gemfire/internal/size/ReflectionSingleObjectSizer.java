@@ -29,7 +29,6 @@ import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
  * does not follow any object references, it just calculates the size
  * of a flat object.
  * 
- * @author dsmith
  *
  */
 public class ReflectionSingleObjectSizer implements SingleObjectSizer {

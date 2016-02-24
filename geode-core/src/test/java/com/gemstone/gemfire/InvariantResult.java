@@ -19,7 +19,6 @@ package com.gemstone.gemfire;
 /** 
 * Used as result of verifying an Invariant
 * @see Invariant
-* @author ericz
 *
 */
 public class InvariantResult {

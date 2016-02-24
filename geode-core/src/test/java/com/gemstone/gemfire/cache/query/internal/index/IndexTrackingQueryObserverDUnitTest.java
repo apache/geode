@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author shobhit
  *
  */
 public class IndexTrackingQueryObserverDUnitTest extends CacheTestCase {
@@ -283,7 +282,6 @@ public class IndexTrackingQueryObserverDUnitTest extends CacheTestCase {
     return asyncInv;
   }
   /**
-   * @author shobhit
    * TODO: Not implemented fully for all the hooks.
    *
    */

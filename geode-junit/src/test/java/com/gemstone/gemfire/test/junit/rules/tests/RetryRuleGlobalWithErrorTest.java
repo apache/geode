@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.junit.rules.RetryRule;
  * Unit tests for Retry JUnit Rule involving global scope (ie Rule affects all 
  * tests in the test case) with failures due to an Exception.
  * 
- * @author Kirk Lund
  */
 @Category(UnitTest.class)
 public class RetryRuleGlobalWithErrorTest {

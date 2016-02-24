@@ -56,7 +56,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *     and one for the invalidate.
  *  4) Do a create , update , update & destroy. The client should receive 3 callbacks ( craete , conflated update & destroy).
  *
- * @author Girish Thombare.
  *
  */
 

@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * the time is expired, the server comes off the blacklist, but the next
  * failure will put the server back on the list for a longer period of time.
  * 
- * @author dsmith
  *
  */
 public class ServerBlackList {

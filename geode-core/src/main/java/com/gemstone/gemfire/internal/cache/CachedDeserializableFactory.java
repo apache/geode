@@ -30,7 +30,6 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 
 /**
  * Produces instances that implement CachedDeserializable.
- * @author Darrel
  * @since 5.0.2
  *
  */

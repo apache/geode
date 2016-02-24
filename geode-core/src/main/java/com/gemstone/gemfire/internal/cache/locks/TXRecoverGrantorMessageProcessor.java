@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * Provides processing of DLockRecoverGrantorProcessor. Reply will not be
  * sent until all locks are released.
  *
- * @author Kirk Lund
  */
 public class TXRecoverGrantorMessageProcessor
 implements DLockRecoverGrantorProcessor.MessageProcessor {

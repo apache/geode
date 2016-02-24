@@ -64,7 +64,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * represents creation of
  * a {@link CacheDistributionAdvisee}. Name remains CreateRegion to avoid
  * merge conflicts.
- * @author Eric Zoerner
  */
 public class CreateRegionProcessor implements ProfileExchangeProcessor {
   private static final Logger logger = LogService.getLogger();

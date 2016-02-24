@@ -51,7 +51,6 @@ import com.gemstone.gemfire.internal.VersionedDataSerializable;
  * RegionVersionHolder that holds the exception is locked while accessing
  * its RVVExceptions.  This is what is done in RegionVersionVector.
  * 
- * @author Bruce Schuchardt
  */
 abstract class RVVException implements Comparable<RVVException>, Cloneable, VersionedDataSerializable {
   protected static boolean UseTreeSetsForTesting = false;

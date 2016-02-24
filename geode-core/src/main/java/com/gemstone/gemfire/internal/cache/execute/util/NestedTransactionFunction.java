@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 
  * @see CommitFunction
  * @since 6.6.1
- * @author sbawaska
  *
  */
 public class NestedTransactionFunction implements Function {

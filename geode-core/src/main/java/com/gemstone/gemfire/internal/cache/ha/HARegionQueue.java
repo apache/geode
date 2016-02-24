@@ -131,9 +131,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * (See BlockingHARegionQueue)
  * 
  * 
- * @author Dinesh Patel
- * @author Mitul Bid
- * @author Asif
  * @since 4.3
  * 
  */
@@ -2318,8 +2315,6 @@ public class HARegionQueue implements RegionQueue
    * a separate Lock object was used by the BlockingQueue for wait notify. This
    * class will be performant if there is a single peek thread.
    * 
-   * @author Asif
-   * @author Mitul Bid
    *  
    */
   private static class BlockingHARegionQueue extends HARegionQueue

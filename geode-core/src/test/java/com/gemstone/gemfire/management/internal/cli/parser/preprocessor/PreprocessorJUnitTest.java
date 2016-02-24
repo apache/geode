@@ -27,8 +27,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * 
  * Test for Preprocessor
  * 
- * @author njadhav
- * @author David Hoots
  *
  */
 @Category(UnitTest.class)

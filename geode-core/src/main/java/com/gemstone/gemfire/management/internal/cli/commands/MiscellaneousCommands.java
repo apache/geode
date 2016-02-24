@@ -124,9 +124,6 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 /**
  *
- * @author Sourabh Bansod
- * @author Abhishek Chaudhari
- * @author Ajay Pande
  * @since 7.0
  */
 public class MiscellaneousCommands implements CommandMarker {

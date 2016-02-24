@@ -29,7 +29,6 @@ import com.gemstone.gemfire.cache.Operation;
  * event. 
  * The CqEvent is not an extension of CacheEvent. 
  * 
- * @author anil
  * @since 5.5
  */
 public interface CqEvent {

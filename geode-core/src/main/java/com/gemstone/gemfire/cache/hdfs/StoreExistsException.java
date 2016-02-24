@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.CacheException;
 /**
  * Thrown when attempting to create a {@link HDFSStore} if one already exists.
  * 
- * @author Ashvin Agrawal
  */
 public class StoreExistsException extends CacheException {
   private static final long serialVersionUID = 1L;

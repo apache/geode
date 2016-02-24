@@ -58,8 +58,6 @@ import com.gemstone.gemfire.management.internal.security.CLIOperationContext;
 
 /**
  * 
- * @author Abhishek Chaudhari
- * @author Nikhil Jadhav
  * @since 7.0
  */
 public class CommandManager {

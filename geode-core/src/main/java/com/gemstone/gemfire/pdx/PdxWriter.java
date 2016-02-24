@@ -32,7 +32,6 @@ import com.gemstone.gemfire.cache.CacheFactory;
  * <p>All methods on this interface return itself to allow method calls to be
  * chained together.
  * 
- * @author darrel
  * @since 6.6
  */
 public interface PdxWriter {

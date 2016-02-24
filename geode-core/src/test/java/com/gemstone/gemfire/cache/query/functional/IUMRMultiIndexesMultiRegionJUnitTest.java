@@ -56,7 +56,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  *
- * @author vjadhav
  */
 @Category(IntegrationTest.class)
 public class IUMRMultiIndexesMultiRegionJUnitTest {
@@ -782,7 +781,6 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
            * 
            * For expected results correct parenthesis must be used as in next query.
            * 
-           * @author Shobhit
            */
           {"SELECT pf.status, emp.empId, pf.getType() FROM /portfolio pf, /employee emp WHERE pf.ID = emp.empId AND pf.status='active' OR pf.ID > 0", ""+999001},
           {"SELECT * FROM /portfolio pf, /employee emp WHERE pf.ID = emp.empId AND (pf.status='active' OR pf.ID > 499)", ""+750}, 

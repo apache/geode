@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 /**
- * @author kbanks
  *
  */
 public class ExpectedStrings {

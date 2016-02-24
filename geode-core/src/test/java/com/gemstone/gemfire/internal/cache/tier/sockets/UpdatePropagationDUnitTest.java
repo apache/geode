@@ -71,8 +71,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * to register with the server is the same across servers
  *
  *
- * @author Yogesh Mahajan
- * @author Asif
  *
  */
 

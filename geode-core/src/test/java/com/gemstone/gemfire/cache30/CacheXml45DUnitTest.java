@@ -33,7 +33,6 @@ import java.util.*;
  * Tests the declarative caching functionality introduced in GemFire
  * 5.0 (i.e. congo1). Don't be confused by the 45 in my name :-)
  *
- * @author Darrel Schneider
  * @since 5.0
  */
 public class CacheXml45DUnitTest extends CacheXml41DUnitTest {

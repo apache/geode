@@ -73,7 +73,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * TODO: javadoc this test properly and cleanup the helper methods to be
  * more flexible and understandable
  *  
- * @author Kirk Lund
  */
 public class ResourceManagerDUnitTest extends CacheTestCase {
   private static final Logger logger = LogService.getLogger();

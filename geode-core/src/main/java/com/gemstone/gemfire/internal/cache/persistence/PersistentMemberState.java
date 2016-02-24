@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * @author dsmith
  *
  */
 public enum PersistentMemberState {

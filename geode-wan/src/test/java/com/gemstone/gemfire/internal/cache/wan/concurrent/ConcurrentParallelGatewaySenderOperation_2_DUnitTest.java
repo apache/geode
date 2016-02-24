@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author skumar
  *
  */
 public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTestBase {

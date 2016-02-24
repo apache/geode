@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.client.internal.ExecuteRegionFunctionSingleHop
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 /**
  * 
- * @author ymahajan
  *
  */
 public class SingleHopOperationCallable implements Callable {

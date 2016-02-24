@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * gemfire messages do. This is a extension of AdminRequest so that old
  * admin messages which are still used as part of the new CLI still log the
  * message.
- * @author dsmith
  *
  */
 public abstract class CliLegacyMessage extends AdminRequest {

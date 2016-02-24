@@ -65,7 +65,6 @@ import org.apache.logging.log4j.Logger;
 /**
  * Manages client to server connections for the connection pool. This class contains
  * all of the pooling logic to checkout/checkin connections.
- * @author dsmith
  * 
  * @since 5.7
  *

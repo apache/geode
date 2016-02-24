@@ -24,7 +24,6 @@ import java.io.Serializable;
  * 
  * Retained for backwards compatibility reasons. 
  * 
- * @author dsmith
  */
 public class LI implements Serializable {
   

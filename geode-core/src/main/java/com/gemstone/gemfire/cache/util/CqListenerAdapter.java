@@ -23,7 +23,6 @@ package com.gemstone.gemfire.cache.util;
  * with empty implementations. Applications can subclass this class and only
  * override the methods of interest.
  *
- * @author anil 
  * @since 5.1
  */
 

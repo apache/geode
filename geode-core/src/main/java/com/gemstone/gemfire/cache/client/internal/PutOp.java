@@ -43,7 +43,6 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Does a region put (or create) on a server
- * @author darrel
  * @since 5.7
  */
 public class PutOp {

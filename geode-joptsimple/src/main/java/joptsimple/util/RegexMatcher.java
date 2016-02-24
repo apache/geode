@@ -37,7 +37,6 @@ import static java.util.regex.Pattern.*;
 /**
  * Ensures that values entirely match a regular expression.
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public class RegexMatcher implements ValueConverter<String> {
     private final Pattern pattern;

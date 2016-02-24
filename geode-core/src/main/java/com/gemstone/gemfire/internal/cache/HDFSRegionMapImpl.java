@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.size.SingleObjectSizer;
 /**
  * Implementation of RegionMap that reads data from HDFS.
  * 
- * @author sbawaska
  */
 public class HDFSRegionMapImpl extends AbstractRegionMap implements HDFSRegionMap {
 

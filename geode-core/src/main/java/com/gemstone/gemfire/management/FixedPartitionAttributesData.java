@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.Region;
  * Composite date type used to distribute the fixed partition attributes for
  * a {@link Region}.
  * 
- * @author rishim
  * @since 7.0
  */
 public class FixedPartitionAttributesData {

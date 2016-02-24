@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * </br>2.It also records those transactional operations in order to send those to
  * secondaries/replicas(in one batch) at commit time.
  * 
- * @author shirishd
  *
  */
 public final class DistPeerTXStateStub extends PeerTXStateStub implements

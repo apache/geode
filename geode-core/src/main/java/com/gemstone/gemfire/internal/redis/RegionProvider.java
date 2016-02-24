@@ -58,7 +58,6 @@ import com.gemstone.gemfire.redis.GemFireRedisServer;
  * or destroying a {@link Region} needs to be synchronized, which is done away with
  * and abstracted by this class.
  * 
- * @author Vitaly Gavrilov
  *
  */
 public class RegionProvider implements Closeable {

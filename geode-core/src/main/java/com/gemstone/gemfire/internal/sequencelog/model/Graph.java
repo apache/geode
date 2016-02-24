@@ -25,7 +25,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * @author dsmith
  *
  * TODO - I think a better idea here would be consider
  * source vertices as "temporary" place holders that

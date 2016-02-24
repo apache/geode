@@ -21,7 +21,6 @@ import java.util.List;
 /**
  * Provides for inspection of meta-data for off-heap memory blocks.
  * 
- * @author Kirk Lund
  * @since 9.0
  */
 public interface MemoryInspector {

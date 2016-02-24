@@ -22,7 +22,6 @@ package com.gemstone.gemfire.admin;
  *
  * @see AdminDistributedSystem#addCacheServer()
  *
- * @author David Whitlock
  * @since 4.0
  * @deprecated as of 5.7 use {@link CacheVmConfig} instead.
  */

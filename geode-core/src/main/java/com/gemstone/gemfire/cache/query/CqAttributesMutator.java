@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.query;
  * Each CqQuery has an CqAttributesMutator interface which supports modification 
  * of certain CQ attributes after the CQ has been created. 
  * 
- * @author anil 
  * @since 5.5
  */
 public interface CqAttributesMutator {

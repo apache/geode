@@ -23,7 +23,6 @@ import com.gemstone.gemfire.GemFireException;
  * The MemberNotFoundException is a GemFirException indicating that a member by name could not be found in the GemFire
  * distributed system.
  * </p>
- * @author jblum
  * @see com.gemstone.gemfire.GemFireException
  * @since 7.0
  */

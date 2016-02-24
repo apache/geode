@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 /**
  * A source for discovering servers and finding the least loaded
  * server to connect to.
- * @author dsmith
  * @since 5.7
  *
  */

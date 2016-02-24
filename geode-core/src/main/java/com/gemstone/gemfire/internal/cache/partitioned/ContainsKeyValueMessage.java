@@ -282,7 +282,6 @@ public final class ContainsKeyValueMessage extends PartitionMessageWithDirectRep
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.partitioned.ContainsKeyValueMessage.ContainsKeyValueReplyMessage}
    * 
-   * @author Mitch Thomas
    * @since 5.0
    */
   public static class ContainsKeyValueResponse extends PartitionResponse

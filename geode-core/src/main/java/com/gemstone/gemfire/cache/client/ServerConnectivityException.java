@@ -22,7 +22,6 @@ import com.gemstone.gemfire.GemFireException;
  * A generic exception indicating that a failure has happened while communicating
  * with a gemfire server. Subclasses of this exception provide more detail
  * on specific failures.
- * @author dsmith
  * @since 5.7
  */
 public class ServerConnectivityException extends GemFireException {

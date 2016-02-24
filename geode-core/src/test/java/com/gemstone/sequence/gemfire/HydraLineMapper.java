@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 import com.gemstone.sequence.LineMapper;
 
 /**
- * @author dsmith
  *
  */
 public class HydraLineMapper implements LineMapper {

@@ -23,7 +23,6 @@ import java.util.List;
  * Basic Stack implementation, used by
  * {@link PreprocessorUtils#isSyntaxValid(String)} for detecting valid syntax
  * 
- * @author Nikhil Jadhav
  * 
  * @param <T>
  */

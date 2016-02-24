@@ -34,8 +34,6 @@ import org.junit.experimental.categories.Category;
  * The AbstractLauncherJUnitTest class is a test suite of unit tests testing the contract and functionality
  * of the AbstractLauncher class.
  * <p/>
- * @author John Blum
- * @author Kirk Lund
  * @see com.gemstone.gemfire.distributed.AbstractLauncher
  * @see org.junit.Assert
  * @see org.junit.Test

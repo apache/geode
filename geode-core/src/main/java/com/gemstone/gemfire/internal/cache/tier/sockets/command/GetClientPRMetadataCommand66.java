@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * {@link Command} for {@link GetClientPRMetadataCommand66}
  * 
- * @author Suranjan Kumar
  * 
  * @since 6.6
  */

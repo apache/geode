@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache;
  * Indicates that an attempt was mode to invoke an operation that is not
  * allowed in a transaction.
  *
- * @author gregp
  * @since 6.5
  */
 public class UnsupportedOperationInTransactionException extends

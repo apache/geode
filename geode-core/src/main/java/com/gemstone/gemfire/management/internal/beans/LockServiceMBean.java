@@ -25,7 +25,6 @@ import com.gemstone.gemfire.management.LockServiceMXBean;
 /**
  * Management API to manage a Lock Service MBean
  * 
- * @author rishim
  * 
  */
 public class LockServiceMBean extends NotificationBroadcasterSupport implements

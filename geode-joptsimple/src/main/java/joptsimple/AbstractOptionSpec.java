@@ -36,7 +36,6 @@ import static joptsimple.internal.Strings.*;
 
 /**
  * @param <V> represents the type of the arguments this option accepts
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 abstract class AbstractOptionSpec<V> implements OptionSpec<V>, OptionDescriptor {
     private final List<String> options = new ArrayList<String>();

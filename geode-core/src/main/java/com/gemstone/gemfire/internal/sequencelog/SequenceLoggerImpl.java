@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.sequencelog.io.OutputStreamAppender;
 
 /**
- * @author dsmith
  *
  */
 public class SequenceLoggerImpl implements SequenceLogger {

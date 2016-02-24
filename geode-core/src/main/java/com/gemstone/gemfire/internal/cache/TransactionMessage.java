@@ -25,7 +25,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 /**
  * Messages that carry transaction information will implement this interface
  * 
- * @author sbawaska
  */
 public interface TransactionMessage {
   /**

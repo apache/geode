@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
 
 /**
  * Register a bunch of instantiators on a server
- * @author darrel
  * @since 5.7
  */
 public class RegisterInstantiatorsOp {

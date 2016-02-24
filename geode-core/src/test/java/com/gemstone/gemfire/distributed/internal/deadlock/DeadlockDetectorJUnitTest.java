@@ -39,7 +39,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * @author dsmith
  *
  */
 @Category(UnitTest.class)
@@ -301,7 +300,6 @@ public class DeadlockDetectorJUnitTest {
   
   /**
    * A fake dependency monitor.
-   * @author dsmith
    *
    */
   private static class MockDependencyMonitor implements DependencyMonitor {

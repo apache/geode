@@ -59,7 +59,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * A connection source which uses locators to find
  * the least loaded server.
- * @author dsmith
  * @since 5.7
  *
  */

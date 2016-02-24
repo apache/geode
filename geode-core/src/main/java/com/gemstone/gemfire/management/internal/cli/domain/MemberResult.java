@@ -22,7 +22,6 @@ import java.io.Serializable;
  * Data class used to return the result of a function on a member. 
  * Typically to return the status of an action on a member.
  * Not suitable if you wish to return specific data from member
- * @author bansods
  *
  */
 public class MemberResult implements Serializable {

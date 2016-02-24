@@ -39,7 +39,6 @@ import junit.framework.TestCase;
 /**
  * Tests all basic methods of ContextImpl.
  * 
- * @author Nand Kishor Jha
  */
 @Category(UnitTest.class)
 public class ContextJUnitTest extends TestCase {

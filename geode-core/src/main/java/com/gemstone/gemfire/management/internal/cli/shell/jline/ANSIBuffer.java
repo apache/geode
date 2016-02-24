@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 /**
  *  A buffer that can contain ANSI text.
  *
- *  @author  <a href="mailto:mwp1@cornell.edu">Marc Prud'hommeaux</a>
  */
 public class ANSIBuffer {
     private boolean ansiEnabled = true;

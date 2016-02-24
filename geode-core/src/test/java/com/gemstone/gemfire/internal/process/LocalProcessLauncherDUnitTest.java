@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Multi-process tests for ProcessLauncher.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 @SuppressWarnings("serial")

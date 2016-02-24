@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
  * 
  * The java.util.iterator is expected to be iterating over a set of 
  * CachedDeserializable objects.
- * @author dsmith
  *
  */
 class ItrAdapter implements CloseableIterator<CachedDeserializable> {

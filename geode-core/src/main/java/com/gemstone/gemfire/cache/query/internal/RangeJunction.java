@@ -50,7 +50,6 @@ import com.gemstone.gemfire.cache.query.types.StructType;
  * Junction, then it can possibly have a not null Iter Operand, so that it can
  * be evaluated along with the expansion/truncation of index result.
  * 
- * @author asif
  */
 public class RangeJunction extends AbstractGroupOrRangeJunction {
   private final static int RANGE_SIZE_ESTIMATE = 3;
@@ -768,7 +767,6 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * apart from conditions having null or undefined as key). This class is also
    * extended by SingleCondnEvaluator and DoubleCondnRangeJunctionEvaluator
    * 
-   * @author asif
    * 
    */
   private static class NotEqualConditionEvaluator extends AbstractCompiledValue
@@ -957,7 +955,6 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * most specific inequality for the AND junction. Thus if something like a > 7
    * and a >=6 , will be sufficiently represented by a > 7
    * 
-   * @author asif
    * 
    */
   private static class SingleCondnEvaluator extends NotEqualConditionEvaluator {
@@ -1101,7 +1098,6 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * may be null ( if there is no 'NOT EQUAL' type condition satisfying the
    * bounded condition)
    * 
-   * @author ashahid
    * 
    */
   private static class DoubleCondnRangeJunctionEvaluator extends

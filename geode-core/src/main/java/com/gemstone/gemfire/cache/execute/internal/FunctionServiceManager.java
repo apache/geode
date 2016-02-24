@@ -66,7 +66,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * While {@link FunctionService} is a customer facing interface to this functionality, all of the work is done here. In
  * addition, internal only functionality is exposed in this class.
  * 
- * @author Yogesh Mahajan
  * @since 7.0
  */
 public final class FunctionServiceManager {

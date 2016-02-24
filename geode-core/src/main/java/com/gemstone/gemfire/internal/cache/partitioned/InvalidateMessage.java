@@ -363,7 +363,6 @@ public final class InvalidateMessage extends DestroyMessage {
   }
   /**
    * A processor to capture the value returned by {@link InvalidateMessage}
-   * @author bruce
    * @since 5.1
    */
   public static class InvalidateResponse extends PartitionResponse  {

@@ -22,7 +22,6 @@ import com.gemstone.gemfire.management.cli.Result;
 /**
  * 
  * 
- * @author tushark
  *
  */
 public interface CLIStep {

@@ -40,12 +40,10 @@ import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
  * It is always better to use this class instead ByteArrayOutputStream.
  * <p>This class is not thread safe
  *
- *  @author Darrel
  *  @since 5.0.2
  * 
  *
  *
- * @author Eric Zoerner
  * Added boolean flag that when turned on will throw an exception instead of allocating a new
  * buffer. The exception is a BufferOverflowException thrown from expand, and will restore
  * the position to the point at which the flag was set with the disallowExpansion method.

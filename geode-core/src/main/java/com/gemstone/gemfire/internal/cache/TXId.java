@@ -29,7 +29,6 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
  * identify a transaction in a confederation of transaction
  * participants (currently VM in a Distributed System).
  *
- * @author Mitch Thomas
  * 
  * @since 4.0
  * 

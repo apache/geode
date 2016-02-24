@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.util.ArrayUtils;
 /**
  * An instruction to all members with cache that they should 
  * compact their disk stores.
- * @author dsmith
  *
  */
 public class CompactRequest extends CliLegacyMessage {

@@ -58,7 +58,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Used to send region operations from a client to a server
- * @author darrel
  * @since 5.7
  */
 @SuppressWarnings("deprecation")

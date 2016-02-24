@@ -34,7 +34,6 @@ import javax.management.openmbean.TabularType;
 /**
  * Table type converter
  * 
- * @author rishim
  * 
  */
 public final class TableConverter extends OpenTypeConverter {

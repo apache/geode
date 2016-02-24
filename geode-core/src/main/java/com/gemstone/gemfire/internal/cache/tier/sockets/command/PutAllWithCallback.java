@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 
 /**
  * Adds a callbackArg to PutAll80
- * @author dschneider
  *
  */
 public class PutAllWithCallback extends PutAll80 {

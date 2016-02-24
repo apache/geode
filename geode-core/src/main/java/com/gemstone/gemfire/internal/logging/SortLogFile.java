@@ -30,7 +30,6 @@ import java.util.*;
  * @see MergeLogFiles
  * @see LogFileParser
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

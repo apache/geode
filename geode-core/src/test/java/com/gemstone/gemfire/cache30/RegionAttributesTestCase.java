@@ -31,7 +31,6 @@ import java.util.Properties;
  * {@link RegionAttributes}, {@link AttributesFactory}, and {@link
  * AttributesMutator}.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

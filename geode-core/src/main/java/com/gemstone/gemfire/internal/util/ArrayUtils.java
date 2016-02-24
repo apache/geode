@@ -23,8 +23,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
- * @author John Blum
- * @author jpenney
  *
  * Handle some simple editing of fixed-length arrays.
  *

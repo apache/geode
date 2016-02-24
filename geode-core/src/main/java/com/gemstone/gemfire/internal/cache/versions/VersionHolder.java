@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache.versions;
 
 /**
  * Read only interface for an object that holds an entry version.
- * @author dsmith
  *
  * @param <T>
  */

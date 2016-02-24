@@ -26,7 +26,6 @@ import java.io.Serializable;
  * in a HashMap(OR HashSet) for calculation of hash-code for
  * custom objects and primitive types.
  * 
- * @author shobhit
  * @since 8.0
  *
  */

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
 /**
  * A Wrapper around the graph logger that logs region level
  * events.
- * @author dsmith
  * 
  */
 public class RegionLogger {

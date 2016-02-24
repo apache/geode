@@ -57,7 +57,6 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 /**
  *
- * @author Yogesh Mahajan
  *
  */
 public class CacheServerTestUtil extends DistributedTestCase

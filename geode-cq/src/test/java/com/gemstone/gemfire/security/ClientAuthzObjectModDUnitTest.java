@@ -51,7 +51,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
  * This enables testing of object and callback modification both in
  * pre-processing and post-processing phases.
  * 
- * @author sumedh
  * @since 5.5
  */
 public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestBase {

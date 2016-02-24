@@ -18,7 +18,6 @@ package com.gemstone.gemfire.test.junit.categories;
 /**
  * JUnit Test Category that specifies a hydra test.
  *  
- * @author Kirk Lund
  */
 public interface HydraTest {
 }

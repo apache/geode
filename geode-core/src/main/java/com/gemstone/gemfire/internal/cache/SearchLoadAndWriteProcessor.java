@@ -88,7 +88,6 @@ import com.gemstone.gemfire.internal.offheap.StoredObject;
  * At the receiving end, the request is converted into an appropriate message
  * whose process method responds to the request.
  *
- * @author Sudhir Menon
  */
 
 public class SearchLoadAndWriteProcessor implements MembershipListener {

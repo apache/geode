@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * 
- * @author ymahajan
  *
  */
 public class ServerFunctionExecutor extends AbstractExecution {

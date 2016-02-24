@@ -53,8 +53,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * Removes a batch of events from the remote secondary queues
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * 
  * @since 7.0
  * 

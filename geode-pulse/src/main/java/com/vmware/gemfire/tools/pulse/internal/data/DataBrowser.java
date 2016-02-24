@@ -41,7 +41,6 @@ import java.util.Scanner;
  * Class DataBrowser This class contains Data browser functionalities for
  * managing queries and histories.
  * 
- * @author Sachin K
  * @since version 7.5.Beta 2013-03-25
  */
 public class DataBrowser {

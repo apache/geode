@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * This class tests the functionality of a cache {@link Region region}
  * that has a scope of {@link Scope#DISTRIBUTED_ACK distributed ACK}.
  *
- * @author David Whitlock
  * @since 3.0
  */
 public class PreloadedRegionTestCase extends MultiVMRegionTestCase {

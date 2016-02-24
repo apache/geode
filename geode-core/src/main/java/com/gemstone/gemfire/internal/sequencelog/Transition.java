@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.sequencelog;
 
 /**
- * @author dsmith
  *
  */
 public class Transition {

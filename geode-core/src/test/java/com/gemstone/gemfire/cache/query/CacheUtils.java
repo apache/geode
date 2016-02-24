@@ -43,8 +43,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 /**
  * 
- * @author vaibhav
- * @author asif
  */
 public class CacheUtils {
 

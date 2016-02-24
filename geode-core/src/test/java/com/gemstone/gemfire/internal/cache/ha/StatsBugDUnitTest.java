@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
  * closed during fail over , with the failed endpoint getting closed. This bug
  * has been fixed by moving the invalidate stat to be part of our implementation.
  * 
- * @author Dinesh Patel
  * 
  */
 @Category(DistributedTest.class)

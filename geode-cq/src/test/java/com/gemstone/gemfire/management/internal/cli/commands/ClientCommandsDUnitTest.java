@@ -76,7 +76,6 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 
 /**
  * Dunit class for testing gemfire Client commands : list client , describe client 
- * @author ajayp
  * @since 8.0
  */
 

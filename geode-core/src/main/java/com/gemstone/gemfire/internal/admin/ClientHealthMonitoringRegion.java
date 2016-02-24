@@ -32,8 +32,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * This is an admin (meta) region used by the client health monitoring service
  * to publish the client health details to the cache-server.
  * 
- * @author hkhanna
- * @author Hrishi
  */
 
 public class ClientHealthMonitoringRegion {

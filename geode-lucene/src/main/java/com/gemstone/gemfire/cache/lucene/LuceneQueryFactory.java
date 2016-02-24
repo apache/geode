@@ -27,7 +27,6 @@ import com.gemstone.gemfire.annotations.Experimental;
  * To use this factory configure it with the <code>set</code> methods and then
  * call {@link #create} to produce a {@link LuceneQuery} instance.
  * 
- * @author Xiaojian Zhou
  */
 @Experimental
 public interface LuceneQueryFactory {

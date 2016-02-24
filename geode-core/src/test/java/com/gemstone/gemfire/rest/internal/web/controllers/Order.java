@@ -28,7 +28,6 @@ import com.gemstone.gemfire.pdx.PdxWriter;
 /**
 * The Order class is an abstraction modeling a order.
 * <p/>
-* @author Nilkanth Patel
 * @since 8.0
 */
 

@@ -52,7 +52,6 @@ import java.util.Collection;
  *   String value = parser.parse( "-c", "2" ).valueOf( optionC );  // ClassCastException
  * </code></pre>
  *
- * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
  */
 public class OptionSpecBuilder extends NoArgumentOptionSpec {
     private final OptionParser parser;

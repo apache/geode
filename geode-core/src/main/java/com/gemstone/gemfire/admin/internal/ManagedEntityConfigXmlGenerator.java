@@ -35,7 +35,6 @@ import java.util.*;
  * <code>AdminDistributedSystem</code>.  This class is used mainly for
  * testing.
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class ManagedEntityConfigXmlGenerator

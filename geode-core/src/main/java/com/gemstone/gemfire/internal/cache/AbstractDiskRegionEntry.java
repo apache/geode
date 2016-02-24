@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 /**
  * 
- * @author sbawaska
  *
  */
 public abstract class AbstractDiskRegionEntry

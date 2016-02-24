@@ -25,7 +25,6 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 
 /**
  * Represents a server. Keeps track of information about the specific server
- * @author dsmith
  * @since 5.7
  *
  */

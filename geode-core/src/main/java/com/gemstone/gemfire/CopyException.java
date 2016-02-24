@@ -19,7 +19,6 @@ package com.gemstone.gemfire;
 /**
  * Indicates a failure to copy an object.
  *
- * @author Darrel Schneider
  *
  *
  * @see CopyHelper#copy

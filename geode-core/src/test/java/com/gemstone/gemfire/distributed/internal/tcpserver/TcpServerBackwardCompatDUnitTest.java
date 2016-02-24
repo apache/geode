@@ -47,7 +47,6 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
  * This tests the rolling upgrade for locators with
  * different GOSSIPVERSION.
  *
- * @author shobhit
  *
  */
 @Category(DistributedTest.class)

@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends
  * an eviction event for off-heap regions. This is registered with the ResourceManager.
  *
- * @author rholmes
  * @since 9.0
  */
 public class OffHeapEvictor extends HeapEvictor {

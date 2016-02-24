@@ -405,7 +405,6 @@ public class BlockingHARegionJUnitTest
 
   /**
    * class which does specified number of puts on the queue
-   * @author mbid
    *
    */
   static class DoPuts extends Thread
@@ -450,7 +449,6 @@ public class BlockingHARegionJUnitTest
 
   /**
    * class which does a specified number of takes
-   * @author mbid
    *
    */
   static class DoTake extends Thread

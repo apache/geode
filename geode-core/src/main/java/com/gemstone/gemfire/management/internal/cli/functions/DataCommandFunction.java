@@ -81,7 +81,6 @@ import org.json.JSONArray;
 
 /***
  * 
- * @author tushark
  * since 7.0
  */
 

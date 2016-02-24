@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.persistence.BackupInspector;
  * lists of oplog files that should be deleted when the oplog is backed up. See
  * {@link DiskStoreImpl#startBackup(File, BackupInspector, com.gemstone.gemfire.internal.cache.persistence.RestoreScript)}
  * 
- * @author dsmith
  * 
  */
 public class DiskStoreBackup {

@@ -83,7 +83,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
  * 
  * Currently this implementation only supports an index on a region path.
  * 
- * @author Eric Zoerner
  * @since 6.0
  */
 public class CompactRangeIndex extends AbstractIndex {
@@ -1171,8 +1170,6 @@ public class CompactRangeIndex extends AbstractIndex {
 
   /**
    * 
-   * @author vaibhav
-   * @author Asif
    */
   class IMQEvaluator implements IndexedExpressionEvaluator {
     private Cache cache;

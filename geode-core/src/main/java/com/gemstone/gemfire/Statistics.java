@@ -46,8 +46,6 @@ package com.gemstone.gemfire;
  *
  * @see <A href="package-summary.html#statistics">Package introduction</A>
  *
- * @author David Whitlock
- * @author Darrel Schneider
  *
  * @since 3.0
  *

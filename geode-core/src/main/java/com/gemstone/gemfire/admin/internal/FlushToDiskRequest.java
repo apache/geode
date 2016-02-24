@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  * the members will suspend bucket destroys to make sure
  * buckets aren't missed during the backup.
  * 
- * @author dsmith
  *
  */
 public class FlushToDiskRequest  extends CliLegacyMessage {

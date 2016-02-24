@@ -21,8 +21,6 @@ package com.gemstone.gemfire.cache;
  * Gemfire Context passed to <code>PartitionResolver</code> to compute the
  * data location
  * 
- * @author Yogesh Mahajan
- * @author Mitch Thomas
  * 
  * @see PartitionResolver  
  * @since 6.0 

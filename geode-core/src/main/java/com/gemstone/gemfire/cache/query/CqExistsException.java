@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache.query;
 
 /**
  * Thrown if a CQ by this name already exists on this client 
- * @author Anil 
  * @since 5.5
  */
 

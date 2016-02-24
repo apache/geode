@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.datasource;
  * This class wraps the client connection factory and the corresponding
  * connection manager Object.
  * 
- * @author rreja
  */
 public class ClientConnectionFactoryWrapper  {
 

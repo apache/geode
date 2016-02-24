@@ -30,7 +30,6 @@ import java.io.Serializable;
  * @param <V> the cache entry value type
  * 
  * @since 7.0
- * @author bakera
  */
 public interface SnapshotOptions<K, V> extends Serializable {
   /**

@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
- * @author ymahajan
  * 
  */
 public class MultiRegionFunctionExecutor extends AbstractExecution {

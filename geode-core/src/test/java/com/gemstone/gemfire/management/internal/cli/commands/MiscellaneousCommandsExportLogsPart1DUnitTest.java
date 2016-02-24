@@ -37,7 +37,6 @@ import java.util.Date;
 /**
  * Dunit class for testing gemfire function commands : export logs
  *
- * @author apande
  */
 
 public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTestBase {

@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**This class is similar to HashSet supporting all the feature
  * of ConcurrentHashMap
  * 
- * @author soubhikc
  *
  */
 public class ConcurrentHashSet<E> extends AbstractSet<E>  

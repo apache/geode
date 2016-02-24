@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.PartitionResolver;
 
 /**
  * This resolver is used in QueryUsingFunctionContextDUnitTest.
- * @author shobhit
  *
  */
 public class QueryAPITestPartitionResolver implements PartitionResolver {

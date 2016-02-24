@@ -77,7 +77,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
  * 3.X (3.0, 3.2, 3.5).  Tests for syntax added in subsequent releases
  * is tested by subclasses of this class.
  *
- * @author David Whitlock
  * @since 3.0
  */
 public class CacheXml30DUnitTest extends CacheXmlTestCase {
