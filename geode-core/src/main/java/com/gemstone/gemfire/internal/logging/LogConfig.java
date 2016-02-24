@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 import java.io.File;
 
 public interface LogConfig {
@@ -54,7 +56,7 @@ public interface LogConfig {
    * A name is optional and by default empty.
    * If set it must be unique in the ds.
    * When set its used by tools to help identify the member.
-   * <p> The default value is: {@link #DEFAULT_NAME}.
+   * <p> The default value is: {@link DistributionConfig#DEFAULT_NAME}.
    * @return the system's name.
    */
   public String getName();
