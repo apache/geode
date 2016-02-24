@@ -31,14 +31,15 @@ public class MultithreadedTester {
 
   
   public static Collection<Object> runMultithreaded(Collection<Callable> callables) throws InterruptedException {
-    final CountDownLatch allRunnablesAreSubmitted = new CountDownLatch(1);
+    final CountDownLatch allRunnablesAreSubmitted = new CountDownLatch(callables.size());
     final CountDownLatch callablesComplete = new CountDownLatch(callables.size());
     final ExecutorService executor = Executors.newFixedThreadPool(callables.size());
     final LinkedList<Future> futures = new LinkedList<>();
     //Submit all tasks to the executor
-    callables.parallelStream().forEach(callable -> {
+    callables.forEach(callable -> {
       futures.add(executor.submit(() -> {
         try {
+          allRunnablesAreSubmitted.countDown();
           allRunnablesAreSubmitted.await(60, TimeUnit.SECONDS);
           return callable.call();
         }
@@ -50,11 +51,10 @@ public class MultithreadedTester {
         }
       }));
     });
-    //Unlock all tasks
-    allRunnablesAreSubmitted.countDown();
     //Wait until all tasks are complete
     callablesComplete.await(60, TimeUnit.SECONDS);
     executor.shutdown();
+    executor.awaitTermination(60, TimeUnit.SECONDS);
     return convertFutureToResult(futures);
   }
 
