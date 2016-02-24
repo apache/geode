@@ -35,9 +35,6 @@ passthrough /\/(bootstrap|css|font|img|js|static)\/.*/
 compile '/docs/*' do
   @docs = true
   filter :erb
-  filter :fenced_code_block
-  filter :pandoc
-  filter :colorize_syntax, :default_colorizer => :pygmentsrb, :pygmentsrb => { :options => { :startinline => 'True' } }
   layout 'docs'
 end
 
