@@ -231,7 +231,7 @@
         <nav class="collapse navbar-collapse bf-navbar-collapse" role="navigation">
             <ul class="nav navbar-nav navbar-right">
                 <li class="<%= 'active' if @community %>"><a href="/community/"><span class="icns icon-group"></span></a></li>
-                <li><a href="http://geode.docs.pivotal.io" target="_blank"><span class="icns icon-book"></span></a></li>
+                <li class="<%= 'active' if @docs %>"><a href="/docs/"><span class="icns icon-book"></span></a></li>
                 <li><a href="http://github.com/apache/incubator-geode" target="_blank"><span class="icns icon-github-sign"></span></a></li>
                 <!--<li><a href="https://trello.com/b/exQmJIOn/usergrid" target="_blank"><span class="icns icon-trello"></span></a></li>-->
                 <li><a href="https://issues.apache.org/jira/browse/GEODE/"
