@@ -1,10 +1,10 @@
 # Overview
 
-Apache Geode is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
+[Apache Geode] (http://geode.incubator.apache.org/) is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
 
 Apache Geode pools memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Apache Geode is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.
 
-Apache Geode is a mature, robust technology originally developed by GemStone Systems in Beaverton, Oregon. Commercially available as GemFire™, the technology was first deployed in the financial sector as the transactional, low-latency data engine used in Wall Street trading platforms.  Today Apache Geode is used by over 600 enterprise customers for high-scale business applications that must meet low latency and 24x7 availability requirements.
+Apache Geode is a mature, robust technology originally developed by GemStone Systems in Beaverton, Oregon. Commercially available as GemFire™, the technology was first deployed in the financial sector as the transactional, low-latency data engine used in Wall Street trading platforms.  Today Apache Geode is used by over 600 enterprise customers for high-scale business applications that must meet low latency and 24x7 availability requirements. An example deployment includes [China National Railways](http://pivotal.io/big-data/case-study/scaling-online-sales-for-the-largest-railway-in-the-world-china-railway-corporation) that uses Geode to run railway ticketing for the entire country of China with a 10 node cluster that manages 2 terabytes of "hot data" in memory, and 10 backup nodes for high availability and elastic scale.
 
 # Main Concepts and Components
 
