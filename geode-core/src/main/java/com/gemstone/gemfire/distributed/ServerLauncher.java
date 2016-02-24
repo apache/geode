@@ -1958,8 +1958,9 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       // NOTE only set the 'bind address' if the user specified a value
       else {
         try {
-          this.serverBindAddress = InetAddress.getByName(serverBindAddress);
-          if (SocketCreator.isLocalHost(this.serverBindAddress)) {
+          InetAddress bindAddress = InetAddress.getByName(serverBindAddress);
+          if (SocketCreator.isLocalHost(bindAddress)) {
+            this.serverBindAddress = bindAddress;
             this.serverBindAddressSetByUser = true;
             return this;
           }

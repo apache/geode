@@ -1480,8 +1480,9 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
       }
       else {
         try {
-          this.bindAddress = InetAddress.getByName(bindAddress);
-          if (SocketCreator.isLocalHost(this.bindAddress)) {
+          InetAddress address = InetAddress.getByName(bindAddress);
+          if (SocketCreator.isLocalHost(address)) {
+            this.bindAddress = address;
             return this;
           }
           else {

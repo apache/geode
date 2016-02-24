@@ -1311,6 +1311,9 @@ public class SocketCreator {
       if (InetAddressUtil.LOCALHOST.equals(host)) {
         return true;
       }
+      else if (((InetAddress) host).isLoopbackAddress()) {
+        return true;
+      }
       else {
         try {
           Enumeration en=NetworkInterface.getNetworkInterfaces();
