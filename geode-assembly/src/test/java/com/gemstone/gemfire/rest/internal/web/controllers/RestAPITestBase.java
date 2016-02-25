@@ -25,8 +25,11 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.management.internal.AgentUtil;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 
@@ -47,12 +50,19 @@ public class RestAPITestBase extends DistributedTestCase {
   public void setUp() throws Exception {
     super.setUp();
     disconnectAllFromDS();
+    AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
+    if (agentUtil.findWarLocation("geode-web-api") == null) {
+      fail("unable to locate geode-web-api WAR file");
+    }
     Wait.pause(5000);
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     vm2 = host.getVM(2);
     vm3 = host.getVM(3);
+    // gradle sets a property telling us where the build is located
+    final String buildDir = System.getProperty("geode.build.dir", System.getProperty("user.dir"));
+    Invoke.invokeInEveryVM(()-> System.setProperty("geode.build.dir", buildDir));
   }  
   
   /**
