@@ -1362,7 +1362,7 @@ public class TXState implements TXStateInterface {
       if (txr == null) {
         txr = txWriteRegion(localRegion, keyInfo);
       }
-      result = localRegion.createReadEntry(txr, keyInfo, createIfAbsent);
+      result = dataReg.createReadEntry(txr, keyInfo, createIfAbsent);
     }
     
     if (result != null) {
@@ -1379,7 +1379,7 @@ public class TXState implements TXStateInterface {
        * 
        */
       if (txr!=null) {
-        txr.cleanupNonDirtyEntries(localRegion);
+        txr.cleanupNonDirtyEntries(dataReg);
       }
       if (expectedOldValue==null) {
         /*
