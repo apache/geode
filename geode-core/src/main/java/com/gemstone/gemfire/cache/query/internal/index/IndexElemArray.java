@@ -199,18 +199,20 @@ public class IndexElemArray implements Iterable, Collection {
    * @return <tt>true</tt> if this list contained the specified element
    */
   public boolean remove(Object o) {
-    if (o == null) {
-      for (int index = 0; index < size; index++)
-        if (elementData[index] == null) {
-          fastRemove(index);
-          return true;
-        }
-    } else {
-      for (int index = 0; index < size; index++)
-        if (o.equals(elementData[index])) {
-          fastRemove(index);
-          return true;
-        }
+    synchronized (lock) {
+      if (o == null) {
+        for (int index = 0; index < size; index++)
+          if (elementData[index] == null) {
+            fastRemove(index);
+            return true;
+          }
+      } else {
+        for (int index = 0; index < size; index++)
+          if (o.equals(elementData[index])) {
+            fastRemove(index);
+            return true;
+          }
+      }
     }
     return false;
   }
@@ -224,13 +226,11 @@ public class IndexElemArray implements Iterable, Collection {
     Object[] newArray = new Object[len - 1];
     System.arraycopy(elementData, 0, newArray, 0, index);
     int numMoved = len - index - 1;
-    if (numMoved > 0)
+    if (numMoved > 0) {
       System.arraycopy(elementData, index + 1, newArray, index, numMoved);
-
-    synchronized (lock) {
-      elementData = newArray;
-      --size;
     }
+    elementData = newArray;
+    --size;
   }
 
   /**
