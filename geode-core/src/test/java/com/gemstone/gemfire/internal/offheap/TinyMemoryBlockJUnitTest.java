@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.gemstone.gemfire.internal.offheap;
 
 import static org.junit.Assert.*;
@@ -119,19 +136,13 @@ public class TinyMemoryBlockJUnitTest {
   }
 
   @Test
-  public void sizeOfBlockConstructedFromRawMemoryReturnsZero() {
-    MemoryBlock mb = new TestableFreeListManager.TinyMemoryBlock(slabs[0].getMemoryAddress(), 0);
-    softly.assertThat(mb.getBlockSize()).isEqualTo(0);
-  }
-
-  @Test
-  public void sizeOfBlockConstructedFromChunkReturnsChunkSize() {
+  public void getBlockSizeReturnsReturnsSizeOfUnderlyingChunk() {
     MemoryBlock mb = new TestableFreeListManager.TinyMemoryBlock(new ObjectChunk(slabs[0].getMemoryAddress(), slabs[0].getSize()).getMemoryAddress(), 0);
     softly.assertThat(mb.getBlockSize()).isEqualTo(slabs[0].getSize());
   }
 
   @Test
-  public void getNextBlockThrowsExceptionForFragment() {
+  public void getNextBlockThrowsUnsupportedOperationException() {
     expectedException.expect(UnsupportedOperationException.class);
 
     MemoryBlock mb = new TestableFreeListManager.TinyMemoryBlock(new ObjectChunk(slabs[0].getMemoryAddress(), slabs[0].getSize()).getMemoryAddress(), 0);
@@ -140,7 +151,16 @@ public class TinyMemoryBlockJUnitTest {
   }
 
   @Test
-  public void getFreeListIdReturnsIdBlockWasConstructedFrom() {
+  public void getSlabIdThrowsUnsupportedOperationException() {
+    expectedException.expect(UnsupportedOperationException.class);
+
+    MemoryBlock mb = new TestableFreeListManager.TinyMemoryBlock(new ObjectChunk(slabs[0].getMemoryAddress(), slabs[0].getSize()).getMemoryAddress(), 0);
+    mb.getSlabId();
+    fail("getSlabId failed to throw UnsupportedOperationException");
+  }
+
+  @Test
+  public void getFreeListIdReturnsIdBlockWasConstructedWith() {
     MemoryBlock mb0 = new TestableFreeListManager.TinyMemoryBlock(new ObjectChunk(slabs[0].getMemoryAddress(), slabs[0].getSize()).getMemoryAddress(), 0);
     MemoryBlock mb1 = new TestableFreeListManager.TinyMemoryBlock(new ObjectChunk(slabs[1].getMemoryAddress(), slabs[1].getSize()).getMemoryAddress(), 1);
     softly.assertThat(mb0.getFreeListId()).isEqualTo(0);
