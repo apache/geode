@@ -406,7 +406,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       @Override
       public void run() {
         // TODO GemFire used the tcp/ip connection but this is using heartbeats
-        boolean pinged = GMSHealthMonitor.this.doCheckMember(mbr);
+        boolean pinged = GMSHealthMonitor.this.doCheckMember(mbr, true);
         if (!pinged) {
           suspectedMemberInView.put(mbr, currentView);
           String reason = "Member isn't responding to heartbeat requests";
@@ -438,7 +438,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * @param member
    * @return
    */
-  private boolean doCheckMember(InternalDistributedMember member) {
+  private boolean doCheckMember(InternalDistributedMember member, boolean waitForResponse) {
     if (playingDead || beingSick) {
       // a member playingDead should not be sending messages to other
       // members, so we avoid sending heartbeat requests or suspect
@@ -449,14 +449,16 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     logger.trace("Checking member {}", member);
     final HeartbeatRequestMessage hrm = constructHeartbeatRequestMessage(member);
     final Response pingResp = new Response();
-    requestIdVsResponse.put(hrm.getRequestId(), pingResp);
+    if(waitForResponse) {
+      requestIdVsResponse.put(hrm.getRequestId(), pingResp);
+    }
     try {
       Set<InternalDistributedMember> membersNotReceivedMsg = this.services.getMessenger().send(hrm);
       this.stats.incHeartbeatRequestsSent();
       if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(member)) {
         // member is not part of current view.
         logger.trace("Member {} is not part of current view.", member);
-      } else {
+      } else if (waitForResponse){
         synchronized (pingResp) {
           if (pingResp.getResponseMsg() == null) {
             pingResp.wait(memberTimeout);
@@ -484,7 +486,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     } catch (InterruptedException e) {
       logger.debug("GMSHealthMonitor checking thread interrupted, while waiting for response from member: {} .", member);
     } finally {
-      requestIdVsResponse.remove(hrm.getRequestId());
+      if(waitForResponse) {
+        requestIdVsResponse.remove(hrm.getRequestId());
+      }
     }
     return false;
   }
@@ -496,7 +500,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * @param suspectMember member that does not respond to HeartbeatRequestMessage
    * @return true if successfully exchanged PING/PONG with TCP connection, otherwise false.
    */
-  private boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
+  boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
     Socket clientSocket = null;
     try {
       logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember, suspectMember.getInetAddress(), port);
@@ -1060,6 +1064,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           resp.notify();
         }
       }
+      //we got heartbeat lets update timestamp
+      contactedBy(m.getSender(), System.currentTimeMillis());
     }
   }
 
@@ -1255,7 +1261,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         if (logger.isDebugEnabled()) {
           logger.debug("\ncurrent view: {}\nports: {}", cv, Arrays.toString(cv.getFailureDetectionPorts()));
         }
-        pinged = GMSHealthMonitor.this.doCheckMember(mbr);
+        pinged = GMSHealthMonitor.this.doCheckMember(mbr, true);
         GMSHealthMonitor.this.stats.incFinalCheckRequestsSent();
         GMSHealthMonitor.this.stats.incUdpFinalCheckRequestsSent();
         if (pinged) {
@@ -1263,6 +1269,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           GMSHealthMonitor.this.stats.incUdpFinalCheckResponsesReceived();
         }
       } else {
+        //this will just send heartbeat request, it will not wait for response
+        //if we will get heartbeat then it will change the timestamp, which we are 
+        //checking below in case of tcp check failure..
+        GMSHealthMonitor.this.doCheckMember(mbr, false);
         pinged = GMSHealthMonitor.this.doTCPCheckMember(mbr, port);
       }
   
