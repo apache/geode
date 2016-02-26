@@ -779,11 +779,11 @@ public class FreeListManager {
   /**
    * Used to represent an address from a tiny free list as a MemoryBlock
    */
-  private static final class TinyMemoryBlock implements MemoryBlock {
+  protected static final class TinyMemoryBlock implements MemoryBlock {
     private final long address;
     private final int freeListId;
 
-    private TinyMemoryBlock(long address, int freeListId) {
+    protected TinyMemoryBlock(long address, int freeListId) {
       this.address = address;
       this.freeListId = freeListId;
     }
