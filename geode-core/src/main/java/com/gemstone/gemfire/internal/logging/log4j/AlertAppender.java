@@ -90,6 +90,10 @@ public final class AlertAppender extends AbstractAppender implements PropertyCha
     this.alertingDisabled = alertingDisabled;
   }
   
+  public static void setIsAlerting(boolean isAlerting) {
+    alerting.set(isAlerting? Boolean.TRUE : Boolean.FALSE);
+  }
+  
   /**
    * This method is optimized with the assumption that at least one listener
    * has set a level which requires that the event be sent. This is ensured
@@ -106,57 +110,60 @@ public final class AlertAppender extends AbstractAppender implements PropertyCha
     if ((alerting.get())) {
       return;
     }
-    alerting.set(Boolean.TRUE);
+    setIsAlerting(true);
     
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("Delivering an alert event: {}", event);
-    }
-        
-    InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-    if (ds == null) {
-      // Use info level to avoid triggering another alert
-      logger.info("Did not append alert event because the distributed system is set to null.");
-      return;
-    }
-    DistributionManager distMgr = (DistributionManager) ds.getDistributionManager();
-    
-    final int intLevel = logLevelToAlertLevel(event.getLevel().intLevel());
-    final Date date = new Date(event.getTimeMillis());
-    final String threadName = event.getThreadName();
-    final String logMessage = event.getMessage().getFormattedMessage();
-    final String stackTrace = ThreadUtils.stackTraceToString(event.getThrown(), true);
-    final String connectionName = ds.getConfig().getName();
-    
-    for (Listener listener : this.listeners) {
-      if (event.getLevel().intLevel() > listener.getLevel().intLevel()) {
-        break;
+    try {
+      
+      final boolean isDebugEnabled = logger.isDebugEnabled();
+      if (isDebugEnabled) {
+        logger.debug("Delivering an alert event: {}", event);
       }
           
-      try {
-        AlertListenerMessage alertMessage = AlertListenerMessage.create(listener.getMember(), intLevel, date,
-            connectionName, threadName, Thread.currentThread().getId(), logMessage, stackTrace);
-        
-        if (listener.getMember().equals(distMgr.getDistributionManagerId())) {
-          if (isDebugEnabled) {
-            logger.debug("Delivering local alert message: {}, {}, {}, {}, {}, [{}], [{}].", listener.getMember(), intLevel, date,
-                connectionName, threadName, logMessage, stackTrace);
-          }
-          alertMessage.process(distMgr);
-        } else {
-          if (isDebugEnabled) {
-            logger.debug("Delivering remote alert message: {}, {}, {}, {}, {}, [{}], [{}].", listener.getMember(), intLevel, date,
-                connectionName, threadName, logMessage, stackTrace);
-          }
-          distMgr.putOutgoing(alertMessage);
-        }
-      } catch (ReenteredConnectException e) {
-        // OK. We can't send to this recipient because we're in the middle of
-        // trying to connect to it.
+      InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+      if (ds == null) {
+        // Use info level to avoid triggering another alert
+        logger.info("Did not append alert event because the distributed system is set to null.");
+        return;
       }
+      DistributionManager distMgr = (DistributionManager) ds.getDistributionManager();
+      
+      final int intLevel = logLevelToAlertLevel(event.getLevel().intLevel());
+      final Date date = new Date(event.getTimeMillis());
+      final String threadName = event.getThreadName();
+      final String logMessage = event.getMessage().getFormattedMessage();
+      final String stackTrace = ThreadUtils.stackTraceToString(event.getThrown(), true);
+      final String connectionName = ds.getConfig().getName();
+      
+      for (Listener listener : this.listeners) {
+        if (event.getLevel().intLevel() > listener.getLevel().intLevel()) {
+          break;
+        }
+            
+        try {
+          AlertListenerMessage alertMessage = AlertListenerMessage.create(listener.getMember(), intLevel, date,
+              connectionName, threadName, Thread.currentThread().getId(), logMessage, stackTrace);
+          
+          if (listener.getMember().equals(distMgr.getDistributionManagerId())) {
+            if (isDebugEnabled) {
+              logger.debug("Delivering local alert message: {}, {}, {}, {}, {}, [{}], [{}].", listener.getMember(), intLevel, date,
+                  connectionName, threadName, logMessage, stackTrace);
+            }
+            alertMessage.process(distMgr);
+          } else {
+            if (isDebugEnabled) {
+              logger.debug("Delivering remote alert message: {}, {}, {}, {}, {}, [{}], [{}].", listener.getMember(), intLevel, date,
+                  connectionName, threadName, logMessage, stackTrace);
+            }
+            distMgr.putOutgoing(alertMessage);
+          }
+        } catch (ReenteredConnectException e) {
+          // OK. We can't send to this recipient because we're in the middle of
+          // trying to connect to it.
+        }
+      }
+    } finally {
+      setIsAlerting(false);
     }
-    
-    alerting.set(Boolean.FALSE);
   }
 
   public synchronized void addAlertListener(final DistributedMember member, final int alertLevel) {

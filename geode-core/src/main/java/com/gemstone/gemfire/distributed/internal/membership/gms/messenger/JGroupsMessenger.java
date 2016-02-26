@@ -781,23 +781,7 @@ public class JGroupsMessenger implements Messenger {
     Message msg = new Message();
     msg.setDest(null);
     msg.setSrc(src);
-    // GemFire uses its own reply processors so there is no need
-    // to maintain message order
-    msg.setFlag(Flag.OOB);
-    // Bundling is mostly only useful if we're doing no-ack work,
-    // which is fairly rare
-    msg.setFlag(Flag.DONT_BUNDLE);
-
-    if (gfmsg.getProcessorType() == DistributionManager.HIGH_PRIORITY_EXECUTOR
-        || gfmsg instanceof HighPriorityDistributionMessage
-        || AlertAppender.isThreadAlerting()) {
-      msg.setFlag(Flag.NO_FC);
-      msg.setFlag(Flag.SKIP_BARRIER);
-    }
-    if (gfmsg instanceof DistributedCacheOperation.CacheOperationMessage) {
-      // we don't want to see our own cache operation messages
-      msg.setTransientFlag(Message.TransientFlag.DONT_LOOPBACK);
-    }
+    setMessageFlags(gfmsg, msg);
     try {
       long start = services.getStatistics().startMsgSerialization();
       HeapDataOutputStream out_stream =
@@ -820,6 +804,26 @@ public class JGroupsMessenger implements Messenger {
       }
     }
     return msg;
+  }
+
+  void setMessageFlags(DistributionMessage gfmsg, Message msg) {
+    // GemFire uses its own reply processors so there is no need
+    // to maintain message order
+    msg.setFlag(Flag.OOB);
+    // Bundling is mostly only useful if we're doing no-ack work,
+    // which is fairly rare
+    msg.setFlag(Flag.DONT_BUNDLE);
+
+    if (gfmsg.getProcessorType() == DistributionManager.HIGH_PRIORITY_EXECUTOR
+        || gfmsg instanceof HighPriorityDistributionMessage
+        || AlertAppender.isThreadAlerting()) {
+      msg.setFlag(Flag.NO_FC);
+      msg.setFlag(Flag.SKIP_BARRIER);
+    }
+    if (gfmsg instanceof DistributedCacheOperation.CacheOperationMessage) {
+      // we don't want to see our own cache operation messages
+      msg.setTransientFlag(Message.TransientFlag.DONT_LOOPBACK);
+    }
   }
 
 

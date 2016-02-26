@@ -37,6 +37,7 @@ import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
+import org.jgroups.Message.Flag;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.UNICAST3;
 import org.jgroups.protocols.pbcast.NAKACK2;
@@ -79,6 +80,7 @@ import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
+import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import junit.framework.Assert;
@@ -194,6 +196,23 @@ public class JGroupsMessengerJUnitTest {
     mbrs.add(createAddress(101));
     NetView v = new NetView(sender, 1, mbrs);
     return v;
+  }
+  
+  @Test
+  public void alertMessagesBypassFlowControl() throws Exception {
+    initMocks(false);
+    Message jgmsg = new Message();
+    DistributionMessage dmsg = mock(DistributionMessage.class);
+    when(dmsg.getProcessorType()).thenReturn(DistributionManager.SERIAL_EXECUTOR);
+    messenger.setMessageFlags(dmsg, jgmsg);
+    assertFalse("expected no_fc to not be set in " + jgmsg.getFlags(), jgmsg.isFlagSet(Message.Flag.NO_FC));
+    AlertAppender.setIsAlerting(true);
+    try {
+      messenger.setMessageFlags(dmsg, jgmsg);
+      assertTrue("expected no_fc to be set in " + jgmsg.getFlags(), jgmsg.isFlagSet(Message.Flag.NO_FC));
+    } finally {
+      AlertAppender.setIsAlerting(false);
+    }
   }
   
   @Test
