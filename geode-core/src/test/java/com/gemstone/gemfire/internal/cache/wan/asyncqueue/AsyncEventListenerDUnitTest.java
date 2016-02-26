@@ -943,7 +943,26 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
     vm4.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
 
-    vm4.invoke(() -> verifySubstitutionFilterInvocations( "ln" , numPuts ));
+    vm4.invoke(() -> verifySubstitutionFilterInvocations( "ln" ,numPuts ));
+  }
+
+  public void testParallelAsyncEventQueueWithSubstitutionFilterNoSubstituteValueToDataInvocations() {
+    Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
+
+    vm4.invoke(createCacheRunnable(lnPort));
+
+    vm4.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue( "ln",
+        true, 100, 100, false, false, null, false, "MyAsyncEventListener", "SizeableGatewayEventSubstitutionFilter" ));
+
+    String regionName = getTestMethodName() + "_PR";
+    vm4.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( regionName, "ln", isOffHeap() ));
+
+    int numPuts = 10;
+    vm4.invoke(() -> AsyncEventQueueTestBase.doPuts( regionName, numPuts ));
+
+    vm4.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+
+    vm4.invoke(() -> verifySubstitutionFilterToDataInvocations( "ln" ,0 ));
   }
 
   /**
