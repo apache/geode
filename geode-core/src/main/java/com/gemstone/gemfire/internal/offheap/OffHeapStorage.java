@@ -71,7 +71,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     final String usedMemoryDesc = "The amount of off-heap memory, in bytes, that is being used to store data.";
     final String compactionsDesc = "The total number of times off-heap memory has been compacted.";
     final String compactionTimeDesc = "The total time spent compacting off-heap memory.";
-    final String fragmentationDesc = "The percentage of off-heap memory fragmentation.  Updated every time a compaction is performed.";
+    final String fragmentationDesc = "The percentage of off-heap free memory that is fragmented.  Updated every time a compaction is performed.";
     final String fragmentsDesc = "The number of fragments of free off-heap memory. Updated every time a compaction is done.";
     final String freeMemoryDesc = "The amount of off-heap memory, in bytes, that is not being used.";
     final String largestFragmentDesc = "The largest fragment of memory found by the last compaction of off heap memory. Updated every time a compaction is done.";
