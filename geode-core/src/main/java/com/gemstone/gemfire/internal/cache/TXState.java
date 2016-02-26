@@ -1351,7 +1351,7 @@ public class TXState implements TXStateInterface {
       boolean rememberRead, Object expectedOldValue, boolean createIfAbsent)
   throws EntryNotFoundException
   {
-    LocalRegion dataReg = localRegion.getDataRegionForRead(keyInfo);
+    LocalRegion dataReg = localRegion.getDataRegionForWrite(keyInfo);
     TXRegionState txr = txReadRegion(dataReg);
     TXEntryState result = null;
     if (txr != null) {
