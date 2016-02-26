@@ -28,3 +28,10 @@ cache:
 
 after_failure:
   - cat build/reports/rat/rat-report.txt
+
+notifications:
+  email:
+    recipients:
+      - dev@geode.incubator.apache.org
+    on_success: change
+    on_failure: change
