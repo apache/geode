@@ -302,6 +302,11 @@ public class IndexManager  {
 
       IndexCreationHelper helper = null;
       boolean isCompactOrHash = false;
+      //Hash index not supported for overflow but we "thought" we were so let's maintain backwards compatibility
+      //and create a regular compact range index instead
+      if (indexType == IndexType.HASH && isOverFlowRegion()) {
+        indexType = IndexType.FUNCTIONAL;
+      }
       if (indexType != IndexType.PRIMARY_KEY) {
         helper = new FunctionalIndexCreationHelper(origFromClause,
             origIndexedExpression, projectionAttributes, imports, region.getCache(),
@@ -1614,11 +1619,6 @@ public class IndexManager  {
 
       if (this.prIndex != null) {
         stats = this.prIndex.getStatistics();
-      }
-      //Hash index not supported for overflow but we "thought" we were so let's maintain backwards compatibility
-      //and create a regular compact range index instead
-      if (indexType == IndexType.HASH && isOverFlowRegion()) {
-        indexType = IndexType.FUNCTIONAL;
       }
       if (indexType == IndexType.PRIMARY_KEY) {
         index = new PrimaryKeyIndex(indexName, region, fromClause,indexedExpression,
