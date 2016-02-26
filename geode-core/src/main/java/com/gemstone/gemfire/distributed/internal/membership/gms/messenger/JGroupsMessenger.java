@@ -92,6 +92,7 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.cache.DirectReplyMessage;
 import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
 
@@ -787,9 +788,9 @@ public class JGroupsMessenger implements Messenger {
     // which is fairly rare
     msg.setFlag(Flag.DONT_BUNDLE);
 
-    //log.info("Creating message with payload " + gfmsg);
     if (gfmsg.getProcessorType() == DistributionManager.HIGH_PRIORITY_EXECUTOR
-        || gfmsg instanceof HighPriorityDistributionMessage) {
+        || gfmsg instanceof HighPriorityDistributionMessage
+        || AlertAppender.isThreadAlerting()) {
       msg.setFlag(Flag.NO_FC);
       msg.setFlag(Flag.SKIP_BARRIER);
     }
