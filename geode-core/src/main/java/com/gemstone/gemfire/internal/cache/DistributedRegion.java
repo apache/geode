@@ -2057,7 +2057,7 @@ public class DistributedRegion extends LocalRegion implements
     }
   }
 
-  private void distributeUpdateEntryVersion(EntryEventImpl event) {
+  protected void distributeUpdateEntryVersion(EntryEventImpl event) {
     if (!this.regionInvalid && event.isDistributed() && !event.isOriginRemote()
         && !isTX() /* only distribute if non-tx */) {
       if (event.isDistributed() && !event.isOriginRemote()) {
