@@ -20,7 +20,7 @@ limitations under the License.
 <P>
 
 <CENTER>
-<IMG SRC="doc-files/client_static_diagram.png"
+<IMG SRC="{@docRoot}/javadoc-images/client_static_diagram.png"
      />
      <h3> Static Architecture Overview </h3>
 </CENTER>
@@ -41,7 +41,7 @@ Operations are performed on the PoolImpl. The pool impl class has methods, such 
 The ConnectionManagerImpl class owns the client to server connections. It creates new connections (using a connection factory and connection source) and allows the pool to check out/check in connections. It keeps track of the maximum and minimum number of connections allowed, and the idle timeout for connections.
 
 <CENTER>
-<IMG SRC="doc-files/ConnectionManagerImpl.png"
+<IMG SRC="{@docRoot}/javadoc-images/ConnectionManagerImpl.png"
      />
      <h3> Connection Manager Static Diagram </h3>
 </CENTER>
@@ -51,7 +51,7 @@ The ConnectionManagerImpl class owns the client to server connections. It create
 The ConnectionManagerImpl class owns the server to client connections. It creates new server to client connections (using a connection factory and connection source). It's responsible for maintaing the redundancy of the connections, and recovering interest on new connections.
 
 <CENTER>
-<IMG SRC="doc-files/QueueManagerImpl.png"
+<IMG SRC="{@docRoot}/javadoc-images/QueueManagerImpl.png"
      />
      <h3> Connection Manager Static Diagram </h3>
 </CENTER>

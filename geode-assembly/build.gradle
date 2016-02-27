@@ -212,6 +212,16 @@ task docs(type: Javadoc) {
     exclude 'com/gemstone/gemfire/distributed/**/util/**/'
     exclude 'com/gemstone/gemfire/test/**/'
     destinationDir = docsDir
+
+    doLast {
+      parent.subprojects.each { project ->
+        copy {
+          from project.sourceSets.main.resources.srcDirs
+          into docsDir
+          include 'javadoc-images/*'
+        }
+      }
+   }
 }
 
 gradle.taskGraph.whenReady( { graph ->
