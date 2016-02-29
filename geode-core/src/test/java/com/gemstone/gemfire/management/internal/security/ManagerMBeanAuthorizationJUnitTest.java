@@ -16,6 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.lang.management.ManagementFactory;
+import javax.management.ObjectName;
+
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.ManagerMXBean;
 import com.gemstone.gemfire.management.internal.beans.ManagerMBean;
@@ -26,12 +32,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import javax.management.ObjectName;
-import java.lang.management.ManagementFactory;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
 @Category(IntegrationTest.class)
 public class ManagerMBeanAuthorizationJUnitTest {
@@ -71,8 +71,8 @@ public class ManagerMBeanAuthorizationJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testSomeAccess() throws Exception {
-    assertThatThrownBy(() -> managerMXBean.start()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:MANAGE");
-    assertThatThrownBy(() -> managerMXBean.getPulseURL()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:WRITE");
+    assertThatThrownBy(() -> managerMXBean.start()).hasMessageContaining("CLUSTER:MANAGE");
+    assertThatThrownBy(() -> managerMXBean.getPulseURL()).hasMessageContaining("CLUSTER:WRITE");
     managerMXBean.isRunning();
   }
 }

@@ -151,19 +151,16 @@ public class JmxOperationInvoker implements OperationInvoker {
       this.connector = JMXConnectorFactory.connect(url, env);
       this.mbsc = connector.getMBeanServerConnection();
       this.connector.addConnectionNotificationListener(new JMXConnectionListener(this), null, null);
-      this.connector.connect(); // TODO this call to connect is not needed
       this.distributedSystemMXBeanProxy = JMX.newMXBeanProxy(mbsc, MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
 
-      if (this.distributedSystemMXBeanProxy == null || !JMX.isMXBeanInterface(DistributedSystemMXBean.class)) {
+      if (this.distributedSystemMXBeanProxy == null ) {
         LogWrapper.getInstance().info("DistributedSystemMXBean is not present on member with endpoints : "+this.endpoints);
-        connector.close();
         throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
       }
       else {
         this.managerMemberObjectName = this.distributedSystemMXBeanProxy.getMemberObjectName();
         if (this.managerMemberObjectName == null || !JMX.isMXBeanInterface(MemberMXBean.class)) {
           LogWrapper.getInstance().info("MemberMXBean with ObjectName "+this.managerMemberObjectName+" is not present on member with endpoints : "+endpoints);
-          this.connector.close();
           throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
         }
         else {

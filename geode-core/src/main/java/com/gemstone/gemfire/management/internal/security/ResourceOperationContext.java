@@ -27,24 +27,29 @@ public class ResourceOperationContext extends OperationContext {
   private Object opResult = null;
   private Resource resource = null;
   private OperationCode operation = null;
+  private String regionName = null;
 
   public ResourceOperationContext() {
   }
 
   public ResourceOperationContext(Resource resource, OperationCode operation) {
+    setParts(resource.name()+":"+operation.name(), false);
     this.resource = resource;
     this.operation = operation;
   }
 
-  public ResourceOperationContext(String resource, String operation) {
+  public ResourceOperationContext(String resource, String operation, String regionName) {
+    setParts(resource+":"+operation+":"+regionName, false);
     if (resource != null) this.resource = Resource.valueOf(resource);
     if (operation != null) this.operation = OperationCode.valueOf(operation);
+    this.regionName = regionName;
   }
 
   public void setResourceOperation(ResourceOperation op) {
     if (op != null) {
       resource = op.resource();
       operation = op.operation();
+      setParts(resource.name()+":"+operation.name(), false);
     }
   }
 
@@ -64,6 +69,11 @@ public class ResourceOperationContext extends OperationContext {
   }
 
   @Override
+  public String getRegionName(){
+    return this.regionName;
+  }
+
+  @Override
   public boolean isPostOperation() {
     return isPostOperation;
   }
@@ -76,5 +86,21 @@ public class ResourceOperationContext extends OperationContext {
   public Object getOperationResult() {
     return this.opResult;
   }
+
+  public String toString(){
+    if(this.regionName==null)
+      return getResource() + ":"+ getOperationCode();
+    else
+      return getResource() + ":"+ getOperationCode()+ ":" +this.regionName;
+  }
+
+  public boolean equals(Object o){
+    if(! (o instanceof ResourceOperationContext))
+      return false;
+
+    ResourceOperationContext other = (ResourceOperationContext)o;
+    return (this.resource==other.getResource() && this.operation==other.getOperationCode());
+  }
+
 
 }

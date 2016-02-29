@@ -38,7 +38,6 @@ import javax.management.remote.rmi.RMIJRMPServerImpl;
 import javax.management.remote.rmi.RMIServerImpl;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -52,8 +51,8 @@ import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagerMXBean;
 import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
-import com.gemstone.gemfire.management.internal.security.ManagementInterceptor;
 import com.gemstone.gemfire.management.internal.unsafe.ReadOpFileAccessController;
+import com.gemstone.gemfire.security.JMXShiroAuthenticator;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -80,10 +79,9 @@ public class ManagementAgent {
   private boolean running = false;
   private Registry registry;
   private JMXConnectorServer cs;
+  private JMXShiroAuthenticator shiroAuthenticator;
   private final DistributionConfig config;
   private boolean isHttpServiceRunning = false;
-  private ManagementInterceptor managementInterceptor = null;
-  private MBeanServerWrapper mBeanServerWrapper = null;
 
   /**
    * This system property is set to true when the embedded HTTP server is
@@ -98,14 +96,6 @@ public class ManagementAgent {
 
   public synchronized boolean isRunning() {
     return this.running;
-  }
-
-  public ManagementInterceptor getManagementInterceptor() {
-    return managementInterceptor;
-  }
-
-  public MBeanServerWrapper getMBeanServerWrapper() {
-    return mBeanServerWrapper;
   }
 
   public synchronized boolean isHttpServiceRunning() {
@@ -307,10 +297,6 @@ public class ManagementAgent {
     }
   }
 
-  private boolean isRunningInTomcat() {
-    return (System.getProperty("catalina.base") != null || System.getProperty("catalina.home") != null);
-  }
-
   private void setStatusMessage(ManagerMXBean mBean, String message) {
     mBean.setPulseURL("");
     mBean.setStatusMessage(message);
@@ -398,29 +384,6 @@ public class ManagementAgent {
     // Environment map. KIRK: why is this declared as HashMap?
     final HashMap<String, Object> env = new HashMap<String, Object>();
 
-    Cache cache = CacheFactory.getAnyInstance();
-    if (isCustomAuthenticator()) {
-      managementInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getProperties());
-      env.put(JMXConnectorServer.AUTHENTICATOR, managementInterceptor);
-    }
-    else {
-      /* Disable the old authenticator mechanism */
-      String pwFile = this.config.getJmxManagerPasswordFile();
-      if (pwFile != null && pwFile.length() > 0) {
-        env.put("jmx.remote.x.password.file", pwFile);
-      }
-
-      String accessFile = this.config.getJmxManagerAccessFile();
-      if (accessFile != null && accessFile.length() > 0) {
-        // Lets not use default connector based authorization
-        // env.put("jmx.remote.x.access.file", accessFile);
-        // Rewire the mbs hierarchy to set accessController
-        ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFile);
-        controller.setMBeanServer(mbs);
-        mbs = controller;
-      }
-    }
-
     // Manually creates and binds a JMX RMI Connector Server stub with the
     // registry created above: the port we pass here is the port that can
     // be specified in "service:jmx:rmi://"+hostname+":"+port - where the
@@ -474,13 +437,33 @@ public class ManagementAgent {
       }
     };
 
-    if (isCustomAuthorizer()) {
-      if(managementInterceptor==null){
-        managementInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getProperties());
+    String shiroConfig = this.config.getShiroInit();
+    if (! StringUtils.isBlank(shiroConfig) || isCustomAuthenticator()) {
+      shiroAuthenticator = new JMXShiroAuthenticator();
+      env.put(JMXConnectorServer.AUTHENTICATOR, shiroAuthenticator);
+      cs.addNotificationListener(shiroAuthenticator, null, cs.getAttributes());
+      if(! StringUtils.isBlank(shiroConfig) || isCustomAuthorizer()) {
+        MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper();
+        cs.setMBeanServerForwarder(mBeanServerWrapper);
       }
-      mBeanServerWrapper = new MBeanServerWrapper(managementInterceptor);
-      cs.setMBeanServerForwarder(mBeanServerWrapper);
-      logger.info("Starting RMI Connector with Security Interceptor");
+    }
+
+    else {
+      /* Disable the old authenticator mechanism */
+      String pwFile = this.config.getJmxManagerPasswordFile();
+      if (pwFile != null && pwFile.length() > 0) {
+        env.put("jmx.remote.x.password.file", pwFile);
+      }
+
+      String accessFile = this.config.getJmxManagerAccessFile();
+      if (accessFile != null && accessFile.length() > 0) {
+        // Lets not use default connector based authorization
+        // env.put("jmx.remote.x.access.file", accessFile);
+        // Rewire the mbs hierarchy to set accessController
+        ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFile);
+        controller.setMBeanServer(mbs);
+        mbs = controller;
+      }
     }
 
     cs.start();

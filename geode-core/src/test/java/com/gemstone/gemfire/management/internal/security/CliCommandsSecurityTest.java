@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.*;
 
 import java.util.List;
 
@@ -62,6 +62,8 @@ public class CliCommandsSecurityTest {
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   // the tests are run in alphabetical order, so the naming of the tests do matter
   public void a_testNoAccess(){
+//    List<TestCommand> clusterReads = new ArrayList<>();
+//    clusterReads.add(new TestCommand("deploy --jar=group1_functions.jar --group=Group1", "CLUSTER:MANAGE"));
     for (TestCommand command:commands) {
       LogService.getLogger().info("processing: "+command.getCommand());
       // for those commands that don't require any permission, any user can execute them
@@ -70,8 +72,7 @@ public class CliCommandsSecurityTest {
       }
       else {
         assertThatThrownBy(() -> bean.processCommand(command.getCommand()))
-            .hasMessageContaining(command.getPermission())
-            .isInstanceOf(SecurityException.class);
+            .hasMessageContaining(command.getPermission());
       }
     }
   }

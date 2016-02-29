@@ -18,22 +18,6 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
-import com.gemstone.gemfire.management.internal.security.ManagementInterceptor;
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
-import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
-import org.json.JSONException;
-
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorServer;
-import javax.management.remote.JMXConnectorServerFactory;
-import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.Inet4Address;
@@ -43,6 +27,22 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXConnectorServerFactory;
+import javax.management.remote.JMXServiceURL;
+
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
+import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
+import com.gemstone.gemfire.security.JMXShiroAuthenticator;
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
+import org.json.JSONException;
 
 public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"
@@ -68,10 +68,10 @@ public class Server {
       JSONAuthorization.setUpWithJsonFile(jsonAuthFile);
       Map<String, Object> env = new HashMap<String, Object>();
 
-      ManagementInterceptor interceptor = new ManagementInterceptor(props);
+      JMXShiroAuthenticator interceptor = new JMXShiroAuthenticator();
       env.put(JMXConnectorServer.AUTHENTICATOR, interceptor);
       cs = JMXConnectorServerFactory.newJMXConnectorServer(url, env, mbs);
-      cs.setMBeanServerForwarder(new MBeanServerWrapper(interceptor));
+      cs.setMBeanServerForwarder(new MBeanServerWrapper());
     } else {
       System.setProperty("spring.profiles.active", "pulse.authentication.default");
       cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);

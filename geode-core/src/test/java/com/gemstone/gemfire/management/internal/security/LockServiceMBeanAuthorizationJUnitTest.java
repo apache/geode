@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static org.assertj.core.api.Assertions.*;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
@@ -29,8 +31,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Category(IntegrationTest.class)
 public class LockServiceMBeanAuthorizationJUnitTest {
@@ -74,17 +74,17 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testSomeAccess() throws Exception {
-    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor());
     lockServiceMBean.getMemberCount();
   }
 
   @Test
   @JMXConnectionConfiguration(user = "data-user", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> lockServiceMBean.getMemberCount()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> lockServiceMBean.isDistributed()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> lockServiceMBean.getMemberCount()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> lockServiceMBean.isDistributed()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock()).hasMessageContaining("CLUSTER:READ");
   }
 }

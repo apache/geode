@@ -16,16 +16,17 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static org.assertj.core.api.Assertions.*;
+
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.MemberMXBean;
+import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Category(IntegrationTest.class)
 public class DataCommandsSecurityTest {
@@ -49,11 +50,9 @@ public class DataCommandsSecurityTest {
   @JMXConnectionConfiguration(user = "region1-user", password = "1234567")
   public void testDataUser() throws Exception {
     bean.processCommand("locate entry --key=k1 --region=region1");
-    bean.processCommand("query --query='SELECT * FROM /region1'");
 
     // can't operate on secureRegion
-    assertThatThrownBy(() -> bean.processCommand("locate entry --key=k1 --region=secureRegion")).isInstanceOf(SecurityException.class);
-    assertThatThrownBy(() -> bean.processCommand("query --query='SELECT * FROM /secureRegion")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> bean.processCommand("locate entry --key=k1 --region=secureRegion")).isInstanceOf(GemFireSecurityException.class);
   }
 
   @JMXConnectionConfiguration(user = "secure-user", password = "1234567")
@@ -61,27 +60,23 @@ public class DataCommandsSecurityTest {
   public void testSecureDataUser(){
     // can do all these on both regions
     bean.processCommand("locate entry --key=k1 --region=region1");
-    bean.processCommand("query --query='SELECT * FROM /region1'");
-
     bean.processCommand("locate entry --key=k1 --region=secureRegion");
-    bean.processCommand("query --query='SELECT * FROM /secureRegion'");
   }
 
   // dataUser has all the permissions granted, but not to region2 (only to region1)
   @JMXConnectionConfiguration(user = "region1-user", password = "1234567")
   @Test
   public void testRegionAcess(){
-    assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region2")).isInstanceOf(SecurityException.class)
+    assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region2")).isInstanceOf(GemFireSecurityException.class)
         .hasMessageContaining("DATA:MANAGE");
 
-    assertThatThrownBy(() -> bean.processCommand("export data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
-    assertThatThrownBy(() -> bean.processCommand("import data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> bean.processCommand("export data --region=region2 --file=foo.txt --member=value")).isInstanceOf(GemFireSecurityException.class);
+    assertThatThrownBy(() -> bean.processCommand("import data --region=region2 --file=foo.txt --member=value")).isInstanceOf(GemFireSecurityException.class);
 
-    assertThatThrownBy(() -> bean.processCommand("put --key=key1 --value=value1 --region=region2")).isInstanceOf(SecurityException.class)
+    assertThatThrownBy(() -> bean.processCommand("put --key=key1 --value=value1 --region=region2")).isInstanceOf(GemFireSecurityException.class)
         .hasMessageContaining("DATA:WRITE");
 
-    assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region2")).isInstanceOf(SecurityException.class);
-    assertThatThrownBy(() -> bean.processCommand("query --query='SELECT * FROM /region2'")).isInstanceOf(SecurityException.class);
-  }
+    assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region2")).isInstanceOf(GemFireSecurityException.class);
+    }
 
 }

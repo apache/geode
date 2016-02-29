@@ -16,9 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.test.junit.rules.DescribedExternalResource;
-import org.junit.runner.Description;
+import static org.junit.Assert.*;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
@@ -29,12 +32,9 @@ import javax.management.QueryExp;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import com.gemstone.gemfire.test.junit.rules.DescribedExternalResource;
+import org.junit.runner.Description;
 
 /**
  * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}
@@ -123,6 +123,7 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
       jmxConnector.close();
       jmxConnector = null;
     }
+
     con = null;
   }
 

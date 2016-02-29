@@ -38,7 +38,7 @@ public class ResultBuilder {
   public static final int ERRORCODE_DEFAULT           = 400;
   public static final int ERRORCODE_CONNECTION_ERROR  = 405;
   public static final int ERRORCODE_SHELLCLIENT_ERROR = 410;
-  //Error code for auth-error??
+  public static final int ERRORCODE_UNAUTHORIZED      = 415;
   
   // errors on member
   public static final int ERRORCODE_PARSING_ERROR     = 501;
@@ -113,6 +113,11 @@ public class ResultBuilder {
   public static Result createGemFireErrorResult(String message) {
     return createErrorResult(ERRORCODE_GEMFIRE_ERROR, 
                   "Could not process command due to GemFire error. " + message);
+  }
+
+  public static Result createGemFireUnAuthorizedErrorResult(String message) {
+    return createErrorResult(ERRORCODE_UNAUTHORIZED,
+        "Could not process command due to GemFire error. " + message);
   }
 
   public static Result createUserErrorResult(String message) {

@@ -76,14 +76,14 @@
     {
       "name": "region1-use",
       "operationsAllowed": [
-        "DATA:READ"
+        "DATA"
       ],
       "region": "region1"
     },
     {
       "name": "secure-use",
       "operationsAllowed": [
-        "DATA:READ"
+        "DATA"
       ],
       "regions": ["region1", "secureRegion"]
     }

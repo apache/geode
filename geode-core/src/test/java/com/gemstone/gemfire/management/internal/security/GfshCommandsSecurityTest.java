@@ -2,17 +2,28 @@ package com.gemstone.gemfire.management.internal.security;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
+import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
+import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 @Category(IntegrationTest.class)
+@RunWith(Parameterized.class)
 public class GfshCommandsSecurityTest {
   private static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
   private static int jmxPort = ports[0];
@@ -25,7 +36,19 @@ public class GfshCommandsSecurityTest {
       jmxPort, httpPort, "cacheServer.json");
 
   @Rule
-  public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, true);
+  public GfshShellConnectionRule gfshConnection = null;
+
+  public GfshCommandsSecurityTest(boolean useHttp){
+    gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, useHttp);
+  }
+
+  @Parameterized.Parameters
+  public static Collection parameters() {
+    return Arrays.asList(new Object[][] {
+        { false},  // useHttp=false,
+        { true } // useHttp=true,
+    });
+  }
 
   @Before
   public void before(){
@@ -46,34 +69,78 @@ public class GfshCommandsSecurityTest {
 
   @Test
   @JMXConnectionConfiguration(user = "cluster-reader", password = "1234567")
-  public void testAuthorized() throws Exception{
-    CommandResult result = null;
-//    List<TestCommand> commands = TestCommand.getCommandsOfPermission("DATA:READ");
-//    for(TestCommand command:commands){
-//      System.out.println("Processing command: "+command.getCommand());
-//      gfsh.executeCommand(command.getCommand());
-//      result = (CommandResult)gfsh.getResult();
-//      System.out.println(result);
-//    }
-//
-//    List<TestCommand> others = TestCommand.getCommands();
-//    others.removeAll(commands);
-//    for(TestCommand command:others){
-//      gfsh.executeCommand(command.getCommand());
-//      result = (CommandResult)gfsh.getResult();
-//      System.out.println(result);
-//    }
-    gfsh.executeCommand("describe config --member=Member1");
-    result = (CommandResult)gfsh.getResult();
-    System.out.println("result is: "+ result);
+  public void testClusterReader() throws Exception{
+    runCommandsWithAndWithout("CLUSTER:READ");
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "cluster-reader", password = "1234567")
-  public void testNotAuthorized() throws Exception{
-    CommandResult result = null;
-    gfsh.executeCommand("alter runtime --member=server1 --log-level=finest --enable-statistics=true");
-    result = (CommandResult)gfsh.getResult();
-    System.out.println("result is: "+ result);
+  @JMXConnectionConfiguration(user = "cluster-writer", password = "1234567")
+  public void testClusterWriter() throws Exception{
+    runCommandsWithAndWithout("CLUSTER:WRITE");
   }
+
+  @Test
+  @JMXConnectionConfiguration(user = "cluster-manager", password = "1234567")
+  public void testClusterManager() throws Exception{
+    runCommandsWithAndWithout("CLUSTER:MANAGE");
+  }
+
+  @Test
+  @JMXConnectionConfiguration(user = "data-reader", password = "1234567")
+  public void testDataReader() throws Exception{
+    runCommandsWithAndWithout("DATA:READ");
+  }
+
+  @Test
+  @JMXConnectionConfiguration(user = "data-writer", password = "1234567")
+  public void testDataWriter() throws Exception{
+    runCommandsWithAndWithout("DATA:WRITE");
+  }
+
+  @Test
+  @JMXConnectionConfiguration(user = "data-manager", password = "1234567")
+  public void testDataManager() throws Exception{
+    runCommandsWithAndWithout("DATA:MANAGE");
+  }
+
+
+  private void runCommandsWithAndWithout(String permission) throws Exception{
+    List<TestCommand> permitted = TestCommand.getCommandsOfPermission(permission);
+    for(TestCommand clusterRead:permitted) {
+      LogService.getLogger().info("Processing authorized command: "+clusterRead.getCommand());gfsh.executeCommand(clusterRead.getCommand());
+      CommandResult result = (CommandResult) gfsh.getResult();
+      assertNotNull(result);
+
+      if(result.getResultData() instanceof ErrorResultData) {
+        assertNotEquals(ResultBuilder.ERRORCODE_UNAUTHORIZED, ((ErrorResultData) result.getResultData()).getErrorCode());
+      }
+      else{
+        assertEquals(Result.Status.OK, result.getStatus()) ;
+      }
+    }
+
+    List<TestCommand> others = TestCommand.getCommands();
+    others.removeAll(permitted);
+    for(TestCommand other:others) {
+      // skip no permission commands
+      if(other.getPermission()==null)
+        continue;
+
+      LogService.getLogger().info("Processing unauthorized command: "+other.getCommand());
+      gfsh.executeCommand(other.getCommand());
+      CommandResult result = (CommandResult) gfsh.getResult();
+      int errorCode = ((ErrorResultData) result.getResultData()).getErrorCode();
+
+      // for some commands there are pre execution checks to check for user input error, will skip those commands
+      if(errorCode==ResultBuilder.ERRORCODE_USER_ERROR){
+        LogService.getLogger().info("Skip user error: "+result.getContent());
+        continue;
+      }
+
+      assertEquals(ResultBuilder.ERRORCODE_UNAUTHORIZED, ((ErrorResultData) result.getResultData()).getErrorCode());
+      assertTrue(result.getContent().toString().contains(other.getPermission()));
+    }
+  }
+
+
 }

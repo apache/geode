@@ -16,15 +16,11 @@
  */
 package com.gemstone.gemfire.management.internal.web.controllers;
 
-import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -139,13 +135,7 @@ public class DataCommandsController extends AbstractCommandsController {
     command.addOption(CliStrings.EXPORT_DATA__REGION, decode(regionNamePath));
     command.addOption(CliStrings.EXPORT_DATA__FILE, decode(file));
 
-    final Properties credentials = EnvironmentVariablesHandlerInterceptor.CREDENTIALS.get();
-
-    return new Callable<ResponseEntity<String>>() {
-      @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommandWithCredentials(command.toString(), credentials), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString());
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/members/{member}/regions/{region}/data")
@@ -159,13 +149,7 @@ public class DataCommandsController extends AbstractCommandsController {
     command.addOption(CliStrings.IMPORT_DATA__REGION, decode(regionNamePath));
     command.addOption(CliStrings.IMPORT_DATA__FILE, decode(file));
 
-    final Properties credentials = EnvironmentVariablesHandlerInterceptor.CREDENTIALS.get();
-
-    return new Callable<ResponseEntity<String>>() {
-      @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommandWithCredentials(command.toString(), credentials), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString());
   }
 
   @RequestMapping(method = RequestMethod.GET, value = "/regions/{region}/data/location")
@@ -208,13 +192,7 @@ public class DataCommandsController extends AbstractCommandsController {
     command.addOption(CliStrings.QUERY__STEPNAME, stepName);
     command.addOption(CliStrings.QUERY__INTERACTIVE, String.valueOf(Boolean.TRUE.equals(interactive)));
 
-    final Properties credentials = EnvironmentVariablesHandlerInterceptor.CREDENTIALS.get();
-
-    return new Callable<ResponseEntity<String>>() {
-      @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommandWithCredentials(command.toString(), credentials), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString());
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/regions/data", params = "op=rebalance")
@@ -238,13 +216,7 @@ public class DataCommandsController extends AbstractCommandsController {
     command.addOption(CliStrings.REBALANCE__SIMULATE, String.valueOf(simulate));
     command.addOption(CliStrings.REBALANCE__TIMEOUT, String.valueOf(timeout));
 
-    final Properties credentials = EnvironmentVariablesHandlerInterceptor.CREDENTIALS.get();
-
-    return new Callable<ResponseEntity<String>>() {
-      public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommandWithCredentials(command.toString(), credentials), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString());
   }
 
 }

@@ -20,6 +20,8 @@ import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
+import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
+import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.junit.rules.DescribedExternalResource;
 import org.junit.runner.Description;
@@ -55,29 +57,27 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     String shellId = getClass().getSimpleName() + "_" + description.getMethodName();
     gfsh = new HeadlessGfsh(shellId, 30);
 
-    final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CONNECT);
-    command.addOption(CliStrings.CONNECT__USERNAME, config.user());
-    command.addOption(CliStrings.CONNECT__PASSWORD, config.password());
+    final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
+    connectCommand.addOption(CliStrings.CONNECT__USERNAME, config.user());
+    connectCommand.addOption(CliStrings.CONNECT__PASSWORD, config.password());
 
     String endpoint;
     if (useHttp) {
       endpoint = "http://localhost:" + httpPort + "/gemfire/v1";
-      command.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
-      command.addOption(CliStrings.CONNECT__URL, endpoint);
+      connectCommand.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
+      connectCommand.addOption(CliStrings.CONNECT__URL, endpoint);
     } else {
       endpoint = "localhost[" + jmxPort + "]";
-      command.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
+      connectCommand.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
     }
     System.out.println(getClass().getSimpleName()+" using endpoint: "+endpoint);
 
-    gfsh.executeCommand(command.toString());
+    gfsh.executeCommand(connectCommand.toString());
 
     CommandResult result = (CommandResult) gfsh.getResult();
-
-    String message = result.getContent().toString();
-    if(message.contains("Authentication Failed Wrong username/password") ||
-        message.contains("The HTTP request failed with: 403 - Access Denied")){
-      this.authenticated = false;
+    if(result.getResultData() instanceof ErrorResultData) {
+      ErrorResultData errorResultData = (ErrorResultData) result.getResultData();
+      this.authenticated = !(errorResultData.getErrorCode() == ResultBuilder.ERRORCODE_CONNECTION_ERROR);
     }
     else{
       this.authenticated = true;
@@ -90,6 +90,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   protected void after(Description description) throws Throwable {
     if (gfsh != null) {
       gfsh.clearEvents();
+      gfsh.executeCommand("disconnect");
       gfsh.executeCommand("exit");
       gfsh.terminate();
       gfsh.setThreadLocalInstance();

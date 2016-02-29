@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,14 +28,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(IntegrationTest.class)
-public class CacheServerMBeanAuthorizationJUnitTest {
+public class CacheServerMBeanShiroJUnitTest {
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private CacheServerMXBean bean;
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "cacheServer.json");
+  public static ShiroCacheStartRule serverRule = new ShiroCacheStartRule(jmxManagerPort, "shiro.ini");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -46,10 +45,10 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
-  public void testDataAdmin() throws Exception {
+  @JMXConnectionConfiguration(user = "root", password = "secret")
+  public void testAllAccess() throws Exception {
     bean.removeIndex("foo");
-    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining("DATA:READ");
+    bean.executeContinuousQuery("bar");
     bean.fetchLoadProbe();
     bean.getActiveCQCount();
     bean.stopContinuousQuery("bar");
@@ -58,25 +57,9 @@ public class CacheServerMBeanAuthorizationJUnitTest {
     bean.showClientQueueDetails("foo");
   }
 
-  @Test
-  @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
-  public void testClusterAdmin() throws Exception {
-    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining("DATA:READ");
-    bean.fetchLoadProbe();
-  }
-
 
   @Test
-  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
-  public void testDataUser() throws Exception {
-    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining("DATA:MANAGE");
-    bean.executeContinuousQuery("bar");
-    assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining("CLUSTER:READ");
-  }
-
-  @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  @JMXConnectionConfiguration(user = "guest", password = "guest")
   public void testNoAccess() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining("DATA:MANAGE");
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining("DATA:READ");

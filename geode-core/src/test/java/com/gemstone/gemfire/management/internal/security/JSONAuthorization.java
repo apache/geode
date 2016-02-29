@@ -16,22 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.Authenticator;
-import com.gemstone.gemfire.security.NotAuthorizedException;
-import com.gemstone.gemfire.util.test.TestUtil;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import javax.management.remote.JMXPrincipal;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -43,9 +27,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
+import javax.management.remote.JMXPrincipal;
+
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.operations.OperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import com.gemstone.gemfire.cache.operations.OperationContext.Resource;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.security.AccessControl;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
+import com.gemstone.gemfire.security.Authenticator;
+import com.gemstone.gemfire.security.NotAuthorizedException;
+import com.gemstone.gemfire.util.test.TestUtil;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class JSONAuthorization implements AccessControl, Authenticator {
 
@@ -188,7 +186,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
   }
 
   @Override
-  public boolean authorizeOperation(String arg0, OperationContext context) {
+  public boolean authorizeOperation(String region, OperationContext context) {
     if (principal == null)
       return false;
 
@@ -204,28 +202,12 @@ public class JSONAuthorization implements AccessControl, Authenticator {
         if (context.getResource() == perm.getResource() && context.getOperationCode() == perm.getOperationCode()) {
           LogService.getLogger().info("Found permission " + perm);
 
-          //if this is only for JMX aurthorization, we've found the permission needed, i.e, this operation is authorized
-          if(!(context instanceof CLIOperationContext)){
+          //no need to further check the rgionName
+          if(context.getRegionName()==null){
             return true;
           }
 
-          // If this is a Command operation context, we need to further check if the region is allowed in this role
-          CLIOperationContext ctx = (CLIOperationContext) context;
-
-          String region = ctx.getCommandOptions().get("region");
-          if(region==null) {
-            region = ctx.getCommandOptions().get("include-region");
-          }
-          if(region==null) {
-            String query = ctx.getCommandOptions().get("query");
-            if(query!=null) {
-              Matcher matcher = Pattern.compile("/\\s*(\\w+)").matcher(query);
-              if (matcher.find())
-                region = matcher.group(1);
-            }
-          }
-
-          if(role.regionNames == null || region == null || role.regionNames.contains(region)){
+          if(role.regionNames == null || role.regionNames.contains(context.getRegionName())){
             // if regionName is null, i.e. all regions are allowed
             return true;
           }
@@ -251,7 +233,6 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     LogService.getLogger().info("User=" + user + " pwd=" + pwd);
     if (user != null && !userObj.pwd.equals(pwd) && !"".equals(user))
       throw new AuthenticationFailedException("Wrong username/password");
-    LogService.getLogger().info("Authentication successful!! for " + user);
     return new JMXPrincipal(user);
   }
 

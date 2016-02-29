@@ -25,8 +25,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.management.JMX;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -47,10 +47,10 @@ import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
 import com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor;
 import com.gemstone.gemfire.management.internal.web.controllers.support.MemberMXBeanAdapter;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
+import com.gemstone.gemfire.security.ShiroUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.http.HttpStatus;
@@ -434,17 +434,11 @@ public abstract class AbstractCommandsController {
       SystemManagementService service = (SystemManagementService) ManagementService
           .getExistingManagementService(GemFireCacheImpl.getInstance());
       MBeanServer mbs = getMBeanServer();
-      MBeanServerWrapper wrapper = service.getManagementAgent().getMBeanServerWrapper();
-      MBeanServer wrappedMbs = mbs;
-      if(wrapper!=null) {
-        wrapper.setMBeanServer(mbs);
-        wrappedMbs = wrapper;
-      }
 
-      final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(wrappedMbs,
+      final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(mbs,
         MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
 
-      managingMemberMXBeanProxy = createMemberMXBeanForManagerUsingProxy(wrappedMbs,
+      managingMemberMXBeanProxy = createMemberMXBeanForManagerUsingProxy(mbs,
         distributedSystemMXBean.getMemberObjectName());
     }
 
@@ -554,13 +548,19 @@ public abstract class AbstractCommandsController {
   protected String processCommand(final String command) {
     return processCommand(command, getEnvironment(), null);
   }
-
-  protected String processCommandWithCredentials(final String command, Properties credentials) {
-    if (credentials != null) {
-      EnvironmentVariablesHandlerInterceptor.CREDENTIALS.set(credentials);
-    }
-    return processCommand(command, getEnvironment(), null);
+  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command){
+    return getProcessCommandCallable(command, null);
   }
+
+  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command, final byte[][] fileData){
+    Callable callable = new Callable<ResponseEntity<String>>() {
+      @Override public ResponseEntity<String> call() throws Exception {
+        return new ResponseEntity<String>(processCommand(command, fileData), HttpStatus.OK);
+      }
+    };
+    return ShiroUtil.associateWith(callable);
+  }
+
 
   /**
    * Executes the specified command as entered by the user using the GemFire Shell (Gfsh).  Note, Gfsh performs
@@ -576,13 +576,6 @@ public abstract class AbstractCommandsController {
    * @see #processCommand(String, java.util.Map, byte[][])
    */
   protected String processCommand(final String command, final byte[][] fileData) {
-    return processCommand(command, getEnvironment(), fileData);
-  }
-
-  protected String processCommandWithCredentials(final String command, final byte[][] fileData, Properties credentials) {
-    if (credentials != null) {
-      EnvironmentVariablesHandlerInterceptor.CREDENTIALS.set(credentials);
-    }
     return processCommand(command, getEnvironment(), fileData);
   }
 

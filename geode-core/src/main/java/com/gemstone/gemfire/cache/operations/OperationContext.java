@@ -17,6 +17,8 @@
 
 package com.gemstone.gemfire.cache.operations;
 
+import org.apache.shiro.authz.permission.WildcardPermission;
+
 /**
  * Encapsulates a cache operation and the data associated with it for both the
  * pre-operation and post-operation cases. Implementations for specific
@@ -28,7 +30,7 @@ package com.gemstone.gemfire.cache.operations;
  *
  * @since 5.5
  */
-public abstract class OperationContext {
+public abstract class OperationContext extends WildcardPermission{
 
   public enum Resource {
     CLUSTER,
@@ -297,6 +299,10 @@ public abstract class OperationContext {
 
   public Resource getResource(){
     return Resource.DATA;
+  }
+
+  public String getRegionName(){
+    return null;
   }
 
   /**

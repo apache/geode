@@ -14,7 +14,7 @@ public class TestCommand {
   private final String command;
   private final String permission;
   
-  private TestCommand(String command, String permission) {
+  public TestCommand(String command, String permission) {
     this.command = command;
     this.permission = permission;
   }
@@ -39,7 +39,8 @@ public class TestCommand {
   public static List<TestCommand> getCommandsOfPermission(String permission){
     List<TestCommand> result = new ArrayList<>();
     for(TestCommand testCommand:testCommands){
-      if(permission.equals(testCommand.permission)){
+      String cPerm = testCommand.getPermission();
+      if(cPerm!=null && cPerm.startsWith(permission)){
         result.add(testCommand);
       }
     }
@@ -47,6 +48,7 @@ public class TestCommand {
   }
 
   private static void init() {
+    // ClientCommands
     createTestCommand("list clients", "CLUSTER:READ");
     createTestCommand("describe client --clientID=172.16.196.144", "CLUSTER:READ");
 
@@ -57,21 +59,21 @@ public class TestCommand {
 
     //CreateAlterDestroyRegionCommands
     createTestCommand("alter region --name=region1 --eviction-max=5000", "DATA:MANAGE");
-    createTestCommand("create region --name=region12", "DATA:MANAGE");
+    createTestCommand("create region --name=region12 --type=REPLICATE", "DATA:MANAGE");
     createTestCommand("destroy region --name=value", "DATA:MANAGE");
 
     //Data Commands
     createTestCommand("rebalance --include-region=region1", "DATA:MANAGE");
-    createTestCommand("export data --region=region1 --file=foo.txt --member=value", "DATA:READ");
-    createTestCommand("import data --region=region1 --file=foo.txt --member=value", "DATA:WRITE");
+    createTestCommand("export data --region=region1 --file=export.txt --member=exportMember", "DATA:READ");
+    createTestCommand("import data --region=region1 --file=import.txt --member=importMember", "DATA:WRITE");
     createTestCommand("put --key=key1 --value=value1 --region=region1", "DATA:WRITE");
     createTestCommand("get --key=key1 --region=region1", "DATA:READ");
     createTestCommand("remove --region=region1", "DATA:MANAGE");
     createTestCommand("query --query='SELECT * FROM /region1'", "DATA:READ");
+    createTestCommand("locate entry --key=k1 --region=secureRegion", "DATA:READ");
 
     // Deploy commands
-    createTestCommand("deploy --jar=group1_functions.jar --group=Group1", "DATA:MANAGE");
-    createTestCommand("list deployed", "CLUSTER:READ");
+    //createTestCommand("deploy --jar=group1_functions.jar --group=Group1", "DATA:MANAGE"); // TODO: this command will fail in GfshCommandsSecurityTest at interceptor for jar file checking
     createTestCommand("undeploy --group=Group1", "DATA:MANAGE");
 
     // Diskstore Commands
@@ -87,7 +89,7 @@ public class TestCommand {
     createTestCommand("describe offline-disk-store --name=foo --disk-dirs=bar", null);
     createTestCommand("export offline-disk-store --name=foo --disk-dirs=bar --dir=baz", null);
     createTestCommand("validate offline-disk-store --name=foo --disk-dirs=bar", null);
-    createTestCommand("alter disk-store --name=foo --region=xyz --disk-dirs=bar", null); // alteroffline
+    createTestCommand("alter disk-store --name=foo --region=xyz --disk-dirs=bar", null);
     createTestCommand("destroy disk-store --name=foo", "DATA:MANAGE");
 
     // DurableClientCommands
@@ -98,10 +100,10 @@ public class TestCommand {
 
     //ExportIMportSharedConfigurationCommands
     createTestCommand("export cluster-configuration --zip-file-name=mySharedConfig.zip", "CLUSTER:READ");
-    createTestCommand("import cluster-configuration --zip-file-name=value", "CLUSTER:MANAGE");
+    createTestCommand("import cluster-configuration --zip-file-name=value.zip", "CLUSTER:MANAGE");
 
     //FunctionCommands
-    createTestCommand("destroy function --id=InterestCalculations", "DATA:MANAGE");
+    //createTestCommand("destroy function --id=InterestCalculations", "DATA:MANAGE");
     createTestCommand("execute function --id=InterestCalculations --group=Group1", "DATA:WRITE");
     createTestCommand("list functions", "CLUSTER:READ");
 
@@ -126,8 +128,8 @@ public class TestCommand {
     createTestCommand("start vsd", null);
     createTestCommand("status locator", null);
     createTestCommand("status server", null);
-    createTestCommand("stop locator --name=locator1", "CLUSTER:MANAGE");
-    createTestCommand("stop server --name=server1", "CLUSTER:MANAGE");
+    //createTestCommand("stop locator --name=locator1", "CLUSTER:MANAGE");
+    //createTestCommand("stop server --name=server1", "CLUSTER:MANAGE");
 
     //MemberCommands
     createTestCommand("describe member --name=server1", "CLUSTER:READ");
@@ -146,7 +148,7 @@ public class TestCommand {
 
     // PDX Commands
     createTestCommand("configure pdx --read-serialized=true", "DATA:MANAGE");
-    createTestCommand("pdx rename --old=com.gemstone --new=com.pivotal --disk-store=ds1 --disk-dirs=/diskDir1", "DATA:MANAGE");
+    //createTestCommand("pdx rename --old=com.gemstone --new=com.pivotal --disk-store=ds1 --disk-dirs=/diskDir1", "DATA:MANAGE");
 
     // Queue Commands
     createTestCommand("create async-event-queue --id=myAEQ --listener=myApp.myListener", "DATA:MANAGE");
@@ -187,6 +189,6 @@ public class TestCommand {
     //ShellCommand
     createTestCommand("disconnect", null);
     //Misc commands
-    createTestCommand("shutdown", "CLUSTER:MANAGE");
+    //createTestCommand("shutdown", "CLUSTER:MANAGE");
   };
 }

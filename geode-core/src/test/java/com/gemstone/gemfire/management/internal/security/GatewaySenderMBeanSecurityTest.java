@@ -16,6 +16,11 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import javax.management.ObjectName;
+
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.GatewaySenderMXBean;
 import com.gemstone.gemfire.management.ManagementService;
@@ -28,11 +33,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import javax.management.ObjectName;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
 
 @Category(IntegrationTest.class)
 public class GatewaySenderMBeanSecurityTest {
@@ -88,18 +88,18 @@ public class GatewaySenderMBeanSecurityTest {
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.getAlertThreshold()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getAverageDistributionTimePerBatch()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getBatchSize()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getMaximumQueueMemory()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getOrderPolicy()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
-    assertThatThrownBy(() -> bean.isBatchConflationEnabled()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
-    assertThatThrownBy(() -> bean.isManualStart()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
-    assertThatThrownBy(() -> bean.pause()).hasMessageStartingWith("Access Denied: Not authorized for DATA:MANAGE");
-    assertThatThrownBy(() -> bean.rebalance()).hasMessageStartingWith("Access Denied: Not authorized for DATA:MANAGE");
-    assertThatThrownBy(() -> bean.resume()).hasMessageStartingWith("Access Denied: Not authorized for DATA:MANAGE");
-    assertThatThrownBy(() -> bean.start()).hasMessageStartingWith("Access Denied: Not authorized for DATA:MANAGE");
-    assertThatThrownBy(() -> bean.stop()).hasMessageStartingWith("Access Denied: Not authorized for DATA:MANAGE");
+    assertThatThrownBy(() -> bean.getAlertThreshold()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getAverageDistributionTimePerBatch()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getBatchSize()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getMaximumQueueMemory()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getOrderPolicy()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.isBatchConflationEnabled()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.isManualStart()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.pause()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.rebalance()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.resume()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.start()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.stop()).hasMessageContaining("DATA:MANAGE");
   }
 
 }

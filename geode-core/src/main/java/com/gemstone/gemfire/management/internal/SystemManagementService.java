@@ -20,22 +20,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 import javax.management.Notification;
 import javax.management.ObjectName;
-
-import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ResourceEvent;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.AlreadyRunningException;
 import com.gemstone.gemfire.management.AsyncEventQueueMXBean;
@@ -55,7 +54,14 @@ import com.gemstone.gemfire.management.RegionMXBean;
 import com.gemstone.gemfire.management.internal.beans.ManagementAdapter;
 import com.gemstone.gemfire.management.membership.MembershipEvent;
 import com.gemstone.gemfire.management.membership.MembershipListener;
-
+import com.gemstone.gemfire.security.CustomAuthRealm;
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.util.ThreadContext;
 
 /**
  * This is the concrete implementation of ManagementService
@@ -130,9 +136,6 @@ public final class SystemManagementService extends BaseManagementService {
    */
   private List<ProxyListener> proxyListeners;
 
-  private AuthManager authManager;
-
-
   private UniversalListenerContainer universalListenerContainer = new UniversalListenerContainer();
   
   public static BaseManagementService newSystemManagementService(Cache cache) {
@@ -154,6 +157,21 @@ public final class SystemManagementService extends BaseManagementService {
     this.jmxAdapter = new MBeanJMXAdapter();      
     this.repo = new ManagementResourceRepo();
 
+    DistributionConfig config = system.getConfig();
+
+    // setup shiro for authentication and authorization if it's desired
+    String shiroConfig = config.getShiroInit();
+    String customAuthenticator = config.getSecurityClientAuthenticator();
+    if (!StringUtils.isBlank(shiroConfig)) {
+      IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:"+shiroConfig);
+      SecurityManager securityManager = factory.getInstance();
+      SecurityUtils.setSecurityManager(securityManager);
+    }
+    else if (!StringUtils.isBlank(customAuthenticator)) {
+      Realm realm = new CustomAuthRealm(config.toProperties());
+      SecurityManager securityManager = new DefaultSecurityManager(realm);
+      SecurityUtils.setSecurityManager(securityManager);
+    }
 
     this.notificationHub = new NotificationHub(repo);
     if (system.getConfig().getJmxManager()) {
@@ -181,7 +199,6 @@ public final class SystemManagementService extends BaseManagementService {
       this.listener = new ManagementMembershipListener(this);
       system.getDistributionManager().addMembershipListener(listener);
       isStarted = true;
-      this.authManager = new AuthManager(cache);
       return this;
     } catch (CancelException e) {
       // Rethrow all CancelExceptions (fix for defect 46339)
@@ -273,8 +290,11 @@ public final class SystemManagementService extends BaseManagementService {
       }
       if (this.agent != null && this.agent.isRunning()) {
         this.agent.stopAgent();
-      }     
-      this.authManager.expireAllAuthZ();
+      }
+
+      // clean out Shiro's thread local content
+      ThreadContext.remove();
+
       getGemFireCacheImpl().getJmxManagerAdvisor().broadcastChange();
       instances.remove(cache);
       localManager  = null;
@@ -836,9 +856,5 @@ public final class SystemManagementService extends BaseManagementService {
   @Override
   public void removeMembershipListener(MembershipListener listener) {
     universalListenerContainer.removeMembershipListener(listener);    
-  }
-
-  public AuthManager getAuthManager(){
-    return this.authManager;
   }
 }

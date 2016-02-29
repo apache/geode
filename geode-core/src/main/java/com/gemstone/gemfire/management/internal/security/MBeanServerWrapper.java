@@ -46,6 +46,7 @@ import javax.management.remote.MBeanServerForwarder;
 
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import com.gemstone.gemfire.security.ShiroUtil;
 
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to
@@ -55,11 +56,8 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  */
 public class MBeanServerWrapper implements MBeanServerForwarder {
   private MBeanServer mbs;
-  private ManagementInterceptor interceptor;
-
   
-  public MBeanServerWrapper(ManagementInterceptor interceptor){
-    this.interceptor = interceptor;
+  public MBeanServerWrapper(){
   }
 
   private void doAuthorization(ResourceOperationContext context){
@@ -67,14 +65,14 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     if(context == null)
       return;
 
-    interceptor.authorize(context);
+    ShiroUtil.authorize(context);
   }
 
   private void doAuthorizationPost(ResourceOperationContext context){
     if(context == null)
       return;
 
-    interceptor.postAuthorize(context);
+    //interceptor.postAuthorize(context);
   }
 
   private void checkDomain(ObjectName name){
@@ -218,14 +216,12 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
       throws InstanceNotFoundException, MBeanException, ReflectionException {
+    // skip authorization check if operation is "processCommand" since we will check authorization in the command itself
     ResourceOperationContext ctx = null;
-    if("processCommand".equals(operationName) && params.length>=1){
-      ctx = CLIOperationContext.getOperationContext((String)params[0]);
-    }
-    else {
+    if(!"processCommand".equals(operationName)) {
       ctx = getOperationContext(name, operationName, true);
+      doAuthorization(ctx);
     }
-    doAuthorization(ctx);
 
     Object result = mbs.invoke(name, operationName, params, signature);
     if(ctx!=null)
@@ -271,7 +267,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     String resource = (String)descriptor.getFieldValue("resource");
     String operationCode = (String)descriptor.getFieldValue("operation");
     if(resource!=null && operationCode!=null){
-      return new ResourceOperationContext(resource, operationCode);
+      return new ResourceOperationContext(resource, operationCode, null);
     }
     return defaultValue;
   }
@@ -395,10 +391,6 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public MBeanServer getMBeanServer() {    
     return mbs;
-  }
-
-  public ManagementInterceptor getInterceptor() {
-    return interceptor;
   }
 
   @Override

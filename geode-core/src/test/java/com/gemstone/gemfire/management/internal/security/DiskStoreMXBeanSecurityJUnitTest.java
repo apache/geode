@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static org.assertj.core.api.Assertions.*;
+
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.DiskStoreMXBean;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -25,8 +27,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Category(IntegrationTest.class)
 public class DiskStoreMXBeanSecurityJUnitTest {
@@ -69,7 +69,7 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "data-user", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.flush()).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.flush()).hasMessageContaining("DATA:MANAGE");
     assertThatThrownBy(() -> bean.forceCompaction()).hasMessageContaining("DATA:MANAGE");
     assertThatThrownBy(() -> bean.forceRoll()).hasMessageContaining("DATA:MANAGE");
     assertThatThrownBy(() -> bean.getCompactionThreshold()).hasMessageContaining("CLUSTER:READ");
