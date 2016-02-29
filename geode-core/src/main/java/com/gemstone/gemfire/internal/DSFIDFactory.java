@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal;
 
 
 
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.*;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import java.io.DataInput;
@@ -104,16 +105,6 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoor
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GetViewRequest;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GetViewResponse;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HeartbeatMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
 import com.gemstone.gemfire.distributed.internal.streaming.StreamingOperation.StreamingReplyMessage;
 import com.gemstone.gemfire.internal.admin.ClientMembershipMessage;
 import com.gemstone.gemfire.internal.admin.remote.AddHealthListenerRequest;

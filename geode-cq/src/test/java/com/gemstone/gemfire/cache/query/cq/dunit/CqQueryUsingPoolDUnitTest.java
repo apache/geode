@@ -2807,7 +2807,9 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     VM server2 = host.getVM(1);
     VM client1 = host.getVM(2);
     VM client2 = host.getVM(3);
-    
+
+    Wait.pause(3 * 1000);
+
     createServer(server1);
     
     final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());

@@ -61,7 +61,7 @@ rat {
     '**/*.log',
     '**/*.patch',
     '**/*.diff',
-          '**/*.MF',
+    '**/*.MF',
 
     // binary files
     '**/*.cer',

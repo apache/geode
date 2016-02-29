@@ -48,13 +48,25 @@ public abstract class CacheSerializableRunnable
   }
 
   /**
+   * Creates a new <code>CacheSerializableRunnable</code> with the
+   * given name
+   */
+  public CacheSerializableRunnable(String name,Object[] args) {
+    super(name);
+    this.args = args;
+  }
+
+  /**
    * Invokes the {@link #run2} method and will wrap any {@link
    * CacheException} thrown by <code>run2</code> in a {@link
    * CacheSerializableRunnableException}. 
    */
   public final void run() {
     try {
-      run2();
+      if(args == null){
+      run2();}else{
+        run3();
+      }
 
     } catch (CacheException ex) {
       String s = "While invoking \"" + this + "\"";
@@ -95,6 +107,8 @@ public abstract class CacheSerializableRunnable
    * {@link CacheException}.
    */
   public abstract void run2() throws CacheException;
+
+  public void run3() throws CacheException{}
 
   /////////////////////////  Inner Classes  /////////////////////////
 

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import com.gemstone.gemfire.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
@@ -86,6 +87,7 @@ public class NetView implements DataSerializableFixedID {
     crashedMembers = Collections.emptySet();
     this.creator = creator;
     Arrays.fill(failureDetectionPorts, -1);
+
   }
 
   // legacy method for JGMM
