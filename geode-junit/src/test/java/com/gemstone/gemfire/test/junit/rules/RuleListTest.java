@@ -18,10 +18,12 @@ package com.gemstone.gemfire.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.ExternalResource;
 import org.junit.runner.Result;
 
@@ -30,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Unit tests for {@link RuleList}.
  */
+@Category(UnitTest.class)
 public class RuleListTest {
 
   private static AtomicInteger counter;
