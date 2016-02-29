@@ -14,18 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit;
+package com.gemstone.gemfire.test.junit.rules.serializable;
 
-import org.junit.runner.Description;
+import org.junit.rules.TestWatcher;
 
 /**
- * The IgnoreCondition class...
- *
- * @see org.junit.runner.Description
+ * Serializable subclass of {@link org.junit.rules.TestWatcher TestWatcher}.
+ * There are no instance variables to be serialized.
  */
-@SuppressWarnings("unused")
-public interface IgnoreCondition {
-
-  boolean evaluate(Description testCaseDescription);
-
+public abstract class SerializableTestWatcher extends TestWatcher implements SerializableTestRule {
 }

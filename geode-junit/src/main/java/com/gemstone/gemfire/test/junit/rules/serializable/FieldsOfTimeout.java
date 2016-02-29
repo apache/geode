@@ -14,18 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit;
-
-import org.junit.runner.Description;
+package com.gemstone.gemfire.test.junit.rules.serializable;
 
 /**
- * The IgnoreCondition class...
- *
- * @see org.junit.runner.Description
+ * Names of member fields in {@link org.junit.rules.Timeout}.
  */
-@SuppressWarnings("unused")
-public interface IgnoreCondition {
-
-  boolean evaluate(Description testCaseDescription);
-
+interface FieldsOfTimeout {
+  static final String FIELD_TIMEOUT = "timeout"; // long
+  static final String FIELD_TIME_UNIT = "timeUnit"; // java.util.concurrent.TimeUnit
+  static final String FIELD_LOOK_FOR_STUCK_THREAD = "lookForStuckThread"; // boolean
 }

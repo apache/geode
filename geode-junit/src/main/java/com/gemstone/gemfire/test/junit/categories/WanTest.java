@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 package com.gemstone.gemfire.test.junit.categories;
+
 /**
- * Tests Wan Feature.
- * 
- * @author Kirk Lund 
+ * JUnit Test Category that specifies a test that involves Wan feature.
  */
 public interface WanTest {
 }

@@ -14,20 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.tests;
+package com.gemstone.gemfire.test.junit.rules.serializable;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.junit.rules.ExternalResource;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-  ExpectedTimeoutRuleTest.class,
-  IgnoreUntilRuleTest.class,
-  RepeatRuleTest.class,
-  RetryRuleGlobalWithErrorTest.class,
-  RetryRuleGlobalWithExceptionTest.class,
-  RetryRuleLocalWithErrorTest.class,
-  RetryRuleLocalWithExceptionTest.class,
-})
-public class JUnitRuleTestSuite {
+/**
+ * Serializable subclass of {@link org.junit.rules.ExternalResource ExternalResource}.
+ */
+public abstract class SerializableExternalResource extends ExternalResource implements SerializableTestRule {
 }

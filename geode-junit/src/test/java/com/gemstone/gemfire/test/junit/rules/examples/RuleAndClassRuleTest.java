@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.tests;
+package com.gemstone.gemfire.test.junit.rules.examples;
 
-import static com.gemstone.gemfire.test.junit.rules.tests.TestRunner.*;
 import static org.assertj.core.api.Assertions.*;
 
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.rules.TestRunner;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,14 +29,15 @@ import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runners.model.Statement;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
+/**
+ * Example usage of a rule as both a method {@literal @}Rule and a {@literal @}ClassRule.
+ */
 @Category(UnitTest.class)
 public class RuleAndClassRuleTest {
 
   @Test
   public void usingRuleAsRuleAndClassRuleShouldInvokeBeforeClass() {
-    Result result = runTest(UsingRuleAsRuleAndClassRule.class);
+    Result result = TestRunner.runTest(UsingRuleAsRuleAndClassRule.class);
     
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(UsingRuleAsRuleAndClassRule.staticRule.beforeClassInvoked).isEqualTo(true);
@@ -43,7 +45,7 @@ public class RuleAndClassRuleTest {
   
   @Test
   public void usingRuleAsRuleAndClassRuleShouldInvokeAfterClass() {
-    Result result = runTest(UsingRuleAsRuleAndClassRule.class);
+    Result result = TestRunner.runTest(UsingRuleAsRuleAndClassRule.class);
     
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(UsingRuleAsRuleAndClassRule.staticRule.afterClassInvoked).isEqualTo(true);
@@ -51,7 +53,7 @@ public class RuleAndClassRuleTest {
 
   @Test
   public void usingRuleAsRuleAndClassRuleShouldInvokeBefore() {
-    Result result = runTest(UsingRuleAsRuleAndClassRule.class);
+    Result result = TestRunner.runTest(UsingRuleAsRuleAndClassRule.class);
     
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(UsingRuleAsRuleAndClassRule.staticRule.beforeInvoked).isEqualTo(true);
@@ -59,17 +61,21 @@ public class RuleAndClassRuleTest {
 
   @Test
   public void usingRuleAsRuleAndClassRuleShouldInvokeAfter() {
-    Result result = runTest(UsingRuleAsRuleAndClassRule.class);
+    Result result = TestRunner.runTest(UsingRuleAsRuleAndClassRule.class);
     
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(UsingRuleAsRuleAndClassRule.staticRule.afterInvoked).isEqualTo(true);
   }
 
+  /**
+   * Implementation of TestRule that records the callbacks invoked on it. Used
+   * by {@link UsingRuleAsRuleAndClassRule}.
+   */
   public static class SpyRule implements TestRule {
-    boolean beforeClassInvoked;
-    boolean afterClassInvoked;
-    boolean beforeInvoked;
-    boolean afterInvoked;
+    boolean beforeClassInvoked = false;
+    boolean afterClassInvoked = false;
+    boolean beforeInvoked = false;
+    boolean afterInvoked = false;
     
     @Override
     public Statement apply(final Statement base, final Description description) {
@@ -124,8 +130,11 @@ public class RuleAndClassRuleTest {
     private void after() {
       this.afterInvoked = true;
     }
-  };
-  
+  }
+
+  /**
+   * Used by the tests in {@link RuleAndClassRuleTest}.
+   */
   public static class UsingRuleAsRuleAndClassRule {
     @ClassRule
     public static SpyRule staticRule = new SpyRule();

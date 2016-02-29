@@ -14,24 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.tests;
+package com.gemstone.gemfire.test.junit.rules.serializable;
 
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Request;
-import org.junit.runner.Result;
+import java.io.Serializable;
+
+import org.junit.rules.TestRule;
 
 /**
- * Used by Rule Unit Tests to execute Test Cases.
- * 
- * @author Kirk Lund
+ * Specifies that a {@link org.junit.rules.TestRule TestRule} is
+ * {@code Serializable}.
  */
-public class TestRunner {
-
-  protected TestRunner() {
-  }
-  
-  public static Result runTest(Class<?> test) {
-    JUnitCore junitCore = new JUnitCore();
-    return junitCore.run(Request.aClass(test).getRunner());
-  }
+public interface SerializableTestRule extends Serializable, TestRule {
 }

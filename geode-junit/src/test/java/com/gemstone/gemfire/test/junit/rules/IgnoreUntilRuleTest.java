@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.tests;
+package com.gemstone.gemfire.test.junit.rules;
 
-import static com.gemstone.gemfire.test.junit.rules.tests.TestRunner.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,12 +29,9 @@ import org.junit.runner.notification.Failure;
 
 import com.gemstone.gemfire.test.junit.IgnoreUntil;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.gemstone.gemfire.test.junit.rules.IgnoreUntilRule;
 
 /**
- * Unit tests for IgnoreUntil JUnit Rule
- * 
- * @author Kirk Lund
+ * Unit tests for {@link IgnoreUntilRule}.
  */
 @Category(UnitTest.class)
 public class IgnoreUntilRuleTest {
@@ -43,7 +40,7 @@ public class IgnoreUntilRuleTest {
   
   @Test
   public void shouldIgnoreWhenUntilIsInFuture() {
-    Result result = runTest(ShouldIgnoreWhenUntilIsInFuture.class);
+    Result result = TestRunner.runTest(ShouldIgnoreWhenUntilIsInFuture.class);
     
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(ShouldIgnoreWhenUntilIsInFuture.count).isEqualTo(0);
@@ -51,7 +48,7 @@ public class IgnoreUntilRuleTest {
   
   @Test
   public void shouldExecuteWhenUntilIsInPast() {
-    Result result = runTest(ShouldExecuteWhenUntilIsInPast.class);
+    Result result = TestRunner.runTest(ShouldExecuteWhenUntilIsInPast.class);
     
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -65,7 +62,7 @@ public class IgnoreUntilRuleTest {
   
   @Test
   public void shouldExecuteWhenUntilIsDefault() {
-    Result result = runTest(ShouldExecuteWhenUntilIsDefault.class);
+    Result result = TestRunner.runTest(ShouldExecuteWhenUntilIsDefault.class);
     
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -76,13 +73,22 @@ public class IgnoreUntilRuleTest {
     assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class).hasMessage(ASSERTION_ERROR_MESSAGE);
     assertThat(ShouldExecuteWhenUntilIsDefault.count).isEqualTo(1);
   }
-  
+
+  /**
+   * Used by test {@link #shouldIgnoreWhenUntilIsInFuture()}
+   */
   public static class ShouldIgnoreWhenUntilIsInFuture {
-    private static int count;
-    
+
+    static int count = 0;
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+    }
+
     @Rule
     public final IgnoreUntilRule ignoreUntilRule = new IgnoreUntilRule();
-    
+
     @Test
     @IgnoreUntil(value = "description", until = "3000-01-01")
     public void doTest() throws Exception {
@@ -91,12 +97,21 @@ public class IgnoreUntilRuleTest {
     }
   }
 
+  /**
+   * Used by test {@link #shouldExecuteWhenUntilIsInPast()}
+   */
   public static class ShouldExecuteWhenUntilIsInPast {
-    private static int count;
-    
+
+    static int count = 0;
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+    }
+
     @Rule
     public final IgnoreUntilRule ignoreUntilRule = new IgnoreUntilRule();
-    
+
     @Test
     @IgnoreUntil(value = "description", until = "1980-01-01")
     public void doTest() throws Exception {
@@ -105,14 +120,23 @@ public class IgnoreUntilRuleTest {
     }
   }
 
+  /**
+   * Used by test {@link #shouldExecuteWhenUntilIsDefault()}
+   */
   public static class ShouldExecuteWhenUntilIsDefault {
-    private static int count;
-    
+
+    static int count = 0;
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+    }
+
     @Rule
     public final IgnoreUntilRule ignoreUntilRule = new IgnoreUntilRule();
-    
+
     @Test
-    @IgnoreUntil(value = "description")
+    @IgnoreUntil("description")
     public void doTest() throws Exception {
       count++;
       fail(ASSERTION_ERROR_MESSAGE);

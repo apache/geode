@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.tests;
+package com.gemstone.gemfire.test.junit.rules;
 
-import static com.gemstone.gemfire.test.junit.rules.tests.TestRunner.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
@@ -30,27 +29,23 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.gemstone.gemfire.test.junit.rules.ExpectedTimeoutRule;
 
 /**
- * Unit tests for ExpectedTimeout JUnit Rule.
- * 
- * @author Kirk Lund
- * @since 8.2
+ * Unit tests for {@link ExpectedTimeoutRule}.
  */
 @Category(UnitTest.class)
 public class ExpectedTimeoutRuleTest {
 
   @Test
   public void passesUnused() {
-    Result result = runTest(PassingTestShouldPassWhenUnused.class);
+    Result result = TestRunner.runTest(PassingTestShouldPassWhenUnused.class);
     
     assertThat(result.wasSuccessful()).isTrue();
   }
   
   @Test
   public void failsWithoutExpectedException() {
-    Result result = runTest(FailsWithoutExpectedException.class);
+    Result result = TestRunner.runTest(FailsWithoutExpectedException.class);
     
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -63,7 +58,7 @@ public class ExpectedTimeoutRuleTest {
   
   @Test
   public void failsWithoutExpectedTimeoutException() {
-    Result result = runTest(FailsWithoutExpectedTimeoutException.class);
+    Result result = TestRunner.runTest(FailsWithoutExpectedTimeoutException.class);
     
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -76,7 +71,7 @@ public class ExpectedTimeoutRuleTest {
   
   @Test
   public void failsWithExpectedTimeoutButWrongError() {
-    Result result = runTest(FailsWithExpectedTimeoutButWrongError.class);
+    Result result = TestRunner.runTest(FailsWithExpectedTimeoutButWrongError.class);
     
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -95,14 +90,14 @@ public class ExpectedTimeoutRuleTest {
   
   @Test
   public void passesWithExpectedTimeoutAndTimeoutException() {
-    Result result = runTest(PassesWithExpectedTimeoutAndTimeoutException.class);
+    Result result = TestRunner.runTest(PassesWithExpectedTimeoutAndTimeoutException.class);
     
     assertThat(result.wasSuccessful()).isTrue();
   }
   
   @Test
   public void failsWhenTimeoutIsEarly() {
-    Result result = runTest(FailsWhenTimeoutIsEarly.class);
+    Result result = TestRunner.runTest(FailsWhenTimeoutIsEarly.class);
    
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -115,7 +110,7 @@ public class ExpectedTimeoutRuleTest {
   
   @Test
   public void failsWhenTimeoutIsLate() {
-    Result result = runTest(FailsWhenTimeoutIsLate.class);
+    Result result = TestRunner.runTest(FailsWhenTimeoutIsLate.class);
     
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -125,29 +120,46 @@ public class ExpectedTimeoutRuleTest {
     Failure failure = failures.get(0);
     assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class).hasMessage("Expected test to throw (an instance of " + TimeoutException.class.getName() + " and exception with message a string containing \"" + FailsWhenTimeoutIsLate.message + "\")");
   }
-  
+
+  /**
+   * Base class for all inner class test cases
+   */
   public static class AbstractExpectedTimeoutRuleTest {
+
     @Rule
     public ExpectedTimeoutRule timeout = ExpectedTimeoutRule.none();
   }
-  
+
+  /**
+   * Used by test {@link #passesUnused()}
+   */
   public static class PassingTestShouldPassWhenUnused extends AbstractExpectedTimeoutRuleTest {
+
     @Test
-    public void passesUnused() throws Exception {
+    public void doTest() {
     }
   }
-  
+
+  /**
+   * Used by test {@link #failsWithoutExpectedException()}
+   */
   public static class FailsWithoutExpectedException extends AbstractExpectedTimeoutRuleTest {
+
     @Test
-    public void failsWithoutExpectedException() throws Exception {
+    public void doTest() {
       timeout.expect(TimeoutException.class);
     }
   }
-  
+
+  /**
+   * Used by test {@link #failsWithoutExpectedTimeoutException()}
+   */
   public static class FailsWithoutExpectedTimeoutException extends AbstractExpectedTimeoutRuleTest {
-    public static final String message = "this is a message for FailsWithoutExpectedTimeoutException";
+
+    static final String message = "this is a message for FailsWithoutExpectedTimeoutException";
+
     @Test
-    public void failsWithoutExpectedTimeoutAndTimeoutException() throws Exception {
+    public void doTest() throws Exception {
       timeout.expect(TimeoutException.class);
       timeout.expectMessage(message);
       timeout.expectMinimumDuration(10);
@@ -156,11 +168,16 @@ public class ExpectedTimeoutRuleTest {
       Thread.sleep(100);
     }
   }
-  
+
+  /**
+   * Used by test {@link #failsWithExpectedTimeoutButWrongError()}
+   */
   public static class FailsWithExpectedTimeoutButWrongError extends AbstractExpectedTimeoutRuleTest {
-    public static final String message = "this is a message for FailsWithExpectedTimeoutButWrongError";
+
+    static final String message = "this is a message for FailsWithExpectedTimeoutButWrongError";
+
     @Test
-    public void failsWithExpectedTimeoutButWrongError() throws Exception {
+    public void doTest() throws Exception {
       timeout.expect(TimeoutException.class);
       timeout.expectMessage(message);
       timeout.expectMinimumDuration(10);
@@ -171,11 +188,16 @@ public class ExpectedTimeoutRuleTest {
     }
   }
 
+  /**
+   * Used by test {@link #passesWithExpectedTimeoutAndTimeoutException()}
+   */
   public static class PassesWithExpectedTimeoutAndTimeoutException extends AbstractExpectedTimeoutRuleTest {
-    public static final String message = "this is a message for PassesWithExpectedTimeoutAndTimeoutException";
-    public static final Class<TimeoutException> exceptionClass = TimeoutException.class;
+
+    static final String message = "this is a message for PassesWithExpectedTimeoutAndTimeoutException";
+    static final Class<TimeoutException> exceptionClass = TimeoutException.class;
+
     @Test
-    public void passesWithExpectedTimeoutAndTimeoutException() throws Exception {
+    public void doTest() throws Exception {
       timeout.expect(exceptionClass);
       timeout.expectMessage(message);
       timeout.expectMinimumDuration(10);
@@ -186,10 +208,15 @@ public class ExpectedTimeoutRuleTest {
     }
   }
 
+  /**
+   * Used by test {@link #failsWhenTimeoutIsEarly()}
+   */
   public static class FailsWhenTimeoutIsEarly extends AbstractExpectedTimeoutRuleTest {
-    public static final String message = "this is a message for FailsWhenTimeoutIsEarly";
+
+    static final String message = "this is a message for FailsWhenTimeoutIsEarly";
+
     @Test
-    public void failsWhenTimeoutIsEarly() throws Exception {
+    public void doTest() throws Exception {
       timeout.expect(TimeoutException.class);
       timeout.expectMessage(message);
       timeout.expectMinimumDuration(1000);
@@ -199,10 +226,15 @@ public class ExpectedTimeoutRuleTest {
     }
   }
 
+  /**
+   * Used by test {@link #failsWhenTimeoutIsLate()}
+   */
   public static class FailsWhenTimeoutIsLate extends AbstractExpectedTimeoutRuleTest {
-    public static final String message = "this is a message for FailsWhenTimeoutIsLate";
+
+    static final String message = "this is a message for FailsWhenTimeoutIsLate";
+
     @Test
-    public void failsWhenTimeoutIsLate() throws Exception {
+    public void doTest() throws Exception {
       timeout.expect(TimeoutException.class);
       timeout.expectMessage(message);
       timeout.expectMinimumDuration(10);

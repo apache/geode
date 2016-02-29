@@ -16,14 +16,20 @@
  */
 package com.gemstone.gemfire.test.junit.rules;
 
-import org.junit.rules.TestWatcher;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Request;
+import org.junit.runner.Result;
 
 /**
- * Serializable version of TestWatcher JUnit Rule. JUnit lifecycle is not
- * executed in remote JVMs.
- * 
- * @author Kirk Lund
+ * Used by JUnit rule unit tests to execute inner test cases.
  */
-@SuppressWarnings("serial")
-public class SerializableTestWatcher extends TestWatcher implements SerializableTestRule {
+public class TestRunner {
+
+  protected TestRunner() {
+  }
+
+  public static Result runTest(Class<?> test) {
+    JUnitCore junitCore = new JUnitCore();
+    return junitCore.run(Request.aClass(test).getRunner());
+  }
 }

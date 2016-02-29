@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.tests;
+package com.gemstone.gemfire.test.junit.rules;
 
-import static com.gemstone.gemfire.test.junit.rules.tests.TestRunner.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.fail;
 
 import java.util.List;
 
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,20 +29,19 @@ import org.junit.runner.notification.Failure;
 
 import com.gemstone.gemfire.test.junit.Retry;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.gemstone.gemfire.test.junit.rules.RetryRule;
 
 /**
- * Unit tests for Retry JUnit Rule involving global scope (ie Rule affects all 
- * tests in the test case) with failures due to an Exception.
+ * Unit tests for {@link RetryRule} involving global scope (ie rule affects all
+ * tests in the test class) with failures due to an {@code Exception}.
  * 
- * @author Kirk Lund
+ * @see com.gemstone.gemfire.test.junit.rules.RetryRule
  */
 @Category(UnitTest.class)
-public class RetryRuleGlobalWithErrorTest {
+public class RetryRuleGlobalWithExceptionTest {
   
   @Test
   public void zeroIsIllegal() {
-    Result result = runTest(ZeroIsIllegal.class);
+    Result result = TestRunner.runTest(ZeroIsIllegal.class);
     
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -57,7 +55,7 @@ public class RetryRuleGlobalWithErrorTest {
   
   @Test
   public void failsWithOne() {
-    Result result = runTest(FailsWithOne.class);
+    Result result = TestRunner.runTest(FailsWithOne.class);
     
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -65,29 +63,27 @@ public class RetryRuleGlobalWithErrorTest {
     assertThat(failures.size()).as("Failures: " + failures).isEqualTo(1);
 
     Failure failure = failures.get(0);
-    assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class).hasMessage(FailsWithOne.message);
+    assertThat(failure.getException()).isExactlyInstanceOf(CustomException.class).hasMessage(FailsWithOne.message);
     assertThat(FailsWithOne.count).isEqualTo(1);
   }
   
   @Test
   public void passesWithOne() {
-    Result result = runTest(PassesWithOne.class);
+    Result result = TestRunner.runTest(PassesWithOne.class);
     
     assertThat(result.wasSuccessful()).isTrue();
-    assertThat(PassesWithOne.count).isEqualTo(1);
   }
   
   @Test
   public void passesWithUnused() {
-    Result result = runTest(PassesWhenUnused.class);
+    Result result = TestRunner.runTest(PassesWhenUnused.class);
     
     assertThat(result.wasSuccessful()).isTrue();
-    assertThat(PassesWhenUnused.count).isEqualTo(1);
   }
   
   @Test
   public void failsOnSecondAttempt() {
-    Result result = runTest(FailsOnSecondAttempt.class);
+    Result result = TestRunner.runTest(FailsOnSecondAttempt.class);
     
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -95,13 +91,13 @@ public class RetryRuleGlobalWithErrorTest {
     assertThat(failures.size()).as("Failures: " + failures).isEqualTo(1);
 
     Failure failure = failures.get(0);
-    assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class).hasMessage(FailsOnSecondAttempt.message);
+    assertThat(failure.getException()).isExactlyInstanceOf(CustomException.class).hasMessage(FailsOnSecondAttempt.message);
     assertThat(FailsOnSecondAttempt.count).isEqualTo(2);
   }
 
   @Test
   public void passesOnSecondAttempt() {
-    Result result = runTest(PassesOnSecondAttempt.class);
+    Result result = TestRunner.runTest(PassesOnSecondAttempt.class);
     
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(PassesOnSecondAttempt.count).isEqualTo(2);
@@ -109,7 +105,7 @@ public class RetryRuleGlobalWithErrorTest {
   
   @Test
   public void failsOnThirdAttempt() {
-    Result result = runTest(FailsOnThirdAttempt.class);
+    Result result = TestRunner.runTest(FailsOnThirdAttempt.class);
     
     assertThat(result.wasSuccessful()).isFalse();
     
@@ -117,133 +113,219 @@ public class RetryRuleGlobalWithErrorTest {
     assertThat(failures.size()).as("Failures: " + failures).isEqualTo(1);
 
     Failure failure = failures.get(0);
-    assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class).hasMessage(FailsOnThirdAttempt.message);
+    assertThat(failure.getException()).isExactlyInstanceOf(CustomException.class).hasMessage(FailsOnThirdAttempt.message);
     assertThat(FailsOnThirdAttempt.count).isEqualTo(3);
   }
 
   @Test
   public void passesOnThirdAttempt() {
-    Result result = runTest(PassesOnThirdAttempt.class);
+    Result result = TestRunner.runTest(PassesOnThirdAttempt.class);
     
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(PassesOnThirdAttempt.count).isEqualTo(3);
   }
-  
+
+  /**
+   * Custom exception used by several tests
+   */
+  public static class CustomException extends Exception {
+    public CustomException(final String message) {
+      super(message);
+    }
+  }
+
+  /**
+   * Used by test {@link #zeroIsIllegal()}
+   */
   public static class ZeroIsIllegal {
-    protected static int count;
-    protected static final String message = "Retry count must be greater than zero";
+
+    static int count = 0;
+    static final String message = "Retry count must be greater than zero";
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+    }
 
     @Rule
     public RetryRule retryRule = new RetryRule(0);
 
     @Test
-    public void zeroIsIllegal() throws Exception {
+    public void doTest() throws Exception {
       count++;
     }
   }
-  
+
+  /**
+   * Used by test {@link #failsWithOne()}
+   */
   public static class FailsWithOne {
-    protected static int count;
-    protected static String message;
+
+    static int count = 0;
+    static String message = null;
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+      message = null;
+    }
 
     @Rule
     public RetryRule retryRule = new RetryRule(1);
 
     @Test
-    public void failsWithOne() throws Exception {
+    public void doTest() throws Exception {
       count++;
       message = "Failing " + count;
-      fail(message);
+      throw new CustomException(message);
     }
   }
-  
+
+  /**
+   * Used by test {@link #passesWithOne()}
+   */
   public static class PassesWithOne {
-    protected static int count;
+
+    static int count = 0;
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+    }
 
     @Rule
     public RetryRule retryRule = new RetryRule(1);
 
     @Test
-    public void passesWithOne() throws Exception {
+    public void doTest() throws Exception {
       count++;
     }
   }
-  
+
+  /**
+   * Used by test {@link #passesWithUnused()}
+   */
   public static class PassesWhenUnused {
-    protected static int count;
+
+    static int count = 0;
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+    }
 
     @Rule
     public RetryRule retryRule = new RetryRule(2);
 
     @Test
-    public void passesWithUnused() throws Exception {
+    public void doTest() throws Exception {
       count++;
     }
   }
-  
+
+  /**
+   * Used by test {@link #failsOnSecondAttempt()}
+   */
   public static class FailsOnSecondAttempt {
-    protected static int count;
-    protected static String message;
+
+    static int count = 0;
+    static String message = null;
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+      message = null;
+    }
 
     @Rule
     public RetryRule retryRule = new RetryRule(2);
 
     @Test
     @Retry(2)
-    public void failsOnSecondAttempt() {
+    public void doTest() throws Exception {
       count++;
       message = "Failing " + count;
-      fail(message);
+      throw new CustomException(message);
     }
   }
-  
+
+  /**
+   * Used by test {@link #passesOnSecondAttempt()}
+   */
   public static class PassesOnSecondAttempt {
-    protected static int count;
-    protected static String message;
+
+    static int count = 0;
+    static String message = null;
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+      message = null;
+    }
     
     @Rule
     public RetryRule retryRule = new RetryRule(2);
 
     @Test
     @Retry(2)
-    public void failsOnSecondAttempt() {
+    public void doTest() throws Exception {
       count++;
       if (count < 2) {
         message = "Failing " + count;
-        fail(message);
+        throw new CustomException(message);
       }
     }
   }
-  
+
+  /**
+   * Used by test {@link #failsOnThirdAttempt()}
+   */
   public static class FailsOnThirdAttempt {
-    protected static int count;
-    protected static String message;
+
+    static int count = 0;
+    static String message = null;
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+      message = null;
+    }
 
     @Rule
     public RetryRule retryRule = new RetryRule(3);
 
     @Test
     @Retry(3)
-    public void failsOnThirdAttempt() {
+    public void doTest() throws Exception {
       count++;
       message = "Failing " + count;
-      fail(message);
+      throw new CustomException(message);
     }
   }
 
+  /**
+   * Used by test {@link #passesOnThirdAttempt()}
+   */
   public static class PassesOnThirdAttempt {
-    protected static int count;
-    protected static String message;
+
+    static int count = 0;
+    static String message = null;
+
+    @BeforeClass
+    public static void beforeClass() {
+      count = 0;
+      message = null;
+    }
 
     @Rule
     public RetryRule retryRule = new RetryRule(3);
 
     @Test
-    public void failsOnThirdAttempt() {
+    public void doTest() throws Exception {
       count++;
       if (count < 3) {
         message = "Failing " + count;
-        fail(message);
+        throw new CustomException(message);
       }
     }
   }

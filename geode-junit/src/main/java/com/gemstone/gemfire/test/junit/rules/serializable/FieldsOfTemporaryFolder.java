@@ -14,20 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules;
-
-import java.io.Serializable;
-
-import org.junit.rules.TestRule;
+package com.gemstone.gemfire.test.junit.rules.serializable;
 
 /**
- * Serializable version of JUnit TestRule. JUnit lifecycle is not
- * executed in remote JVMs.
- * 
- * The simplest way to satisfy this interface is to apply <tt>transient</tt>
- * to every instance field.
- * 
- * @author Kirk Lund
+ * Names of member fields in {@link org.junit.rules.TemporaryFolder}.
  */
-public interface SerializableTestRule extends Serializable, TestRule {
+interface FieldsOfTemporaryFolder {
+  static final String FIELD_PARENT_FOLDER = "parentFolder"; // java.io.File
+  static final String FIELD_ASSURE_DELETION = "assureDeletion"; // boolean (since JUnit 4.13)
+  static final String FIELD_FOLDER = "folder"; // java.io.File
 }

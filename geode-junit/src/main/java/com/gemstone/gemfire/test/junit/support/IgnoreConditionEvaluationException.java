@@ -19,7 +19,6 @@ package com.gemstone.gemfire.test.junit.support;
 /**
  * The IgnoreConditionEvaluationException class...
  *
- * @author John Blum
  * @see java.lang.RuntimeException
  */
 @SuppressWarnings({ "serial", "unused" })
