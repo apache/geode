@@ -52,16 +52,16 @@ public class OperationCodesForDistributedSystemMXBeanTest {
   private final ResourceOperationCode[] distributedSystemResourceOperationCodes = {
       ResourceOperationCode.LIST_DS, 
       ResourceOperationCode.LIST_DS, 
-      ResourceOperationCode.READ_DS,
-      ResourceOperationCode.QUERYDATA_DS, 
-      ResourceOperationCode.READ_DS, 
-      ResourceOperationCode.CHANGE_ALERT_LEVEL_DS, 
-      ResourceOperationCode.BACKUP_DS,
-      ResourceOperationCode.REMOVE_DISKSTORE_DS, 
-      ResourceOperationCode.SHUTDOWN_DS, 
-      ResourceOperationCode.QUERYDATA_DS, 
-      ResourceOperationCode.QUERYDATA_DS,
-      ResourceOperationCode.QUERYDATA_DS 
+      ResourceOperationCode.GET,
+      ResourceOperationCode.QUERY,
+      ResourceOperationCode.GET,
+      ResourceOperationCode.CHANGE_ALERT_LEVEL,
+      ResourceOperationCode.BACKUP_MEMBERS,
+      ResourceOperationCode.REVOKE_MISSING_DISKSTORE,
+      ResourceOperationCode.SHUTDOWN,
+      ResourceOperationCode.QUERY,
+      ResourceOperationCode.QUERY,
+      ResourceOperationCode.QUERY
   };
   
   @Test

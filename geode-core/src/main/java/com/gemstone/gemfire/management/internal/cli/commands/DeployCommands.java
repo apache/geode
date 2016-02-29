@@ -44,6 +44,10 @@ import com.gemstone.gemfire.management.internal.cli.result.FileResult;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -75,6 +79,7 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
    */
   @CliCommand(value = { CliStrings.DEPLOY }, help = CliStrings.DEPLOY__HELP)
   @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.DeployCommands$Interceptor", relatedTopic={CliStrings.TOPIC_GEMFIRE_CONFIG}, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.DEPLOY)
   public final Result deploy(
     @CliOption(key = { CliStrings.DEPLOY__GROUP }, help = CliStrings.DEPLOY__GROUP__HELP, optionContext=ConverterHint.MEMBERGROUP)
     @CliMetaData (valueSeparator = ",")
@@ -157,6 +162,7 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
    */
   @CliCommand(value = { CliStrings.UNDEPLOY }, help = CliStrings.UNDEPLOY__HELP)
   @CliMetaData(relatedTopic={CliStrings.TOPIC_GEMFIRE_CONFIG}, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.UNDEPLOY)
   public final Result undeploy(
       @CliOption(key = { CliStrings.UNDEPLOY__GROUP },
                  help = CliStrings.UNDEPLOY__GROUP__HELP, 
@@ -227,6 +233,7 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
    */
   @CliCommand(value = { CliStrings.LIST_DEPLOYED }, help = CliStrings.LIST_DEPLOYED__HELP)
   @CliMetaData(relatedTopic={CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
   public final Result listDeployed(
       @CliOption(key = { CliStrings.LIST_DEPLOYED__GROUP },
                  help = CliStrings.LIST_DEPLOYED__GROUP__HELP)

@@ -24,6 +24,13 @@ import java.util.Set;
 import javax.management.remote.JMXPrincipal;
 import javax.security.auth.Subject;
 
+/**
+ * AccessControlMBean Implementation. This retrieves JMXPrincipal from AccessController
+ * and performs authorization for given role using gemfire AccessControl Plugin
+ *
+ * @author tushark
+ * @since 9.0
+ */
 public class AccessControl implements AccessControlMXBean {
 
   private ManagementInterceptor interceptor;
@@ -37,12 +44,11 @@ public class AccessControl implements AccessControlMXBean {
     AccessControlContext acc = AccessController.getContext();
     Subject subject = Subject.getSubject(acc);
     Set<JMXPrincipal> principals = subject.getPrincipals(JMXPrincipal.class);
-    Set<Object> pubCredentials = subject.getPublicCredentials();
     if (principals == null || principals.isEmpty()) {
       throw new SecurityException("Access denied");
     }
     Principal principal = principals.iterator().next();
-    com.gemstone.gemfire.security.AccessControl gemAccControl = interceptor.getAccessControl(principal);
+    com.gemstone.gemfire.security.AccessControl gemAccControl = interceptor.getAccessControl(principal, false);
     boolean authorized = gemAccControl.authorizeOperation(null,
         new com.gemstone.gemfire.management.internal.security.AccessControlContext(role));
     return authorized;

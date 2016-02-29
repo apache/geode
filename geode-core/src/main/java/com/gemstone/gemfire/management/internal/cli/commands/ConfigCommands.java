@@ -62,6 +62,9 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 /****
  *
  * @author David Hoots
@@ -80,6 +83,7 @@ public class ConfigCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.DESCRIBE_CONFIG }, help = CliStrings.DESCRIBE_CONFIG__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
   public Result describeConfig(
       @CliOption (key = CliStrings.DESCRIBE_CONFIG__MEMBER,
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -193,6 +197,7 @@ public class ConfigCommands implements CommandMarker {
    */
   @CliCommand(value = { CliStrings.EXPORT_CONFIG }, help = CliStrings.EXPORT_CONFIG__HELP)
   @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ConfigCommands$Interceptor", relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.EXPORT_CONFIG)
   public Result exportConfig(
       @CliOption(key = { CliStrings.EXPORT_CONFIG__MEMBER },
                  optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -248,6 +253,7 @@ public class ConfigCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.ALTER_RUNTIME_CONFIG }, help = CliStrings.ALTER_RUNTIME_CONFIG__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.ALTER_RUNTIME)
   public Result alterRuntimeConfig(
       @CliOption (key = {CliStrings.ALTER_RUNTIME_CONFIG__MEMBER},
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,

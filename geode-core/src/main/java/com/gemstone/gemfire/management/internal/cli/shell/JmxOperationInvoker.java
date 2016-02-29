@@ -16,14 +16,18 @@
  */
 package com.gemstone.gemfire.management.internal.cli.shell;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,13 +48,18 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
+import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
+import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.MemberMXBean;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
+import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.CommandRequest;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
+import com.gemstone.gemfire.management.internal.cli.commands.ShellCommands;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 
 /**
  * OperationInvoker JMX Implementation
@@ -94,7 +103,7 @@ public class JmxOperationInvoker implements OperationInvoker {
                              final int port,
                              final String userName,
                              final String password,
-                             final Map<String, String> sslConfigProps)
+                             final Map<String, String> sslConfigProps, String gfSecurityPropertiesPath)
     throws Exception
   {
     final Set<String> propsToClear = new TreeSet<String>();
@@ -133,6 +142,11 @@ public class JmxOperationInvoker implements OperationInvoker {
         }
       }
 
+      //Check for JMX Credentials if empty put properties instance directly so that
+      //jmx management interceptor can read it for custom security properties
+      if(!env.containsKey(JMXConnector.CREDENTIALS)) {
+        env.put(JMXConnector.CREDENTIALS, readProperties(gfSecurityPropertiesPath));
+      }
 
       this.url = new JMXServiceURL(MessageFormat.format(JMX_URL_FORMAT, checkAndConvertToCompatibleIPv6Syntax(host), String.valueOf(port)));      
       this.connector = JMXConnectorFactory.connect(url, env);
@@ -177,7 +191,54 @@ public class JmxOperationInvoker implements OperationInvoker {
     }
   }
 
-  
+  //Copied from ShellCommands.java
+  private Properties readProperties(String gfSecurityPropertiesPath) throws MalformedURLException {
+    Gfsh gfshInstance = Gfsh.getCurrentInstance();
+    // reference to hold resolved gfSecurityPropertiesPath
+    String gfSecurityPropertiesPathToUse = CliUtil.resolvePathname(gfSecurityPropertiesPath);
+    URL gfSecurityPropertiesUrl = null;
+
+    // Case 1: User has specified gfSecurity properties file
+    if (!StringUtils.isBlank(gfSecurityPropertiesPathToUse)) {
+      // User specified gfSecurity properties doesn't exist
+      if (!IOUtils.isExistingPathname(gfSecurityPropertiesPathToUse)) {
+        gfshInstance.printAsSevere(CliStrings.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ", gfSecurityPropertiesPathToUse));
+      } else {
+        gfSecurityPropertiesUrl = new File(gfSecurityPropertiesPathToUse).toURI().toURL();
+      }
+    } else if (gfSecurityPropertiesPath == null) {
+      // Use default "gfsecurity.properties"
+      // in current dir, user's home or classpath
+      gfSecurityPropertiesUrl = ShellCommands.getFileUrl("gfsecurity.properties");
+    }
+    // if 'gfSecurityPropertiesPath' OR gfsecurity.properties has resolvable path
+    if (gfSecurityPropertiesUrl != null) {
+      gfshInstance.logToFile("Using security properties file : "
+              + CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl.getPath()), null);
+      return loadPropertiesFromURL(gfSecurityPropertiesUrl);
+    }
+    return null;
+  }
+
+  static Properties loadPropertiesFromURL(URL gfSecurityPropertiesUrl) {
+    Properties props = new Properties();
+    if (gfSecurityPropertiesUrl != null) {
+      InputStream inputStream = null;
+      try {
+
+        inputStream = gfSecurityPropertiesUrl.openStream();
+        props.load(inputStream);
+      } catch (IOException io) {
+        throw new RuntimeException(CliStrings.format(
+            CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0,
+                CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl.getPath())), io);
+      } finally {
+        IOUtils.close(inputStream);
+      }
+    }
+    return props;
+  }
+
   private String checkforSystemPropertyPrefix(String key) {
     String returnKey = key;
     if (key.startsWith("javax."))

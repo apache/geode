@@ -86,9 +86,42 @@ public abstract class OperationContext {
     
     private static final byte OP_RESOURCE = 20;
     
-    private static final OperationCode[] VALUES = new OperationCode[22];
+    private static final byte OP_LIST = 21;
+
+    private static final byte OP_CREATE_QUERY = 22;
+
+    private static final byte OP_UPDATE_QUERY = 23;
+
+    private static final byte OP_DELETE_QUERY = 24;
+
+    private static final OperationCode[] VALUES = new OperationCode[25];
 
     private static final Map OperationNameMap = new HashMap();
+
+    /**
+     * A LIST operation.
+     * LIST regions, registered functions, named queries in DS.
+     */
+    public static final OperationCode LIST = new OperationCode(
+        "LIST", OP_LIST);
+
+    /**
+     * A create parameterized query operation with developer REST APIs.
+     */
+    public static final OperationCode CREATE_QUERY = new OperationCode(
+        "CREATE_QUERY", OP_CREATE_QUERY);
+
+    /**
+     * A update parameterized query operation with developer REST APIs.
+     */
+    public static final OperationCode UPDATE_QUERY = new OperationCode(
+        "UPDATE_QUERY", OP_UPDATE_QUERY);
+
+    /**
+     * A delete parameterized query operation with developer REST APIs.
+     */
+    public static final OperationCode DELETE_QUERY = new OperationCode(
+        "DELETE_QUERY", OP_DELETE_QUERY);
 
     /**
      * An entry get operation.
@@ -254,6 +287,34 @@ public abstract class OperationContext {
       this.opCode = opCode;
       VALUES[opCode] = this;
       OperationNameMap.put(name, this);
+    }
+
+    /**
+     * Returns true if this is a list operation for regions, functions and queries.
+     */
+    public boolean isList() {
+      return (this.opCode == OP_LIST);
+    }
+
+    /**
+     * Returns true if this is a create named query operation.
+     */
+    public boolean isCreateQuery() {
+      return (this.opCode == OP_CREATE_QUERY);
+    }
+
+    /**
+     * Returns true if this is a update named query operation.
+     */
+    public boolean isUpdateQuery() {
+      return (this.opCode == OP_UPDATE_QUERY);
+    }
+
+    /**
+     * Returns true if this is a delete named query operation.
+     */
+    public boolean isDestroyQuery() {
+      return (this.opCode == OP_DELETE_QUERY);
     }
 
     /**

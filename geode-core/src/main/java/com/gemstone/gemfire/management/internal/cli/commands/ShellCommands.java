@@ -30,6 +30,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -82,6 +83,9 @@ import com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker;
 import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshHistory;
 import com.gemstone.gemfire.management.internal.cli.util.CauseFinder;
 import com.gemstone.gemfire.management.internal.cli.util.ConnectionEndpoint;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
 import com.gemstone.gemfire.management.internal.web.http.support.SimpleHttpRequester;
 import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
@@ -100,6 +104,7 @@ public class ShellCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.EXIT, "quit" }, help = CliStrings.EXIT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public ExitShellRequest exit() throws IOException {
     Gfsh gfshInstance = getGfsh();
 
@@ -123,6 +128,7 @@ public class ShellCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.CONNECT }, help = CliStrings.CONNECT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_MANAGER})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result connect(
     @CliOption(key = { CliStrings.CONNECT__LOCATOR },
                unspecifiedDefaultValue = ConnectionEndpointConverter.DEFAULT_LOCATOR_ENDPOINTS,
@@ -195,9 +201,19 @@ public class ShellCommands implements CommandMarker {
           ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage()));
       }
     } else if (useHttp) {      
+      Gfsh gemfireShell = getGfsh();
       try{
         
-        final Map<String, String> sslConfigProps = this.readSSLConfiguration(useSsl, keystoreToUse,keystorePasswordToUse, 
+        if (userName != null && userName.length() > 0) {
+          if (passwordToUse == null || passwordToUse.length() == 0) {
+            passwordToUse = gemfireShell.readWithMask("http password: ", '*');
+          }
+          if (passwordToUse == null || passwordToUse.length() == 0) {
+            throw new IllegalArgumentException(CliStrings.CONNECT__MSG__JMX_PASSWORD_MUST_BE_SPECIFIED);
+          }
+        }
+
+        final Map<String, String> sslConfigProps = this.readSSLConfiguration(useSsl, keystoreToUse,keystorePasswordToUse,
             truststoreToUse, truststorePasswordToUse, sslCiphersToUse, sslProtocolsToUse, gfSecurityPropertiesPath);
      
         if (useSsl) {
@@ -207,18 +223,24 @@ public class ShellCommands implements CommandMarker {
           }
         }
 
+        Map<String,String> securityProperties = new HashMap<String, String>();
+
+        Iterator<String> it = sslConfigProps.keySet().iterator();
+        while(it.hasNext()){
+          String secKey = it.next();
+          securityProperties.put(secKey, sslConfigProps.get(secKey));
+        }
+
         // This is so that SSL termination results in https URLs being returned
         String query = (url.startsWith("https")) ? "?scheme=https" : "";
 
-        LogWrapper.getInstance().warning(String.format("Sending HTTP request for Link Index at (%1$s)...", url.concat("/index")));
+        LogWrapper.getInstance().warning(String.format("Sending HTTP request for Link Index at (%1$s)...", url.concat("/index").concat(query)));
 
-        LinkIndex linkIndex = new SimpleHttpRequester(CONNECT_LOCATOR_TIMEOUT_MS).get(url.concat("/index").concat(query), LinkIndex.class);
+        LinkIndex linkIndex = new SimpleHttpRequester(gemfireShell, CONNECT_LOCATOR_TIMEOUT_MS, securityProperties).exchange(url.concat("/index").concat(query), LinkIndex.class);
 
         LogWrapper.getInstance().warning(String.format("Received Link Index (%1$s)", linkIndex.toString()));
 
-        Gfsh gemfireShell = getGfsh();
-
-        HttpOperationInvoker operationInvoker = new RestHttpOperationInvoker(linkIndex, gemfireShell, url);
+        HttpOperationInvoker operationInvoker = new RestHttpOperationInvoker(linkIndex, gemfireShell, url, securityProperties);
 
         Initializer.init(operationInvoker);
         gemfireShell.setOperationInvoker(operationInvoker);
@@ -231,11 +253,11 @@ public class ShellCommands implements CommandMarker {
       } catch (IOException ioe) {
         String errorMessage = ioe.getMessage();
         result = ResultBuilder.createConnectionErrorResult(errorMessage);
-        ioe.printStackTrace();
+        if (gemfireShell.getDebug()) {ioe.printStackTrace();}
       } catch (Exception e) {
         String errorMessage = e.getMessage();
         result = ResultBuilder.createConnectionErrorResult(errorMessage);
-        e.printStackTrace();
+        if (gemfireShell.getDebug()) {e.printStackTrace();}
       }
     } else {
 
@@ -300,7 +322,7 @@ public class ShellCommands implements CommandMarker {
           gfshInstance.logToFile("Connecting to manager via SSL.", null);
         }
 
-        JmxOperationInvoker operationInvoker = new JmxOperationInvoker(memberRmiHostPort.getHost(), memberRmiHostPort.getPort(), userName, passwordToUse, sslConfigProps);
+        JmxOperationInvoker operationInvoker = new JmxOperationInvoker(memberRmiHostPort.getHost(), memberRmiHostPort.getPort(), userName, passwordToUse, sslConfigProps, gfSecurityPropertiesPath);
         gfshInstance.setOperationInvoker(operationInvoker);
         infoResultData.addLine(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, memberRmiHostPort.toString(false)));
         LogWrapper.getInstance().info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, memberRmiHostPort.toString(false)));
@@ -610,7 +632,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
   }
 
   // Copied from DistributedSystem.java
-  private static URL getFileUrl(String fileName) {
+  public static URL getFileUrl(String fileName) {
     File file = new File(fileName);
 
     if (file.exists()) {
@@ -668,6 +690,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.DISCONNECT }, help = CliStrings.DISCONNECT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_MANAGER})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result disconnect() {
     Result result = null;
 
@@ -700,6 +723,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = {CliStrings.DESCRIBE_CONNECTION}, help = CliStrings.DESCRIBE_CONNECTION__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_JMX})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result describeConnection() {
     Result result = null;
     try {
@@ -727,6 +751,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.ECHO }, help = CliStrings.ECHO__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result echo(
       @CliOption(key = {CliStrings.ECHO__STR, ""},
                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -764,6 +789,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.SET_VARIABLE }, help = CliStrings.SET_VARIABLE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result setVariable(
       @CliOption(key = CliStrings.SET_VARIABLE__VAR,
                  mandatory=true,
@@ -803,6 +829,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.DEBUG }, help = CliStrings.DEBUG__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL })
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result debug(
       @CliOption(key = CliStrings.DEBUG__STATE,
                    unspecifiedDefaultValue = "OFF",
@@ -832,6 +859,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = CliStrings.HISTORY, help = CliStrings.HISTORY__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH })
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result history(
       @CliOption(key = { CliStrings.HISTORY__FILE }, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.HISTORY__FILE__HELP)
       String saveHistoryTo,
@@ -943,6 +971,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.RUN }, help = CliStrings.RUN__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GFSH})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result executeScript(
       @CliOption(key = CliStrings.RUN__FILE,
                  optionContext = ConverterHint.FILE,
@@ -974,6 +1003,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = CliStrings.ENCRYPT, help = CliStrings.ENCRYPT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result encryptPassword(
       @CliOption(key = CliStrings.ENCRYPT_STRING,
                  help = CliStrings.ENCRYPT_STRING__HELP,
@@ -984,6 +1014,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.VERSION }, help = CliStrings.VERSION__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GFSH})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result version(
       @CliOption(key = { CliStrings.VERSION__FULL },
                  specifiedDefaultValue = "true",
@@ -997,6 +1028,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.SLEEP }, help = CliStrings.SLEEP__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GFSH})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result sleep(
       @CliOption(key = { CliStrings.SLEEP__TIME },
                  unspecifiedDefaultValue = "3",
@@ -1011,6 +1043,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.SH }, help = CliStrings.SH__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GFSH})
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result sh(
       @CliArgument(name = CliStrings.SH__COMMAND,
                    mandatory = true,

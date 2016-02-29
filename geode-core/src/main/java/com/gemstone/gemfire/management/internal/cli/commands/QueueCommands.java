@@ -45,6 +45,9 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 /**
  * The QueueCommands class encapsulates all GemFire Queue commands in Gfsh.
@@ -60,6 +63,7 @@ public class QueueCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE, help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
   @CliMetaData(writesToSharedConfiguration = true)
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.CREATE_AEQ)
   public Result createAsyncEventQueue(
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, 
                  mandatory = true,
@@ -199,6 +203,7 @@ public class QueueCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.LIST_ASYNC_EVENT_QUEUES, help = CliStrings.LIST_ASYNC_EVENT_QUEUES__HELP)
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result listAsyncEventQueues() {
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();

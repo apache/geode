@@ -22,5 +22,5 @@ public enum Resource {
   REGION,
   DISKSTORE,
   GATEWAY_SENDER,
-  GATEWAT_LISTENER,  
+  GATEWAY_RECEIVER,
 }

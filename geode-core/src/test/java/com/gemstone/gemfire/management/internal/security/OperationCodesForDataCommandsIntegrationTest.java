@@ -71,12 +71,12 @@ public class OperationCodesForDataCommandsIntegrationTest {
     this.ds = DistributedSystem.connect(properties);
     this.cache = (GemFireCacheImpl) CacheFactory.create(ds);
 
-    this.commands.put("put --key=k1 --value=v1 --region=/region1", ResourceOperationCode.PUT_REGION);    
-    this.commands.put("locate entry --key=k1 --region=/region1", ResourceOperationCode.LOCATE_ENTRY_REGION);
-    this.commands.put("query --query=\"select * from /region1\"", ResourceOperationCode.QUERYDATA_DS);
-    this.commands.put("export data --region=value --file=value --member=value", ResourceOperationCode.EXPORT_DATA_REGION);
-    this.commands.put("import data --region=value --file=value --member=value", ResourceOperationCode.IMPORT_DATA_REGION);
-    this.commands.put("rebalance", ResourceOperationCode.REBALANCE_DS);
+    this.commands.put("put --key=k1 --value=v1 --region=/region1", ResourceOperationCode.PUT);
+    this.commands.put("locate entry --key=k1 --region=/region1", ResourceOperationCode.LOCATE_ENTRY);
+    this.commands.put("query --query=\"select * from /region1\"", ResourceOperationCode.QUERY);
+    this.commands.put("export data --region=value --file=value --member=value", ResourceOperationCode.EXPORT_DATA);
+    this.commands.put("import data --region=value --file=value --member=value", ResourceOperationCode.IMPORT_DATA);
+    this.commands.put("rebalance", ResourceOperationCode.REBALANCE);
   }
 
   @After

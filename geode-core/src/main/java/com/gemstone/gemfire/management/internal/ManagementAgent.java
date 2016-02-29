@@ -386,9 +386,9 @@ public class ManagementAgent {
     // Environment map. KIRK: why is this declared as HashMap?
     final HashMap<String, Object> env = new HashMap<String, Object>();
 
-    boolean integratedSecEnabled = System.getProperty("resource-authenticator") != null;
+    boolean integratedSecEnabled = isIntegratedSecEnabled();
     if (integratedSecEnabled) {
-      securityInterceptor = new ManagementInterceptor(logger);
+      securityInterceptor = new ManagementInterceptor((GemFireCacheImpl)CacheFactory.getAnyInstance(), logger);
       env.put(JMXConnectorServer.AUTHENTICATOR, securityInterceptor);
     } else {
       /* Disable the old authenticator mechanism */
@@ -479,6 +479,11 @@ public class ManagementAgent {
     //
     // final Thread clean = new CleanThread(cs);
     // clean.start();
+  }
+
+  private boolean isIntegratedSecEnabled() {
+    String authenticatorFactoryName = config.getSecurityClientAuthenticator();
+    return authenticatorFactoryName != null && !authenticatorFactoryName.isEmpty();
   }
 
   private static class GemFireRMIClientSocketFactory implements RMIClientSocketFactory,

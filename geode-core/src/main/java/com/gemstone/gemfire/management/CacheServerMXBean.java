@@ -17,6 +17,9 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -279,6 +282,7 @@ public interface CacheServerMXBean {
    * @param indexName
    *          Name of the index to be removed.
    */
+  @ResourceOperation(resource=Resource.REGION, operation=ResourceConstants.DESTROY_INDEX)
   public void removeIndex(String indexName) throws Exception;
 
   /**
@@ -296,6 +300,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.
    */
   @Deprecated 
+  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.QUERY)
   public void executeContinuousQuery(String queryName) throws Exception;
 
   /**
@@ -309,6 +314,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
+  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.STOP_CONTINUOUS_QUERY)
   public void stopContinuousQuery(String queryName) throws Exception;
 
   /**
@@ -321,6 +327,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
+  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.STOP_CONTINUOUS_QUERY)
   public void closeAllContinuousQuery(String regionName) throws Exception;
   
   
@@ -334,6 +341,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
+  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.STOP_CONTINUOUS_QUERY)
   public void closeContinuousQuery(String queryName) throws Exception;
 
 

@@ -16,14 +16,33 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.ACCESS_DENIED_MESSAGE;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.GET_ATTRIBUTE;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.GET_ATTRIBUTES;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.GET_PREFIX;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.PASSWORD;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.PROCESS_COMMAND;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.SET_ATTRIBUTE;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.SET_ATTRIBUTES;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.SET_PREFIX;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.USER_NAME;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.WRONGE_CREDENTIALS_MESSAGE;
+
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.Principal;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+import javax.management.Attribute;
+import javax.management.AttributeList;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -38,36 +57,73 @@ import javax.security.auth.Subject;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.ClassLoadUtil;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.security.AccessControl;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
 
-@SuppressWarnings("rawtypes")
+/**
+ *
+ * ManagementInterceptor is central go-to place for all M&M Clients Authentication and Authorization
+ * requests
+ *
+ * @author tushark
+ * @since 9.0
+ *
+ */
 public class ManagementInterceptor implements JMXAuthenticator {
 
+  // FIXME: Merged from GEODE-17. Are they necessary?
 	public static final String USER_NAME = "security-username";
 	public static final String PASSWORD = "security-password";
 	public static final String OBJECT_NAME_ACCESSCONTROL = "GemFire:service=AccessControl,type=Distributed";
+
 	private MBeanServerWrapper mBeanServerForwarder;
 	private Logger logger;  
+  private ObjectName accessControlMBeanON;
+  private Cache cache;
+  private String authzFactoryName;
+  private String postAuthzFactoryName;
+  private String authenticatorFactoryName;
+  private ConcurrentMap<Principal, AccessControl> cachedAuthZCallback;
+  private ConcurrentMap<Principal, AccessControl> cachedPostAuthZCallback;
 
-	public ManagementInterceptor(Logger logger) {
+  public ManagementInterceptor(Cache gemFireCacheImpl, Logger logger) {
+    this.cache = gemFireCacheImpl;
 		this.logger = logger;		
 		this.mBeanServerForwarder = new MBeanServerWrapper(this);
+    DistributedSystem system = cache.getDistributedSystem();
+    Properties sysProps = system.getProperties();
+    this.authzFactoryName = sysProps.getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME);
+    this.postAuthzFactoryName = sysProps.getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME);
+    this.authenticatorFactoryName = sysProps.getProperty(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+    this.cachedAuthZCallback = new ConcurrentHashMap<Principal, AccessControl>();
+    this.cachedPostAuthZCallback = new ConcurrentHashMap<Principal, AccessControl>();
 		registerAccessContorlMbean();
-		LogService.getLogger().info("Starting management interceptor");
+    logger.info("Started Management interceptor on JMX connector");
 	}
 
-	private void registerAccessContorlMbean() {    
+  /**
+   * This method registers an AccessControlMBean which allows any remote JMX Client (for example Pulse) to check for
+   * access allowed for given Operation Code.
+   */
+	private void registerAccessContorlMbean() {
     try {
       com.gemstone.gemfire.management.internal.security.AccessControl acc = new com.gemstone.gemfire.management.internal.security.AccessControl(this);
-      ObjectName name = new ObjectName(OBJECT_NAME_ACCESSCONTROL);
+      accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
       MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
-      Set<ObjectName> names = platformMBeanServer.queryNames(name, null);
+      Set<ObjectName> names = platformMBeanServer.queryNames(accessControlMBeanON, null);
       if(names.isEmpty()) {
         try {
-          platformMBeanServer.registerMBean(acc, name);
-          logger.info("Registered AccessContorlMBean on " + name);
+          platformMBeanServer.registerMBean(acc, accessControlMBeanON);
+          logger.info("Registered AccessContorlMBean on " + accessControlMBeanON);
         } catch (InstanceAlreadyExistsException e) {
           throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",e);
         } catch (MBeanRegistrationException e) {
@@ -77,195 +133,252 @@ public class ManagementInterceptor implements JMXAuthenticator {
         }
       }
     } catch (MalformedObjectNameException e) {      
-      e.printStackTrace();
+      throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
     }
   }
 
+  /**
+   * Delegates authentication to GemFire Authenticator
+   *
+   * @throws SecurityException
+   *           if authentication fails
+   */
   @Override
 	public Subject authenticate(Object credentials) {
 		String username = null, password = null;
-		if (!(credentials instanceof String[])) {
-			// Special case for null so we get a more informative message
-			if (credentials == null) {
-				// throw new SecurityException("Credentials required");
-				username = "empty";
-				password = "emptypwd";
-			}
-			// throw new SecurityException("Credentials should be String[]");
-			username = "empty";
-			password = "emptypwd";
-			
-			//TODO ***** Remove empty stuff
-			
-		} else {
+    Properties pr = new Properties();
+    if (credentials instanceof String[]) {
 			final String[] aCredentials = (String[]) credentials;
 			username = (String) aCredentials[0];
 			password = (String) aCredentials[1];
-		}
-
-		Properties pr = new Properties();
 		pr.put(USER_NAME, username);
 		pr.put(PASSWORD, password);
-		getAuthenticator(pr).authenticate(pr, null);
-		return new Subject(true, Collections.singleton(new JMXPrincipal(username)), Collections.EMPTY_SET,
+    } else if (credentials instanceof Properties) {
+      pr = (Properties) credentials;
+    } else {
+      throw new SecurityException(WRONGE_CREDENTIALS_MESSAGE);
+    }
+
+    try {
+      Principal principal = getAuthenticator(cache.getDistributedSystem().getSecurityProperties()).authenticate(pr,
+          cache.getDistributedSystem().getDistributedMember());
+      return new Subject(true, Collections.singleton(new JMXPrincipal(principal.getName())), Collections.EMPTY_SET,
 			    Collections.EMPTY_SET);
+    } catch (AuthenticationFailedException e) {
+      //wrap inside Security exception. AuthenticationFailedException is gemfire class
+      //which generic JMX client can't serialize
+      throw new SecurityException("Authentication Failed " + e.getMessage());
 	}
 
-	@SuppressWarnings("unchecked")
-	public void authorize(ObjectName name, final String methodName, Object[] params) {
+  }
 	  
-    try {
-      ObjectName accessControlMBean = new ObjectName(OBJECT_NAME_ACCESSCONTROL);
-      if (name.equals(accessControlMBean)) {
-        logger.info("Granting access to accessContorlMXBean.. name="+name);
-        return;
+  /**
+   * Builds ResourceOperationContext for the given JMX MBean Request for delegates Authorization to
+   * gemfire AccessControl plugin with context as parameter
+   *
+   *
+   * @param name
+   * @param methodName
+   * @param params
+   *
+   * @throws SecurityException
+   *           if access is not granted
+   */
+  public ResourceOperationContext authorize(ObjectName name, final String methodName, Object[] params) {
+
+    if (StringUtils.isBlank(authzFactoryName)){
+      return com.gemstone.gemfire.management.internal.security.AccessControlContext.ACCESS_GRANTED_CONTEXT;
       }
-    } catch (MalformedObjectNameException e) {
-      // TODO Auto-generated catch block
-      // e.printStackTrace();
+
+    if (name.equals(accessControlMBeanON)) {
+      return com.gemstone.gemfire.management.internal.security.AccessControlContext.ACCESS_GRANTED_CONTEXT;
     }
 	  
-	  
-	  //Only apply for gemfire domain
-	  String domain = name.getDomain();
-	  if(!"GemFire".equals(domain))
-	    return;
-	  
-		// Retrieve Subject from current AccessControlContext
+    if (!ManagementConstants.OBJECTNAME__DEFAULTDOMAIN.equals(name.getDomain()))
+      return com.gemstone.gemfire.management.internal.security.AccessControlContext.ACCESS_GRANTED_CONTEXT;
+
 		AccessControlContext acc = AccessController.getContext();		
 		Subject subject = Subject.getSubject(acc);
-		// Allow operations performed locally on behalf of the connector server
-		// itself
+
+    // Allow operations performed locally on behalf of the connector server itself
 		if (subject == null) {
-			return;
+      return com.gemstone.gemfire.management.internal.security.AccessControlContext.ACCESS_GRANTED_CONTEXT;
 		}
 
-		// Restrict access to "createMBean" and "unregisterMBean" to any user
-		if (methodName.equals("createMBean")
-				|| methodName.equals("unregisterMBean")) {
-			throw new SecurityException("Access denied");
+    if (methodName.equals(ResourceConstants.CREATE_MBEAN) || methodName.equals(ResourceConstants.UNREGISTER_MBEAN)) {
+      throw new SecurityException(ACCESS_DENIED_MESSAGE);
 		}
 
-		// Retrieve JMXPrincipal from Subject
-		Set<JMXPrincipal> principals = subject
-				.getPrincipals(JMXPrincipal.class);
-		Set<Object> pubCredentials = subject.getPublicCredentials();
+    Set<JMXPrincipal> principals = subject.getPrincipals(JMXPrincipal.class);
 		
-		/*System.out.println("JMXPrincipal " + principals);
-		System.out.println("Principals " + subject.getPrincipals());
-		System.out.println("PubCredentials " + subject.getPublicCredentials());*/
-		//add condition -> check if accessor is configured
-		if (principals == null || principals.isEmpty()
-				/*|| pubCredentials.size() < 1 */) {
-			throw new SecurityException("Access denied");
+    if (principals == null || principals.isEmpty()) {
+      throw new SecurityException(ACCESS_DENIED_MESSAGE);
 		}		
 	
 		Principal principal = principals.iterator().next();
+
 		
-		//Give read access globally : TODO : Need to change this to map to proper getter
-		LogService.getLogger().info("Name=" + name + " methodName=" +  methodName + " principal="+ principal.getName());
-		if("getAttribute".equals(methodName) || "getAttributes".equals(methodName))
-			return;	
+    if (logger.isDebugEnabled()) {
+      logger.debug("Name=" + name + " methodName=" + methodName + " principal=" + principal.getName());
+    }
 		
-		//TODO : if method=getAttributes params is directly availalbe
-		//TODO : if method is operation then params is array array[0] = actual params, array[1]= signature
-		
-		ResourceOperationContext resourceContext = buildContext(name,methodName, params);		
-		boolean authorized = getAccessControl(principal).authorizeOperation(null, resourceContext);
-		LogService.getLogger().info("Name=" + name + " methodName=" +  methodName 
-		    + " result="+authorized + " principal="+ principal.getName());
+    AccessControl accessControl = getAccessControl(principal, false);
+    String method = methodName;
+    if (methodName.equals(GET_ATTRIBUTE)) {
+      method = GET_PREFIX + (String) params[0];
+    } else if(methodName.equals(GET_ATTRIBUTES)) {
+      //Pass to first attribute getter
+      String[] attrs = (String[]) params[0];
+      method = GET_PREFIX + attrs[0];
+    } else if(methodName.equals(SET_ATTRIBUTE)) {
+      Attribute attribute = (Attribute) params[0];
+      method = SET_PREFIX + attribute.getName();
+    }
+
+    if (methodName.equals(SET_ATTRIBUTES)) {
+      AttributeList attrList = (AttributeList) params[0];
+      List<Attribute> list = attrList.asList();
+      ResourceOperationContext setterContext = null;
+      SetAttributesOperationContext resourceContext = new SetAttributesOperationContext();
+      for(int i=0;i<list.size();i++) {
+        Attribute attribute = list.get(i);
+        String setter = SET_PREFIX + attribute.getName();
+        setterContext = buildContext(name,setter,null);
+        boolean authorized = accessControl.authorizeOperation(null, setterContext);
+        if (logger.isDebugEnabled()) {
+          logger.debug("Name=" + name + " methodName=" + methodName + " result=" + authorized + " principal="
+              + principal.getName());
+        }
 		if(!authorized)
-			throw new SecurityException("Access denied");
+          throw new SecurityException(ACCESS_DENIED_MESSAGE);
+        else
+          resourceContext.addAttribute(attribute.getName(), setterContext);
+      }
+      return resourceContext;
+    } else {
+      ResourceOperationContext resourceContext = buildContext(name, method, params);
+      boolean authorized = accessControl.authorizeOperation(null, resourceContext);
+      if (logger.isDebugEnabled()) {
+        logger.debug("Name=" + name + " methodName=" + methodName + " result=" + authorized + " principal="
+            + principal.getName());
+      }
+
+      if (!authorized)
+        throw new SecurityException(ACCESS_DENIED_MESSAGE);
+      return resourceContext;
+    }
 	}
 
 	public MBeanServerForwarder getMBeanServerForwarder() {
 		return mBeanServerForwarder;
 	}
 
-	private static Class accessControlKlass = null;
-	
-	public AccessControl getAccessControl(Principal principal) {
-		if(accessControlKlass==null) {
-			String authorizeKlass = System.getProperty(ResourceConstants.RESORUCE_AUTH_ACCESSOR);
+  public AccessControl getAccessControl(Principal principal, boolean isPost) {
+    if (!isPost) {
+      if (cachedAuthZCallback.containsKey(principal)) {
+        return cachedAuthZCallback.get(principal);
+      } else if (!StringUtils.isBlank(authzFactoryName)) {
 			try {
-				accessControlKlass = Class.forName(authorizeKlass);
-			} catch (ClassNotFoundException e) {
-			  logger.error(e);
-				throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",e);
+          Method authzMethod = ClassLoadUtil.methodFromName(authzFactoryName);
+          AccessControl authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
+          authzCallback.init(principal, null, cache);
+          cachedAuthZCallback.put(principal, authzCallback);
+          return authzCallback;
+        } catch (Exception ex) {
+          throw new AuthenticationFailedException(
+              LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT.toLocalizedString(), ex);
 			}
 		}
-		
+    } else {
+      if (cachedPostAuthZCallback.containsKey(principal)) {
+        return cachedPostAuthZCallback.get(principal);
+      } else if (!StringUtils.isBlank(postAuthzFactoryName)) {
 		try {
-			AccessControl accessControl = (AccessControl) accessControlKlass.newInstance();
-			accessControl.init(principal, null, null); //TODO pass proper params
-			LogService.getLogger().info("Returning resource accessControl");
-			return accessControl;
-		} catch (InstantiationException e) {
-		  logger.error(e);
-			throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",e);
-		} catch (IllegalAccessException e) {
-		  logger.error(e);
-			throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",e);
+          Method authzMethod = ClassLoadUtil.methodFromName(postAuthzFactoryName);
+          AccessControl postAuthzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
+          postAuthzCallback.init(principal, null, cache);
+          cachedPostAuthZCallback.put(principal, postAuthzCallback);
+          return postAuthzCallback;
+        } catch (Exception ex) {
+          throw new AuthenticationFailedException(
+              LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT.toLocalizedString(), ex);
 		}
 	}
+    }
+    return null;
+  }
 
-	private static Class authenticatorClass = null;
-	private Authenticator getAuthenticator(Properties pr) {
-		if(authenticatorClass==null) {
-			String authenticatorKlass = System.getProperty(ResourceConstants.RESORUCE_AUTHENTICATOR);
+  private Authenticator getAuthenticator(Properties gfSecurityProperties) throws AuthenticationFailedException {
+    Authenticator auth;
 			try {
-				authenticatorClass = Class.forName(authenticatorKlass);
-			} catch (ClassNotFoundException e) {	
-			  logger.error(e);
-				throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",e);
+      Method instanceGetter = ClassLoadUtil.methodFromName(this.authenticatorFactoryName);
+      auth = (Authenticator) instanceGetter.invoke(null, (Object[]) null);
+    } catch (Exception ex) {
+      throw new AuthenticationFailedException(
+          LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT.toLocalizedString(), ex);
 			}
+    if (auth == null) {
+      throw new AuthenticationFailedException(
+          LocalizedStrings.HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED.toLocalizedString());
 		}
-		
-		try {
-			Authenticator authenticator = (Authenticator) authenticatorClass.newInstance();
-			authenticator.init(pr, null, null); //TODO pass proper params
-			LogService.getLogger().info("Returning resource authenticator " + authenticator);
-			return authenticator;
-		} catch (InstantiationException e) {
-		  logger.error(e);
-			throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",e);
-		} catch (IllegalAccessException e) {
-		  logger.error(e);
-			throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",e);
-		}
+    auth.init(gfSecurityProperties,(InternalLogWriter) this.cache.getLogger(), (InternalLogWriter) this.cache.getSecurityLogger());
+    return auth;
 	}
 
   private ResourceOperationContext buildContext(ObjectName name, String methodName, Object[] params) {
-    if (params != null) {
-      LogService.getLogger().info("Params length=" + params.length);
-      for (int i = 0; i < params.length; i++) {
-        LogService.getLogger().info("Params[" + i + "] is " + arrayString(params[i]));
-      }
-    }
-
     String service = name.getKeyProperty("service");
-    // only member mbean does not have service KeyProperty
-    if (service == null && "processCommand".equals(methodName)) {
+    if (service == null && PROCESS_COMMAND.equals(methodName)) {
       Object[] array = (Object[]) params[0];
       String command = (String) array[0];
-      CLIOperationContext context = new CLIOperationContext(command);      
-      LogService.getLogger().info("Returning CLIContext for " + methodName);
+      CLIOperationContext context = new CLIOperationContext(command);
       return context;
     } else {
       ResourceOperationContext context = new JMXOperationContext(name, methodName);
-      LogService.getLogger().info("Returning JMXOperationContext for " + methodName);
       return context;
     }
   }
 
-  private String arrayString(Object object) {
-    StringBuilder sb = new StringBuilder();
-    if (object instanceof Object[]) {
-      Object[] array = (Object[]) object;
-      for (Object a : array)
-        sb.append(a).append(" ");
+  public ObjectName getAccessControlMBeanON() {
+    return accessControlMBeanON;
     }
-    return sb.toString();
+
+  public void postAuthorize(ObjectName name, final String methodName, ResourceOperationContext context, Object result) {
+
+    if (StringUtils.isBlank(postAuthzFactoryName)){
+      return ;
+    }
+
+    context.setPostOperationResult(result);
+
+    if (context.equals(com.gemstone.gemfire.management.internal.security.AccessControlContext.ACCESS_GRANTED_CONTEXT))
+      return;
+
+    AccessControlContext acc = AccessController.getContext();
+    Subject subject = Subject.getSubject(acc);
+    Set<JMXPrincipal> principals = subject.getPrincipals(JMXPrincipal.class);
+    if (principals == null || principals.isEmpty()) {
+      throw new SecurityException(ACCESS_DENIED_MESSAGE);
+    }
+    Principal principal = principals.iterator().next();
+    AccessControl accessControl = getAccessControl(principal, true);
+    if (context instanceof SetAttributesOperationContext) {
+      SetAttributesOperationContext setterContext = (SetAttributesOperationContext) context;
+      for (Entry<String, ResourceOperationContext> e : setterContext.getAttributesContextMap().entrySet()) {
+        //TODO : Retrieve proper values from AttributeList and set to its jmxContext
+        e.getValue().setPostOperationResult(result);
+        boolean authorized = accessControl.authorizeOperation(null, e.getValue());
+        if (!authorized)
+          throw new SecurityException(ACCESS_DENIED_MESSAGE);
+      }
+    } else {
+      boolean authorized = accessControl.authorizeOperation(null, context);
+      if (logger.isDebugEnabled()) {
+        logger.debug("postAuthorize: Name=" + name + " methodName=" + methodName + " result=" + authorized
+            + " principal=" + principal.getName());
+      }
+      if (!authorized)
+        throw new SecurityException(ACCESS_DENIED_MESSAGE);
+    }
   }
 
 }

@@ -102,6 +102,18 @@ public class AuthorizeRequest {
     return this.authzCallback;
   }
 
+  public Principal getPrincipal() {
+    return principal;
+  }
+
+  public boolean isPrincipalSerializable() {
+    return isPrincipalSerializable;
+  }
+
+  public LogWriterI18n getLogger() {
+    return logger;
+  }
+
   public GetOperationContext getAuthorize(String regionName, Object key,
       Object callbackArg) throws NotAuthorizedException {
 

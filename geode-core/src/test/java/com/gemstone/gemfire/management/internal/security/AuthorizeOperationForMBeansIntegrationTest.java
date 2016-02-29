@@ -155,9 +155,10 @@ public class AuthorizeOperationForMBeansIntegrationTest {
   private void checkAccessControlMXBean() throws Exception {
     final ResourceOperationCode resourceOperationCodes[] = { 
         ResourceOperationCode.LIST_DS, 
-        ResourceOperationCode.READ_DS, 
-        ResourceOperationCode.CHANGE_ALERT_LEVEL_DS,
-        ResourceOperationCode.LOCATE_ENTRY_REGION 
+// FIXME: what should this be?
+//        ResourceOperationCode.READ_DS,
+        ResourceOperationCode.CHANGE_ALERT_LEVEL,
+        ResourceOperationCode.LOCATE_ENTRY
     };
     
     ObjectName objectName = new ObjectName(ManagementInterceptor.OBJECT_NAME_ACCESSCONTROL);
@@ -174,7 +175,7 @@ public class AuthorizeOperationForMBeansIntegrationTest {
     boolean isAuthorizedForAllOperations = (Boolean) mbeanServer.invoke(
         objectName, 
         "authorize", 
-        new Object[] { ResourceOperationCode.ADMIN_DS.toString() },
+        new Object[] { ResourceOperationCode.ADMIN.toString() },
         new String[] { String.class.getName() }
     );
     assertThat(isAuthorizedForAllOperations).isFalse();
@@ -302,9 +303,10 @@ public class AuthorizeOperationForMBeansIntegrationTest {
       if (principal.getName().equals("tushark")) {
         ResourceOperationCode authorizedOps[] = { 
             ResourceOperationCode.LIST_DS, 
-            ResourceOperationCode.READ_DS, 
-            ResourceOperationCode.CHANGE_ALERT_LEVEL_DS,
-            ResourceOperationCode.LOCATE_ENTRY_REGION 
+// FOXME: Is this necessary?
+//            ResourceOperationCode.READ_DS,
+            ResourceOperationCode.CHANGE_ALERT_LEVEL,
+            ResourceOperationCode.LOCATE_ENTRY
         };
 
         ResourceOperationContext ctx = (ResourceOperationContext) context;

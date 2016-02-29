@@ -17,6 +17,9 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -89,11 +92,13 @@ public interface GatewayReceiverMXBean {
   /**
    * Starts the gateway receiver.
    */
+  @ResourceOperation(resource=Resource.GATEWAY_RECEIVER, operation=ResourceConstants.START_GW_RECEIVER)
   public void start() throws Exception;
 
   /**
    * Stops the gateway receiver.
    */
+  @ResourceOperation(resource=Resource.GATEWAY_RECEIVER, operation=ResourceConstants.STOP_GW_RECEIVER)
   public void stop() throws Exception;
 
   /**

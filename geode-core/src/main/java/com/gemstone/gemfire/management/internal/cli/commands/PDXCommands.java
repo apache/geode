@@ -41,6 +41,9 @@ import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
 import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxType;
@@ -50,7 +53,8 @@ public class PDXCommands extends AbstractCommandsSupport{
 
   @CliCommand (value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  public Result configurePDX( 
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.CONFIGURE_PDX)
+  public Result configurePDX(
       @CliOption (key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
       help = CliStrings.CONFIGURE_PDX__READ__SERIALIZED__HELP) 
@@ -171,7 +175,8 @@ public class PDXCommands extends AbstractCommandsSupport{
 
   @CliCommand (value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-  public Result pdxRename( 
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.RENAME_PDX)
+  public Result pdxRename(
       @CliOption (key = CliStrings.PDX_RENAME_OLD,
       mandatory=true,
       help = CliStrings.PDX_RENAME_OLD__HELP) 

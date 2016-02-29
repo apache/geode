@@ -288,8 +288,8 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
   @Override
   public Principal authenticate(Properties props, DistributedMember arg1) throws AuthenticationFailedException {
-    String user = props.getProperty(ManagementInterceptor.USER_NAME);
-    String pwd = props.getProperty(ManagementInterceptor.PASSWORD);
+    String user = props.getProperty(ResourceConstants.USER_NAME);
+    String pwd = props.getProperty(ResourceConstants.PASSWORD);
     User userObj = acl.get(user);
     if(userObj==null)
       throw new AuthenticationFailedException("Wrong username/password");

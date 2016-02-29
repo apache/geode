@@ -16,11 +16,13 @@
  */
 package com.gemstone.gemfire.management.internal.web.controllers;
 
+import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
+import com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -111,9 +113,12 @@ public class FunctionCommandsController extends AbstractCommandsController {
       command.addOption(CliStrings.EXECUTE_FUNCTION__RESULTCOLLECTOR, resultCollector);
     }
 
+
+    final Properties credentials = EnvironmentVariablesHandlerInterceptor.CREDENTIALS.get();
+
     return new Callable<ResponseEntity<String>>() {
       @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommand(command.toString()), HttpStatus.OK);
+        return new ResponseEntity<String>(processCommandWithCredentials(command.toString(), credentials), HttpStatus.OK);
       }
     };
   }

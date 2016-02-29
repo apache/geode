@@ -37,6 +37,9 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfigurationStatus;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 /********
  * 
@@ -50,6 +53,7 @@ public class StatusCommands extends AbstractCommandsSupport implements CommandMa
   @SuppressWarnings("unchecked")
   @CliCommand (value = CliStrings.STATUS_SHARED_CONFIG, help = CliStrings.STATUS_SHARED_CONFIG_HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_LOCATOR)
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result statusSharedConfiguration() {
     final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     final Set<DistributedMember> locators = new HashSet<DistributedMember>(cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());

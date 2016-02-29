@@ -54,6 +54,9 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 /***
  * Class containing implementation of commands based on region:
@@ -75,6 +78,7 @@ public class RegionCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.LIST_REGION }, help = CliStrings.LIST_REGION__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION)
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result listRegion(
       @CliOption(key = { CliStrings.LIST_REGION__GROUP },
       optionContext = ConverterHint.MEMBERGROUP,
@@ -154,6 +158,7 @@ public class RegionCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.DESCRIBE_REGION }, help = CliStrings.DESCRIBE_REGION__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_CONFIG } )
+  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.LIST_DS)
   public Result describeRegion(
       @CliOption(key = CliStrings.DESCRIBE_REGION__NAME,
       optionContext = ConverterHint.REGIONPATH,
