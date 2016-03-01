@@ -37,6 +37,7 @@ import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.ResourceException;
 import com.gemstone.gemfire.cache.operations.PutAllOperationContext;
+import com.gemstone.gemfire.cache.operations.internal.UpdateOnlyMap;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 
 import java.io.IOException;
@@ -189,6 +190,9 @@ public class PutAll extends BaseCommand {
           PutAllOperationContext putAllContext = authzRequest.putAllAuthorize(
               regionName, map, null);
           map = putAllContext.getMap();
+          if (map instanceof UpdateOnlyMap) {
+            map = ((UpdateOnlyMap) map).getInternalMap();
+          }
         }
       } else {
         // no auth, so update the map based on isObjectMap here
