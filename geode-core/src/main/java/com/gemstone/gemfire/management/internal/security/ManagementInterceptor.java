@@ -16,30 +16,19 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.ACCESS_DENIED_MESSAGE;
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.GET_ATTRIBUTE;
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.GET_ATTRIBUTES;
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.GET_PREFIX;
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.PASSWORD;
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.PROCESS_COMMAND;
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.SET_ATTRIBUTE;
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.SET_ATTRIBUTES;
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.SET_PREFIX;
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.USER_NAME;
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.WRONGE_CREDENTIALS_MESSAGE;
-
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.Method;
-import java.security.AccessControlContext;
-import java.security.AccessController;
-import java.security.Principal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import com.gemstone.gemfire.GemFireConfigException;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.ClassLoadUtil;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.management.internal.ManagementConstants;
+import com.gemstone.gemfire.security.AccessControl;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
+import com.gemstone.gemfire.security.Authenticator;
+import org.apache.logging.log4j.Logger;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -53,21 +42,20 @@ import javax.management.remote.JMXAuthenticator;
 import javax.management.remote.JMXPrincipal;
 import javax.management.remote.MBeanServerForwarder;
 import javax.security.auth.Subject;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.Principal;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.ClassLoadUtil;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.Authenticator;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.*;
 
 /**
  *
@@ -116,7 +104,7 @@ public class ManagementInterceptor implements JMXAuthenticator {
    */
 	private void registerAccessContorlMbean() {
     try {
-      com.gemstone.gemfire.management.internal.security.AccessControl acc = new com.gemstone.gemfire.management.internal.security.AccessControl(this);
+      AccessControlMBean acc = new AccessControlMBean(this);
       accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
       MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
       Set<ObjectName> names = platformMBeanServer.queryNames(accessControlMBeanON, null);
@@ -240,34 +228,34 @@ public class ManagementInterceptor implements JMXAuthenticator {
       List<Attribute> list = attrList.asList();
       ResourceOperationContext setterContext = null;
       SetAttributesOperationContext resourceContext = new SetAttributesOperationContext();
-      for(int i=0;i<list.size();i++) {
+      for (int i = 0; i < list.size(); i++) {
         Attribute attribute = list.get(i);
         String setter = SET_PREFIX + attribute.getName();
-        setterContext = buildContext(name,setter,null);
+        setterContext = buildContext(name, setter, null);
         boolean authorized = accessControl.authorizeOperation(null, setterContext);
         if (logger.isDebugEnabled()) {
-          logger.debug("Name=" + name + " methodName=" + methodName + " result=" + authorized + " principal="
-              + principal.getName());
+          logger.debug(
+              "Name=" + name + " methodName=" + methodName + " result=" + authorized + " principal=" + principal.getName());
         }
-		if(!authorized)
+        if (!authorized) {
           throw new SecurityException(ACCESS_DENIED_MESSAGE);
-        else
+        } else {
           resourceContext.addAttribute(attribute.getName(), setterContext);
+        }
       }
       return resourceContext;
     } else {
       ResourceOperationContext resourceContext = buildContext(name, method, params);
       boolean authorized = accessControl.authorizeOperation(null, resourceContext);
       if (logger.isDebugEnabled()) {
-        logger.debug("Name=" + name + " methodName=" + methodName + " result=" + authorized + " principal="
-            + principal.getName());
+        logger.debug(
+            "Name=" + name + " methodName=" + methodName + " result=" + authorized + " principal=" + principal.getName());
       }
 
-      if (!authorized)
-        throw new SecurityException(ACCESS_DENIED_MESSAGE);
+      if (!authorized) throw new SecurityException(ACCESS_DENIED_MESSAGE);
       return resourceContext;
     }
-	}
+  }
 
 	public MBeanServerForwarder getMBeanServerForwarder() {
 		return mBeanServerForwarder;

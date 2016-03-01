@@ -310,7 +310,7 @@ public abstract class ResourceOperationContext extends OperationContext {
 		}
 	    
     public List<ResourceOperationCode> getChildren() {
-      return Collections.unmodifiableList(children);
+      return children != null ? Collections.unmodifiableList(children) : null;
     }
 
     public void addChild(ResourceOperationCode code) {

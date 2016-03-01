@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static org.jgroups.util.Util.readFile;
 import static org.junit.Assert.*;
 
 import java.lang.management.ManagementFactory;
@@ -62,9 +63,8 @@ public class AuthorizeOperationForRegionCommandsIntegrationTest {
   
   @Before
   public void setUp() {
-    System.setProperty("resource.secDescriptor", TestUtil.getResourcePath(getClass(), "auth3.json"));
-    System.setProperty("resource-auth-accessor", JSONAuthorization.class.getCanonicalName());
-    System.setProperty("resource-authenticator", JSONAuthorization.class.getCanonicalName());
+    System.setProperty("gemfire.security-client-accessor", JSONAuthorization.class.getName() + ".create");
+    System.setProperty("gemfire.security-client-authenticator", JSONAuthorization.class.getName() + ".create");
 
     Properties properties = new Properties();
     properties.put("name", testName.getMethodName());
@@ -95,26 +95,22 @@ public class AuthorizeOperationForRegionCommandsIntegrationTest {
   @Test
   public void testInheritRole() {
   }
-  
-  @Ignore("Test was dead-coded")
-  @Test
-  public void testUserMultipleRole() throws Exception {
-  }
-  
+
   @Test
   public void testAuthorizeOperationWithRegionOperations() throws Exception {
-    JSONAuthorization authorization = JSONAuthorization.create();       
+    String json = readFile(TestUtil.getResourcePath(getClass(), "auth3.json"));
+    JSONAuthorization authorization = new JSONAuthorization(json);
     authorization.init(new JMXPrincipal("tushark"), null, null);
     
     checkAccessControlMBean();
     
     CLIOperationContext cliContext = new CLIOperationContext("locate entry --key=k1 --region=region1");
     boolean result = authorization.authorizeOperation(null, cliContext);
-    assertTrue(result);
+    assertTrue("Operation not authorized", result);
 
     cliContext = new CLIOperationContext("locate entry --key=k1 --region=secureRegion");
     result = authorization.authorizeOperation(null, cliContext);
-    //assertFalse(result); //this is failing due to logic issue TODO: why is this commented out?
+    assertTrue("Operation not authorized", result);
 
     authorization.init(new JMXPrincipal("avinash"), null, null);
     result = authorization.authorizeOperation(null, cliContext);

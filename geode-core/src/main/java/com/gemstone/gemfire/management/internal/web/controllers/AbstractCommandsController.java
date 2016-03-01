@@ -17,29 +17,6 @@
 
 package com.gemstone.gemfire.management.internal.web.controllers;
 
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.ACCESS_DENIED_MESSAGE;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
-import java.net.URI;
-import java.security.Principal;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import javax.management.JMX;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-import javax.management.remote.JMXPrincipal;
-import javax.security.auth.Subject;
-
-import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
@@ -55,15 +32,10 @@ import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.management.internal.security.CLIOperationContext;
-import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperationContext;
 import com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor;
 import com.gemstone.gemfire.management.internal.web.controllers.support.MemberMXBeanAdapter;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.Authenticator;
-
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.http.HttpStatus;
@@ -75,7 +47,23 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
+
+import javax.management.JMX;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
+import java.net.URI;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * The AbstractCommandsController class is the abstract base class encapsulating common functionality across all

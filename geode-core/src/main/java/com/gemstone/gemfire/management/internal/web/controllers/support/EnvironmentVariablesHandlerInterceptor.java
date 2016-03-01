@@ -16,46 +16,24 @@
  */
 package com.gemstone.gemfire.management.internal.web.controllers.support;
 
-import java.lang.reflect.Method;
-import java.security.Principal;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.management.ManagementService;
+import com.gemstone.gemfire.management.internal.SystemManagementService;
+import com.gemstone.gemfire.security.Authenticator;
+import org.apache.logging.log4j.Logger;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import java.util.Map.Entry;
-
-import javax.management.remote.JMXPrincipal;
-import javax.security.auth.Subject;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
-
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.ClassLoadUtil;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.management.internal.security.CLIOperationContext;
-import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import com.gemstone.gemfire.security.Authenticator;
-
-import org.apache.logging.log4j.Logger;
+import java.util.Properties;
 
 /**
  * The GetEnvironmentHandlerInterceptor class handles extracting Gfsh environment variables encoded in the HTTP request

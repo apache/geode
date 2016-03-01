@@ -16,22 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.management.remote.JMXPrincipal;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
@@ -43,31 +27,45 @@ import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.management.remote.JMXPrincipal;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 public class JSONAuthorization implements AccessControl, Authenticator {
-	
+
 	public static class Role{
 		String[] permissions;
 		String name;
 		String regionName;
-		String serverGroup;		
+		String serverGroup;
 	}
-	
+
 	public static class User{
 		String name;
 		Role[] roles;
 		String pwd;
 	}
-	
+
 	private static Map<String,User> acl = null;
-	
+
 	public static JSONAuthorization create() throws IOException, JSONException {
 	  if(acl==null){
 	    readSecurityDescriptor(readDefault());
 	  }
 	  return new JSONAuthorization();
 	}
-	
+
   public JSONAuthorization() {
     if (acl == null) {
       try {
@@ -79,7 +77,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
       }
     }
   }
-	
+
 	public static Set<ResourceOperationCode> getAuthorizedOps(User user, ResourceOperationContext context) {
     Set<ResourceOperationCode> codeList = new HashSet<ResourceOperationCode>();
     for(Role role : user.roles) {
@@ -105,17 +103,18 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     LogService.getLogger().info("Final set of permisions " + codeList);
     return codeList;
   }
-	
-	private static void addPermissions(ResourceOperationCode code, Set<ResourceOperationCode> codeList) {
-	  if(code!=null) {
-      if(code.getChildren()==null)
-        codeList.add(code);
-      else {
-        for(ResourceOperationCode c : code.getChildren()){
-          codeList.add(c);
-        }
+
+  private static void addPermissions(ResourceOperationCode code, Set<ResourceOperationCode> codeList) {
+    if (code == null) {
+      return;
+    }
+
+    codeList.add(code);
+    if (code.getChildren() != null) {
+      for (ResourceOperationCode c : code.getChildren()) {
+        codeList.add(c);
       }
-    }    
+    }
   }
 
   private static String readDefault() throws IOException, JSONException {
@@ -132,13 +131,12 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 	public JSONAuthorization(String json) throws IOException, JSONException{
 		readSecurityDescriptor(json);
 	}
-	
 
-	private static void readSecurityDescriptor(String json) throws IOException, JSONException {		
-		JSONObject jsonBean = new JSONObject(json);		
-		acl = new HashMap<String,User>();		
+	private static void readSecurityDescriptor(String json) throws IOException, JSONException {
+		JSONObject jsonBean = new JSONObject(json);
+		acl = new HashMap<String,User>();
 		Map<String,Role> roleMap = readRoles(jsonBean);
-		readUsers(acl,jsonBean,roleMap);		
+		readUsers(acl,jsonBean,roleMap);
 	}
 
 	private static void readUsers(Map<String, User> acl, JSONObject jsonBean,
@@ -148,11 +146,12 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 			JSONObject obj = array.getJSONObject(i);
 			User user = new User();
 			user.name = obj.getString("name");
-			if(obj.has("password"))
-			  user.pwd = obj.getString("password");
-			else 
-			  user.pwd = user.name;
-			
+			if(obj.has("password")) {
+        user.pwd = obj.getString("password");
+      } else {
+        user.pwd = user.name;
+      }
+
 			JSONArray ops = obj.getJSONArray("roles");
 			user.roles = new Role[ops.length()];
 			for(int j=0;j<ops.length();j++){
@@ -163,7 +162,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 				}
 			}
 			acl.put(user.name, user);
-		}		
+		}
 	}
 
 	private static Map<String, Role> readRoles(JSONObject jsonBean) throws JSONException {
@@ -173,7 +172,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 			JSONObject obj = array.getJSONObject(i);
 			Role role = new Role();
 			role.name = obj.getString("name");
-			
+
 			if(obj.has("operationsAllowed")){
 				JSONArray ops = obj.getJSONArray("operationsAllowed");
 				role.permissions = new String[ops.length()];
@@ -187,18 +186,18 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 									+ role.name
 									+ " does not have any permission neither it inherits any parent role");
 			}
-			
+
 			roleMap.put(role.name,role);
-			
+
 			if(obj.has("region")){
 				role.regionName = obj.getString("region");
 			}
-			
+
 			if(obj.has("serverGroup")){
 				role.serverGroup = obj.getString("serverGroup");
 			}
 		}
-		
+
 		for(int i=0;i<array.length();i++){
 			JSONObject obj = array.getJSONObject(i);
 			String name = obj.getString("name");
@@ -207,7 +206,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 				throw new RuntimeException("Role not present "
 						+ role);
 			}
-			if(obj.has("inherit")){				
+			if(obj.has("inherit")){
 				JSONArray parentRoles = obj.getJSONArray("inherit");
 				for (int m = 0; m < parentRoles.length(); m++) {
 					String parentRoleName = parentRoles.getString(m);
@@ -234,56 +233,56 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 					role.permissions = str;
 				}
 			}
-			
-		}		
+
+		}
 		return roleMap;
 	}
 
 	public static Map<String, User> getAcl() {
 		return acl;
 	}
-	
+
 	private Principal principal=null;
 
   @Override
   public void close() {
-    
+
   }
 
   @Override
   public boolean authorizeOperation(String arg0, OperationContext context) {
-    
+
     if(principal!=null) {
       User user = acl.get(principal.getName());
       if(user!=null) {
         LogService.getLogger().info("Context received " + context);
         ResourceOperationContext ctx = (ResourceOperationContext)context;
         LogService.getLogger().info("Checking for code " + ctx.getResourceOperationCode());
-        
+
         //TODO : This is for un-annotated commands
         if(ctx.getResourceOperationCode()==null)
-          return true;        
-        
+          return true;
+
         boolean found = false;
         for(ResourceOperationCode code : getAuthorizedOps(user, (ResourceOperationContext) context)) {
           if(ctx.getResourceOperationCode().equals(code)){
             found =true;
             LogService.getLogger().info("found code " + code.toString());
             break;
-          }             
+          }
         }
         if(found)
           return true;
         LogService.getLogger().info("Did not find code " + ctx.getResourceOperationCode());
-        return false;        
+        return false;
       }
-    } 
+    }
     return false;
   }
 
   @Override
   public void init(Principal principal, DistributedMember arg1, Cache arg2) throws NotAuthorizedException {
-    this.principal = principal;    
+    this.principal = principal;
   }
 
   @Override
@@ -297,12 +296,12 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     if (user!=null && !userObj.pwd.equals(pwd) && !"".equals(user))
       throw new AuthenticationFailedException("Wrong username/password");
     LogService.getLogger().info("Authentication successful!! for " + user);
-    return new JMXPrincipal(user);    
+    return new JMXPrincipal(user);
   }
 
   @Override
-  public void init(Properties arg0, LogWriter arg1, LogWriter arg2) throws AuthenticationFailedException {   
-    
-  }	
+  public void init(Properties arg0, LogWriter arg1, LogWriter arg2) throws AuthenticationFailedException {
+
+  }
 
 }

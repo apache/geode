@@ -22,7 +22,6 @@ import java.util.concurrent.Callable;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.management.internal.security.CLIOperationContext;
 import com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor;
 
 import org.springframework.http.HttpStatus;

@@ -80,8 +80,8 @@ public class AuthorizeOperationForMBeansIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty("resource-auth-accessor", TestAccessControl.class.getName());
-    System.setProperty("resource-authenticator", TestAuthenticator.class.getName());
+    System.setProperty("gemfire.security-client-accessor", TestAccessControl.class.getName() + ".create");
+    System.setProperty("gemfire.security-client-authenticator", TestAuthenticator.class.getName() + ".create");
     
     Properties properties = new Properties();
     properties.put("name", this.testName.getMethodName());
@@ -263,6 +263,10 @@ public class AuthorizeOperationForMBeansIntegrationTest {
    */
   public static class TestAuthenticator implements Authenticator {
 
+    public static Authenticator create() {
+      return new TestAuthenticator();
+    }
+
     @Override
     public void close() {
     }
@@ -291,6 +295,10 @@ public class AuthorizeOperationForMBeansIntegrationTest {
 
     @Override
     public void close() {
+    }
+
+    public static AccessControl create() {
+      return new TestAccessControl();
     }
 
     @Override

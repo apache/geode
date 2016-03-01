@@ -47,6 +47,7 @@ import javax.management.remote.JMXServiceURL;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -56,6 +57,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * Test ReadOnly operations are accesible from RMI Connector with readOnly user
@@ -75,6 +77,9 @@ public class ReadOpFileAccessControllerJUnitTest {
 
   public static final String SERVICE_URLPREFIX = "service:jmx:rmi:///jndi/rmi:";
   private static final String NEW_LINE = System.getProperty("line.separator");
+
+  @Rule
+  public TemporaryFolder tempFolder = new TemporaryFolder();
   
   @Before
   public void setUp() throws Exception {
@@ -89,6 +94,7 @@ public class ReadOpFileAccessControllerJUnitTest {
     connector.close();
     rmiConnector.stop();
     cache.close();
+    ds.disconnect();
     UnicastRemoteObject.unexportObject(registry, true);
   }
   
@@ -145,12 +151,7 @@ public class ReadOpFileAccessControllerJUnitTest {
   }
 
   private void createConnector(String accessFileName, String pwFile) throws IOException {
-    
-    try {
-      registry = LocateRegistry.createRegistry(port);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    registry = LocateRegistry.createRegistry(port);
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
     String serviceUrl = SERVICE_URLPREFIX + "//" + hostname + ":" + port
         + "/jmxconnector";
@@ -169,8 +170,7 @@ public class ReadOpFileAccessControllerJUnitTest {
   }
   
   private String createAccessFile() throws IOException {
-    File file = new File("jmxremote.access");
-    assertTrue(file.createNewFile());
+    File file = tempFolder.newFile("jmxremote.access");
     BufferedWriter writer = new BufferedWriter(new FileWriter(file));
     writer.append("admin readwrite");
     writer.append(NEW_LINE);
@@ -182,8 +182,7 @@ public class ReadOpFileAccessControllerJUnitTest {
   }
   
   private String createPasswordFile() throws IOException {
-    File file = new File("jmxremote.password");
-    assertTrue(file.createNewFile());
+    File file = tempFolder.newFile("jmxremote.password");
     BufferedWriter writer = new BufferedWriter(new FileWriter(file));
     writer.append("admin admin");
     writer.append(NEW_LINE);

@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import javax.management.ObjectName;
 
@@ -52,9 +52,9 @@ public class OperationCodesForDistributedSystemMXBeanTest {
   private final ResourceOperationCode[] distributedSystemResourceOperationCodes = {
       ResourceOperationCode.LIST_DS, 
       ResourceOperationCode.LIST_DS, 
-      ResourceOperationCode.GET,
+      ResourceOperationCode.LIST_DS,
       ResourceOperationCode.QUERY,
-      ResourceOperationCode.GET,
+      ResourceOperationCode.LIST_DS,
       ResourceOperationCode.CHANGE_ALERT_LEVEL,
       ResourceOperationCode.BACKUP_MEMBERS,
       ResourceOperationCode.REVOKE_MISSING_DISKSTORE,
@@ -69,8 +69,8 @@ public class OperationCodesForDistributedSystemMXBeanTest {
     ObjectName objectName = MBeanJMXAdapter.getDistributedSystemName();
     for (int i = 0; i < distributedSystemMXBeanOperations.length; i++) {
       JMXOperationContext context = new JMXOperationContext(objectName, distributedSystemMXBeanOperations[i]);
-      assertThat(context.getResourceOperationCode()).isEqualTo(distributedSystemResourceOperationCodes[i]);
-      assertThat(context.getOperationCode()).isEqualTo(OperationCode.RESOURCE);
+      assertEquals(distributedSystemResourceOperationCodes[i], context.getResourceOperationCode());
+      assertEquals(OperationCode.RESOURCE, context.getOperationCode());
     }
   }
 }

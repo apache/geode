@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import com.gemstone.gemfire.security.AccessControl;
+
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.Principal;
@@ -31,11 +33,11 @@ import javax.security.auth.Subject;
  * @author tushark
  * @since 9.0
  */
-public class AccessControl implements AccessControlMXBean {
+public class AccessControlMBean implements AccessControlMXBean {
 
   private ManagementInterceptor interceptor;
 
-  public AccessControl(ManagementInterceptor interceptor) {
+  public AccessControlMBean(ManagementInterceptor interceptor) {
     this.interceptor = interceptor;
   }
 
@@ -48,7 +50,7 @@ public class AccessControl implements AccessControlMXBean {
       throw new SecurityException("Access denied");
     }
     Principal principal = principals.iterator().next();
-    com.gemstone.gemfire.security.AccessControl gemAccControl = interceptor.getAccessControl(principal, false);
+    AccessControl gemAccControl = interceptor.getAccessControl(principal, false);
     boolean authorized = gemAccControl.authorizeOperation(null,
         new com.gemstone.gemfire.management.internal.security.AccessControlContext(role));
     return authorized;

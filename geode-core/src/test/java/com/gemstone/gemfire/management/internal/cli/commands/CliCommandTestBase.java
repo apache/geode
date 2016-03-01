@@ -55,9 +55,7 @@ import java.util.regex.Pattern;
  * @author David Hoots
  * @author John Blum
  */
-public class CliCommandTestBase extends CacheTestCase {
-
-  private static final long serialVersionUID = 1L;
+public abstract class CliCommandTestBase extends CacheTestCase {
 
   protected static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
 
