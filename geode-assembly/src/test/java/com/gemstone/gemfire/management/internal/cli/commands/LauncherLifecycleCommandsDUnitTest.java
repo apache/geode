@@ -48,6 +48,7 @@ import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.runners.MethodSorters;
 
 import javax.management.MBeanServerConnection;
@@ -804,7 +805,8 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
   }
 
-  public void test013StartServerWithSpring() {
+  @Ignore("Disabled until GEODE-1025, SGF-476 are resolved")
+  public void IGNORE_test013StartServerWithSpring() {
     String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
     File workingDirectory = new File(pathname);
 
@@ -832,9 +834,13 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     assertNotNull(springGemFireServer);
 
     ServerState serverState = springGemFireServer.status();
-
+    
     assertNotNull(serverState);
     assertEquals(Status.ONLINE, serverState.getStatus());
+    
+    //Ensure the member name is what is set through spring
+    String logFile = serverState.getLogFile();
+    assertTrue("Log file name was not configured from spring context: " + logFile, logFile.contains("spring_server.log"));
 
     // Now that the GemFire Server bootstrapped with Spring started up OK, stop it!
     stopServer(springGemFireServer.getWorkingDirectory());

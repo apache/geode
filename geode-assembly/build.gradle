@@ -41,8 +41,16 @@ gradle.taskGraph.whenReady( { graph ->
   }
 })
 
+configurations {
+  bundled {
+    description 'A dependency that is shipped with geode, but is not required to compile'
+  }
+}
+
 dependencies {
   provided project(':geode-core')
+  bundled 'org.springframework.data:spring-data-commons:' + project.'spring-data-commons.version'
+  bundled 'org.springframework.data:spring-data-gemfire:' + project.'spring-data-gemfire.version'
   
   archives project(':geode-common')  
   archives project(':geode-json')  
@@ -284,12 +292,9 @@ distributions {
         from project(":geode-cq").configurations.archives.allArtifacts.files
 
         from project(":geode-core").configurations.runtime
-        // Copying from provided configuration is only for supporting Spring Data GemFire.
-        // If there are more dependencies added to provided configuration, this will need
-        // to change
-        from (project(":geode-core").configurations.provided) {
-          include 'spring-data-gemfire-*'
-        }
+
+        from configurations.bundled
+
         from project(":geode-core").configurations.archives.allArtifacts.files
         from project(":geode-core").webJar
         from project(":geode-core").raJar
