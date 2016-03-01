@@ -34,6 +34,7 @@ import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.ReplyException;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.pdx.PdxReader;
@@ -159,7 +160,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
       
       SerializableRunnable setSysProp = new CacheSerializableRunnable("Create Region") {
         public void run2() throws CacheException {
-          System.setProperty("gemfire.STORE_ALL_VALUE_FORMS", "true");
+          CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = true;
         }
       };
       
@@ -225,7 +226,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
     }finally {
       SerializableRunnable unsetSysProp = new CacheSerializableRunnable("Create Region") {
         public void run2() throws CacheException {
-          System.setProperty("gemfire.STORE_ALL_VALUE_FORMS", "false");          
+          CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = false;
         }
       };
       vm0.invoke(unsetSysProp);
