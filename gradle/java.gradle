@@ -92,11 +92,6 @@ subprojects {
     options.addStringOption('Xdoclint:none', '-quiet')
     options.encoding='UTF-8'
   }
-
-  dependencies {
-    compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
-    compile 'com.google.code.findbugs:jsr305:' + project.'jsr305.version'
-  }
 }
 
 

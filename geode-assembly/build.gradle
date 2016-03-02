@@ -316,9 +316,11 @@ distributions {
         from configurations.bundled
 
         from project(":geode-core").configurations.archives.allArtifacts.files
-        from project(":geode-core").webJar
-        from project(":geode-core").raJar
-        from project(":geode-core").jcaJar
+        //These tasks are included as closures (wrapped in {}) because gradle may evaluate
+        //this CopySpec before it evaluates the geode-core build file.
+        from { project(":geode-core").webJar }
+        from { project(":geode-core").raJar }
+        from { project(":geode-core").jcaJar }
         
         from project(":geode-lucene").configurations.runtime
         from project(":geode-lucene").configurations.archives.allArtifacts.files
