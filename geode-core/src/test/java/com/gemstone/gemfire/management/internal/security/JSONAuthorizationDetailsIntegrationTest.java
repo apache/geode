@@ -16,20 +16,19 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Map;
-
-import org.json.JSONException;
+import com.gemstone.gemfire.management.internal.security.JSONAuthorization.User;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization.User;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.Arrays;
+import java.util.Map;
+
+import static org.hamcrest.Matchers.hasItems;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 /**
  * Tests JSONAuthorization with JSON loaded from files.
@@ -39,8 +38,7 @@ public class JSONAuthorizationDetailsIntegrationTest {
 
   @Test
   public void testSimpleUserAndRole() throws Exception {
-    String json = readFile(TestUtil.getResourcePath(getClass(), "testSimpleUserAndRole.json"));
-    new JSONAuthorization(json); // static side effect
+    new JSONAuthorization("testSimpleUserAndRole.json");
     Map<String, User> acl = JSONAuthorization.getAcl();
     assertNotNull(acl);
     assertEquals(1, acl.size());
@@ -55,8 +53,7 @@ public class JSONAuthorizationDetailsIntegrationTest {
 
   @Test
   public void testUserAndRoleRegionServerGroup() throws Exception {
-    String json = readFile(TestUtil.getResourcePath(getClass(), "testUserAndRoleRegionServerGroup.json"));
-    new JSONAuthorization(json); // static side effect
+    new JSONAuthorization("testUserAndRoleRegionServerGroup.json");
     Map<String, User> acl = JSONAuthorization.getAcl();
     
     assertNotNull(acl);
@@ -75,8 +72,7 @@ public class JSONAuthorizationDetailsIntegrationTest {
 
   @Test
   public void testUserMultipleRole() throws Exception {
-    String json = readFile(TestUtil.getResourcePath(getClass(), "testUserMultipleRole.json"));
-    new JSONAuthorization(json); // static side effect
+    new JSONAuthorization("testUserMultipleRole.json");
     Map<String, User> acl = JSONAuthorization.getAcl();
     
     assertNotNull(acl);
@@ -97,19 +93,19 @@ public class JSONAuthorizationDetailsIntegrationTest {
 
     assertEquals(7, role.permissions.length);
     assertEquals("sysMonitors", role.name);
-    assertTrue(contains(role.permissions, "CMD_EXORT_LOGS"));
-    assertTrue(contains(role.permissions, "CMD_STACK_TRACES"));
-    assertTrue(contains(role.permissions, "CMD_GC"));
-    assertTrue(contains(role.permissions, "CMD_NETSTAT"));
-    assertTrue(contains(role.permissions, "CMD_SHOW_DEADLOCKS"));
-    assertTrue(contains(role.permissions, "CMD_SHOW_LOG"));
-    assertTrue(contains(role.permissions, "SHOW_METRICS"));
+    assertThat(Arrays.asList(role.permissions), hasItems(
+        "CMD_EXPORT_LOGS",
+        "CMD_STACK_TRACES",
+        "CMD_GC",
+        "CMD_NETSTAT",
+        "CMD_SHOW_DEADLOCKS",
+        "CMD_SHOW_LOG",
+        "SHOW_METRICS"));
   }
 
   @Test
   public void testInheritRole() throws Exception {
-    String json = readFile(TestUtil.getResourcePath(getClass(), "testInheritRole.json"));
-    new JSONAuthorization(json); // static side effect
+    new JSONAuthorization("testInheritRole.json");
     Map<String, User> acl = JSONAuthorization.getAcl();
     
     assertNotNull(acl);
@@ -138,26 +134,6 @@ public class JSONAuthorizationDetailsIntegrationTest {
     assertEquals("adminSG2", admin2.roles[0].name);
     assertEquals("SG2", admin2.roles[0].serverGroup);
     assertEquals(2, admin2.roles[0].permissions.length);
-    assertTrue(contains(admin2.roles[0].permissions, "CHANGE_LOG_LEVEL"));
-    assertTrue(contains(admin2.roles[0].permissions, "CMD_SHUTDOWN"));
-  }
-
-  private String readFile(String name) throws IOException, JSONException {
-    File file = new File(name);
-    FileReader reader = new FileReader(file);
-    char[] buffer = new char[(int) file.length()];
-    reader.read(buffer);
-    String json = new String(buffer);
-    reader.close();
-    return json;
-  }
-
-  private boolean contains(String[] permissions, String string) {
-    for (String str : permissions) {
-      if (str.equals(string)) {
-        return true;
-      }
-    }
-    return false;
+    assertThat(Arrays.asList(admin2.roles[0].permissions), hasItems("CHANGE_LOG_LEVEL", "CMD_SHUTDOWN"));
   }
 }

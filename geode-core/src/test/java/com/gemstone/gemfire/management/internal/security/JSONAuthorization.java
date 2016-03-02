@@ -27,6 +27,7 @@ import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.NotAuthorizedException;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,6 +42,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import static org.jgroups.util.Util.readFile;
 
 public class JSONAuthorization implements AccessControl, Authenticator {
 
@@ -128,7 +131,8 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 		return json;
 	}
 
-	public JSONAuthorization(String json) throws IOException, JSONException{
+	public JSONAuthorization(String jsonFileName) throws IOException, JSONException{
+    String json = readFile(TestUtil.getResourcePath(getClass(), jsonFileName));
 		readSecurityDescriptor(json);
 	}
 
@@ -304,4 +308,13 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
   }
 
+  private String readFile(String name) throws IOException, JSONException {
+    File file = new File(name);
+    FileReader reader = new FileReader(file);
+    char[] buffer = new char[(int) file.length()];
+    reader.read(buffer);
+    String json = new String(buffer);
+    reader.close();
+    return json;
+  }
 }

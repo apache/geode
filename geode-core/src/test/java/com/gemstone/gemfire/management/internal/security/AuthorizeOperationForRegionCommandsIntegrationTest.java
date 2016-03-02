@@ -91,15 +91,9 @@ public class AuthorizeOperationForRegionCommandsIntegrationTest {
     }
   }
   
-  @Ignore("Test was never implemented")
-  @Test
-  public void testInheritRole() {
-  }
-
   @Test
   public void testAuthorizeOperationWithRegionOperations() throws Exception {
-    String json = readFile(TestUtil.getResourcePath(getClass(), "auth3.json"));
-    JSONAuthorization authorization = new JSONAuthorization(json);
+    JSONAuthorization authorization = new JSONAuthorization("auth3.json");
     authorization.init(new JMXPrincipal("tushark"), null, null);
     
     checkAccessControlMBean();
