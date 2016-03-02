@@ -57,7 +57,7 @@ dependencies {
   provided 'org.apache.hadoop:hadoop-annotations:' + project.'hadoop.version'
   provided 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
   provided 'org.apache.hadoop:hadoop-mapreduce-client-core:' + project.'hadoop.version'
-  compile 'org.apache.hbase:hbase:' + project.'hbase.version'
+  provided 'org.apache.hbase:hbase:' + project.'hbase.version'
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
   runtime 'org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version'
@@ -72,13 +72,19 @@ dependencies {
   compile 'org.eclipse.jetty:jetty-webapp:' + project.'jetty.version'
   compile 'org.eclipse.jetty:jetty-xml:' + project.'jetty.version'
   compile 'org.fusesource.jansi:jansi:' + project.'jansi.version'
-  compile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  runtime 'org.springframework:spring-aop:' + project.'springframework.version'
   compile 'org.springframework.data:spring-data-commons:' + project.'spring-data-commons.version'
   provided 'org.springframework.data:spring-data-gemfire:' + project.'spring-data-gemfire.version'
+  compile 'org.springframework:spring-beans:' + project.'springframework.version' //only used in AbstractCommandsController
+  compile 'org.springframework:spring-context:' + project.'springframework.version'
+  compile 'org.springframework:spring-context-support:' + project.'springframework.version'
+  compile 'org.springframework:spring-core:' + project.'springframework.version'
+  runtime 'org.springframework:spring-expression:' + project.'springframework.version'
   compile 'org.springframework:spring-tx:' + project.'springframework.version'
+  compile 'org.springframework:spring-web:' + project.'springframework.version'
+  compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
   compile 'org.springframework.shell:spring-shell:' + project.'spring-shell.version'
   compile 'org.xerial.snappy:snappy-java:' + project.'snappy-java.version'
-  compile 'org.apache.hbase:hbase:' + project.'hbase.version'
  
   compile project(':geode-common')
   compile project(':geode-joptsimple')
