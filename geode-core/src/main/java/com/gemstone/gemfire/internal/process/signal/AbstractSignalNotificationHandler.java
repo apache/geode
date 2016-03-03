@@ -28,7 +28,6 @@ import java.util.Set;
 /**
  * The AbstractSignalNotificationHandler class...
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.process.signal.Signal
  * @see com.gemstone.gemfire.internal.process.signal.SignalEvent
  * @see com.gemstone.gemfire.internal.process.signal.SignalListener

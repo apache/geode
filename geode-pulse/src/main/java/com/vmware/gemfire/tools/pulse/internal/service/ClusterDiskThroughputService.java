@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletRequest;
  * Class ClusterDiskThroughput This class contains implementations for getting
  * cluster's current disk throughput details and its trend over time
  * 
- * @author Sachin K.
  * @since version 7.0.Beta
  */
 

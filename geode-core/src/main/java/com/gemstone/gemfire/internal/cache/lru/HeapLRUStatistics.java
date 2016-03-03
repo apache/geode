@@ -27,7 +27,6 @@ import com.gemstone.gemfire.*;
  *
  * @see com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController
  * @see com.gemstone.gemfire.internal.cache.lru.LRUCapacityController
- * @author Mitch Thomas
  * @since 4.0
  */
 public class HeapLRUStatistics extends LRUStatistics {

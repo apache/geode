@@ -23,8 +23,6 @@ import java.util.Map;
  * <code>CommandStatement</code> instance can be used multiple times to process
  * the same command string repeatedly.
  * 
- * @author Kirk Lund
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

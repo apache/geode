@@ -48,7 +48,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * A distributed test suite of test cases for testing the queue commands that are part of Gfsh.
  *
- * @author David Hoots
  * @since 8.0
  */
 public class QueueCommandsDUnitTest extends CliCommandTestBase {

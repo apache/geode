@@ -60,7 +60,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * (1) testPut() - Tests teh put() functionality for the partitioned region.
  * </P>
  * 
- * @author tapshank, modified by tnegi
  *  
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

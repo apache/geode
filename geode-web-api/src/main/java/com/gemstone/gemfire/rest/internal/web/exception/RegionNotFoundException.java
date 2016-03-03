@@ -20,7 +20,6 @@ package com.gemstone.gemfire.rest.internal.web.exception;
 /**
  * Indicates that Region does not found while trying to do some REST operation on that region.
  * <p/>
- * @author Nilkanth Patel
  * @since 8.0
  */
 @SuppressWarnings("unused")

@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
  * Function to be applied on all the statistic Threshold is valid for value
  * evaluated by function
  * 
- * @author Harsh Khanna
  */
 public final class FunctionDecoratorImpl extends BaseDecoratorImpl {
   private static final long serialVersionUID = -4857857489413081553L;

@@ -42,7 +42,6 @@ import junit.framework.TestCase;
 
 /**
  * 
- * @author sbawaska
  */
 @Category(IntegrationTest.class)
 public class IntegrationJUnitTest {

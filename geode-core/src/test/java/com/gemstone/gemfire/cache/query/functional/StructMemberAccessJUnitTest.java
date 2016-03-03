@@ -51,7 +51,6 @@ import com.gemstone.gemfire.cache.query.types.StructType;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author vaibhav
  */
 @Category(IntegrationTest.class)
 public class StructMemberAccessJUnitTest {

@@ -25,7 +25,6 @@ import com.gemstone.gemfire.GemFireException;
  * If you see this exception you should restart members that are
  * configured for hosting persistent replicates.
  * 
- * @author sbawaska
  * @since 7.0
  */
 public class PersistentReplicatesOfflineException extends GemFireException {

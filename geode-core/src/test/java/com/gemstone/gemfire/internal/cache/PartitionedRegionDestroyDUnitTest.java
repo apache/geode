@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * This test aims to test the destroyRegion functionality.
  * 
- * @author rreja, Created on Jan 18, 2006
  * 
  *  
  */

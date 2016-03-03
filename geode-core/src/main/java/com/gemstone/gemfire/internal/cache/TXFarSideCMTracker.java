@@ -66,7 +66,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  *
  * </ol>
  *
- * @author Mitch Thomas
  * @since 4.0
  * 
  */

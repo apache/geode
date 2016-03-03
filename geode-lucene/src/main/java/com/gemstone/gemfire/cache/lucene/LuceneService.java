@@ -64,7 +64,6 @@ import com.gemstone.gemfire.cache.GemFireCache;
  * The item of the list is either the domain object or instance of {@link LuceneResultStruct}
  * </pre>
  * 
- * @author Xiaojian Zhou
  *
  */
 @Experimental

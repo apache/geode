@@ -22,7 +22,6 @@ import com.gemstone.gemfire.GemFireException;
  * Indicates that the current connection has already been destroyed.
  * This exception should not propagate all the way back to the 
  * user, but is a signal to retry an attempt.
- * @author dsmith
  *
  */
 public class ConnectionDestroyedException extends GemFireException {

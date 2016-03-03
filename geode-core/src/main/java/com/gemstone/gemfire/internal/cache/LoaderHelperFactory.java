@@ -19,7 +19,6 @@
  * from a need to allow Partitioned Regions to generate a LoaderHelper that was
  * outside the context of the Region the loader invoked from.
  * @since 5.0
- * @author Mitch Thomas
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -30,7 +29,6 @@ import com.gemstone.gemfire.cache.LoaderHelper;
  * {@link com.gemstone.gemfire.cache.CacheLoader}.
  *  
  * @since 5.0
- * @author Mitch Thomas
  */
 public interface LoaderHelperFactory
 {

@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 
 /**
  * 
- * @author rishim
  * @since  8.1
  */
 public class SSLUtil {

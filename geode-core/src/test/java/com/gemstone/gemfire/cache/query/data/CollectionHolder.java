@@ -30,7 +30,6 @@ import com.gemstone.gemfire.*;
 
 /**
  *
- * @author kdeshpan
  */
 public class CollectionHolder implements Serializable, DataSerializable {
     

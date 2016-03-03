@@ -25,7 +25,6 @@ import javax.management.NotificationBroadcaster;
  * proxy implementations have to implement the sendNotification method.
  * 
  * 
- * @author rishim
  *
  */
 

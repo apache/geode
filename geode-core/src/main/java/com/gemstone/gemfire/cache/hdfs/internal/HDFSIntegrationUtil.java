@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Contains utility functions
  *
- * @author Hemant Bhanawat
  *
  */
 public class HDFSIntegrationUtil {

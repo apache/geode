@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * TxState on a datanode VM
  * 
- * @author vivekb
  * 
  */
 public class DistTXState extends TXState {

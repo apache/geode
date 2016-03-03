@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.internal.cli.MultipleValueAdapter;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 
 /**
- * @author Nikhil Jadhav
  *
  * @since 7.0
  * 

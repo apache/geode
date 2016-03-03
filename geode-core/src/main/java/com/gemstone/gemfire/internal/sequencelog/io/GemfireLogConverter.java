@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.sequencelog.Transition;
  * A utility to convert existing gemfire logs
  * into a graph logger file. This will help
  * me debug hydra runs more quickly. 
- * @author dsmith
  *
  */
 public class GemfireLogConverter {

@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Integration tests for LogService and how it configures and uses log4j2
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class LogServiceIntegrationJUnitTest {

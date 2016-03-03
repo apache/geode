@@ -123,7 +123,6 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
  * So, we refactored the code of those two subclasses into
  * <code>DistributionManager</code>.
  *
- * @author David Whitlock
  * @since 2.0
  *
  * @see DistributionMessage#process
@@ -2435,7 +2434,6 @@ public class DistributionManager
    * @see com.gemstone.gemfire.distributed.internal.DistributionManager.MemberCrashedEvent
    * @see com.gemstone.gemfire.distributed.internal.DistributionManager.MemberJoinedEvent
    * @see com.gemstone.gemfire.distributed.internal.DistributionManager.MemberDepartedEvent
-   * @author jpenney
    *
    */
   protected class MemberEventInvoker implements Runnable {
@@ -4364,7 +4362,6 @@ public class DistributionManager
   /**
    * This is the listener implementation for responding from events from
    * the Membership Manager.
-   * @author jpenney
    *
    */
   private final class MyListener implements DistributedMembershipListener {
@@ -4500,7 +4497,6 @@ public class DistributionManager
    * This is an event reflecting that a InternalDistributedMember has joined
    * the system.
    * 
-   * @author jpenney
    *
    */
   private static final class MemberJoinedEvent extends MemberEvent  {
@@ -4519,7 +4515,6 @@ public class DistributionManager
   
   /**
    * This is an event reflecting that a InternalDistributedMember has left the system.
-   * @author jpenney
    *
    */
   private static final class MemberDepartedEvent extends MemberEvent  {
@@ -4543,7 +4538,6 @@ public class DistributionManager
    * This is an event reflecting that a InternalDistributedMember has left the
    * system in an unexpected way.
    * 
-   * @author jpenney
    *
    */
   private static final class MemberCrashedEvent extends MemberEvent  {
@@ -4566,7 +4560,6 @@ public class DistributionManager
   /**
    * This is an event reflecting that a InternalDistributedMember may be missing
    * but has not yet left the system.
-   * @author bruce
    */
   private static final class MemberSuspectEvent extends MemberEvent {
     InternalDistributedMember whoSuspected;

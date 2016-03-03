@@ -21,7 +21,6 @@ import java.nio.ByteBuffer;
 /**
  * Used by a couple of our classes to say they can have
  * a ByteBuffer written to them. 
- * @author dschneider
  */
 public interface ByteBufferWriter {
   /**

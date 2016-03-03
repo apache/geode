@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 
 /**
  * Provides methods to execute AbstractOp instances on a client pool.
- * @author darrel
  * @since 5.7
  */
 public interface ExecutablePool {

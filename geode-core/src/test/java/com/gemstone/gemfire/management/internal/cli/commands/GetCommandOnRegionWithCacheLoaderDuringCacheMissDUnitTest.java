@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 'get' data command when a cache miss occurs on data in a Region with a CacheLoader defined.
  * <p>
  *
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase
  * @see com.gemstone.gemfire.management.internal.cli.commands.DataCommands
  * @since 8.0

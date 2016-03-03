@@ -20,7 +20,6 @@ import com.gemstone.gemfire.cache.execute.ResultSender;
 
 /**
  * 
- * @author ymahajan
  *
  */
 public interface InternalResultSender extends ResultSender<Object> {

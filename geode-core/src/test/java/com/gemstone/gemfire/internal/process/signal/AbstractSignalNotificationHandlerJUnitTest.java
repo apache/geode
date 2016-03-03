@@ -35,7 +35,6 @@ import org.junit.experimental.categories.Category;
  * The AbstractSignalNotificationHandlerJUnitTest class is a test suite of test cases testing the contract
  * and functionality of the AbstractSignalNotificationHandler.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.process.signal.AbstractSignalNotificationHandler
  * @see com.gemstone.gemfire.internal.process.signal.Signal
  * @see com.gemstone.gemfire.internal.process.signal.SignalEvent

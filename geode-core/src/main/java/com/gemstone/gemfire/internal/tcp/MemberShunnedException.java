@@ -24,7 +24,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * MemberShunnedException may be thrown to prevent ack-ing a message
  * received from a member that has been removed from membership.  It
  * is currently only thrown by JGroupMembershipManager.processMessage()
- * @author bruce
  */
 public class MemberShunnedException extends GemFireException
 {

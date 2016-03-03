@@ -28,8 +28,6 @@ import java.util.*;
  * LogFileParser.LogEntry}s.  It behaves sort of like an {@link
  * java.util.StringTokenizer}. 
  *
- * @author David Whitlock
- * @author Bruce Schuchardt
  *
  * @since 3.0
  */

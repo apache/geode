@@ -42,7 +42,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * TRAC bug #51967 which is caused by a JDK bug. The test {@link #hangsOnWindows}
  * verifies the existence of the bug.
  * 
- * @author Kirk Lund
  * @since 8.2
  */
 @Category(IntegrationTest.class)

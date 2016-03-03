@@ -55,7 +55,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * @see StatAlertDefinition
  * @see StatAlert
  * 
- * @author mjha
  * 
  * @since 5.7
  */
@@ -345,7 +344,6 @@ public class StatAlertsManager {
   /**
    * Timer task to send all the alerts raised to {@link StatAlertsAggregator}
    * 
-   * @author mjha
    */
   class EvaluateAlertDefnsTask extends SystemTimerTask {
     /**

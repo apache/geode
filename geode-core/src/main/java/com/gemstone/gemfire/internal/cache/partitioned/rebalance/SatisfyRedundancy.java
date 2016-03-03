@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * A director to create redundant copies for buckets that are low in redundancy
  * level. This is most commonly used as an element of the composite director.
- * @author dsmith
  *
  */
 public class SatisfyRedundancy extends RebalanceDirectorAdapter {

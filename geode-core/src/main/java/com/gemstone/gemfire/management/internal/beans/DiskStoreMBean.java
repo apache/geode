@@ -26,7 +26,6 @@ import com.gemstone.gemfire.management.DiskStoreMXBean;
  * persistence attributes. A region without a disk store name belongs to the
  * default disk store.
  * 
- * @author rishim
  * 
  */
 public class DiskStoreMBean extends NotificationBroadcasterSupport implements

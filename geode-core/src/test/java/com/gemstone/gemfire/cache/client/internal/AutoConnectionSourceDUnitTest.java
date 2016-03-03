@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * Tests cases that are particular for the auto connection source
  * - dynamically discovering servers, locators, handling 
  * locator disappearance, etc.
- * @author dsmith
  *
  */
 public class AutoConnectionSourceDUnitTest extends LocatorTestBase {

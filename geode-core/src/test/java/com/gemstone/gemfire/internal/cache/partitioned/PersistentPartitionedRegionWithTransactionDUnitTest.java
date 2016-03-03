@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Tests the basic use cases for PR persistence.
- * @author dsmith
  *
  */
 public class PersistentPartitionedRegionWithTransactionDUnitTest extends PersistentPartitionedRegionTestBase {

@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * and NotifyBySubscription is false then it follows normal path and then again calls put of region
  * on which regionqueue is based. so recurssion is happening.
  *
- * @author Girish Thombare
  */
 
 public class HABugInPutDUnitTest extends DistributedTestCase

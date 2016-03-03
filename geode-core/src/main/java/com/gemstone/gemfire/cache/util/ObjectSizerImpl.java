@@ -23,7 +23,6 @@ package com.gemstone.gemfire.cache.util;
  * This implementation is slow and may cause throughput numbers to drop if used on
  * complex objects.
  *
- * @author Sudhir Menon
  *
  * @deprecated use {@link ObjectSizer#DEFAULT} instead.
  */

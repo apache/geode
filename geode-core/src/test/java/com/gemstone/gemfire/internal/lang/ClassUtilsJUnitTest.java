@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * The ClassUtilsJUnitTest class is a test suite with test cases to test the contract and functionality of the ClassUtils
  * class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.lang.ClassUtils
  * @see org.junit.Assert
  * @see org.junit.Test

@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 /**
  * A data structure used to hold load information for a locator
  * 
- * @author dsmith
  * @since 5.7
  * 
  */

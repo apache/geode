@@ -33,8 +33,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
  * A generic comparator class which compares two Object/StructImpl according to
  * their sort criterion specified in order by clause
  * 
- * @author yogesh
- * @author asif
  */
 public class OrderByComparator implements Comparator {
   private final ObjectType objType;

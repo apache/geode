@@ -24,7 +24,6 @@ import com.gemstone.gemfire.management.internal.beans.stats.StatsKey;
 /**
  * Concrete implementation of AsyncEventQueueMXBean
  * 
- * @author rishim
  * 
  */
 public class AsyncEventQueueMBean extends NotificationBroadcasterSupport

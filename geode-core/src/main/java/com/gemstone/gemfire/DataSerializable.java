@@ -80,7 +80,6 @@ import java.io.*;
  * @see DataSerializer
  * @see Instantiator
  *
- * @author David Whitlock
  * @since 3.5 */
 public interface DataSerializable extends Serializable {
 

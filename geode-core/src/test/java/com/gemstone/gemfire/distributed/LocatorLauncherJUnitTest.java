@@ -39,8 +39,6 @@ import org.junit.rules.TestName;
  * The LocatorLauncherJUnitTest class is a test suite of test cases for testing the contract and functionality of
  * launching a GemFire Locator.
  *
- * @author John Blum
- * @author Kirk Lund
  * @see com.gemstone.gemfire.distributed.LocatorLauncher
  * @see com.gemstone.gemfire.distributed.LocatorLauncher.Builder
  * @see com.gemstone.gemfire.distributed.LocatorLauncher.Command

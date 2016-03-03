@@ -38,7 +38,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Test to make sure dynamic regions work
  *
- * @author darrel
  * @since 4.3
  */
 public class DynamicRegionDUnitTest extends CacheTestCase {

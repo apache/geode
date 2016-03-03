@@ -38,7 +38,6 @@ import java.util.Set;
  * Abstract class that contains common code that all true implementations
  * of {@link CacheServer} can use.
  *
- * @author darrel
  * @since 5.7
  */
 public abstract class AbstractCacheServer implements CacheServer {

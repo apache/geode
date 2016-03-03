@@ -22,7 +22,6 @@ import com.gemstone.gemfire.GemFireCheckedException;
 /**
  * Thrown during by the query engine during parsing or execution.
  * Instances of subclasses are thrown for more specific exceptions.
- * @author Eric Zoerner
  * @since 4.0
  */
 

@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletRequest;
  * This class contains implementations for getting Memeber's current Disk
  * Throughput trends over the time.
  * 
- * @author Sachin K
  * @since version 7.5
  */
 @Component

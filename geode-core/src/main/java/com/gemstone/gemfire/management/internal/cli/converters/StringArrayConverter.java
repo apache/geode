@@ -25,7 +25,6 @@ import com.gemstone.gemfire.management.cli.ConverterHint;
 import com.gemstone.gemfire.management.internal.cli.MultipleValueAdapter;
 
 /**
- * @author Nikhil Jadhav
  *
  * @since 7.0
  * 

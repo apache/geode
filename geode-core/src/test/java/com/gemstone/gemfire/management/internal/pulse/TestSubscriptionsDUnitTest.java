@@ -51,7 +51,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * This is for testing subscriptions
  * 
- * @author ajayp
  * 
  */
 

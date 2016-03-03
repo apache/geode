@@ -60,7 +60,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Test client to server flow for delta propogation
  * 
- * @author aingle
  * @since 6.1
  */
 public class ClientToServerDeltaDUnitTest extends DistributedTestCase {

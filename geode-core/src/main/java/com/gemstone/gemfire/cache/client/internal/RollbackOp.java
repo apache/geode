@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 /**
  * Does a Rollback on the server
  * @since 6.6
- * @author sbawaska
  */
 public class RollbackOp {
 

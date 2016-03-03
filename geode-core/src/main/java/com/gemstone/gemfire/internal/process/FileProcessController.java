@@ -35,7 +35,6 @@ import com.gemstone.gemfire.lang.AttachAPINotFoundException;
  * Controls a {@link ControllableProcess} using files to communicate between
  * processes.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 public class FileProcessController implements ProcessController {

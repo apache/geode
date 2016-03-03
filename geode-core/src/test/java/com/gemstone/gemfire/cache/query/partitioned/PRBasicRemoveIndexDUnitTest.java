@@ -24,7 +24,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Basic funtional test for removing index from a partitioned region system.
- * @author rdubey
  * 
  */
 public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase

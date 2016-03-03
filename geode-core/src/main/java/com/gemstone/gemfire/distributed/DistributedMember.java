@@ -24,7 +24,6 @@ import java.util.Set;
  * system. A process becomes a member by calling {@link 
  * DistributedSystem#connect}.
  * 
- * @author Kirk Lund
  * @since 5.0
  */
 public interface DistributedMember extends Comparable<DistributedMember> {

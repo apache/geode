@@ -57,7 +57,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 
  * Extracted from DistributedTestCase.
  * 
- * @author Mitch Thomas
  * @since 5.7bugfix
  */
 @SuppressWarnings("serial")

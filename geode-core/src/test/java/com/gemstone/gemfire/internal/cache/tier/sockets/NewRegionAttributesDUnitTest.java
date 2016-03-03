@@ -38,8 +38,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * This tests that basic entry operations work properly when regions are
  * configured with newly added RegionAttributes in a P2P environment.
  * 
- * @author Dinesh Patel
- * @author Suyog Bhokare
  */
 public class NewRegionAttributesDUnitTest extends DistributedTestCase
 {

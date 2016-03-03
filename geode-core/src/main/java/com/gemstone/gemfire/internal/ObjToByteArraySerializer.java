@@ -22,7 +22,6 @@ import java.io.*;
 /** ObjToByteArraySerializer allows an object to be serialized as a byte array
  * so that the other side sees a byte array arrive.
  *
- *  @author Darrel
  *  @since 5.0.2
  * 
  */

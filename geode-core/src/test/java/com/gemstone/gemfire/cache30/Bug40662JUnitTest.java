@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * attributes by CacheXmlParser when cache.xml has eviction attributes with no
  * eviction action specified. which was being set to EvictionAction.NONE
  * 
- * @author shoagarwal
  * @since 6.6
  */
 @Category(IntegrationTest.class)

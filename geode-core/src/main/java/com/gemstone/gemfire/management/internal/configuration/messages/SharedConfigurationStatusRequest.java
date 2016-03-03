@@ -24,7 +24,6 @@ import com.gemstone.gemfire.DataSerializable;
 
 /****
  * 
- * @author bansods
  *
  */
 public class SharedConfigurationStatusRequest implements DataSerializable {

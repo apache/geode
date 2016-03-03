@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile
 /**
  * Distributed cache object (typically a <code>Region</code>) which uses
  * a {@link CacheDistributionAdvisor}.
- * @author Kirk Lund
  * @since 5.1
  */
 public interface CacheDistributionAdvisee extends DistributionAdvisee {

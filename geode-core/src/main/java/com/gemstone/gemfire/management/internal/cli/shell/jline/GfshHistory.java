@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 /**
  * Overrides jline.History to add History without newline characters.
  * 
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 public class GfshHistory extends MemoryHistory {

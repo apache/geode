@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.CacheException;
 /**
  * An exception thrown by a <code>RegionQueue</code>.
  *
- * @author Barry Oglesby
  *
  * @since 4.2
  */

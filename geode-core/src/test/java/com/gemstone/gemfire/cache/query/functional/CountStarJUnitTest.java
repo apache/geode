@@ -49,7 +49,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * This test runs {Select COUNT(*) from /regionName [where clause]} queries
  * on different types of regions with and without multiple indexes.
  * 
- * @author shobhit
  *
  */
 @Category(IntegrationTest.class)

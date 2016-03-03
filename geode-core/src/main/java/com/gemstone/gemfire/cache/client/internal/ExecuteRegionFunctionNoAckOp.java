@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Does a Execution of function on server region
  * It does not get the resul from the server (follows Fire&Forget approch)
- * @author Kishor Bachhav
  * @since 5.8Beta
  */
 public class ExecuteRegionFunctionNoAckOp {

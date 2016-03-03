@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletRequest;
  * This class contains implementations of getting Cluster's GC Pauses (JVM
  * Pauses) Details and its trend over the time.
  * 
- * @author Anchal G
  * @since version 7.5
  */
 

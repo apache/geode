@@ -35,7 +35,6 @@ import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
 
 /**
  * 
- * @author rishim
  */
 public class PartitionedRegionBridge<K, V>  extends RegionMBeanBridge<K, V> {  
 

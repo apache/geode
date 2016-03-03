@@ -45,7 +45,6 @@ import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
  * pre-operation callbacks. It also checks for authorization in case of
  * failover.
  * 
- * @author sumedh
  * @since 5.5
  */
 public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {

@@ -31,7 +31,6 @@ import java.io.*;
  * Jakarta Commons Modeler and generates an HTML file that documents
  * each MBean.
  *
- * @author David Whitlock
  * @since 3.5
  */
 public class GenerateMBeanHTML extends DefaultHandler {

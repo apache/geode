@@ -35,7 +35,6 @@ import com.gemstone.gemfire.management.PersistentMemberDetails;
  *
  * It is provided with one bridge reference which acts as an intermediate for
  * JMX and GemFire.
- * @author rishim
  *
  */
 public class DistributedSystemMBean extends NotificationBroadcasterSupport

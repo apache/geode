@@ -22,15 +22,14 @@ package com.gemstone.gemfire.internal.datasource;
  * pooling. 2) Datasource with pooled connections. 3) Datasource with pooled
  * connection and transaction capabilities.
  * 
- * @author tnegi
- * @author Asif : The invokeAllMethods was setting only some specific properties
+ *         The invokeAllMethods was setting only some specific properties
  *         Modified the code so that any key value mentioned in <property>tag
  *         is attempted for setting. If the property has a key as serverName ,
  *         then the setter method is invoked with the name setServerName & the
  *         value present in value attribute is passed Made the Exception
  *         handling robust
  * 
- * @author rreja : Changed invokeAllMethods wrt the change in cache.xml for
+ *         Changed invokeAllMethods wrt the change in cache.xml for
  *         vendor specific properties.
  *  
  */

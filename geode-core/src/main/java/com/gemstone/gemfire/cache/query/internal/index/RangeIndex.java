@@ -62,8 +62,6 @@ import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author vaibhav
- * @author asif
  */
 public class RangeIndex extends AbstractIndex  {
 

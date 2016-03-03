@@ -30,7 +30,6 @@ import com.gemstone.gemfire.DataSerializer;
  * for the data but it is also serializable and comparable so it is able to be used
  * in querying
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayWrapper> {

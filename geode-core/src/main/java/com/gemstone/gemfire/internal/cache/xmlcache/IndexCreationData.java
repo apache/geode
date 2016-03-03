@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.query.IndexStatistics;
 import com.gemstone.gemfire.cache.query.IndexType;
 
 /**
- * @author asifs
  * 
  * This class contains the information needed to create an index It will
  * contain the callback data between <index></index> invocation

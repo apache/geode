@@ -36,7 +36,6 @@ import java.util.*;
  * specific <code>Region</code> created. In this case the <code>Role</code> is
  * considered to be absent for that <code>Region</code>.
  *
- * @author Kirk Lund
  * @see com.gemstone.gemfire.distributed.Role
  * @since 5.0
  */

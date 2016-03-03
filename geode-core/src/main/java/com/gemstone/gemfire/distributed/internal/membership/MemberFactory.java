@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
  * TODO: need to implement a real factory implementation based on gemfire.properties
  * 
  * @see com.gemstone.gemfire.distributed.internal.membership.NetMember
- * @author D. Jason Penney
  */
 public class MemberFactory {
   

@@ -23,7 +23,6 @@ import java.util.concurrent.CountDownLatch;
  * two threads have both reached expected code before proceeding.  Unlike a
  * barrier pattern, the threads can be allowed to proceed independently.
  *  
- * @author bakera
  */
 public class DelayedAction implements Runnable {
   private final CountDownLatch hit = new CountDownLatch(1);

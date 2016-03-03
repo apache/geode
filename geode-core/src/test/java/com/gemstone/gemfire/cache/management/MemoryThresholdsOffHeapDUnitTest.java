@@ -86,7 +86,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Tests the Off-Heap Memory thresholds of {@link ResourceManager}
  * 
- * @author David Hoots
  * @since 9.0
  */
 public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {

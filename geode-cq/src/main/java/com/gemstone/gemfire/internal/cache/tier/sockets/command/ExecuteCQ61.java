@@ -50,7 +50,6 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 
 
 /**
- * @author aingle
  * @since 6.1
  */
 

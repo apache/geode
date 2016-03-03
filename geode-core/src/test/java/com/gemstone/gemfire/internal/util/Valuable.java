@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.util;
  * value associated with them.  This interface is not considered to be
  * a "user class".
  *
- * @author David Whitlock
  *
  * @since 2.0.3
  */

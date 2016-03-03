@@ -30,8 +30,6 @@ package com.gemstone.gemfire;
  * <P>
  * <code>StatisticDescriptor</code>s are naturally ordered by their name.
  *
- * @author David Whitlock
- * @author Darrel Schneider
  *
  * @since 3.0
  */

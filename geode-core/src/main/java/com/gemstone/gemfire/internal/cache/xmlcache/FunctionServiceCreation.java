@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 
 /**
  * FunctionServiceCreation to be used in CacheXmlParser
- * @author skumar
  *
  */
 public class FunctionServiceCreation {

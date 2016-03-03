@@ -56,7 +56,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 /**
  * The QueryingController class serves all HTTP REST requests related to the gemfire querying
  * <p/>
- * @author Nilkanth Patel, john blum
  * @see org.springframework.stereotype.Controller
  * @since 8.0
  */

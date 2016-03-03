@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Test verifies Region#query()for PartitionedRegion on a single VM with
  * Region#destroyRegion() being called on the same with some delay.
  * 
- * @author pbatra
  * 
  */
 @Category(IntegrationTest.class)

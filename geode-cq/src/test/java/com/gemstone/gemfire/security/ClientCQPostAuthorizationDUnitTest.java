@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * This is for multiuser-authentication
  * 
- * @author ashetkar
  *
  */
 public class ClientCQPostAuthorizationDUnitTest extends

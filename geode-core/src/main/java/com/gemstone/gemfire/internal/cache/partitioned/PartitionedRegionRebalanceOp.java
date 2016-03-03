@@ -78,7 +78,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * There is also a FPRDirector that creates buckets and moves primaries for
  * fixed partititioned regions.
  * 
- * @author dsmith
  *
  */
 @SuppressWarnings("synthetic-access")
@@ -706,7 +705,6 @@ public class PartitionedRegionRebalanceOp {
   /**
    * A wrapper class which delegates actual bucket operations to the enclosed BucketOperator,
    * but keeps track of statistics about how many buckets are created, transfered, etc.
-   * @author dsmith
    *
    */
   private class BucketOperatorWrapper implements 

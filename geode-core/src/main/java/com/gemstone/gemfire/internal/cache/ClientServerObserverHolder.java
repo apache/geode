@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.query.internal.Support;
  * needed, this member variable should point to an object with 'do-nothing'
  * methods, such as ClientServerObserverAdapter.
  * 
- * @author Yogesh Mahajan
  * @since 5.1
  */
 public class ClientServerObserverHolder

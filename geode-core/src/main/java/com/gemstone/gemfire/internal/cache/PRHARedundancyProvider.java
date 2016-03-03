@@ -100,7 +100,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * distributed system gracefully. i.e. Cache.close()</br><br>
  * (4) Redundancy management at random node failure.</br>
  * 
- * @author tnegi, Mitch Thomas
  */
 public class PRHARedundancyProvider
   {
@@ -2170,7 +2169,6 @@ public class PRHARedundancyProvider
   
   /**
    * Monitors distributed membership for a given bucket
-   * @author mthomas
    *
    */
   private class BucketMembershipObserver implements MembershipListener {

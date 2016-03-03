@@ -32,8 +32,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.GatewayReceiverCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * 
  * @since 7.0
  */

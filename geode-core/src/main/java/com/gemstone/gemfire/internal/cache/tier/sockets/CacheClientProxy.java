@@ -112,7 +112,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * the client. It then reads those messages from the queue and sends them to the
  * client.
  *
- * @author Barry Oglesby
  *
  * @since 4.2
  */

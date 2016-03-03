@@ -55,7 +55,6 @@ import java.util.Properties;
  * <code>DistributedSystemConfig</code> object can be made by invoking
  * the {@link #clone} method.
  *
- * @author    Kirk Lund
  * @since 3.5 
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
 */

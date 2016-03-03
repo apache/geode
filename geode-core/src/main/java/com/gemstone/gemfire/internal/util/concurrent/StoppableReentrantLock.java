@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.Assert;
  * Instances of {@link java.util.concurrent.locks.Lock}
  * that respond to cancellations
  * 
- * @author jpenney
  */
 public class StoppableReentrantLock {
   /**

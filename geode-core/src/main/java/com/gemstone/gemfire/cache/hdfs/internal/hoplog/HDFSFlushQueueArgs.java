@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * Defines the arguments to the flush queue request.
  * 
- * @author bakera
  */
 @SuppressWarnings("serial")
 public class HDFSFlushQueueArgs implements VersionedDataSerializable {

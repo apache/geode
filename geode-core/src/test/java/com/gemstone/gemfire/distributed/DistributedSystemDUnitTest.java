@@ -61,7 +61,6 @@ import org.junit.experimental.categories.Category;
  *
  * @see InternalDistributedSystemJUnitTest
  *
- * @author David Whitlock
  */
 @Category(DistributedTest.class)
 public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {

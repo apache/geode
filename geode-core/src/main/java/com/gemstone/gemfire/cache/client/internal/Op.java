@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache.client.internal;
  * An operation to perform on a server. Used by
  * {@link ExecutablePool} to attempt the operation on 
  * multiple servers until the retryAttempts is exceeded.
- * @author dsmith
  * @since 5.7
  *
  */

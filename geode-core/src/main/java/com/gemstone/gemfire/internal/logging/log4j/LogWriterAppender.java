@@ -37,8 +37,6 @@ import com.gemstone.gemfire.internal.logging.PureLogWriter;
 /**
  * A Log4j Appender which will copy all output to a LogWriter.
  * 
- * @author David Hoots
- * @author Kirk Lund
  */
 public class LogWriterAppender extends AbstractAppender implements PropertyChangeListener {
   private static final org.apache.logging.log4j.Logger logger = LogService.getLogger();

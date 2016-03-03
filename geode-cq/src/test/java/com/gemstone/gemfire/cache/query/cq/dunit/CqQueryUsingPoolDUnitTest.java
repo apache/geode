@@ -83,7 +83,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * a data loader. The client creates the same region and attaches the connection pool.
  * 
  *
- * @author anil
  */
 public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
   

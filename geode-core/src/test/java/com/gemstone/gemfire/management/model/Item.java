@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.model;
 import java.io.Serializable;
 
 /**
- * @author rishim
  *
  */
 public class Item implements Serializable {

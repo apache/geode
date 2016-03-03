@@ -26,7 +26,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
  * Helper class to build command strings, used in the Dunits for testing gfsh
  * commands
  * 
- * @author Saurabh Bansod
  * 
  * @since 7.0
  */

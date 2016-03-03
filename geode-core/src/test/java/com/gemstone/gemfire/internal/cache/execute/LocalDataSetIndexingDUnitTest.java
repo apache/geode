@@ -72,7 +72,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * 
- * @author ymahajan
  * 
  */
 public class LocalDataSetIndexingDUnitTest extends CacheTestCase {

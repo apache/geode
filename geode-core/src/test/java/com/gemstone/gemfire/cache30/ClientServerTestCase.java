@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * test case was created by refactoring methods from ConnectionPoolDUnitTest into
  * this class.
  *
- * @author Kirk Lund
  * @since 4.2.1
  */
 public class ClientServerTestCase extends CacheTestCase {

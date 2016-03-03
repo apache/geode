@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * 
- * @author ashetkar
  * 
  */
 public class Bug51400DUnitTest extends DistributedTestCase {

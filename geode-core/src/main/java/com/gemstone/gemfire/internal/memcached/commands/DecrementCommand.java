@@ -41,7 +41,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
  * Also, the item must already exist for incr/decr to work; these commands won't pretend
  * that a non-existent key exists with value 0; instead, they will fail.
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class DecrementCommand extends AbstractCommand {

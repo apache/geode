@@ -33,7 +33,6 @@ import com.gemstone.gemfire.cache.query.Struct;
 /**
  * This is a safe encoder and decoder for all redis matching needs
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public class Coder {

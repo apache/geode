@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.tcp.ImmutableByteBufferInputStream;
 /**
  * Used by PdxReaderImpl to manage the raw bytes of a PDX.
  * 
- * @author darrel
  * @since 6.6
  */
 public class PdxInputStream extends ImmutableByteBufferInputStream {

@@ -22,7 +22,6 @@ import java.util.Set;
 /**
  * OperationContext for Function execution operation. This is for the pre-operation case
  * 
- * @author Yogesh Mahajan
  * @since 6.0
  *
  */

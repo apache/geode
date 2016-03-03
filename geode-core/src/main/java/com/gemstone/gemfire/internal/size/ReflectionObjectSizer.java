@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.size.ObjectGraphSizer.ObjectFilter;
  * For objects that are all approximately the same size, consider using
  * {@link SizeClassOnceObjectSizer}
  * 
- * @author dsmith
  * 
  */
 public class ReflectionObjectSizer implements ObjectSizer, Serializable {

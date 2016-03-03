@@ -46,7 +46,6 @@ import com.gemstone.gemfire.pdx.internal.json.PdxToJSON;
  * JSON objects are converted into PdxInstance
  * JSON arrays are converted into List.
  *  
- *  @author hiteshk
  */
 
 public class JSONFormatter {

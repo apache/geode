@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache;
  * signal that the current transaction should be aborted.
  * 
  * @see TransactionWriter#beforeCommit
- * @author gregp
  * @since 6.5
  *
  */

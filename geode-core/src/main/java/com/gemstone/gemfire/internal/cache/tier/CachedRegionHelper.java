@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.cache.InternalCache;
 /**
  * Helper class that maintains a weak hashmap of referenced regions
  *
- * @author Sudhir Menon
  * @since 2.0.2
  */
 public class CachedRegionHelper {

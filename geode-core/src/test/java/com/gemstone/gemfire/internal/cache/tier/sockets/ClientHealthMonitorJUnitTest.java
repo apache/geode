@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * This is a functional-test for <code>ClientHealthMonitor</code>.
  * 
- * @author dpatel
  * 
  */
 @Category(IntegrationTest.class)

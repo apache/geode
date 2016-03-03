@@ -24,7 +24,6 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 /**
  * Current use of this class is limited to ignoring the Bulk DML operations. 
  * 
- * @author hemantb
  *
  */
 public class HDFSEventQueueFilter implements GatewayEventFilter{

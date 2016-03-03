@@ -91,7 +91,6 @@ import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
 /**
  * Represents a GemFire distributed system for remote administration/management.
  *
- * @author    Kirk Lund
  * @since     3.5
  */
 public class AdminDistributedSystemImpl

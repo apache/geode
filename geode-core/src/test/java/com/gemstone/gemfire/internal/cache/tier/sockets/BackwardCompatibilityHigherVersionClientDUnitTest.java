@@ -40,7 +40,6 @@ import com.gemstone.gemfire.cache.client.internal.ConnectionFactoryImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 
 /**
- * @author Pallavi
  * 
  * Test to verify that server responds to a higher versioned client.
  */

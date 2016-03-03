@@ -54,7 +54,6 @@ import com.gemstone.gemfire.cache.query.*; // for javadocs
  * <li>{@link Region#registerInterestRegex(String, InterestResultPolicy, boolean)}
  * </ul>
  *
- * @author darrel
  * @since 5.7
  */
 public interface PoolFactory {

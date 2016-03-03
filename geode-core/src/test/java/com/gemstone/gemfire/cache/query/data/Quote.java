@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache.query.data;
 
 /**
  *
- * @author  prafulla
  */
 import java.util.*;
 import java.io.Serializable;

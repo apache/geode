@@ -69,7 +69,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * This code was factored out of GossipServer.java to allow multiple handlers to
  * share the same gossip server port.
  * 
- * @author dsmith
  * @since 5.7
  * 
  */

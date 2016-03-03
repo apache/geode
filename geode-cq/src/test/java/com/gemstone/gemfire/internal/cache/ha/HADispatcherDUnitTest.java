@@ -77,7 +77,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 8. close client1 and client2
  * 9. close server1 and server2
  *
- *  @author Girish Thombare
  */
 
 public class HADispatcherDUnitTest extends DistributedTestCase

@@ -30,7 +30,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
- * @author gzhou
  *
  */
 @Category(UnitTest.class)

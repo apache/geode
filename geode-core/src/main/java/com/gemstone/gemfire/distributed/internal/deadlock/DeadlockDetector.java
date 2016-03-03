@@ -53,7 +53,6 @@ import java.util.Set;
  * This class also has a main() method that can read serialized DependencyGraphs
  * from multiple JVMs, merge them and perform various analysis on them.
  * 
- * @author dsmith
  * 
  */
 public class DeadlockDetector {

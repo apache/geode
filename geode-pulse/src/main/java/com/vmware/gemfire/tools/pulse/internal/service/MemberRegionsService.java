@@ -40,7 +40,6 @@ import java.text.DecimalFormat;
  * 
  * This class contains implementations of getting Memeber's Regions details.
  * 
- * @author Sachin K
  * @since version 7.5
  */
 

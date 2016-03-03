@@ -19,7 +19,6 @@ package com.gemstone.gemfire.distributed.internal;
 /**
  * Defines the interface used to access and modify DM statistics.
  *
- * @author Darrel Schneider
  *
  */
 public interface DMStats {

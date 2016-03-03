@@ -69,7 +69,6 @@ import junit.framework.TestSuite;
 /**
  *
  *
- * @author ashetkar
  * @since 5.7
  *
  */

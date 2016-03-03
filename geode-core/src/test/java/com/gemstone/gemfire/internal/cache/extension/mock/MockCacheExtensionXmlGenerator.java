@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
 /**
  * {@link MockCacheExtension} {@link XmlGenerator}.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

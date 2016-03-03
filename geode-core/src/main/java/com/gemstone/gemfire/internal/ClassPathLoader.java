@@ -62,7 +62,6 @@ import com.gemstone.gemfire.internal.util.CollectionUtils;
  * in either a {@link java.lang.SecurityException SecurityException} or a null, then that class loader is quietly
  * skipped. Duplicate class loaders will be skipped.
  * 
- * @author Kirk Lund
  * @since 6.5.1.4
  */
 public final class ClassPathLoader {

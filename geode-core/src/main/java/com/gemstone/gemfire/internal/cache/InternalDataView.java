@@ -31,8 +31,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
- * @author Swapnil Bawaskar
- * @author Greg Passmore
  * @since 6.0tx
  */
 public interface InternalDataView {

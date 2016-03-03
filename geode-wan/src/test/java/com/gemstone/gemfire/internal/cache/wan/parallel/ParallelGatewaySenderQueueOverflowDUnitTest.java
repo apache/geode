@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * DUnit for ParallelSenderQueue overflow operations.
  * 
- * @author pdeole
  *
  */
 public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {

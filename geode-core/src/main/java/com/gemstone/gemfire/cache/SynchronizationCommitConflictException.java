@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache;
 
 /** Thrown when a commit operation of a JTA enlisted cache transaction fails
  *
- * @author Mitch Thomas
  *
  * @see javax.transaction.UserTransaction#commit
  * @since 4.0

@@ -81,7 +81,6 @@ import com.gemstone.gemfire.management.ManagementException;
  * Apart from simple types, arrays, and collections, Java types are converted
  * through introspection into CompositeType
  * 
- * @author rishim
  * 
  */
 public abstract class OpenTypeConverter {
@@ -490,7 +489,6 @@ public abstract class OpenTypeConverter {
    * Converts from a CompositeData to an instance of the targetClass Various
    * subclasses override its functionality.
    * 
-   * @author rishim
    * 
    */
   protected static abstract class CompositeBuilder {
@@ -546,7 +544,6 @@ public abstract class OpenTypeConverter {
    * Builder if the target class has a method "public static
    * from(CompositeData)"
    * 
-   * @author rishim
    * 
    */
   protected static final class CompositeBuilderViaFrom extends CompositeBuilder {
@@ -608,7 +605,6 @@ public abstract class OpenTypeConverter {
    * getters are OK, then the "applicable" method will return an empty string
    * and the other builders will be tried.
    * 
-   * @author rishim
    * 
    */
   protected static class CompositeBuilderCheckGetters extends CompositeBuilder {
@@ -648,7 +644,6 @@ public abstract class OpenTypeConverter {
   /**
    * Builder if the target class has a setter for every getter
    * 
-   * @author rishim
    * 
    */
   protected static class CompositeBuilderViaSetters extends CompositeBuilder {
@@ -710,7 +705,6 @@ public abstract class OpenTypeConverter {
    * Builder if the target class has a constructor that is annotated with @ConstructorProperties
    * so we can derive the corresponding getters.
    * 
-   * @author rishim
    * 
    */
   protected static final class CompositeBuilderViaConstructor extends
@@ -900,7 +894,6 @@ public abstract class OpenTypeConverter {
    * than getters. Then we can make an instance using a dynamic proxy that
    * forwards the getters to the source CompositeData
    * 
-   * @author rishim
    * 
    */
   protected static final class CompositeBuilderViaProxy extends

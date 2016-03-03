@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
  * Class <code>DurableClientCrashDUnitTest</code> tests durable client
  * functionality when clients are disconnected from servers.
  * 
- * @author Abhijit Bhaware
  * 
  * @since 5.2
  */

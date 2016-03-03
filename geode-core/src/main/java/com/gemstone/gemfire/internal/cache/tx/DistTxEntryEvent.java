@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 
 /**
  * 
- * @author shirishd
  *
  */
 public class DistTxEntryEvent extends EntryEventImpl {

@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.control.RebalanceOperation;
  * <p>This exception only occurs when a transaction
  * involves partitioned regions.
  * 
- * @author gregp
  * @since 6.6
  */
 public class TransactionDataRebalancedException extends TransactionException {

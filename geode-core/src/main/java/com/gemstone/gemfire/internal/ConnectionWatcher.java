@@ -22,7 +22,6 @@ import java.net.Socket;
  * ConnectionWatcher is used to observe tcp/ip connection formation in SockCreator
  * implementations.
  * 
- * @author bschuchardt
  *
  */
 public interface ConnectionWatcher {

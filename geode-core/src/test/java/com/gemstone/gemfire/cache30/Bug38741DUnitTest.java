@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  *
- * @author Mitch Thomas
  * @since bugfix5.7
  */
 public class Bug38741DUnitTest extends ClientServerTestCase {

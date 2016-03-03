@@ -28,7 +28,6 @@ import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 /**
  * Internal implementation of {@link FixedPartitionAttributes}.
  * 
- * @author kbachhav
  * @since 6.6
  */
 

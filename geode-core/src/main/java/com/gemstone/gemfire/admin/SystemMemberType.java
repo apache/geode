@@ -21,7 +21,6 @@ package com.gemstone.gemfire.admin;
 /**
  * Type-safe definition for system members.
  *
- * @author    Kirk Lund
  * @since     3.5
  *
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead

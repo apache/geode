@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
 /**
  * Computes the Max or Min
  * 
- * @author ashahid
  *
  */
 

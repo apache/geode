@@ -23,7 +23,6 @@ import com.gemstone.gemfire.admin.*;
 /**
  * The implementation of <code>MemberHealthConfig</code>
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

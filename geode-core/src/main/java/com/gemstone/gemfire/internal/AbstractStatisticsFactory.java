@@ -34,8 +34,6 @@ import java.util.List;
  * It can be used in contexts that do not have the GemFire product
  * or in vm's that do not have a distributed system nor a gemfire connection.
  *
- * @author Darrel Schneider
- * @author Kirk Lund
  * @since 7.0
  */
 public abstract class AbstractStatisticsFactory 

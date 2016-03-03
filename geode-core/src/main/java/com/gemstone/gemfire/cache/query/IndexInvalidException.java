@@ -27,7 +27,6 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Thrown if the index definition is not valid.
  *
- * @author vaibhav
  * @since 4.0
  */
 

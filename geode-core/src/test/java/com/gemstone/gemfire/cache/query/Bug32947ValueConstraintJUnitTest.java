@@ -43,7 +43,6 @@ import org.junit.experimental.categories.Category;
 
 /**
  * Junit test for checking the value constraint region attributes.
- * @author kdeshpan
  */
 @Category(IntegrationTest.class)
 public class Bug32947ValueConstraintJUnitTest {

@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.offheap;
  * Basic size and usage information about an off-heap memory block under
  * inspection. For test validation only.
  * 
- * @author Kirk Lund
  * @since 9.0
  */
 public interface MemoryBlock {

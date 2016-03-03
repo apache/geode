@@ -53,7 +53,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 /**
  * Test behavior of region when running out of off-heap memory.
  * 
- * @author Kirk Lund
  */
 @SuppressWarnings("serial")
 public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {

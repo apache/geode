@@ -84,7 +84,6 @@ import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
  * of the system and contains some state itself.
  * 
  * 
- * @author rishim
  * 
  */
 public class ManagementAdapter {

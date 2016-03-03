@@ -62,7 +62,6 @@ import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
  * <li>describe region
  * </ul>
  * 
- * @author Sourabh Bansod
  * @since 7.0
  */
 public class RegionCommands implements CommandMarker {

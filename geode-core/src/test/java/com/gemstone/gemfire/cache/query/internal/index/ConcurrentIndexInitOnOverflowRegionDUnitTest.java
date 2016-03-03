@@ -54,7 +54,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
- * @author shobhit
  * 
  */
 public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase {

@@ -28,7 +28,6 @@ import java.util.*;
  * Note: the name of this class is not changed to BulkOpPartialResultException
  * to keep it compatible with old clients and old peers.
  *
- * @author xzhou
  *
  *
  * @since 6.5

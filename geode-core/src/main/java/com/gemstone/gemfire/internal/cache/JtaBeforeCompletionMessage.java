@@ -34,7 +34,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author sbawaska
  *
  */
 public class JtaBeforeCompletionMessage extends TXMessage {

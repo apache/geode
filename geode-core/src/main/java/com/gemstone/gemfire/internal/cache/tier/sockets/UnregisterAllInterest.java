@@ -22,7 +22,6 @@ import java.io.*;
 /**
  * Singleton token indicating that all interest registrations should be removed.
  *
- * @author Darrel Schneider
  *
  */
 public class UnregisterAllInterest implements Serializable {

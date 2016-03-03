@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * <code>DLockRecoverGrantorMessage</code> is sent out by the new lock grantor
  * and all members reply with details on held and pending locks.
  *
- * @author Kirk Lund
  */
 public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();

@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.Assert;
  * <p>
  * It is implemented as a strict "cover" for a genuine {@link java.util.concurrent.locks.Condition}.
  * 
- * @author jpenney
  */
 public class StoppableCondition implements /* Condition, */ java.io.Serializable {
     private static final long serialVersionUID = -7091681525970431937L;

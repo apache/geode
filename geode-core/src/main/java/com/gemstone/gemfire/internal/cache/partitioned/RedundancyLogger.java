@@ -50,7 +50,6 @@ import com.gemstone.gemfire.internal.util.TransformUtils;
  * is meant to run in its own thread and utilizes the PRHARedundancyProvider's count down latch in order to determine
  * when it is finished.
  * 
- * @author rholmes
  */
 public class RedundancyLogger extends RecoveryRunnable implements PersistentStateListener {
 
@@ -197,7 +196,6 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
   /**
    * Keeps track of logging a message for a single partitioned region
    * and logging a separate message when the waiting is done for the same region
-   * @author dsmith, rholmes
    *
    */
   private class RegionStatus {

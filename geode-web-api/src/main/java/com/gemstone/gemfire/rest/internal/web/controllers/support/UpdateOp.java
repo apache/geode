@@ -19,7 +19,6 @@ package com.gemstone.gemfire.rest.internal.web.controllers.support;
 
 /**
  * UpdateOp contains all posible update operation supported with REST APIs
- * @author Nilkanth Patel
  */
 
 @SuppressWarnings("unused")

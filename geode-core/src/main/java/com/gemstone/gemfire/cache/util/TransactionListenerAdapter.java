@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.TransactionEvent;
  * with empty implementations. Applications can subclass this class and only
  * override the methods for the events of interest.
  * 
- * @author Darrel Schneider
  * 
  * @since 5.0
  */

@@ -25,7 +25,6 @@ import com.gemstone.gemfire.management.internal.FederationComponent;
  * also as long as they adhere to ProxyAggregator contract) implement this
  * interface.
  * 
- * @author rishim
  * 
  */
 

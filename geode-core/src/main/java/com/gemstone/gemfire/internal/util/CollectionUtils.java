@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.lang.Filter;
  * The CollectionUtils class is a utility class for working with the Java Collections framework of classes, data
  * structures and algorithms.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.lang.Filter
  * @see java.util.Arrays
  * @see java.util.Collection
@@ -245,7 +244,6 @@ public abstract class CollectionUtils {
    * Unmodifiable {@link Iterable} in the style of
    * {@link Collections#unmodifiableCollection(Collection)}.
    * 
-   * @author jbarrett@pivotal.io
    *
    * @since 8.1
    */

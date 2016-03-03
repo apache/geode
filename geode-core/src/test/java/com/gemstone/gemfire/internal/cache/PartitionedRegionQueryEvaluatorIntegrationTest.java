@@ -47,7 +47,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * This class is an integration test for <code>PartitionedRegionQueryEvaluator</code> class.
- * @author rreja 
  */
 @Category(IntegrationTest.class)
 public class PartitionedRegionQueryEvaluatorIntegrationTest

@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * This test is dunit test for the multiple Partition Regions in 4 VMs.
  * 
- * @author gthombar, modified by Tushar (for bug#35713)
  *  
  */
 public class PartitionedRegionMultipleDUnitTest extends

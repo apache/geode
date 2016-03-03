@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionHolder;
 
 /**
- * @author dsmith
  *
  */
 public interface DiskInitFileInterpreter {

@@ -43,7 +43,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
  * hosted by this bridge server.
  * 
  * 
- * @author dsmith
  * @since 5.7
  */
 public class ConnectionCountProbe extends ServerLoadProbeAdapter implements

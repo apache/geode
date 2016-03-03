@@ -61,7 +61,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  *  * This test is run for all modes persist, persist+overflow, overflow only in
  * syn and async mode.
  * 
- * @author Mitul Bid
  *  
  */
 @Category(IntegrationTest.class)
@@ -335,7 +334,6 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
    * Tests the bug where a get operation on an evicted entry fails to get value
    * as the oplog is deleted by the roller, but the entry was not rolled.
    * 
-   * @author Asif
    *  
    */
   @Test
@@ -779,7 +777,6 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
    * actually joined with the new thread ( different from the one on which
    * notification was issued to exit).
    * 
-   * @author Asif
    *  
    */
   @Test

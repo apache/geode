@@ -16,7 +16,6 @@
  */
 /*
  * IumMultConditionJUnitTest.java
- * @author vikramj
  * Created on April 29, 2005, 2:30 PM
  *Task IUM 5 And IUM 6
  */

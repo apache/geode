@@ -18,7 +18,6 @@ package com.gemstone.gemfire.management.internal.cli.result;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

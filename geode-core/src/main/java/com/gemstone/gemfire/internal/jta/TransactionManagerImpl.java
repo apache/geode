@@ -21,8 +21,6 @@ package com.gemstone.gemfire.internal.jta;
  * TransactionManager: A JTA compatible Transaction Manager.
  * </p>
  * 
- * @author Mitul Bid
- * @author Asif
  * @since 4.1.1
  */
 import java.io.Serializable;

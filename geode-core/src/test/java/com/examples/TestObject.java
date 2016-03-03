@@ -22,7 +22,6 @@ package com.examples;
  * (this test no longer exists?) 
  * that must be in a non-<code>com.gemstone</code> package.
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

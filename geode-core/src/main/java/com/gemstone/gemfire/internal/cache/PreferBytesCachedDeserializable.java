@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * You can ask it for its Object in which case it always has to deserialize.
  * So it "prefers serialization (aka bytes)".
  *
- * @author Darrel
  * @since 5.0.2
  *
  */

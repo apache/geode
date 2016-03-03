@@ -43,7 +43,6 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author shobhit
  *
  */
 @Category(IntegrationTest.class)
@@ -366,7 +365,6 @@ public class MapRangeIndexMaintenanceJUnitTest{
   /**
    * TestObject with wrong comareTo() implementation implementation.
    * Which throws NullPointer while removing mapping from a MapRangeIndex.
-   * @author shobhit
    *
    */
   public class TestObject implements Cloneable, Comparable {

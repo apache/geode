@@ -43,7 +43,6 @@ import com.gemstone.gemfire.distributed.internal.MembershipListener;
  * Adding an ProxyListener in a non Manager node wont be useful as it wont get any
  * proxy related callbacks
  * 
- * @author rishim
  * 
  */
 public interface ProxyListener extends MembershipListener {

@@ -74,7 +74,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * Class <code>DurableClientTestCase</code> tests durable client
  * functionality.
  * 
- * @author Barry Oglesby
  * 
  * @since 5.2
  */ 

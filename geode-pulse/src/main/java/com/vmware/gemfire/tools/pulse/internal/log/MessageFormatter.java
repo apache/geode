@@ -38,7 +38,6 @@ import com.vmware.gemfire.tools.pulse.internal.data.Repository;
  * MessageFormatter is the custom formatter class for formatting the log
  * messages.
  * 
- * @author Sachin K
  * @since version 7.0.1
  */
 public class MessageFormatter extends Formatter {

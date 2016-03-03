@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 4. Waits for the period which is slightly greater than expiration period.
  * 5. Checks size of the regionqueue. Size of the regionqueue should be equal to 0.
  *
- *  @author Girish Thombare
  */
 
 public class HAExpiryDUnitTest extends DistributedTestCase

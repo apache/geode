@@ -53,7 +53,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Test to verify correct propagation of operations eventID's for put all
  *
  *
- * @author Mitul Bid
  * @since 5.1
  */
 

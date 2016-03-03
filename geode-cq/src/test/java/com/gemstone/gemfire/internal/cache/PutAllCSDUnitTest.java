@@ -90,7 +90,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Tests putAll for c/s. Also tests removeAll
  * 
- * @author Gester Zhou
  * @since 5.0.23
  */
 @SuppressWarnings("serial")

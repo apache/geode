@@ -45,7 +45,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.TrimmedI
  * Implementation of {@link GfshOptionParser} which internally makes use of
  * {@link joptsimple.OptionParser}
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  * 
  */

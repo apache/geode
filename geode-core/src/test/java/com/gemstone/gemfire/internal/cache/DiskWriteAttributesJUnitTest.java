@@ -29,7 +29,6 @@ import junit.framework.TestCase;
  * Tests if DiskWriteAttributeFactory returns the correct DWA object with the
  * desired values
  * 
- * @author Mitul Bid
  *  
  */
 @Category(UnitTest.class)
@@ -146,7 +145,6 @@ public class DiskWriteAttributesJUnitTest extends TestCase
   /**
    * Tests the behaviour of DiskWriteAttributesFactory & DiskWritesAttrbutes with
    * various combinations of  time interval & buffer size.
-   * @author Asif   
    */
   public void testDiskWriteAttributesCreation() {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();

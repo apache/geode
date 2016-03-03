@@ -54,7 +54,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Unit test for the ClientRegionFactory class
- * @author darrel
  * @since 6.5
  */
 @Category(IntegrationTest.class)

@@ -49,8 +49,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
  * {@link com.gemstone.gemfire.internal.StatArchiveWriter} for the currently
  * open archive file (unless archiving is disabled).
  * 
- * @author Darrel Schneider
- * @author Kirk Lund
  * @since 7.0
  */
 public class StatArchiveHandler implements SampleHandler {

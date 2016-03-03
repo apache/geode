@@ -22,7 +22,6 @@ import java.beans.ConstructorProperties;
  * Composite data type used to distribute attributes for the missing disk
  * store of a persistent member.
  *
- * @author rishim
  * @since 7.0
  *
  */

@@ -39,7 +39,6 @@ import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author Asif
  * 
  * 
  */

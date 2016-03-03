@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.dunit.Host;
  * This Dunit test class have multiple tests to tests different validations of
  * static partitioning
  * 
- * @author kbachhav
  * 
  */
 

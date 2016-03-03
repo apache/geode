@@ -26,7 +26,6 @@ import com.gemstone.gemfire.GemFireException;
  * Various management and monitoring exceptions are wrapped in
  * <code>ManagementException<code>s.
  * 
- * @author rishim
  * @since 7.0
  * 
  */

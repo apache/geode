@@ -27,8 +27,6 @@ package com.gemstone.gemfire.cache.execute;
  * <p>This interface is implemented by GemFire. Instances of it will be passed
  * in to {@link Function#execute(FunctionContext)}.
  * 
- * @author Yogesh Mahajan
- * @author Mitch Thomas
  *
  * @since 6.0
  *

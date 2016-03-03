@@ -30,8 +30,6 @@ import java.io.IOException;
  * To check whether the result has a file in it use
  * {@link #hasIncomingFiles()}.
  * 
- * @author Kirk Lund
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */
@@ -40,7 +38,6 @@ public interface Result {
   /**
    * Indicates a Results status.
    * 
-   * @author Kirk Lund
    * @since 7.0
    */
   public enum Status {

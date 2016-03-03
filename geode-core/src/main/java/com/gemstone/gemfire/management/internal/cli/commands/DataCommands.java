@@ -83,8 +83,6 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperationContex
 
 /**
  * 
- * @author ajayp
- * @author tushark
  * @since 7.0
  */
 public class DataCommands implements CommandMarker {

@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
  * with new load information from the server.
  * Also includes the id of any clients whose estimate is no
  * longer needed on the server-locator.
- * @author dsmith
  * @since 5.7
  *
  */

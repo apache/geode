@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Test to make sure cache values are lazily deserialized
  *
- * @author darrel
  * @since 5.0
  */
 public class Bug34948DUnitTest extends CacheTestCase {

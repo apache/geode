@@ -45,7 +45,6 @@ import org.junit.experimental.categories.Category;
 /**
  * Tests the functionality of the {@link DistributedMember} class.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 @Category(DistributedTest.class)

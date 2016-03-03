@@ -62,8 +62,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * Tests remote (client/server) query execution.
  *
- * @author Barry Oglesby
- * @author Asif
  * @since 5.0.1
  */
 public class QueryUsingPoolDUnitTest extends CacheTestCase {

@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.internal.util.StopWatch;
 
 /**
- * @author Kirk Lund
  * @since 8.0
  */
 public abstract class AbstractLauncherJUnitTestCase {

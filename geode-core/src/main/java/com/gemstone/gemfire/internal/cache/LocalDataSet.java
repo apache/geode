@@ -70,7 +70,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * 
- * @author ymahajan
  *
  */
 public final class LocalDataSet implements Region, QueryExecutor {

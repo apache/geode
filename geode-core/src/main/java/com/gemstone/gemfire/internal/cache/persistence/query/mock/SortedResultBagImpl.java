@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.persistence.query.SortKeyExtractor;
 /**
  * Mock sorted bag implementation. Uses the mock index map
  * internally, for convenience.
- * @author dsmith
  *
  */
 public class SortedResultBagImpl implements ResultBag {

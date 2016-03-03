@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * Takes delta to be evicted and tries to evict the least no of LRU entry which
  * would make evictedBytes more than or equal to the delta
  * 
- * @author Suranjan, Amardeep, Swapnil, Yogesh
  * @since 6.0
  * 
  */

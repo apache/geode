@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Tests that the compressor region attribute is properly set or rejected by a RegionFactory.
- * @author rholmes
  */
 public class CompressionRegionFactoryDUnitTest extends CacheTestCase {
   /**

@@ -57,7 +57,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * the actual size of objects wrapped in CacheDeserializables.
  * 
  * 
- * @author dsmith
  * 
  * TODO - I was intending to add tests that have an
  * index and object sizer, but it appears we don't support

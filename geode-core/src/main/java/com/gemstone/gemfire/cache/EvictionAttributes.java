@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
  * com.gemstone.gemfire.cache.EvictionAction}. Once a <code>Region</code> is created with an eviction controller, it can
  * not be removed, however it can be changed through an {@link com.gemstone.gemfire.cache.EvictionAttributesMutator}.
  *
- * @author Mitch Thomas
  * @see com.gemstone.gemfire.cache.AttributesFactory#setEvictionAttributes(EvictionAttributes)
  * @see com.gemstone.gemfire.cache.AttributesMutator
  * @since 5.0

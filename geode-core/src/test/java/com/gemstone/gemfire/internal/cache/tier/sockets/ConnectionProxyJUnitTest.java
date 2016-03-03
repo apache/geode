@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author asif
  *
  * Tests the functionality of operations of AbstractConnectionProxy & its
  * derived classes.
@@ -124,7 +123,6 @@ public class ConnectionProxyJUnitTest
    * 5)Verify that above exception occurs sometime after the readTimeout
    * configured for the client <br>
    *
-   * @author Dinesh
    */
   public void DISABLE_testListenerOnServerSitForever()
   {
@@ -202,7 +200,6 @@ public class ConnectionProxyJUnitTest
    * Tests the DeadServerMonitor when identifying an 
    * Endpoint as alive , does not create a persistent Ping connection
    * ( i.e sends a CLOSE protocol , if the number of connections is zero.
-   * @author Asif
    */
   @Test
   public void testDeadServerMonitorPingNature1() {
@@ -274,7 +271,6 @@ public class ConnectionProxyJUnitTest
    * Endpoint as alive , does creates a persistent Ping connection
    * ( i.e sends a PING protocol , if the number of connections is more than 
    * zero.
-   * @author Asif
    */
   @Test
   public void testDeadServerMonitorPingNature2() {

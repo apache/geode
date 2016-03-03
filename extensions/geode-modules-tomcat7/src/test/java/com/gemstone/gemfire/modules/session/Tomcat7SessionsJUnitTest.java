@@ -22,7 +22,6 @@ import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
 /**
- * @author Jens Deppe
  */
 @Category(UnitTest.class)
 public class Tomcat7SessionsJUnitTest extends TestSessionsBase {

@@ -58,7 +58,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author dsmith
  *
  */
 public class Bug40632DUnitTest extends CacheTestCase {

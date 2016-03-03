@@ -63,8 +63,6 @@ import joptsimple.OptionSet;
  *  </ol>
  * </ul>
  *
- * @author Abhishek Chaudhari
- * @author David Hoots
  * @since 7.0
  */
 public final class Launcher {

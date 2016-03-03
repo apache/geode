@@ -23,7 +23,6 @@ import com.gemstone.gemfire.GemFireException;
  * The DiskStoreNotFoundException is a GemFireException class indicating that a disk store by name could not be found
  * on a member specified by name!
  * </p>
- * @author jblum
  * @see com.gemstone.gemfire.GemFireException
  * @since 7.0
  */

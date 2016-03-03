@@ -55,7 +55,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link AbstractRegion}.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

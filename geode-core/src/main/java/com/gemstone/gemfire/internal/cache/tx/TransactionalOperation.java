@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author Bruce Schuchardt
  *
  */
 public class TransactionalOperation {

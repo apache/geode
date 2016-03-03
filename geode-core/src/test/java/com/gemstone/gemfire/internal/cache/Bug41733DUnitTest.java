@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author dsmith
  *
  * Test to make sure that we can handle 
  * a crash of the member directing bucket creation.

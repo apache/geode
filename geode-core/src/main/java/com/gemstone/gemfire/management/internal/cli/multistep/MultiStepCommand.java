@@ -23,7 +23,6 @@ import java.lang.annotation.Target;
 
 /***
  * Just a marker interface to identify interactive command from other regular commands
- * @author tushark
  *
  */
 

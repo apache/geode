@@ -41,7 +41,6 @@ import com.gemstone.gemfire.management.internal.cli.converters.ConnectionEndpoin
  * Output format for gemfire. The records provided to writers created by this
  * output format are PUT in a live gemfire cluster.
  * 
- * @author ashvina
  */
 public class GFOutputFormat extends OutputFormat<Object, Object> {
   public static final String REGION = "mapreduce.output.gfoutputformat.outputregion";

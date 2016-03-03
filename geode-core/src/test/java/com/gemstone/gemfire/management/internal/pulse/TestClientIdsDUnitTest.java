@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing client IDs
- * @author Ajay Pande
  * 
  */
 

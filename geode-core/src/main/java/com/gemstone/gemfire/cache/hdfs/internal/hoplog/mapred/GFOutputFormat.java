@@ -33,7 +33,6 @@ import com.gemstone.gemfire.cache.client.ClientCache;
  * Output format for gemfire. The records provided to writers created by this
  * output format are PUT in a live gemfire cluster.
  * 
- * @author ashvina
  */
 public class GFOutputFormat extends
     com.gemstone.gemfire.cache.hdfs.internal.hoplog.mapreduce.GFOutputFormat

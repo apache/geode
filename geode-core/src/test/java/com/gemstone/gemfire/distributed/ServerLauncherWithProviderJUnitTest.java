@@ -34,8 +34,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Extracted from ServerLauncherLocalJUnitTest.
  * 
- * @author John Blum
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class ServerLauncherWithProviderJUnitTest extends AbstractServerLauncherJUnitTestCase {

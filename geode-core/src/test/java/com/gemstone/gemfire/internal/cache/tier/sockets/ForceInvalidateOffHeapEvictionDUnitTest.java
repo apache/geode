@@ -25,7 +25,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Runs force invalidate eviction tests with off-heap regions.
- * @author rholmes
  * @since 9.0
  */
 public class ForceInvalidateOffHeapEvictionDUnitTest extends

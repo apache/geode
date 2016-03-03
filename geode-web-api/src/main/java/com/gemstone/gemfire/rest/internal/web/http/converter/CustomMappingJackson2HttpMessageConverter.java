@@ -30,7 +30,6 @@ import org.springframework.util.Assert;
 /**
  * The CustomMappingJackson2HttpMessageConverter class...
  * 
- * @author John Blum
  * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
  * @since 0.0.1
  */

@@ -53,7 +53,6 @@ import static org.junit.Assert.*;
  * The LauncherLifecycleCommandsJUnitTest class is a test suite of test cases testing the contract and functionality of
  * the lifecycle launcher GemFire shell (Gfsh) commands.
  *
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.LauncherLifecycleCommands
  * @see org.junit.Assert
  * @see org.junit.Test

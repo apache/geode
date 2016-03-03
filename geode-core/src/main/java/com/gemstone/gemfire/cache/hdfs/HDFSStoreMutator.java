@@ -23,7 +23,6 @@ package com.gemstone.gemfire.cache.hdfs;
  * {@link HDFSStore#createHdfsStoreMutator} and applied using
  * {@link HDFSStore#alter}
  * 
- * @author ashvina
  */
 public interface HDFSStoreMutator {
   /**

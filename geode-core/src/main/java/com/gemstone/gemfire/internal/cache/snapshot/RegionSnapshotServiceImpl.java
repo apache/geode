@@ -64,7 +64,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Provides an implementation for region snapshots.
  * 
- * @author bakera
  *
  * @param <K> the key type
  * @param <V> the value type

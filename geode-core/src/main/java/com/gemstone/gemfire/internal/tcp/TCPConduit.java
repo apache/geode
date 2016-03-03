@@ -76,7 +76,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
     If the ServerDelegate is null, DistributionMessages are ignored by
     the TCPConduit.</p>
 
-    @author Bruce Schuchardt
     @since 2.0
    
 */

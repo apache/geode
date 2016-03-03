@@ -19,7 +19,6 @@ package com.gemstone.gemfire.admin.jmx.internal;
 /**
  * Type-safe definition for refresh notifications.
  *
- * @author    Kirk Lund
  * @since     3.5
  *
  */

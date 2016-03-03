@@ -25,7 +25,6 @@ package com.gemstone.gemfire.cache.query.data;
 
 /**
  *
- * @author vaibhav
  */
 public class Data {
   

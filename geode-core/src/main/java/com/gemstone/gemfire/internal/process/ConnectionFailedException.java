@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.process;
 /**
  * A ConnectionFailedException is thrown if connection to a process fails.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public final class ConnectionFailedException extends Exception {

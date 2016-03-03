@@ -30,7 +30,6 @@ import java.util.Iterator;
 
 /**
  * Test that keys iterator do not returned keys with removed token as its values
- * @author sbawaska
  *
  */
 public class IteratorDUnitTest extends CacheTestCase {

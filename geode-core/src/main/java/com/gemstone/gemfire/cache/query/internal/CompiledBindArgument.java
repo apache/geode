@@ -30,7 +30,6 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
 /**
  * Class Description
  *
- * @author      ezoerner
  */
 
 

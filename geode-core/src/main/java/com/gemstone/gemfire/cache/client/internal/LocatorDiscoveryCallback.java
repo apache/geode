@@ -21,7 +21,6 @@ import java.util.List;
 /**
  * A callback to receive notifications about locator discovery. Currently 
  * only used internally.
- * @author dsmith
  * @since 5.7
  */
 public interface LocatorDiscoveryCallback {

@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Utility class for mapping operations in the query language to Java methods
  *
- * @author Eric Zoerner
  * @version $Revision: 1.1 $
  */
 

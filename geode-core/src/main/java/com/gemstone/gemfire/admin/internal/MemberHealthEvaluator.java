@@ -36,12 +36,10 @@ import java.util.*;
  * @see ProcessStats
  * @see DMStats
  *
- * @author David Whitlock
  *
  * @since 3.5
  */
 /**
- * @author rdubey
  *
  */
 class MemberHealthEvaluator extends AbstractHealthEvaluator {

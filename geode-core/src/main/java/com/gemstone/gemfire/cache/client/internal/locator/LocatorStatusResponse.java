@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.process.ProcessUtils;
 /**
  * The LocatorStatusResponse class...
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.cache.client.internal.locator.ServerLocationResponse
  * @since 7.0
  */

@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
  * locator metadata about the new locator so that they can update their remote
  * locator metadata.
  * 
- * @author kbachhav
  * 
  */
 public interface LocatorMembershipListener {

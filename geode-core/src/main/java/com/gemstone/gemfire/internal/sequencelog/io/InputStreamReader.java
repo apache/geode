@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.sequencelog.model.Graph;
 import com.gemstone.gemfire.internal.sequencelog.model.GraphReaderCallback;
 
 /**
- * @author dsmith
  *
  */
 public class InputStreamReader {

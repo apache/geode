@@ -27,7 +27,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Test runs all tests of HARegionQueueStatsJUnitTest using
  * BlockingHARegionQueue instead of HARegionQueue
  * 
- * @author Dinesh Patel
  * 
  */
 @Category(IntegrationTest.class)

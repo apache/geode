@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author asif
  * 
  */
 public abstract class AbstractGroupOrRangeJunction extends

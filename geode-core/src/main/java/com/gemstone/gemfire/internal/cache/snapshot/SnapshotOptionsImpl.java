@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
 /**
  * Implements the snapshot options.
  * 
- * @author bakera
  *
  * @param <K> the key type
  * @param <V> the value type

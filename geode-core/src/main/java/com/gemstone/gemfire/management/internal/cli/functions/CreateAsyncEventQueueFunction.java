@@ -20,7 +20,6 @@ package com.gemstone.gemfire.management.internal.cli.functions;
  * Function used by the 'create async-event-queue' gfsh command to create an
  * asynchronous event queue on a member.
  * 
- * @author David Hoots
  * @since 8.0
  */
 import java.util.HashMap;

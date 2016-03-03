@@ -22,7 +22,6 @@ import com.gemstone.gemfire.pdx.internal.PdxType;
 
 /**
  * Retrieve the PDXType, given an integer PDX id, from a server.
- * @author dsmith
  * @since 6.6
  */
 public class GetPDXTypeByIdOp {

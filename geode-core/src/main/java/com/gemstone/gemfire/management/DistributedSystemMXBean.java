@@ -71,7 +71,6 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperationContex
  * </tr>
  * </table>
  *
- * @author rishim
  * @since 7.0
  *
  */

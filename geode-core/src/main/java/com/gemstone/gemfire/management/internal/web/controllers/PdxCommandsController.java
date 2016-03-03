@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * The PdxCommandsController class implements GemFire Management REST API web service endpoints for Gfsh PDX Commands.
  *
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.PDXCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

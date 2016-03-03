@@ -37,7 +37,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * }
  * </code>
  *
- * @author kbanks
  * @since 6.0
  *
  */

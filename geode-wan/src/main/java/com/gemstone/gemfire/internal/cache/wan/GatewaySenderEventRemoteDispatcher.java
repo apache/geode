@@ -46,8 +46,6 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.cache.client.internal.SenderProxy;
 
 /**
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * @since 7.0
  *
  */

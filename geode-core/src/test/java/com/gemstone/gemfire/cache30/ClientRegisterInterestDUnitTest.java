@@ -36,7 +36,6 @@ import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
 /**
  * Tests the client register interest
  *
- * @author Kirk Lund
  * @since 4.2.3
  */
 public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {

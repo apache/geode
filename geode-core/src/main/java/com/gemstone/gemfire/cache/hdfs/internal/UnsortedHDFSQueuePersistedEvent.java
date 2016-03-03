@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  * temporarily to copy the data from the HDFSGatewayEventImpl to the persisted
  * record in the file. 
  * 
- * @author dsmith
  *
  */
 public class UnsortedHDFSQueuePersistedEvent extends UnsortedHoplogPersistedEvent implements QueuedPersistentEvent {

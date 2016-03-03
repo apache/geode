@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * 
- * @author Deepkumar Varma
  *
  * The test is written to verify that the rootRegion() in GemfireCache.java
  * doesn't return any metaRegions or HA Regions.

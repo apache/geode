@@ -70,7 +70,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * 
  * This model is not threadsafe.
  * 
- * @author dsmith
  * @since 6.0
  * 
  */
@@ -1078,7 +1077,6 @@ public class PartitionedRegionLoadModel {
   /**
    * Represents the sum of all of colocated buckets with
    * a given bucket id.
-   * @author dsmith
    *
    */
   protected class BucketRollup extends Bucket {
@@ -1503,7 +1501,6 @@ public class PartitionedRegionLoadModel {
    * to keep track of moves that we have already attempted
    * that have failed.
    * 
-   * @author dsmith
    *
    */
   protected static class Move {

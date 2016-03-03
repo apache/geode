@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * TestCase that emulates the conditions that produce defect 48182 and ensures that the fix works under those conditions.
  * 48182: Unexpected EntryNotFoundException while shutting down members with off-heap
  * https://svn.gemstone.com/trac/gemfire/ticket/48182 
- * @author rholmes
  */
 @Category(IntegrationTest.class)
 public class Bug48182JUnitTest {

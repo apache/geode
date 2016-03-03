@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * 
- * @author ymahajan
  * @since 6.5
  *
  */

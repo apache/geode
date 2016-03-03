@@ -124,9 +124,6 @@ import com.gemstone.gemfire.pdx.internal.PdxWriterImpl;
  * file only supports persistent regions. For overflow only regions see
  * {@link OverflowOplog}.
  * 
- * @author Darrel Schneider
- * @author Mitul Bid
- * @author Asif
  * 
  * @since 5.1
  */
@@ -7903,7 +7900,6 @@ public final class Oplog implements CompactableOplog, Flushable {
    * Used in offline mode to prevent pdx deserialization of keys. The raw bytes
    * are a serialized pdx.
    * 
-   * @author darrel
    * @since 6.6
    */
   private static class RawByteKey implements Sendable {
@@ -7937,7 +7933,6 @@ public final class Oplog implements CompactableOplog, Flushable {
   /**
    * Enumeration of operation log file types.
    * 
-   * @author rholmes
    */
   enum OplogFileType {
     OPLOG_CRF, // Creates and updates
@@ -7948,7 +7943,6 @@ public final class Oplog implements CompactableOplog, Flushable {
   /**
    * Enumeration of the possible results of the okToSkipModifyRecord
    * 
-   * @author dsmith
    *
    */
   private static enum OkToSkipResult {

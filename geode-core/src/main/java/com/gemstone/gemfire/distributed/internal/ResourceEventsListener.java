@@ -19,7 +19,6 @@ package com.gemstone.gemfire.distributed.internal;
 /**
  * Internal interface to be implemented to catch various resource events
  * 
- * @author rishim
  * 
  */
 public interface ResourceEventsListener {

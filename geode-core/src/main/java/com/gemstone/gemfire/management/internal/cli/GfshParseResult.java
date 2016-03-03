@@ -39,7 +39,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker;
  * {@link GfshExecutionStrategy} will detect whether the command is a remote
  * command and send it to ManagementMBean via {@link OperationInvoker}.
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

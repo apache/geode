@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown during continuous query creation, execution time.
  * 
- * @author Anil 
  * @since 5.5
  */
 

@@ -21,7 +21,6 @@ import com.gemstone.gemfire.Statistics;
 /**
  * Null implementation of OffHeapMemoryStats for testing.
  *  
- * @author Kirk Lund
  */
 public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
   private boolean isClosed;

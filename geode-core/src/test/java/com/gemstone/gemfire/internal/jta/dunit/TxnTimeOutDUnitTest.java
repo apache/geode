@@ -45,7 +45,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
-*@author Mitul D Bid
 *This test sees if the TransactionTimeOut works properly
 */
 public class TxnTimeOutDUnitTest extends DistributedTestCase {

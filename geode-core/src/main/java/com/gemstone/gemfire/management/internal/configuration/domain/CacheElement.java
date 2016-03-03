@@ -47,7 +47,6 @@ import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.XPa
  * Domain class to determine the order of an element Currently being used to
  * store order information of child elements of "cache"
  * 
- * @author bansods
  *
  */
 // UnitTest CacheElementJUnitTest

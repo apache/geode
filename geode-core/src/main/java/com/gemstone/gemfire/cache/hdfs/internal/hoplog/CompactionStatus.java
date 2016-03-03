@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * Status of the compaction task reported in the future
  * 
- * @author sbawaska
  */
 public class CompactionStatus implements VersionedDataSerializable {
   /**MergeGemXDHDFSToGFE check and verify serializationversions **/

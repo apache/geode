@@ -28,7 +28,6 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 
     @see com.gemstone.gemfire.distributed.internal.direct.DirectChannel
 
-    @author Bruce Schuchardt
     @since 2.0
    
   */

@@ -21,7 +21,6 @@ import java.beans.ConstructorProperties;
 /**
  * Composite data type used to distribute server load information.
  * 
- * @author rishim
  * @since 7.0
  */
 public class ServerLoadData {

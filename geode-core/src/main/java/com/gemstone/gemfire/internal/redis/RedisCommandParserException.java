@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.redis;
 /**
  * Exception thrown by CommandParser (non-existent class) when a command has illegal syntax
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public class RedisCommandParserException extends Exception {

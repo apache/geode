@@ -21,7 +21,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 
 /**
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  */
 public class NewHelp {

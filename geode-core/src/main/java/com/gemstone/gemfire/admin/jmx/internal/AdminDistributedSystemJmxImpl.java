@@ -101,7 +101,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * DistributedSystemImpl. Wrap all delegate calls w/ e.printStackTrace() since 
  * the HttpAdaptor devours them (what to do w/ template methods then?)
  *
- * @author    Kirk Lund
  * @since     3.5
  */
 public class AdminDistributedSystemJmxImpl 
@@ -2295,7 +2294,6 @@ class ProcessSystemwideStatAlertsNotification extends TimerTask {
  * <li> Region Loss </li>
  * </ol>
  * 
- * @author abhishek
  */
 class CacheAndRegionListenerImpl implements SystemMemberCacheListener {
   private AdminDistributedSystemJmxImpl adminDS;

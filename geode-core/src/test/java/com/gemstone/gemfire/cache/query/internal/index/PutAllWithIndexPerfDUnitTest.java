@@ -47,7 +47,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * @author shobhit
  *
  */
 @Category(DistributedTest.class)

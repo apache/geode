@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.admin.remote.AdminResponse;
 /**
  * The response to the {@link PrepareBackupRequest}
  * 
- * @author dsmith
  *
  */
 public class PrepareBackupResponse extends AdminResponse {

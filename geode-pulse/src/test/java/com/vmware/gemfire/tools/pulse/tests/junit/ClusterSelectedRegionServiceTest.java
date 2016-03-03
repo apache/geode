@@ -37,7 +37,6 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 /**
  * JUnit Tests for ClusterSelectedRegionService in the back-end server for region detail page
  *
- * @author rbhandekar
  *
  */
 @Ignore
@@ -45,7 +44,6 @@ public class ClusterSelectedRegionServiceTest extends BaseServiceTest {
 
   /**
    *
-   * @author rbhandekar
    * @throws java.lang.Exception
    */
   @BeforeClass
@@ -56,7 +54,6 @@ public class ClusterSelectedRegionServiceTest extends BaseServiceTest {
 
   /**
    *
-   * @author rbhandekar
    * @throws java.lang.Exception
    */
   @AfterClass
@@ -67,7 +64,6 @@ public class ClusterSelectedRegionServiceTest extends BaseServiceTest {
 
   /**
    *
-   * @author rbhandekar
    * @throws java.lang.Exception
    */
   @Override
@@ -77,7 +73,6 @@ public class ClusterSelectedRegionServiceTest extends BaseServiceTest {
 
   /**
    *
-   * @author rbhandekar
    * @throws java.lang.Exception
    */
   @Override
@@ -88,7 +83,6 @@ public class ClusterSelectedRegionServiceTest extends BaseServiceTest {
   /**
    * Tests that service returns json object
    *
-   * @author rbhandekar
    */
   @Test
   public void testResponseNotNull() {
@@ -134,7 +128,6 @@ public class ClusterSelectedRegionServiceTest extends BaseServiceTest {
   *
   * Tests that response is for same logged in user
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseUsername() {
@@ -186,7 +179,6 @@ public class ClusterSelectedRegionServiceTest extends BaseServiceTest {
   *
   * Test method for {@link com.vmware.gemfire.tools.pulse.internal.service.ClusterSelectedRegionService#execute(javax.servlet.http.HttpServletRequest)}.
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseRegionPathMatches() {
@@ -241,7 +233,6 @@ public class ClusterSelectedRegionServiceTest extends BaseServiceTest {
   *
   * Test method for {@link com.vmware.gemfire.tools.pulse.internal.service.ClusterSelectedRegionService#execute(javax.servlet.http.HttpServletRequest)}.
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseNonExistentRegion() {
@@ -294,7 +285,6 @@ public class ClusterSelectedRegionServiceTest extends BaseServiceTest {
   *
   * Test method for {@link com.vmware.gemfire.tools.pulse.internal.service.ClusterSelectedRegionService#execute(javax.servlet.http.HttpServletRequest)}.
   *
-  * @author rbhandekar
   */
   @Test
   public void testResponseMemerberCount() {

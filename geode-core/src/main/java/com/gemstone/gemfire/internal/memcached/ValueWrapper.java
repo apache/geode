@@ -30,7 +30,6 @@ import com.gemstone.gemfire.DataSerializer;
  * version and the value. Instances of this class can be
  * obtained by using {@link #getWrappedValue(byte[], int)}
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class ValueWrapper implements DataSerializable {

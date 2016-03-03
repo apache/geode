@@ -24,7 +24,6 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
- * @author skumar
  *
  */
 public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTestBase {

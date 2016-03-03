@@ -42,7 +42,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Disk region recovery tests
  * 
- * @author Vikram Jadhav
  * @since 5.1
  */
 @Category(IntegrationTest.class)
@@ -84,7 +83,6 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
    * cache. Create Region with the same name as that of in STEP 1. Get and
    * verify the entries put in STEP 1 and STEP 2.
    * 
-   * @author Vikram Jadhav
    */
   @Test
   public void testDiskRegRecovery()
@@ -323,7 +321,6 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
    * 3: Again Create cache. Create Region with the same name as that of in STEP
    * 4) Verify that the entries got deleted
    * 
-   * @author Asif
    */
   @Test
   public void testBug39989_1()
@@ -425,7 +422,6 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
    * 3: Again Create cache.
    * 4) check if the region creation is successful
    * 
-   * @author Asif
    */
   @Test
   public void testBug39989_2()

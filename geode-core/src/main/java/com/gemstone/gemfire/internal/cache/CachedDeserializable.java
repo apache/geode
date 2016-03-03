@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * Provides protocol for getting the deserialized value from a potentially
  * encapsulated object.
  *
- * @author Eric Zoerner
  *
  */
 public interface CachedDeserializable extends Sizeable

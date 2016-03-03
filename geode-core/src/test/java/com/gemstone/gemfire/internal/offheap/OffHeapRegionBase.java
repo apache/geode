@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * Basic test of regions that use off heap storage.
  * Subclasses exist for the different types of offheap store.
  * 
- * @author darrel
  *
  */
 public abstract class OffHeapRegionBase {

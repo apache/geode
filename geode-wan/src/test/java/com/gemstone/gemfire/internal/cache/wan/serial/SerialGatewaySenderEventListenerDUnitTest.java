@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author skumar
  *
  */
 public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {

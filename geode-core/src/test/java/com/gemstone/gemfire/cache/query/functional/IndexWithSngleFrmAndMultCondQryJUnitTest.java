@@ -23,7 +23,6 @@
 
 /**
  *
- * @author vikramj
  */
 package com.gemstone.gemfire.cache.query.functional;
 
@@ -455,7 +454,6 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest{
    * Test index usage on PR region & Local region if the total number of indexes 
    * created are more than the fields used in the where clause of the
    * query and the number of from clause iterators are two
-   * @author ashahid
    */
   @Test
   public void testIndexUsageIfIndexesGreaterThanFieldsInQueryWhereClauseWithTwoIterators() throws Exception {
@@ -607,7 +605,6 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest{
    * Test index usage on PR region & Local region if the total number of indexes 
    * created are more than the fields used in the where clause of the
    * query and the number of from clause iterators is One
-   * @author ashahid
    */
   @Test
   public void testIndexUsageIfIndexesGreaterThanFieldsInQueryWhereClauseWithOneIterator() throws Exception {
@@ -774,7 +771,6 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest{
    * Test index usage on PR region & Local region if the where clause contains three conditions but 
    * only one condition is indexed & the total number of from clause iterators is 1.
    *  
-   * @author ashahid
    */
   @Test
   public void testIndexUsageIfOneFieldIndexedAndMoreThanOneUnindexed_Bug38032() throws Exception {
@@ -987,7 +983,6 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest{
   /**
    * Test index usage on PR region & Local region if the where clause contains three conditions with 
    * two conditions  indexed & the total number of from clause iterators is 1.
-   * @author ashahid
    */
   @Test
   public void testIndexUsageIfTwoFieldsIndexedAndOneUnindexed() throws Exception {

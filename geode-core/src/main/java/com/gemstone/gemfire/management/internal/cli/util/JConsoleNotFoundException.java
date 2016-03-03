@@ -23,7 +23,6 @@ import com.gemstone.gemfire.GemFireException;
  * The JConsoleNotFoundException class is a RuntimeException class that indicates that the JDK JConsole tool could
  * not be located in the file system.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.GemFireException
  * @since 7.0
  */

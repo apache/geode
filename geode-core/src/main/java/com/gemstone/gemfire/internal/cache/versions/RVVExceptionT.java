@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.cache.versions.RVVException.ReceivedVersion
  * used if the exception represents a large gap.
  * 
  * 
- * @author Bruce Schuchardt
  *
  */
 public class RVVExceptionT extends RVVException {

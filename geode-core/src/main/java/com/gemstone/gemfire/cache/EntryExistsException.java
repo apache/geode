@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache;
 
 /** Thrown when attempting to create a <code>Region.Entry</code> that already
  * exists in the <code>Region</code>.
- * @author Eric Zoerner
  *
  * @see com.gemstone.gemfire.cache.Region#create(Object, Object)
  * @see Region.Entry

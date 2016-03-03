@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * Enumerated type for an event operation.
  * This class describes the operation that generated the event.
  *
- * @author Darrel Schneider
  *
  *
  * @see CacheEvent#getOperation

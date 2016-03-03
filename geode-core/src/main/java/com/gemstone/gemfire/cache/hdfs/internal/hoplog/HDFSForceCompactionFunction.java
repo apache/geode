@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Function responsible for forcing a compaction on all members
  * of the system
  *
- * @author sbawaska
  */
 @SuppressWarnings("serial")
 public class HDFSForceCompactionFunction implements Function, InternalEntity {

@@ -56,7 +56,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * which sends this message to all VMs that have that PartitionedRegion defined.
  * 
  * @see com.gemstone.gemfire.internal.cache.PartitionedRegion#sendDumpB2NRegionForBucket(int)
- * @author rreja
  */
 public final class DumpB2NRegion extends PartitionMessage
   {

@@ -55,7 +55,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * 
- * @author sbawaska
  */
 public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
 

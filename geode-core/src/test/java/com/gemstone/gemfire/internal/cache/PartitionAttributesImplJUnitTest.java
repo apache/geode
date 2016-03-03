@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit test suite for PartitionAttributesImpl.
  * 
- * @author Kirk Lund
  */
 @Category(UnitTest.class)
 public class PartitionAttributesImplJUnitTest {

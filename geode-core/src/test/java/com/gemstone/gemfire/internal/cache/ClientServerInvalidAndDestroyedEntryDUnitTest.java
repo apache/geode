@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * also tests that tombstones are treated in a similar manner.  The ticket
  * complains that a client that does a get(K) does not end up with the entry
  * in its cache if K is invalid on the server.
- * @author bruces
  *
  */
 public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase {

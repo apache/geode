@@ -127,8 +127,6 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
 import com.gemstone.gemfire.i18n.StringId;
 /**
  * 
- * @author Eric Zoerner
- * @author Sudhir Menon
  */
 @SuppressWarnings("deprecation")
 public class DistributedRegion extends LocalRegion implements 

@@ -65,7 +65,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
- * @author tapshank Created on Dec 21, 2005
  */
 public class PartitionedRegionHelper
   {

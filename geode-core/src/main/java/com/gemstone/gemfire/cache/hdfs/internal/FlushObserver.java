@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Observes and reacts to flush events.
  * 
- * @author bakera
  */
 public interface FlushObserver {
   public interface AsyncFlushResult {

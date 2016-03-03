@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
 /**
  * A subclass of EntryEventImpl used in WAN conflict resolution
  * 
- * @author Bruce Schuchardt
  */
 public class TimestampedEntryEventImpl extends EntryEventImpl implements
     TimestampedEntryEvent {

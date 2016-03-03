@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.cache.EventID;
 
 /**
  * Does a region destroyRegion (or create) on a server
- * @author darrel
  * @since 5.7
  */
 public class DestroyRegionOp {

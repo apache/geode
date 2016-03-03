@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
 /**
  * Class PulseServiceFactory
  * 
- * @author azambare
  * @since version 7.5
  */
 @Component

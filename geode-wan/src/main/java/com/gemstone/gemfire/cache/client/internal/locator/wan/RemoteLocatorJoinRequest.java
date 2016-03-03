@@ -29,9 +29,6 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 /**
  * Requests remote locators of a remote WAN site
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
- * @author Kishor Bachhav
  * 
  * @since 6.6
  * 

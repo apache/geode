@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.CachedDeserializable;
  * The result set should be closed using the close method to free up resources
  * when it is no longer in use.
  * 
- * @author dsmith
  * @since cedar
  */
 public interface ResultBag {

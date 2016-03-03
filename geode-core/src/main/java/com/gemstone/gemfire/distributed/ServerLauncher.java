@@ -89,8 +89,6 @@ import joptsimple.OptionSet;
  * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying a GemFire Cache
  * Server process).
  * 
- * @author John Blum
- * @author Kirk Lund
  * @see com.gemstone.gemfire.distributed.AbstractLauncher
  * @see com.gemstone.gemfire.distributed.LocatorLauncher
  * @since 7.0

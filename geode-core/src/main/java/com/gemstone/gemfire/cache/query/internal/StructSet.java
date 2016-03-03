@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * The values in this set are stored as Object[] and get wrapped in Structs as
  * necessary.
  * 
- * @author Eric Zoerner
  * @since 4.0
  */
 public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set, SelectResults, 

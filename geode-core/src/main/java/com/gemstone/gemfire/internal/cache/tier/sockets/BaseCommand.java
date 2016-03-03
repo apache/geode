@@ -83,7 +83,6 @@ import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 /**
- * @author ashahid
  *
  */
 public abstract class BaseCommand implements Command {

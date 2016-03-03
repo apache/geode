@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.offheap.Releasable;
 
 /** <p>The internal implementation of the {@link TransactionEvent} interface
  * 
- * @author Darrel Schneider
  *
  * @since 4.0
  * 

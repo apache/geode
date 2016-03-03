@@ -25,7 +25,6 @@ import com.gemstone.gemfire.pdx.internal.EnumInfo;
 
 /**
  * Retrieve the PDXType, given an integer PDX id, from a server.
- * @author darrel
  * @since 6.6.2
  */
 public class GetPDXIdForEnumOp {

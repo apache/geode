@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.jta;
 import javax.transaction.Synchronization;
 
 /*
- * @author Mitul Bid
  */
 public class SyncImpl implements Synchronization {
 	public boolean befCompletion = false ;

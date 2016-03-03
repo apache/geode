@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Test for simluating the deadLock condition as in bug#37244
  * 
- * @author pbatra
  * 
  */
 @Category(IntegrationTest.class)
@@ -151,8 +150,6 @@ public class Bug37244JUnitTest
    * Test Implementation class of NewLRUClockHand for bug37244.
    * 
    * 
-   * @author pbatra
-   * @author pallavis
    * 
    */
 

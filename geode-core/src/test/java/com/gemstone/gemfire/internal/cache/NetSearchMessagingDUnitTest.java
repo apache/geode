@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author dsmith
  *
  */
 public class NetSearchMessagingDUnitTest extends CacheTestCase {

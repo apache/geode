@@ -45,7 +45,6 @@ import org.json.JSONObject;
 
 /**
  * Domain object used for Data Commands Functions
- * @author tushark
  * 
  * TODO : Implement DataSerializable
  *

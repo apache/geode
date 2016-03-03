@@ -63,8 +63,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
     Connections represent a pipe between two endpoints represented
     by generic DistributedMembers.</p>
 
-    @author Bruce Schuchardt
-    @author Darrel Schneider
     @since 2.1
 */
 /*

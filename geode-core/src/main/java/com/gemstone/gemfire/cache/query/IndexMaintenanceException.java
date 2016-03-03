@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.CacheRuntimeException;
  * Thrown if an error occurs while updating query indexes during
  * region modification.
  *
- * @author Eric Zoerner
  * @since 4.0
  */
 public class IndexMaintenanceException extends CacheRuntimeException {

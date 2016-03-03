@@ -27,7 +27,6 @@ import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 
 /**
- * @author dsmith
  *
  */
 public class PersistentMemberID implements DataSerializable {

@@ -27,7 +27,6 @@ import java.util.*;
 
 /**
  *
- * @author  vikramj
  */
 public class Address {
     public String zipCode;

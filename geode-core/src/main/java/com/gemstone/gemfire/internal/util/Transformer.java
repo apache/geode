@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.util;
 
 /**
  * Represents a data transform between two types.
- * @author rholmes
  *
  * @param <T1> The data type to be transformed from.
  * @param <T2> The data type to be transformed to.

@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.memcached.ValueWrapper;
  * 
  * "set" means "store this data".
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class SetCommand extends StorageCommand {

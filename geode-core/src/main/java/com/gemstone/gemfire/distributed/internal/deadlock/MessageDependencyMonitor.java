@@ -34,7 +34,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
  * processor thread is waiting for.
  * 
  * This will allow us to programatically discover deadlocks.
- * @author dsmith
  *
  */
 public class MessageDependencyMonitor implements DependencyMonitor {

@@ -64,7 +64,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  * <P>
  *  
- * @author Bruce Schuchardt
  * @since 4.0
  */
 public abstract class Locator {

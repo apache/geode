@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * which sends this message to all VMs that have that PartitionedRegion defined.
  * 
  * @see com.gemstone.gemfire.internal.cache.PartitionedRegion#sendDumpAllPartitionedRegions()
- * @author Tushar Apshankar
  */
 public final class DumpAllPRConfigMessage extends PartitionMessage
   {

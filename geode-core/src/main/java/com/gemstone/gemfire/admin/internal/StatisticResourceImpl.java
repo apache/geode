@@ -32,7 +32,6 @@ import java.util.List;
 /**
  * Provides monitoring of a statistic resource.
  *
- * @author    Kirk Lund
  * @since     3.5
  */
 public class StatisticResourceImpl 

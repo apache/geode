@@ -40,7 +40,6 @@ import javax.tools.ToolProvider;
 /**
  * Test framework utility class to programatically create classes, JARs and ClassLoaders that include the classes.
  * 
- * @author David Hoots
  * @since 7.0
  */
 public class ClassBuilder implements Serializable {

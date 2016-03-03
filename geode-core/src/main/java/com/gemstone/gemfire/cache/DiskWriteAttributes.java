@@ -25,8 +25,6 @@ package com.gemstone.gemfire.cache;
  * @see RegionAttributes#getDiskWriteAttributes
  * @see Region#writeToDisk
  *
- * @author David Whitlock
- * @author Mitul Bid
  *
  * @since 3.2
  * @deprecated as of 6.5 use {@link DiskStore} instead

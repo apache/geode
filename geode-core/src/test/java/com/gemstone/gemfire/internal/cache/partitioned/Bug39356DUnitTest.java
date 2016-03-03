@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 
 
 /**
- * @author dsmith
  *
  */
 public class Bug39356DUnitTest extends CacheTestCase {

@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author dsmith
  *
  */
 public class ProcessManager {

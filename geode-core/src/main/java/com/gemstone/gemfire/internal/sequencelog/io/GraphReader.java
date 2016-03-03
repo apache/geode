@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.sequencelog.GraphType;
 import com.gemstone.gemfire.internal.sequencelog.model.GraphSet;
 
 /**
- * @author dsmith
  *
  */
 public class GraphReader {

@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache;
  * is propagated back to the caller that initiated modification of the
  * cache, even if the caller is not in the same cache VM.
  *
- * @author Eric Zoerner
  *
  * @see CacheWriter
  * @see com.gemstone.gemfire.cache.Region#put(Object, Object)

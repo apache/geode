@@ -60,7 +60,6 @@ import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecor
  * node.  The source node will continue to send data until it runs out of permits;
  * it must then wait for ACK's to resume.
  * 
- * @author bakera
  *
  * @param <K> the key type
  * @param <V> the value type

@@ -49,7 +49,6 @@ import com.gemstone.gemfire.cache.CacheCallback;
  * be called once for each cache server.
  * </p>
  * 
- * @author dsmith
  * @since 5.7
  * 
  */

@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Testing methods for SimpleDiskRegion.java api's
  * 
- * @author Mitul Bid
  * @since 5.1
  *  
  */

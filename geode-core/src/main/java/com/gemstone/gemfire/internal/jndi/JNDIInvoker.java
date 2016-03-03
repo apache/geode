@@ -61,7 +61,6 @@ import com.gemstone.gemfire.internal.jta.UserTransactionImpl;
  * TransactionManager.
  * </p>
  * 
- * @author Nand Kishor Jha
  */
 public class JNDIInvoker  {
 

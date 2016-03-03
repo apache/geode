@@ -130,7 +130,6 @@ public interface Hoplog extends Closeable, Comparable<Hoplog>  {
   /**
    * Provides hoplog's reader's activity related events to owners
    * 
-   * @author ashvina
    */
   public interface HoplogReaderActivityListener {
     /**

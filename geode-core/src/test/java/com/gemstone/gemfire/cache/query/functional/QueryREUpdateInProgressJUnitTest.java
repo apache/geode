@@ -53,7 +53,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * their results to test DataInconsistency changes for Bug #41010
  * and #42757.
  *
- * @author shobhit
  *
  */
 @Category(IntegrationTest.class)

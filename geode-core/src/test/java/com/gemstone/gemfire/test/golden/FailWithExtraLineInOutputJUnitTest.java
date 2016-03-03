@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Verifies that test output containing an unexpected extra line
  * will fail with that line as the failure message.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class FailWithExtraLineInOutputJUnitTest extends FailOutputTestCase {

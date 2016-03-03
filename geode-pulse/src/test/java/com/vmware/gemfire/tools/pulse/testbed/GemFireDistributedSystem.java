@@ -34,7 +34,6 @@ import java.util.Properties;
  * 3. PropFile Writing
  * 4. Link to other remote systems, topology - multi-cluster [7.5] 
  * 
- * @author tushark
  *
  */
 public class GemFireDistributedSystem {

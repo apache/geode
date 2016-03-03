@@ -25,7 +25,6 @@ import org.springframework.util.ObjectUtils;
 /**
  * A method that can be executed via a shell command.
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  */
 public class GfshMethodTarget {

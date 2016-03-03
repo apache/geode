@@ -36,7 +36,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * class is created for each connection from the client/peer and the
  * <code>authorizeOperation</code> method invoked before/after each operation.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public interface AccessControl extends CacheCallback {

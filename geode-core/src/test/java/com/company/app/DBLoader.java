@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.*;
 /**
  * A <code>CacheLoader</code> that is <code>Declarable</code>
  *
- * @author David Whitlock
  * @since 3.2.1
  */
 public class DBLoader implements CacheLoader, Declarable {

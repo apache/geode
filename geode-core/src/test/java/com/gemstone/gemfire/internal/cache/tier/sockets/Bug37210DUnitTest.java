@@ -46,7 +46,6 @@ import com.gemstone.gemfire.cache.client.*;
  * destroy was not being called on CacheClientProxy's closure. As a result,
  * stats were left open.
  * 
- * @author Dinesh Patel
  * 
  */
 public class Bug37210DUnitTest extends DistributedTestCase

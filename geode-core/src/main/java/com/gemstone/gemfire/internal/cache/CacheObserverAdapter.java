@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.RegionEvent;
  * ISSUE_CALLBACKS_TO_CACHE_OBSERVER present in
  * com.gemstone.gemfire.internal.cache.LocalRegion is made true
  * 
- * @author ashahid
  */
 public class CacheObserverAdapter implements CacheObserver {
 

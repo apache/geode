@@ -51,7 +51,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * eventually destroy region.
  * The Test verifies that fix prevents this.
  * 
- * @author pallavis
  */
 
 public class Bug40299DUnitTest extends CacheTestCase

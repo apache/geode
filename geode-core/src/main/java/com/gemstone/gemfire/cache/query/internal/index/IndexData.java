@@ -18,7 +18,6 @@ package com.gemstone.gemfire.cache.query.internal.index;
 
 /**
  * 
- * @author Asif
  * 
  * Object of this class contains information of various attributes of Range
  * Index for a filter evaluatable condition , from the perspective of the query

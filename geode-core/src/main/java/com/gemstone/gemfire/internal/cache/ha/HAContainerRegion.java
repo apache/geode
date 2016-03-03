@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.HAEventWrapper;
 
 /**
- * @author ashetkar
  * @since 5.7
  */
 public class HAContainerRegion implements HAContainerWrapper {

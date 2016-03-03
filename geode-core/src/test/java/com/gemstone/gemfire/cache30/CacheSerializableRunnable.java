@@ -30,7 +30,6 @@ import junit.framework.AssertionFailedError;
  * CacheException}.  This way, we don't need to have a lot of
  * try/catch code in the tests.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

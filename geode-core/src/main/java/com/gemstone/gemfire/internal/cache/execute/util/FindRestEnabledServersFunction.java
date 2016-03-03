@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 /**
 * The FindRestEnabledServersFunction class is a gemfire function that gives details about REST enabled gemfire servers.
 * <p/>
-* @author Nilkanth Patel
 * @since 8.1
 */
 

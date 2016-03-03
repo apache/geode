@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * verifies the count of clear operation
  *  
- * @author aingle
  */
 public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
   /** the cache */

@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Abstract implementation of InternalExecution interface.
  *  
- * @author Yogesh Mahajan
  * @since 5.8LA
  *
  */

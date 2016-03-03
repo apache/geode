@@ -31,7 +31,6 @@ import com.gemstone.gemfire.management.membership.MembershipListener;
 /**
  * Interface to the GemFire management service for a single Cache.
  * 
- * @author rishim.
  * @since 7.0
  */
 public abstract class  ManagementService{

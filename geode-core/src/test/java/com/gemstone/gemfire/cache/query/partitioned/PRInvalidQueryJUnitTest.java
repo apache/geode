@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * single VM.,As region#query doesn't support Select Query for Local Querying it
  * should throw QueryInvalidException
  * 
- * @author pbatra
  * 
  */
 @Category(IntegrationTest.class)

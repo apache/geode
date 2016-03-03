@@ -45,7 +45,6 @@ import com.gemstone.gemfire.cache.EvictionCriteria;
  *
  * @since 3.5.1
  *
- * @author Darrel Schneider
 
 Implementations:
   (unshared)

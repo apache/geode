@@ -55,7 +55,6 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
  *  Do some puts on S1 .The expiry is on high side. Stop S1 , the client is failing to S2.During fail over duration do some
  *  puts on S1. The client on failing to S2 may receive duplicate events but should not miss any events.
  *
- *  @author Suyog Bhokare
  *
  */
 public class FailoverDUnitTest extends DistributedTestCase

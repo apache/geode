@@ -27,7 +27,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
 /**
  * Does not send a response on a cache miss.
  * 
- * @author Swapnil Bawaskar
  */
 public class GetQCommand extends GetCommand {
 

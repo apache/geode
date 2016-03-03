@@ -18,8 +18,6 @@
 package com.gemstone.gemfire.cache.wan;
 
 /**
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * 
  * @since 7.0
  */

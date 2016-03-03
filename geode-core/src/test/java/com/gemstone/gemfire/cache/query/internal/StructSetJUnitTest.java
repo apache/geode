@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  *
- * @author ericz
  */
 @Category(UnitTest.class)
 public class StructSetJUnitTest extends TestCase {

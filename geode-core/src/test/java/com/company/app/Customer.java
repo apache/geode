@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.Declarable;
 /**
  * A class that is <code>Declarable</code>
  *
- * @author David Whitlock
  * @since 3.2.1
  */
 public class Customer implements Declarable {

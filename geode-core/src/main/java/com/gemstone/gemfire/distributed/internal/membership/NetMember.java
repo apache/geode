@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.Version;
  * This is the SPI for the basic element of membership provided in the
  * GemFire system.
  * 
- * @author jpenney
  *
  */
 public interface NetMember extends Comparable<NetMember>

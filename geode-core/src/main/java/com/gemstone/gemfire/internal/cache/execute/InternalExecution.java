@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
 /**
  * Internal interface for SQLFabric. It has internal methods specific for SQLFabric
  * 
- * @author Yogesh Mahajan
  * @since 5.8LA
  * 
  */

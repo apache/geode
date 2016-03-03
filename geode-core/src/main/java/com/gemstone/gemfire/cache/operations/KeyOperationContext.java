@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache.operations;
  * {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#DESTROY} 
  * and {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#CONTAINS_KEY}.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public abstract class KeyOperationContext extends OperationContext {

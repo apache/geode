@@ -91,7 +91,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests the basic use cases for PR persistence.
- * @author dsmith
  *
  */
 public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedRegionTestBase {

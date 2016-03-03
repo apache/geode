@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
    if (response != null && response.waitForResponse()) {
      // primary was deposed
    }
- * @author Kirk Lund
  */
 public class DeposePrimaryBucketMessage extends PartitionMessage {
 

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
  * implement this interface to process a command from
  * the client.
  * 
- * @author Swapnil Bawaskar
  *
  */
 public interface CommandProcessor {

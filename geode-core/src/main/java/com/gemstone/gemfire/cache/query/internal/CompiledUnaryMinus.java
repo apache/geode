@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author Yogesh Mahajan
  * 
  */
 public class CompiledUnaryMinus extends AbstractCompiledValue{

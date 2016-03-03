@@ -38,7 +38,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author tapshank, Created on Jan 19, 2006
  *  
  */
 public class PartitionedRegionStatsDUnitTest extends

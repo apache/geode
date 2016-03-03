@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
  * Encapsulates a region operation that requires both key and serialized value
  * for the pre-operation and post-operation cases.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public abstract class KeyValueOperationContext extends KeyOperationContext {

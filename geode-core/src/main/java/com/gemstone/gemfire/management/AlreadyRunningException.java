@@ -20,7 +20,6 @@ package com.gemstone.gemfire.management;
  * Indicates that a request to start a management service
  * failed because it was already running.
  * 
- * @author darrel
  * @since 7.0
  * 
  */

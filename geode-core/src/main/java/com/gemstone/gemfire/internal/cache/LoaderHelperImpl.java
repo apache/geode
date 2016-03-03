@@ -29,7 +29,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * is only valid within the {@link CacheLoader#load(LoaderHelper) load}
  * method.
  *
- * @author Sudhir Menon
  *
  * @see CacheLoader#load(LoaderHelper) load
  * @since 2.0

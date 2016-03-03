@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
- * @author ashetkar
  *
  */
 public class MultiuserDurableCQAuthzDUnitTest extends

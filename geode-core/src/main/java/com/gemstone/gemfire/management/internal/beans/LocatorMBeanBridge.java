@@ -35,7 +35,6 @@ import com.gemstone.gemfire.management.internal.ManagementStrings;
 
 /**
  * 
- * @author rishim
  *
  */
 public class LocatorMBeanBridge {

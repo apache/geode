@@ -58,7 +58,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * Tests the UniversalMembershipListenerAdapter.
  *
- * @author Kirk Lund
  * @since 4.2.1
  */
 

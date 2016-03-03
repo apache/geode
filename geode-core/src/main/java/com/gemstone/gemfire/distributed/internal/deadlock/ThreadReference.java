@@ -21,7 +21,6 @@ import java.io.Serializable;
 /**
  * A marker interface for thread identifiers returned from
  * {@link DeadlockDetector#getThreadReference(String, Thread)}
- * @author dsmith
  */
 public interface ThreadReference extends Serializable {
 

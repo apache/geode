@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.admin;
 /**
  * Describes a cache from a GemFireVM's point of view.
  * 
- * @author Darrel Schneider
  * @since 3.5
  */
 public interface CacheInfo {

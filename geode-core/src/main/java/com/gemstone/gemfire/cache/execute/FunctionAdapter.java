@@ -30,7 +30,6 @@ package com.gemstone.gemfire.cache.execute;
  * </ol>
  * </p>
  * 
- * @author Yogesh Mahajan
  * @since 6.0
  * @see Function
  * 

@@ -74,8 +74,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 
 /**
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * @since 7.0
  * 
  */

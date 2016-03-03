@@ -33,7 +33,6 @@ import org.junit.rules.TestName;
  * has setUp() and tearDown() methods that create and initialize a
  * GemFire connection.
  *
- * @author davidw
  *
  */
 public abstract class GemFireTestCase {

@@ -55,7 +55,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Test verifies the properties of a HARegion which allows localPuts and
  * localDestroys on a MirroredRegion
  * 
- * @author Mitul Bid
  *  
  */
 @Category(IntegrationTest.class)

@@ -1132,7 +1132,7 @@ RETRYLOOP:
    * Extension of {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.Segment} using reference-equality comparison for key,
    * value equality instead of equals method.
    * 
-   * @author swale
+   * swale
    * @since 7.0
    */
   static final class IdentitySegment<K, V> extends Segment<K, V> implements
@@ -1683,7 +1683,6 @@ RETRYLOOP:
    * Also allows invoking a method when removing from map by a call to
    * {@link #removeConditionally(Object, MapCallback, Object, Object)}.
    * 
-   * @author swale
    * @since 7.0
    * 
    * @param <K>

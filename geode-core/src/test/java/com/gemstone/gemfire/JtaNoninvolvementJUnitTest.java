@@ -40,7 +40,6 @@ import org.junit.runners.MethodSorters;
 /**
  * Ensure that the ignoreJTA Region setting works
  *
- * @author Bruce Schuchardt
  * @since 4.1.1
  */
 @SuppressWarnings("deprecation")

@@ -21,7 +21,6 @@ package com.gemstone.gemfire.lang;
  * The AttachAPINotFoundException class is a RuntimeException indicating that the JDK tools.jar has not been properly
  * set on the user's classpath
  * <p/>
- * @author John Blum
  * @see java.lang.RuntimeException
  * @since 7.0
  */

@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.execute.ResultSender;
  * Context available when called using
  * {@link InternalFunctionService#onRegions(Set)}
  * 
- * @author ymahajan
  * 
  * @since 6.5
  * 

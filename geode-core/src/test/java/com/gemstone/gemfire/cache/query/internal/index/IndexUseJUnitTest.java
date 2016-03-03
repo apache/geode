@@ -56,7 +56,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * 
- * @author vaibhav
  */
 @Category(IntegrationTest.class)
 public class IndexUseJUnitTest
@@ -151,7 +150,6 @@ public class IndexUseJUnitTest
   /**
    * Test to check if Region object is passed as bind argument, the index
    * utilization occurs or not
-   * @author ashahid
    */
   @Test
   public void testBug36421_part1() {
@@ -181,7 +179,6 @@ public class IndexUseJUnitTest
   /**
    * Test to check if Region short cut method is used for querying, the index
    * utilization occurs or not
-   * @author ashahid
    */
   @Test
   public void testBug36421_part2() {
@@ -211,7 +208,6 @@ public class IndexUseJUnitTest
   /**
    * Test to check if a parametrized query when using different bind arguments
    * of Region uses the index correctly
-   * @author ashahid
    */
   @Test
   public void testBug36421_part3() {
@@ -252,7 +248,6 @@ public class IndexUseJUnitTest
   /**
    * Test to check if Region short cut method is used for querying, the Primary
    * key index utilization occurs or not 
-   * @author ashahid
    */
   @Test
   public void testBug36421_part4() {

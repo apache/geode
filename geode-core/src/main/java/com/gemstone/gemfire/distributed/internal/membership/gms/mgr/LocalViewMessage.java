@@ -31,7 +31,6 @@ import com.gemstone.gemfire.distributed.internal.membership.NetView;
   in an orderly manner.  It is intended to be queued with serially
   executed messages so that the view takes effect at the proper time.
   
-  @author Bruce Schuchardt
  */
 
 public final class LocalViewMessage extends SerialDistributionMessage

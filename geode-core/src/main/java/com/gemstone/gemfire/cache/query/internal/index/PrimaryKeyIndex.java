@@ -55,7 +55,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
 
 /**
  * 
- * @author vaibhav
  */
 public class PrimaryKeyIndex extends AbstractIndex  {
 

@@ -67,7 +67,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * Base class for tests for authorization from client to server. It contains
  * utility functions for the authorization tests from client to server.
  * 
- * @author sumedh
  * @since 5.5
  */
 public class ClientAuthorizationTestBase extends DistributedTestCase {
@@ -907,7 +906,6 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
    * different operations and also queues up the received updates to precise
    * checking of each update.
    * 
-   * @author sumedh
    * @since 5.5
    */
   public static class AuthzCqListener implements CqListener {
@@ -1003,7 +1001,6 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
    * This class specifies flags that can be used to alter the behaviour of
    * operations being performed by the <code>doOp</code> function.
    * 
-   * @author sumedh
    * @since 5.5
    */
   public static class OpFlags {
@@ -1161,7 +1158,6 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
    * This class encapsulates an {@link OperationCode} with associated flags, the
    * client to perform the operation, and the number of operations to perform.
    * 
-   * @author sumedh
    * @since 5.5
    */
   public static class OperationWithAction {
@@ -1325,7 +1321,6 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
    * indices also. This is utilized by the post-operation authorization tests
    * where authorization is based on key indices.
    * 
-   * @author sumedh
    * @since 5.5
    */
   public interface TestCredentialGenerator {
@@ -1354,7 +1349,6 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
    * Contains a {@link AuthzCredentialGenerator} and implements the
    * {@link TestCredentialGenerator} interface.
    * 
-   * @author sumedh
    * @since 5.5
    */
   protected static class TestAuthzCredentialGenerator implements

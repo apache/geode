@@ -65,7 +65,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @author dsmith
  * @since 5.7
  */
 public class ServerLocator implements TcpHandler, DistributionAdvisee {

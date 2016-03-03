@@ -22,9 +22,6 @@ import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 /**
  * Factory to create SerialGatewaySender
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
- * @author Kishor Bachhav
  * 
  * @since 7.0
  * @see GatewaySender

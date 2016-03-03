@@ -64,7 +64,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  *
  * The {@link ParallelGatewaySenderQueue} should be shared among all the {@link ParallelGatewaySenderEventProcessor}s.
  * 
- * @author Suranjan Kumar
  *
  */
 public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEventProcessor {

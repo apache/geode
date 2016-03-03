@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * PartitionedRegion.KeysSetIterator used by SqlFabric to obtain information of
  * the bucket ID from which the current local entry is being fetched from.
  * 
- * @author Asif
  */
 public interface PREntriesIterator<T> extends Iterator<T>{
 

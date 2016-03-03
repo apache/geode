@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.Region;
  * Composite data type used to distribute the eviction attributes for
  * a {@link Region}.
  * 
- * @author rishim
  * @since 7.0
  */
 

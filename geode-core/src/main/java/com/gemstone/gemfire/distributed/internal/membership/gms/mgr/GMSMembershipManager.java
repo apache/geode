@@ -391,7 +391,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * Insert our own MessageReceiver between us and the direct channel, in order
    * to correctly filter membership events.
    * 
-   * @author jpenney
    * 
    */
   class MyDCReceiver implements DirectChannelListener

@@ -55,7 +55,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 
 /**
  * 
- * @author ajayp
  * @since 8.0
  */
 

@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Verifies that test output missing an expected line (at the end of
  * the golden file) will fail with that line as the failure message.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class FailWithLineMissingFromEndOfOutputJUnitTest extends FailOutputTestCase {

@@ -48,7 +48,6 @@ import java.util.Map;
 import junit.framework.Assert;
 
 /**
- * @author Xiaojian Zhou
  *
  */
 public class DistributedAckPersistentRegionCCEDUnitTest extends DistributedAckRegionCCEDUnitTest {

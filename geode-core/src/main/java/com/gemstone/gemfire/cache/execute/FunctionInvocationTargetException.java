@@ -24,7 +24,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * Function needs to be re-executed if the
  * {@link FunctionException#getCause()} is FunctionInvocationTargetException.
  * 
- * @author Yogesh Mahajan
  * @since 6.0
  * 
  */

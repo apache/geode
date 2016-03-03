@@ -22,7 +22,6 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Indicates that error encountered while processing REST request.
  * <p/>
- * @author Nilkanth Patel
  * @since 8.0
  */
 

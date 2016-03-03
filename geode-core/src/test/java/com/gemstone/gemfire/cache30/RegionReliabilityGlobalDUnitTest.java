@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.*;
  * Tests region reliability defined by MembershipAttributes using 
  * GLOBAL scope.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public class RegionReliabilityGlobalDUnitTest extends RegionReliabilityTestCase {

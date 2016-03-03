@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Tests basic region operations with compression enabled.
  * 
- * @author rholmes
  */
 public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
   /**

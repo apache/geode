@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.wan.DistributedSystemListener;
  * When a removedDistributedSystem is called, GatewaySender and GatewayReceiver
  * is stopped on site1 and site2 respectively.
  * 
- * @author kbachhav
  * 
  */
 public class MyDistributedSystemListener implements DistributedSystemListener {

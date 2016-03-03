@@ -46,8 +46,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * This class is a refactoring of <code>Systemcontroller</code>,
  * <code>RemoteCommand</code>, and <code>LocatorRemoteCommand</code>.
  *
- * @author David Whitlock
- * @author Kirk Lund (original SystemController)
  * @since 4.0
  */
 class EnabledManagedEntityController implements ManagedEntityController {

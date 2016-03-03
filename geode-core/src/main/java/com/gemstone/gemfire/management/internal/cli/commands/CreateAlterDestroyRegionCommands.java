@@ -82,7 +82,6 @@ import java.util.regex.Pattern;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {

@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 
 /**
  * 
- * @author ajayp
  * @since 8.0
  */
 

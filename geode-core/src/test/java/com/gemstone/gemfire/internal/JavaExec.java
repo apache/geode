@@ -22,7 +22,6 @@ import java.util.*;
 /**
  * Used to exec a java main class in its own vm
  *
- * @author darrel
  *
  */
 public class JavaExec {

@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * 
- * @author rishim
  * @since  1.4
  */
 @Category(IntegrationTest.class)

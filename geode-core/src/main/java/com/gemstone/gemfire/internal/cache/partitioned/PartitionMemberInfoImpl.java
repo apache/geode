@@ -24,7 +24,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * Implements PartitionMemberInfo. Serializable form is used to allow JMX 
  * MBeans to use this as a remotable return type.
  * 
- * @author Kirk Lund
  */
 public class PartitionMemberInfoImpl 
 implements InternalPartitionDetails, Serializable {

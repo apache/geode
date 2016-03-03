@@ -28,7 +28,6 @@ import java.io.StringWriter;
  * {@link com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext#WRITER_WRAPPER}. 
  * NOTE: Not thread safe 
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

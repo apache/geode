@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.*;
  * 
  * A testing helper factory to get a disk region with the desired configuration
  * 
- * @author Mitul Bid
  *  
  */
 public class DiskRegionHelperFactory

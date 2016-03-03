@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
 /**
  * The LocatorStatusRequest class...
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.cache.client.internal.locator.ServerLocationRequest
  * @see com.gemstone.gemfire.internal.DataSerializableFixedID
  * @since 7.0

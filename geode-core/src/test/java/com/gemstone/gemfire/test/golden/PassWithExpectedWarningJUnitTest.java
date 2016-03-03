@@ -26,7 +26,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Verifies that an example test should always pass even if the output contains
  * a warning that is expected.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class PassWithExpectedWarningJUnitTest extends PassWithExpectedProblemTestCase {

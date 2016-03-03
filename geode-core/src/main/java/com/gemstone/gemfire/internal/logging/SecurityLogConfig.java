@@ -24,7 +24,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
  * LogConfig implementation for Security logging configuration that delegates 
  * to a DistributionConfig.
  * 
- * @author Kirk Lund
  */
 public class SecurityLogConfig implements LogConfig {
 

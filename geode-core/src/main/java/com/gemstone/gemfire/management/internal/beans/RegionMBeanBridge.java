@@ -48,7 +48,6 @@ import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
  * This class acts as a bridge between a Region and RegionMBean This also
  * listens for statistics changes and update its value accordingly
  * 
- * @author rishim
  * 
  * @param <K>
  * @param <V>

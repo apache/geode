@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author Eric Zoerner
  */
 public class CompiledIteratorDef extends AbstractCompiledValue {
   private static final Logger logger = LogService.getLogger();

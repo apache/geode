@@ -38,7 +38,6 @@ import org.junit.experimental.categories.Category;
  * Make sure that create are distributed and done in
  * remote regions that are CACHED_ALL_EVENTS*.
  *
- * @author darrel
  * @since 5.0
  */
 @Category(DistributedTest.class)

@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * 
- * @author Deepkumar Varma
  * 
  * The DUnitTest checks whether the following Three counts are incremented
  * correctly or not:

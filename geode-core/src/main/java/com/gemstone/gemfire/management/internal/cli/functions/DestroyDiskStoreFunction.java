@@ -35,7 +35,6 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
  * Function used by the 'destroy disk-store' gfsh command to destroy a disk
  * store on each member.
  * 
- * @author David Hoots
  * @since 8.0
  */
 

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
 
 /**
  * Contains common data tranformation utility methods and transformers.
- * @author rholmes
  */
 public final class TransformUtils {
   

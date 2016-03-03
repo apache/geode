@@ -35,7 +35,6 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  * The first time someone asks this instance for its Object it will deserialize
  * the bytes and from then on keep a reference to the deserialized form.
  * So it "prefers deserialization".
- * @author Eric Zoerner
  *
  */
 public final class VMCachedDeserializable implements CachedDeserializable, DataSerializableFixedID {

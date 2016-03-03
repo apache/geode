@@ -24,7 +24,6 @@ import antlr.Token;
 import com.gemstone.gemfire.cache.query.internal.QCompiler;
 
 /**
- * @author jhuynh
  * 
  * @since 8.1
  *

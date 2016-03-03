@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Tests the use of CacheDistributionAdvisor in createSubRegion
  *
- * @author Eric Zoerner
  *
  */
 public class CacheAdvisorDUnitTest extends CacheTestCase {

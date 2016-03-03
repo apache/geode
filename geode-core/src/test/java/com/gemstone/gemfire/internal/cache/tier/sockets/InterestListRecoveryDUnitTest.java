@@ -64,8 +64,6 @@ import com.gemstone.gemfire.cache.client.internal.RegisterInterestTracker;
  * s2 ----> unavaliable // fail over should to s1 with intrest list s4,s5
  * see only k4 and k5 are registerd on s1
  *
- * @author Yogesh Mahajan
- * @author Suyog Bhokare
  */
 public class InterestListRecoveryDUnitTest extends DistributedTestCase
 {

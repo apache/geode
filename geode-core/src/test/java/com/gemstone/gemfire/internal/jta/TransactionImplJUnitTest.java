@@ -17,7 +17,6 @@
 /*
  * Test TransactionImpl methods not tested by UserTransactionImpl
  * 
- * @author Mitul Bid
  */
 package com.gemstone.gemfire.internal.jta;
 
@@ -40,8 +39,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author unknown
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class TransactionImplJUnitTest {

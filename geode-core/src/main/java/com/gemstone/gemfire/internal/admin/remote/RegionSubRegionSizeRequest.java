@@ -25,7 +25,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 /**
  * Admin request to transfer region info for a member
  * 
- * @author Harsh Khanna
  */
 public class RegionSubRegionSizeRequest extends AdminRequest implements
     Cancellable {

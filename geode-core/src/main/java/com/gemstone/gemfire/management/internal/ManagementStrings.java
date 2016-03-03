@@ -26,7 +26,6 @@ import com.gemstone.gemfire.i18n.StringId;
  *
  * 100001 - 110000
  *
- * @author rishim
  *
  */
 public class ManagementStrings {

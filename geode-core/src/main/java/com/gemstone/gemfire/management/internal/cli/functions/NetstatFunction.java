@@ -36,7 +36,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 /**
  * Executes 'netstat' OS command & returns the result as compressed bytes.
  * 
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 public class NetstatFunction implements Function, InternalEntity {

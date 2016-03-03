@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  *
- * @author Eric Zoerner
  *
  */
 public class DistributionAdvisorDUnitTest extends DistributedTestCase {

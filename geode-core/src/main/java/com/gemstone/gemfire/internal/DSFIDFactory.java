@@ -418,7 +418,6 @@ import com.gemstone.gemfire.pdx.internal.EnumInfo;
  * Note that this class implements DataSerializableFixedID to inherit constants but
  * is not actually an instance of this interface.
  *
- * @author Darrel Schneider
  * @since 5.7
  */
 public final class DSFIDFactory implements DataSerializableFixedID {

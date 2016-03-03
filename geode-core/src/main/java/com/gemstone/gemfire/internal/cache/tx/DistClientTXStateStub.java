@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.cache.TXStateProxy;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author vivekb
  * 
  */
 public class DistClientTXStateStub extends ClientTXStateStub implements

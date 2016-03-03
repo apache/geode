@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Implementing class for <code>Conflatable</code> interface. Objects of this
  * class will be add to the queue
  * 
- * @author Dinesh Patel
  * 
  */
 public class CqConflatable implements Conflatable, Serializable

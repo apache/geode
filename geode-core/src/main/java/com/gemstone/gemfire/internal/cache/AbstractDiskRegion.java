@@ -49,7 +49,6 @@ import joptsimple.internal.Strings;
 /**
  * Code shared by both DiskRegion and RecoveredDiskRegion.
  *
- * @author Darrel Schneider
  *
  * @since prPersistSprint2
  */

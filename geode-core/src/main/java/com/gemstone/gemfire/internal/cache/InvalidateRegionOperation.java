@@ -29,7 +29,6 @@ import com.gemstone.gemfire.DataSerializer;
 
 /**
  *
- * @author Eric Zoerner
  *
  */
 public class InvalidateRegionOperation extends DistributedCacheOperation {

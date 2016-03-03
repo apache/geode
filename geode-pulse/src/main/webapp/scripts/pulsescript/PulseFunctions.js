@@ -19,7 +19,6 @@
 
 /**
  * @name PulseFunctions.js
- * @author Ashutosh Zambare.
  * @version 1.0
  *
  */

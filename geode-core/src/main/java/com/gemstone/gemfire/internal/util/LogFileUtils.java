@@ -30,7 +30,6 @@ import java.io.OutputStream;
 /**
  * Utility class for copying log files
  * 
- * @author gregp
  * @since 6.5
  */
 public class LogFileUtils {

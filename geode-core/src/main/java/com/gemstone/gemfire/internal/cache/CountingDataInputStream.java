@@ -21,7 +21,6 @@ import java.io.*;
 /**
  * A data input stream that counts the bytes it plans on reading.
  * 
- * @author Darrel Schneider
  * 
  * @since prPersistSprint2
  */

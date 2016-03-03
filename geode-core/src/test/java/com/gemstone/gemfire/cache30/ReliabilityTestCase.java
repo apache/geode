@@ -23,7 +23,6 @@ import java.util.*;
 /**
  * Provides functionality helpful to testing Reliability and RequiredRoles.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public abstract class ReliabilityTestCase extends CacheTestCase {

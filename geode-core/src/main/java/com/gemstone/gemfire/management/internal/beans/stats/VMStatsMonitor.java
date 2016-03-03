@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
  * This class acts as a monitor and listen for VM stats update on behalf of
  * MemberMBean.
  * 
- * @author rishim
  * 
  */
 public final class VMStatsMonitor extends MBeanStatsMonitor {

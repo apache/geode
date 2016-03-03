@@ -22,7 +22,6 @@ import javax.management.ObjectName;
  * Proxy info class holds details about proxy
  * for quicker access during several Management 
  * operations
- * @author rishim
  *
  */
 public class ProxyInfo {

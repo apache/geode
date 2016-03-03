@@ -46,7 +46,6 @@ import java.util.Set;
  * @see TXOriginatorRecoveryProcessor
  * @see com.gemstone.gemfire.internal.cache.TXFarSideCMTracker
  * 
- * @author Mitch Thomas
  * @since 4.1.1
  */
 public final class TXLockUpdateParticipantsMessage

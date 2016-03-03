@@ -29,7 +29,6 @@ import org.springframework.util.ObjectUtils;
  * identifiers
  * <p/>
  * 
- * @author John Blum, Nilkanth Patel
  * @since 8.0
  */
 @SuppressWarnings("unused")

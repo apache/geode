@@ -50,8 +50,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * If we can not find enough free memory then all the existing free memory is defragmented.
  * If we still do not have enough to make the allocation an exception is thrown.
  * 
- * @author darrel
- * @author Kirk Lund
  * @since 9.0
  */
 public class MemoryAllocatorImpl implements MemoryAllocator {

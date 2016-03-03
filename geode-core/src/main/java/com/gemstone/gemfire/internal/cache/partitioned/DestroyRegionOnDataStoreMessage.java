@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
  * A message sent to a data store telling that data store to globally
  * destroy the region on behalf of a PR accessor.
  * 
- * @author mthomas
  * @since 5.0
  */
 public final class DestroyRegionOnDataStoreMessage extends PartitionMessage

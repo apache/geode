@@ -64,7 +64,6 @@ import com.gemstone.gemfire.management.internal.configuration.SharedConfiguratio
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 /****
  *
- * @author David Hoots
  *         Sourabh Bansod
  * @since 7.0
  *

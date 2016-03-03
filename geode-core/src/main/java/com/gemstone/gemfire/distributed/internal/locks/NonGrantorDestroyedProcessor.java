@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * by the calling member.
  *
  * @since 4.0
- * @author Kirk Lund
  */
 public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();

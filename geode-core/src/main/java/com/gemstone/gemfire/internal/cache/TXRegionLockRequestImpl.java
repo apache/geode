@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /** TXRegionLockRequest represents all the locks that need to be made
  * for a single region.
  *
- * @author Darrel Schneider
  * 
  * @since 4.0
  * 

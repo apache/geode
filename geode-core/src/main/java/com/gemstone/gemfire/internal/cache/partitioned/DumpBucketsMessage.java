@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * PartitionedRegion defined.
  * 
  * @see com.gemstone.gemfire.internal.cache.PartitionedRegion#dumpAllBuckets(boolean)
- * @author Mitch Thomas
  */
 public final class DumpBucketsMessage extends PartitionMessage
 {

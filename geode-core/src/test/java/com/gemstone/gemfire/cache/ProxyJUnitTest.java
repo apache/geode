@@ -38,7 +38,6 @@ import org.junit.experimental.categories.Category;
 /**
  * Unit test for basic DataPolicy.EMPTY feature.
  * NOTE: these tests using a loner DistributedSystem and local scope regions
- * @author Darrel Schneider
  * @since 5.0
  */
 @Category(IntegrationTest.class)

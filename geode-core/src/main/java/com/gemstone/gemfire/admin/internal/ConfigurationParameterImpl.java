@@ -30,7 +30,6 @@ import java.util.List;
 /**
  * A single configuration parameter of a system member.
  *
- * @author    Kirk Lund
  * @since     3.5
  *
  */

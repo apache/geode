@@ -20,8 +20,6 @@ package com.gemstone.gemfire.cache.query.internal;
  * Encapsulates evaluation info about compiled values
  * 
  * @version $Revision: 1.1 $
- * @author ericz
- * @author asif
  * @since 4.1
  */
 

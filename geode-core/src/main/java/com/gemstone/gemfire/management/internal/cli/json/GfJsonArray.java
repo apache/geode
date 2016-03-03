@@ -26,7 +26,6 @@ import org.json.JSONException;
 /**
  * Wrapper over JSONArray.
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

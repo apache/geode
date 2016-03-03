@@ -47,7 +47,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Written to test fix for Bug #47132
- * @author tushark
  *
  */
 public class InterestRegrListenerDUnitTest extends DistributedTestCase {

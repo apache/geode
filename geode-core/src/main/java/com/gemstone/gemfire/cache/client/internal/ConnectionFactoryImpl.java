@@ -45,7 +45,6 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
 /**
  * Creates connections, using a connection source to determine
  * which server to connect to.
- * @author dsmith
  * @since 5.7
  * 
  */

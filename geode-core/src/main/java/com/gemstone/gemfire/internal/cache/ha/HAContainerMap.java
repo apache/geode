@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * @author ashetkar
  * @since 5.7
  */
 public class HAContainerMap implements HAContainerWrapper {

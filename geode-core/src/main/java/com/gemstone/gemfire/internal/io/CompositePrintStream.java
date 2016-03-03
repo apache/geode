@@ -21,7 +21,6 @@ import java.io.PrintStream;
 import java.util.Iterator;
 
 /**
- * @author Kirk Lund
  * @since 7.0
  */
 public class CompositePrintStream extends PrintStream {

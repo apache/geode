@@ -53,7 +53,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Integration tests for launching a Locator in a forked process.
  *
- * @author Kirk Lund
  * @since 8.0
  */
 @Category(IntegrationTest.class)

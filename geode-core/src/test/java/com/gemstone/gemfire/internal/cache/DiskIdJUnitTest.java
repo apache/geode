@@ -26,7 +26,6 @@ import junit.framework.TestCase;
  * 
  * Test verifies the setting and getting of disk id values are correctly 
  * 
- * @author Mitul Bid
  *
  */
 @Category(UnitTest.class)

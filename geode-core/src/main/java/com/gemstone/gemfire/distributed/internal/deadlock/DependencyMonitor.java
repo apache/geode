@@ -25,7 +25,6 @@ import java.util.Set;
  * this interface should register themselves with the dependency monitor using
  * the {@link DependencyMonitorManager#addMonitor(DependencyMonitor)} method.
  * 
- * @author dsmith
  */
 public interface DependencyMonitor {
   /**

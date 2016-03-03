@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * The ClientServerRegisterInterestsDUnitTest class is a test suite of test cases testing the interaction between a
  * client and a server in a Register Interests scenario.
  *
- * @author John Blum
  * @see com.gemstone.gemfire.test.dunit.DistributedTestCase
  * @since 8.0
  */

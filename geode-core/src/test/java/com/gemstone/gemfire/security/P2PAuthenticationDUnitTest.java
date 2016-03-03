@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * Tests peer to peer authentication in Gemfire
  * 
- * @author Yogesh Mahajan
  * @since 5.5
  */
 public class P2PAuthenticationDUnitTest extends DistributedTestCase {

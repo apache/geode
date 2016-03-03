@@ -43,7 +43,6 @@ import org.junit.experimental.categories.Category;
 /**
  * Tests the functionality of the {@link DataSerializable} class.
  *
- * @author David Whitlock
  * @since 3.0
  */
 @Category(UnitTest.class)

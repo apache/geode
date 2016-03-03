@@ -40,7 +40,6 @@ import java.util.Date;
  * running
  * <li> Port=The port you are using to open the monitor port for
  * the instance
- * @author dpark
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public class AdminConfig

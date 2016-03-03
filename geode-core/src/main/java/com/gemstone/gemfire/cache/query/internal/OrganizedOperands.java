@@ -31,7 +31,6 @@ package com.gemstone.gemfire.cache.query.internal;
  * iterateOperand refers to a single or group of conditions which are not filter
  * evaluatable.
  * 
- * @author asif
  * 
  *  
  */

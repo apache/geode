@@ -24,7 +24,6 @@ import java.io.*;
  * A message that is sent to a particular distribution manager to get its
  * current {@link com.gemstone.gemfire.admin.GemFireMemberStatus}
  * 
- * @author Harsh Khanna
  */
 public class RefreshMemberSnapshotRequest extends AdminRequest {
   /**

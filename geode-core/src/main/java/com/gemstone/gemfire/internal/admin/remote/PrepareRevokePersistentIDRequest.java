@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * An instruction to all members that they should forget 
  * about the persistent member described by this pattern.
- * @author dsmith
  * TODO prpersist - This extends AdminRequest, but it doesn't
  * work with most of the admin paradigm, which is a request response
  * to a single member. Maybe we need to a new base class.

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.management.internal.cli.remote.MemberCommandService;
  * <b>NOTE:</b> <code>CommandService</code> is currently available only on
  * GemFire Manager nodes.
  *
- * @author Abhishek Chaudhari
  *
  * @since 7.0
  */

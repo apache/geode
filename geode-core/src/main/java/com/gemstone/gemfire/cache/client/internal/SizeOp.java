@@ -21,7 +21,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 
 /**
  * Does a region size on a server
- * @author gregp
  * @since 6.6
  */
 public class SizeOp {

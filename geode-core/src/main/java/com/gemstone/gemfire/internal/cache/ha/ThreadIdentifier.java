@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.cache.EventID;
  * which uniquely identifies the thread by storing the Object of this class.
  * 
  * @see EventID
- * @author Asif
  * 
  *  
  */

@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * Provides an envelope for transmitting a collection of
  * <code>SnapshotRecord</code>s during export.
  * 
- * @author bakera
  */
 public class SnapshotPacket implements DataSerializableFixedID {
   /**

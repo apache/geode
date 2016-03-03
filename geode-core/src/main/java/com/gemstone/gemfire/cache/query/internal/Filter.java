@@ -24,8 +24,6 @@ import com.gemstone.gemfire.cache.query.*;
  * Class Description
  * 
  * @version $Revision: 1.1 $
- * @author ericz
- * @author asif
  */
 public interface Filter {
 

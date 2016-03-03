@@ -50,7 +50,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * A request send from an admin VM to all of the peers to indicate
  * that that should complete the backup operation.
  * 
- * @author dsmith
  *
  */
 public class FinishBackupRequest  extends CliLegacyMessage {

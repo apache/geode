@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  * been closed. Can be thrown from almost any method related to regions or the
  * <code>Cache</code> after the cache has been closed.
  *
- * @author Eric Zoerner
  *
  *
  * @see Cache

@@ -37,7 +37,6 @@ import junit.framework.TestCase;
  * Tests the old disk apis to make sure they do the correct thing.
  * Once we drop these old deprecated disk apis then this unit test can be removed.
  * 
- * @author darrel
  *  
  */
 @Category(IntegrationTest.class)

@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.query.internal.QCompiler;
 import com.gemstone.gemfire.cache.query.internal.Support;
 /**
  * 
- * @author Yogesh Mahajan
  *
  */
 public class ASTUnary extends GemFireAST {	 

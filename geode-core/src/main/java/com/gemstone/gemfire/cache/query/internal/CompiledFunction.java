@@ -28,7 +28,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
  * Predefined functions
  *
  * @version     $Revision: 1.1 $
- * @author      ericz
  */
 
 

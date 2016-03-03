@@ -57,7 +57,6 @@ import com.gemstone.gemfire.cache.client.*;
  * - data will come to region1 on server2 via GII
  * - data should be sent to client2 
  * 
- * @author Mitul Bid
  * 
  * 
  */

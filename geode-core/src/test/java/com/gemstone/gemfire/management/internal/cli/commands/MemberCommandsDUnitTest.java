@@ -53,7 +53,6 @@ import java.util.Properties;
 import java.util.Set;
 
 /****
- * @author bansods since 7.0
  */
 
 public class MemberCommandsDUnitTest extends CacheTestCase {

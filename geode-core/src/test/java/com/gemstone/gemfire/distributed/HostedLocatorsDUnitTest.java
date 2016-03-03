@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Extracted from LocatorLauncherLocalJUnitTest.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 public class HostedLocatorsDUnitTest extends DistributedTestCase {

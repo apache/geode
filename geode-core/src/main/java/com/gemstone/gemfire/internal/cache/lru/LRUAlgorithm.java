@@ -69,7 +69,6 @@ import java.util.*;
  * region will result in an {@link IllegalStateException} being
  * thrown.
  *
- * @author David Whitlock
  * @since 3.2
  */
 public abstract class LRUAlgorithm

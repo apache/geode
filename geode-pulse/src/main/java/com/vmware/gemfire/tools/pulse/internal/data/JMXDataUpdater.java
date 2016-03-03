@@ -69,7 +69,6 @@ import java.util.Set;
  * Class JMXDataUpdater Class used for creating JMX connection and getting all
  * the required MBeans
  *
- * @author Anand Hariharan
  *
  * @since version 7.0.Beta 2012-09-23
  */

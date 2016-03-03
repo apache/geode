@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.DirectReplyMessage;
  * 
  * The reply sender may be the distribution manager itself, or it may send
  * the reply directly back on the same socket the message as received on.
- * @author dsmith
  *
  */
 public interface ReplySender {

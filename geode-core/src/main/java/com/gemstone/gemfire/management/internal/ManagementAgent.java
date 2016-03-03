@@ -66,7 +66,6 @@ import com.gemstone.gemfire.management.internal.unsafe.ReadOpFileAccessControlle
  * control JMX server end points for the Platform MBeanServer and the GemFire
  * MBeans hosted within it.
  *
- * @author VMware, Inc.
  * @since 7.0
  */
 public class ManagementAgent {

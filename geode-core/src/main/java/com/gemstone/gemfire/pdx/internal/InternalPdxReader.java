@@ -25,7 +25,6 @@ import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.AutoClassInfo;
 
 /**
  * Adds additional methods for reading pdx fields for internal use.
- * @author darrel
  * @since 6.6.2
  */
 public interface InternalPdxReader extends PdxReader {

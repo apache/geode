@@ -24,7 +24,6 @@ package com.vmware.gemfire.tools.pulse.internal.util;
  * 
  * This is utility class used for conversions of time.
  * 
- * @author Sachin K
  * 
  * @since version 7.0.1
  */

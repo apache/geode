@@ -33,7 +33,6 @@ import java.net.*;
  * It contains configuration state and behavior common to all managed
  * entities.
  *
- * @author David Whitlock
  * @since 4.0
  */
 public abstract class ManagedEntityConfigImpl

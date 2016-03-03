@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.sequencelog.model;
 import java.util.SortedMap;
 
 /**
- * @author dsmith
  *
  */
 public class Vertex implements Comparable<Vertex> {

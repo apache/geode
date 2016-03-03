@@ -32,7 +32,6 @@ import org.springframework.shell.core.MethodTarget;
 
 /**
  * 
- * @author Sourabh Bansod
  * @since 7.0
  */
 public class GatewaySenderIdConverter implements Converter<String> {

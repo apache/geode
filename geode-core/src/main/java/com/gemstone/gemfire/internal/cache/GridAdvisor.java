@@ -30,7 +30,6 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
 
 /**
  * Used to share code with BridgeServerAdvisor and ControllerAdvisor
- * @author darrel
  *
  */
 public abstract class GridAdvisor extends DistributionAdvisor {

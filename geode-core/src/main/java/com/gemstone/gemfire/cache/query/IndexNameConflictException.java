@@ -26,7 +26,6 @@ package com.gemstone.gemfire.cache.query;
  * Thrown while creating the new index if there exists an Index with
  * the same name as new index.
  *
- * @author vaibhav
  * @since 4.0
  */
 

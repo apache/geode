@@ -40,7 +40,6 @@ import org.junit.Ignore;
 /**
  * Test for accessing query bind parameters from authorization callbacks
  * 
- * @author tnomulwar
  * 
  */
 public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {

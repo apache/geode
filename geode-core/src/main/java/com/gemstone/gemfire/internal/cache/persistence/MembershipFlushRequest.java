@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.ProxyBucketRegion;
 
 /**
- * @author dsmith
  *
  */
 public class MembershipFlushRequest extends

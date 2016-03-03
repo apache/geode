@@ -70,7 +70,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Tests the ClientMembership API including ClientMembershipListener.
  *
- * @author Kirk Lund
  * @since 4.2.1
  */
 public class ClientMembershipDUnitTest extends ClientServerTestCase {

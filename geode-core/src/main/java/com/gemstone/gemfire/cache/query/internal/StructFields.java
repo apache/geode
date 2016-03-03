@@ -29,7 +29,6 @@ import com.gemstone.gemfire.cache.query.types.CollectionType;
  * @see StructBag
  * @see SortedStructBag
  * 
- * @author ashahid
  *
  */
 public interface StructFields {

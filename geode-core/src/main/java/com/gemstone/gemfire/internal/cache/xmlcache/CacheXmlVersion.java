@@ -23,7 +23,6 @@ import java.util.HashMap;
  * comparisons. Under the old String comparison version "8.1" was older than
  * "8_0" and "10.0" was older than "9.0".
  *
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * The StringUtilsJUnitTest is a test suite containing test cases for testing the contract and functionality of
  * the StringUtils class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.lang.StringUtils
  * @see org.junit.Assert
  * @see org.junit.Test

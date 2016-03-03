@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 
 /**
  * Close a continuous query on the server
- * @author darrel
  * @since 5.7
  */
 public class CloseCQOp {

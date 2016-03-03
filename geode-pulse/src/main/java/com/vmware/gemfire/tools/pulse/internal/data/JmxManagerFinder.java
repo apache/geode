@@ -40,7 +40,6 @@ import com.vmware.gemfire.tools.pulse.internal.util.ConnectionUtil;
  * GemFire's internal serialization codes and byte sequences have been hard
  * coded into this code.
  * 
- * @author darrel
  * @since version 7.0.Beta 2012-09-23
  * 
  */
@@ -74,7 +73,6 @@ public class JmxManagerFinder {
    * Describes the location of a jmx manager. If a jmx manager does not exist
    * then port will be 0.
    * 
-   * @author darrel
    * 
    */
   public static class JmxManagerInfo {

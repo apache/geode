@@ -83,19 +83,16 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * This class sends the query on various <code>PartitionedRegion</code> data
  * store nodes and collects the results back, does the union of all the results.
  * 
- * @author rreja
- * @author Eric Zoerner
  *   revamped with streaming of results
- * @author Mitch Thomas
  *   retry logic
  */
 public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 {
   private static final Logger logger = LogService.getLogger();
+
   /**
    * An ArrayList which might be unconsumable.
    * @since 6.6.2
-   * @author shobhit
    */
   public static class MemberResultsList extends ArrayList {
     private boolean isLastChunkReceived = false;
@@ -111,7 +108,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * Simple testing interface
-   * @author Mitch Thomas
    * @since 6.0
    */
   public interface TestHook {
@@ -1028,7 +1024,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * in multipleThreads and results gained from buckets.
    * In future this can be used for adding for more information to final
    * query running info from pool threads.
-   * @author shobhit
    * @since 6.6
    */
   public static class PRQueryResultCollector {

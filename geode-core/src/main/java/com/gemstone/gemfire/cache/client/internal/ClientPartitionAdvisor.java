@@ -42,8 +42,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Stores the information such as partition attributes and meta data details
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * 
  * @since 6.5
  * 

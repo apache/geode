@@ -68,8 +68,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  * @see com.gemstone.gemfire.cache.PartitionAttributes
  * @see com.gemstone.gemfire.cache.AttributesFactory#setPartitionAttributes(PartitionAttributes)
- * @author rreja
- * @author bruce
  * @since 5.0
  */
 public class PartitionAttributesFactory<K,V>

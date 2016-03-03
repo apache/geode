@@ -106,7 +106,6 @@ import com.gemstone.gemfire.management.internal.configuration.messages.SharedCon
  * locator.startPeerLocation();
  * locator.startDistributeSystem();
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class InternalLocator extends Locator implements ConnectListener {
@@ -1235,7 +1234,6 @@ public class InternalLocator extends Locator implements ConnectListener {
   
   /******
    * 
-   * @author bansods
    *
    */
   class FetchSharedConfigStatus implements Callable<SharedConfigurationStatusResponse> {

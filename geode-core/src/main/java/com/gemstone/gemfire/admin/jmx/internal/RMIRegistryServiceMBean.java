@@ -27,7 +27,6 @@ import java.rmi.RemoteException;
  * the RMI Registry should get bound to.
  * 2. Port property can not be changed once set.
  * 
- * @author abhishek
  */
 public interface RMIRegistryServiceMBean {
 

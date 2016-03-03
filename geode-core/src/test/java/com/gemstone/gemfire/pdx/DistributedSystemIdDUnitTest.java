@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author dsmith
  *
  */
 public class DistributedSystemIdDUnitTest extends DistributedTestCase {

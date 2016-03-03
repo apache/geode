@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Asserts that values received in EntryEvents for CacheWriters and CacheListeners are not compressed.
  * 
- * @author rholmes
  */
 public class CompressionCacheListenerDUnitTest extends CacheTestCase {
   /**

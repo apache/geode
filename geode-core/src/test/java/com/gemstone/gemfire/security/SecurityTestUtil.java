@@ -93,7 +93,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * Contains utility methods for setting up servers/clients for authentication
  * and authorization tests.
  * 
- * @author sumedh
  * @since 5.5
  */
 public class SecurityTestUtil extends DistributedTestCase {

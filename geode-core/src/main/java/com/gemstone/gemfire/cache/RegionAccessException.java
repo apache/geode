@@ -28,7 +28,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
  * {@link MembershipAttributes} have been configured with {@link 
  * LossAction#NO_ACCESS} or {@link LossAction#LIMITED_ACCESS}.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public class RegionAccessException extends RegionRoleException {

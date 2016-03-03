@@ -22,7 +22,6 @@ import com.gemstone.gemfire.pdx.JSONFormatterException;
 /**
  * Indicates that incorrect JSON document encountered while processing it.
  * <p/>
- * @author Nilkanth Patel
  * @since 8.0
  */
 

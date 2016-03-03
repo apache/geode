@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.SocketCreator;
  * has revoked. Any fields that are null will be considered a wildcard
  * matching any members.
  * 
- * @author dsmith
  * @since prPersistSprint1
  */
 public class PersistentMemberPattern implements PersistentID, Comparable<PersistentMemberPattern> {

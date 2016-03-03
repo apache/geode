@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
- * @author dsmith
  *
  */
 public class PersistentPartitionedRegionOldConfigDUnitTest extends

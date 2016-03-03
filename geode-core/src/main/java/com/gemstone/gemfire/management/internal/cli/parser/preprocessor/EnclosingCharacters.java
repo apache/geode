@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.cli.parser.preprocessor;
 /**
  * Used for Supporting enclosed input
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  *
  */

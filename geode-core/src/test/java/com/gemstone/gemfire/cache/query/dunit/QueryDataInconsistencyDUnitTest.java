@@ -54,7 +54,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * This tests the data inconsistency during update on an index and querying the
  * same UNLOCKED index.
  * 
- * @author shobhit
  * 
  */
 public class QueryDataInconsistencyDUnitTest extends CacheTestCase {

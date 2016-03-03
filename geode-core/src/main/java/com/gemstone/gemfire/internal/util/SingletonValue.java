@@ -39,7 +39,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * supports timeouts, the serial execution penalty can cause "timeout stacking"
  * and thus unbounded delays on the invoking threads.
  * 
- * @author bakera
  *
  * @param <T> the type of the singleton
  */

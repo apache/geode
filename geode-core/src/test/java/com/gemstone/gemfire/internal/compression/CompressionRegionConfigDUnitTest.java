@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
 /**
  * Sanity checks on a number of basic cluster configurations with compression turned on.
  * 
- * @author rholmes
  */
 public class CompressionRegionConfigDUnitTest extends CacheTestCase {
   /**

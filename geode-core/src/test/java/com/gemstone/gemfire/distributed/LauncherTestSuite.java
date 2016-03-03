@@ -42,7 +42,6 @@ import org.junit.runners.Suite;
 /**
  * Suite of tests for the Launcher classes.
  * 
- * @author Kirk Lund
  */
 public class LauncherTestSuite {
 }

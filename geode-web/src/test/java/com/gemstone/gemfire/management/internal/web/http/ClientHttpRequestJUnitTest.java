@@ -44,7 +44,6 @@ import org.springframework.util.MultiValueMap;
  * The ClientHttpRequestJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * ClientHttpRequest class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.web.AbstractWebTestCase
  * @see com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest
  * @see org.jmock.Mockery

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.management.internal.cli.exceptions.CliException;
 /**
  * Delegate used for parsing by {@link GfshParser}
  *  
- * @author Nikhil Jadhav
  * @since 7.0
  */
 public interface GfshOptionParser {

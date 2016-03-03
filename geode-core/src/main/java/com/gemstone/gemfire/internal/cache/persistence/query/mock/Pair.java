@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache.persistence.query.mock;
 
 /**
  * An object that holds a pair of objects.
- * @author dsmith
  *
  */
 public class Pair<X, Y> {

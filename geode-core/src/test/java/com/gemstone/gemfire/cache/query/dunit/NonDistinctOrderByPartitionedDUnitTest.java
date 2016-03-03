@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * 
- * @author ashahid
  *
  */
 @Category(DistributedTest.class)

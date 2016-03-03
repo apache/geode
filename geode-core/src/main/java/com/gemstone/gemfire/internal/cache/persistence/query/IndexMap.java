@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.cache.CachedDeserializable;
  * 
  * TODO - Do we need getKey, getValue, 
  *
- * @author dsmith
  * @since cedar
  */
 public interface IndexMap {
@@ -164,7 +163,6 @@ public interface IndexMap {
 
   /**
    * A single entry in an index
-   * @author dsmith
    * @since cedar
    */
   interface IndexEntry {

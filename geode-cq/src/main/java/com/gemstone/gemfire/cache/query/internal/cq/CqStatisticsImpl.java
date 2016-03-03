@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.query.CqStatistics;
  * Provides statistical information about a CqQuery.
  * 
  * @since 5.5
- * @author Rao Madduri
  */
 public class CqStatisticsImpl implements CqStatistics {
   private CqQueryImpl cqQuery;

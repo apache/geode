@@ -19,7 +19,6 @@ package com.gemstone.gemfire.distributed.internal;
 
 /**
  *
- * @author Eric Zoerner
  */
 public abstract class HighPriorityDistributionMessage extends DistributionMessage {
   

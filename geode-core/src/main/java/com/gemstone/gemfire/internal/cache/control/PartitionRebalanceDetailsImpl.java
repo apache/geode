@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * Serializable form is used to allow JMX 
  * MBeans to use this as a remotable return type.
  * 
- * @author dsmith
  */
 public class PartitionRebalanceDetailsImpl implements PartitionRebalanceInfo, 
 Serializable, Comparable<PartitionRebalanceDetailsImpl> {

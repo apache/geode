@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.cache.persistence.soplog.SortedReader.Seria
  * lexicographic ordering is not important or the serialization is order-
  * preserving. 
  * 
- * @author bakera
  */
 public class ByteComparator implements SerializedComparator {
   @Override

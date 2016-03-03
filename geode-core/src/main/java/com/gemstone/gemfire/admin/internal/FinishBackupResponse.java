@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.admin.remote.AdminResponse;
  * reply contains the persistent ids of the disk stores
  * that were backed up on this member.
  * 
- * @author dsmith
  *
  */
 public class FinishBackupResponse extends AdminResponse {

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * MBean that provides access to information and management functionality for a
  * {@link Region}.
  * 
- * @author rishim
  * @since 7.0
  * 
  */

@@ -79,7 +79,6 @@ import com.gemstone.gemfire.management.membership.ClientMembershipListener;
  * An implementation of the <code>CacheServer</code> interface that delegates
  * most of the heavy lifting to an {@link Acceptor}.
  * 
- * @author David Whitlock
  * @since 4.0
  */
 @SuppressWarnings("deprecation")

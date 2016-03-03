@@ -18,7 +18,6 @@ package com.gemstone.gemfire.modules.hibernate.internal;
 
 /**
  * 
- * @author sbawaska
  */
 public class EntityVersionImpl implements EntityVersion {
 

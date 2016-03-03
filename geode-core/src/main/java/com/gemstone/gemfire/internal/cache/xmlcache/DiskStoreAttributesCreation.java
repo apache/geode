@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * that this class must be updated when {@link DiskStore} is
  * modified.  This class is public for testing purposes.
  *
- * @author Gester
  *
  * @since prPersistSprint2
  */

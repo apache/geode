@@ -77,7 +77,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * See {@link #getRegionAttributes}.
  *
  *
- * @author David Whitlock
  * @since 3.0
  */
 public abstract class RegionTestCase extends CacheTestCase {

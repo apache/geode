@@ -32,7 +32,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
  * Function which carries out the export of a region to a file on a member.
  * Uses the RegionSnapshotService to export the data
  * 
- * @author Sourabh Bansod
  *
  */
 public class ExportDataFunction extends FunctionAdapter implements

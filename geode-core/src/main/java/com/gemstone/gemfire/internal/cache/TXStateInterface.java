@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.cache.tx.TransactionalOperation.ServerRegio
 /**
  * An entity that tracks transactions must implement this interface. 
  * 
- * @author mthomas
  */
 public interface TXStateInterface extends Synchronization, InternalDataView {
 

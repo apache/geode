@@ -54,7 +54,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * Contains the implementation of {@link com.gemstone.gemfire.Instantiator}
  * registration and distribution messaging (and shared memory management).
  *
- * @author David Whitlock
  * @since 3.5
  */
 public class InternalInstantiator {
@@ -977,7 +976,6 @@ public class InternalInstantiator {
    * distributed cache of a new <code>Instantiator</code> being
    * registered.
    *
-   * @author Yogesh Mahajan
    *
    * @since 5.0
    */

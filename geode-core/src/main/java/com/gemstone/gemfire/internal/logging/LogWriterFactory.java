@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
 /**
  * Creates LogWriterLogger instances.
  * 
- * @author Kirk Lund
  */
 public class LogWriterFactory {
 

@@ -42,7 +42,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  *
- * @author vikramj
  */
 @Category(IntegrationTest.class)
 public class IndexOperatorJUnitTest {

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.management.ManagementException;
  * This class acts as a central point hub for collecting all notifications
  * originated from VM and sending across to Managing Node
  * 
- * @author rishim
  * 
  */
 public class NotificationHub {
@@ -163,7 +162,6 @@ public class NotificationHub {
    * This class is the managed node counterpart to listen to notifications from
    * MBeans for which it is resistered
    * 
-   * @author rishim
    * 
    */
   public class NotificationHubListener implements NotificationListener {

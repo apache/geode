@@ -53,7 +53,6 @@ import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 
 /**
  * 
- * @author ashahid
  * 
  */
 public abstract class OrderByTestImplementation {

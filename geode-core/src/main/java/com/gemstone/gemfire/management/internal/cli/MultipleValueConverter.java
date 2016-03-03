@@ -25,7 +25,6 @@ import org.springframework.shell.core.MethodTarget;
 /**
  * Extends {@link Converter} to add multiple value support
  * 
- * @author Nikhil Jadhav
  * 
  * @param <T>
  */

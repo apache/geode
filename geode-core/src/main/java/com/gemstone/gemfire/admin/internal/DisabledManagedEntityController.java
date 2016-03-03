@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * in the classpath then the code uses DisabledManagedEntityController as a
  * place holder.
  *
- * @author Kirk Lund
  */
 class DisabledManagedEntityController implements ManagedEntityController {
 

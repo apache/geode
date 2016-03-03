@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
- * @author bruces
  * 
  */
 @Category(IntegrationTest.class)

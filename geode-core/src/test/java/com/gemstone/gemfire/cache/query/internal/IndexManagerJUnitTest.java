@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 /**
- * @author Asif
  */
 package com.gemstone.gemfire.cache.query.internal;
 

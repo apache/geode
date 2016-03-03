@@ -32,7 +32,6 @@ import org.junit.experimental.categories.Category;
 /**
  * Test StructsBag Limit behaviour
  * 
- * @author Asif
  */
 @Category(UnitTest.class)
 public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJUnitTest {

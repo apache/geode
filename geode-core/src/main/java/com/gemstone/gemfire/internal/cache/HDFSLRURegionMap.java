@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Implementation of RegionMap that reads data from HDFS and adds LRU behavior
  * 
- * @author sbawaska
  */
 public class HDFSLRURegionMap extends AbstractLRURegionMap implements HDFSRegionMap {
 

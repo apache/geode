@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
  * The base memory address and the total size of a fragment never change.
  * During defragmentation fragments go away and are recreated.
  * 
- * @author darrel
  *
  */
 public class Fragment implements MemoryBlock {

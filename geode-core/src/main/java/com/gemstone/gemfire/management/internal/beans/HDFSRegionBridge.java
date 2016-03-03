@@ -32,7 +32,6 @@ import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
 
 /**
  * 
- * @author rishim
  * 
  * MBean Bridge for HDFS region which is a type of Partitioned Region
  */

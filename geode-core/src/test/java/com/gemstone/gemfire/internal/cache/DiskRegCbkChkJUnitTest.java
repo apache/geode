@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  *  * Tests if callbacks are getting invoked correctly 
  *   * for 'create', 'update' and 'destroy' of disk region entries
  *    * with concurrent 'clear' 
- *     * @author Pallavi Sontakke
  *      *
  */
 @Category(IntegrationTest.class)

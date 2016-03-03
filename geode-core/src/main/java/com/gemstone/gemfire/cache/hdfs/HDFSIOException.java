@@ -26,7 +26,6 @@ import com.gemstone.gemfire.GemFireIOException;
  * the HDFS file system. This error may indicate a failure of the HDFS
  * system.
  * 
- * @author dsmith
  * 
  * @since 7.5
  * 

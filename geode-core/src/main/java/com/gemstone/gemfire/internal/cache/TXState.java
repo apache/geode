@@ -68,7 +68,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
  * thread basis, noting changes to Region entries on a per operation
  * basis. It lives on the node where transaction data exists.
  *
- * @author Mitch Thomas
  * 
  * @since 4.0
  * 

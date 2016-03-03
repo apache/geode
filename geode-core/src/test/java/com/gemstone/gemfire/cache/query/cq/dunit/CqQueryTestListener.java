@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.jayway.awaitility.Awaitility;
 
 /**
- * @author rmadduri
  *
  */
 public class CqQueryTestListener implements CqStatusListener {

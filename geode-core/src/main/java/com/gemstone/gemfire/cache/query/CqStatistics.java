@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.query;
  * represented by the CqQuery object. 
  * 
  * @since 5.5
- * @author Anil
  */
 public interface CqStatistics {
 

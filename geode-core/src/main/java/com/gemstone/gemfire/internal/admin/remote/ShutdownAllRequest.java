@@ -46,7 +46,6 @@ import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 /**
  * An instruction to all members with cache that their PR should gracefully
  * close and disconnect DS
- * @author xzhou
  *
  */
 public class ShutdownAllRequest extends AdminRequest {

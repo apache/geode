@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * because it is either data for another operation or is
  * a feature that is not yet supported by GemFire
  *
- * @author Eric Zoerner
  */
 public class ASTUnsupported extends GemFireAST {
   private static final long serialVersionUID = -1192307218047393827L;

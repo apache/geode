@@ -36,7 +36,6 @@ import java.lang.annotation.Target;
  * One or more OffHeapIdentifiers may be supplied if the developer wishes to link this annotation with other
  * off-heap annotations.
  * 
- * @author rholmes
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.PARAMETER,

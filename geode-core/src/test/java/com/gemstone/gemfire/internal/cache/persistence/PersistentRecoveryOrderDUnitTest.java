@@ -87,7 +87,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * multiple VMs are persisting the same region, they recover
  * with the latest data during recovery.
  * 
- * @author dsmith
  *
  */
 public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBase {

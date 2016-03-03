@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * DistributedSystem Cache Locator no no yes yes no yes yes yes yes
  * 
  * 
- * @author rishim
  * 
  */
 

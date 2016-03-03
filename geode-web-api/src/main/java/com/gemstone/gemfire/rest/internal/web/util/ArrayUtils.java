@@ -23,7 +23,6 @@ import java.util.Set;
 /**
  * The ArrayUtils class is an abstract utility class for working with Object arrays.
  * <p/>
- * @author John Blum, Nilkanth Patel
  * @see java.util.Arrays
  * @since 8.0
  */

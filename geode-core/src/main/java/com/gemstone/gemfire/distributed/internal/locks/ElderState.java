@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * Keeps track of all the information kept by the elder.
  *
  * @since 4.0
- * @author Darrel Schneider
  */
 public class ElderState {
   private static final Logger logger = LogService.getLogger();

@@ -130,7 +130,6 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * thrown. The second phase actually {@linkplain CacheCreation#create creates}
  * the {@link Cache}/{@link ClientCache},{@link Region}s, etc.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

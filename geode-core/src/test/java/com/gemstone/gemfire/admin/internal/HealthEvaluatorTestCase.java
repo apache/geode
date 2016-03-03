@@ -29,7 +29,6 @@ import org.junit.Before;
  * com.gemstone.gemfire.admin.internal.AbstractHealthEvaluator health
  * evaluator} classes.
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

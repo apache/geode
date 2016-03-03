@@ -29,7 +29,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionStats;
  * GemFire statistics about a {@link CacheClientNotifier}. These statistics 
  * are related to cache server client notifications.
  *
- * @author Barry Oglesby
  *
  * @since 4.1.2
  */

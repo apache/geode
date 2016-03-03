@@ -74,7 +74,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * This is the test for the custom and colocated partitioning of
  * PartitionedRegion
  * 
- * @author Kishor
  */
 @SuppressWarnings("synthetic-access")
 public class PRColocationDUnitTest extends CacheTestCase {

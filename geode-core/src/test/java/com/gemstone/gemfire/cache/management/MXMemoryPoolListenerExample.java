@@ -46,7 +46,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
  * 
  * java -cp geode-dependencies.jar:. -Dgemfire.log-file=system.log -Dgemfire.statistic-archive-file=statsArchive.gfs com.gemstone.gemfire.cache.control.MXMemoryPoolListenerExample  
  * 
- * @author Mitch Thomas
  * @since 6.0
  */
 public class MXMemoryPoolListenerExample implements NotificationListener {

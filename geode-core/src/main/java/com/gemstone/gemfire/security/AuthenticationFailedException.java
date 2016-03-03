@@ -20,7 +20,6 @@ package com.gemstone.gemfire.security;
 /**
  * Thrown if authentication of this client/peer fails.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class AuthenticationFailedException extends GemFireSecurityException {

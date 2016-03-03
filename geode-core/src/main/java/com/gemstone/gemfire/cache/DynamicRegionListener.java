@@ -30,7 +30,6 @@ package com.gemstone.gemfire.cache;
  * <p>
  * See {@link DynamicRegionFactory}
  *
- * @author Gideon Low
  * @since 4.3
  */
 public interface DynamicRegionListener {

@@ -62,7 +62,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Test whether query results are DataSerializable
  *
- * @author ezoerner
  */
 @Category(IntegrationTest.class)
 public class ResultsDataSerializabilityJUnitTest {

@@ -55,7 +55,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 4. Start vm1 and create HARegion Queue asynchronously and notify vm0 after its creation
  * 5. Put the data from vm0 asynchronously till HARegion Queue gets created in vm1.
  * 6. Validate the data. Puts happened during GII should be missed.
- * @author Girish Thombare
  *
  */
 

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing heap size from Mbean  
- * @author ajayp
  * 
  */
 

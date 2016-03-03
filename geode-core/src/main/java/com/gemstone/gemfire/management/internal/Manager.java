@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
  * It's responsible for defining JMX server endpoints for servicing JMX 
  * clients.
  *
- * @author VMware, Inc.
  * @since 7.0
  */
 public abstract class Manager {

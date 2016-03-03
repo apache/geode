@@ -74,7 +74,6 @@ import com.gemstone.gemfire.internal.util.StopWatch;
  * BucketRegions}. The <code>BucketAdvisor</code> is owned by a {@link 
  * ProxyBucketRegion} and may outlive a <code>BucketRegion</code>.
  * 
- * @author Kirk Lund
  */
 @SuppressWarnings("synthetic-access")
 public class BucketAdvisor extends CacheDistributionAdvisor  {
@@ -2600,7 +2599,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor  {
    * Handles the actual volunteering to become primary bucket. Ensures that
    * only one thread is ever volunteering at one time.
    * 
-   * @author Kirk Lund
    */
   class VolunteeringDelegate  {
     /** 

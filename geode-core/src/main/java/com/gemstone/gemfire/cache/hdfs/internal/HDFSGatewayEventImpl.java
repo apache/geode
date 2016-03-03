@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
 /**
  * Gateway event extended for HDFS functionality 
  *
- * @author Hemant Bhanawat
  */
 public class HDFSGatewayEventImpl extends GatewaySenderEventImpl {
   

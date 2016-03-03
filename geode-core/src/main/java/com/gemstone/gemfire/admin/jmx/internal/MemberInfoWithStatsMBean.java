@@ -80,7 +80,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * This MBean also acts as a Notification Hub for all the Notifications that are 
  * defined for Admin Distributed System. 
  * 
- * @author abhishek
  * 
  * @since 6.5
  */
@@ -1253,7 +1252,6 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean
  * {@link NotificationBroadcasterSupport} only to have the functionality to send
  * notifications.
  * 
- * @author abhishek
  * 
  * @since 6.5
  */

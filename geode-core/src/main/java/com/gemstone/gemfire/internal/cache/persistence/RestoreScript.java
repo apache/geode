@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.FileUtil;
  * 
  * It generates either a restore.sh for unix or a restore.bat for windows.
  * 
- * @author dsmith
  *
  */
 public class RestoreScript {

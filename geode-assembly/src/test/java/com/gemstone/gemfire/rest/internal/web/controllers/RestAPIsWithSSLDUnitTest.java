@@ -73,7 +73,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * 
- * @author rishim
  * @since 8.0
  */
 public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {

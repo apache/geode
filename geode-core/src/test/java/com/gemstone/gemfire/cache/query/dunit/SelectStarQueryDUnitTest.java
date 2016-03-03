@@ -51,7 +51,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Test for #44807 to eliminate unnecessary serialization/deserialization in
  * select * queries
  * 
- * @author Tejas Nomulwar
  * 
  */
 public class SelectStarQueryDUnitTest extends CacheTestCase {

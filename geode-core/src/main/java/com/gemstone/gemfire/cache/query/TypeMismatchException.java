@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown if type consistency is violated while a query is being executed.
  *
- * @author      Eric Zoerner
  * @since 4.0
  */
 

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.RegionEvent;
  * the callback is issed only if the boolean ISSUE_CALLBACKS_TO_CACHE_OBSERVER
  * present in com.gemstone.gemfire.internal.cache.LocalRegion is made true
  * 
- * @author Asif
  */
 public interface CacheObserver
 {

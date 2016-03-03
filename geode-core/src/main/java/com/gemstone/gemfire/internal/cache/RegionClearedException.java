@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache;
 /**
  * Indicates that a Clear Operation happened while an entry operation
  * was in progress, which would result in the ongoing entry operation to abort
- * @author Asif Shahid
  * @since 5.1
  */
 public class RegionClearedException extends Exception  {

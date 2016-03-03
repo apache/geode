@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * <code>Cache</code> instance according to the thresholds provided in
  * a {@link CacheHealthConfig}.
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

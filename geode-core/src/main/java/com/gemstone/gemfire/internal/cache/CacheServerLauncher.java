@@ -58,10 +58,6 @@ import com.gemstone.gemfire.internal.util.JavaCommandBuilder;
 /**
  * Launcher program to start a cache server.
  *
- * @author Sudhir Menon
- * @author Barry Oglesby
- * @author David Whitlock
- * @author John Blum
  *
  * @since 2.0.2
  */

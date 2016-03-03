@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * An instance of this class is delegated to by test classes that test
  * disk regions.
  *
- * @author Eric Zoerner
  *
  */
 public class DiskRegionTestImpl implements Serializable {

@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  *
- * @author vaibhav
  */
 public class DummyQRegion extends QRegion {
   

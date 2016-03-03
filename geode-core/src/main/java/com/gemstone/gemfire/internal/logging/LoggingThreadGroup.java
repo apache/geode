@@ -39,7 +39,6 @@ import com.gemstone.gemfire.i18n.StringId;
  *
  * @see LoggingThreadGroup#createThreadGroup
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class LoggingThreadGroup extends ThreadGroup {

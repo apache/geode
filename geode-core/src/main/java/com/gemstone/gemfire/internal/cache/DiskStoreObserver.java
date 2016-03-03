@@ -20,7 +20,6 @@ import java.util.Map;
 
 /**
  * For testing purposes only, observers events in the disk store.
- * @author dsmith
  *
  */
 public abstract class DiskStoreObserver {

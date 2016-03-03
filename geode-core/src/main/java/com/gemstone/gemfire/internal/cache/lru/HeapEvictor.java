@@ -56,7 +56,6 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends
  * an eviction event for on-heap regions. This is registered with the ResourceManager.
  * 
- * @author Yogesh, Suranjan, Amardeep, rholmes
  * @since 6.0
  * 
  */

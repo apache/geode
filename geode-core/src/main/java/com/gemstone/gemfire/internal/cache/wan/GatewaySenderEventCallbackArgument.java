@@ -42,7 +42,6 @@ import java.util.Set;
  * <p>
  * This class used to be in package <code>com.gemstone.gemfire.util</code>.
  * 
- * @author Suranjan Kumar
  * @since 7.0
  */
 public final class GatewaySenderEventCallbackArgument extends

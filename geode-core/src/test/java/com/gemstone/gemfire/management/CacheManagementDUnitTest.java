@@ -63,7 +63,6 @@ import static org.hamcrest.Matchers.*;
  * config data and stats are of proper value To check proper federation of
  * MemberMBean including remote ops and remote data access
  * 
- * @author rishim
  * 
  */
 public class CacheManagementDUnitTest extends ManagementTestBase {

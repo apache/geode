@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * after the entry gets written to the disk, The Test verifies the existence of
  * the scenario.
  * 
- * @author pbatra
  */
 
 public class Bug37377DUnitTest extends CacheTestCase

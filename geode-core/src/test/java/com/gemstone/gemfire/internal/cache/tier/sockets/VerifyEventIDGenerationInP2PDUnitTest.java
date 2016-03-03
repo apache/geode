@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * that is not present in the node's region.
  * Currently test is commented because of the bug.
  * 
- * @author Suyog Bhokare
  * 
  */
 

@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Does a Execution of function on server region.<br>
  * It alos gets result from the server
- * @author Kishor Bachhav
  * @since 5.8Beta
  */
 public class ExecuteRegionFunctionOp {

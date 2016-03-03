@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link SharedConfiguration}.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

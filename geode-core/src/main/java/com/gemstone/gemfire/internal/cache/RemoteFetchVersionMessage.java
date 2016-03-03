@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * DistributedRegions with DataPolicy EMPTY, NORMAL, PRELOADED, can use
  * this message to fetch VersionTag for a key.
  * 
- * @author sbawaska
  * @since 7.0
  */
 public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
@@ -149,7 +148,6 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
   /**
    * This message is used to send a reply for RemoteFetchVersionMessage.
    * 
-   * @author sbawaska
    */
   public static final class FetchVersionReplyMessage extends ReplyMessage {
     private VersionTag tag;
@@ -216,7 +214,6 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
   /**
    * A processor to capture the VersionTag returned by RemoteFetchVersion message.
    * 
-   * @author sbawaska
    */
   public static class FetchVersionResponse extends RemoteOperationResponse {
 

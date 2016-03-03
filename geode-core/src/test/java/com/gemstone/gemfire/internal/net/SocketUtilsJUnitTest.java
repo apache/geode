@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * The SocketUtilsJUnitTest class is a test suite of test cases testing the contract and functionality of the SocketUtils
  * utility class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.net.SocketUtils
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery

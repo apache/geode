@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.Version;
  * value overhead by sharing the same Snappy {@link Compressor} instance with
  * all instances of this class within the {@link Cache}.
  * 
- * @author rholmes
  */
 public class SnappyCompressedCachedDeserializable extends
     CompressedCachedDeserializable {

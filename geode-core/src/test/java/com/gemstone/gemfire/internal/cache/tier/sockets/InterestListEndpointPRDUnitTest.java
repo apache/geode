@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.*;
 /**
  * subclass of InterestListEndpointDUnitTest to exercise partitioned regions
  *
- * @author Bruce Schuchardt
  */
 public class InterestListEndpointPRDUnitTest extends InterestListEndpointDUnitTest {
 

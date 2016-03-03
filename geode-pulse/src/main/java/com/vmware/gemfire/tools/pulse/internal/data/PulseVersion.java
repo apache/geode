@@ -27,7 +27,6 @@ import java.util.ResourceBundle;
  * This class is for holding Pulse Applications Version's details (like version
  * details, build details, source details, etc) from properties file
  * 
- * @author Sachin K
  * @since version Helios
  */
 

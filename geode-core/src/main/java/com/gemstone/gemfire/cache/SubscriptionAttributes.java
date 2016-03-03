@@ -26,7 +26,6 @@ import java.io.*;
  * <p>The {@link InterestPolicy} defines what remote operation's data/event
  * are of interest to this cache's region.</p>
  * 
- * @author Darrel
  * @since 5.0
  */
 public class SubscriptionAttributes implements DataSerializable, Externalizable {

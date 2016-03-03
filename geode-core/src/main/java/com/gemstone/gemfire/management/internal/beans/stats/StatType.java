@@ -18,7 +18,6 @@ package com.gemstone.gemfire.management.internal.beans.stats;
 
 /**
  * 
- * @author rishim
  *
  */
 public enum StatType {

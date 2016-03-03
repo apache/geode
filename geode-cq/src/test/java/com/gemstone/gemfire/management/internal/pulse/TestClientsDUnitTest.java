@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * This is for testing Number of clients and can be extended for relevant test
  * addition
  * 
- * @author ajayp
  * 
  */
 

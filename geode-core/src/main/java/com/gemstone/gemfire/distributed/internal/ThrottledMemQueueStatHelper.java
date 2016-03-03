@@ -21,7 +21,6 @@ package com.gemstone.gemfire.distributed.internal;
  * Used to implement statistics on a throttled queue.
  * The implementation will call these methods at to proper time.
  *
- * @author Bruce Schuchardt
  *
  * @since 5.0
  */

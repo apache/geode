@@ -54,7 +54,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @author ymahajan
  * 
  */
 public class MemberFunctionStreamingMessage extends DistributionMessage implements TransactionMessage, MessageWithReply {

@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * DUnit test for operations on ParallelGatewaySender
  * 
- * @author pdeole
  *
  */
 public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {

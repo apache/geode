@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
  *
  * @since 3.5.1
  *
- * @author Darrel Schneider
  *
  */
 public abstract class AbstractOplogDiskRegionEntry

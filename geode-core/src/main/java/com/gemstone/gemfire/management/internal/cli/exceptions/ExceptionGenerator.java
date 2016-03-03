@@ -23,7 +23,6 @@ import joptsimple.OptionMissingRequiredArgumentException;
 import joptsimple.UnrecognizedOptionException;
 
 /**
- * @author njadhav
  * 
  *         Converts joptsimple exceptions into corresponding exceptions for cli
  * 

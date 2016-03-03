@@ -59,7 +59,6 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * recipients requesting a potentially large amount of data from a Partitioned Region datastore
  * and receiving the reply with data chunked into several messages.
  *
- * @author Eric Zoerner
  */
 
 public abstract class StreamingPartitionOperation extends StreamingOperation {

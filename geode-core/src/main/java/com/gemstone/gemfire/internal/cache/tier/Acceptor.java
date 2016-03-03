@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.Version;
  * Server. Multiple communication stacks may provide implementations for the
  * interfaces defined in this package
  *
- * @author Sudhir Menon
  * @since 2.0.2
  */
 public abstract class Acceptor

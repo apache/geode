@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * 
  * The behaviour should be predictable
  * 
- * @author Mitul Bid
  *
  */
 @Category(IntegrationTest.class)

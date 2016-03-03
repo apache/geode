@@ -97,8 +97,6 @@ import com.gemstone.gemfire.cache.NoSubscriptionServersAvailableException;
  * then verify that updates has occurred as a result of interest registration.
  *
  *
- * @author Yogesh Mahajan
- * @author Suyog Bhokare
  *
  */
 public class InterestListDUnitTest extends DistributedTestCase

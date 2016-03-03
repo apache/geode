@@ -24,7 +24,6 @@ import java.util.*;
 /** TXLockRequest represents all the locks that need to be made
  * for a single transaction.
  *
- * @author Darrel Schneider
  * 
  * @since 4.0
  * 

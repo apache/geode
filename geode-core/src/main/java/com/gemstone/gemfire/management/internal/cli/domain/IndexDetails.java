@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 /**
  * The IndexDetails class encapsulates information for an Index on a Region in the GemFire Cache.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.cache.query.Index
  * @see com.gemstone.gemfire.cache.query.IndexStatistics
  * @see com.gemstone.gemfire.cache.query.IndexType

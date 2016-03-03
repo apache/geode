@@ -34,8 +34,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Retrieves {@link ClientPartitionAdvisor} related information for the
  * specified PartitionedRegion from one of the servers
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * 
  * @since 6.5
  * 

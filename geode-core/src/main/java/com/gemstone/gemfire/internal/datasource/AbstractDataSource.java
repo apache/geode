@@ -16,9 +16,6 @@
  */
 package com.gemstone.gemfire.internal.datasource;
 
-/**
- * @author tnegi
- */
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -36,8 +33,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * for the datasouce types. The class also implements the Serializable and
  * Referenceable behavior.
  * 
- * @author tnegi
- * @author Asif : This class now contains only those paramaters which are needed
+ *         This class now contains only those paramaters which are needed
  *         by the Gemfire DataSource configuration. This maps to those
  *         paramaters which are specified as attributes of <jndi-binding>tag.
  *         Those parameters which are specified as attributes of <property>tag

@@ -79,8 +79,6 @@ import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 
 /**
  * 
- * @author Eric Zoerner
- * @author Bruce Schuchardt
  */
 public abstract class DistributedCacheOperation {
 

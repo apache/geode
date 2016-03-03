@@ -30,7 +30,6 @@ import com.gemstone.gemfire.management.internal.cli.CliUtil;
  * 
  * Class for Garbage collection function
  * 
- * @author apande
  *  
  * 
  */

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * It allows common code to be shared for all the
  * classes we have that implement {@link OffHeapRegionEntry}.
  * 
- * @author darrel
  * @since 9.0
  */
 public class OffHeapRegionEntryHelper {

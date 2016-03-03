@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.operations.OperationContext;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REMOVEALL} operation for both the
  * pre-operation and post-operation cases.
  * 
- * @author Darrel Schneider
  * @since 8.1
  */
 public class RemoveAllOperationContext extends OperationContext {

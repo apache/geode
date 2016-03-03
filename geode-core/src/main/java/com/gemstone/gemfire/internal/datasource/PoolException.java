@@ -21,7 +21,6 @@ import com.gemstone.gemfire.GemFireCheckedException;
 /**
  * Exception thrown from Connection Pool.
  * 
- * @author rreja
  */
 public class PoolException extends GemFireCheckedException {
 private static final long serialVersionUID = -6178632158204356727L;

@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * <code>DistributedSystemHealthEvaluator</code> per distributed
  * system.
  *
- * @author David Whitlock
  *
  * @since 3.5
  * */

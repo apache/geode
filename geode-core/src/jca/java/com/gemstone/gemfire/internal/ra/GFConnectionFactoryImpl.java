@@ -25,7 +25,6 @@ import javax.resource.spi.ManagedConnectionFactory;
 import com.gemstone.gemfire.ra.GFConnectionFactory;
 /**
  * 
- * @author asif
  *
  */
 public class GFConnectionFactoryImpl implements GFConnectionFactory

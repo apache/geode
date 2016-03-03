@@ -46,7 +46,6 @@ import com.gemstone.gemfire.cache.*;
  * @see QueryService#createIndex(String, IndexType, String, String)
  * @see IndexType
  *
- * @author Eric Zoerner
  * @since 4.0
  */
 public interface Index {

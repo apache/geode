@@ -45,7 +45,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * This test is only for GLOBAL REPLICATE Regions. Tests are
  * similar to {@link DistributedAckRegionCCEDUnitTest}.
  *
- * @author Shobhit Agarwal
  * 
  */
 public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {

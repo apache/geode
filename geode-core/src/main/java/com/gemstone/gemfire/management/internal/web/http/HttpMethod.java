@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.web.http;
 /**
  * The HttpMethod enum is an enumeration of all HTTP methods (POST, GET, PUT, DELETE, HEADERS, etc).
  * <p/>
- * @author John Blum
  * @since 8.0
  */
 @SuppressWarnings("unused")

@@ -44,7 +44,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 
 /**
  * 
- * @author sbawaska
  *
  */
 public class TXRemoteCommitMessage extends TXMessage {
@@ -261,7 +260,6 @@ public class TXRemoteCommitMessage extends TXMessage {
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.TXRemoteCommitMessage.TXRemoteCommitReplyMessage}
    * 
-   * @author gregp
    * @since 6.6
    */
   public static class RemoteCommitResponse extends RemoteOperationResponse

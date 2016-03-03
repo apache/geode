@@ -34,7 +34,6 @@ import java.io.*;
  * <li><code>HDFS_PARTITION</code> in addition to <code>PARTITION</code> also causes data to be stored to HDFS. The region initialization may use the data stored on HDFS. 
  * </ol>
  *
- * @author Darrel Schneider
  *
  *
  * @see AttributesFactory#setDataPolicy

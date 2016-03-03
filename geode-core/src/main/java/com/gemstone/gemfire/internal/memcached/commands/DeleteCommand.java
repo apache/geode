@@ -33,7 +33,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
  * The command "delete" allows for explicit deletion of items:
  * delete <key> [noreply]\r\n
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class DeleteCommand extends AbstractCommand {

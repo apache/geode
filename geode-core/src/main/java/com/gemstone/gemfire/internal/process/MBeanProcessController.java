@@ -43,7 +43,6 @@ import com.sun.tools.attach.VirtualMachine;
  * Controls a {@link ControllableProcess} using the Attach API to manipulate
  * MBeans.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 public final class MBeanProcessController implements ProcessController {

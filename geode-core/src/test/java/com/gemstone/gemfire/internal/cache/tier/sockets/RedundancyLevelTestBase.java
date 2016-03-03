@@ -53,7 +53,6 @@ import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 /**
  * Tests Redundancy Level Functionality
  * 
- * @author Suyog Bhokare
  * 
  */
 public class RedundancyLevelTestBase extends DistributedTestCase

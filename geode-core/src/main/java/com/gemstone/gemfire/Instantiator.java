@@ -142,7 +142,6 @@ public class User implements DataSerializable {
  * @see #register(Instantiator)
  * @see #newInstance
  *
- * @author David Whitlock
  * @since 3.5 */
 public abstract class Instantiator {
 

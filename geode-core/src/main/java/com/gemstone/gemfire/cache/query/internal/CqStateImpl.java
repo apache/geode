@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.query.CqState;
 /**
  * Offers methods to get CQ state.
  *
- * @author anil
  * @since 5.5
  */
 

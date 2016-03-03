@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * This tests creates partition regions with 1 Datastore & 1 Accessor node, 
  * firing a simple query and validating the ResultSet size and Contents. 
  * 
- * @author pbatra
  */
 public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
 

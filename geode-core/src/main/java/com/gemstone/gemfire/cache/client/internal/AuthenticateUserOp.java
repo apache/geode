@@ -56,7 +56,6 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * before the user attempts to perform an op whose
  * {@link AbstractOp#needsUserId()} returns true.
  * 
- * @author ashetkar
  * @see PutUserCredentials
  * @see ProxyCache
  * @since 6.5

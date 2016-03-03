@@ -71,7 +71,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author Bruce Schuchardt
  *
  */
 public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitTest {

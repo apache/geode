@@ -22,7 +22,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
 /**
  * Test all the PartitionedRegion api calls when ConserveSockets is set to false
- * @author mthomas
  * @since 5.0
  * @see com.gemstone.gemfire.distributed.DistributedSystem#setThreadsSocketPolicy(boolean)
  */

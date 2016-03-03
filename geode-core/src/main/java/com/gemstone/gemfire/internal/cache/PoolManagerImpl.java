@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Implementation used by PoolManager.
  *
- * @author darrel
  * @since 5.7
  *
  */

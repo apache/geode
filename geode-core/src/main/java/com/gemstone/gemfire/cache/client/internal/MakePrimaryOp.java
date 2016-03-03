@@ -21,7 +21,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 
 /**
  * Tell a server to become the primary host of a server-to-client queue
- * @author darrel
  * @since 5.7
  */
 public class MakePrimaryOp {

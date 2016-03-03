@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * This cache deserializable always keeps its byte[] in serialized form
  * and the object form.
  *
- * @author Darrel
  * @since 5.5 
  *
  */

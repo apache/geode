@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * The aggregator for compuing average which is used on the bucket node for
  * partitioned region based queries.
  * 
- * @author ashahid
  *
  */
 public class AvgBucketNode extends Sum {

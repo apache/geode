@@ -22,7 +22,6 @@ import com.gemstone.gemfire.management.ManagerMXBean;
 
 /**
  * 
- * @author rishim
  *
  */
 public class ManagerMBean implements ManagerMXBean {

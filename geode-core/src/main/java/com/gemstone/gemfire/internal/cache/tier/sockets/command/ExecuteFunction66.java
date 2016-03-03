@@ -64,7 +64,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 
 /**
- * @author kbachhav
  * @since 6.6
  */
 public class ExecuteFunction66 extends BaseCommand {

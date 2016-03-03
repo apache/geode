@@ -51,7 +51,6 @@ import com.gemstone.gemfire.cache.client.internal.Connection;
  * This is the DUnit Test to verify clear and DestroyRegion operation in
  * Client-Server Configuration.
  *
- * @author Girish Thombare
  *
  */
 

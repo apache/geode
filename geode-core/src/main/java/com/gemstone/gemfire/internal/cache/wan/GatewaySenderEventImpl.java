@@ -63,7 +63,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * Class <code>GatewaySenderEventImpl</code> represents an event sent between
  * <code>GatewaySender</code>
  * 
- * @author Suranjan Kumar
  * 
  * @since 7.0
  * 

@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Tests Distributed Ack Region with ConcurrencyChecksEnabled and OffHeap memory.
  * 
- * @author Kirk Lund
  * @since 9.0
  */
 @SuppressWarnings({ "deprecation", "serial" })

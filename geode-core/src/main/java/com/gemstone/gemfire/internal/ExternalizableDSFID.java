@@ -23,7 +23,6 @@ import java.io.*;
  * addition to being DataSerializableFixedID.
  * <p> Note: subclasses must also provide a zero-arg constructor
  *
- * @author Darrel Schneider
  * @since 5.7 
  */
 public abstract class ExternalizableDSFID

@@ -29,7 +29,6 @@ import java.nio.ByteBuffer;
  * This class is currently used for reading direct ack responses
  * It should probably be used for all of the reading done
  * in Connection.
- * @author dsmith
  *
  */
 public abstract class MsgReader {

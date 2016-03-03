@@ -26,7 +26,6 @@ import junit.framework.TestCase;
 /**
  * Tests performance of logging when level is OFF.
  * 
- * @author Kirk Lund
  */
 public abstract class LoggingPerformanceTestCase extends TestCase {
 

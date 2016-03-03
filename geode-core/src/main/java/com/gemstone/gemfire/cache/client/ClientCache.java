@@ -48,7 +48,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * regions on the server.
  * <p>More pools can be created using {@link PoolManager} or by declaring them in cache.xml.
  * @since 6.5
- * @author darrel
  */
 public interface ClientCache extends GemFireCache {
   /**

@@ -23,7 +23,6 @@ import com.gemstone.gemfire.management.internal.cli.GfshParser;
 /**
  * Used by {@link GfshParser} to store details of a command
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  * 
  */

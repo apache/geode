@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Client health stats check
  * 
- * @author rishim
  * 
  */
 public class ClientHealthStatsDUnitTest extends DistributedTestCase {

@@ -34,8 +34,6 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
  * Provides a response of remote statistic resources for a 
  * <code>FetchStatsRequest</code>
  *
- * @author Darrel Schneider
- * @author Kirk Lund
  */
 public final class FetchStatsResponse extends AdminResponse {
 

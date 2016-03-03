@@ -57,7 +57,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * the redundancy to be impaired if that datastore crashes (even if it
  * never hosted that bucket). 
  *
- * @author Dan Smith
  * @since 6.0
  *
  */
@@ -199,7 +198,6 @@ public final class CreateBucketMessage extends PartitionMessage {
   /**
    * A class that contains the reply to a {@link CreateBucketMessage} message
    * which contains the {@link Node} that has accepted to manage the bucket. 
-   * @author mthomas
    * @since 5.0
    */
   public static final class CreateBucketReplyMessage extends ReplyMessage {
@@ -298,7 +296,6 @@ public final class CreateBucketMessage extends PartitionMessage {
   
   /**
    * A processor to capture the {@link Node} returned by {@link CreateBucketMessage}
-   * @author mthomas
    * @since 5.0
    */
   static public class NodeResponse extends ReplyProcessor21 {

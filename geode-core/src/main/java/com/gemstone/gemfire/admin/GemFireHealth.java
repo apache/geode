@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * <code>POOR_HEALTH</code>, then the overall health is
  * <code>POOR_HEALTH</code>.
  *
- * @author David Whitlock
  *
  * @since 3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead

@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  *
- * @author  prafulla
  */
 public class DistAckMapMethodsDUnitTest extends DistributedTestCase{
     static Cache cache;

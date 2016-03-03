@@ -26,7 +26,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Includes tests for checking assignment of {@link CliArgument}
  * 
- * @author njadhav
  * 
  */
 @Category(UnitTest.class)
@@ -184,7 +183,6 @@ public class CliArgumentJUnitTest extends TestCase {
   /**
    * Class used by the tests
    * 
-   * @author njadhav
    * 
    */
   public static class ArgumentTestingClass {

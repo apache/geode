@@ -52,7 +52,6 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 /**
  * Test class for Partitioned Region and CQs
  * 
- * @author rdubey
  * @since 5.5
  */
 public class PrCqUsingPoolDUnitTest extends CacheTestCase {

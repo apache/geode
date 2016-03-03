@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * invalid credentials/modules. It also checks for authentication
  * success/failure in case of failover and for the notification channel.
  * 
- * @author sumedh
  * @since 5.5
  */
 public class ClientAuthenticationDUnitTest extends DistributedTestCase {

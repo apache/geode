@@ -1085,7 +1085,6 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
 
   /**
    * A processor to capture the value returned by {@link RemotePutMessage}
-   * @author bruce
    * @since 5.1
    */
   public static class RemotePutResponse extends RemoteOperationResponse  {

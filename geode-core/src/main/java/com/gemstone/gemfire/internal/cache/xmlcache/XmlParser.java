@@ -33,7 +33,6 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
  * Loaded by {@link ServiceLoader} on {@link XmlParser} class. See file
  * <code>META-INF/services/com.gemstone.gemfire.internal.cache.xmlcache.XmlParser</code>
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

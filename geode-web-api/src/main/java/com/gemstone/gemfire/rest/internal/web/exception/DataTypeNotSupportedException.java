@@ -23,7 +23,6 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Indicates that error encountered while converting Non-Pdx type values/data into RESTful format, i.e JSON
  * <p/>
- * @author Nilkanth Patel
  * @since 8.1
  */
 

@@ -38,7 +38,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author Nand Kishor
  * 
  * This test check the graceful removal of all the resource
  * (DataSources , TransactionManager and UserTransaction and 

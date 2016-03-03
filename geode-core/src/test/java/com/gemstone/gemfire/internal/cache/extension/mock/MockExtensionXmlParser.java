@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlParser;
 /**
  * Mock Extension {@link XmlParser}.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

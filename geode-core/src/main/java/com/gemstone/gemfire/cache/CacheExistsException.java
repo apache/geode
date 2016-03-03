@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache;
 
 /** Thrown when attempting to create a {@link Cache} if one already exists.
  *
- * @author Darrel Schneider
  *
  * @see CacheFactory#create
  * @since 3.0

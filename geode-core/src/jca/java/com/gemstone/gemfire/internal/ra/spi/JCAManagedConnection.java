@@ -44,7 +44,6 @@ import com.gemstone.gemfire.internal.ra.GFConnectionImpl;
 
 /**
  * 
- * @author asif
  *
  */
 public class JCAManagedConnection implements ManagedConnection

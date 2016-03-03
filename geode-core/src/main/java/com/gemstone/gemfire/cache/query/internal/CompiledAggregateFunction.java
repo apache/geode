@@ -41,7 +41,6 @@ import com.gemstone.gemfire.cache.query.types.ObjectType;
 
 /**
  * 
- * @author ashahid
  *
  */
 public class CompiledAggregateFunction extends AbstractCompiledValue {

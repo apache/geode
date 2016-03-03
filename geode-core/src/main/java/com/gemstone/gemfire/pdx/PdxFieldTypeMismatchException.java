@@ -29,7 +29,6 @@ import com.gemstone.gemfire.GemFireException;
  * The writeXXX methods on {@link PdxWriter} define the field type.
  * <p>This exception can also be caused by {@link WritablePdxInstance#setField(String, Object) setField}
  * trying to set a value whose type is not compatible with the field.
- * @author darrel
  * @since 6.6
  *
  */

@@ -29,7 +29,6 @@ import org.json.JSONObject;
 /**
  * Wrapper over JSONObject. 
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

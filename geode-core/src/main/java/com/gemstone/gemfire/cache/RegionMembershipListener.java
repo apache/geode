@@ -25,7 +25,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * Instead of implementing this interface it is recommended that you extend
  * the {@link com.gemstone.gemfire.cache.util.RegionMembershipListenerAdapter} class.
  * 
- * @author Darrel Schneider
  * 
  * 
  * @see AttributesFactory#addCacheListener

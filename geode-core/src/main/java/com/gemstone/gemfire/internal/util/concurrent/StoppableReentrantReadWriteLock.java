@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.Assert;
 /**
  * Instances of {@link java.util.concurrent.locks.ReentrantReadWriteLock}
  * that respond to cancellation
- * @author jpenney
  *
  */
 public class StoppableReentrantReadWriteLock implements /* ReadWriteLock, */ java.io.Serializable  {
@@ -84,7 +83,6 @@ public class StoppableReentrantReadWriteLock implements /* ReadWriteLock, */ jav
   
   /**
    * read locks that are stoppable
-   * @author jpenney
    */
   static public class StoppableReadLock {
 

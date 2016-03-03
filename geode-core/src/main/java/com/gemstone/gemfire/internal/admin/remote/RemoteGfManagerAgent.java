@@ -79,9 +79,6 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
  * {@link JoinLeaveListener}s as well suport for collecting and
  * collating the pieces of a {@linkplain CacheCollector cache
  * snapshot}.
- * @author    Darrel Schneider
- * @author    Pete Matern
- * @author    Kirk Lund
  */
 public
   // Note that since we export the instances in a public list,

@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.process;
  * and the launcher expects to create a new pid file without forcing the
  * deletion of the old one.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public final class FileAlreadyExistsException extends Exception {

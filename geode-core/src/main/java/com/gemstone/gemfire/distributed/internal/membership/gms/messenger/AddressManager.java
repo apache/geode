@@ -38,7 +38,6 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
  * one of these, so we need to maintain a mapping between logical and physical
  * addresses.
  * 
- * @author bschuchardt
  *
  */
 public class AddressManager extends Protocol {

@@ -21,7 +21,6 @@ package com.gemstone.gemfire.management.internal;
  * Abstract class containing methods which will be accesed 
  * by both Local and Remote filter chains
  * 
- * @author rishim
  *
  */
 public abstract class FilterChain {

@@ -50,7 +50,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 /**
- * @author hiteshk
  *
  */
 public class JSONPdxClientServerDUnitTest extends CacheTestCase {

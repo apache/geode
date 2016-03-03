@@ -26,7 +26,6 @@ package com.gemstone.gemfire.management.internal.cli.util;
  * <li> find a cause by specific type 
  * </ul>
  * 
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 public class CauseFinder {

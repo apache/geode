@@ -62,8 +62,6 @@ import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
  * will have its own instance of this class. We allow instances of this class to be found
  * so that tests can access internal apis that are not exposed on the public ReflectionBasedAutoSerializer.
  * 
- * @author jens
- * @author darrel
  * @since 6.6
  */
 
@@ -2008,7 +2006,6 @@ public class AutoSerializableManager {
 
   /**
    * Holds meta information about a class that we have auto serialized.
-   * @author darrel
    *
    */
   public static class AutoClassInfo {

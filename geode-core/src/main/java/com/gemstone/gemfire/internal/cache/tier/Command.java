@@ -22,7 +22,6 @@ package com.gemstone.gemfire.internal.cache.tier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.*;
 
 /**
- * @author ashahid
  * 
  */
 public interface Command {

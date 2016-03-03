@@ -25,7 +25,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Verifies that test output containing an unexpected FATAL message
  * will fail with that FATAL message as the failure message.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class FailWithLoggerFatalInOutputJUnitTest extends FailWithProblemInOutputTestCase {

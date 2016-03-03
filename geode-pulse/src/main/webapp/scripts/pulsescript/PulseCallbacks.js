@@ -24,7 +24,6 @@
  * JSON response.
  *
  * @name PulseCallbacks.js
- * @author ashutosh zambare.
  * @version 1.0
  *
  */

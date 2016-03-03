@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 import com.gemstone.gemfire.internal.sequencelog.GraphType;
 
 /**
- * @author dsmith
  *
  */
 public interface Filter {

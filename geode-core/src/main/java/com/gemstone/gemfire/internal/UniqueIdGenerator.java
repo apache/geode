@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * <p>
  * Instances of this class are thread safe.
  *
- * @author Darrel
  * @since 5.0.2
    
 */

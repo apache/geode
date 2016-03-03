@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * <p>
  * Based on the original Doug Lea backport implementation of CountDownLatch.
  * 
- * @author Kirk Lund
  * @see java.util.concurrent.CountDownLatch
  */
 public class StoppableCountDownOrUpLatch {

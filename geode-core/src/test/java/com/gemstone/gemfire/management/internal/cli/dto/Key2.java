@@ -21,7 +21,6 @@ import java.io.Serializable;
 
 /**
  * Sample class for Data DUnit tests with JSON keys and values
- * @author tushark
  *
  */
 public class Key2 implements Serializable{

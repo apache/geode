@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Test ResultsBag Limit behaviour
  * 
- * @author Asif
  */
 @Category(UnitTest.class)
 public class ResultsBagLimitBehaviourJUnitTest extends TestCase {

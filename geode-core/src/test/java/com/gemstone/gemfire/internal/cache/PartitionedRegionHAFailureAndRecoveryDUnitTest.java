@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * testMetaDataCleanupOnMultiplePRNodeFail - Test for PartitionedRegion metadata
  * cleanup for multiple failed nodes.</br>
  *
- * @author tnegi, modified by Tushar (for bug#35713)
  */
 public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends
     PartitionedRegionDUnitTestCase

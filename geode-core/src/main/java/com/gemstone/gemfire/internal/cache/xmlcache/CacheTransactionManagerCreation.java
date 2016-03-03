@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Represents a {@link CacheTransactionManager} that is created declaratively.  
  *
- * @author Mitch Thomas
  *
  * @since 4.0
  */

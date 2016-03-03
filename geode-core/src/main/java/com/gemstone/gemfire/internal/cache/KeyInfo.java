@@ -27,8 +27,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
- * @author sbawaska
- * @author rdubey
  *
  */
 public class KeyInfo {

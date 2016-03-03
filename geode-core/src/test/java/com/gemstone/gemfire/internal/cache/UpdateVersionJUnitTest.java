@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * correctly on it after various other operations have been applied on it
  * (Including destroy when entry is a {@link Tombstone}).
  * 
- * @author Shobhit Agarwal
  * @since 7.0.1
  *
  */

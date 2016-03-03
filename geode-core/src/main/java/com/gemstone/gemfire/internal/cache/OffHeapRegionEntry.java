@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.offheap.Releasable;
  * Any RegionEntry that is stored off heap must
  * implement this interface.
  * 
- * @author darrel
  *
  */
 public interface OffHeapRegionEntry extends RegionEntry, Releasable {

@@ -36,8 +36,6 @@ import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
  * {@linkplain PartitionAttributesFactory#setColocatedWith(String) colocated} data references.
  * </p>
  * 
- * @author Yogesh Mahajan
- * @author Mitch Thomas
  * 
  * @since 6.0
  * 

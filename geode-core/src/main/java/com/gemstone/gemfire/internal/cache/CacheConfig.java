@@ -28,7 +28,6 @@ import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
  * This is helper class used by CacheFactory to pass the cache configuration
  *  values to cache creation code.
  *  
- * @author agingade
  * @since 6.6
  */
 public class CacheConfig {

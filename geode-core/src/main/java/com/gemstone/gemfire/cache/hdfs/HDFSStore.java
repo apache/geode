@@ -34,8 +34,6 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * <p>
  * Instances of this interface are created using {@link HDFSStoreFactory#create}
  * 
- * @author Hemant Bhanawat
- * @author Ashvin Agrawal
  */
 
 public interface HDFSStore {

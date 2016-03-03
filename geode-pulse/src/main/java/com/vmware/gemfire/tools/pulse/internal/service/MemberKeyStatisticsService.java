@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletRequest;
  * This class contains implementations of getting Member's CPU, Memory and Read
  * Write details
  * 
- * @author Sachin K
  * @since version 7.5
  */
 @Component

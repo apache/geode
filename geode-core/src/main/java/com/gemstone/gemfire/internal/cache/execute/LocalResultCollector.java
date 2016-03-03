@@ -24,7 +24,6 @@ import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
  * Extends {@link ResultCollector} interface to provide for methods that are
  * required internally by the product.
  * 
- * @author swale
  */
 public interface LocalResultCollector<T, S>
     extends ResultCollector<T, S> {

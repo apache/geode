@@ -33,7 +33,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * Various repository related methods are declared here These methods provide a
  * consistent view to read and update the repository.
  * 
- * @author rishim
  * 
  */
 

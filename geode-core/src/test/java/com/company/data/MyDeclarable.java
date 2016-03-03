@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.*;
 /**
  * A <code>Declarable</code> object
  *
- * @author David Whitlock
  * @since 3.2.1
  */
 public class MyDeclarable implements Declarable {

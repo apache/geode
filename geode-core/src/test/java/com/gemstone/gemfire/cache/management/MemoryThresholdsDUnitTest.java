@@ -96,8 +96,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests the Heap Memory thresholds of {@link ResourceManager}
- * @author sbawaska
- * @author Mitch Thomas
  * @since 6.0
  */
 public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
@@ -2316,7 +2314,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
   /**
    * Used to return and report remote CacheServer port info.
-   * @author rholmes
    */
   private static final class ServerPorts implements Serializable {
     private final int port;

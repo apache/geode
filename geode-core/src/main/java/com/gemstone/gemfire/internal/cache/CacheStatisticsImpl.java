@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
 
 /**
  *
- * @author Eric Zoerner
  *
  */
 class CacheStatisticsImpl implements CacheStatistics {

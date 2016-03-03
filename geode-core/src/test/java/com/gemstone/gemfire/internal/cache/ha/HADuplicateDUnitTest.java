@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 3. Stop the server1 so that fail over happens
  * 4. Validate the duplicates received by the client1
  *
- * @author Girish Thombare
  *
  */
 

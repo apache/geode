@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
- * @author sbawaska
  */
 public class ExecuteFunction70 extends ExecuteFunction66 {
 

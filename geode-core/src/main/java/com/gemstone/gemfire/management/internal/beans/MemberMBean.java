@@ -31,7 +31,6 @@ import com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionConte
 /**
  * This MBean is a gateway to cache and a member
  * 
- * @author rishim
  * 
  */
 public class MemberMBean extends NotificationBroadcasterSupport implements

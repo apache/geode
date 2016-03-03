@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.CacheRuntimeException;
  * Abstract root class of all GemFire exceptions representing system
  * cancellation
  * 
- * @author jpenney
  * @since 6.0
  */
 public abstract class CancelException extends CacheRuntimeException {

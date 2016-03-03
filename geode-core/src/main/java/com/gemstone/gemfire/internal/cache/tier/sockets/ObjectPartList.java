@@ -41,7 +41,6 @@ import org.apache.logging.log4j.Logger;
  * that keys are either provided for all entries or for none.
  * 
  * @since 5.7
- * @author swale
  */
 public class ObjectPartList implements DataSerializableFixedID, Releasable {
   private static final Logger logger = LogService.getLogger();

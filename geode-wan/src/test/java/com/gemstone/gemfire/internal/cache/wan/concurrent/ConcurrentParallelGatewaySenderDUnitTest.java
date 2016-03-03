@@ -34,7 +34,6 @@ import java.util.Set;
 
 /**
  * Test the functionality of ParallelGatewaySender with multiple dispatchers.
- * @author skumar
  *
  */
 public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {

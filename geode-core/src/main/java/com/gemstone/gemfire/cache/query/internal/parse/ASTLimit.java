@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.query.internal.QCompiler;
 
 /**
  *
- * @author Asif Shahid
  */
 public class ASTLimit extends GemFireAST {
 

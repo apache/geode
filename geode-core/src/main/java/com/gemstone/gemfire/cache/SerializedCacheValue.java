@@ -32,7 +32,6 @@ package com.gemstone.gemfire.cache;
  * Attempts to access off-heap data from this event after it has expired will result in an
  * IllegalStateException.
  *
- * @author Barry Oglesby
  * @since 5.5
  */
 public interface SerializedCacheValue<V> {

@@ -27,7 +27,6 @@ import java.io.*;
 
 /**
  *
- * @author prafulla
  */
 public class Country implements Serializable{
     public String name;

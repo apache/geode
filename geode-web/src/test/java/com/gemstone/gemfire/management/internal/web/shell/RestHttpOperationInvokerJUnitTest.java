@@ -46,7 +46,6 @@ import org.springframework.web.client.ResourceAccessException;
  * The RestHttpOperationInvokerJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * RestHttpOperationInvoker class.
  * <p/>
- * @author John Blum
  * @see java.net.URI
  * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
  * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod

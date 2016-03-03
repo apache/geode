@@ -35,7 +35,6 @@ import com.gemstone.gemfire.cache.client.ServerOperationException;
 
 /**
  * Does a region query on a server
- * @author darrel
  * @since 5.7
  */
 public class QueryOp {

@@ -24,7 +24,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Used by tests to get notifications about the lifecycle of a 
  * MemoryAllocatorImpl.
  * 
- * @author Kirk Lund
  */
 public interface LifecycleListener {
 

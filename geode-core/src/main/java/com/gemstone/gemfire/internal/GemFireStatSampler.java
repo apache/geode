@@ -42,9 +42,6 @@ import org.apache.logging.log4j.Logger;
  * <p>
  * The StatisticsManager is implemented by DistributedSystem.
  * 
- * @author Darrel Schneider
- * @author Kirk Lund
- * @author Swapnil Bawaskar
  */
 public final class GemFireStatSampler extends HostStatSampler  {
 

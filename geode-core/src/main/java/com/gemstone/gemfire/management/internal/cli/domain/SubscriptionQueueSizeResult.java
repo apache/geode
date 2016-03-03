@@ -18,7 +18,6 @@ package com.gemstone.gemfire.management.internal.cli.domain;
 
 /***
  *Data class used for sending back subscription-queue-size for a client or a cq
- * @author bansods
  *
  */
 public class SubscriptionQueueSizeResult extends MemberResult {

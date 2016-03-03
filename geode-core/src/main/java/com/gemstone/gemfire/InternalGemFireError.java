@@ -25,7 +25,6 @@ package com.gemstone.gemfire;
  * This is similar to {@link AssertionError}, but these errors are always
  * enabled in a GemFire system.
  * 
- * @author jpenney
  * @since 5.5
  * @see AssertionError
  */

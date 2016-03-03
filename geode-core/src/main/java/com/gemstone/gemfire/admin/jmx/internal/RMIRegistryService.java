@@ -31,7 +31,6 @@ import java.rmi.server.UnicastRemoteObject;
 /**
  * This MBean is an implementation of {@link RMIRegistryServiceMBean}.
  * 
- * @author abhishek
  */
 public class RMIRegistryService implements RMIRegistryServiceMBean {
   /* RMI Registry host */
@@ -199,7 +198,6 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 /**
  * Custom implementation of the {@link RMIServerSocketFactory}
  * 
- * @author abhishek
  */
 class RMIServerSocketFactoryImpl implements RMIServerSocketFactory {
   /* IP address to use for creating ServerSocket */

@@ -30,7 +30,6 @@ import java.util.zip.ZipInputStream;
 /**
  * Utility methods for unzipping a file. Used for backwards compatibility
  * test for gateway queue to handle checked in test code.
- * @author dsmith
  *
  */
 public class UnzipUtil {

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.management.cli.CommandStatement;
 import com.gemstone.gemfire.management.cli.Result;
 
 /**
- * @author Abhishek Chaudhari
  */
 public class MemberCommandService extends CommandService {
   private final Object modLock = new Object();

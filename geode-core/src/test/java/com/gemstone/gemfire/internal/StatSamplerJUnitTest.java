@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * @author Kirk Lund
  * @since 7.0
  */
 @Category(UnitTest.class)

@@ -54,7 +54,6 @@ import org.junit.experimental.categories.Category;
  * DiskStoreCommands class implementing commands in the GemFire shell (gfsh) that access and modify disk stores in
  * GemFire.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
  * @see com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails
  * @see com.gemstone.gemfire.management.internal.cli.functions.DescribeDiskStoreFunction

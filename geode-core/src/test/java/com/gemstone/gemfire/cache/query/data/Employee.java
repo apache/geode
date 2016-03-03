@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache.query.data;
 import java.util.*;
 /**
  *
- * @author  vikramj
  */
 public class Employee {
     private String name;

@@ -21,7 +21,6 @@ import java.nio.ByteBuffer;
 /**
  * Provides utilities for converting from byte[] to primitive values.
  * 
- * @author bakera
  */
 public class Bytes {
   /**

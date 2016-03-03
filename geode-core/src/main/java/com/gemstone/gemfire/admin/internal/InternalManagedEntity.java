@@ -25,7 +25,6 @@ import com.gemstone.gemfire.admin.ManagedEntityConfig;
  * <code>ManagedEntity<code>s.  This functionality is used by the
  * {@link ManagedEntityController} to manage the entity.
  *
- * @author David Whitlock
  * @since 4.0
  */
 public interface InternalManagedEntity extends ManagedEntity {

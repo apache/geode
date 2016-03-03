@@ -21,7 +21,6 @@ package com.vmware.gemfire.tools.pulse.tests;
 /**
  * Region on members mbean
  *
- * @author rbhandekar
  *
  */
 public interface RegionOnMemberMBean {

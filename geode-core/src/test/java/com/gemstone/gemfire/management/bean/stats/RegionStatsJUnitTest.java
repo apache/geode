@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Implementing RegionMXBean to ensure test coverage
  * 
- * @author rishim
  */
 @Category(IntegrationTest.class)
 public class RegionStatsJUnitTest extends MBeanStatsTestCase{

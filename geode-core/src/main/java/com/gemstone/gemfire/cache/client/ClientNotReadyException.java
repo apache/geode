@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.OperationAbortedException;
  * method, but failed.
  * <p>This exception was moved from the <code>util</code> package in 5.7.
  * 
- * @author darrel
  *
  * @since 5.7
  * @deprecated as of 6.5 this exception is no longer thrown by GemFire so any code that catches it should be removed.

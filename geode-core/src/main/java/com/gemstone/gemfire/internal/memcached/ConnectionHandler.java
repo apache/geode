@@ -34,7 +34,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
  * responses to this client.
  * 
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class ConnectionHandler implements Runnable {

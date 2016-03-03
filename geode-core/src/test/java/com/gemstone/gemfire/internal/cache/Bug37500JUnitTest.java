@@ -33,8 +33,6 @@ import static org.junit.Assert.*;
 /**
  * This is a bugtest for bug 37500.
  * 
- * @author Dinesh Patel
- * @author Mitul Bid
  * 
  */
 @Category(IntegrationTest.class)

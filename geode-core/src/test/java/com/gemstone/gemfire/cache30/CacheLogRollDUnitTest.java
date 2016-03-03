@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 /**
  * Test to make sure cache close is working.
  *
- * @author gregp
  * @since 6.5
  */
 public class CacheLogRollDUnitTest extends CacheTestCase {

@@ -63,7 +63,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * Goal of the Test : RegionMBean gets created once region is created. Data like
  * Region Attributes data and stats are of proper value
  * 
- * @author rishim
  * 
  */
 public class RegionManagementDUnitTest extends ManagementTestBase {
@@ -1405,7 +1404,6 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
   /**
    * User defined notification handler for Region creation handling
    * 
-   * @author rishim
    * 
    */
   private static class RegionNotif implements NotificationListener {
@@ -1426,7 +1424,6 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
   /**
    * User defined notification handler for Region creation handling
    * 
-   * @author rishim
    * 
    */
   private static class DistrNotif implements NotificationListener {

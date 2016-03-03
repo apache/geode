@@ -38,7 +38,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  *
- * @author vaibhav
  */
 @Category(IntegrationTest.class)
 public class QueryServiceJUnitTest {

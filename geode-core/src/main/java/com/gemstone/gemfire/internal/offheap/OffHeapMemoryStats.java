@@ -21,7 +21,6 @@ import com.gemstone.gemfire.Statistics;
 /**
  * Statistics for off-heap memory storage.
  * 
- * @author Kirk Lund
  * @since 9.0
  */
 public interface OffHeapMemoryStats {

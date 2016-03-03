@@ -31,7 +31,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 /****
  * Function which carries out the import of a region to a file on a member.
  * Uses the RegionSnapshotService to import the data
- * @author Sourabh Bansod
  *
  */
 public class ImportDataFunction extends FunctionAdapter implements

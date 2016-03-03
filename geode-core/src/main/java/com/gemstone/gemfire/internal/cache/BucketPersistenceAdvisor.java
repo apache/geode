@@ -46,7 +46,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.TransformUtils;
 
 /**
- * @author dsmith
  *
  */
 public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {

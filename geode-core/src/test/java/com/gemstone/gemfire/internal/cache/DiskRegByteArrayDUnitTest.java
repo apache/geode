@@ -42,7 +42,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * The value when obtained from the disk ,locally , 
  * should be correctly obtained as ByteArrray.
  * 
- * @author Vikram Jadhav
  */
 
 public class DiskRegByteArrayDUnitTest extends CacheTestCase {

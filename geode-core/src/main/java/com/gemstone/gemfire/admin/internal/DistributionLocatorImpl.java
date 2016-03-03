@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Default administrative implementation of a DistributionLocator.
  *
- * @author    Kirk Lund
  * @since     3.5
  */
 public class DistributionLocatorImpl

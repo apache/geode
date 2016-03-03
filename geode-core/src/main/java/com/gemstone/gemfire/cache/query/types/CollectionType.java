@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.query.types;
  * objects.
  *
  * @since 4.0
- * @author Eric Zoerner
  */
 public interface CollectionType extends ObjectType {
   

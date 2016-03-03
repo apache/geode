@@ -24,7 +24,6 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Thrown when a PDX field does not exist and the current operation requires its existence.
  * PDX fields exist after they are written by one of the writeXXX methods on {@link PdxWriter}.
- * @author darrel
  * @since 6.6
  *
  */

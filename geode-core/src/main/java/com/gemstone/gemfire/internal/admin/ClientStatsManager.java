@@ -41,7 +41,6 @@ import com.gemstone.gemfire.management.internal.cli.CliUtil;
 /**
  * This class publishes the client statistics using the admin region.
  * 
- * @author Hrishi
  */
 public class ClientStatsManager {
 

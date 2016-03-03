@@ -27,7 +27,6 @@ import static com.gemstone.gemfire.management.internal.cli.shell.MultiCommandHel
 
 /**
  * 
- * @author tushark
  *
  */
 @Category(UnitTest.class)

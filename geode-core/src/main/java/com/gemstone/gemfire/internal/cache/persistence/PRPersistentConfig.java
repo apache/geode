@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.cache.persistence;
 
 /**
- * @author dsmith
  *
  */
 public class PRPersistentConfig {

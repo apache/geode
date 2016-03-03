@@ -63,8 +63,6 @@ import static org.junit.Assert.*;
 import junit.framework.*;
 
 /**
- * @author vaibhav
- * @author Asif
  */
 @Category(IntegrationTest.class)
 public class MiscJUnitTest {

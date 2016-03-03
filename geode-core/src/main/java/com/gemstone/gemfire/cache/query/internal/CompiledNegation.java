@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Class Description
  *
  * @version     $Revision: 1.1 $
- * @author      ericz
  */
 
 

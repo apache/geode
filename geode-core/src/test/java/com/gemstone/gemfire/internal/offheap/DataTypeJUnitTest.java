@@ -76,7 +76,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests the DataType support for off-heap MemoryInspector.
- * @author Kirk Lund
  */
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)

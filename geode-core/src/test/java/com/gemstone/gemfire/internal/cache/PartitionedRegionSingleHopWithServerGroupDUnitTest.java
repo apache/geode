@@ -62,7 +62,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 /**
- * @author skumar
  *
  */
 public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTestCase{

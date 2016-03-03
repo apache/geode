@@ -86,7 +86,6 @@ import com.gemstone.gemfire.management.internal.configuration.utils.ZipUtils;
 
 /*********
  * 
- * @author bansods
  *
  */
 @SuppressWarnings("deprecation")

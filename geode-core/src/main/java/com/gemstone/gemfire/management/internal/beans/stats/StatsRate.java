@@ -20,7 +20,6 @@ import com.gemstone.gemfire.management.internal.beans.MetricsCalculator;
 
 /**
  * 
- * @author rishim
  *
  */
 public class StatsRate {

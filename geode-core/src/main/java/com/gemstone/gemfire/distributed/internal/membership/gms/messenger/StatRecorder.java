@@ -36,7 +36,6 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
  * JGroups doesn't capture quite the stats we want so this protocol is
  * inserted into the stack to gather the missing ones.
  * 
- * @author bschuchardt
  *
  */
 public class StatRecorder extends Protocol {

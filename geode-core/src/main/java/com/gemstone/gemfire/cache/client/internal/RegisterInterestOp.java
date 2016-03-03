@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 /**
  * Does a region registerInterest on a server
- * @author darrel
  * @since 5.7
  */
 public class RegisterInterestOp {

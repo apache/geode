@@ -24,7 +24,6 @@ import org.junit.experimental.categories.Category;
 /**
  * This class is the superclass of all distributed unit tests.
  *
- * @author David Whitlock
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")

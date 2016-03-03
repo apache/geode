@@ -40,7 +40,6 @@ import com.gemstone.gemfire.management.ManagementService;
  * The RestAgent is used to start http service in embedded mode on any non
  * manager data node with developer REST APIs service enabled.
  *
- * @author Nilkanth Patel.
  * @since 8.0
  */
 public class RestAgent {

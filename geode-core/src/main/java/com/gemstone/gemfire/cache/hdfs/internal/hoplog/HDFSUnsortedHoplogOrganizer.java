@@ -46,7 +46,6 @@ import org.apache.hadoop.hbase.util.FSUtils;
  * Manages unsorted Hoplog files for a bucket (Streaming Ingest option). An instance per bucket 
  * will exist in each PR
  * 
- * @author hemantb
  *
  */
 public class HDFSUnsortedHoplogOrganizer extends AbstractHoplogOrganizer<UnsortedHoplogPersistedEvent> {

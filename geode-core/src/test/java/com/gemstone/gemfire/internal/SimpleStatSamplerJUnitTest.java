@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Integration tests for SimpleStatSampler.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 @Category(IntegrationTest.class)

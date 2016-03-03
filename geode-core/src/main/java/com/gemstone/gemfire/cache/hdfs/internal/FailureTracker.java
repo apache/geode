@@ -24,7 +24,6 @@ import org.apache.commons.lang.mutable.MutableLong;
 
 /**
  * Class for tracking failures and backing off if necessary.
- * @author dsmith
  *
  */
 public class FailureTracker  extends ThreadLocal<MutableInt> {

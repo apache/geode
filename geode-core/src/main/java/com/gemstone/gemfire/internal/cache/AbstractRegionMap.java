@@ -93,7 +93,6 @@ import com.gemstone.gemfire.pdx.internal.ConvertableToBytes;
  *
  * @since 3.5.1
  *
- * @author Darrel Schneider
  *
  */
 

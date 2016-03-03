@@ -22,7 +22,6 @@ import java.util.Set;
 
 /**
  * Utility methods for managing and using Sets 
- * @author Mitch Thomas
  * @since gemfire59poc
  * 
  */

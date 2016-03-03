@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.EntryVersi
 /**
  * Test the DSFID serialization framework added for rolling upgrades in 7.1
  * 
- * @author tnomulwar
  * 
  * 
  */

@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.util.LogFileUtils;
  * Holds on to one or many instances of LogWriterAppender and provides
  * convenience methods for controlling their lifecycles.
  * 
- * @author Kirk Lund
  */
 public class LogWriterAppenders {
   public final static String APPEND_TO_LOG_FILE = "gemfire.append-log";

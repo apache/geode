@@ -56,7 +56,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * client and the secondary server does process the QRMs for the EXPIRE_DESTROY
  * events.
  * 
- * @author ashetkar
  * 
  */
 @SuppressWarnings("serial")

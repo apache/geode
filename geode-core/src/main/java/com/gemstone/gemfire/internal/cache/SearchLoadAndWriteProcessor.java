@@ -87,7 +87,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * At the receiving end, the request is converted into an appropriate message
  * whose process method responds to the request.
  *
- * @author Sudhir Menon
  */
 
 public class SearchLoadAndWriteProcessor implements MembershipListener {

@@ -55,7 +55,6 @@ import java.util.Set;
 /***
  * DUnit test to test export and import of shared configuration.
  *
- * @author bansods
  */
 public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
 

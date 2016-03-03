@@ -20,7 +20,6 @@ package com.gemstone.gemfire.management.internal.cli.json;
  * Wraps GemFire JSON Exceptions
  * 
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

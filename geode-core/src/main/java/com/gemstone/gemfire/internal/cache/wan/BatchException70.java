@@ -24,7 +24,6 @@ import java.util.List;
 /**
  * An exception thrown during batch processing.
  *
- * @author Suranjan Kumar
  *
  * @since 7.0
  */

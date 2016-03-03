@@ -27,7 +27,6 @@ import com.gemstone.gemfire.StatisticsFactory;
  * for its Statistics instances. This is an internal implementation
  * specific interface.
  *
- * @author Darrel Schneider
  *
  */
 public interface StatisticsManager extends StatisticsFactory {

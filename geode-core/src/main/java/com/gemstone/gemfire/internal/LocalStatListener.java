@@ -27,7 +27,6 @@ package com.gemstone.gemfire.internal;
  * sampler.addLocalStatListener(l, stats, statName);
  * </code>
  * 
- * @author sbawaska
  *
  */
 public interface LocalStatListener {

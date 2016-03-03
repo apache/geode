@@ -26,7 +26,6 @@ import com.gemstone.gemfire.DataSerializable;
 /**
  * A request to the TCP server to provide information
  * about the server
- * @author dsmith
  * @since 5.7
  *
  */

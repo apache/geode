@@ -55,7 +55,6 @@ import java.io.Serializable;
 import java.util.Iterator;
 
 /**
- * @author sbawaska
  *
  */
 public class TransactionsWithDeltaDUnitTest extends CacheTestCase {

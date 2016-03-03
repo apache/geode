@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests the Serialization of the Query related class.
  *
- * @author kbanks
  * @since 3.0
  */
 @Category(UnitTest.class)

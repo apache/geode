@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.admin.StatAlertsManager;
  * on server side , {@link StatAlertsManager} create instance of
  * {@link StatisticInfoImpl} class with help of this class instance
  * 
- * @author hgadre
  */
 public class DummyStatisticInfoImpl implements StatisticInfo {
   private static final long serialVersionUID = -5456779525795868187L;

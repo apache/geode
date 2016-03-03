@@ -38,7 +38,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * A sample test class using the QueryTestUtils
  * 
- * @author Tejas Nomulwar
  * 
  */
 @Category(IntegrationTest.class)

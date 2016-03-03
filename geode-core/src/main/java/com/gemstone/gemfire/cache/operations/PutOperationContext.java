@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.Region;
  * and value objects for for both the pre-operation case and for post-operation
  * updates.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class PutOperationContext extends KeyValueOperationContext {

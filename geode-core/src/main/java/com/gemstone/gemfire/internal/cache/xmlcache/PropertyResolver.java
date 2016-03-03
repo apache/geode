@@ -23,7 +23,6 @@ import java.util.IllegalFormatException;
 import java.util.Properties;
 
 /**
- * @author Shobhit Agarwal
  * @since 6.6
  */
 public interface PropertyResolver {

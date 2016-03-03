@@ -49,7 +49,6 @@ public class ThreadUtils {
   /**
    * Print stack dumps for all vms.
    * 
-   * @author bruce
    * @since 5.0
    */
   public static void dumpAllStacks() {
@@ -68,7 +67,6 @@ public class ThreadUtils {
   /** 
    * Print a stack dump for this vm.
    * 
-   * @author bruce
    * @since 5.0
    */
   public static void dumpStack() {
@@ -78,7 +76,6 @@ public class ThreadUtils {
   /** 
    * Print stack dumps for all vms on the given host.
    * 
-   * @author bruce
    * @since 5.0
    */
   public static void dumpStack(final Host host) {
@@ -90,7 +87,6 @@ public class ThreadUtils {
   /** 
    * Print a stack dump for the given vm.
    * 
-   * @author bruce
    * @since 5.0
    */
   public static void dumpStack(final VM vm) {

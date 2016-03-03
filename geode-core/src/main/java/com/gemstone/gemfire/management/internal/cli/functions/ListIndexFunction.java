@@ -33,7 +33,6 @@ import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails;
  * The ListIndexFunction class is a GemFire function used to collect all the index information on all Regions across
  * the entire GemFire Cache (distributed system).
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.execute.Function
  * @see com.gemstone.gemfire.cache.execute.FunctionAdapter

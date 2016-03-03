@@ -32,7 +32,6 @@ import com.gemstone.gemfire.management.internal.configuration.messages.Configura
 /***
  * Handler for {@link ConfigurationRequest} request message.
  * Processes the {@link ConfigurationRequest}, sends the {@link ConfigurationResponse} containing the requested configuration.
- * @author bansods
  *
  */
 public class ConfigurationRequestHandler implements TcpHandler{

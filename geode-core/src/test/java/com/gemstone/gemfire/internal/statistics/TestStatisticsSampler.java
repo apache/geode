@@ -22,7 +22,6 @@ import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.internal.StatisticsManager;
 
 /**
- * @author Kirk Lund
  * @since 7.0
  */
 public class TestStatisticsSampler implements StatisticsSampler {

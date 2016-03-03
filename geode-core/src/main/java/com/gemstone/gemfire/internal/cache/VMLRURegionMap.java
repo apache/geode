@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.lru.*;
  *
  * @since 3.5.1
  *
- * @author Darrel Schneider
  *
  */
 final class VMLRURegionMap extends AbstractLRURegionMap {
