@@ -61,33 +61,6 @@ subprojects {
     }
   }
 
-  // Here we want to disable all transitive dependencies on external artifacts.  This
-  // allows us to lock down library versions.  However, we want project dependencies to
-  // be transitive such that the libraries of a dependent project are automatically included.
-  configurations.all {
-    dependencies.all { dep ->
-      if (dep instanceof ModuleDependency && !(dep instanceof ProjectDependency)) {
-        dep.transitive = false
-      }
-    }
-  }
-
-  configurations.testCompile {
-    dependencies.all { dep ->
-      if (dep instanceof ModuleDependency) {
-        dep.transitive = true
-      }
-    }
-  }
-
-  configurations.testRuntime {
-    dependencies.all { dep ->
-      if (dep instanceof ModuleDependency) {
-        dep.transitive = true
-      }
-    }
-  }
- 
   // This ensures that javadoc and source jars also have any prefix paths stripped and will
   // be created as libs/foo-sources.jar instead of libs/extensions/foo-sources.jar for example.
   tasks.all { task ->

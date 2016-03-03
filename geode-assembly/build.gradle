@@ -49,8 +49,18 @@ configurations {
 
 dependencies {
   provided project(':geode-core')
-  bundled 'org.springframework.data:spring-data-commons:' + project.'spring-data-commons.version'
-  bundled 'org.springframework.data:spring-data-gemfire:' + project.'spring-data-gemfire.version'
+  bundled ('org.springframework.data:spring-data-commons:' + project.'spring-data-commons.version') {
+    transitive=false
+  }
+  bundled ('org.springframework.data:spring-data-gemfire:' + project.'spring-data-gemfire.version') {
+    transitive=false
+  }
+  bundled ('org.springframework:spring-expression:' + project.'springframework.version') {
+    transitive=false
+  }
+  bundled ('org.springframework:spring-tx:' + project.'springframework.version') {
+    transitive=false
+  }
   
   archives project(':geode-common')  
   archives project(':geode-json')  

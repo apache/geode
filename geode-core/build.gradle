@@ -33,56 +33,62 @@ dependencies {
   provided files("${System.getProperty('java.home')}/../lib/tools.jar")
   compile 'org.jgroups:jgroups:3.6.7.Final'
   compile 'antlr:antlr:' + project.'antlr.version'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
   compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
-  provided 'com.google.guava:guava:' + project.'guava.version'
   compile 'commons-io:commons-io:' + project.'commons-io.version'
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile 'commons-logging:commons-logging:' + project.'commons-logging.version'
-  compile 'commons-modeler:commons-modeler:' + project.'commons-modeler.version'
+  compile ('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
+    exclude module: 'commons-digester'
+    exclude module: 'commons-logging-api'
+    exclude module: 'mx4j-jmx'
+    exclude module: 'xml-apis'
+  }
   compile 'io.netty:netty-all:' + project.'netty-all.version'
   compile 'it.unimi.dsi:fastutil:' + project.'fastutil.version'
-  compile 'javax.activation:activation:' + project.'activation.version'
   compile 'javax.mail:javax.mail-api:' + project.'javax.mail-api.version'
   compile 'javax.resource:javax.resource-api:' + project.'javax.resource-api.version'
-  compile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  compile 'javax.transaction:javax.transaction-api:' + project.'javax.transaction-api.version'
   compile 'mx4j:mx4j:' + project.'mx4j.version'
   compile 'mx4j:mx4j-remote:' + project.'mx4j.version'
   compile 'mx4j:mx4j-tools:' + project.'mx4j.version'
   compile 'net.java.dev.jna:jna:' + project.'jna.version'
-  compile 'jline:jline:' + project.'jline.version'
-  provided 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
-  provided 'org.apache.hadoop:hadoop-annotations:' + project.'hadoop.version'
-  provided 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
-  provided 'org.apache.hadoop:hadoop-mapreduce-client-core:' + project.'hadoop.version'
-  provided 'org.apache.hbase:hbase:' + project.'hbase.version'
+  provided ('org.apache.hadoop:hadoop-common:' + project.'hadoop.version') {
+    transitive=false
+  }
+  provided ('org.apache.hadoop:hadoop-annotations:' + project.'hadoop.version') {
+    transitive=false
+  }
+  provided ('org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version') {
+    transitive=false
+  }
+  provided ('org.apache.hadoop:hadoop-mapreduce-client-core:' + project.'hadoop.version') {
+    transitive=false
+  }
+  provided ('org.apache.hbase:hbase:' + project.'hbase.version') {
+    transitive=false
+  }
+
+  compile 'com.google.guava:guava:' + project.'guava.version'
+
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  runtime 'org.fusesource.jansi:jansi:' + project.'jansi.version'
   runtime 'org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version'
   runtime 'org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version'
   runtime 'org.apache.logging.log4j:log4j-jul:' + project.'log4j.version'
-  compile 'org.eclipse.jetty:jetty-http:' + project.'jetty.version'
-  compile 'org.eclipse.jetty:jetty-io:' + project.'jetty.version'
-  compile 'org.eclipse.jetty:jetty-security:' + project.'jetty.version'
-  compile 'org.eclipse.jetty:jetty-server:' + project.'jetty.version'
-  compile 'org.eclipse.jetty:jetty-servlet:' + project.'jetty.version'
-  compile 'org.eclipse.jetty:jetty-util:' + project.'jetty.version'
   compile 'org.eclipse.jetty:jetty-webapp:' + project.'jetty.version'
-  compile 'org.eclipse.jetty:jetty-xml:' + project.'jetty.version'
-  compile 'org.fusesource.jansi:jansi:' + project.'jansi.version'
-  compile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
-  runtime 'org.springframework:spring-aop:' + project.'springframework.version'
-  compile 'org.springframework:spring-beans:' + project.'springframework.version' //only used in AbstractCommandsController
-  compile 'org.springframework:spring-context:' + project.'springframework.version'
-  compile 'org.springframework:spring-context-support:' + project.'springframework.version'
-  compile 'org.springframework:spring-core:' + project.'springframework.version'
-  runtime 'org.springframework:spring-expression:' + project.'springframework.version'
-  compile 'org.springframework:spring-tx:' + project.'springframework.version'
-  compile 'org.springframework:spring-web:' + project.'springframework.version'
-  compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
-  compile 'org.springframework.shell:spring-shell:' + project.'spring-shell.version'
+  runtime ('org.springframework:spring-aop:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+  }
+  compile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-aop'
+  }
+  compile ('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'asm'
+    exclude module: 'cglib'
+    exclude module: 'guava'
+    exclude module: 'spring-aop'
+  }
   compile 'org.xerial.snappy:snappy-java:' + project.'snappy-java.version'
  
   compile project(':geode-common')
