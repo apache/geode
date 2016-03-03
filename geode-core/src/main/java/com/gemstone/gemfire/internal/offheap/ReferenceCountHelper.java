@@ -17,14 +17,8 @@
 
 package com.gemstone.gemfire.internal.offheap;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.gemstone.gemfire.internal.cache.RegionEntry;
 
 /**
  * This class provides static methods to help
@@ -33,48 +27,31 @@ import com.gemstone.gemfire.internal.cache.RegionEntry;
  * To enable free operation tracking set: -Dgemfire.trackOffHeapFreedRefCounts=true.
  */
 public class ReferenceCountHelper {
-  private ReferenceCountHelper() {
-    // no instances allowed
-  }
-  final static private boolean trackRefCounts = Boolean.getBoolean("gemfire.trackOffHeapRefCounts");
-  final static private boolean trackFreedRefCounts = Boolean.getBoolean("gemfire.trackOffHeapFreedRefCounts");
-  final static private ConcurrentMap<Long, List<RefCountChangeInfo>> stacktraces;
-  final static private ConcurrentMap<Long, List<RefCountChangeInfo>> freedStacktraces;
-  final static private ThreadLocal<Object> refCountOwner;
-  final static private ThreadLocal<AtomicInteger> refCountReenterCount;
-  final static private Object SKIP_REF_COUNT_TRACKING = new Object();
-  final static private List<RefCountChangeInfo> LOCKED = Collections.emptyList();
+  
+  public static final String TRACK_OFFHEAP_REFERENCES = "gemfire.trackOffHeapRefCounts";
+  public static final String TRACK_OFFHEAP_FREES = "gemfire.trackOffHeapFreedRefCounts";
 
-  static {
-    if (trackRefCounts) {
-      stacktraces = new ConcurrentHashMap<Long, List<RefCountChangeInfo>>();
-      if (trackFreedRefCounts) {
-        freedStacktraces = new ConcurrentHashMap<Long, List<RefCountChangeInfo>>();
-      } else {
-        freedStacktraces = null;
-      }
-      refCountOwner = new ThreadLocal<Object>();
-      refCountReenterCount = new ThreadLocal<AtomicInteger>();
-    } else {
-      stacktraces = null;
-      freedStacktraces = null;
-      refCountOwner = null;
-      refCountReenterCount = null;
-    }
+  private static final ReferenceCountHelperImpl inst = new ReferenceCountHelperImpl(Boolean.getBoolean(TRACK_OFFHEAP_REFERENCES), Boolean.getBoolean(TRACK_OFFHEAP_FREES));
+
+  /* Do not allow any instances */
+  private ReferenceCountHelper() {}
+  
+  static ReferenceCountHelperImpl getInstance() {
+    return inst;
   }
   
   /**
    * Returns true if reference count tracking is enabled.
    */
   public static boolean trackReferenceCounts() {
-    return trackRefCounts;
+    return getInstance().trackReferenceCounts();
   }
 
   /**
    * Returns true if free operation tracking is enabled.
    */
   public static boolean trackFreedReferenceCounts() {
-    return trackFreedRefCounts;
+    return getInstance().trackFreedReferenceCounts();
   }
 
   /**
@@ -85,31 +62,7 @@ public class ReferenceCountHelper {
    * Calling this method is a noop if !trackReferenceCounts.
    */
   public static void setReferenceCountOwner(Object owner) {
-    if (trackReferenceCounts()) {
-      if (refCountOwner.get() != null) {
-        AtomicInteger ai = refCountReenterCount.get();
-        if (owner != null) {
-          ai.incrementAndGet();
-        } else {
-          if (ai.decrementAndGet() <= 0) {
-            refCountOwner.set(null);
-            ai.set(0);
-          }
-        }
-      } else {
-        AtomicInteger ai = refCountReenterCount.get();
-        if (ai == null) {
-          ai = new AtomicInteger(0);
-          refCountReenterCount.set(ai);
-        }
-        if (owner != null) {
-          ai.set(1);
-        } else {
-          ai.set(0);
-        }
-        refCountOwner.set(owner);
-      }
-    }
+    getInstance().setReferenceCountOwner(owner);
   }
 
   /**
@@ -117,12 +70,7 @@ public class ReferenceCountHelper {
    * Calling this method is a noop and returns null if !trackReferenceCounts.
    */
   public static Object createReferenceCountOwner() {
-    Object result = null;
-    if (trackReferenceCounts()) {
-      result = new Object();
-      setReferenceCountOwner(result);
-    }
-    return result;
+    return getInstance().createReferenceCountOwner();
   }
 
   /**
@@ -134,14 +82,21 @@ public class ReferenceCountHelper {
    * after the allocation or free is done.
    */
   public static void skipRefCountTracking() {
-    setReferenceCountOwner(SKIP_REF_COUNT_TRACKING);
+    getInstance().skipRefCountTracking();
+  }
+
+  /**
+   * Returns true if currently tracking reference counts.
+   */
+  public static boolean isRefCountTracking() {
+    return getInstance().isRefCountTracking();
   }
 
   /**
    * Call this method to undo a call to skipRefCountTracking.
    */
   public static void unskipRefCountTracking() {
-    setReferenceCountOwner(null);
+    getInstance().unskipRefCountTracking();
   }
 
   /**
@@ -149,12 +104,37 @@ public class ReferenceCountHelper {
    * the given Chunk address.
    */
   public static List<RefCountChangeInfo> getRefCountInfo(long address) {
-    if (!trackReferenceCounts()) return null;
-    List<RefCountChangeInfo> result = stacktraces.get(address);
-    while (result != null && !stacktraces.replace(address, result, LOCKED)) {
-      result = stacktraces.get(address);
-    }
-    return result;
+    return getInstance().getRefCountInfo(address);
+  }
+
+  /**
+   * Used internally to report that a reference count has changed.
+   */  
+  static void refCountChanged(Long address, boolean decRefCount, int rc) {
+    getInstance().refCountChanged(address, decRefCount, rc);
+  }
+
+  /**
+   * Called internally when free operations are tracked to record
+   * that a free has happened of the given address.
+   */
+  static void freeRefCountInfo(Long address) {
+    getInstance().freeRefCountInfo(address);
+  }
+  
+  /**
+   * Returns the thread local owner
+   */
+  static Object getReferenceCountOwner() {
+    return getInstance().getReferenceCountOwner();
+  }
+
+  /**
+   * Returns the thread local count of the
+   * number of times ref count has been updated
+   */
+  static AtomicInteger getReenterCount() {
+    return getInstance().getReenterCount();
   }
 
   /**
@@ -163,92 +143,14 @@ public class ReferenceCountHelper {
    * ends up being done and fails.
    */
   public static List<RefCountChangeInfo> getFreeRefCountInfo(long address) {
-    if (!trackReferenceCounts() || !trackFreedReferenceCounts()) return null;
-    return freedStacktraces.get(address);
+    return getInstance().getFreeRefCountInfo(address);
   }
 
   /**
-   * Used internally to report that a reference count has changed.
+   * Returns a list of any reference count tracking information for
+   * the given Chunk address without locking.
    */
-  
-  static void refCountChanged(Long address, boolean decRefCount, int rc) {
-    final Object owner = refCountOwner.get();
-    if (owner == SKIP_REF_COUNT_TRACKING) {
-      return;
-    }
-    List<RefCountChangeInfo> list = stacktraces.get(address);
-    if (list == null) {
-      List<RefCountChangeInfo> newList = new ArrayList<RefCountChangeInfo>();
-      List<RefCountChangeInfo> old = stacktraces.putIfAbsent(address, newList);
-      if (old == null) {
-        list = newList;
-      } else {
-        list = old;
-      }
-    }
-    if (decRefCount) {
-      if (owner != null) {
-        synchronized (list) {
-          for (int i=0; i < list.size(); i++) {
-            RefCountChangeInfo info = list.get(i);
-            if (owner instanceof RegionEntry) {
-              // use identity comparison on region entries since sqlf does some wierd stuff in the equals method
-              if (owner == info.getOwner()) {
-                if (info.getUseCount() > 0) {
-                  info.decUseCount();
-                } else {
-                  list.remove(i);
-                }
-                return;
-              }
-            } else if (owner.equals(info.getOwner())) {
-              if (info.getUseCount() > 0) {
-                info.decUseCount();
-              } else {
-                list.remove(i);
-              }
-              return;
-            }
-          }
-        }
-      }
-    }
-    if (list == LOCKED) {
-      MemoryAllocatorImpl.debugLog("refCount " + (decRefCount ? "deced" : "inced") + " after orphan detected for @" + Long.toHexString(address), true);
-      return;
-    }
-    RefCountChangeInfo info = new RefCountChangeInfo(decRefCount, rc, owner);
-    synchronized (list) {
-      //      if (list.size() == 16) {
-      //        debugLog("dumping @" + Long.toHexString(address) + " history=" + list, false);
-      //        list.clear();
-      //      }
-      for (RefCountChangeInfo e: list) {
-        if (e.isSameCaller(info)) {
-          // No need to add it just increment useCount
-          e.incUseCount();
-          return;
-        }
-      }
-      list.add(info);
-    }
-  }
-
-  /**
-   * Called internally when free operations are tracked to record
-   * that a free has happened of the given address.
-   */
-  static void freeRefCountInfo(Long address) {
-    if (!trackReferenceCounts()) return;
-    List<RefCountChangeInfo> freedInfo = stacktraces.remove(address);
-    if (freedInfo == LOCKED) {
-      MemoryAllocatorImpl.debugLog("freed after orphan detected for @" + Long.toHexString(address), true);
-    } else if (trackFreedReferenceCounts()) {
-      if (freedInfo != null) {
-        freedStacktraces.put(address, freedInfo);
-      } else {
-        freedStacktraces.remove(address);
-      }
-    }
+  static List<RefCountChangeInfo> peekRefCountInfo(long address) {
+    return getInstance().peekRefCountInfo(address);
   }
 }
