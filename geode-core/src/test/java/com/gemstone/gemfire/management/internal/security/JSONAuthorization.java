@@ -43,8 +43,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.jgroups.util.Util.readFile;
-
 public class JSONAuthorization implements AccessControl, Authenticator {
 
 	public static class Role{

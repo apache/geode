@@ -80,9 +80,6 @@ public class AuthorizeOperationForMBeansIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty("gemfire.security-client-accessor", TestAccessControl.class.getName() + ".create");
-    System.setProperty("gemfire.security-client-authenticator", TestAuthenticator.class.getName() + ".create");
-    
     Properties properties = new Properties();
     properties.put("name", this.testName.getMethodName());
     properties.put(DistributionConfig.LOCATORS_NAME, "");
@@ -91,7 +88,9 @@ public class AuthorizeOperationForMBeansIntegrationTest {
     properties.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     properties.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(this.jmxManagerPort));
     properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
-    
+    properties.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, TestAccessControl.class.getName() + ".create");
+    properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, TestAuthenticator.class.getName() + ".create");
+
     this.ds = DistributedSystem.connect(properties);
     this.cache = (GemFireCacheImpl) CacheFactory.create(ds);
 

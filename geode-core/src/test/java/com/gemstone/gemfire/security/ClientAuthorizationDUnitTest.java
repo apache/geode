@@ -186,13 +186,12 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
 
       // Perform the operation from selected client
       if (useThisVM) {
-        doOp(new Byte(opCode.toOrdinal()), currentOp.getIndices(), new Integer(
+        doOp(opCode, currentOp.getIndices(), new Integer(
             opFlags), new Integer(expectedResult));
       }
       else {
-        byte ordinal = opCode.toOrdinal();
         int[] indices = currentOp.getIndices();
-        clientVM.invoke(() -> ClientAuthorizationTestBase.doOp( new Byte(ordinal),
+        clientVM.invoke(() -> ClientAuthorizationTestBase.doOp(opCode,
                 indices, new Integer(opFlags),
                 new Integer(expectedResult) ));
       }

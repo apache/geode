@@ -184,7 +184,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       ReflectionException {
     ResourceOperationContext ctx = doAuthorization(name, GET_ATTRIBUTES, new Object[]{attributes});
     AttributeList result = mbs.getAttributes(name, attributes);
-    doAuthorizationPost(name,GET_ATTRIBUTES, ctx, result);
+    doAuthorizationPost(name, GET_ATTRIBUTES, ctx, result);
     return result;
   }
 

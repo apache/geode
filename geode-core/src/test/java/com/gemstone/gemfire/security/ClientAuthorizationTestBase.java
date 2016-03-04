@@ -201,10 +201,9 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
 
   private static final int PAUSE = 5 * 1000;
   
-  public static void doOp(Byte opCode, int[] indices, Integer flagsI,
+  public static void doOp(OperationCode op, int[] indices, Integer flagsI,
       Integer expectedResult) {
 
-    OperationCode op = OperationCode.fromOrdinal(opCode.byteValue());
     boolean operationOmitted = false;
     final int flags = flagsI.intValue();
     Region region = getRegion();
@@ -794,13 +793,12 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
 
       // Perform the operation from selected client
       if (useThisVM) {
-        doOp(new Byte(opCode.toOrdinal()), currentOp.getIndices(), new Integer(
+        doOp(opCode, currentOp.getIndices(), new Integer(
             opFlags), new Integer(expectedResult));
       }
       else {
-        byte ordinal = opCode.toOrdinal();
         int[] indices = currentOp.getIndices();
-        clientVM.invoke(() -> ClientAuthorizationTestBase.doOp( new Byte(ordinal),
+        clientVM.invoke(() -> ClientAuthorizationTestBase.doOp(opCode,
                 indices, new Integer(opFlags),
                 new Integer(expectedResult) ));
       }

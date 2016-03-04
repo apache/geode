@@ -1,0 +1,34 @@
+{
+  "roles": [
+    {
+      "name": "everything",
+      "operationsAllowed": [
+        "INDEX:DESTROY",
+        "LOCATE_ENTRY",
+        "QUERY:*"
+      ]
+    },
+    {
+      "name": "nothing",
+      "operationsAllowed": [
+      ],
+      "region": "secureRegion"
+    }
+  ],
+  "users": [
+    {
+      "name": "superuser",
+      "password": "1234567",
+      "roles": [
+        "everything"
+      ]
+    },
+    {
+      "name": "stranger",
+      "password": "1234567",
+      "roles": [
+        "nothing"
+      ]
+    }
+  ]
+}

@@ -63,9 +63,6 @@ public class AuthorizeOperationForRegionCommandsIntegrationTest {
   
   @Before
   public void setUp() {
-    System.setProperty("gemfire.security-client-accessor", JSONAuthorization.class.getName() + ".create");
-    System.setProperty("gemfire.security-client-authenticator", JSONAuthorization.class.getName() + ".create");
-
     Properties properties = new Properties();
     properties.put("name", testName.getMethodName());
     properties.put(DistributionConfig.LOCATORS_NAME, "");
@@ -74,7 +71,9 @@ public class AuthorizeOperationForRegionCommandsIntegrationTest {
     properties.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     properties.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(this.jmxManagerPort));
     properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
-    
+    properties.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+    properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
+
     this.ds = DistributedSystem.connect(properties);
     this.cache = (GemFireCacheImpl) CacheFactory.create(ds);
   }

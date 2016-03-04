@@ -23,4 +23,6 @@ public enum Resource {
   DISKSTORE,
   GATEWAY_SENDER,
   GATEWAY_RECEIVER,
+  QUERY,
+  INDEX
 }

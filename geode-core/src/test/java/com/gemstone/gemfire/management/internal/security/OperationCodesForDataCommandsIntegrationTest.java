@@ -36,8 +36,6 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.internal.security.ResourceOperationContext.ResourceOperationCode;
-import com.gemstone.gemfire.management.internal.security.AuthorizeOperationForMBeansIntegrationTest.TestAccessControl;
-import com.gemstone.gemfire.management.internal.security.AuthorizeOperationForMBeansIntegrationTest.TestAuthenticator;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -59,9 +57,6 @@ public class OperationCodesForDataCommandsIntegrationTest {
 
   @Before
   public void setUp() {
-    System.setProperty("resource-auth-accessor", TestAccessControl.class.getName());
-    System.setProperty("resource-authenticator", TestAuthenticator.class.getName());
-    
     Properties properties = new Properties();
     properties.put("name", testName.getMethodName());
     properties.put(DistributionConfig.LOCATORS_NAME, "");
