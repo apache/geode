@@ -4,8 +4,9 @@
       "name": "everything",
       "operationsAllowed": [
         "INDEX:DESTROY",
+        "DESTROY_INDEX",
         "LOCATE_ENTRY",
-        "QUERY:*"
+        "QUERY"
       ]
     },
     {

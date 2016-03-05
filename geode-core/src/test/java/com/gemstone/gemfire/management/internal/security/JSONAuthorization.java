@@ -119,7 +119,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
   }
 
   private static String readDefault() throws IOException, JSONException {
-	  String str = System.getProperty(ResourceConstants.RESORUCE_SEC_DESCRIPTOR, ResourceConstants.RESORUCE_DEFAULT_SEC_DESCRIPTOR);
+	  String str = System.getProperty(ResourceConstants.RESOURCE_SEC_DESCRIPTOR, ResourceConstants.RESORUCE_DEFAULT_SEC_DESCRIPTOR);
 		File file = new File(str);
 		FileReader reader = new FileReader(file);
 		char[] buffer = new char[(int) file.length()];

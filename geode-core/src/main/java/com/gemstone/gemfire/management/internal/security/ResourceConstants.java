@@ -20,7 +20,7 @@ public class ResourceConstants {
 
 	public static final String DEFAULT_LABEL="";
 	
-	public static final String RESORUCE_SEC_DESCRIPTOR = "resource.secDescriptor";
+	public static final String RESOURCE_SEC_DESCRIPTOR = "resource.secDescriptor";
 	public static final String RESORUCE_AUTH_ACCESSOR = "resource-auth-accessor";
 	public static final String RESORUCE_AUTHENTICATOR = "resource-authenticator";
   public static final String RESORUCE_DEFAULT_SEC_DESCRIPTOR = "resourceSecDesc.json";
