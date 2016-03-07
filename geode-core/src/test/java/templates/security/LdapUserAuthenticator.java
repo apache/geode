@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package templates.security;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
+import org.apache.logging.log4j.Logger;
 
 import java.security.Principal;
 import java.util.Properties;
@@ -33,6 +34,7 @@ import javax.naming.directory.InitialDirContext;
  * @since 5.5
  */
 public class LdapUserAuthenticator implements Authenticator {
+  private static final Logger logger = LogService.getLogger();
 
   private String ldapServer = null;
 
@@ -92,7 +94,7 @@ public class LdapUserAuthenticator implements Authenticator {
     Properties env = new Properties();
     env
         .put(Context.INITIAL_CONTEXT_FACTORY,
-            "com.sun.jndi.ldap.LdapCtxFactory");
+            com.sun.jndi.ldap.LdapCtxFactory.class.getName());
     env.put(Context.PROVIDER_URL, this.ldapUrlScheme + this.ldapServer + '/'
         + this.basedn);
     String fullentry = "uid=" + userName + "," + this.basedn;
@@ -103,10 +105,9 @@ public class LdapUserAuthenticator implements Authenticator {
       ctx.close();
     }
     catch (Exception e) {
-      //TODO:hitesh need to add getCause message
       throw new AuthenticationFailedException(
           "LdapUserAuthenticator: Failure with provided username, password "
-              + "combination for user name: " + userName);
+              + "combination for user name: " + userName, e);
     }
     return new UsernamePrincipal(userName);
   }

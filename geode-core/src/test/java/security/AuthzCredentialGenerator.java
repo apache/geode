@@ -1,6 +1,3 @@
-
-package security;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,9 +6,9 @@ package security;
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,7 +16,12 @@ package security;
  * specific language governing permissions and limitations
  * under the License.
  */
+package security;
 
+import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.security.AccessControl;
+import org.apache.logging.log4j.Logger;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -28,9 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.security.AccessControl;
 
 /**
  * Encapsulates obtaining authorized and unauthorized credentials for a given
@@ -41,6 +40,7 @@ import com.gemstone.gemfire.security.AccessControl;
  * @since 5.5
  */
 public abstract class AuthzCredentialGenerator {
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Enumeration for various {@link AuthzCredentialGenerator} implementations.
@@ -90,10 +90,10 @@ public abstract class AuthzCredentialGenerator {
     private static final Map CodeNameMap = new HashMap();
 
     public static final ClassCode DUMMY = new ClassCode(
-        "templates.security.DummyAuthorization.create", ID_DUMMY);
+        templates.security.DummyAuthorization.class.getName() + ".create", ID_DUMMY);
 
     public static final ClassCode XML = new ClassCode(
-        "templates.security.XmlAuthorization.create", ID_XML);
+        templates.security.XmlAuthorization.class.getName() + ".create", ID_XML);
 
     /** The name of this class. */
     private final String name;

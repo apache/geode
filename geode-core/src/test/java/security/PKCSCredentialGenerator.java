@@ -1,6 +1,3 @@
-
-package security;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,9 +6,9 @@ package security;
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,16 +16,16 @@ package security;
  * specific language governing permissions and limitations
  * under the License.
  */
+package security;
 
+import com.gemstone.gemfire.util.test.TestUtil;
+import templates.security.PKCSAuthInit;
+import templates.security.PKCSAuthenticator;
 
 import java.security.Principal;
 import java.security.Provider;
 import java.security.Security;
 import java.util.Properties;
-
-import com.gemstone.gemfire.util.test.TestUtil;
-import templates.security.PKCSAuthInit;
-import templates.security.PKCSAuthenticator;
 
 /**
  * @author kneeraj
@@ -66,11 +63,11 @@ public class PKCSCredentialGenerator extends CredentialGenerator {
   }
 
   public String getAuthInit() {
-    return "templates.security.PKCSAuthInit.create";
+    return templates.security.PKCSAuthInit.class.getName() + ".create";
   }
 
   public String getAuthenticator() {
-    return "templates.security.PKCSAuthenticator.create";
+    return templates.security.PKCSAuthenticator.class.getName() + ".create";
   }
 
   public Properties getInvalidCredentials(int index) {

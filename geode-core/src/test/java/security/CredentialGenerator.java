@@ -1,6 +1,3 @@
-
-package security;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,9 +6,9 @@ package security;
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,7 +16,10 @@ package security;
  * specific language governing permissions and limitations
  * under the License.
  */
+package security;
 
+import com.gemstone.gemfire.security.AuthInitialize;
+import com.gemstone.gemfire.security.Authenticator;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -28,9 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import com.gemstone.gemfire.security.AuthInitialize;
-import com.gemstone.gemfire.security.Authenticator;
 
 /**
  * Encapsulates obtaining valid and invalid credentials. Implementations will be
@@ -85,13 +82,13 @@ public abstract class CredentialGenerator {
     private static final Map CodeNameMap = new HashMap();
 
     public static final ClassCode DUMMY = new ClassCode(
-        "templates.security.DummyAuthenticator.create", ID_DUMMY);
+        templates.security.DummyAuthenticator.class.getName() + ".create", ID_DUMMY);
 
     public static final ClassCode LDAP = new ClassCode(
-        "templates.security.LdapUserAuthenticator.create", ID_LDAP);
+        templates.security.LdapUserAuthenticator.class.getName() + ".create", ID_LDAP);
 
     public static final ClassCode PKCS = new ClassCode(
-        "templates.security.PKCSAuthenticator.create", ID_PKCS);
+        templates.security.PKCSAuthenticator.class.getName() + ".create", ID_PKCS);
 
     public static final ClassCode SSL = new ClassCode("SSL", ID_SSL);
 

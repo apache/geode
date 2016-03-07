@@ -1,6 +1,3 @@
-
-package security;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,9 +6,9 @@ package security;
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,17 +16,19 @@ package security;
  * specific language governing permissions and limitations
  * under the License.
  */
+package security;
 
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Properties;
 
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import security.CredentialGenerator;
-
 public class SSLCredentialGenerator extends CredentialGenerator {
+  private static final Logger logger = LogService.getLogger();
 
   private File findTrustedJKS() {
     File ssldir = new File(System.getProperty("JTESTS") + "/ssl");
@@ -53,7 +52,7 @@ public class SSLCredentialGenerator extends CredentialGenerator {
     }
     catch (IOException ex) {
       throw new AuthenticationFailedException(
-          "SSL: Exception while opening the key store: " + ex);
+          "SSL: Exception while opening the key store: " + ex.getMessage(), ex);
     }
   }
 
@@ -69,7 +68,7 @@ public class SSLCredentialGenerator extends CredentialGenerator {
     }
     catch (IOException ex) {
       throw new AuthenticationFailedException(
-          "SSL: Exception while opening the key store: " + ex);
+          "SSL: Exception while opening the key store: " + ex.getMessage(), ex);
     }
   }
 

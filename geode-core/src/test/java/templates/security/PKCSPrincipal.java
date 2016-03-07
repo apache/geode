@@ -17,13 +17,14 @@
 
 package templates.security;
 
+import java.io.Serializable;
 import java.security.Principal;
 
 /**
  * @author kneeraj
  * 
  */
-public class PKCSPrincipal implements Principal {
+public class PKCSPrincipal implements Principal, Serializable {
 
   private String alias;
 
