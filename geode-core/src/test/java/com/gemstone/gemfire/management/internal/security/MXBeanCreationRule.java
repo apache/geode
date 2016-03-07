@@ -16,9 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import org.junit.rules.ExternalResource;
+import com.gemstone.gemfire.test.junit.rules.DescribedExternalResource;
 import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
@@ -36,53 +35,25 @@ import java.util.Map;
  *
  * @param <T> The type of MBean which will be returned.
  */
-public class MXBeanCreationRule<T> extends ExternalResource {
+public class MXBeanCreationRule<T> extends DescribedExternalResource {
 
   private final int jmxServerPort;
-  private Class<T> proxyClass;
+  private final Class<T> proxyClass;
+  private final String objectName;
   private JMXConnector jmxConnector;
   private ObjectName beanObjectName;
   private MBeanServerConnection mbeanServer;
 
-  private static class JMXConfigurationStatement extends Statement {
-
-    private final Description description;
-    private final Statement base;
-    private final MXBeanCreationRule mxRule;
-
-    JMXConfigurationStatement(Statement base, Description description, MXBeanCreationRule rule) {
-      this.description = description;
-      this.base = base;
-      this.mxRule = rule;
-    }
-
-    @Override
-    public void evaluate() throws Throwable {
-      mxRule.createConnection(getUser(), getPassword());
-      try {
-        base.evaluate();
-      } finally {
-        mxRule.close();
-      }
-    }
-
-    private String getUser() {
-      return description.getAnnotation(JMXConnectionConfiguration.class).user();
-    }
-
-    private String getPassword() {
-      return description.getAnnotation(JMXConnectionConfiguration.class).password();
-    }
-  }
 
   /**
    * Rule constructor
    * @param port The JMX server port to connect to
    * @param proxyClass The class for which a proxy MBean will be created
    */
-  public MXBeanCreationRule(int port, Class<T> proxyClass) {
+  public MXBeanCreationRule(int port, Class<T> proxyClass, String objectName) {
     this.jmxServerPort = port;
     this.proxyClass = proxyClass;
+    this.objectName = objectName;
   }
 
   /**
@@ -93,11 +64,9 @@ public class MXBeanCreationRule<T> extends ExternalResource {
     return JMX.newMBeanProxy(mbeanServer, beanObjectName, proxyClass);
   }
 
-  private void close() throws Exception{
-    jmxConnector.close();
-  }
-
-  private void createConnection(String user, String password) throws Exception {
+  protected void before(Description description) throws Throwable {
+    String user = description.getAnnotation(JMXConnectionConfiguration.class).user();
+    String password = description.getAnnotation(JMXConnectionConfiguration.class).password();
     Map<String, String[]> env = new HashMap<>();
     env.put(JMXConnector.CREDENTIALS, new String[] {user, password});
     JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + jmxServerPort + "/jmxrmi");
@@ -105,22 +74,18 @@ public class MXBeanCreationRule<T> extends ExternalResource {
     jmxConnector = JMXConnectorFactory.connect(url, env);
     mbeanServer = jmxConnector.getMBeanServerConnection();
 
-    ObjectName objectNamePattern = lookupObjectName();
-    ObjectInstance bean = (ObjectInstance) mbeanServer.queryMBeans(objectNamePattern, null).toArray()[0];
+    ObjectInstance bean = (ObjectInstance) mbeanServer.queryMBeans(ObjectName.getInstance(objectName), null).toArray()[0];
     beanObjectName = bean.getObjectName();
   }
 
-  private ObjectName lookupObjectName() throws Exception {
-    switch (proxyClass.getName()) {
-      case "com.gemstone.gemfire.management.CacheServerMXBean":
-        return(ObjectName.getInstance("GemFire:service=CacheServer,*"));
-      default:
-        throw new RuntimeException("Unknown MBean class: " + proxyClass.getName());
-    }
+  /**
+   * Override to tear down your specific external resource.
+   */
+  protected void after(Description description) throws Throwable {
+    jmxConnector.close();
+    jmxConnector = null;
+    mbeanServer = null;
+    beanObjectName = null;
   }
 
-  @Override
-  public Statement apply(Statement base, Description description) {
-    return new JMXConfigurationStatement(base, description, this);
-  }
 }

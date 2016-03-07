@@ -43,7 +43,7 @@ public class CacheServerMBeanSecurityJUnitTest {
   private CacheServerMXBean cacheServerMXBean;
 
   @Rule
-  public MXBeanCreationRule<CacheServerMXBean> mxRule = new MXBeanCreationRule(jmxManagerPort, CacheServerMXBean.class);
+  public MXBeanCreationRule<CacheServerMXBean> mxRule = new MXBeanCreationRule(jmxManagerPort, CacheServerMXBean.class, "GemFire:service=CacheServer,*");
 
   @ClassRule
   public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
