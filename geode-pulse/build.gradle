@@ -26,11 +26,6 @@ sourceSets {
 }
 
 dependencies {
-  compile 'org.springframework:spring-beans:' + project.'springframework.version'
-  compile 'org.springframework:spring-context:' + project.'springframework.version'
-  compile 'org.springframework:spring-core:' + project.'springframework.version'
-  compile 'org.springframework:spring-web:' + project.'springframework.version'
-  
   compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
   compile 'commons-collections:commons-collections:' + project.'commons-collections.version'
   compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
@@ -38,7 +33,6 @@ dependencies {
   compile 'org.springframework.ldap:spring-ldap-core:' + project.'spring-ldap-core.version'
   compile 'org.springframework.security:spring-security-config:' + project.'spring-security.version'
   compile 'org.springframework.security:spring-security-core:' + project.'spring-security.version'
-  runtime 'org.springframework:spring-expression:' + project.'springframework.version'
   compile 'org.springframework.security:spring-security-ldap:' + project.'spring-security.version'
   compile 'org.springframework.security:spring-security-web:' + project.'spring-security.version'
   compile 'org.springframework:spring-tx:' + project.'spring-tx.version'
