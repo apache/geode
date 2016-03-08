@@ -195,7 +195,7 @@ public final class FetchEntriesMessage extends PartitionMessage
     public FetchEntriesReplyMessage() {
     }
   
-    private FetchEntriesReplyMessage(InternalDistributedMember dest,
+    protected FetchEntriesReplyMessage(InternalDistributedMember dest,
         int processorId, int buckId, HeapDataOutputStream chunk,
         int seriesNum, int msgNum, int numSeries, boolean lastInSeries, boolean hasRVV) {
       setRecipient(dest);
@@ -455,9 +455,9 @@ public final class FetchEntriesMessage extends PartitionMessage
 
     private final PartitionedRegion pr;
 
-    private volatile RegionVersionVector returnRVV; 
-    private final HashMap<Object, Object> returnValue;
-    private final HashMap<Object, VersionTag> returnVersions = new HashMap();
+    protected volatile RegionVersionVector returnRVV; 
+    protected final HashMap<Object, Object> returnValue;
+    protected final HashMap<Object, VersionTag> returnVersions = new HashMap();
     private final Map<VersionSource,VersionSource> canonicalMembers = new ConcurrentHashMap<VersionSource,VersionSource>();
     
     /** lock used to synchronize chunk processing */

@@ -556,7 +556,7 @@ public class LocalRegion extends AbstractRegion
    * <code>CompactCompositeRegionKey</code> that points to the raw row bytes and
    * so requires a handle to table schema for interpretation of those bytes.
    */
-  public final boolean keyRequiresRegionContext() {
+  public boolean keyRequiresRegionContext() {
     return this.keyRequiresRegionContext;
   }
 
