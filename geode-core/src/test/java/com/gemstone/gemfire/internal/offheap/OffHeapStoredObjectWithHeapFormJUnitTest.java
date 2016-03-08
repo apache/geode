@@ -29,14 +29,14 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class ObjectChunkWithHeapFormJUnitTest extends ObjectChunkJUnitTest {
+public class OffHeapStoredObjectWithHeapFormJUnitTest extends OffHeapStoredObjectJUnitTest {
 
   @Test
   public void getRawBytesShouldReturnCachedHeapForm() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
 
     byte[] valueInBytes = getValueAsByteArray();
-    ObjectChunkWithHeapForm heapForm = new ObjectChunkWithHeapForm(chunk, valueInBytes);
+    OffHeapStoredObjectWithHeapForm heapForm = new OffHeapStoredObjectWithHeapForm(chunk, valueInBytes);
 
     assertNotNull(heapForm);
 
@@ -45,19 +45,19 @@ public class ObjectChunkWithHeapFormJUnitTest extends ObjectChunkJUnitTest {
 
   @Test
   public void getChunkWithoutHeapFormShouldReturnGemFireChunk() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
     byte[] valueInBytes = getValueAsByteArray();
-    ObjectChunkWithHeapForm heapForm = new ObjectChunkWithHeapForm(chunk, valueInBytes);
+    OffHeapStoredObjectWithHeapForm heapForm = new OffHeapStoredObjectWithHeapForm(chunk, valueInBytes);
 
-    ObjectChunk chunkWithOutHeapForm = heapForm.getChunkWithoutHeapForm();
+    OffHeapStoredObject chunkWithOutHeapForm = (OffHeapStoredObject)heapForm.getStoredObjectWithoutHeapForm();
 
     assertNotNull(chunkWithOutHeapForm);
-    assertEquals(ObjectChunk.class, chunkWithOutHeapForm.getClass());
+    assertEquals(OffHeapStoredObject.class, chunkWithOutHeapForm.getClass());
 
-    assertEquals(chunk, heapForm.getChunkWithoutHeapForm());
+    assertEquals(chunk, heapForm.getStoredObjectWithoutHeapForm());
 
-    assertEquals(chunk.getMemoryAddress(), chunkWithOutHeapForm.getMemoryAddress());
+    assertEquals(chunk.getAddress(), chunkWithOutHeapForm.getAddress());
     assertArrayEquals(chunk.getRawBytes(), chunkWithOutHeapForm.getRawBytes());
     assertNotSame(valueInBytes, chunkWithOutHeapForm.getRawBytes());
   }

@@ -4592,8 +4592,8 @@ public final class Oplog implements CompactableOplog, Flushable {
         // TODO: compaction needs to get version?
         byte userBits = wrapper.getBits();
         ValueWrapper vw;
-        if (wrapper.getDataChunk() != null) {
-          vw = new DiskEntry.Helper.ChunkValueWrapper(wrapper.getDataChunk());
+        if (wrapper.getOffHeapData() != null) {
+          vw = new DiskEntry.Helper.OffHeapValueWrapper(wrapper.getOffHeapData());
         } else {
           vw = new DiskEntry.Helper.CompactorValueWrapper(wrapper.getBytes(), wrapper.getValidLength());
         }
@@ -4613,8 +4613,8 @@ public final class Oplog implements CompactableOplog, Flushable {
             LocalizedStrings.Oplog_FAILED_WRITING_KEY_TO_0_DUE_TO_FAILURE_IN_ACQUIRING_READ_LOCK_FOR_ASYNCH_WRITING
                 .toLocalizedString(this.diskFile.getPath()), ie, getParent());
       } finally {
-        if (wrapper.getDataChunk() != null) {
-          wrapper.setChunkData(null, (byte) 0);
+        if (wrapper.getOffHeapData() != null) {
+          wrapper.setOffHeapData(null, (byte) 0);
         }
         if (exceptionOccured) {
           did.setValueLength(len);
@@ -6127,8 +6127,8 @@ public final class Oplog implements CompactableOplog, Flushable {
                     // skip this guy his oplogId changed
                     if (!wrapper.isReusable()) {
                       wrapper = new BytesAndBitsForCompactor();
-                    } else if (wrapper.getDataChunk() != null) {
-                      wrapper.setChunkData(null, (byte) 0);
+                    } else if (wrapper.getOffHeapData() != null) {
+                      wrapper.setOffHeapData(null, (byte) 0);
                     }
                     continue;
                   }

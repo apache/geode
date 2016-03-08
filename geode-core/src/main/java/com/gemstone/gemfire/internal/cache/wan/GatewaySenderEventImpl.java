@@ -50,8 +50,6 @@ import com.gemstone.gemfire.internal.cache.WrappedCallbackArgument;
 import com.gemstone.gemfire.internal.cache.lru.Sizeable;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
-import com.gemstone.gemfire.internal.offheap.ObjectChunkWithHeapForm;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.Releasable;
@@ -554,11 +552,11 @@ public class GatewaySenderEventImpl implements
       result = this.substituteValue;
       if (result == null) {
       result = this.valueObj;
-      if (result instanceof ObjectChunk) {
+      if (result instanceof StoredObject && ((StoredObject) result).hasRefCount()) {
         if (this.valueObjReleased) {
           result = null;
         } else {
-          ObjectChunk ohref = (ObjectChunk) result;
+          StoredObject ohref = (StoredObject) result;
           if (!ohref.retain()) {
             result = null;
           } else if (this.valueObjReleased) {
@@ -966,9 +964,7 @@ public class GatewaySenderEventImpl implements
 //    if (so != null  && !event.hasDelta()) {
       // Since GatewaySenderEventImpl instances can live for a long time in the gateway region queue
       // we do not want the StoredObject to be one that keeps the heap form cached.
-      if (so instanceof ObjectChunkWithHeapForm) {
-        so = ((ObjectChunkWithHeapForm) so).getChunkWithoutHeapForm(); // fixes 51999
-      }
+      so = so.getStoredObjectWithoutHeapForm(); // fixes 51999
       this.valueObj = so;
       if (!so.isSerialized()) {
         this.valueIsObject = 0x00;
@@ -1280,7 +1276,7 @@ public class GatewaySenderEventImpl implements
           return this;
         }
       }
-      if (v instanceof ObjectChunk) {
+      if (v instanceof StoredObject && ((StoredObject) v).hasRefCount()) {
         try {
           return makeCopy();
         } catch (IllegalStateException ex) {

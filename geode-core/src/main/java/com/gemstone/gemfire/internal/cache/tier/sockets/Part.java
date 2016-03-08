@@ -17,11 +17,8 @@
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
-import com.gemstone.gemfire.internal.offheap.DataAsAddress;
+import com.gemstone.gemfire.internal.offheap.AddressableMemoryManager;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
 
 import java.io.*;
 import java.nio.*;
@@ -121,17 +118,17 @@ public class Part {
   public void setPartState(StoredObject so, boolean isObject) {
     if (isObject) {
       this.typeCode = OBJECT_CODE;
-    } else if (so.getValueSizeInBytes() == 0) {
+    } else if (so.getDataSize() == 0) {
       this.typeCode = EMPTY_BYTEARRAY_CODE;
       this.part = EMPTY_BYTE_ARRAY;
       return;
     } else {
       this.typeCode = BYTE_CODE;
     }
-    if (so instanceof DataAsAddress) {
-      this.part = ((DataAsAddress)so).getRawBytes();
+    if (so.hasRefCount()) {
+      this.part = so;
     } else {
-      this.part = (ObjectChunk)so;
+      this.part = so.getValueAsHeapByteArray();
     }
   }
   public byte getTypeCode() {
@@ -146,8 +143,8 @@ public class Part {
       return 0;
     } else if (this.part instanceof byte[]) {
       return ((byte[])this.part).length;
-    } else if (this.part instanceof ObjectChunk) {
-      return ((ObjectChunk) this.part).getValueSizeInBytes();
+    } else if (this.part instanceof StoredObject) {
+      return ((StoredObject) this.part).getDataSize();
     } else {
       return ((HeapDataOutputStream)this.part).size();
     }
@@ -289,19 +286,19 @@ public class Part {
       if (this.part instanceof byte[]) {
         byte[] bytes = (byte[])this.part;
         out.write(bytes, 0, bytes.length);
-      } else if (this.part instanceof ObjectChunk) {
-        ObjectChunk c = (ObjectChunk) this.part;
-        ByteBuffer cbb = c.createDirectByteBuffer();
-        if (cbb != null) {
-          HeapDataOutputStream.writeByteBufferToStream(out,  buf, cbb);
+      } else if (this.part instanceof StoredObject) {
+        StoredObject so = (StoredObject) this.part;
+        ByteBuffer sobb = so.createDirectByteBuffer();
+        if (sobb != null) {
+          HeapDataOutputStream.writeByteBufferToStream(out,  buf, sobb);
         } else {
-          int bytesToSend = c.getDataSize();
-          long addr = c.getAddressForReading(0, bytesToSend);
+          int bytesToSend = so.getDataSize();
+          long addr = so.getAddressForReadingData(0, bytesToSend);
           while (bytesToSend > 0) {
             if (buf.remaining() == 0) {
               HeapDataOutputStream.flushStream(out,  buf);
             }
-            buf.put(UnsafeMemoryChunk.readAbsoluteByte(addr));
+            buf.put(AddressableMemoryManager.readByte(addr));
             addr++;
             bytesToSend--;
           }
@@ -322,16 +319,16 @@ public class Part {
     if (getLength() > 0) {
       if (this.part instanceof byte[]) {
         buf.put((byte[])this.part);
-      } else if (this.part instanceof ObjectChunk) {
-        ObjectChunk c = (ObjectChunk) this.part;
+      } else if (this.part instanceof StoredObject) {
+        StoredObject c = (StoredObject) this.part;
         ByteBuffer bb = c.createDirectByteBuffer();
         if (bb != null) {
           buf.put(bb);
         } else {
           int bytesToSend = c.getDataSize();
-          long addr = c.getAddressForReading(0, bytesToSend);
+          long addr = c.getAddressForReadingData(0, bytesToSend);
           while (bytesToSend > 0) {
-            buf.put(UnsafeMemoryChunk.readAbsoluteByte(addr));
+            buf.put(AddressableMemoryManager.readByte(addr));
             addr++;
             bytesToSend--;
           }
@@ -372,10 +369,10 @@ public class Part {
           }
           buf.clear();
         }
-      } else if (this.part instanceof ObjectChunk) {
-        // instead of copying the Chunk to buf try to create a direct ByteBuffer and
+      } else if (this.part instanceof StoredObject) {
+        // instead of copying the StoredObject to buf try to create a direct ByteBuffer and
         // just write it directly to the socket channel.
-        ObjectChunk c = (ObjectChunk) this.part;
+        StoredObject c = (StoredObject) this.part;
         ByteBuffer bb = c.createDirectByteBuffer();
         if (bb != null) {
           while (bb.remaining() > 0) {
@@ -383,7 +380,7 @@ public class Part {
           }
         } else {
           int len = c.getDataSize();
-          long addr = c.getAddressForReading(0, len);
+          long addr = c.getAddressForReadingData(0, len);
           buf.clear();
           while (len > 0) {
             int bytesThisTime = len;
@@ -392,7 +389,7 @@ public class Part {
             }
             len -= bytesThisTime;
             while (bytesThisTime > 0) {
-              buf.put(UnsafeMemoryChunk.readAbsoluteByte(addr));
+              buf.put(AddressableMemoryManager.readByte(addr));
               addr++;
               bytesThisTime--;
             }

@@ -17,24 +17,11 @@
 package com.gemstone.gemfire.internal.offheap;
 
 /**
- * Used to keep the heapForm around while an operation is still in progress.
- * This allows the operation to access the serialized heap form instead of copying
- * it from offheap. See bug 48135.
+ * Used to create Slab instances.
  */
-public class ObjectChunkWithHeapForm extends ObjectChunk {
-  private final byte[] heapForm;
-  
-  public ObjectChunkWithHeapForm(ObjectChunk chunk, byte[] heapForm) {
-    super(chunk);
-    this.heapForm = heapForm;
-  }
-
-  @Override
-  protected byte[] getRawBytes() {
-    return this.heapForm;
-  }
-  
-  public ObjectChunk getChunkWithoutHeapForm() {
-    return new ObjectChunk(this);
-  }
+public interface SlabFactory {
+  /** Create and return a Slab
+   * @throws OutOfMemoryError if the create fails
+   */
+  public Slab create(int size);
 }

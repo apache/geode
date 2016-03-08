@@ -26,18 +26,18 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class ObjectChunkSliceJUnitTest extends ObjectChunkJUnitTest {
+public class OffHeapStoredObjectSliceJUnitTest extends OffHeapStoredObjectJUnitTest {
 
   @Test
   public void sliceShouldHaveAValidDataSize() {
     int position = 1;
     int end = 2;
 
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    ObjectChunkSlice slice = (ObjectChunkSlice) chunk.slice(position, end);
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObjectSlice slice = (OffHeapStoredObjectSlice) chunk.slice(position, end);
 
     assertNotNull(slice);
-    assertEquals(ObjectChunkSlice.class, slice.getClass());
+    assertEquals(OffHeapStoredObjectSlice.class, slice.getClass());
 
     assertEquals(end - position, slice.getDataSize());
   }
@@ -47,11 +47,11 @@ public class ObjectChunkSliceJUnitTest extends ObjectChunkJUnitTest {
     int position = 1;
     int end = 2;
 
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    ObjectChunkSlice slice = (ObjectChunkSlice) chunk.slice(position, end);
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObjectSlice slice = (OffHeapStoredObjectSlice) chunk.slice(position, end);
 
     assertNotNull(slice);
-    assertEquals(ObjectChunkSlice.class, slice.getClass());
+    assertEquals(OffHeapStoredObjectSlice.class, slice.getClass());
 
     assertEquals(chunk.getBaseDataAddress() + position, slice.getBaseDataAddress());
   }
@@ -61,11 +61,11 @@ public class ObjectChunkSliceJUnitTest extends ObjectChunkJUnitTest {
     int position = 1;
     int end = 2;
 
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    ObjectChunkSlice slice = (ObjectChunkSlice) chunk.slice(position, end);
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObjectSlice slice = (OffHeapStoredObjectSlice) chunk.slice(position, end);
 
     assertNotNull(slice);
-    assertEquals(ObjectChunkSlice.class, slice.getClass());
+    assertEquals(OffHeapStoredObjectSlice.class, slice.getClass());
 
     assertEquals(chunk.getBaseDataOffset() + position, slice.getBaseDataOffset());
   }

@@ -80,4 +80,14 @@ public class SnappyCompressedCachedDeserializable extends
   public Version[] getSerializationVersions() {
     return null;
   }
+
+  @Override
+  public boolean isSerialized() {
+    return true;
+  }
+
+  @Override
+  public boolean usesHeapForStorage() {
+    return true;
+  }
 }

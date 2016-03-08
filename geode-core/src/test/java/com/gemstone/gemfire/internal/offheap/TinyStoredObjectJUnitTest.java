@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.RegionEntryContext;
-import com.gemstone.gemfire.internal.offheap.DataAsAddress;
+import com.gemstone.gemfire.internal.offheap.TinyStoredObject;
 
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -38,7 +38,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
-public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
+public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
     @Override
     public Object getValue() {
@@ -65,7 +65,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
     }
 
     @Override
-    public DataAsAddress createValueAsUnserializedStoredObject(Object value) {
+    public TinyStoredObject createValueAsUnserializedStoredObject(Object value) {
         byte[] valueInByteArray;
         if(value instanceof Integer) {
             valueInByteArray = convertValueToByteArray(value);
@@ -74,62 +74,62 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
         }
         //encode a non-serialized entry value to address
         long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInByteArray, false, false);
-        return new DataAsAddress(encodedAddress);
+        return new TinyStoredObject(encodedAddress);
     }
 
     @Override
-    public DataAsAddress createValueAsSerializedStoredObject(Object value) {
+    public TinyStoredObject createValueAsSerializedStoredObject(Object value) {
         byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
         //encode a serialized entry value to address
         long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, false);
-        return new DataAsAddress(encodedAddress);
+        return new TinyStoredObject(encodedAddress);
     }
 
-    public DataAsAddress createValueAsCompressedStoredObject(Object value) {
+    public TinyStoredObject createValueAsCompressedStoredObject(Object value) {
         byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
         //encode a serialized, compressed entry value to address
         long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, true);
-        return new DataAsAddress(encodedAddress);
+        return new TinyStoredObject(encodedAddress);
     }
 
-    public DataAsAddress createValueAsUncompressedStoredObject(Object value) {
+    public TinyStoredObject createValueAsUncompressedStoredObject(Object value) {
         byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
         //encode a serialized, uncompressed entry value to address
         long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, false);
-        return new DataAsAddress(encodedAddress);
+        return new TinyStoredObject(encodedAddress);
     }
 
     @Test
     public void shouldReturnCorrectEncodingAddress() {
 
-        DataAsAddress address1 = new DataAsAddress(10001L);
+        TinyStoredObject address1 = new TinyStoredObject(10001L);
         assertNotNull(address1);
-        assertEquals("Encoding address should be:", 10001, address1.getEncodedAddress());
+        assertEquals("Encoding address should be:", 10001, address1.getAddress());
 
-        DataAsAddress address2 = new DataAsAddress(10002L);
+        TinyStoredObject address2 = new TinyStoredObject(10002L);
         assertNotNull(address2);
-        assertEquals("Returning always 10001 expected 10002", 10002, address2.getEncodedAddress());
+        assertEquals("Returning always 10001 expected 10002", 10002, address2.getAddress());
     }
 
     @Test
     public void twoAddressesShouldBeEqualIfEncodingAddressIsSame() {
-        DataAsAddress address1 = new DataAsAddress(10001L);
-        DataAsAddress address2 = new DataAsAddress(10001L);
+        TinyStoredObject address1 = new TinyStoredObject(10001L);
+        TinyStoredObject address2 = new TinyStoredObject(10001L);
 
         assertEquals("Two addresses are equal if encoding address is same", true, address1.equals(address2));
     }
 
     @Test
     public void twoAddressesShouldNotBeEqualIfEncodingAddressIsNotSame() {
-        DataAsAddress address1 = new DataAsAddress(10001L);
-        DataAsAddress address2 = new DataAsAddress(10002L);
+        TinyStoredObject address1 = new TinyStoredObject(10001L);
+        TinyStoredObject address2 = new TinyStoredObject(10002L);
 
         assertEquals("Two addresses are not equal if encoding address is not same", false, address1.equals(address2));
     }
 
     @Test
     public void twoAddressesAreNotEqualIfTheyAreNotTypeDataAsAddress() {
-        DataAsAddress address1 = new DataAsAddress(10001L);
+        TinyStoredObject address1 = new TinyStoredObject(10001L);
         Long address2 = new Long(10002L);
 
         assertEquals("Two addresses are not equal if encoding address is not same", false, address1.equals(address2));
@@ -137,14 +137,14 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
 
     @Test
     public void addressHashCodeShouldBe() {
-        DataAsAddress address1 = new DataAsAddress(10001L);
+        TinyStoredObject address1 = new TinyStoredObject(10001L);
         assertEquals("", 10001, address1.hashCode());
     }
 
     @Test
     public void getSizeInBytesAlwaysReturnsZero() {
-        DataAsAddress address1 = new DataAsAddress(10001L);
-        DataAsAddress address2 = new DataAsAddress(10002L);
+        TinyStoredObject address1 = new TinyStoredObject(10001L);
+        TinyStoredObject address2 = new TinyStoredObject(10002L);
 
         assertEquals("getSizeInBytes", 0, address1.getSizeInBytes());
         assertEquals("getSizeInBytes", 0, address2.getSizeInBytes());
@@ -152,33 +152,18 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
 
     @Test
     public void getValueSizeInBytesAlwaysReturnsZero() {
-        DataAsAddress address1 = new DataAsAddress(10001L);
-        DataAsAddress address2 = new DataAsAddress(10002L);
+        TinyStoredObject address1 = new TinyStoredObject(10001L);
+        TinyStoredObject address2 = new TinyStoredObject(10002L);
 
         assertEquals("getSizeInBytes", 0, address1.getValueSizeInBytes());
         assertEquals("getSizeInBytes", 0, address2.getValueSizeInBytes());
     }
 
     @Test
-    public void retainShouldAlwaysBeTrue() {
-        DataAsAddress address1 = new DataAsAddress(10001L);
-        DataAsAddress address2 = new DataAsAddress(10002L);
-
-        assertEquals("retain", true, address1.retain());
-        assertEquals("retain", true, address2.retain());
-    }
-
-    @Test
-    public void dataAsAddressShouldImplementReleaseToAdhereToStoredObject() {
-        DataAsAddress address = new DataAsAddress(10001L);
-        address.release();
-    }
-
-    @Test
     public void isCompressedShouldReturnTrueIfCompressed() {
         Object regionEntryValue = getValue();
 
-        DataAsAddress offheapAddress = createValueAsCompressedStoredObject(regionEntryValue);
+        TinyStoredObject offheapAddress = createValueAsCompressedStoredObject(regionEntryValue);
 
         assertEquals("Should return true as it is compressed", true, offheapAddress.isCompressed());
     }
@@ -187,7 +172,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
     public void isCompressedShouldReturnFalseIfNotCompressed() {
         Object regionEntryValue = getValue();
 
-        DataAsAddress offheapAddress = createValueAsUncompressedStoredObject(regionEntryValue);
+        TinyStoredObject offheapAddress = createValueAsUncompressedStoredObject(regionEntryValue);
 
         assertEquals("Should return false as it is compressed", false, offheapAddress.isCompressed());
     }
@@ -196,7 +181,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
     public void isSerializedShouldReturnTrueIfSeriazlied() {
         Object regionEntryValue = getValue();
 
-        DataAsAddress offheapAddress = createValueAsSerializedStoredObject(regionEntryValue);
+        TinyStoredObject offheapAddress = createValueAsSerializedStoredObject(regionEntryValue);
 
         assertEquals("Should return true as it is serialized", true, offheapAddress.isSerialized());
     }
@@ -205,7 +190,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
     public void isSerializedShouldReturnFalseIfNotSeriazlied() {
         Object regionEntryValue = getValue();
 
-        DataAsAddress offheapAddress = createValueAsUnserializedStoredObject(regionEntryValue);
+        TinyStoredObject offheapAddress = createValueAsUnserializedStoredObject(regionEntryValue);
 
         assertEquals("Should return false as it is serialized", false, offheapAddress.isSerialized());
     }
@@ -217,7 +202,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
 
         //encode a non-serialized and compressed entry value to address - last argument is to let that it is compressed
         long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, true);
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        TinyStoredObject offheapAddress = new TinyStoredObject(encodedAddress);
 
         RegionEntryContext regionContext = mock(RegionEntryContext.class);
         CachePerfStats cacheStats = mock(CachePerfStats.class);
@@ -246,7 +231,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
     public void getDecompressedBytesShouldNotTryToDecompressIfNotCompressed() {
         Object regionEntryValue = getValue();
 
-        DataAsAddress offheapAddress = createValueAsUncompressedStoredObject(regionEntryValue);
+        TinyStoredObject offheapAddress = createValueAsUncompressedStoredObject(regionEntryValue);
 
         //mock the thing
         RegionEntryContext regionContext = mock(RegionEntryContext.class);
@@ -268,7 +253,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
     public void getRawBytesShouldReturnAByteArray() {
         byte[] regionEntryValueAsBytes = getValueAsByteArray();
 
-        DataAsAddress offheapAddress = createValueAsUnserializedStoredObject(regionEntryValueAsBytes);
+        TinyStoredObject offheapAddress = createValueAsUnserializedStoredObject(regionEntryValueAsBytes);
         byte[] actual = offheapAddress.getRawBytes();
 
         assertArrayEquals(regionEntryValueAsBytes, actual);
@@ -278,7 +263,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
     public void getSerializedValueShouldReturnASerializedByteArray() {
         Object regionEntryValue = getValue();
 
-        DataAsAddress offheapAddress = createValueAsSerializedStoredObject(regionEntryValue);
+        TinyStoredObject offheapAddress = createValueAsSerializedStoredObject(regionEntryValue);
 
         byte[] actualSerializedValue = offheapAddress.getSerializedValue();
 
@@ -291,7 +276,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
     public void getDeserializedObjectShouldReturnADeserializedObject() {
         Object regionEntryValue = getValue();
 
-        DataAsAddress offheapAddress = createValueAsSerializedStoredObject(regionEntryValue);
+        TinyStoredObject offheapAddress = createValueAsSerializedStoredObject(regionEntryValue);
 
         Integer actualRegionEntryValue = (Integer) offheapAddress.getDeserializedValue(null, null);
 
@@ -302,7 +287,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
     public void getDeserializedObjectShouldReturnAByteArrayAsIsIfNotSerialized() {
         byte[] regionEntryValueAsBytes = getValueAsByteArray();
 
-        DataAsAddress offheapAddress = createValueAsUnserializedStoredObject(regionEntryValueAsBytes);
+        TinyStoredObject offheapAddress = createValueAsUnserializedStoredObject(regionEntryValueAsBytes);
 
         byte[] deserializeValue = (byte[]) offheapAddress.getDeserializedValue(null, null);
 
@@ -317,7 +302,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
         //encode a serialized entry value to address
         long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedRegionEntryValue, true, false);
 
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        TinyStoredObject offheapAddress = new TinyStoredObject(encodedAddress);
 
         //mock the things
         BytesAndBitsForCompactor wrapper = mock(BytesAndBitsForCompactor.class);
@@ -336,7 +321,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
         //encode a un serialized entry value to address
         long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, false);
 
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        TinyStoredObject offheapAddress = new TinyStoredObject(encodedAddress);
 
         //mock the things
         BytesAndBitsForCompactor wrapper = mock(BytesAndBitsForCompactor.class);
@@ -359,7 +344,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
         //encode a un serialized entry value to address
         long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedValue, true, false);
 
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        TinyStoredObject offheapAddress = new TinyStoredObject(encodedAddress);
 
         String errorMessage = offheapAddress.getStringForm();
 

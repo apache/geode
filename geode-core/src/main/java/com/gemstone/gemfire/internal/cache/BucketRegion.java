@@ -1829,11 +1829,12 @@ implements Bucket
       if (!(rawNewValue instanceof CachedDeserializable)) {
         return;
       }
-      if (rawNewValue instanceof StoredObject && !((StoredObject) rawNewValue).isSerialized()) {
+      CachedDeserializable cd = (CachedDeserializable) rawNewValue;
+      if (!cd.isSerialized()) {
         // it is a byte[]; not a Delta
         return;
       }
-      Object instance = ((CachedDeserializable)rawNewValue).getValue();
+      Object instance = cd.getValue();
       if (instance instanceof com.gemstone.gemfire.Delta
           && ((com.gemstone.gemfire.Delta)instance).hasDelta()) {
         try {

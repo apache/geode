@@ -16,18 +16,26 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import java.nio.ByteBuffer;
-
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-@Category(UnitTest.class)
-public class HeapByteBufferMemoryChunkJUnitTest extends MemoryChunkJUnitTestBase {
-
-  @Override
-  protected MemoryChunk createChunk(int size) {
-    return new ByteBufferMemoryChunk(ByteBuffer.allocate(size));
+/**
+ * Used to keep the heapForm around while an operation is still in progress.
+ * This allows the operation to access the serialized heap form instead of copying
+ * it from offheap. See bug 48135.
+ */
+public class OffHeapStoredObjectWithHeapForm extends OffHeapStoredObject {
+  private final byte[] heapForm;
+  
+  public OffHeapStoredObjectWithHeapForm(OffHeapStoredObject chunk, byte[] heapForm) {
+    super(chunk);
+    this.heapForm = heapForm;
   }
 
+  @Override
+  protected byte[] getRawBytes() {
+    return this.heapForm;
+  }
+  
+  @Override
+  public StoredObject getStoredObjectWithoutHeapForm() {
+    return new OffHeapStoredObject(this);
+  }
 }

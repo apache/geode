@@ -29,17 +29,29 @@ public interface MemoryAllocator {
    * @return the allocated chunk of memory.
    * @throws IllegalStateException if the heap does not have enough memory to grant the request
    */
-  public MemoryChunk allocate(int size);
+  public StoredObject allocate(int size);
   
   /**
-   * Allocates off heap memory for the given data and returns a MemoryChunk
+   * Allocates off heap memory for the given data and returns a StoredObject
    * that is backed by this allocated memory and that contains the data.
-   * @param data the bytes of the data to put in the allocated CachedDeserializable
+   * @param data the bytes of the data to put in the allocated StoredObject
    * @param isSerialized true if data contains a serialized object; false if it is an actual byte array.
    * @param isCompressed true if data is compressed; false if it is uncompressed.
    * @throws IllegalStateException if the heap does not have enough memory to grant the request
    */
   public StoredObject allocateAndInitialize(byte[] data, boolean isSerialized, boolean isCompressed);
+  
+  /**
+   * Allocates off heap memory for the given data and returns a StoredObject
+   * that is backed by this allocated memory and that contains the data
+   * and keeps a reference to the original heap data.
+   * @param data the bytes of the data to put in the allocated StoredObject
+   * @param isSerialized true if data contains a serialized object; false if it is an actual byte array.
+   * @param originalHeapData the original uncompressed heap data
+   * @param isCompressed true if data is compressed; false if it is uncompressed.
+   * @throws IllegalStateException if the heap does not have enough memory to grant the request
+   */
+  public StoredObject allocateAndInitialize(byte[] data, boolean isSerialized, boolean isCompressed, byte[] originalHeapData);
   
   public long getFreeMemory();
   

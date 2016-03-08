@@ -37,7 +37,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class FragmentJUnitTest {
 
-  private UnsafeMemoryChunk[] slabs;
+  private SlabImpl[] slabs;
 
   static {
     ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
@@ -60,15 +60,15 @@ public class FragmentJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    UnsafeMemoryChunk slab1 = new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE);
-    UnsafeMemoryChunk slab2 = new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE);
-    slabs = new UnsafeMemoryChunk[]{slab1, slab2};
+    SlabImpl slab1 = new SlabImpl((int)OffHeapStorage.MIN_SLAB_SIZE);
+    SlabImpl slab2 = new SlabImpl((int)OffHeapStorage.MIN_SLAB_SIZE);
+    slabs = new SlabImpl[]{slab1, slab2};
   }
 
   @After
   public void tearDown() throws Exception {
     for (int i=0; i < slabs.length; i++) {
-      slabs[i].release();
+      slabs[i].free();
     }
   }
   
@@ -120,9 +120,9 @@ public class FragmentJUnitTest {
   @Test
   public void getMemoryAdressIsAlwaysFragmentBaseAddress() {
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
-    softly.assertThat(fragment.getMemoryAddress()).isEqualTo(slabs[0].getMemoryAddress());
+    softly.assertThat(fragment.getAddress()).isEqualTo(slabs[0].getMemoryAddress());
     fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
-    softly.assertThat(fragment.getMemoryAddress()).isEqualTo(slabs[0].getMemoryAddress());
+    softly.assertThat(fragment.getAddress()).isEqualTo(slabs[0].getMemoryAddress());
   }
   
   @Test
@@ -200,7 +200,7 @@ public class FragmentJUnitTest {
   public void fragmentHashCodeIsHashCodeOfItsMemoryAddress() {
     Fragment fragment0 = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     Fragment fragment1 = new Fragment(slabs[1].getMemoryAddress(), slabs[1].getSize());
-    Long fragmentAddress = fragment0.getMemoryAddress();
+    Long fragmentAddress = fragment0.getAddress();
     softly.assertThat(fragment0.hashCode()).isEqualTo(fragmentAddress.hashCode())
                                            .isNotEqualTo(fragment1.hashCode());
   }
@@ -208,12 +208,12 @@ public class FragmentJUnitTest {
   @Test
   public void fragmentFillSetsAllBytesToTheSameConstantValue() {
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
-    Long fragmentAddress = fragment.getMemoryAddress();
+    Long fragmentAddress = fragment.getAddress();
     byte[] bytes = new byte[(int)OffHeapStorage.MIN_SLAB_SIZE];
     byte[] expectedBytes = new byte[(int)OffHeapStorage.MIN_SLAB_SIZE];
-    Arrays.fill(expectedBytes, ObjectChunk.FILL_BYTE);;
+    Arrays.fill(expectedBytes, OffHeapStoredObject.FILL_BYTE);;
     fragment.fill();
-    UnsafeMemoryChunk.readAbsoluteBytes(fragmentAddress, bytes, 0, (int)OffHeapStorage.MIN_SLAB_SIZE);
+    AddressableMemoryManager.readBytes(fragmentAddress, bytes, 0, (int)OffHeapStorage.MIN_SLAB_SIZE);
     assertThat(bytes, is(equalTo(expectedBytes)));
   }
 

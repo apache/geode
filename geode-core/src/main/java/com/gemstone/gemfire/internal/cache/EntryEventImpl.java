@@ -73,7 +73,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
@@ -834,10 +833,7 @@ public class EntryEventImpl
       }
       boolean doCopyOnRead = getRegion().isCopyOnRead();
       if (ov != null) {
-        if (ov instanceof StoredObject) {
-          // TODO OFFHEAP: returns off-heap PdxInstance
-          return ((StoredObject) ov).getValueAsDeserializedHeapObject();
-        } else
+        // TODO OFFHEAP: returns off-heap PdxInstance
         if (ov instanceof CachedDeserializable) {
           CachedDeserializable cd = (CachedDeserializable)ov;
           if (doCopyOnRead) {
@@ -930,9 +926,9 @@ public class EntryEventImpl
     if (this.offHeapOk) {
       OffHeapHelper.releaseAndTrackOwner(this.newValue, this);
     }
-    if (v instanceof ObjectChunk) {
+    if (isOffHeapReference(v)) {
       ReferenceCountHelper.setReferenceCountOwner(this);
-      if (!((ObjectChunk) v).retain()) {
+      if (!((StoredObject) v).retain()) {
         ReferenceCountHelper.setReferenceCountOwner(null);
         this.newValue = null;
         return;
@@ -946,17 +942,21 @@ public class EntryEventImpl
    * Returns true if this event has a reference to an off-heap new or old value.
    */
   public boolean hasOffHeapValue() {
-    return (this.newValue instanceof ObjectChunk) || (this.oldValue instanceof ObjectChunk);
+    return isOffHeapReference(this.newValue) || isOffHeapReference(this.oldValue);
   }
   
   @Unretained
   protected final Object basicGetNewValue() {
     Object result = this.newValue;
-    if (!this.offHeapOk && result instanceof ObjectChunk) {
+    if (!this.offHeapOk && isOffHeapReference(result)) {
       //this.region.getCache().getLogger().info("DEBUG new value already freed " + System.identityHashCode(result));
       throw new IllegalStateException("Attempt to access off heap value after the EntryEvent was released.");
     }
     return result;
+  }
+  
+  private static boolean isOffHeapReference(Object ref) {
+    return (ref instanceof StoredObject) && ((StoredObject)ref).hasRefCount();
   }
   
   private class OldValueOwner {
@@ -992,12 +992,10 @@ public class EntryEventImpl
     @Released final Object curOldValue = this.oldValue;
     if (v == curOldValue) return;
     if (this.offHeapOk) {
-      if (curOldValue instanceof ObjectChunk) {
-        if (ReferenceCountHelper.trackReferenceCounts()) {
-          OffHeapHelper.releaseAndTrackOwner(curOldValue, new OldValueOwner());
-        } else {
-          OffHeapHelper.release(curOldValue);
-        }
+      if (ReferenceCountHelper.trackReferenceCounts()) {
+        OffHeapHelper.releaseAndTrackOwner(curOldValue, new OldValueOwner());
+      } else {
+        OffHeapHelper.release(curOldValue);
       }
     }
     
@@ -1008,17 +1006,18 @@ public class EntryEventImpl
   private void retainAndSetOldValue(@Retained(ENTRY_EVENT_OLD_VALUE) Object v) {
     if (v == this.oldValue) return;
     
-    if (v instanceof ObjectChunk) {
+    if (isOffHeapReference(v)) {
+      StoredObject so = (StoredObject) v;
       if (ReferenceCountHelper.trackReferenceCounts()) {
         ReferenceCountHelper.setReferenceCountOwner(new OldValueOwner());
-        boolean couldNotRetain = (!((ObjectChunk) v).retain());
+        boolean couldNotRetain = (!so.retain());
         ReferenceCountHelper.setReferenceCountOwner(null);
         if (couldNotRetain) {
           this.oldValue = null;
           return;
         }
       } else {
-        if (!((ObjectChunk) v).retain()) {
+        if (!so.retain()) {
           this.oldValue = null;
           return;
         }
@@ -1031,7 +1030,7 @@ public class EntryEventImpl
   private Object basicGetOldValue() {
     @Unretained(ENTRY_EVENT_OLD_VALUE)
     Object result = this.oldValue;
-    if (!this.offHeapOk && result instanceof ObjectChunk) {
+    if (!this.offHeapOk && isOffHeapReference(result)) {
       //this.region.getCache().getLogger().info("DEBUG old value already freed " + System.identityHashCode(result));
       throw new IllegalStateException("Attempt to access off heap value after the EntryEvent was released.");
     }
@@ -1056,7 +1055,6 @@ public class EntryEventImpl
   }
   /**
    * Just like getRawOldValue except if the raw old value is off-heap deserialize it.
-   * Note that in some cases sqlf ignores the request to deserialize.
    */
   @Unretained(ENTRY_EVENT_OLD_VALUE)
   public final Object getOldValueAsOffHeapDeserializedOrRaw() {
@@ -1107,11 +1105,8 @@ public class EntryEventImpl
         // I'm not sure this can even happen
         return AbstractRegion.handleNotAvailable(nv);
       }
-      if (nv instanceof StoredObject) {
-        // TODO OFFHEAP currently we copy offheap new value to the heap here. Check callers of this method to see if they can be optimized to use offheap values.
-        // TODO OFFHEAP: returns off-heap PdxInstance
-        return ((StoredObject) nv).getValueAsDeserializedHeapObject();
-      } else
+      // TODO OFFHEAP currently we copy offheap new value to the heap here. Check callers of this method to see if they can be optimized to use offheap values.
+      // TODO OFFHEAP: returns off-heap PdxInstance
       if (nv instanceof CachedDeserializable) {
         CachedDeserializable cd = (CachedDeserializable)nv;
         Object v = null;
@@ -1284,18 +1279,16 @@ public class EntryEventImpl
     @Unretained(ENTRY_EVENT_NEW_VALUE)
     final Object tmp = basicGetNewValue();
     if (tmp instanceof CachedDeserializable) {
-      if (tmp instanceof StoredObject) {
-        if (!((StoredObject) tmp).isSerialized()) {
-          // TODO OFFHEAP can we handle offheap byte[] better?
-          return null;
-        }
+      CachedDeserializable cd = (CachedDeserializable) tmp;
+      if (!cd.isSerialized()) {
+        // TODO OFFHEAP can we handle offheap byte[] better?
+        return null;
       }
       byte[] bytes = this.newValueBytes;
       if (bytes == null) {
         bytes = this.cachedSerializedNewValue;
       }
-      return new SerializedCacheValueImpl(this, getRegion(), this.re,
-          (CachedDeserializable)tmp, bytes);
+      return new SerializedCacheValueImpl(this, getRegion(), this.re, cd, bytes);
     } else {
       // Note we return null even if cachedSerializedNewValue is not null.
       // This is because some callers of this method use it to indicate
@@ -1360,7 +1353,7 @@ public class EntryEventImpl
       @Unretained(ENTRY_EVENT_NEW_VALUE)
       final StoredObject so = (StoredObject) nv;
       final boolean isSerialized = so.isSerialized();
-      if (nv instanceof ObjectChunk) {
+      if (so.hasRefCount()) {
         if (importer.isUnretainedNewReferenceOk()) {
           importer.importNewObject(nv, isSerialized);
         } else {
@@ -1447,7 +1440,7 @@ public class EntryEventImpl
     if (ov instanceof StoredObject) {
       final StoredObject so = (StoredObject) ov;
       final boolean isSerialized = so.isSerialized();
-      if (ov instanceof ObjectChunk) {
+      if (so.hasRefCount()) {
         if (importer.isUnretainedOldReferenceOk()) {
           importer.importOldObject(ov, isSerialized);
         } else {
@@ -1501,7 +1494,6 @@ public class EntryEventImpl
   }
   /**
    * Just like getRawNewValue(true) except if the raw new value is off-heap deserialize it.
-   * Note that in some cases sqlf ignores the request to deserialize.
    */
   @Unretained(ENTRY_EVENT_NEW_VALUE)
   public final Object getNewValueAsOffHeapDeserializedOrRaw() {
@@ -1518,16 +1510,7 @@ public class EntryEventImpl
    */
   @Retained(ENTRY_EVENT_NEW_VALUE)
   public StoredObject getOffHeapNewValue() {
-    final Object tmp = basicGetNewValue();
-    if (tmp instanceof StoredObject) {
-      StoredObject result = (StoredObject) tmp;
-      if (!result.retain()) {
-        return null;
-      }
-      return result;
-    } else {
-      return null;
-    }
+    return convertToStoredObject(basicGetNewValue());
   }
   
   /**
@@ -1536,28 +1519,23 @@ public class EntryEventImpl
    */
   @Retained(ENTRY_EVENT_OLD_VALUE)
   public StoredObject getOffHeapOldValue() {
-    final Object tmp = basicGetOldValue();
-    if (tmp instanceof StoredObject) {
-      StoredObject result = (StoredObject) tmp;
-      if (!result.retain()) {
-        return null;
-      }
-      return result;
-    } else {
-      return null;
-    }
+    return convertToStoredObject(basicGetOldValue());
   }
 
-  /**
-   * Result may be unretained because sqlf getDeserializedForReading returns unretained.
-   */
+  private static StoredObject convertToStoredObject(final Object tmp) {
+    if (!(tmp instanceof StoredObject)) {
+      return null;
+    }
+    StoredObject result = (StoredObject) tmp;
+    if (!result.retain()) {
+      return null;
+    }
+    return result;
+  }
+  
   public final Object getDeserializedValue() {
     if (this.delta == null) {
       final Object val = basicGetNewValue();
-      if (val instanceof StoredObject) {
-        // TODO OFFHEAP: returns off-heap PdxInstance
-        return ((StoredObject) val).getValueAsDeserializedHeapObject();
-      } else 
       if (val instanceof CachedDeserializable) {
         return ((CachedDeserializable)val).getDeserializedForReading();
       }
@@ -1869,8 +1847,8 @@ public class EntryEventImpl
     Object preparedV = reentry.prepareValueForCache(this.region, v, this, this.hasDelta());
     if (preparedV != v) {
       v = preparedV;
-      if (v instanceof ObjectChunk) {
-        if (!((ObjectChunk) v).isCompressed()) { // fix bug 52109
+      if (v instanceof StoredObject) {
+        if (!((StoredObject) v).isCompressed()) { // fix bug 52109
           // If we put it off heap and it is not compressed then remember that value.
           // Otherwise we want to remember the decompressed value in the event.
           basicSetNewValue(v);
@@ -1931,8 +1909,8 @@ public class EntryEventImpl
       success = true;
     }
     } finally {
-      if (!success && reentry instanceof OffHeapRegionEntry && v instanceof ObjectChunk) {
-        OffHeapRegionEntryHelper.releaseEntry((OffHeapRegionEntry)reentry, (ObjectChunk)v);
+      if (!success && reentry instanceof OffHeapRegionEntry && v instanceof StoredObject) {
+        OffHeapRegionEntryHelper.releaseEntry((OffHeapRegionEntry)reentry, (StoredObject)v);
       }      
     }
     if (logger.isTraceEnabled()) {
@@ -2230,9 +2208,9 @@ public class EntryEventImpl
 
   /**
    * If a PdxInstance is returned then it will have an unretained reference
-   * to Chunk's off-heap address.
+   * to the StoredObject's off-heap address.
    */
-  public static @Unretained Object deserializeChunk(ObjectChunk bytes) {
+  public static @Unretained Object deserializeOffHeap(StoredObject bytes) {
     if (bytes == null)
       return null;
     try {
@@ -2418,9 +2396,7 @@ public class EntryEventImpl
         Object nv = basicGetNewValue();
         boolean newValueSerialized = nv instanceof CachedDeserializable;
         if (newValueSerialized) {
-          if (nv instanceof StoredObject) {
-            newValueSerialized = ((StoredObject) nv).isSerialized();
-          }
+          newValueSerialized = ((CachedDeserializable) nv).isSerialized();
         }
         out.writeBoolean(newValueSerialized);
         if (newValueSerialized) {
@@ -2443,9 +2419,7 @@ public class EntryEventImpl
       Object ov = basicGetOldValue();
       boolean oldValueSerialized = ov instanceof CachedDeserializable;
       if (oldValueSerialized) {
-        if (ov instanceof StoredObject) {
-          oldValueSerialized = ((StoredObject) ov).isSerialized();
-        }
+        oldValueSerialized = ((CachedDeserializable) ov).isSerialized();
       }
       out.writeBoolean(oldValueSerialized);
       if (oldValueSerialized) {
@@ -2517,14 +2491,12 @@ public class EntryEventImpl
     @Unretained(ENTRY_EVENT_OLD_VALUE)
     final Object tmp = basicGetOldValue();
     if (tmp instanceof CachedDeserializable) {
-      if (tmp instanceof StoredObject) {
-        if (!((StoredObject) tmp).isSerialized()) {
-          // TODO OFFHEAP can we handle offheap byte[] better?
-          return null;
-        }
+      CachedDeserializable cd = (CachedDeserializable) tmp;
+      if (!cd.isSerialized()) {
+        // TODO OFFHEAP can we handle offheap byte[] better?
+        return null;
       }
-      return new SerializedCacheValueImpl(this, this.region, this.re,
-          (CachedDeserializable)tmp, this.oldValueBytes);
+      return new SerializedCacheValueImpl(this, this.region, this.re, cd, this.oldValueBytes);
     }
     else {
       return null;
@@ -2881,7 +2853,7 @@ public class EntryEventImpl
     private final byte[] serializedValue;
     
     SerializedCacheValueImpl(EntryEventImpl event, Region r, RegionEntry re, @Unretained CachedDeserializable cd, byte[] serializedBytes) {
-      if (cd instanceof ObjectChunk) {
+      if (isOffHeapReference(cd)) {
         this.event = event;
       } else {
         this.event = null;
@@ -2957,6 +2929,16 @@ public class EntryEventImpl
     @Override
     public void sendTo(DataOutput out) throws IOException {
       DataSerializer.writeObject(getCd(), out);
+    }
+
+    @Override
+    public boolean isSerialized() {
+      return getCd().isSerialized();
+    }
+
+    @Override
+    public boolean usesHeapForStorage() {
+      return getCd().usesHeapForStorage();
     }
   }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -3060,14 +3042,14 @@ public class EntryEventImpl
     Object nv = basicGetNewValue();
     this.offHeapOk = false;
     
-    if (ov instanceof ObjectChunk) {
+    if (ov instanceof StoredObject) {
       //this.region.getCache().getLogger().info("DEBUG freeing ref to old value on " + System.identityHashCode(ov));
       if (ReferenceCountHelper.trackReferenceCounts()) {
         ReferenceCountHelper.setReferenceCountOwner(new OldValueOwner());
-        ((ObjectChunk) ov).release();
+        ((StoredObject) ov).release();
         ReferenceCountHelper.setReferenceCountOwner(null);
       } else {
-        ((ObjectChunk) ov).release();
+        ((StoredObject) ov).release();
       }
     }
     OffHeapHelper.releaseAndTrackOwner(nv, this);
@@ -3078,7 +3060,7 @@ public class EntryEventImpl
    * Once this is called on an event it does not need to have release called.
    */
   public void disallowOffHeapValues() {
-    if (this.newValue instanceof ObjectChunk || this.oldValue instanceof ObjectChunk) {
+    if (isOffHeapReference(this.newValue) || isOffHeapReference(this.oldValue)) {
       throw new IllegalStateException("This event does not support off-heap values");
     }
     this.offHeapOk = false;
@@ -3087,12 +3069,11 @@ public class EntryEventImpl
   /**
    * This copies the off-heap new and/or old value to the heap.
    * As a result the current off-heap new/old will be released.
-   * @throws IllegalStateException if called with an event for sqlf data.
    */
   @Released({ENTRY_EVENT_NEW_VALUE, ENTRY_EVENT_OLD_VALUE})
   public void copyOffHeapToHeap() {
     Object ov = basicGetOldValue();
-    if (ov instanceof ObjectChunk) {
+    if (isOffHeapReference(ov)) {
       if (ReferenceCountHelper.trackReferenceCounts()) {
         ReferenceCountHelper.setReferenceCountOwner(new OldValueOwner());
         this.oldValue = OffHeapHelper.copyAndReleaseIfNeeded(ov);
@@ -3102,19 +3083,19 @@ public class EntryEventImpl
       }
     }
     Object nv = basicGetNewValue();
-    if (nv instanceof ObjectChunk) {
+    if (isOffHeapReference(nv)) {
       ReferenceCountHelper.setReferenceCountOwner(this);
       this.newValue = OffHeapHelper.copyAndReleaseIfNeeded(nv);
       ReferenceCountHelper.setReferenceCountOwner(null);
     }
-    if (this.newValue instanceof ObjectChunk || this.oldValue instanceof ObjectChunk) {
+    if (isOffHeapReference(this.newValue) || isOffHeapReference(this.oldValue)) {
       throw new IllegalStateException("event's old/new value still off-heap after calling copyOffHeapToHeap");
     }
     this.offHeapOk = false;
   }
 
   public boolean isOldValueOffHeap() {
-    return this.oldValue instanceof ObjectChunk;
+    return isOffHeapReference(this.oldValue);
   }
   public final boolean isFetchFromHDFS() {
     return fetchFromHDFS;

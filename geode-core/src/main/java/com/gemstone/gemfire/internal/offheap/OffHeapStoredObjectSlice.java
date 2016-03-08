@@ -14,19 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.offheap;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
-@Suite.SuiteClasses({
-  ByteArrayMemoryChunkJUnitTest.class,
-  DirectByteBufferMemoryChunkJUnitTest.class,
-  HeapByteBufferMemoryChunkJUnitTest.class,
-  UnsafeMemoryChunkJUnitTest.class,
-})
-@RunWith(Suite.class)
-public class MemoryChunkTestSuite {
-
+/**
+ * Represents a slice of an OffHeapStoredObject.
+ * A slice is a subsequence of the bytes stored in an OffHeapStoredObject.
+ */
+public class OffHeapStoredObjectSlice extends OffHeapStoredObject {
+  private final int offset;
+  private final int capacity;
+  public OffHeapStoredObjectSlice(OffHeapStoredObject objectChunk, int position, int limit) {
+    super(objectChunk);
+    this.offset = objectChunk.getBaseDataOffset() + position;
+    this.capacity = limit - position;
+  }
+  @Override
+  public int getDataSize() {
+    return this.capacity;
+  }
+  
+  @Override
+  protected long getBaseDataAddress() {
+    return super.getBaseDataAddress() + this.offset;
+  }
+  @Override
+  protected int getBaseDataOffset() {
+    return this.offset;
+  }
 }

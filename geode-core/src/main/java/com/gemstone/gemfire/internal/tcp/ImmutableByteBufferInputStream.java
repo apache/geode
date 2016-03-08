@@ -18,7 +18,7 @@ package com.gemstone.gemfire.internal.tcp;
 
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 
 /**
  * You should only create an instance of this class if the bytes this buffer reads
@@ -67,7 +67,7 @@ public class ImmutableByteBufferInputStream extends ByteBufferInputStream {
     // for serialization
   }
   
-  public ImmutableByteBufferInputStream(ObjectChunk blob) {
+  public ImmutableByteBufferInputStream(StoredObject blob) {
     super(blob);
   }
   @Override

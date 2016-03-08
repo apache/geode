@@ -92,7 +92,7 @@ public abstract class OffHeapRegionBase {
       assertNotNull(ma);
       final long offHeapSize = ma.getFreeMemory();
       assertEquals(0, ma.getUsedMemory());
-      MemoryChunk mc1 = ma.allocate(64);
+      StoredObject mc1 = ma.allocate(64);
       assertEquals(64+perObjectOverhead(), ma.getUsedMemory());
       assertEquals(offHeapSize-(64+perObjectOverhead()), ma.getFreeMemory());
       mc1.release();
@@ -123,7 +123,7 @@ public abstract class OffHeapRegionBase {
       assertNotNull(ma);
       final long offHeapSize = ma.getFreeMemory();
       assertEquals(0, ma.getUsedMemory());
-      MemoryChunk mc1 = ma.allocate(64);
+      StoredObject mc1 = ma.allocate(64);
       assertEquals(64+perObjectOverhead(), ma.getUsedMemory());
       assertEquals(offHeapSize-(64+perObjectOverhead()), ma.getFreeMemory());
       mc1.release();
@@ -163,11 +163,11 @@ public abstract class OffHeapRegionBase {
       final long offHeapSize = ma.getFreeMemory();
       assertEquals(0, ma.getUsedMemory());
       byte[] data = new byte[] {1,2,3,4,5,6,7,8};
-      MemoryChunk mc1 = (MemoryChunk)ma.allocateAndInitialize(data, false, false);
+      StoredObject mc1 = (StoredObject)ma.allocateAndInitialize(data, false, false);
       assertEquals(data.length+perObjectOverhead(), ma.getUsedMemory());
       assertEquals(offHeapSize-(data.length+perObjectOverhead()), ma.getFreeMemory());
       byte[] data2 = new byte[data.length];
-      mc1.readBytes(0, data2);
+      mc1.readDataBytes(0, data2);
       assertTrue(Arrays.equals(data, data2));
       mc1.release();
       assertEquals(offHeapSize, ma.getFreeMemory());
@@ -540,11 +540,11 @@ public abstract class OffHeapRegionBase {
     @Released(OffHeapIdentifier.TEST_OFF_HEAP_REGION_BASE_LISTENER)
     @Override
     public void close() {
-      if (this.ohOldValue instanceof ObjectChunk) {
-        ((ObjectChunk)this.ohOldValue).release();
+      if (this.ohOldValue instanceof OffHeapStoredObject) {
+        ((OffHeapStoredObject)this.ohOldValue).release();
       }
-      if (this.ohNewValue instanceof ObjectChunk) {
-        ((ObjectChunk)this.ohNewValue).release();
+      if (this.ohNewValue instanceof OffHeapStoredObject) {
+        ((OffHeapStoredObject)this.ohNewValue).release();
       }
     }
   }

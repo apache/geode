@@ -19,20 +19,20 @@ package com.gemstone.gemfire.internal.offheap;
 import com.gemstone.gemfire.LogWriter;
 
 /**
- * A "stack" of "chunk" instances. The chunks are not kept
- * in java object form but instead each "chunk" is just an
- * off-heap address.
- * This class is used for each "tiny" free-list of the off-heap memory allocator.
+ * A "stack" of addresses of OffHeapStoredObject instances. The stored objects are not kept
+ * in java object form but instead each one is just an off-heap address.
+ * This class is used for each "tiny" free-list of the FreeListManager.
+ * This class is thread safe.
  */
-public class SyncChunkStack {
+public class OffHeapStoredObjectAddressStack {
   // Ok to read without sync but must be synced on write
   private volatile long topAddr;
   
-  public SyncChunkStack(long addr) {
+  public OffHeapStoredObjectAddressStack(long addr) {
     if (addr != 0L) SimpleMemoryAllocatorImpl.validateAddress(addr);
     this.topAddr = addr;
   }
-  public SyncChunkStack() {
+  public OffHeapStoredObjectAddressStack() {
     this.topAddr = 0L;
   }
   public boolean isEmpty() {
@@ -42,7 +42,7 @@ public class SyncChunkStack {
     assert e != 0;
     SimpleMemoryAllocatorImpl.validateAddress(e);
     synchronized (this) {
-      ObjectChunk.setNext(e, this.topAddr);
+      OffHeapStoredObject.setNext(e, this.topAddr);
       this.topAddr = e;
     }
   }
@@ -51,7 +51,7 @@ public class SyncChunkStack {
     synchronized (this) {
       result = this.topAddr;
       if (result != 0L) {
-        this.topAddr = ObjectChunk.getNext(result);
+        this.topAddr = OffHeapStoredObject.getNext(result);
       }
     }
     return result;
@@ -63,9 +63,9 @@ public class SyncChunkStack {
     return this.topAddr;
   }
   /**
-   * Removes all the Chunks from this stack
-   * and returns the address of the first chunk.
-   * The caller owns all the Chunks after this call.
+   * Removes all the addresses from this stack
+   * and returns the top address.
+   * The caller owns all the addresses after this call.
    */
   public long clear() {
     long result;
@@ -85,8 +85,8 @@ public class SyncChunkStack {
       concurrentModDetected = false;
       addr = headAddr;
       while (addr != 0L) {
-        int curSize = ObjectChunk.getSize(addr);
-        addr = ObjectChunk.getNext(addr);
+        int curSize = OffHeapStoredObject.getSize(addr);
+        addr = OffHeapStoredObject.getNext(addr);
         testHookDoConcurrentModification();
         long curHead = this.topAddr;
         if (curHead != headAddr) {
@@ -113,8 +113,8 @@ public class SyncChunkStack {
       result = 0;
       addr = headAddr;
       while (addr != 0L) {
-        result += ObjectChunk.getSize(addr);
-        addr = ObjectChunk.getNext(addr);
+        result += OffHeapStoredObject.getSize(addr);
+        addr = OffHeapStoredObject.getNext(addr);
         testHookDoConcurrentModification();
         long curHead = this.topAddr;
         if (curHead != headAddr) {

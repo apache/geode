@@ -36,7 +36,7 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
+import com.gemstone.gemfire.internal.offheap.OffHeapStoredObject;
 import com.gemstone.gemfire.internal.offheap.OffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.OffHeapStorage;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
@@ -240,7 +240,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
       
       // After allocating large chunk (equal to total memory) 
       // we should still have no fragmentation
-      int largeChunk = (int) TOTAL_MEMORY - ObjectChunk.OFF_HEAP_HEADER_SIZE;
+      int largeChunk = (int) TOTAL_MEMORY - OffHeapStoredObject.HEADER_SIZE;
       doPutOnVm(vm, KEY, new byte[largeChunk], OFF_HEAP_REGION_NAME, false);
       // No compaction has run, so fragmentation should be zero
       assertFragmentationStatOnVm(vm,0,ASSERT_OP.EQUAL);
@@ -255,7 +255,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
       assertFragmentationStatOnVm(vm,0,ASSERT_OP.EQUAL);
       
       // Allocate HALF_TOTAL_MEMORY twice and release one to create one fragment
-      int halfChunk = HALF_TOTAL_MEMORY - ObjectChunk.OFF_HEAP_HEADER_SIZE;
+      int halfChunk = HALF_TOTAL_MEMORY - OffHeapStoredObject.HEADER_SIZE;
       doPutOnVm(vm, KEY + "0", new byte[halfChunk], OFF_HEAP_REGION_NAME, false);
       doPutOnVm(vm, KEY + "1", new byte[halfChunk], OFF_HEAP_REGION_NAME, false);
       doDestroyOnVm(vm, KEY + "0", OFF_HEAP_REGION_NAME);
@@ -267,7 +267,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
       
       // Consume the available fragment as below
       // [16][262120][16][262120][16] = [524288] (HALF_TOTAL_MEMORY)
-      int smallChunk = ObjectChunk.MIN_CHUNK_SIZE - ObjectChunk.OFF_HEAP_HEADER_SIZE;
+      int smallChunk = OffHeapStoredObject.MIN_CHUNK_SIZE - OffHeapStoredObject.HEADER_SIZE;
       int mediumChunk = 262112; //(262120 - ObjectChunk.OFF_HEAP_HEADER_SIZE)
       doPutOnVm(vm, KEY + "S1", new byte[smallChunk], OFF_HEAP_REGION_NAME, false);
       doPutOnVm(vm, KEY + "M1", new byte[mediumChunk], OFF_HEAP_REGION_NAME, false);

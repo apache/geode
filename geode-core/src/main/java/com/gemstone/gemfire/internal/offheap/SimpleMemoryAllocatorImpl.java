@@ -90,17 +90,17 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, LogWriter lw, 
       int slabCount, long offHeapMemorySize, long maxSlabSize) {
     return create(ooohml, stats, lw, slabCount, offHeapMemorySize, maxSlabSize,
-        null, new AddressableMemoryChunkFactory() {
+        null, new SlabFactory() {
       @Override
-      public AddressableMemoryChunk create(int size) {
-        return new UnsafeMemoryChunk(size);
+      public Slab create(int size) {
+        return new SlabImpl(size);
       }
     });
   }
 
   private static SimpleMemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, LogWriter lw, 
       int slabCount, long offHeapMemorySize, long maxSlabSize, 
-      AddressableMemoryChunk[] slabs, AddressableMemoryChunkFactory memChunkFactory) {
+      Slab[] slabs, SlabFactory slabFactory) {
     SimpleMemoryAllocatorImpl result = singleton;
     boolean created = false;
     try {
@@ -118,16 +118,16 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
         if (lw != null) {
           lw.config("Allocating " + offHeapMemorySize + " bytes of off-heap memory. The maximum size of a single off-heap object is " + maxSlabSize + " bytes.");
         }
-        slabs = new UnsafeMemoryChunk[slabCount];
+        slabs = new SlabImpl[slabCount];
         long uncreatedMemory = offHeapMemorySize;
         for (int i=0; i < slabCount; i++) {
           try {
             if (uncreatedMemory >= maxSlabSize) {
-              slabs[i] = memChunkFactory.create((int) maxSlabSize);
+              slabs[i] = slabFactory.create((int) maxSlabSize);
               uncreatedMemory -= maxSlabSize;
             } else {
               // the last slab can be smaller then maxSlabSize
-              slabs[i] = memChunkFactory.create((int) uncreatedMemory);
+              slabs[i] = slabFactory.create((int) uncreatedMemory);
             }
           } catch (OutOfMemoryError err) {
             if (i > 0) {
@@ -137,7 +137,7 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
             }
             for (int j=0; j < i; j++) {
               if (slabs[j] != null) {
-                slabs[j].release();
+                slabs[j].free();
               }
             }
             throw err;
@@ -163,11 +163,11 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     return result;
   }
   static SimpleMemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, LogWriter lw, 
-      int slabCount, long offHeapMemorySize, long maxSlabSize, AddressableMemoryChunkFactory memChunkFactory) {
+      int slabCount, long offHeapMemorySize, long maxSlabSize, SlabFactory memChunkFactory) {
     return create(ooohml, stats, lw, slabCount, offHeapMemorySize, maxSlabSize, 
         null, memChunkFactory);
   }
-  public static SimpleMemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener oooml, OffHeapMemoryStats stats, AddressableMemoryChunk[] slabs) {
+  public static SimpleMemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener oooml, OffHeapMemoryStats stats, Slab[] slabs) {
     int slabCount = 0;
     long offHeapMemorySize = 0;
     long maxSlabSize = 0;
@@ -185,7 +185,7 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   }
   
   
-  private void reuse(OutOfOffHeapMemoryListener oooml, LogWriter lw, OffHeapMemoryStats newStats, long offHeapMemorySize, AddressableMemoryChunk[] slabs) {
+  private void reuse(OutOfOffHeapMemoryListener oooml, LogWriter lw, OffHeapMemoryStats newStats, long offHeapMemorySize, Slab[] slabs) {
     if (isClosed()) {
       throw new IllegalStateException("Can not reuse a closed off-heap memory manager.");
     }
@@ -205,7 +205,7 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     this.stats = newStats;
   }
 
-  private SimpleMemoryAllocatorImpl(final OutOfOffHeapMemoryListener oooml, final OffHeapMemoryStats stats, final AddressableMemoryChunk[] slabs) {
+  private SimpleMemoryAllocatorImpl(final OutOfOffHeapMemoryListener oooml, final OffHeapMemoryStats stats, final Slab[] slabs) {
     if (oooml == null) {
       throw new IllegalArgumentException("OutOfOffHeapMemoryListener is null");
     }
@@ -224,20 +224,20 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     this.stats.incFreeMemory(this.freeList.getTotalMemory());
   }
   
-  public List<ObjectChunk> getLostChunks() {
-    List<ObjectChunk> liveChunks = this.freeList.getLiveChunks();
-    List<ObjectChunk> regionChunks = getRegionLiveChunks();
-    Set<ObjectChunk> liveChunksSet = new HashSet<>(liveChunks);
-    Set<ObjectChunk> regionChunksSet = new HashSet<>(regionChunks);
+  public List<OffHeapStoredObject> getLostChunks() {
+    List<OffHeapStoredObject> liveChunks = this.freeList.getLiveChunks();
+    List<OffHeapStoredObject> regionChunks = getRegionLiveChunks();
+    Set<OffHeapStoredObject> liveChunksSet = new HashSet<>(liveChunks);
+    Set<OffHeapStoredObject> regionChunksSet = new HashSet<>(regionChunks);
     liveChunksSet.removeAll(regionChunksSet);
-    return new ArrayList<ObjectChunk>(liveChunksSet);
+    return new ArrayList<OffHeapStoredObject>(liveChunksSet);
   }
   
   /**
    * Returns a possibly empty list that contains all the Chunks used by regions.
    */
-  private List<ObjectChunk> getRegionLiveChunks() {
-    ArrayList<ObjectChunk> result = new ArrayList<ObjectChunk>();
+  private List<OffHeapStoredObject> getRegionLiveChunks() {
+    ArrayList<OffHeapStoredObject> result = new ArrayList<OffHeapStoredObject>();
     RegionService gfc = GemFireCacheImpl.getInstance();
     if (gfc != null) {
       Iterator<Region<?,?>> rootIt = gfc.rootRegions().iterator();
@@ -253,7 +253,7 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     return result;
   }
 
-  private void getRegionLiveChunks(Region<?,?> r, List<ObjectChunk> result) {
+  private void getRegionLiveChunks(Region<?,?> r, List<OffHeapStoredObject> result) {
     if (r.getAttributes().getOffHeap()) {
 
       if (r instanceof PartitionedRegion) {
@@ -277,7 +277,7 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
 
   }
   
-  private void basicGetRegionLiveChunks(LocalRegion r, List<ObjectChunk> result) {
+  private void basicGetRegionLiveChunks(LocalRegion r, List<OffHeapStoredObject> result) {
     for (Object key : r.keySet()) {
       RegionEntry re = ((LocalRegion) r).getRegionEntry(key);
       if (re != null) {
@@ -286,30 +286,30 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
          */
         @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
         Object value = re._getValue();
-        if (value instanceof ObjectChunk) {
-          result.add((ObjectChunk) value);
+        if (value instanceof OffHeapStoredObject) {
+          result.add((OffHeapStoredObject) value);
         }
       }
     }
   }
 
-  private ObjectChunk allocateChunk(int size) {
-    ObjectChunk result = this.freeList.allocate(size);
+  private OffHeapStoredObject allocateOffHeapStoredObject(int size) {
+    OffHeapStoredObject result = this.freeList.allocate(size);
     int resultSize = result.getSize();
     stats.incObjects(1);
     stats.incUsedMemory(resultSize);
     stats.incFreeMemory(-resultSize);
     notifyListeners();
     if (ReferenceCountHelper.trackReferenceCounts()) {
-      ReferenceCountHelper.refCountChanged(result.getMemoryAddress(), false, 1);
+      ReferenceCountHelper.refCountChanged(result.getAddress(), false, 1);
     }
     return result;
   }
   
   @Override
-  public MemoryChunk allocate(int size) {
+  public StoredObject allocate(int size) {
     //System.out.println("allocating " + size);
-    ObjectChunk result = allocateChunk(size);
+    OffHeapStoredObject result = allocateOffHeapStoredObject(size);
     //("allocated off heap object of size " + size + " @" + Long.toHexString(result.getMemoryAddress()), true);
     return result;
   }
@@ -324,16 +324,23 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   
   @Override
   public StoredObject allocateAndInitialize(byte[] v, boolean isSerialized, boolean isCompressed) {
+    return allocateAndInitialize(v, isSerialized, isCompressed, null);
+  }
+  @Override
+  public StoredObject allocateAndInitialize(byte[] v, boolean isSerialized, boolean isCompressed, byte[] originalHeapData) {
     long addr = OffHeapRegionEntryHelper.encodeDataAsAddress(v, isSerialized, isCompressed);
     if (addr != 0L) {
-      return new DataAsAddress(addr);
+      return new TinyStoredObject(addr);
     }
-    ObjectChunk result = allocateChunk(v.length);
+    OffHeapStoredObject result = allocateOffHeapStoredObject(v.length);
     //debugLog("allocated off heap object of size " + v.length + " @" + Long.toHexString(result.getMemoryAddress()), true);
     //debugLog("allocated off heap object of size " + v.length + " @" + Long.toHexString(result.getMemoryAddress()) +  "chunkSize=" + result.getSize() + " isSerialized=" + isSerialized + " v=" + Arrays.toString(v), true);
     result.setSerializedValue(v);
     result.setSerialized(isSerialized);
     result.setCompressed(isCompressed);
+    if (originalHeapData != null) {
+      result = new OffHeapStoredObjectWithHeapForm(result, originalHeapData);
+    }
     return result;
   }
   
@@ -485,18 +492,18 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   }
 
   public synchronized List<MemoryBlock> getOrphans() {
-    List<ObjectChunk> liveChunks = this.freeList.getLiveChunks();
-    List<ObjectChunk> regionChunks = getRegionLiveChunks();
+    List<OffHeapStoredObject> liveChunks = this.freeList.getLiveChunks();
+    List<OffHeapStoredObject> regionChunks = getRegionLiveChunks();
     liveChunks.removeAll(regionChunks);
     List<MemoryBlock> orphans = new ArrayList<MemoryBlock>();
-    for (ObjectChunk chunk: liveChunks) {
+    for (OffHeapStoredObject chunk: liveChunks) {
       orphans.add(new MemoryBlockNode(this, chunk));
     }
     Collections.sort(orphans,
         new Comparator<MemoryBlock>() {
           @Override
           public int compare(MemoryBlock o1, MemoryBlock o2) {
-            return Long.valueOf(o1.getMemoryAddress()).compareTo(o2.getMemoryAddress());
+            return Long.valueOf(o1.getAddress()).compareTo(o2.getAddress());
           }
         });
     //this.memoryBlocks = new WeakReference<List<MemoryBlock>>(orphans);

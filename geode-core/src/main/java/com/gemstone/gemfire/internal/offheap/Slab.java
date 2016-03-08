@@ -17,31 +17,23 @@
 package com.gemstone.gemfire.internal.offheap;
 
 /**
- * Represents a chunk of allocated memory that is not on the heap.
- * This interface provides methods that let you read and write to the chunk.
- * 
- * @author darrel
- * @since 9.0
+ * A "slab" of memory.
+ * Slabs can be created by calling {@link AddressableMemoryManager#allocateSlab(int)}.
+ * Slabs have an address, a size, and can be freed.
  */
-public interface MemoryChunk extends Releasable {
-  
+public interface Slab {
+  /**
+   * Return the address of the memory of this slab.
+   */
+  public long getMemoryAddress();
   /**
    * Returns the size of this memory chunk in bytes.
    */
   public int getSize();
-  
-  public byte readByte(int offset);
-  public void writeByte(int offset, byte value);
-  
-  public void readBytes(int offset, byte[] bytes);
-  public void writeBytes(int offset, byte[] bytes);
-  public void readBytes(int offset, byte[] bytes, int bytesOffset, int size);
-  public void writeBytes(int offset, byte[] bytes, int bytesOffset, int size);
-  
   /**
-   * Read the bytes in this range [src..src+size]
-   * and write them to the range that starts at dst.
-   * The number of bytes copied is size.
+   * Returns any memory allocated for this slab.
+   * Note that after free is called the address of
+   * this slab should no longer be used.
    */
-  public void copyBytes(int src, int dst, int size);
+  public void free();
 }

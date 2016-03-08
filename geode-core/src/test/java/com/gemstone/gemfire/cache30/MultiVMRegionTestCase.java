@@ -110,8 +110,8 @@ import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VMRegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.MemoryChunkWithRefCount;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
@@ -2004,8 +2004,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               LocalRegion reRegion;
               reRegion = (LocalRegion) region;
               RegionEntry re = reRegion.getRegionEntry(key2);
-              MemoryChunkWithRefCount mc = (MemoryChunkWithRefCount) re._getValue();
-              assertEquals(1, mc.getRefCount());
+              StoredObject so = (StoredObject) re._getValue();
+              assertEquals(1, so.getRefCount());
               assertEquals(1, ma.getStats().getObjects());
             }
           }
@@ -2091,8 +2091,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertEquals(2, ma.getStats().getObjects());
             LocalRegion reRegion;
             reRegion = (LocalRegion) region;
-            MemoryChunkWithRefCount mc = (MemoryChunkWithRefCount) reRegion.getRegionEntry(key)._getValue();
-            assertEquals(1, mc.getRefCount());
+            StoredObject so = (StoredObject) reRegion.getRegionEntry(key)._getValue();
+            assertEquals(1, so.getRefCount());
           }
         }
       });
@@ -2157,8 +2157,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               assertEquals(2, ma.getStats().getObjects());
               LocalRegion reRegion;
               reRegion = (LocalRegion) region;
-              MemoryChunkWithRefCount mc = (MemoryChunkWithRefCount) reRegion.getRegionEntry(key)._getValue();
-              assertEquals(1, mc.getRefCount());
+              StoredObject so = (StoredObject) reRegion.getRegionEntry(key)._getValue();
+              assertEquals(1, so.getRefCount());
             }
           }
         }

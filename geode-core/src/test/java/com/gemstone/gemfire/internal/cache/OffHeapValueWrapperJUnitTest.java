@@ -27,26 +27,26 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ChunkValueWrapper;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.OffHeapValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.Flushable;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
+import com.gemstone.gemfire.internal.offheap.SlabImpl;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class ChunkValueWrapperJUnitTest {
+public class OffHeapValueWrapperJUnitTest {
 
-  private static ChunkValueWrapper createChunkValueWrapper(byte[] bytes, boolean isSerialized) {
-    ObjectChunk c = (ObjectChunk)SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, isSerialized, false);
-    return new ChunkValueWrapper(c);
+  private static OffHeapValueWrapper createChunkValueWrapper(byte[] bytes, boolean isSerialized) {
+    StoredObject c = SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, isSerialized, false);
+    return new OffHeapValueWrapper(c);
   }
 
   @Before
   public void setUp() throws Exception {
-    SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
+    SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
   }
 
   @After
@@ -81,7 +81,7 @@ public class ChunkValueWrapperJUnitTest {
   public void testSendTo() throws IOException {
     final ByteBuffer bb = ByteBuffer.allocateDirect(18);
     bb.limit(8);
-    ChunkValueWrapper vw = createChunkValueWrapper(new byte[]{1,2,3,4,5,6,7,8}, false);
+    OffHeapValueWrapper vw = createChunkValueWrapper(new byte[]{1,2,3,4,5,6,7,8}, false);
     vw.sendTo(bb, new Flushable() {
       @Override
       public void flush() throws IOException {

@@ -203,7 +203,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
@@ -1423,6 +1422,7 @@ public class LocalRegion extends AbstractRegion
   public Object getRetained(Object key, Object aCallbackArgument,
       boolean generateCallbacks, boolean disableCopyOnRead,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean opScopeIsLocal) throws TimeoutException, CacheLoaderException {
+    // TODO OFFHEAP: the last parameter "retainResult" should be true for getRetained. Need to look into what it is being set to false.
     return get(key, aCallbackArgument, generateCallbacks, disableCopyOnRead, true, requestingClient, clientEvent, returnTombstones, opScopeIsLocal, true, false);
   }
   /**
@@ -1585,14 +1585,7 @@ public class LocalRegion extends AbstractRegion
           } else if (!disableCopyOnRead) {
             result = conditionalCopy(result);
           }
-          //For sqlf since the deserialized value is nothing but chunk
-          // before returning the found value increase its use count
-          if(GemFireCacheImpl.sqlfSystem() && result instanceof ObjectChunk) {
-            if(!((ObjectChunk)result).retain()) {
-              return null;
-            }
-          }
-          // what was a miss is now a hit
+         // what was a miss is now a hit
           RegionEntry re = null;
           if (isCreate) {
             re = basicGetEntry(keyInfo.getKey());

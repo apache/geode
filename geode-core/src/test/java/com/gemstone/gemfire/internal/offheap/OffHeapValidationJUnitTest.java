@@ -122,7 +122,7 @@ public class OffHeapValidationJUnitTest {
       assertEquals(1024*1024*2, firstBlock.getBlockSize());
       assertEquals("N/A", firstBlock.getDataType());
       assertEquals(-1, firstBlock.getFreeListId());
-      assertTrue(firstBlock.getMemoryAddress() > 0);
+      assertTrue(firstBlock.getAddress() > 0);
       assertNull(firstBlock.getNextBlock());
       assertEquals(0, firstBlock.getRefCount());
       assertEquals(0, firstBlock.getSlabId());
@@ -202,7 +202,7 @@ public class OffHeapValidationJUnitTest {
       assertEquals(i + ":" + values.dataType, values.blockSize, block.getBlockSize());
       assertEquals(i + ":" + values.dataType, values.dataType, block.getDataType());
       assertEquals(i + ":" + values.dataType, values.freeListId, block.getFreeListId());
-      assertEquals(i + ":" + values.dataType, values.memoryAddress, block.getMemoryAddress());
+      assertEquals(i + ":" + values.dataType, values.memoryAddress, block.getAddress());
       assertEquals(i + ":" + values.dataType, values.refCount, block.getRefCount());
       assertEquals(i + ":" + values.dataType, values.slabId, block.getSlabId());
       assertEquals(i + ":" + values.dataType, values.isCompressed, block.isCompressed());
@@ -296,8 +296,8 @@ public class OffHeapValidationJUnitTest {
   
   private long getMemoryAddress(Region region, String key) {
     Object entry = ((LocalRegion) region).getRegionEntry(key)._getValue();
-    assertTrue(entry instanceof ObjectChunk);
-    long memoryAddress = ((ObjectChunk)entry).getMemoryAddress();
+    assertTrue(entry instanceof OffHeapStoredObject);
+    long memoryAddress = ((OffHeapStoredObject)entry).getAddress();
     assertTrue(memoryAddress > 0);
     return memoryAddress;
   }

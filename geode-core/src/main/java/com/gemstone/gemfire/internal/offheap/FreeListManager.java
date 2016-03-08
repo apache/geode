@@ -40,35 +40,35 @@ public class FreeListManager {
   /** The MemoryChunks that this allocator is managing by allocating smaller chunks of them.
    * The contents of this array never change.
    */
-  private final AddressableMemoryChunk[] slabs;
+  private final Slab[] slabs;
   private final long totalSlabSize;
   
-  final private AtomicReferenceArray<SyncChunkStack> tinyFreeLists = new AtomicReferenceArray<SyncChunkStack>(TINY_FREE_LIST_COUNT);
+  final private AtomicReferenceArray<OffHeapStoredObjectAddressStack> tinyFreeLists = new AtomicReferenceArray<OffHeapStoredObjectAddressStack>(TINY_FREE_LIST_COUNT);
   // hugeChunkSet is sorted by chunk size in ascending order. It will only contain chunks larger than MAX_TINY.
-  private final ConcurrentSkipListSet<ObjectChunk> hugeChunkSet = new ConcurrentSkipListSet<ObjectChunk>();
+  private final ConcurrentSkipListSet<OffHeapStoredObject> hugeChunkSet = new ConcurrentSkipListSet<OffHeapStoredObject>();
   private final AtomicLong allocatedSize = new AtomicLong(0L);
 
   private int getNearestTinyMultiple(int size) {
     return (size-1)/TINY_MULTIPLE;
   }
-  List<ObjectChunk> getLiveChunks() {
-    ArrayList<ObjectChunk> result = new ArrayList<ObjectChunk>();
+  List<OffHeapStoredObject> getLiveChunks() {
+    ArrayList<OffHeapStoredObject> result = new ArrayList<OffHeapStoredObject>();
     for (int i=0; i < slabs.length; i++) {
       getLiveChunks(slabs[i], result);
     }
     return result;
   }
-  private void getLiveChunks(AddressableMemoryChunk slab, List<ObjectChunk> result) {
+  private void getLiveChunks(Slab slab, List<OffHeapStoredObject> result) {
     long addr = slab.getMemoryAddress();
-    while (addr <= (slab.getMemoryAddress() + slab.getSize() - ObjectChunk.MIN_CHUNK_SIZE)) {
+    while (addr <= (slab.getMemoryAddress() + slab.getSize() - OffHeapStoredObject.MIN_CHUNK_SIZE)) {
       Fragment f = isAddrInFragmentFreeSpace(addr);
       if (f != null) {
-        addr = f.getMemoryAddress() + f.getSize();
+        addr = f.getAddress() + f.getSize();
       } else {
-        int curChunkSize = ObjectChunk.getSize(addr);
-        int refCount = ObjectChunk.getRefCount(addr);
+        int curChunkSize = OffHeapStoredObject.getSize(addr);
+        int refCount = OffHeapStoredObject.getRefCount(addr);
         if (refCount > 0) {
-          result.add(new ObjectChunk(addr));
+          result.add(new OffHeapStoredObject(addr));
         }
         addr += curChunkSize;
       }
@@ -79,7 +79,7 @@ public class FreeListManager {
    */
   private Fragment isAddrInFragmentFreeSpace(long addr) {
     for (Fragment f: this.fragmentList) {
-      if (addr >= (f.getMemoryAddress() + f.getFreeIndex()) && addr < (f.getMemoryAddress() + f.getSize())) {
+      if (addr >= (f.getAddress() + f.getFreeIndex()) && addr < (f.getAddress() + f.getSize())) {
         return f;
       }
     }
@@ -95,7 +95,7 @@ public class FreeListManager {
     long result = 0;
     for (Fragment f: this.fragmentList) {
       int freeSpace = f.freeSpace();
-      if (freeSpace >= ObjectChunk.MIN_CHUNK_SIZE) {
+      if (freeSpace >= OffHeapStoredObject.MIN_CHUNK_SIZE) {
         result += freeSpace;
       }
     }
@@ -104,7 +104,7 @@ public class FreeListManager {
   long getFreeTinyMemory() {
     long tinyFree = 0;
     for (int i=0; i < this.tinyFreeLists.length(); i++) {
-      SyncChunkStack cl = this.tinyFreeLists.get(i);
+      OffHeapStoredObjectAddressStack cl = this.tinyFreeLists.get(i);
       if (cl != null) {
         tinyFree += cl.computeTotalSize();
       }
@@ -113,7 +113,7 @@ public class FreeListManager {
   }
   long getFreeHugeMemory() {
     long hugeFree = 0;
-    for (ObjectChunk c: this.hugeChunkSet) {
+    for (OffHeapStoredObject c: this.hugeChunkSet) {
       hugeFree += c.getSize();
     }
     return hugeFree;
@@ -126,7 +126,7 @@ public class FreeListManager {
   private final CopyOnWriteArrayList<Fragment> fragmentList;
   private final SimpleMemoryAllocatorImpl ma;
 
-  public FreeListManager(SimpleMemoryAllocatorImpl ma, final AddressableMemoryChunk[] slabs) {
+  public FreeListManager(SimpleMemoryAllocatorImpl ma, final Slab[] slabs) {
     this.ma = ma;
     this.slabs = slabs;
     long total = 0;
@@ -178,10 +178,10 @@ public class FreeListManager {
    * @throws IllegalStateException if a chunk can not be allocated.
    */
   @SuppressWarnings("synthetic-access")
-  public ObjectChunk allocate(int size) {
+  public OffHeapStoredObject allocate(int size) {
     assert size > 0;
     
-    ObjectChunk result = basicAllocate(size, true);
+    OffHeapStoredObject result = basicAllocate(size, true);
 
     result.setDataSize(size);
     this.allocatedSize.addAndGet(result.getSize());
@@ -190,13 +190,13 @@ public class FreeListManager {
     return result;
   }
 
-  private ObjectChunk basicAllocate(int size, boolean useSlabs) {
+  private OffHeapStoredObject basicAllocate(int size, boolean useSlabs) {
     if (useSlabs) {
       // Every object stored off heap has a header so we need
       // to adjust the size so that the header gets allocated.
       // If useSlabs is false then the incoming size has already
       // been adjusted.
-      size += ObjectChunk.OFF_HEAP_HEADER_SIZE;
+      size += OffHeapStoredObject.HEADER_SIZE;
     }
     if (size <= MAX_TINY) {
       return allocateTiny(size, useSlabs);
@@ -205,17 +205,17 @@ public class FreeListManager {
     }
   }
 
-  private ObjectChunk allocateFromFragments(int chunkSize) {
+  private OffHeapStoredObject allocateFromFragments(int chunkSize) {
     do {
       final int lastAllocationId = this.lastFragmentAllocation.get();
       for (int i=lastAllocationId; i < this.fragmentList.size(); i++) {
-        ObjectChunk result = allocateFromFragment(i, chunkSize);
+        OffHeapStoredObject result = allocateFromFragment(i, chunkSize);
         if (result != null) {
           return result;
         }
       }
       for (int i=0; i < lastAllocationId; i++) {
-        ObjectChunk result = allocateFromFragment(i, chunkSize);
+        OffHeapStoredObject result = allocateFromFragment(i, chunkSize);
         if (result != null) {
           return result;
         }
@@ -247,13 +247,13 @@ public class FreeListManager {
   }
 
   private void logHugeState(LogWriter lw) {
-    for (ObjectChunk c: this.hugeChunkSet) {
+    for (OffHeapStoredObject c: this.hugeChunkSet) {
       lw.info("Free huge of size " + c.getSize());
     }
   }
   private void logTinyState(LogWriter lw) {
     for (int i=0; i < this.tinyFreeLists.length(); i++) {
-      SyncChunkStack cl = this.tinyFreeLists.get(i);
+      OffHeapStoredObjectAddressStack cl = this.tinyFreeLists.get(i);
       if (cl != null) {
         cl.logSizes(lw, "Free tiny of size ");
       }
@@ -263,7 +263,7 @@ public class FreeListManager {
     for (Fragment f: this.fragmentList) {
       int freeSpace = f.freeSpace();
       if (freeSpace > 0) {
-        lw.info("Fragment at " + f.getMemoryAddress() + " of size " + f.getSize() + " has " + freeSpace + " bytes free.");
+        lw.info("Fragment at " + f.getAddress() + " of size " + f.getSize() + " has " + freeSpace + " bytes free.");
       }
     }
   }
@@ -323,14 +323,14 @@ public class FreeListManager {
           // So just return true causing the caller to retry the allocation.
           return true;
         }
-        ArrayList<SyncChunkStack> freeChunks = new ArrayList<SyncChunkStack>();
+        ArrayList<OffHeapStoredObjectAddressStack> freeChunks = new ArrayList<OffHeapStoredObjectAddressStack>();
         collectFreeChunks(freeChunks);
         final int SORT_ARRAY_BLOCK_SIZE = 128;
         long[] sorted = new long[SORT_ARRAY_BLOCK_SIZE];
         int sortedSize = 0;
         boolean result = false;
         int largestFragment = 0;
-        for (SyncChunkStack l: freeChunks) {
+        for (OffHeapStoredObjectAddressStack l: freeChunks) {
           long addr = l.poll();
           while (addr != 0) {
             int idx = Arrays.binarySearch(sorted, 0, sortedSize, addr);
@@ -345,10 +345,10 @@ public class FreeListManager {
               } else {
                 // see if we can conflate into sorted[idx]
                 long lowAddr = sorted[idx-1];
-                int lowSize = ObjectChunk.getSize(lowAddr);
+                int lowSize = OffHeapStoredObject.getSize(lowAddr);
                 if (lowAddr + lowSize == addr) {
                   // append the addr chunk to lowAddr
-                  ObjectChunk.setSize(lowAddr, lowSize + ObjectChunk.getSize(addr));
+                  OffHeapStoredObject.setSize(lowAddr, lowSize + OffHeapStoredObject.getSize(addr));
                 } else {
                   if (sortedSize >= sorted.length) {
                     long[] newSorted = new long[sorted.length+SORT_ARRAY_BLOCK_SIZE];
@@ -360,11 +360,11 @@ public class FreeListManager {
                 }
               }
             } else {
-              int addrSize = ObjectChunk.getSize(addr);
+              int addrSize = OffHeapStoredObject.getSize(addr);
               long highAddr = sorted[idx];
               if (addr + addrSize == highAddr) {
                 // append highAddr chunk to addr
-                ObjectChunk.setSize(addr, addrSize + ObjectChunk.getSize(highAddr));
+                OffHeapStoredObject.setSize(addr, addrSize + OffHeapStoredObject.getSize(highAddr));
                 sorted[idx] = addr;
               } else {
                 boolean insert = idx==0;
@@ -374,10 +374,10 @@ public class FreeListManager {
                   //                    long[] tmp = Arrays.copyOf(sorted, sortedSize);
                   //                    throw new IllegalStateException("addr was zero at idx=" + (idx-1) + " sorted="+ Arrays.toString(tmp));
                   //                  }
-                  int lowSize = ObjectChunk.getSize(lowAddr);
+                  int lowSize = OffHeapStoredObject.getSize(lowAddr);
                   if (lowAddr + lowSize == addr) {
                     // append the addr chunk to lowAddr
-                    ObjectChunk.setSize(lowAddr, lowSize + addrSize);
+                    OffHeapStoredObject.setSize(lowAddr, lowSize + addrSize);
                   } else {
                     insert = true;
                   }
@@ -403,10 +403,10 @@ public class FreeListManager {
         for (int i=sortedSize-1; i > 0; i--) {
           long addr = sorted[i];
           long lowAddr = sorted[i-1];
-          int lowSize = ObjectChunk.getSize(lowAddr);
+          int lowSize = OffHeapStoredObject.getSize(lowAddr);
           if (lowAddr + lowSize == addr) {
             // append addr chunk to lowAddr
-            ObjectChunk.setSize(lowAddr, lowSize + ObjectChunk.getSize(addr));
+            OffHeapStoredObject.setSize(lowAddr, lowSize + OffHeapStoredObject.getSize(addr));
             sorted[i] = 0L;
           }
         }
@@ -415,7 +415,7 @@ public class FreeListManager {
         for (int i=sortedSize-1; i >= 0; i--) {
           long addr = sorted[i];
           if (addr == 0L) continue;
-          int addrSize = ObjectChunk.getSize(addr);
+          int addrSize = OffHeapStoredObject.getSize(addr);
           Fragment f = createFragment(addr, addrSize);
           if (addrSize >= chunkSize) {
             result = true;
@@ -492,15 +492,15 @@ public class FreeListManager {
       } else {
         //more than 1 fragment is available so freeMemory is > ObjectChunk.MIN_CHUNK_SIZE
         long freeMemory = getFreeMemory();
-        assert freeMemory > ObjectChunk.MIN_CHUNK_SIZE;
-        long maxPossibleFragments = freeMemory / ObjectChunk.MIN_CHUNK_SIZE;
+        assert freeMemory > OffHeapStoredObject.MIN_CHUNK_SIZE;
+        long maxPossibleFragments = freeMemory / OffHeapStoredObject.MIN_CHUNK_SIZE;
         double fragmentation = ((double) availableFragments /(double) maxPossibleFragments) * 100d;
         return (int) Math.rint(fragmentation);
       }
     }
   }
 
-  private void collectFreeChunks(List<SyncChunkStack> l) {
+  private void collectFreeChunks(List<OffHeapStoredObjectAddressStack> l) {
     collectFreeFragmentChunks(l);
     collectFreeHugeChunks(l);
     collectFreeTinyChunks(l);
@@ -508,17 +508,17 @@ public class FreeListManager {
   List<Fragment> getFragmentList() {
     return this.fragmentList;
   }
-  private void collectFreeFragmentChunks(List<SyncChunkStack> l) {
+  private void collectFreeFragmentChunks(List<OffHeapStoredObjectAddressStack> l) {
     if (this.fragmentList.size() == 0) return;
-    SyncChunkStack result = new SyncChunkStack();
+    OffHeapStoredObjectAddressStack result = new OffHeapStoredObjectAddressStack();
     for (Fragment f: this.fragmentList) {
       int offset;
       int diff;
       do {
         offset = f.getFreeIndex();
         diff = f.getSize() - offset;
-      } while (diff >= ObjectChunk.MIN_CHUNK_SIZE && !f.allocate(offset, offset+diff));
-      if (diff < ObjectChunk.MIN_CHUNK_SIZE) {
+      } while (diff >= OffHeapStoredObject.MIN_CHUNK_SIZE && !f.allocate(offset, offset+diff));
+      if (diff < OffHeapStoredObject.MIN_CHUNK_SIZE) {
         // If diff > 0 then that memory will be lost during compaction.
         // This should never happen since we keep the sizes rounded
         // based on MIN_CHUNK_SIZE.
@@ -526,8 +526,8 @@ public class FreeListManager {
         // The current fragment is completely allocated so just skip it.
         continue;
       }
-      long chunkAddr = f.getMemoryAddress()+offset;
-      ObjectChunk.setSize(chunkAddr, diff);
+      long chunkAddr = f.getAddress()+offset;
+      OffHeapStoredObject.setSize(chunkAddr, diff);
       result.offer(chunkAddr);
     }
     // All the fragments have been turned in to chunks so now clear them
@@ -537,31 +537,31 @@ public class FreeListManager {
       l.add(result);
     }
   }
-  private void collectFreeTinyChunks(List<SyncChunkStack> l) {
+  private void collectFreeTinyChunks(List<OffHeapStoredObjectAddressStack> l) {
     for (int i=0; i < this.tinyFreeLists.length(); i++) {
-      SyncChunkStack cl = this.tinyFreeLists.get(i);
+      OffHeapStoredObjectAddressStack cl = this.tinyFreeLists.get(i);
       if (cl != null) {
         long head = cl.clear();
         if (head != 0L) {
-          l.add(new SyncChunkStack(head));
+          l.add(new OffHeapStoredObjectAddressStack(head));
         }
       }
     }
   }
-  private void collectFreeHugeChunks(List<SyncChunkStack> l) {
-    ObjectChunk c = this.hugeChunkSet.pollFirst();
-    SyncChunkStack result = null;
+  private void collectFreeHugeChunks(List<OffHeapStoredObjectAddressStack> l) {
+    OffHeapStoredObject c = this.hugeChunkSet.pollFirst();
+    OffHeapStoredObjectAddressStack result = null;
     while (c != null) {
       if (result == null) {
-        result = new SyncChunkStack();
+        result = new OffHeapStoredObjectAddressStack();
         l.add(result);
       }
-      result.offer(c.getMemoryAddress());
+      result.offer(c.getAddress());
       c = this.hugeChunkSet.pollFirst();
     }
   }
 
-  ObjectChunk allocateFromFragment(final int fragIdx, final int chunkSize) {
+  OffHeapStoredObject allocateFromFragment(final int fragIdx, final int chunkSize) {
     if (fragIdx >= this.fragmentList.size()) return null;
     final Fragment fragment;
     try {
@@ -580,7 +580,7 @@ public class FreeListManager {
         // this fragment has room
         int newOffset = oldOffset + chunkSize;
         int extraSize = fragmentSize - newOffset;
-        if (extraSize < ObjectChunk.MIN_CHUNK_SIZE) {
+        if (extraSize < OffHeapStoredObject.MIN_CHUNK_SIZE) {
           // include these last few bytes of the fragment in the allocation.
           // If we don't then they will be lost forever.
           // The extraSize bytes only apply to the first chunk we allocate (not the batch ones).
@@ -591,11 +591,11 @@ public class FreeListManager {
         if (fragment.allocate(oldOffset, newOffset)) {
           // We did the allocate!
           this.lastFragmentAllocation.set(fragIdx);
-          ObjectChunk result = new ObjectChunk(fragment.getMemoryAddress()+oldOffset, chunkSize+extraSize);
+          OffHeapStoredObject result = new OffHeapStoredObject(fragment.getAddress()+oldOffset, chunkSize+extraSize);
           checkDataIntegrity(result);
           return result;
         } else {
-          ObjectChunk result = basicAllocate(chunkSize, false);
+          OffHeapStoredObject result = basicAllocate(chunkSize, false);
           if (result != null) {
             return result;
           }
@@ -609,15 +609,15 @@ public class FreeListManager {
   private int round(int multiple, int value) {
     return (int) ((((long)value + (multiple-1)) / multiple) * multiple);
   }
-  private ObjectChunk allocateTiny(int size, boolean useFragments) {
+  private OffHeapStoredObject allocateTiny(int size, boolean useFragments) {
     return basicAllocate(getNearestTinyMultiple(size), TINY_MULTIPLE, 0, this.tinyFreeLists, useFragments);
   }
-  private ObjectChunk basicAllocate(int idx, int multiple, int offset, AtomicReferenceArray<SyncChunkStack> freeLists, boolean useFragments) {
-    SyncChunkStack clq = freeLists.get(idx);
+  private OffHeapStoredObject basicAllocate(int idx, int multiple, int offset, AtomicReferenceArray<OffHeapStoredObjectAddressStack> freeLists, boolean useFragments) {
+    OffHeapStoredObjectAddressStack clq = freeLists.get(idx);
     if (clq != null) {
       long memAddr = clq.poll();
       if (memAddr != 0) {
-        ObjectChunk result = new ObjectChunk(memAddr);
+        OffHeapStoredObject result = new OffHeapStoredObject(memAddr);
         checkDataIntegrity(result);
         result.readyForAllocation();
         return result;
@@ -629,13 +629,13 @@ public class FreeListManager {
       return null;
     }
   }
-  private ObjectChunk allocateHuge(int size, boolean useFragments) {
+  private OffHeapStoredObject allocateHuge(int size, boolean useFragments) {
     // sizeHolder is a fake Chunk used to search our sorted hugeChunkSet.
-    ObjectChunk sizeHolder = new FakeChunk(size);
-    NavigableSet<ObjectChunk> ts = this.hugeChunkSet.tailSet(sizeHolder);
-    ObjectChunk result = ts.pollFirst();
+    OffHeapStoredObject sizeHolder = new SearchMarker(size);
+    NavigableSet<OffHeapStoredObject> ts = this.hugeChunkSet.tailSet(sizeHolder);
+    OffHeapStoredObject result = ts.pollFirst();
     if (result != null) {
-      if (result.getSize() - (HUGE_MULTIPLE - ObjectChunk.OFF_HEAP_HEADER_SIZE) < size) {
+      if (result.getSize() - (HUGE_MULTIPLE - OffHeapStoredObject.HEADER_SIZE) < size) {
         // close enough to the requested size; just return it.
         checkDataIntegrity(result);
         result.readyForAllocation();
@@ -653,19 +653,19 @@ public class FreeListManager {
     }
   }
   
-  private void checkDataIntegrity(ObjectChunk data) {
+  private void checkDataIntegrity(OffHeapStoredObject data) {
     if (this.validateMemoryWithFill) {
       data.validateFill();
     }
   }
   /**
    * Used by the FreeListManager to easily search its
-   * ConcurrentSkipListSet. This is not a real chunk
+   * ConcurrentSkipListSet. This is not a real OffHeapStoredObject
    * but only used for searching.
    */
-  private static class FakeChunk extends ObjectChunk {
+  private static class SearchMarker extends OffHeapStoredObject {
     private final int size;
-    public FakeChunk(int size) {
+    public SearchMarker(int size) {
       super();
       this.size = size;
     }
@@ -678,14 +678,14 @@ public class FreeListManager {
   @SuppressWarnings("synthetic-access")
   public void free(long addr) {
     if (this.validateMemoryWithFill) {
-      ObjectChunk.fill(addr);
+      OffHeapStoredObject.fill(addr);
     }
     
     free(addr, true);
   }
 
   private void free(long addr, boolean updateStats) {
-    int cSize = ObjectChunk.getSize(addr);
+    int cSize = OffHeapStoredObject.getSize(addr);
     if (updateStats) {
       OffHeapMemoryStats stats = this.ma.getStats();
       stats.incObjects(-1);
@@ -703,8 +703,8 @@ public class FreeListManager {
   private void freeTiny(long addr, int cSize) {
     basicFree(addr, getNearestTinyMultiple(cSize), this.tinyFreeLists);
   }
-  private void basicFree(long addr, int idx, AtomicReferenceArray<SyncChunkStack> freeLists) {
-    SyncChunkStack clq = freeLists.get(idx);
+  private void basicFree(long addr, int idx, AtomicReferenceArray<OffHeapStoredObjectAddressStack> freeLists) {
+    OffHeapStoredObjectAddressStack clq = freeLists.get(idx);
     if (clq != null) {
       clq.offer(addr);
     } else {
@@ -719,12 +719,12 @@ public class FreeListManager {
   /**
    * Tests override this method to simulate concurrent modification
    */
-  protected SyncChunkStack createFreeListForEmptySlot(AtomicReferenceArray<SyncChunkStack> freeLists, int idx) {
-    return new SyncChunkStack();
+  protected OffHeapStoredObjectAddressStack createFreeListForEmptySlot(AtomicReferenceArray<OffHeapStoredObjectAddressStack> freeLists, int idx) {
+    return new OffHeapStoredObjectAddressStack();
   }
   
   private void freeHuge(long addr, int cSize) {
-    this.hugeChunkSet.add(new ObjectChunk(addr)); // TODO make this a collection of longs
+    this.hugeChunkSet.add(new OffHeapStoredObject(addr)); // TODO make this a collection of longs
   }
 
   List<MemoryBlock> getOrderedBlocks() {
@@ -737,7 +737,7 @@ public class FreeListManager {
         new Comparator<MemoryBlock>() {
           @Override
           public int compare(MemoryBlock o1, MemoryBlock o2) {
-            return Long.valueOf(o1.getMemoryAddress()).compareTo(o2.getMemoryAddress());
+            return Long.valueOf(o1.getAddress()).compareTo(o2.getAddress());
           }
     });
     return value;
@@ -748,8 +748,8 @@ public class FreeListManager {
     }
   }
   
-  private void addBlocksFromChunks(Collection<ObjectChunk> src, List<MemoryBlock> dest) {
-    for (ObjectChunk chunk : src) {
+  private void addBlocksFromChunks(Collection<OffHeapStoredObject> src, List<MemoryBlock> dest) {
+    for (OffHeapStoredObject chunk : src) {
       dest.add(new MemoryBlockNode(this.ma, chunk));
     }
   }
@@ -768,7 +768,7 @@ public class FreeListManager {
       long addr = this.tinyFreeLists.get(i).getTopAddress();
       while (addr != 0L) {
         value.add(new MemoryBlockNode(sma, new TinyMemoryBlock(addr, i)));
-        addr = ObjectChunk.getNext(addr);
+        addr = OffHeapStoredObject.getNext(addr);
       }
     }
     return value;
@@ -780,7 +780,7 @@ public class FreeListManager {
         new Comparator<MemoryBlock>() {
           @Override
           public int compare(MemoryBlock o1, MemoryBlock o2) {
-            return Long.valueOf(o1.getMemoryAddress()).compareTo(o2.getMemoryAddress());
+            return Long.valueOf(o1.getAddress()).compareTo(o2.getAddress());
           }
     });
     return value;
@@ -803,13 +803,13 @@ public class FreeListManager {
     }
 
     @Override
-    public long getMemoryAddress() {
+    public long getAddress() {
       return address;
     }
 
     @Override
     public int getBlockSize() {
-      return ObjectChunk.getSize(address);
+      return OffHeapStoredObject.getSize(address);
     }
 
     @Override
@@ -855,14 +855,14 @@ public class FreeListManager {
     @Override
     public boolean equals(Object o) {
       if (o instanceof TinyMemoryBlock) {
-        return getMemoryAddress() == ((TinyMemoryBlock) o).getMemoryAddress();
+        return getAddress() == ((TinyMemoryBlock) o).getAddress();
       }
       return false;
     }
     
     @Override
     public int hashCode() {
-      long value = this.getMemoryAddress();
+      long value = this.getAddress();
       return (int)(value ^ (value >>> 32));
     }
   }
@@ -873,7 +873,7 @@ public class FreeListManager {
   
   void freeSlabs() {
     for (int i=0; i < slabs.length; i++) {
-      slabs[i].release();
+      slabs[i].free();
     }
   }
   /**
@@ -885,7 +885,7 @@ public class FreeListManager {
    * be used. Note that this code does not bother
    * comparing the contents of the arrays.
    */
-  boolean okToReuse(AddressableMemoryChunk[] newSlabs) {
+  boolean okToReuse(Slab[] newSlabs) {
     return newSlabs == null || newSlabs == this.slabs;
   }
   
@@ -894,7 +894,7 @@ public class FreeListManager {
   }
   int findSlab(long addr) {
     for (int i=0; i < this.slabs.length; i++) {
-      AddressableMemoryChunk slab = this.slabs[i];
+      Slab slab = this.slabs[i];
       long slabAddr = slab.getMemoryAddress();
       if (addr >= slabAddr) {
         if (addr < slabAddr + slab.getSize()) {

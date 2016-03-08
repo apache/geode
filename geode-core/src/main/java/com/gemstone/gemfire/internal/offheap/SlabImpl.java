@@ -17,28 +17,45 @@
 package com.gemstone.gemfire.internal.offheap;
 
 /**
- * Represents a slice of an ObjectChunk.
- * A slice is a subsequence of the bytes stored in an ObjectChunk.
+ * Implements the Slab interface using AddressableMemoryManager.
+ * 
+ * @since 9.0
  */
-public class ObjectChunkSlice extends ObjectChunk {
-  private final int offset;
-  private final int capacity;
-  public ObjectChunkSlice(ObjectChunk objectChunk, int position, int limit) {
-    super(objectChunk);
-    this.offset = objectChunk.getBaseDataOffset() + position;
-    this.capacity = limit - position;
+public class SlabImpl implements Slab {
+  private final long address;
+  private final int size;
+  
+  public SlabImpl(int size) {
+    this(AddressableMemoryManager.allocate(size), size);
   }
-  @Override
-  public int getDataSize() {
-    return this.capacity;
+
+  public SlabImpl(long addr, int size) {
+    this.address = addr;
+    this.size = size;
   }
   
   @Override
-  protected long getBaseDataAddress() {
-    return super.getBaseDataAddress() + this.offset;
+  public int getSize() {
+    return this.size;
   }
+  
   @Override
-  protected int getBaseDataOffset() {
-    return this.offset;
+  public long getMemoryAddress() {
+    return this.address;
+  }
+  
+  @Override
+  public void free() {
+    AddressableMemoryManager.free(this.address);
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+    sb.append("{");
+    sb.append("MemoryAddress=").append(getMemoryAddress());
+    sb.append(", Size=").append(getSize());
+    sb.append("}");
+    return sb.toString();
   }
 }

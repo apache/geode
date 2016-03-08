@@ -60,7 +60,7 @@ public class OffHeapHelper {
         return ohv.getDeserializedForReading();
       }
       } finally {
-        ohv.release();
+        release(ohv);
       }
     } else {
       return v;
@@ -93,8 +93,8 @@ public class OffHeapHelper {
    * @return true if release was done
    */
   public static boolean release(@Released Object o) {
-    if (o instanceof MemoryChunkWithRefCount) {
-      ((MemoryChunkWithRefCount) o).release();
+    if (o instanceof StoredObject) {
+      ((StoredObject) o).release();
       return true;
     } else {
       return false;
@@ -105,9 +105,14 @@ public class OffHeapHelper {
    * @return true if release was done
    */
   public static boolean releaseWithNoTracking(@Released Object o) {
-    if (o instanceof MemoryChunkWithRefCount) {
+    if (o instanceof StoredObject) {
+      StoredObject so = (StoredObject) o;
+      if (!so.hasRefCount()) {
+        so.release();
+        return true;
+      }
       ReferenceCountHelper.skipRefCountTracking();
-      ((MemoryChunkWithRefCount) o).release();
+      so.release();
       ReferenceCountHelper.unskipRefCountTracking();
       return true;
     } else {
@@ -120,9 +125,14 @@ public class OffHeapHelper {
    * @return true if release was done
    */
   public static boolean releaseAndTrackOwner(@Released final Object o, final Object owner) {
-    if (o instanceof MemoryChunkWithRefCount) {
+    if (o instanceof StoredObject) {
+      StoredObject so = (StoredObject) o;
+      if (!so.hasRefCount()) {
+        so.release();
+        return true;
+      }
       ReferenceCountHelper.setReferenceCountOwner(owner);
-      ((MemoryChunkWithRefCount) o).release();
+      so.release();
       ReferenceCountHelper.setReferenceCountOwner(null);
       return true;
     } else {

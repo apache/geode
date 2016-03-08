@@ -18,46 +18,47 @@ package com.gemstone.gemfire.internal.offheap;
 
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
+import com.gemstone.gemfire.internal.cache.EntryBits;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.RegionEntryContext;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
-   * A chunk that stores a Java object.
-   * Currently the object stored in this chunk
+   * A class that stores a Java object in off-heap memory.
+   * See {@link AddressableMemoryManager} for how off-heap memory
+   * can be allocated, accessed, modified, and freed.
+   * Currently the object stored in this class
    * is always an entry value of a Region.
    * Note: this class has a natural ordering that is inconsistent with equals.
    * Instances of this class should have a short lifetime. We do not store references
    * to it in the cache. Instead the memoryAddress is stored in a primitive field in
    * the cache and if used it will then, if needed, create an instance of this class.
    */
-  public class ObjectChunk extends OffHeapCachedDeserializable implements Comparable<ObjectChunk>, MemoryBlock {
+  public class OffHeapStoredObject extends AbstractStoredObject implements Comparable<OffHeapStoredObject>, MemoryBlock {
     /**
-     * The unsafe memory address of the first byte of this chunk
+     * The memory address of the first byte of addressable memory that belongs to this object
      */
     private final long memoryAddress;
     
     /**
      * The useCount, chunkSize, dataSizeDelta, isSerialized, and isCompressed
-     * are all stored in off heap memory in a HEADER. This saves heap memory
+     * are all stored in addressable memory in a HEADER. This saves heap memory
      * by using off heap.
      */
-    public final static int OFF_HEAP_HEADER_SIZE = 4 + 4;
+    public final static int HEADER_SIZE = 4 + 4;
     /**
      * We need to smallest chunk to at least have enough room for a hdr
      * and for an off heap ref (which is a long).
      */
-    public final static int MIN_CHUNK_SIZE = OFF_HEAP_HEADER_SIZE + 8;
+    public final static int MIN_CHUNK_SIZE = HEADER_SIZE + 8;
     /**
      * int field.
      * The number of bytes in this chunk.
@@ -94,24 +95,24 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     final static long FILL_PATTERN = 0x3c3c3c3c3c3c3c3cL;
     final static byte FILL_BYTE = 0x3c;
     
-    protected ObjectChunk(long memoryAddress, int chunkSize) {
+    protected OffHeapStoredObject(long memoryAddress, int chunkSize) {
       SimpleMemoryAllocatorImpl.validateAddressAndSize(memoryAddress, chunkSize);
       this.memoryAddress = memoryAddress;
       setSize(chunkSize);
-      UnsafeMemoryChunk.writeAbsoluteIntVolatile(getMemoryAddress()+REF_COUNT_OFFSET, MAGIC_NUMBER);
+      AddressableMemoryManager.writeIntVolatile(getAddress()+REF_COUNT_OFFSET, MAGIC_NUMBER);
     }
     public void readyForFree() {
-      UnsafeMemoryChunk.writeAbsoluteIntVolatile(getMemoryAddress()+REF_COUNT_OFFSET, 0);
+      AddressableMemoryManager.writeIntVolatile(getAddress()+REF_COUNT_OFFSET, 0);
     }
     public void readyForAllocation() {
-      if (!UnsafeMemoryChunk.writeAbsoluteIntVolatile(getMemoryAddress()+REF_COUNT_OFFSET, 0, MAGIC_NUMBER)) {
-        throw new IllegalStateException("Expected 0 but found " + Integer.toHexString(UnsafeMemoryChunk.readAbsoluteIntVolatile(getMemoryAddress()+REF_COUNT_OFFSET)));
+      if (!AddressableMemoryManager.writeIntVolatile(getAddress()+REF_COUNT_OFFSET, 0, MAGIC_NUMBER)) {
+        throw new IllegalStateException("Expected 0 but found " + Integer.toHexString(AddressableMemoryManager.readIntVolatile(getAddress()+REF_COUNT_OFFSET)));
       }
     }
     /**
      * Should only be used by FakeChunk subclass
      */
-    protected ObjectChunk() {
+    protected OffHeapStoredObject() {
       this.memoryAddress = 0L;
     }
     
@@ -119,20 +120,120 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
      * Used to create a Chunk given an existing, already allocated,
      * memoryAddress. The off heap header has already been initialized.
      */
-    protected ObjectChunk(long memoryAddress) {
+    protected OffHeapStoredObject(long memoryAddress) {
       SimpleMemoryAllocatorImpl.validateAddress(memoryAddress);
       this.memoryAddress = memoryAddress;
     }
     
-    protected ObjectChunk(ObjectChunk chunk) {
+    protected OffHeapStoredObject(OffHeapStoredObject chunk) {
       this.memoryAddress = chunk.memoryAddress;
     }
+    
+    @Override
+    public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
+      if (isSerialized()) {
+        userBits = EntryBits.setSerialized(userBits, true);
+      }
+      wrapper.setOffHeapData(this, userBits);
+    }
+    
+    String getShortClassName() {
+      String cname = getClass().getName();
+      return cname.substring(getClass().getPackage().getName().length()+1);
+    }
+
+    @Override
+    public boolean checkDataEquals(@Unretained StoredObject so) {
+      if (this == so) {
+        return true;
+      }
+      if (isSerialized() != so.isSerialized()) {
+        return false;
+      }
+      int mySize = getValueSizeInBytes();
+      if (mySize != so.getValueSizeInBytes()) {
+        return false;
+      }
+      if (!(so instanceof OffHeapStoredObject)) {
+        return false;
+      }
+      OffHeapStoredObject other = (OffHeapStoredObject) so;
+      if (getAddress() == other.getAddress()) {
+        return true;
+      }
+      // We want to be able to do this operation without copying any of the data into the heap.
+      // Hopefully the jvm is smart enough to use our stack for this short lived array.
+      final byte[] dataCache1 = new byte[1024];
+      final byte[] dataCache2 = new byte[dataCache1.length];
+      // TODO OFFHEAP: no need to copy to heap. Just get the address of each and compare each byte. No need to call incReads when reading from address.
+      int i;
+      // inc it twice since we are reading two different objects
+      SimpleMemoryAllocatorImpl.getAllocator().getStats().incReads();
+      SimpleMemoryAllocatorImpl.getAllocator().getStats().incReads();
+      for (i=0; i < mySize-(dataCache1.length-1); i+=dataCache1.length) {
+        this.readDataBytes(i, dataCache1);
+        other.readDataBytes(i, dataCache2);
+        for (int j=0; j < dataCache1.length; j++) {
+          if (dataCache1[j] != dataCache2[j]) {
+            return false;
+          }
+        }
+      }
+      int bytesToRead = mySize-i;
+      if (bytesToRead > 0) {
+        // need to do one more read which will be less than dataCache.length
+        this.readDataBytes(i, dataCache1, 0, bytesToRead);
+        other.readDataBytes(i, dataCache2, 0, bytesToRead);
+        for (int j=0; j < bytesToRead; j++) {
+          if (dataCache1[j] != dataCache2[j]) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+    
+    @Override
+    public boolean checkDataEquals(byte[] serializedObj) {
+      // caller was responsible for checking isSerialized
+      int mySize = getValueSizeInBytes();
+      if (mySize != serializedObj.length) {
+        return false;
+      }
+      // We want to be able to do this operation without copying any of the data into the heap.
+      // Hopefully the jvm is smart enough to use our stack for this short lived array.
+      // TODO OFFHEAP: no need to copy to heap. Just get the address of each and compare each byte. No need to call incReads when reading from address.
+      final byte[] dataCache = new byte[1024];
+      int idx=0;
+      int i;
+      SimpleMemoryAllocatorImpl.getAllocator().getStats().incReads();
+      for (i=0; i < mySize-(dataCache.length-1); i+=dataCache.length) {
+        this.readDataBytes(i, dataCache);
+        for (int j=0; j < dataCache.length; j++) {
+          if (dataCache[j] != serializedObj[idx++]) {
+            return false;
+          }
+        }
+      }
+      int bytesToRead = mySize-i;
+      if (bytesToRead > 0) {
+        // need to do one more read which will be less than dataCache.length
+        this.readDataBytes(i, dataCache, 0, bytesToRead);
+        for (int j=0; j < bytesToRead; j++) {
+          if (dataCache[j] != serializedObj[idx++]) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
     
     /**
      * Throw an exception if this chunk is not allocated
      */
     public void checkIsAllocated() {
-      int originalBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(this.memoryAddress+REF_COUNT_OFFSET);
+      int originalBits = AddressableMemoryManager.readIntVolatile(this.memoryAddress+REF_COUNT_OFFSET);
       if ((originalBits&MAGIC_MASK) != MAGIC_NUMBER) {
         throw new IllegalStateException("It looks like this off heap memory was already freed. rawBits=" + Integer.toHexString(originalBits));
       }
@@ -155,41 +256,34 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       setSize(this.memoryAddress, size);
     }
 
-    public long getMemoryAddress() {
+    @Override
+    public long getAddress() {
       return this.memoryAddress;
     }
     
+    @Override
     public int getDataSize() {
-      /*int dataSizeDelta = UnsafeMemoryChunk.readAbsoluteInt(this.memoryAddress+REF_COUNT_OFFSET);
-      dataSizeDelta &= DATA_SIZE_DELTA_MASK;
-      dataSizeDelta >>= DATA_SIZE_SHIFT;
-      return getSize() - dataSizeDelta;*/
       return getDataSize(this.memoryAddress);
     }
     
     protected static int getDataSize(long memoryAdress) {
-      int dataSizeDelta = UnsafeMemoryChunk.readAbsoluteInt(memoryAdress+REF_COUNT_OFFSET);
+      int dataSizeDelta = AddressableMemoryManager.readInt(memoryAdress+REF_COUNT_OFFSET);
       dataSizeDelta &= DATA_SIZE_DELTA_MASK;
       dataSizeDelta >>= DATA_SIZE_SHIFT;
       return getSize(memoryAdress) - dataSizeDelta;
     }
     
     protected long getBaseDataAddress() {
-      return this.memoryAddress+OFF_HEAP_HEADER_SIZE;
+      return this.memoryAddress+HEADER_SIZE;
     }
     protected int getBaseDataOffset() {
       return 0;
     }
     
-    /**
-     * Creates and returns a direct ByteBuffer that contains the contents of this Chunk.
-     * Note that the returned ByteBuffer has a reference to this chunk's
-     * off-heap address so it can only be used while this Chunk is retained.
-     * @return the created direct byte buffer or null if it could not be created.
-     */
+    @Override
     @Unretained
     public ByteBuffer createDirectByteBuffer() {
-      return basicCreateDirectByteBuffer(getBaseDataAddress(), getDataSize());
+      return AddressableMemoryManager.createDirectByteBuffer(getBaseDataAddress(), getDataSize());
     }
     @Override
     public void sendTo(DataOutput out) throws IOException {
@@ -224,108 +318,14 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       super.sendAsByteArray(out);
     }
        
-    private static volatile Class dbbClass = null;
-    private static volatile Constructor dbbCtor = null;
-    private static volatile boolean dbbCreateFailed = false;
-    
     /**
-     * @return the created direct byte buffer or null if it could not be created.
-     */
-    private static ByteBuffer basicCreateDirectByteBuffer(long baseDataAddress, int dataSize) {
-      if (dbbCreateFailed) {
-        return null;
-      }
-      Constructor ctor = dbbCtor;
-      if (ctor == null) {
-        Class c = dbbClass;
-        if (c == null) {
-          try {
-            c = Class.forName("java.nio.DirectByteBuffer");
-          } catch (ClassNotFoundException e) {
-            //throw new IllegalStateException("Could not find java.nio.DirectByteBuffer", e);
-            dbbCreateFailed = true;
-            dbbAddressFailed = true;
-            return null;
-          }
-          dbbClass = c;
-        }
-        try {
-          ctor = c.getDeclaredConstructor(long.class, int.class);
-        } catch (NoSuchMethodException | SecurityException e) {
-          //throw new IllegalStateException("Could not get constructor DirectByteBuffer(long, int)", e);
-          dbbClass = null;
-          dbbCreateFailed = true;
-          return null;
-        }
-        ctor.setAccessible(true);
-        dbbCtor = ctor;
-      }
-      try {
-        return (ByteBuffer)ctor.newInstance(baseDataAddress, dataSize);
-      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-        //throw new IllegalStateException("Could not create an instance using DirectByteBuffer(long, int)", e);
-        dbbClass = null;
-        dbbCtor = null;
-        dbbCreateFailed = true;
-        return null;
-      }
-    }
-    private static volatile Method dbbAddressMethod = null;
-    private static volatile boolean dbbAddressFailed = false;
-    
-    /**
-     * Returns the address of the Unsafe memory for the first byte of a direct ByteBuffer.
-     * If the buffer is not direct or the address can not be obtained return 0.
-     */
-    public static long getDirectByteBufferAddress(ByteBuffer bb) {
-      if (!bb.isDirect()) {
-        return 0L;
-      }
-      if (dbbAddressFailed) {
-        return 0L;
-      }
-      Method m = dbbAddressMethod;
-      if (m == null) {
-        Class c = dbbClass;
-        if (c == null) {
-          try {
-            c = Class.forName("java.nio.DirectByteBuffer");
-          } catch (ClassNotFoundException e) {
-            //throw new IllegalStateException("Could not find java.nio.DirectByteBuffer", e);
-            dbbCreateFailed = true;
-            dbbAddressFailed = true;
-            return 0L;
-          }
-          dbbClass = c;
-        }
-        try {
-          m = c.getDeclaredMethod("address");
-        } catch (NoSuchMethodException | SecurityException e) {
-          //throw new IllegalStateException("Could not get method DirectByteBuffer.address()", e);
-          dbbClass = null;
-          dbbAddressFailed = true;
-          return 0L;
-        }
-        m.setAccessible(true);
-        dbbAddressMethod = m;
-      }
-      try {
-        return (Long)m.invoke(bb);
-      } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-        //throw new IllegalStateException("Could not create an invoke DirectByteBuffer.address()", e);
-        dbbClass = null;
-        dbbAddressMethod = null;
-        dbbAddressFailed = true;
-        return 0L;
-      }
-    }
-    /**
-     * Returns an address that can be used with unsafe apis to access this chunks memory.
+     * Returns an address that can be used with AddressableMemoryManager to access this object's data.
      * @param offset the offset from this chunk's first byte of the byte the returned address should point to. Must be >= 0.
      * @param size the number of bytes that will be read using the returned address. Assertion will use this to verify that all the memory accessed belongs to this chunk. Must be > 0.
-     * @return a memory address that can be used with unsafe apis
+     * @return a memory address that can be used to access this object's data
      */
-    public long getUnsafeAddress(int offset, int size) {
+    @Override
+    public long getAddressForReadingData(int offset, int size) {
       assert offset >= 0 && offset + size <= getDataSize(): "Offset=" + offset + ",size=" + size + ",dataSize=" + getDataSize() + ", chunkSize=" + getSize() + ", but offset + size must be <= " + getDataSize();
       assert size > 0;
       long result = getBaseDataAddress() + offset;
@@ -334,42 +334,37 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     }
     
     @Override
-    public byte readByte(int offset) {
+    public byte readDataByte(int offset) {
       assert offset < getDataSize();
-      return UnsafeMemoryChunk.readAbsoluteByte(getBaseDataAddress() + offset);
+      return AddressableMemoryManager.readByte(getBaseDataAddress() + offset);
     }
 
     @Override
-    public void writeByte(int offset, byte value) {
+    public void writeDataByte(int offset, byte value) {
       assert offset < getDataSize();
-      UnsafeMemoryChunk.writeAbsoluteByte(getBaseDataAddress() + offset, value);
+      AddressableMemoryManager.writeByte(getBaseDataAddress() + offset, value);
     }
 
     @Override
-    public void readBytes(int offset, byte[] bytes) {
-      readBytes(offset, bytes, 0, bytes.length);
+    public void readDataBytes(int offset, byte[] bytes) {
+      readDataBytes(offset, bytes, 0, bytes.length);
     }
 
     @Override
-    public void writeBytes(int offset, byte[] bytes) {
-      writeBytes(offset, bytes, 0, bytes.length);
+    public void writeDataBytes(int offset, byte[] bytes) {
+      writeDataBytes(offset, bytes, 0, bytes.length);
     }
 
-    public long getAddressForReading(int offset, int size) {
-      //delegate to getUnsafeAddress - as both the methods does return the memory address from given offset
-      return getUnsafeAddress(offset, size);
-    }
-    
     @Override
-    public void readBytes(int offset, byte[] bytes, int bytesOffset, int size) {
+    public void readDataBytes(int offset, byte[] bytes, int bytesOffset, int size) {
       assert offset+size <= getDataSize();
-      UnsafeMemoryChunk.readAbsoluteBytes(getBaseDataAddress() + offset, bytes, bytesOffset, size);
+      AddressableMemoryManager.readBytes(getBaseDataAddress() + offset, bytes, bytesOffset, size);
     }
 
     @Override
-    public void writeBytes(int offset, byte[] bytes, int bytesOffset, int size) {
+    public void writeDataBytes(int offset, byte[] bytes, int bytesOffset, int size) {
       assert offset+size <= getDataSize();
-      UnsafeMemoryChunk.writeAbsoluteBytes(getBaseDataAddress() + offset, bytes, bytesOffset, size);
+      AddressableMemoryManager.writeBytes(getBaseDataAddress() + offset, bytes, bytesOffset, size);
     }
     
     @Override
@@ -378,35 +373,32 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
      }
 
     @Override
-    public int compareTo(ObjectChunk o) {
+    public int compareTo(OffHeapStoredObject o) {
       int result = Integer.signum(getSize() - o.getSize());
       if (result == 0) {
         // For the same sized chunks we really don't care about their order
         // but we need compareTo to only return 0 if the two chunks are identical
-        result = Long.signum(getMemoryAddress() - o.getMemoryAddress());
+        result = Long.signum(getAddress() - o.getAddress());
       }
       return result;
     }
     
     @Override
     public boolean equals(Object o) {
-      if (o instanceof ObjectChunk) {
-        return getMemoryAddress() == ((ObjectChunk) o).getMemoryAddress();
+      if (o instanceof OffHeapStoredObject) {
+        return getAddress() == ((OffHeapStoredObject) o).getAddress();
       }
       return false;
     }
     
     @Override
     public int hashCode() {
-      long value = this.getMemoryAddress();
+      long value = this.getAddress();
       return (int)(value ^ (value >>> 32));
     }
 
-    // OffHeapCachedDeserializable methods 
-    
-    @Override
     public void setSerializedValue(byte[] value) {
-      writeBytes(0, value);
+      writeDataBytes(0, value);
     }
     
     public byte[] getDecompressedBytes(RegionEntryContext context) {
@@ -422,7 +414,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
      */
     public byte[] getCompressedBytes() {
       byte[] result = new byte[getDataSize()];
-      readBytes(0, result);
+      readDataBytes(0, result);
       //debugLog("reading", true);
       SimpleMemoryAllocatorImpl.getAllocator().getStats().incReads();
       return result;
@@ -475,21 +467,13 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     }
 
     @Override
-    public void copyBytes(int src, int dst, int size) {
-      throw new UnsupportedOperationException("Implement if used");
-//      assert src+size <= getDataSize();
-//      assert dst+size < getDataSize();
-//      getSlabs()[this.getSlabIdx()].copyBytes(getBaseDataAddress()+src, getBaseDataAddress()+dst, size);
-    }
-
-    @Override
     public boolean isSerialized() {
-      return (UnsafeMemoryChunk.readAbsoluteInt(this.memoryAddress+REF_COUNT_OFFSET) & IS_SERIALIZED_BIT) != 0;
+      return (AddressableMemoryManager.readInt(this.memoryAddress+REF_COUNT_OFFSET) & IS_SERIALIZED_BIT) != 0;
     }
 
     @Override
     public boolean isCompressed() {
-      return (UnsafeMemoryChunk.readAbsoluteInt(this.memoryAddress+REF_COUNT_OFFSET) & IS_COMPRESSED_BIT) != 0;
+      return (AddressableMemoryManager.readInt(this.memoryAddress+REF_COUNT_OFFSET) & IS_COMPRESSED_BIT) != 0;
     }
 
     @Override
@@ -504,30 +488,30 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
     public static int getSize(long memAddr) {
       SimpleMemoryAllocatorImpl.validateAddress(memAddr);
-      return UnsafeMemoryChunk.readAbsoluteInt(memAddr+CHUNK_SIZE_OFFSET);
+      return AddressableMemoryManager.readInt(memAddr+CHUNK_SIZE_OFFSET);
     }
     public static void setSize(long memAddr, int size) {
       SimpleMemoryAllocatorImpl.validateAddressAndSize(memAddr, size);
-      UnsafeMemoryChunk.writeAbsoluteInt(memAddr+CHUNK_SIZE_OFFSET, size);
+      AddressableMemoryManager.writeInt(memAddr+CHUNK_SIZE_OFFSET, size);
     }
     public static long getNext(long memAddr) {
       SimpleMemoryAllocatorImpl.validateAddress(memAddr);
-      return UnsafeMemoryChunk.readAbsoluteLong(memAddr+OFF_HEAP_HEADER_SIZE);
+      return AddressableMemoryManager.readLong(memAddr+HEADER_SIZE);
     }
     public static void setNext(long memAddr, long next) {
       SimpleMemoryAllocatorImpl.validateAddress(memAddr);
-      UnsafeMemoryChunk.writeAbsoluteLong(memAddr+OFF_HEAP_HEADER_SIZE, next);
+      AddressableMemoryManager.writeLong(memAddr+HEADER_SIZE, next);
     }
     
     /**
      * Fills the chunk with a repeated byte fill pattern.
-     * @param baseAddress the starting address for a {@link ObjectChunk}.
+     * @param baseAddress the starting address for a {@link OffHeapStoredObject}.
      */
     public static void fill(long baseAddress) {
       long startAddress = baseAddress + MIN_CHUNK_SIZE;
       int size = getSize(baseAddress) - MIN_CHUNK_SIZE;
       
-      UnsafeMemoryChunk.fill(startAddress, size, FILL_BYTE);
+      AddressableMemoryManager.fill(startAddress, size, FILL_BYTE);
     }
     
     /**
@@ -538,12 +522,12 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     public void validateFill() {
       assert FreeListManager.TINY_MULTIPLE == 8;
       
-      long startAddress = getMemoryAddress() + MIN_CHUNK_SIZE;
+      long startAddress = getAddress() + MIN_CHUNK_SIZE;
       int size = getSize() - MIN_CHUNK_SIZE;
       
       for(int i = 0;i < size;i += FreeListManager.TINY_MULTIPLE) {
-        if(UnsafeMemoryChunk.readAbsoluteLong(startAddress + i) != FILL_PATTERN) {
-          throw new IllegalStateException("Fill pattern violated for chunk " + getMemoryAddress() + " with size " + getSize());
+        if(AddressableMemoryManager.readLong(startAddress + i) != FILL_PATTERN) {
+          throw new IllegalStateException("Fill pattern violated for chunk " + getAddress() + " with size " + getSize());
         }        
       }
     }
@@ -553,12 +537,12 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
         int bits;
         int originalBits;
         do {
-          originalBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(this.memoryAddress+REF_COUNT_OFFSET);
+          originalBits = AddressableMemoryManager.readIntVolatile(this.memoryAddress+REF_COUNT_OFFSET);
           if ((originalBits&MAGIC_MASK) != MAGIC_NUMBER) {
             throw new IllegalStateException("It looks like this off heap memory was already freed. rawBits=" + Integer.toHexString(originalBits));
           }
           bits = originalBits | IS_SERIALIZED_BIT;
-        } while (!UnsafeMemoryChunk.writeAbsoluteIntVolatile(this.memoryAddress+REF_COUNT_OFFSET, originalBits, bits));
+        } while (!AddressableMemoryManager.writeIntVolatile(this.memoryAddress+REF_COUNT_OFFSET, originalBits, bits));
       }
     }
     public void setCompressed(boolean isCompressed) {
@@ -566,12 +550,12 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
         int bits;
         int originalBits;
         do {
-          originalBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(this.memoryAddress+REF_COUNT_OFFSET);
+          originalBits = AddressableMemoryManager.readIntVolatile(this.memoryAddress+REF_COUNT_OFFSET);
           if ((originalBits&MAGIC_MASK) != MAGIC_NUMBER) {
             throw new IllegalStateException("It looks like this off heap memory was already freed. rawBits=" + Integer.toHexString(originalBits));
           }
           bits = originalBits | IS_COMPRESSED_BIT;
-        } while (!UnsafeMemoryChunk.writeAbsoluteIntVolatile(this.memoryAddress+REF_COUNT_OFFSET, originalBits, bits));
+        } while (!AddressableMemoryManager.writeIntVolatile(this.memoryAddress+REF_COUNT_OFFSET, originalBits, bits));
       }
     }
     public void setDataSize(int dataSize) { // KIRK
@@ -582,20 +566,20 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       int bits;
       int originalBits;
       do {
-        originalBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(this.memoryAddress+REF_COUNT_OFFSET);
+        originalBits = AddressableMemoryManager.readIntVolatile(this.memoryAddress+REF_COUNT_OFFSET);
         if ((originalBits&MAGIC_MASK) != MAGIC_NUMBER) {
           throw new IllegalStateException("It looks like this off heap memory was already freed. rawBits=" + Integer.toHexString(originalBits));
         }
         bits = originalBits;
         bits &= ~DATA_SIZE_DELTA_MASK; // clear the old dataSizeDelta bits
         bits |= delta; // set the dataSizeDelta bits to the new delta value
-      } while (!UnsafeMemoryChunk.writeAbsoluteIntVolatile(this.memoryAddress+REF_COUNT_OFFSET, originalBits, bits));
+      } while (!AddressableMemoryManager.writeIntVolatile(this.memoryAddress+REF_COUNT_OFFSET, originalBits, bits));
     }
     
     public void initializeUseCount() {
       int rawBits;
       do {
-        rawBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(this.memoryAddress+REF_COUNT_OFFSET);
+        rawBits = AddressableMemoryManager.readIntVolatile(this.memoryAddress+REF_COUNT_OFFSET);
         if ((rawBits&MAGIC_MASK) != MAGIC_NUMBER) {
           throw new IllegalStateException("It looks like this off heap memory was already freed. rawBits=" + Integer.toHexString(rawBits));
         }
@@ -603,11 +587,11 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
         if (uc != 0) {
           throw new IllegalStateException("Expected use count to be zero but it was: " + uc + " rawBits=0x" + Integer.toHexString(rawBits));
         }
-      } while (!UnsafeMemoryChunk.writeAbsoluteIntVolatile(this.memoryAddress+REF_COUNT_OFFSET, rawBits, rawBits+1));
+      } while (!AddressableMemoryManager.writeIntVolatile(this.memoryAddress+REF_COUNT_OFFSET, rawBits, rawBits+1));
     }
 
     public static int getRefCount(long memAddr) {
-      return UnsafeMemoryChunk.readAbsoluteInt(memAddr+REF_COUNT_OFFSET) & REF_COUNT_MASK;
+      return AddressableMemoryManager.readInt(memAddr+REF_COUNT_OFFSET) & REF_COUNT_MASK;
     }
 
     public static boolean retain(long memAddr) {
@@ -616,7 +600,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       int rawBits;
       int retryCount = 0;
       do {
-        rawBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(memAddr+REF_COUNT_OFFSET);
+        rawBits = AddressableMemoryManager.readIntVolatile(memAddr+REF_COUNT_OFFSET);
         if ((rawBits&MAGIC_MASK) != MAGIC_NUMBER) {
           // same as uc == 0
           // TODO MAGIC_NUMBER rethink its use and interaction with compactor fragments
@@ -632,7 +616,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
         if (retryCount > 1000) {
           throw new IllegalStateException("tried to write " + (rawBits+1) + " to @" + Long.toHexString(memAddr) + " 1,000 times.");
         }
-      } while (!UnsafeMemoryChunk.writeAbsoluteIntVolatile(memAddr+REF_COUNT_OFFSET, rawBits, rawBits+1));
+      } while (!AddressableMemoryManager.writeIntVolatile(memAddr+REF_COUNT_OFFSET, rawBits, rawBits+1));
       //debugLog("use inced ref count " + (uc+1) + " @" + Long.toHexString(memAddr), true);
       if (ReferenceCountHelper.trackReferenceCounts()) {
         ReferenceCountHelper.refCountChanged(memAddr, false, uc+1);
@@ -650,7 +634,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       boolean returnToAllocator;
       do {
         returnToAllocator = false;
-        rawBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(memAddr+REF_COUNT_OFFSET);
+        rawBits = AddressableMemoryManager.readIntVolatile(memAddr+REF_COUNT_OFFSET);
         if ((rawBits&MAGIC_MASK) != MAGIC_NUMBER) {
           String msg = "It looks like off heap memory @" + Long.toHexString(memAddr) + " was already freed. rawBits=" + Integer.toHexString(rawBits) + " history=" + ReferenceCountHelper.getFreeRefCountInfo(memAddr);
           //debugLog(msg, true);
@@ -667,7 +651,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
         } else {
           newCount = rawBits-1;
         }
-      } while (!UnsafeMemoryChunk.writeAbsoluteIntVolatile(memAddr+REF_COUNT_OFFSET, rawBits, newCount));
+      } while (!AddressableMemoryManager.writeIntVolatile(memAddr+REF_COUNT_OFFSET, rawBits, newCount));
       //debugLog("free deced ref count " + (newCount&USE_COUNT_MASK) + " @" + Long.toHexString(memAddr), true);
       if (returnToAllocator ) {
        if (ReferenceCountHelper.trackReferenceCounts()) {
@@ -689,14 +673,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     
     @Override
     public String toString() {
-      return toStringForOffHeapByteSource();
-      // This old impl is not safe because it calls getDeserializedForReading and we have code that call toString that does not inc the refcount.
-      // Also if this Chunk is compressed we don't know how to decompress it.
-      //return super.toString() + ":<dataSize=" + getDataSize() + " refCount=" + getRefCount() + " addr=" + getMemoryAddress() + " storedObject=" + getDeserializedForReading() + ">";
-    }
-    
-    protected String toStringForOffHeapByteSource() {
-      return super.toString() + ":<dataSize=" + getDataSize() + " refCount=" + getRefCount() + " addr=" + Long.toHexString(getMemoryAddress()) + ">";
+      return super.toString() + ":<dataSize=" + getDataSize() + " refCount=" + getRefCount() + " addr=" + Long.toHexString(getAddress()) + ">";
     }
     
     @Override
@@ -731,7 +708,11 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     public Object getDataValue() {
       return null;
     }
-    public ObjectChunk slice(int position, int limit) {
-      return new ObjectChunkSlice(this, position, limit);
+    public StoredObject slice(int position, int limit) {
+      return new OffHeapStoredObjectSlice(this, position, limit);
+    }
+    @Override
+    public boolean hasRefCount() {
+      return true;
     }
   }

@@ -32,7 +32,7 @@ import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class SyncChunkStackJUnitTest {
+public class OffHeapStoredObjectAddressStackJUnitTest {
   static {
     ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
   }
@@ -55,38 +55,38 @@ public class SyncChunkStackJUnitTest {
 
   @Test
   public void addressZeroCausesStackToBeEmpty() {
-    SyncChunkStack stack = new SyncChunkStack(0L);
+    OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack(0L);
     assertEquals(true, stack.isEmpty());
   }
 
   @Test
   public void defaultStackIsEmpty() {
-    SyncChunkStack stack = new SyncChunkStack();
+    OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
     assertEquals(true, stack.isEmpty());
   }
 
   @Test
   public void defaultStackReturnsZeroFromTop() {
-    SyncChunkStack stack = new SyncChunkStack();
+    OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
     assertEquals(0L, stack.getTopAddress());
   }
   
   @Test
   public void defaultStackReturnsZeroFromPoll() {
-    SyncChunkStack stack = new SyncChunkStack();
+    OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
     assertEquals(0L, stack.poll());
   }
   
   @Test
   public void defaultStackReturnsZeroFromClear() {
-    SyncChunkStack stack = new SyncChunkStack();
+    OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
     assertEquals(0L, stack.clear());
     assertEquals(true, stack.isEmpty());
   }
   
   @Test
   public void defaultStackLogsNothing() {
-    SyncChunkStack stack = new SyncChunkStack();
+    OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
     LogWriter lw = mock(LogWriter.class, withSettings().invocationListeners(new InvocationListener() {
       @Override
       public void reportInvocation(MethodInvocationReport methodInvocationReport) {
@@ -98,18 +98,18 @@ public class SyncChunkStackJUnitTest {
   
   @Test
   public void defaultStackComputeSizeIsZero() {
-    SyncChunkStack stack = new SyncChunkStack();
+    OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
     assertEquals(0L, stack.computeTotalSize());
   }
   
   @Test
   public void stackCreatedWithAddressIsNotEmpty() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+    SlabImpl slab = new SlabImpl(1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
-      ObjectChunk chunk = (ObjectChunk) ma.allocate(100);
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
+      OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocate(100);
 
-      SyncChunkStack stack = new SyncChunkStack(chunk.getMemoryAddress());
+      OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack(chunk.getAddress());
       assertEquals(false, stack.isEmpty());
     } finally {
       SimpleMemoryAllocatorImpl.freeOffHeapMemory();
@@ -118,13 +118,13 @@ public class SyncChunkStackJUnitTest {
 
   @Test
   public void stackWithChunkIsNotEmpty() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+    SlabImpl slab = new SlabImpl(1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
-      ObjectChunk chunk = (ObjectChunk) ma.allocate(100);
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
+      OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocate(100);
 
-      SyncChunkStack stack = new SyncChunkStack();
-      stack.offer(chunk.getMemoryAddress());
+      OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
+      stack.offer(chunk.getAddress());
       assertEquals(false, stack.isEmpty());
     } finally {
       SimpleMemoryAllocatorImpl.freeOffHeapMemory();
@@ -133,13 +133,13 @@ public class SyncChunkStackJUnitTest {
 
   @Test
   public void stackWithChunkTopEqualsAddress() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+    SlabImpl slab = new SlabImpl(1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
-      ObjectChunk chunk = (ObjectChunk) ma.allocate(100);
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
+      OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocate(100);
 
-      long addr = chunk.getMemoryAddress();
-      SyncChunkStack stack = new SyncChunkStack();
+      long addr = chunk.getAddress();
+      OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
       stack.offer(addr);
       assertEquals(addr, stack.getTopAddress());
     } finally {
@@ -149,7 +149,7 @@ public class SyncChunkStackJUnitTest {
 
   @Test
   public void addressZeroOfferCausesFailedAssertion() {
-    SyncChunkStack stack = new SyncChunkStack(0L);
+    OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack(0L);
     try {
       stack.offer(0);
       fail("expected AssertionError");
@@ -160,13 +160,13 @@ public class SyncChunkStackJUnitTest {
 
   @Test
   public void stackWithChunkClearReturnsAddressAndEmptiesStack() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+    SlabImpl slab = new SlabImpl(1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
-      ObjectChunk chunk = (ObjectChunk) ma.allocate(100);
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
+      OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocate(100);
 
-      long addr = chunk.getMemoryAddress();
-      SyncChunkStack stack = new SyncChunkStack();
+      long addr = chunk.getAddress();
+      OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
       stack.offer(addr);
       long clearAddr = stack.clear();
       assertEquals(addr, clearAddr);
@@ -178,13 +178,13 @@ public class SyncChunkStackJUnitTest {
 
   @Test
   public void stackWithChunkPollReturnsAddressAndEmptiesStack() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+    SlabImpl slab = new SlabImpl(1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
-      ObjectChunk chunk = (ObjectChunk) ma.allocate(100);
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
+      OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocate(100);
 
-      long addr = chunk.getMemoryAddress();
-      SyncChunkStack stack = new SyncChunkStack();
+      long addr = chunk.getAddress();
+      OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
       stack.offer(addr);
       long pollAddr = stack.poll();
       assertEquals(addr, pollAddr);
@@ -196,14 +196,14 @@ public class SyncChunkStackJUnitTest {
 
   @Test
   public void stackWithChunkTotalSizeIsChunkSize() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+    SlabImpl slab = new SlabImpl(1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
-      ObjectChunk chunk = (ObjectChunk) ma.allocate(100);
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
+      OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocate(100);
       int chunkSize = chunk.getSize();
 
-      long addr = chunk.getMemoryAddress();
-      SyncChunkStack stack = new SyncChunkStack();
+      long addr = chunk.getAddress();
+      OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
       stack.offer(addr);
       assertEquals(chunkSize, stack.computeTotalSize());
     } finally {
@@ -214,14 +214,14 @@ public class SyncChunkStackJUnitTest {
 
   @Test
   public void stackWithChunkLogShowsMsgAndSize() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+    SlabImpl slab = new SlabImpl(1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
-      ObjectChunk chunk = (ObjectChunk) ma.allocate(100);
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
+      OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocate(100);
       int chunkSize = chunk.getSize();
 
-      long addr = chunk.getMemoryAddress();
-      SyncChunkStack stack = new SyncChunkStack();
+      long addr = chunk.getAddress();
+      OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
       stack.offer(addr);
       LogWriter lw = mock(LogWriter.class);
       stack.logSizes(lw, "foo");
@@ -231,7 +231,7 @@ public class SyncChunkStackJUnitTest {
     }
   }
   
-  private class TestableSyncChunkStack extends SyncChunkStack {
+  private class TestableSyncChunkStack extends OffHeapStoredObjectAddressStack {
     public boolean doConcurrentMod = true;
     public int chunk2Size;
     private SimpleMemoryAllocatorImpl ma;
@@ -242,21 +242,21 @@ public class SyncChunkStackJUnitTest {
     protected void testHookDoConcurrentModification() {
       if (doConcurrentMod) {
         doConcurrentMod = false;
-        ObjectChunk chunk2 = (ObjectChunk) ma.allocate(50);
+        OffHeapStoredObject chunk2 = (OffHeapStoredObject) ma.allocate(50);
         this.chunk2Size = chunk2.getSize();
-        this.offer(chunk2.getMemoryAddress());
+        this.offer(chunk2.getAddress());
       }
     }
   }
   @Test
   public void stackWithChunkTotalSizeIsChunkSizeWithConcurrentMod() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+    SlabImpl slab = new SlabImpl(1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
-      ObjectChunk chunk = (ObjectChunk) ma.allocate(100);
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
+      OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocate(100);
       int chunkSize = chunk.getSize();
 
-      long addr = chunk.getMemoryAddress();
+      long addr = chunk.getAddress();
       TestableSyncChunkStack stack = new TestableSyncChunkStack(ma);
       stack.offer(addr);
       long totalSize = stack.computeTotalSize();
@@ -269,13 +269,13 @@ public class SyncChunkStackJUnitTest {
 
   @Test
   public void stackWithChunkLogShowsMsgAndSizeWithConcurrentMod() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+    SlabImpl slab = new SlabImpl(1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
-      ObjectChunk chunk = (ObjectChunk) ma.allocate(100);
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
+      OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocate(100);
       int chunkSize = chunk.getSize();
 
-      long addr = chunk.getMemoryAddress();
+      long addr = chunk.getAddress();
       TestableSyncChunkStack stack = new TestableSyncChunkStack(ma);
       stack.offer(addr);
       LogWriter lw = mock(LogWriter.class);

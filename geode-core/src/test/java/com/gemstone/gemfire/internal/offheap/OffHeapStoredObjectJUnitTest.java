@@ -51,7 +51,7 @@ import com.gemstone.gemfire.internal.offheap.MemoryBlock.State;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
+public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
   private MemoryAllocator ma;
 
@@ -98,7 +98,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   @Override
-  public ObjectChunk createValueAsUnserializedStoredObject(Object value) {
+  public OffHeapStoredObject createValueAsUnserializedStoredObject(Object value) {
     byte[] valueInByteArray;
     if (value instanceof Long) {
       valueInByteArray = convertValueToByteArray(value);
@@ -113,7 +113,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   @Override
-  public ObjectChunk createValueAsSerializedStoredObject(Object value) {
+  public OffHeapStoredObject createValueAsSerializedStoredObject(Object value) {
     byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
 
     boolean isSerialized = true;
@@ -122,54 +122,54 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
     return createChunk(valueInSerializedByteArray, isSerialized, isCompressed);
   }
 
-  private ObjectChunk createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
-    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed);
+  private OffHeapStoredObject createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(v, isSerialized, isCompressed);
     return chunk;
   }
 
   @Test
   public void chunkCanBeCreatedFromAnotherChunk() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
 
-    ObjectChunk newChunk = new ObjectChunk(chunk);
+    OffHeapStoredObject newChunk = new OffHeapStoredObject(chunk);
 
     assertNotNull(newChunk);
-    assertThat(newChunk.getMemoryAddress()).isEqualTo(chunk.getMemoryAddress());
+    assertThat(newChunk.getAddress()).isEqualTo(chunk.getAddress());
 
     chunk.release();
   }
 
   @Test
   public void chunkCanBeCreatedWithOnlyMemoryAddress() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
 
-    ObjectChunk newChunk = new ObjectChunk(chunk.getMemoryAddress());
+    OffHeapStoredObject newChunk = new OffHeapStoredObject(chunk.getAddress());
 
     assertNotNull(newChunk);
-    assertThat(newChunk.getMemoryAddress()).isEqualTo(chunk.getMemoryAddress());
+    assertThat(newChunk.getAddress()).isEqualTo(chunk.getAddress());
 
     chunk.release();
   }
 
   @Test
   public void chunkSliceCanBeCreatedFromAnotherChunk() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
 
     int position = 1;
     int end = 2;
 
-    ObjectChunk newChunk = (ObjectChunk) chunk.slice(position, end);
+    OffHeapStoredObject newChunk = (OffHeapStoredObject) chunk.slice(position, end);
 
     assertNotNull(newChunk);
-    assertThat(newChunk.getClass()).isEqualTo(ObjectChunkSlice.class);
-    assertThat(newChunk.getMemoryAddress()).isEqualTo(chunk.getMemoryAddress());
+    assertThat(newChunk.getClass()).isEqualTo(OffHeapStoredObjectSlice.class);
+    assertThat(newChunk.getAddress()).isEqualTo(chunk.getAddress());
 
     chunk.release();
   }
 
   @Test
   public void fillSerializedValueShouldFillWrapperWithSerializedValueIfValueIsSerialized() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
     // mock the things
     BytesAndBitsForCompactor wrapper = mock(BytesAndBitsForCompactor.class);
@@ -178,14 +178,14 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
     byte serializedUserBits = 1;
     chunk.fillSerializedValue(wrapper, userBits);
 
-    verify(wrapper, times(1)).setChunkData(chunk, serializedUserBits);
+    verify(wrapper, times(1)).setOffHeapData(chunk, serializedUserBits);
 
     chunk.release();
   }
 
   @Test
   public void fillSerializedValueShouldFillWrapperWithDeserializedValueIfValueIsNotSerialized() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
 
     // mock the things
     BytesAndBitsForCompactor wrapper = mock(BytesAndBitsForCompactor.class);
@@ -193,27 +193,27 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
     byte userBits = 1;
     chunk.fillSerializedValue(wrapper, userBits);
 
-    verify(wrapper, times(1)).setChunkData(chunk, userBits);
+    verify(wrapper, times(1)).setOffHeapData(chunk, userBits);
 
     chunk.release();
   }
 
   @Test
   public void getShortClassNameShouldReturnShortClassName() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    assertThat(chunk.getShortClassName()).isEqualTo("ObjectChunk");
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
+    assertThat(chunk.getShortClassName()).isEqualTo("OffHeapStoredObject");
 
     chunk.release();
   }
 
   @Test
   public void chunksAreEqualsOnlyByAddress() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
-    ObjectChunk newChunk = new ObjectChunk(chunk.getMemoryAddress());
+    OffHeapStoredObject newChunk = new OffHeapStoredObject(chunk.getAddress());
     assertThat(chunk.equals(newChunk)).isTrue();
 
-    ObjectChunk chunkWithSameValue = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunkWithSameValue = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.equals(chunkWithSameValue)).isFalse();
 
     Object someObject = getValue();
@@ -225,16 +225,16 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void chunksShouldBeComparedBySize() {
-    ObjectChunk chunk1 = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk1 = createValueAsSerializedStoredObject(getValue());
 
-    ObjectChunk chunk2 = chunk1;
+    OffHeapStoredObject chunk2 = chunk1;
     assertThat(chunk1.compareTo(chunk2)).isEqualTo(0);
 
-    ObjectChunk chunkWithSameValue = createValueAsSerializedStoredObject(getValue());
-    assertThat(chunk1.compareTo(chunkWithSameValue)).isEqualTo(Long.signum(chunk1.getMemoryAddress() - chunkWithSameValue.getMemoryAddress()));
+    OffHeapStoredObject chunkWithSameValue = createValueAsSerializedStoredObject(getValue());
+    assertThat(chunk1.compareTo(chunkWithSameValue)).isEqualTo(Long.signum(chunk1.getAddress() - chunkWithSameValue.getAddress()));
 
-    ObjectChunk chunk3 = createValueAsSerializedStoredObject(Long.MAX_VALUE);
-    ObjectChunk chunk4 = createValueAsSerializedStoredObject(Long.MAX_VALUE);
+    OffHeapStoredObject chunk3 = createValueAsSerializedStoredObject(Long.MAX_VALUE);
+    OffHeapStoredObject chunk4 = createValueAsSerializedStoredObject(Long.MAX_VALUE);
 
     int newSizeForChunk3 = 2;
     int newSizeForChunk4 = 3;
@@ -253,9 +253,9 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
-    int headerBeforeSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + ObjectChunk.REF_COUNT_OFFSET);
+    int headerBeforeSerializedBitSet = AddressableMemoryManager.readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
 
     assertThat(chunk.isSerialized()).isFalse();
 
@@ -263,16 +263,16 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
     assertThat(chunk.isSerialized()).isTrue();
 
-    int headerAfterSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + ObjectChunk.REF_COUNT_OFFSET);
+    int headerAfterSerializedBitSet = AddressableMemoryManager.readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
 
-    assertThat(headerAfterSerializedBitSet).isEqualTo(headerBeforeSerializedBitSet | ObjectChunk.IS_SERIALIZED_BIT);
+    assertThat(headerAfterSerializedBitSet).isEqualTo(headerBeforeSerializedBitSet | OffHeapStoredObject.IS_SERIALIZED_BIT);
 
     chunk.release();
   }
 
   @Test(expected = IllegalStateException.class)
   public void setSerialziedShouldThrowExceptionIfChunkIsAlreadyReleased() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     chunk.setSerialized(true);
 
@@ -287,9 +287,9 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
-    int headerBeforeCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + ObjectChunk.REF_COUNT_OFFSET);
+    int headerBeforeCompressedBitSet = AddressableMemoryManager.readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
 
     assertThat(chunk.isCompressed()).isFalse();
 
@@ -297,16 +297,16 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
     assertThat(chunk.isCompressed()).isTrue();
 
-    int headerAfterCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + ObjectChunk.REF_COUNT_OFFSET);
+    int headerAfterCompressedBitSet = AddressableMemoryManager.readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
 
-    assertThat(headerAfterCompressedBitSet).isEqualTo(headerBeforeCompressedBitSet | ObjectChunk.IS_COMPRESSED_BIT);
+    assertThat(headerAfterCompressedBitSet).isEqualTo(headerBeforeCompressedBitSet | OffHeapStoredObject.IS_COMPRESSED_BIT);
 
     chunk.release();
   }
 
   @Test(expected = IllegalStateException.class)
   public void setCompressedShouldThrowExceptionIfChunkIsAlreadyReleased() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     chunk.setCompressed(true);
 
@@ -315,7 +315,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void setDataSizeShouldSetTheDataSizeBits() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
 
     int beforeSize = chunk.getDataSize();
 
@@ -331,7 +331,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void setDataSizeShouldThrowExceptionIfChunkIsAlreadyReleased() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     chunk.setDataSize(1);
 
@@ -340,7 +340,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void initializeUseCountShouldThrowIllegalStateExceptionIfChunkIsAlreadyRetained() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.retain();
     chunk.initializeUseCount();
 
@@ -349,7 +349,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void initializeUseCountShouldThrowIllegalStateExceptionIfChunkIsAlreadyReleased() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     chunk.initializeUseCount();
 
@@ -358,7 +358,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void isSerializedPdxInstanceShouldReturnTrueIfItsPDXInstance() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
     byte[] serailizedValue = chunk.getSerializedValue();
     serailizedValue[0] = DSCODE.PDX;
@@ -383,7 +383,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void isSerializedPdxInstanceShouldReturnFalseIfItsNotPDXInstance() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk.isSerializedPdxInstance()).isFalse();
 
     chunk.release();
@@ -391,22 +391,22 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void checkDataEqualsByChunk() {
-    ObjectChunk chunk1 = createValueAsSerializedStoredObject(getValue());
-    ObjectChunk sameAsChunk1 = chunk1;
+    OffHeapStoredObject chunk1 = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject sameAsChunk1 = chunk1;
 
     assertThat(chunk1.checkDataEquals(sameAsChunk1)).isTrue();
 
-    ObjectChunk unserializedChunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject unserializedChunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk1.checkDataEquals(unserializedChunk)).isFalse();
 
-    ObjectChunk chunkDifferBySize = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunkDifferBySize = createValueAsSerializedStoredObject(getValue());
     chunkDifferBySize.setSize(0);
     assertThat(chunk1.checkDataEquals(chunkDifferBySize)).isFalse();
 
-    ObjectChunk chunkDifferByValue = createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
+    OffHeapStoredObject chunkDifferByValue = createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
     assertThat(chunk1.checkDataEquals(chunkDifferByValue)).isFalse();
 
-    ObjectChunk newChunk1 = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject newChunk1 = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk1.checkDataEquals(newChunk1)).isTrue();
 
     chunk1.release();
@@ -418,13 +418,13 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void checkDataEqualsBySerializedValue() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk.checkDataEquals(new byte[1])).isFalse();
 
-    ObjectChunk chunkDifferByValue = createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
+    OffHeapStoredObject chunkDifferByValue = createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
     assertThat(chunk.checkDataEquals(chunkDifferByValue.getSerializedValue())).isFalse();
 
-    ObjectChunk newChunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject newChunk = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk.checkDataEquals(newChunk.getSerializedValue())).isTrue();
 
     chunk.release();
@@ -440,7 +440,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = true;
     boolean isCompressed = true;
 
-    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
     RegionEntryContext regionContext = mock(RegionEntryContext.class);
     CachePerfStats cacheStats = mock(CachePerfStats.class);
@@ -469,7 +469,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void incSizeShouldIncrementSize() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
     int beforeSize = chunk.getSize();
 
@@ -484,7 +484,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void readyForFreeShouldResetTheRefCount() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
     int refCountBeforeFreeing = chunk.getRefCount();
     assertThat(refCountBeforeFreeing).isEqualTo(1);
@@ -497,7 +497,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void readyForAllocationShouldThrowExceptionIfAlreadyAllocated() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
     // chunk is already allocated when we created it, so calling readyForAllocation should throw exception.
     chunk.readyForAllocation();
@@ -507,7 +507,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void checkIsAllocatedShouldReturnIfAllocated() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
     chunk.checkIsAllocated();
 
     chunk.release();
@@ -515,7 +515,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void checkIsAllocatedShouldThrowExceptionIfNotAllocated() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
     chunk.release();
     chunk.checkIsAllocated();
 
@@ -524,8 +524,8 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void sendToShouldWriteSerializedValueToDataOutputIfValueIsSerialized() throws IOException {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
-    ObjectChunk spyChunk = spy(chunk);
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject spyChunk = spy(chunk);
 
     HeapDataOutputStream dataOutput = mock(HeapDataOutputStream.class);
     ByteBuffer directByteBuffer = ByteBuffer.allocate(1024);
@@ -543,7 +543,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
   @Test
   public void sendToShouldWriteUnserializedValueToDataOutputIfValueIsUnserialized() throws IOException {
     byte[] regionEntryValue = getValueAsByteArray();
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
     // writeByte is a final method and cannot be mocked, so creating a real one
     HeapDataOutputStream dataOutput = new HeapDataOutputStream(Version.CURRENT);
@@ -566,7 +566,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
   @Test
   public void sendAsByteArrayShouldWriteValueToDataOutput() throws IOException {
     byte[] regionEntryValue = getValueAsByteArray();
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
     // writeByte is a final method and cannot be mocked, so creating a real one
     HeapDataOutputStream dataOutput = new HeapDataOutputStream(Version.CURRENT);
@@ -589,7 +589,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
   public void createDirectByteBufferShouldCreateAByteBuffer() {
     byte[] regionEntryValue = getValueAsByteArray();
 
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
     ByteBuffer buffer = chunk.createDirectByteBuffer();
 
@@ -604,31 +604,31 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
   @Test
   public void getDirectByteBufferShouldCreateAByteBuffer() {
     byte[] regionEntryValue = getValueAsByteArray();
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
     ByteBuffer buffer = chunk.createDirectByteBuffer();
-    long bufferAddress = ObjectChunk.getDirectByteBufferAddress(buffer);
+    long bufferAddress = AddressableMemoryManager.getDirectByteBufferAddress(buffer);
 
     // returned address should be starting of the value (after skipping HEADER_SIZE bytes)
-    assertEquals(chunk.getMemoryAddress() + ObjectChunk.OFF_HEAP_HEADER_SIZE, bufferAddress);
+    assertEquals(chunk.getAddress() + OffHeapStoredObject.HEADER_SIZE, bufferAddress);
 
     chunk.release();
   }
 
   @Test(expected = AssertionError.class)
-  public void getAddressForReadingShouldFailIfItsOutsideOfChunk() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
-    chunk.getAddressForReading(0, chunk.getDataSize() + 1);
+  public void getAddressForReadingDataShouldFailIfItsOutsideOfChunk() {
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
+    chunk.getAddressForReadingData(0, chunk.getDataSize() + 1);
 
     chunk.release();
   }
 
   @Test
-  public void getAddressForReadingShouldReturnDataAddressFromGivenOffset() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+  public void getAddressForReadingDataShouldReturnDataAddressFromGivenOffset() {
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
     int offset = 1;
-    long requestedAddress = chunk.getAddressForReading(offset, 1);
+    long requestedAddress = chunk.getAddressForReadingData(offset, 1);
 
     assertThat(requestedAddress).isEqualTo(chunk.getBaseDataAddress() + offset);
 
@@ -637,69 +637,49 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getSizeInBytesShouldReturnSize() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk.getSizeInBytes()).isEqualTo(chunk.getSize());
 
     chunk.release();
   }
 
   @Test(expected = AssertionError.class)
-  public void getUnsafeAddressShouldFailIfOffsetIsNegative() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
-    chunk.getUnsafeAddress(-1, 1);
+  public void getAddressForReadingDataShouldFailIfOffsetIsNegative() {
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
+    chunk.getAddressForReadingData(-1, 1);
 
     chunk.release();
   }
 
   @Test(expected = AssertionError.class)
-  public void getUnsafeAddressShouldFailIfSizeIsNegative() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
-    chunk.getUnsafeAddress(1, -1);
-
-    chunk.release();
-  }
-
-  @Test(expected = AssertionError.class)
-  public void getUnsafeAddressShouldFailIfItsOutsideOfChunk() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
-    chunk.getUnsafeAddress(0, chunk.getDataSize() + 1);
-
-    chunk.release();
-  }
-
-  @Test
-  public void getUnsafeAddressShouldReturnUnsafeAddress() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
-
-    int offset = 1;
-    long unsafeAddress = chunk.getUnsafeAddress(offset, 1);
-
-    assertThat(unsafeAddress).isEqualTo(chunk.getBaseDataAddress() + offset);
+  public void getAddressForReadingDataShouldFailIfSizeIsNegative() {
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
+    chunk.getAddressForReadingData(1, -1);
 
     chunk.release();
   }
 
   @Test(expected = AssertionError.class)
   public void readByteAndWriteByteShouldFailIfOffsetIsOutside() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
-    chunk.readByte(chunk.getDataSize() + 1);
+    chunk.readDataByte(chunk.getDataSize() + 1);
 
-    chunk.writeByte(chunk.getDataSize() + 1, Byte.MAX_VALUE);
+    chunk.writeDataByte(chunk.getDataSize() + 1, Byte.MAX_VALUE);
 
     chunk.release();
   }
 
   @Test
   public void writeByteShouldWriteAtCorrectLocation() {
-    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
-    byte valueBeforeWrite = chunk.readByte(2);
+    byte valueBeforeWrite = chunk.readDataByte(2);
 
     Byte expected = Byte.MAX_VALUE;
-    chunk.writeByte(2, expected);
+    chunk.writeDataByte(2, expected);
 
-    Byte actual = chunk.readByte(2);
+    Byte actual = chunk.readDataByte(2);
 
     assertThat(actual).isNotEqualTo(valueBeforeWrite);
     assertThat(actual).isEqualTo(expected);
@@ -709,7 +689,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void retainShouldIncrementRefCount() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.getRefCount()).isEqualTo(1);
 
     chunk.retain();
@@ -728,10 +708,10 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void retainShouldThrowExceptionAfterMaxNumberOfTimesRetained() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
 
     // loop though and invoke retain for MAX_REF_COUNT-1 times, as create chunk above counted as one reference
-    for (int i = 0; i < ObjectChunk.MAX_REF_COUNT - 1; i++)
+    for (int i = 0; i < OffHeapStoredObject.MAX_REF_COUNT - 1; i++)
       chunk.retain();
 
     // invoke for the one more time should throw exception
@@ -740,7 +720,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void releaseShouldDecrementRefCount() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.getRefCount()).isEqualTo(1);
 
     chunk.retain();
@@ -763,29 +743,24 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void releaseShouldThrowExceptionIfChunkIsAlreadyReleased() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     chunk.release();
   }
 
   @Test
-  public void testToStringForOffHeapByteSource() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+  public void testToString() {
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
 
-    String expected = ":<dataSize=" + chunk.getDataSize() + " refCount=" + chunk.getRefCount() + " addr=" + Long.toHexString(chunk.getMemoryAddress()) + ">";
-    assertThat(chunk.toStringForOffHeapByteSource()).endsWith(expected);
-
-    // test toString
-    ObjectChunk spy = spy(chunk);
-    spy.toString();
-    verify(spy, times(1)).toStringForOffHeapByteSource();
+    String expected = ":<dataSize=" + chunk.getDataSize() + " refCount=" + chunk.getRefCount() + " addr=" + Long.toHexString(chunk.getAddress()) + ">";
+    assertThat(chunk.toString()).endsWith(expected);
 
     chunk.release();
   }
 
   @Test
   public void getStateShouldReturnAllocatedIfRefCountIsGreaterThanZero() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     assertEquals(State.ALLOCATED, chunk.getState());
 
     chunk.release();
@@ -793,14 +768,14 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getStateShouldReturnDeallocatedIfRefCountIsZero() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     assertEquals(State.DEALLOCATED, chunk.getState());
   }
 
   @Test(expected = UnsupportedOperationException.class)
   public void getNextBlockShouldThrowUnSupportedOperationException() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.getNextBlock();
 
     chunk.release();
@@ -808,23 +783,15 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getBlockSizeShouldBeSameSameGetSize() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     assertEquals(chunk.getSize(), chunk.getBlockSize());
 
     chunk.release();
   }
 
   @Test(expected = UnsupportedOperationException.class)
-  public void copyBytesShouldThrowUnSupportedOperationException() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    chunk.copyBytes(1, 2, 1);
-
-    chunk.release();
-  }
-
-  @Test(expected = UnsupportedOperationException.class)
   public void getSlabIdShouldThrowUnSupportedOperationException() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.getSlabId();
 
     chunk.release();
@@ -832,7 +799,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getFreeListIdShouldReturnMinusOne() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.getFreeListId()).isEqualTo(-1);
 
     chunk.release();
@@ -840,7 +807,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getDataTypeShouldReturnNull() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.getDataType()).isNull();
 
     chunk.release();
@@ -848,7 +815,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getDataDataShouldReturnNull() {
-    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.getDataValue()).isNull();
   }
 
@@ -860,7 +827,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = true;
     boolean isCompressed = true;
 
-    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
     chunk.getRawBytes();
 
@@ -875,7 +842,7 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
     byte[] serializedValue = chunk.getSerializedValue();
 
@@ -889,10 +856,10 @@ public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(new byte[100], isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(new byte[100], isSerialized, isCompressed);
 
     // first fill the unused part with FILL_PATTERN
-    ObjectChunk.fill(chunk.getMemoryAddress());
+    OffHeapStoredObject.fill(chunk.getAddress());
 
     // Validate that it is filled
     chunk.validateFill();
