@@ -1324,7 +1324,7 @@ function createClusteRGraph() {
               + "</div></div></div>"
               + "<div class='popupRowBorder borderBottomZero'>"
               + "<div class='labeltext left display-block width-70'>"
-              + "<span class='left'>GemFire Version</span>"
+              + "<span class='left'>Geode Version</span>"
               + "</div><div class='right width-30'>"
               + "<div class='color-d2d5d7 font-size14'>" + data.gemfireVersion
               + "</div></div></div>" + "</div></div></div>";
