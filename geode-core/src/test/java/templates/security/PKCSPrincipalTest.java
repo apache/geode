@@ -16,39 +16,33 @@
  */
 package templates.security;
 
-import java.util.HashSet;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.commons.lang.SerializationUtils;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * This is a sample class for objects which hold information of the authorized
- * function names and authorized value for the optimizeForWrite.
- * 
- * @author Aneesh Karayil
- * @since 6.0
+ * Unit tests for {@link PKCSPrincipal}
  */
-public class FunctionSecurityPrmsHolder {
+@Category(UnitTest.class)
+public class PKCSPrincipalTest {
 
-  private final Boolean isOptimizeForWrite;
-
-  private final HashSet<String> functionIds;
-
-  private final HashSet<String> keySet;
-
-  public FunctionSecurityPrmsHolder(Boolean isOptimizeForWrite,
-      HashSet<String> functionIds, HashSet<String> keySet) {
-    this.isOptimizeForWrite = isOptimizeForWrite;
-    this.functionIds = functionIds;
-    this.keySet = keySet;
+  @Test
+  public void isSerializable() throws Exception {
+    assertThat(PKCSPrincipal.class).isInstanceOf(Serializable.class);
   }
 
-  public Boolean isOptimizeForWrite() {
-    return isOptimizeForWrite;
-  }
+  @Test
+  public void canBeSerialized() throws Exception {
+    String name = "jsmith";
+    PKCSPrincipal instance = new PKCSPrincipal(name);
 
-  public HashSet<String> getFunctionIds() {
-    return functionIds;
-  }
+    PKCSPrincipal cloned = (PKCSPrincipal) SerializationUtils.clone(instance);
 
-  public HashSet<String> getKeySet() {
-    return keySet;
+    assertThat(cloned.getName()).isEqualTo(name);
   }
 }

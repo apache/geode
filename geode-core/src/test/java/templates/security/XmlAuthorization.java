@@ -14,8 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package templates.security;
+
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.operations.ExecuteFunctionOperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import com.gemstone.gemfire.cache.operations.QueryOperationContext;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.security.AccessControl;
+import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,29 +45,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.operations.ExecuteFunctionOperationContext;
-import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.cache.operations.QueryOperationContext;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.NotAuthorizedException;
 
 /**
  * An implementation of the <code>{@link AccessControl}</code> interface that
