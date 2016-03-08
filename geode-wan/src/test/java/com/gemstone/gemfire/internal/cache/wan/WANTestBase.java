@@ -2257,7 +2257,7 @@ public class WANTestBase extends DistributedTestCase{
   public static void createSender(String dsName, int remoteDsId,
       boolean isParallel, Integer maxMemory,
       Integer batchSize, boolean isConflation, boolean isPersistent,
-      GatewayEventFilter filter, boolean isManulaStart) {
+      GatewayEventFilter filter, boolean isManualStart) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       File persistentDirectory = new File(dsName + "_disk_"
@@ -2270,7 +2270,7 @@ public class WANTestBase extends DistributedTestCase{
         gateway.setParallel(true);
         gateway.setMaximumQueueMemory(maxMemory);
         gateway.setBatchSize(batchSize);
-        gateway.setManualStart(isManulaStart);
+        gateway.setManualStart(isManualStart);
         //set dispatcher threads
         gateway.setDispatcherThreads(numDispatcherThreadsForTheRun);
         ((InternalGatewaySenderFactory) gateway)
@@ -2294,7 +2294,7 @@ public class WANTestBase extends DistributedTestCase{
         GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
         gateway.setMaximumQueueMemory(maxMemory);
         gateway.setBatchSize(batchSize);
-        gateway.setManualStart(isManulaStart);
+        gateway.setManualStart(isManualStart);
         //set dispatcher threads
         gateway.setDispatcherThreads(numDispatcherThreadsForTheRun);
         ((InternalGatewaySenderFactory) gateway)
@@ -3056,7 +3056,25 @@ public class WANTestBase extends DistributedTestCase{
 //      r.destroy(i);
 //    }
   }
-  
+
+
+  public static void doPuts(String regionName, int numPuts, Object value) {
+    IgnoredException exp1 = IgnoredException.addIgnoredException(InterruptedException.class
+        .getName());
+    IgnoredException exp2 = IgnoredException.addIgnoredException(GatewaySenderException.class
+        .getName());
+    try {
+      Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      assertNotNull(r);
+      for (long i = 0; i < numPuts; i++) {
+        r.put(i, value);
+      }
+    } finally {
+      exp1.remove();
+      exp2.remove();
+    }
+  }
+
   public static void doPuts(String regionName, int numPuts) {
     IgnoredException exp1 = IgnoredException.addIgnoredException(InterruptedException.class
         .getName());

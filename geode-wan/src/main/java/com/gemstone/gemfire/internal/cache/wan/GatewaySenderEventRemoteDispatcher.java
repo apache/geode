@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import com.gemstone.gemfire.GemFireIOException;
+import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
@@ -31,7 +33,6 @@ import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.client.internal.Connection;
-import com.gemstone.gemfire.cache.client.internal.ServerProxy;
 import com.gemstone.gemfire.cache.client.internal.pooling.ConnectionDestroyedException;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
@@ -151,7 +152,9 @@ public class GatewaySenderEventRemoteDispatcher implements
     try {
       long start = statistics.startTime();
       success =_dispatchBatch(events, isRetry);
-      statistics.endBatch(start, events.size());
+      if (success) {
+        statistics.endBatch(start, events.size());
+      }
     } catch (GatewaySenderException ge) {
 
       Throwable t = ge.getCause();
@@ -159,7 +162,8 @@ public class GatewaySenderEventRemoteDispatcher implements
         // if our pool is shutdown then just be silent
       } else if (t instanceof IOException
           || t instanceof ServerConnectivityException
-          || t instanceof ConnectionDestroyedException) {
+          || t instanceof ConnectionDestroyedException
+          || t instanceof MessageTooLargeException) {
         this.processor.handleException();
         // If the cause is an IOException or a ServerException, sleep and retry.
         // Sleep for a bit and recheck.
@@ -237,6 +241,27 @@ public class GatewaySenderEventRemoteDispatcher implements
       else {
         ex = e;
         // keep using the connection if we had a batch exception. Else, destroy it
+        destroyConnection();
+      }
+      throw new GatewaySenderException(
+          LocalizedStrings.GatewayEventRemoteDispatcher_0_EXCEPTION_DURING_PROCESSING_BATCH_1_ON_CONNECTION_2.toLocalizedString(
+              new Object[] {this, Integer.valueOf(currentBatchId), connection}), ex);
+    }
+    catch (GemFireIOException e) {
+      Throwable t = e.getCause();
+      if (t instanceof MessageTooLargeException) {
+        // A MessageTooLargeException has occurred.
+        // Do not process the connection as dead since it is not dead.
+        ex = (MessageTooLargeException)t;
+        // Reduce the batch size by half of the configured batch size or number of events in the current batch (whichever is less)
+        int newBatchSize = Math.min(events.size(), this.processor.getBatchSize())/2;
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.GatewaySenderEventRemoteDispatcher_MESSAGE_TOO_LARGE_EXCEPTION, new Object[] { events.size(), newBatchSize }), e);
+        this.processor.setBatchSize(newBatchSize);
+      }
+      else {
+        ex = e;
+        // keep using the connection if we had a MessageTooLargeException. Else, destroy it
         destroyConnection();
       }
       throw new GatewaySenderException(

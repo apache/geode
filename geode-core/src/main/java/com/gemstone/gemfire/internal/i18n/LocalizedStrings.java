@@ -2145,7 +2145,11 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId AUTH_FAILED_TO_ACQUIRE_AUTHINITIALIZE_INSTANCE = new StringId(6611, "AuthInitialize instance could not be obtained");
   public static final StringId AUTH_FAILED_TO_OBTAIN_CREDENTIALS_IN_0_USING_AUTHINITIALIZE_1_2 = new StringId(6612, "Failed to obtain credentials using AuthInitialize [{1}]. {2}");
   public static final StringId DistributedSystem_BACKUP_ALREADY_IN_PROGRESS = new StringId(6613, "A backup is already in progress.");
-  
+
+  public static final StringId AbstractGatewaySenderEventProcessor_SET_BATCH_SIZE = new StringId(6614, "Set the batch size from {0} to {1} events");
+  public static final StringId AbstractGatewaySenderEventProcessor_ATTEMPT_TO_SET_BATCH_SIZE_FAILED = new StringId(6615, "Attempting to set the batch size from {0} to {1} events failed. Instead it was set to 1.");
+  public static final StringId GatewaySenderEventRemoteDispatcher_MESSAGE_TOO_LARGE_EXCEPTION = new StringId(6616, "The following exception occurred attempting to send a batch of {0} events. The batch will be tried again after reducing the batch size to {1} events.");
+
   /** Testing strings, messageId 90000-99999 **/
   
   /** These are simple messages for testing, translated with Babelfish. **/
