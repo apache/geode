@@ -250,7 +250,7 @@ function createMembersTreeMapDefault() {
                   + "<div class='color-d2d5d7 font-size14'>"
                   + applyNotApplicableCheck(data.sockets)
                   + "</div></div></div><div class='popupRowBorder borderBottomZero'>"
-                  + "<div class='labeltext left display-block width-70'><span class='left'>GemFire Version</span>"
+                  + "<div class='labeltext left display-block width-70'><span class='left'>Geode Version</span>"
                   + "</div><div class='right width-30'><div class='color-d2d5d7 font-size14'>"
                   + data.gemfireVersion + "</div></div>" + "</div>" + ""
                   + "</div></div>" + "</div>";
@@ -401,7 +401,7 @@ function createMembersTreeMapSG(){
                         + "<div class='color-d2d5d7 font-size14'>"
                         + applyNotApplicableCheck(data.sockets)
                         + "</div></div></div><div class='popupRowBorder borderBottomZero'>"
-                        + "<div class='labeltext left display-block width-70'><span class='left'>GemFire Version</span>"
+                        + "<div class='labeltext left display-block width-70'><span class='left'>Geode Version</span>"
                         + "</div><div class='right width-30'><div class='color-d2d5d7 font-size14'>"
                         + data.gemfireVersion + "</div></div>" + "</div>" + ""
                         + "</div></div>" + "</div>";
@@ -576,7 +576,7 @@ function createMembersTreeMapRZ(){
                         + "<div class='color-d2d5d7 font-size14'>"
                         + applyNotApplicableCheck(data.sockets)
                         + "</div></div></div><div class='popupRowBorder borderBottomZero'>"
-                        + "<div class='labeltext left display-block width-70'><span class='left'>GemFire Version</span>"
+                        + "<div class='labeltext left display-block width-70'><span class='left'>Geode Version</span>"
                         + "</div><div class='right width-30'><div class='color-d2d5d7 font-size14'>"
                         + data.gemfireVersion + "</div></div>" + "</div>" + ""
                         + "</div></div>" + "</div>";
