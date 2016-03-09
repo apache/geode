@@ -16,14 +16,16 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.*;
 
 import javax.management.remote.JMXPrincipal;
 
-import static org.junit.Assert.assertFalse;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * Tests <code>JSONAuthorization.authorizeOperation(...)</code> for <code>DistributedSystemMXBean</code> operations.
@@ -32,16 +34,15 @@ import static org.junit.Assert.assertFalse;
 public class AuthorizeOperationForDistributedSystemMXBeanIntegrationTest {
 
   @Test
-  public void returnsFalseForUnauthorizedUser() throws Exception {
-    JSONAuthorization.setUpWithJsonFile("auth1.json");
-    JSONAuthorization authorization = JSONAuthorization.create();
+  public void returnsFalseForUnauthorizedUser() throws Exception {    
+    JSONAuthorization authorization = new JSONAuthorization("auth1.json");
     authorization.init(new JMXPrincipal("tushark"), null, null);
     
-    JMXOperationContext context = new JMXOperationContext(MBeanJMXAdapter.getDistributedSystemName(), "queryData");
+    ResourceOperationContext context = new ResourceOperationContext(null, "QUERY");
     boolean result = authorization.authorizeOperation(null, context);
-    //assertTrue(result); TODO: why is this commented out? looks like this should be true but it isn't
+    assertTrue(result);
     
-    context = new JMXOperationContext(MBeanJMXAdapter.getDistributedSystemName(), "changeAlertLevel");
+    context = new ResourceOperationContext(null, "MANAGE");
     result = authorization.authorizeOperation(null,context);
     assertFalse(result);
   }

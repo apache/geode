@@ -17,6 +17,8 @@
 
 package com.gemstone.gemfire.cache.operations;
 
+import com.gemstone.gemfire.management.internal.security.Resource;
+
 /**
  * Encapsulates a cache operation and the data associated with it for both the
  * pre-operation and post-operation cases. Implementations for specific
@@ -39,15 +41,12 @@ public abstract class OperationContext {
    * @since 5.5
    */
   public enum OperationCode {
-    GET,
-    PUT,
     DESTROY,
     INVALIDATE,
     REGISTER_INTEREST,
     UNREGISTER_INTEREST,
     CONTAINS_KEY,
     KEY_SET,
-    QUERY,
     EXECUTE_CQ,
     STOP_CQ,
     CLOSE_CQ,
@@ -55,42 +54,84 @@ public abstract class OperationContext {
     REGION_CREATE,
     REGION_DESTROY,
     PUTALL,
-    EXECUTE_FUNCTION,
     GET_DURABLE_CQS,
     REMOVEALL,
     RESOURCE,
+    MANAGE,
     LIST,
     CREATE_QUERY,
     UPDATE_QUERY,
-    DELETE_QUERY;
-
-    /**
-     * Returns true if this is a list operation for regions, functions and queries.
-     */
-    public boolean isList() {
-      return (this == LIST);
-    }
-
-    /**
-     * Returns true if this is a create named query operation.
-     */
-    public boolean isCreateQuery() {
-      return (this == CREATE_QUERY);
-    }
-
-    /**
-     * Returns true if this is a update named query operation.
-     */
-    public boolean isUpdateQuery() {
-      return (this == UPDATE_QUERY);
-    }
-
-    /**
-     * Returns true if this is a delete named query operation.
-     */
-    public boolean isDestroyQuery() {
-      return (this == DELETE_QUERY);
-    }
+    DELETE_QUERY,
+    ALTER_REGION,
+    ALTER_RUNTIME,
+    BACKUP_DISKSTORE,
+    CHANGE_ALERT_LEVEL,
+    CLOSE_DURABLE_CLIENT,
+    CLOSE_DURABLE_CQ,
+    COMPACT_DISKSTORE,
+    CONFIGURE_PDX,
+    CREATE_AEQ,
+    CREATE_DISKSTORE,
+    CREATE_GW_RECEIVER,
+    CREATE_GW_SENDER,
+    CREATE_INDEX,
+    CREATE_REGION,
+    DEPLOY,
+    DESTROY_DISKSTORE,
+    DESTROY_FUNCTION,
+    DESTROY_INDEX,
+    DESTROY_REGION,
+    EXECUTE_FUNCTION,
+    EXPORT_CONFIG,
+    EXPORT_DATA,
+    EXPORT_LOGS,
+    EXPORT_OFFLINE_DISKSTORE,
+    EXPORT_STACKTRACE,
+    GC,
+    GET,
+    IMPORT_CONFIG,
+    IMPORT_DATA,
+    LIST_DS,
+    LOAD_BALANCE_GW_SENDER,
+    LOCATE_ENTRY,
+    NETSTAT,
+    PAUSE_GW_SENDER,
+    PUT,
+    QUERY,
+    REBALANCE,
+    REMOVE,
+    RENAME_PDX,
+    RESUME_GW_SENDER,
+    REVOKE_MISSING_DISKSTORE,
+    SHOW_DEADLOCKS,
+    SHOW_LOG,
+    SHOW_METRICS,
+    SHOW_MISSING_DISKSTORES,
+    SHOW_SUBSCRIPTION_QUEUE_SIZE,
+    SHUTDOWN,
+    STOP_GW_RECEIVER,
+    STOP_GW_SENDER,
+    UNDEPLOY,
+    BACKUP_MEMBERS,
+    ROLL_DISKSTORE,
+    FORCE_COMPACTION,
+    FORCE_ROLL,
+    FLUSH_DISKSTORE,
+    START_GW_RECEIVER,
+    START_GW_SENDER,
+    BECOME_LOCK_GRANTOR,
+    START_MANAGER,
+    STOP_MANAGER,
+    CREATE_MANAGER,
+    STOP_CONTINUOUS_QUERY,
+    SET_DISK_USAGE,
+    CREATE_HDFS_STORE,
+    ALTER_HDFS_STORE,
+    DESTROY_HDFS_STORE,
+    PULSE_DASHBOARD,
+    PULSE_DATABROWSER,
+    PULSE_WEBGFSH,
+    PULSE_ADMIN;
 
     /**
      * Returns true if this is a entry get operation.
@@ -235,6 +276,11 @@ public abstract class OperationContext {
    * object.
    */
   public abstract OperationCode getOperationCode();
+
+  public Resource getResource(){
+    return Resource.DEFAULT;
+  }
+
 
   /**
    * True if the context is for post-operation.

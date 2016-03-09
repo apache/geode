@@ -19,9 +19,9 @@ package com.gemstone.gemfire.management.internal.security;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.operations.OperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.management.internal.security.ResourceOperationContext.ResourceOperationCode;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
@@ -82,11 +82,11 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 		readUsers(acl,jsonBean,roleMap);
 	}
 
-	public static Set<ResourceOperationCode> getAuthorizedOps(User user, ResourceOperationContext context) {
-    Set<ResourceOperationCode> codeList = new HashSet<ResourceOperationCode>();
+	public static Set<OperationCode> getAuthorizedOps(User user, ResourceOperationContext context) {
+    Set<OperationCode> codeList = new HashSet<OperationCode>();
     for(Role role : user.roles) {
       for (String perm : role.permissions) {
-				ResourceOperationCode code = ResourceOperationCode.parse(perm);
+        OperationCode code = OperationCode.valueOf(perm);
         if (role.regionName == null && role.serverGroup == null) {
           addPermissions(code, codeList);
         } else if (role.regionName != null) {
@@ -108,7 +108,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     return codeList;
   }
 
-  private static void addPermissions(ResourceOperationCode code, Set<ResourceOperationCode> codeList) {
+  private static void addPermissions(OperationCode code, Set<OperationCode> codeList) {
     if (code == null) {
       return;
     }
@@ -233,15 +233,15 @@ public class JSONAuthorization implements AccessControl, Authenticator {
       if(user!=null) {
         LogService.getLogger().info("Context received " + context);
         ResourceOperationContext ctx = (ResourceOperationContext)context;
-        LogService.getLogger().info("Checking for code " + ctx.getResourceOperationCode());
+        LogService.getLogger().info("Checking for code " + ctx.getOperationCode());
 
         //TODO : This is for un-annotated commands
-        if(ctx.getResourceOperationCode()==null)
+        if(ctx.getOperationCode()==null)
           return true;
 
         boolean found = false;
-        for(ResourceOperationCode code : getAuthorizedOps(user, (ResourceOperationContext) context)) {
-          if(ctx.getResourceOperationCode().equals(code)){
+        for(OperationCode code : getAuthorizedOps(user, (ResourceOperationContext) context)) {
+          if(ctx.getOperationCode().equals(code)){
             found =true;
             LogService.getLogger().info("found code " + code.toString());
             break;
@@ -249,7 +249,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
         }
         if(found)
           return true;
-        LogService.getLogger().info("Did not find code " + ctx.getResourceOperationCode());
+        LogService.getLogger().info("Did not find code " + ctx.getOperationCode());
         return false;
       }
     }

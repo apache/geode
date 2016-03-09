@@ -16,13 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,12 +30,12 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.management.internal.security.ResourceOperationContext.ResourceOperationCode;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests operation codes for data commands.
@@ -47,11 +46,11 @@ public class OperationCodesForDataCommandsIntegrationTest {
 
   private GemFireCacheImpl cache;
   private DistributedSystem ds;
-  private Map<String, ResourceOperationCode> commands = new HashMap<String, ResourceOperationCode>();
-  
+  private Map<String, OperationCode> commands = new HashMap<String, OperationCode>();
+
   @Rule
   public TestName testName = new TestName();
-  
+
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
@@ -62,16 +61,16 @@ public class OperationCodesForDataCommandsIntegrationTest {
     properties.put(DistributionConfig.LOCATORS_NAME, "");
     properties.put(DistributionConfig.MCAST_PORT_NAME, "0");
     properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
-    
+
     this.ds = DistributedSystem.connect(properties);
     this.cache = (GemFireCacheImpl) CacheFactory.create(ds);
 
-    this.commands.put("put --key=k1 --value=v1 --region=/region1", ResourceOperationCode.PUT);
-    this.commands.put("locate entry --key=k1 --region=/region1", ResourceOperationCode.LOCATE_ENTRY);
-    this.commands.put("query --query=\"select * from /region1\"", ResourceOperationCode.QUERY);
-    this.commands.put("export data --region=value --file=value --member=value", ResourceOperationCode.EXPORT_DATA);
-    this.commands.put("import data --region=value --file=value --member=value", ResourceOperationCode.IMPORT_DATA);
-    this.commands.put("rebalance", ResourceOperationCode.REBALANCE);
+    this.commands.put("put --key=k1 --value=v1 --region=/region1", OperationCode.PUT);
+    this.commands.put("locate entry --key=k1 --region=/region1", OperationCode.LOCATE_ENTRY);
+    this.commands.put("query --query=\"select * from /region1\"", OperationCode.QUERY);
+    this.commands.put("export data --region=value --file=value --member=value", OperationCode.EXPORT_DATA);
+    this.commands.put("import data --region=value --file=value --member=value", OperationCode.IMPORT_DATA);
+    this.commands.put("rebalance", OperationCode.REBALANCE);
   }
 
   @After
@@ -85,12 +84,12 @@ public class OperationCodesForDataCommandsIntegrationTest {
       this.ds = null;
     }
   }
-  
+
   @Test
   public void commandsShouldMapToCorrectResourceCodes() throws Exception {
     for (String command : this.commands.keySet()) {
       CLIOperationContext ctx = new CLIOperationContext(command);
-      assertThat(ctx.getResourceOperationCode()).isEqualTo(this.commands.get(command));
+      assertThat(ctx.getOperationCode()).isEqualTo(this.commands.get(command));
     }
   }
 }

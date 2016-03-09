@@ -11,8 +11,7 @@
         "SHUTDOWN",
         "COMPACT_DISKSTORE",
         "CREATE_MANAGER",
-        "CREATE_REGION",
-        "some-nonsense"
+        "CREATE_REGION"
       ]
     },
     {

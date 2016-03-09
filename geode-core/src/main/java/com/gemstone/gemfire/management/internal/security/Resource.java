@@ -17,6 +17,8 @@
 package com.gemstone.gemfire.management.internal.security;
 
 public enum Resource {
+  DEFAULT,
+  MBEAN,
   DISTRIBUTED_SYSTEM,
   MEMBER,
   REGION,

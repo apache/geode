@@ -64,12 +64,6 @@ public class MemberMBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "user", password = "1234567")
-  public void testSomeAccess() throws Exception {
-
-  }
-
-  @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
     assertThatThrownBy(() -> bean.shutDownMember()).isInstanceOf(SecurityException.class);

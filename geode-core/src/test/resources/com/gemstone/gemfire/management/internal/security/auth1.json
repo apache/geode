@@ -2,7 +2,7 @@
 "roles" : [	
 			{
 				"name" : "jmxReader",
-				"operationsAllowed" : ["QUERYDATA_DS"]				
+				"operationsAllowed" : ["QUERY"]
 			}
 		],
 users : [

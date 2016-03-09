@@ -16,15 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.security.AccessControl;
 
+import javax.management.remote.JMXPrincipal;
+import javax.security.auth.Subject;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.Principal;
 import java.util.Set;
-
-import javax.management.remote.JMXPrincipal;
-import javax.security.auth.Subject;
 
 /**
  * AccessControlMBean Implementation. This retrieves JMXPrincipal from AccessController
@@ -52,7 +52,7 @@ public class AccessControlMBean implements AccessControlMXBean {
     Principal principal = principals.iterator().next();
     AccessControl gemAccControl = interceptor.getAccessControl(principal, false);
     boolean authorized = gemAccControl.authorizeOperation(null,
-        new com.gemstone.gemfire.management.internal.security.AccessControlContext(role));
+        new ResourceOperationContext(Resource.DEFAULT, OperationContext.OperationCode.valueOf(role)));
     return authorized;
   }
 

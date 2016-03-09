@@ -16,33 +16,28 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static org.jgroups.util.Util.readFile;
-import static org.junit.Assert.*;
-
-import java.lang.management.ManagementFactory;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import javax.management.remote.JMXPrincipal;
-
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import javax.management.remote.JMXPrincipal;
+import java.lang.management.ManagementFactory;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.junit.Assert.*;
 
 /**
  * Tests <code>JSONAuthorization.authorizeOperation(...)</code> for Region commands.

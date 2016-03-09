@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import javax.management.DescriptorKey;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -26,9 +27,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface ResourceOperation {
-  
+  @DescriptorKey("resource")
   Resource resource();
   String label() default ResourceConstants.DEFAULT_LABEL;
+  @DescriptorKey("operation")
   String operation() default ResourceConstants.LIST_DS;
 
 }
