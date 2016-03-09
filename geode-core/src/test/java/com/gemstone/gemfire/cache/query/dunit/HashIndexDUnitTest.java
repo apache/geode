@@ -19,7 +19,9 @@ package com.gemstone.gemfire.cache.query.dunit;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
+import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
@@ -76,7 +78,7 @@ public class HashIndexDUnitTest extends DistributedTestCase{
   public void doPut(final int entries) {
      vm0.invokeAsync(new CacheSerializableRunnable("Putting values") {
       public void run2() {
-        utils.createValuesStringKeys("exampleRegion", entries);
+        putPortfolios("exampleRegion", entries);
       }
     });
   }
@@ -84,7 +86,7 @@ public class HashIndexDUnitTest extends DistributedTestCase{
   public void doUpdate(final int entries) {
     vm0.invokeAsync(new CacheSerializableRunnable("Updating values") {
      public void run2() {
-       utils.createDiffValuesStringKeys("exampleRegion", entries);
+       putOffsetPortfolios("exampleRegion", entries);
      }
    });
  }
@@ -115,7 +117,14 @@ public class HashIndexDUnitTest extends DistributedTestCase{
           e.printStackTrace();
         }
         try {
-         utils.destroyRegion("exampleRegion", entries);
+         Region region = utils.getRegion("exampleRegion");
+         for (int i = 1; i <= entries; i++) {
+           try {
+             region.destroy("KEY-"+ i);
+           } catch (Exception e) {
+             throw new Exception(e);
+           }
+         }
         }
         catch (Exception e) {
           throw new CacheException(e){};
@@ -128,5 +137,19 @@ public class HashIndexDUnitTest extends DistributedTestCase{
   protected final void preTearDown() throws Exception {
     Thread.sleep(5000);
     utils.closeServer(vm0);
+  }
+  
+  private void putPortfolios(String regionName, int size) {
+    Region region = utils.getRegion(regionName);
+    for (int i = 1; i <= size; i++) {
+      region.put("KEY-"+ i, new Portfolio(i));
+    }
+  }
+  
+  private void putOffsetPortfolios(String regionName, int size) {
+    Region region = utils.getRegion(regionName);
+    for (int i = 1; i <= size; i++) {
+      region.put("KEY-"+ i, new Portfolio(i + 1));
+    }
   }
 }

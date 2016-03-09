@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.query;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,14 +58,16 @@ public class QueryTestUtils implements Serializable {
 
   private static Cache cache;
 
-  private static QueryService qs;
-
-  public static final String KEY = "key-";
-
   public HashMap<String, String> queries;
 
   public HashMap<String, String> bindQueries;
 
+  private static QueryTestUtils instance = new QueryTestUtils();
+  
+  public static QueryTestUtils getInstance() {
+    return instance;
+  }
+  
   public QueryTestUtils() {
     queries = new HashMap<String, String>();
     bindQueries = new HashMap<String, String>();
@@ -1036,6 +1040,10 @@ public class QueryTestUtils implements Serializable {
     bindQueries.put("81", "select p from /exampleRegion.values p where p like $1");
     bindQueries.put("82", "select p.positions.get('acc') from $1 p");
   }
+  
+  public static QueryService getQueryService() {
+    return cache.getQueryService();
+  }
 
   public void createServer(VM server, final Properties prop) {
     SerializableRunnable createCacheServer = new CacheSerializableRunnable(
@@ -1061,27 +1069,6 @@ public class QueryTestUtils implements Serializable {
   public static void setCache(Cache cache) {
     QueryTestUtils.cache = cache;
   }
-  
-  public void createClient(VM client, final Properties prop) {
-    SerializableRunnable createCacheClient = new CacheSerializableRunnable(
-        "Create Cache Client") {
-      private static final long serialVersionUID = 1L;
-
-      public void run2() throws CacheException {
-        createClientCache(prop);
-      }
-    };
-    client.invoke(createCacheClient);
-  }
-
-  public void createClientCache(Properties prop) {
-    if (null != prop && !prop.isEmpty()) {
-      cache = (Cache) new ClientCacheFactory(prop).create();
-    }
-    else{
-      cache = (Cache) new ClientCacheFactory().create();
-    }
- }
 
   public void createPartitionRegion(final String name, final Class constraint, VM vm) {
     vm.invoke(new CacheSerializableRunnable("Create Partition region") {
@@ -1159,7 +1146,7 @@ public class QueryTestUtils implements Serializable {
   
   public void removeIndex(String name, String region){
     try {
-      qs = cache.getQueryService();
+      QueryService qs = getQueryService();
       qs.removeIndex(qs.getIndex(cache.getRegion(region), name));
     } catch (Exception e) {
       e.printStackTrace();
@@ -1219,99 +1206,6 @@ public class QueryTestUtils implements Serializable {
       cache.close();
     }
   }
-
-  /**
-   * Places new values in the given region with Object ({@link Portfolio}) Keys
-   * @param vm 
-   * @param regionName
-   * @param size
-   */
-  public void createValuesObjKeys(VM vm, final String regionName, final int size) {
-    vm.invoke(new SerializableRunnable() {
-      public void run() {
-        createValuesObjKeys(regionName, size);
-      }
-    });
-  }
-
-  /**
-   * Places new values in the given region with {@link String} Keys
-   * @param vm 
-   * @param regionName
-   * @param size
-   */
-  public void createValuesStringKeys(VM vm, final String regionName, final int size) {
-    vm.invoke(new SerializableRunnable() {
-      public void run() {
-        createValuesStringKeys(regionName, size);
-      }
-    });
-  }
-
-  /**
-   * Places new values in the given region with {@link String} Keys 
-   * @param regionName
-   * @param size
-   */
-  public void createValuesStringKeys(String regionName, final int size) {
-    Region region = cache.getRegion(regionName);
-    for (int i = 1; i <= size; i++) {
-      region.put("KEY-"+ i, new Portfolio(i));
-    }
-  }
-  
-  /**
-   * Used to update the values in the given region having {@link String} Keys
-   * with modifed values. Should preferably use after the call to createValuesStringKeys
-   * @param regionName
-   * @param size
-   */
-  public void createDiffValuesStringKeys(String regionName, final int size) {
-    Region region = cache.getRegion(regionName);
-    for (int i = 1; i <= size; i++) {
-      region.put("KEY-"+ i, new Portfolio(i+1));
-    }
-  }
-  /**
-   * Places new values in the given region with Object ({@link Portfolio}) Keys 
-   * @param regionName
-   * @param size
-   */
-  public void createValuesObjKeys(String regionName, final int size) {
-    Region region = cache.getRegion(regionName);
-    for (int i = 1; i <= size; i++) {
-      region.put(new Portfolio(i), new Portfolio(i));
-    }
-  }
-  
-  /**
-   * Places new values in the given region with {@link String} Keys 
-   * @param regionName
-   * @param size
-   */
-  public void createNumericValuesStringKeys(String regionName, final int size) {
-    Region region = cache.getRegion(regionName);
-    for (int i = 1; i <= size; i++) {
-      region.put("KEY-"+ i, new Numbers(i));
-    }
-  }
-
-  /**
-   * Destroys entries from the region
-   * @param regionName
-   * @param size
-   * @throws Exception 
-   */
-  public void destroyRegion(String regionName, int size) throws Exception{
-    Region region = cache.getRegion(regionName);
-    for (int i = 1; i <= size; i++) {
-      try {
-        region.destroy("KEY-"+ i);
-      } catch (Exception e) {
-        throw new Exception(e);
-      }
-    }
-  }
  
   /**
    * Executes queries corresponding to the keys passed using array<br>  
@@ -1348,7 +1242,7 @@ public class QueryTestUtils implements Serializable {
    *  Object array containing SelectResults
    */
   public Object[] executeQueries(String qarr[]) throws Exception{
-    qs = cache.getQueryService();
+    QueryService qs = cache.getQueryService();
     Object[] result = new Object[qarr.length];
     String query = null;
     int j = 0;
@@ -1377,7 +1271,7 @@ public class QueryTestUtils implements Serializable {
    * @param qarr
    */
   public Object[] executeQueriesWithoutDistinct(String qarr[]) {
-    qs = cache.getQueryService();
+    QueryService qs = cache.getQueryService();
     Object[] result = new Object[qarr.length];
     String query = null;
     int j = 0;
@@ -1416,7 +1310,7 @@ public class QueryTestUtils implements Serializable {
    * @param qarr
    */
   public Object[] executeQueriesWithDistinct(String qarr[]) {
-    qs = cache.getQueryService();
+    QueryService qs = cache.getQueryService();
     Object[] result = new Object[qarr.length];
     String query = null;
     int j = 0;
@@ -1432,40 +1326,6 @@ public class QueryTestUtils implements Serializable {
         result[j++] = qs.newQuery(query).execute();
       } catch (Exception e) {
         throw new RuntimeException(e);
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Execute all the queries in the map
-   * @param vm
-   */
-  public void executeAllQueries(VM vm) {
-    vm.invoke(new CacheSerializableRunnable("Execute all queries") {
-      public void run2() {
-        executeAllQueries();
-      }
-    });
-  }
-
-  /**
-   * Execute all the queries in the map
-   */
-  public Object[] executeAllQueries() {
-    qs = cache.getQueryService();
-    Object[] result = new Object[queries.size()];
-
-    int j = 0;
-    for (Map.Entry<String, String> entry : queries.entrySet()) {
-      String queryId = entry.getKey();
-      String query = entry.getValue();
-      System.out.println("\nExecuting query: " + query);
-      try {
-        result[j++] = qs.newQuery(query).execute();
-        formatQueryResult(result);
-      } catch (Exception e) {
-        throw new RuntimeException("Query: " + queryId + "-" + query + " failed: ", e);
       }
     }
     return result;
@@ -1499,7 +1359,7 @@ public class QueryTestUtils implements Serializable {
   
   public Object executeBindQuery(final String queryId, final Object[] params) {
     Object result = null;
-    qs = cache.getQueryService();
+    QueryService qs = cache.getQueryService();
     String query = bindQueries.get(queryId);
     try {
       getLogger().fine("\nExecuting query: " + query);
@@ -1510,120 +1370,8 @@ public class QueryTestUtils implements Serializable {
     return result;
   }
 
-  public void compareResults(SelectResults[][] r) {
-    Set set1 = null;
-    Set set2 = null;
-    Iterator itert1 = null;
-    Iterator itert2 = null;
-    ObjectType type1, type2;
-
-    for (int j = 0; j < r.length; j++) {
-      CollectionType collType1 = r[j][0].getCollectionType();
-      CollectionType collType2 = r[j][1].getCollectionType();
-      type1 = collType1.getElementType();
-      type2 = collType2.getElementType();
-
-      if (collType1.getSimpleClassName().equals(collType2.getSimpleClassName())) {
-        CacheUtils.log("Both SelectResults are of the same Type i.e.--> "
-            + collType1);
-      }
-      else {
-        CacheUtils.log("Collection type are : " + collType1 + "and  "
-            + collType2);
-        Assert
-            .fail("FAILED:Select results Collection Type is different in both the cases. CollectionType1="
-                + collType1 + " CollectionType2=" + collType2);
-      }
-      if (type1.equals(type2)) {
-        CacheUtils.log("Both SelectResults have same element Type i.e.--> "
-            + type1);
-      }
-      else {
-        CacheUtils.log("Classes are :  type1=" + type1.getSimpleClassName()
-            + " type2= " + type2.getSimpleClassName());
-        Assert
-            .fail("FAILED:SelectResult Element Type is different in both the cases. Type1="
-                + type1 + " Type2=" + type2);
-      }
-
-      if (collType1.equals(collType2)) {
-        CacheUtils.log("Both SelectResults are of the same Type i.e.--> "
-            + collType1);
-      }
-      else {
-        CacheUtils.log("Collections are : " + collType1 + " " + collType2);
-        Assert
-            .fail("FAILED:SelectResults Collection Type is different in both the cases. CollType1="
-                + collType1 + " CollType2=" + collType2);
-      }
-      if (r[j][0].size() == r[j][1].size()) {
-        CacheUtils.log("Both SelectResults are of Same Size i.e.  Size= "
-            + r[j][1].size());
-      }
-      else {
-        Assert
-            .fail("FAILED:SelectResults size is different in both the cases. Size1="
-                + r[j][0].size() + " Size2 = " + r[j][1].size());
-      }
-      set2 = ((r[j][1]).asSet());
-      set1 = ((r[j][0]).asSet());
-      // boolean pass = true;
-      itert1 = set1.iterator();
-      while (itert1.hasNext()) {
-        Object p1 = itert1.next();
-        itert2 = set2.iterator();
-
-        boolean exactMatch = false;
-        while (itert2.hasNext()) {
-          Object p2 = itert2.next();
-          if (p1 instanceof Struct) {
-            Object[] values1 = ((Struct)p1).getFieldValues();
-            Object[] values2 = ((Struct)p2).getFieldValues();
-            Assert.assertEquals(values1.length, values2.length);
-            boolean elementEqual = true;
-            for (int i = 0; i < values1.length; ++i) {
-              elementEqual = elementEqual
-                  && ((values1[i] == values2[i]) || values1[i]
-                      .equals(values2[i]));
-            }
-            exactMatch = elementEqual;
-          }
-          else {
-            exactMatch = (p2 == p1) || p2.equals(p1);
-          }
-          if (exactMatch) {
-            break;
-          }
-        }
-        if (!exactMatch) {
-          Assert
-              .fail("Atleast one element in the pair of SelectResults supposedly identical, is not equal ");
-        }
-      }
-    }
-  }
-
-  public void formatQueryResult(Object[] results) {
-    log("\nResults: ");
-    for (Object result : results) {
-      if (result == null) {
-        log("NULL");
-      } else if (result == QueryService.UNDEFINED) {
-        log("UNDEFINED");
-      } else if (result instanceof SelectResults) {
-        Collection<?> collection = ((SelectResults<?>) result).asList();
-        StringBuffer sb = new StringBuffer();
-        for (Object e : collection) {
-          sb.append(e + "\n\t");
-        }
-        log(sb.toString());
-      } else {
-        log("Unknown");
-      }
-    }
-  }
-
-  public LogWriter getLogger() {
+ 
+  private LogWriter getLogger() {
     if (cache == null) {
       return null;
     }
@@ -1633,8 +1381,47 @@ public class QueryTestUtils implements Serializable {
   public Cache getCache() {
     return cache;
   }
-
-  public void log(Object message) {
-    CacheUtils.log(message);
+  
+  public static void createCacheInVM(VM vm, Properties props) {
+    vm.invoke(() -> {
+      getInstance().createCache(props);
+    });
+  }
+  
+  public static void closeCacheInVM(VM vm) {
+    vm.invoke(() -> {
+      getInstance().cache.close();
+    });
+  }
+  
+  public Region getRegion(String regionName) {
+    return cache.getRegion(regionName);
+  }
+  
+  public void populateRegion(String regionName, Map<?, ?> entries) {
+    Region r = cache.getRegion("/" + regionName);
+    entries.entrySet().forEach(e -> {
+      r.put(e.getKey(), e.getValue());
+    });
+  }
+  
+  public static void populateRegion(VM vm, String regionName, Map<?, ?> entries) {
+    vm.invoke(() -> {
+      getInstance().populateRegion(regionName, entries);
+    });
+  }
+  
+  public static File createTestRootDiskStore(String testName) throws IOException {
+    File diskDir = new File(testName).getAbsoluteFile();
+    com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
+    diskDir.mkdir();
+    diskDir.deleteOnExit();
+    return diskDir;
+  }
+  
+  public static File createRootDiskStoreInVM(VM vm, String rootDiskStoreName) {
+    return vm.invoke(() -> {
+      return createTestRootDiskStore(rootDiskStoreName);
+    });
   }
 }

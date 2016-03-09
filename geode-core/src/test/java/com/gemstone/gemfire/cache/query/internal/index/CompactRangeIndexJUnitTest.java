@@ -77,7 +77,7 @@ public class CompactRangeIndexJUnitTest  {
     isUsingConcurrentHashSet("type1");
     utils.removeIndex("type", "/exampleRegion");
     executeQueryWithAndWithoutIndex(4);
-    updateValues(2);
+    putOffsetValues(2);
     executeQueryWithCount();
     executeQueryWithAndWithoutIndex(3);
     executeRangeQueryWithDistinct(8);
@@ -377,13 +377,18 @@ public class CompactRangeIndexJUnitTest  {
 
   
  
-  public void putValues(int num) {
-    long start = System.currentTimeMillis();
-    utils.createValuesStringKeys("exampleRegion", num);
+  private void putValues(int num) {
+    Region region = utils.getRegion("exampleRegion");
+    for (int i = 1; i <= num; i++) {
+      region.put("KEY-"+ i, new Portfolio(i));
+    }
   }
   
-  private void updateValues(int num){
-    utils.createDiffValuesStringKeys("exampleRegion", num);
+  private void putOffsetValues(int num) {
+    Region region = utils.getRegion("exampleRegion");
+    for (int i = 1; i <= num; i++) {
+      region.put("KEY-"+ i, new Portfolio(i + 1));
+    }
   }
  
   public void executeQueryWithCount() throws Exception{

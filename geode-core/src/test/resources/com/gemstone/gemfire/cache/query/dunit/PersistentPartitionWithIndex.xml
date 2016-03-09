@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+        "-//GemStone Systems, Inc.//GemFire Declarative Caching 8.0//EN"
+        "http://www.gemstone.com/dtd/cache8_0.dtd">
+<cache>
+<disk-store name="diskStore">
+        <disk-dirs>
+            <disk-dir>diskDir-PersistentPartitionWithIndexDiskStore</disk-dir>
+        </disk-dirs>
+    </disk-store>
+
+<region name="persistentTestRegion">
+<region-attributes refid="PARTITION_REDUNDANT_PERSISTENT" disk-store-name="diskStore" >
+</region-attributes>
+<index name="persistentTestRegion_ID" from-clause="/persistentTestRegion" expression="ID" type="range"/>
+</region>
+</cache>
