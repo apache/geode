@@ -17,6 +17,9 @@
 
 package com.gemstone.gemfire.rest.internal.web.util;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 /**
  * The ArrayUtils class is an abstract utility class for working with Object arrays.
  * <p/>
@@ -56,5 +59,12 @@ public abstract class ArrayUtils {
   public static String toString(final String... array) {
     return toString((Object[])array); 
   }
-  
+
+  public static Set asSet(String[] filter) {
+    LinkedHashSet linkedHashSet = new LinkedHashSet(filter.length);
+    for (int i = 0; i < filter.length; i++) {
+      linkedHashSet.add(filter[i]);
+    }
+    return linkedHashSet;
+  }
 }
