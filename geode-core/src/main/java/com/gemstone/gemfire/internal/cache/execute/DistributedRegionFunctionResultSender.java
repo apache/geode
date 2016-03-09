@@ -241,7 +241,7 @@ public final class DistributedRegionFunctionResultSender implements
     else {
       ((LocalResultCollector)this.rc).setException(exception);
       //this.lastResult(exception);
-      logger.fatal(LocalizedMessage.create(
+      logger.info(LocalizedMessage.create(
           LocalizedStrings.DistributedRegionFunctionResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE), exception);
     }
     this.rc.endResults();

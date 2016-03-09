@@ -257,7 +257,7 @@ public final class MemberFunctionResultSender implements InternalResultSender {
   public void setException(Throwable exception) {
     ((LocalResultCollector)this.rc).setException(exception);
     //this.lastResult(exception);
-    logger.fatal(LocalizedMessage.create(
+    logger.info(LocalizedMessage.create(
         LocalizedStrings.MemberResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE), exception);
     this.rc.endResults();
     this.localLastResultRecieved = true;

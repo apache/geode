@@ -316,7 +316,7 @@ public final class PartitionedRegionFunctionResultSender implements
     }
     else {
       ((LocalResultCollector)this.rc).setException(exception);
-      logger.fatal(LocalizedMessage.create(
+      logger.info(LocalizedMessage.create(
           LocalizedStrings.PartitionedRegionFunctionResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE),
           exception);
     }
