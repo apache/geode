@@ -36,7 +36,6 @@ import java.util.*;
 /**
  * Dunit Test to validate OnRegion function execution with REST APIs
  *
- * @author Nilkanth Patel
  * @since 8.0
  */
 

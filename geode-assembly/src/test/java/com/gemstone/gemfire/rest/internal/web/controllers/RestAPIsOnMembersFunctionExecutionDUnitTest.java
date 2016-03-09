@@ -30,10 +30,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 
 import java.util.Properties;
 
-/**
- * @author Nilkanth Patel
- */
-
 public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase {
 
   private static final long serialVersionUID = 1L;
@@ -111,10 +107,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
   }
 
   public void testFunctionExecutionOnAllMembers() {
-    restURLs.add(vm0.invoke(() -> createCacheAndRegisterFunction(vm0, "m1")));
-    restURLs.add(vm1.invoke(() -> createCacheAndRegisterFunction(vm1, "m2")));
-    restURLs.add(vm2.invoke(() -> createCacheAndRegisterFunction(vm2, "m3")));
-    restURLs.add(vm3.invoke(() -> createCacheAndRegisterFunction(vm3, "m4")));
+    createCacheForVMs();
 
     for (int i = 0; i < 10; i++) {
       CloseableHttpResponse response = executeFunctionThroughRestCall("OnMembersFunction",null,null,null,null,null);
@@ -131,11 +124,15 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     restURLs.clear();
   }
 
+  private void createCacheForVMs() {
+    restURLs.add(vm0.invoke(() -> createCacheAndRegisterFunction(vm0, "m1")));
+    restURLs.add(vm1.invoke(() -> createCacheAndRegisterFunction(vm1, "m2")));
+    restURLs.add(vm2.invoke(() -> createCacheAndRegisterFunction(vm2, "m3")));
+    restURLs.add(vm3.invoke(() -> createCacheAndRegisterFunction(vm3, "m4")));
+  }
+
   public void testFunctionExecutionEOnSelectedMembers() {
-    restURLs.add((String) vm0.invoke(() -> createCacheAndRegisterFunction(vm0, "m1")));
-    restURLs.add((String) vm1.invoke(() -> createCacheAndRegisterFunction(vm1, "m2")));
-    restURLs.add((String) vm2.invoke(() -> createCacheAndRegisterFunction(vm2, "m3")));
-    restURLs.add((String) vm3.invoke(() -> createCacheAndRegisterFunction(vm3, "m4")));
+    createCacheForVMs();
 
     for (int i = 0; i < 10; i++) {
       CloseableHttpResponse response = executeFunctionThroughRestCall("OnMembersFunction",null,null,null,null,"m1,m2,m3");
@@ -153,10 +150,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
   }
 
   public void testFunctionExecutionOnMembersWithFilter() {
-    restURLs.add((String) vm0.invoke(() -> createCacheAndRegisterFunction(vm0, "m1")));
-    restURLs.add((String) vm1.invoke(() -> createCacheAndRegisterFunction(vm1, "m2")));
-    restURLs.add((String) vm2.invoke(() -> createCacheAndRegisterFunction(vm2, "m3")));
-    restURLs.add((String) vm3.invoke(() -> createCacheAndRegisterFunction(vm3, "m4")));
+    createCacheForVMs();
 
     for (int i = 0; i < 10; i++) {
       CloseableHttpResponse response = executeFunctionThroughRestCall("OnMembersFunction",null,"key2",null,null,"m1,m2,m3");
