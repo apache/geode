@@ -10366,7 +10366,10 @@ public class LocalRegion extends AbstractRegion
           txException = txException.getCause();
         }
         if (e == null) {
-          e = new ServerOperationException(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0.toLocalizedString(getFullPath()), e1.getFailure());
+          e = getCancelCriterion().generateCancelledException(e1.getFailure());//for cache close
+          if(e == null) {
+            e = new ServerOperationException(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0.toLocalizedString(getFullPath()), e1.getFailure());
+          }
         }
       }
     }
