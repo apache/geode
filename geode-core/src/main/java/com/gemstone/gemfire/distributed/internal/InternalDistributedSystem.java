@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
@@ -76,6 +77,7 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.LinuxProcFsStatistics;
 import com.gemstone.gemfire.internal.LocalStatisticsImpl;
+import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.OsStatisticsFactory;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.StatisticsImpl;
@@ -83,8 +85,8 @@ import com.gemstone.gemfire.internal.StatisticsManager;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheConfig;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.execute.FunctionServiceStats;
@@ -944,6 +946,22 @@ public class InternalDistributedSystem
     if (isForcedDisconnect) {
       this.forcedDisconnect = true;
       resetReconnectAttemptCounter();
+      if (sampler.isSamplingEnabled()) {
+        if (sampler.getStatSamplerStats().getJvmPauses() > 0) {
+          try {
+            // if running tests then create a heap dump
+            Class.forName("com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher");
+            Class<?> jmapClass = Class.forName("sun.tools.jmap.JMap");
+            logger.info("This member of the distributed system has been forced to disconnect.  JVM pauses have been detected - dumping heap");
+            String pid = String.valueOf(OSProcess.getId());
+            String fileName = "java"+pid+".hprof";
+            Object parameters = new String[]{"-dump:format=b,file="+fileName, pid};
+            Method main = jmapClass.getDeclaredMethod("main", String[].class);
+            main.invoke(null, parameters);
+          } catch (Exception e) {
+          }
+        }
+      }
     
      reconnected = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
     }
