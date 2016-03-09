@@ -21,11 +21,13 @@ import org.junit.runner.Description;
 
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,47 +37,47 @@ import java.util.Map;
  *
  * @param <T> The type of MBean which will be returned.
  */
-public class MXBeanCreationRule<T> extends DescribedExternalResource {
+public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
 
   private final int jmxServerPort;
-  private final Class<T> proxyClass;
-  private final String objectName;
   private JMXConnector jmxConnector;
-  private ObjectName beanObjectName;
   private MBeanServerConnection mbeanServer;
 
 
   /**
    * Rule constructor
    * @param port The JMX server port to connect to
-   * @param proxyClass The class for which a proxy MBean will be created
    */
-  public MXBeanCreationRule(int port, Class<T> proxyClass, String objectName) {
+  public MBeanServerConnectionRule(int port) {
     this.jmxServerPort = port;
-    this.proxyClass = proxyClass;
-    this.objectName = objectName;
   }
 
   /**
    * Retrieve a new proxy MBean
    * @return A new proxy MBean of the same type with which the class was constructed
    */
-  public T getProxyMBean() {
-    return JMX.newMBeanProxy(mbeanServer, beanObjectName, proxyClass);
+  public T getProxyMBean(Class<T> proxyClass, String beanName) throws MalformedObjectNameException, IOException {
+    ObjectInstance bean = (ObjectInstance) mbeanServer.queryMBeans(ObjectName.getInstance(beanName), null).toArray()[0];
+    return JMX.newMXBeanProxy(mbeanServer, bean.getObjectName(), proxyClass);
+  }
+
+
+  public MBeanServerConnection getMBeanServerConnection() throws IOException {
+    return jmxConnector.getMBeanServerConnection();
   }
 
   protected void before(Description description) throws Throwable {
-    String user = description.getAnnotation(JMXConnectionConfiguration.class).user();
-    String password = description.getAnnotation(JMXConnectionConfiguration.class).password();
+    JMXConnectionConfiguration config = description.getAnnotation(JMXConnectionConfiguration.class);
     Map<String, String[]> env = new HashMap<>();
-    env.put(JMXConnector.CREDENTIALS, new String[] {user, password});
+    if(config!=null) {
+      String user = config.user();
+      String password = config.password();
+      env.put(JMXConnector.CREDENTIALS, new String[] { user, password });
+    }
     JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + jmxServerPort + "/jmxrmi");
 
     jmxConnector = JMXConnectorFactory.connect(url, env);
     mbeanServer = jmxConnector.getMBeanServerConnection();
-
-    ObjectInstance bean = (ObjectInstance) mbeanServer.queryMBeans(ObjectName.getInstance(objectName), null).toArray()[0];
-    beanObjectName = bean.getObjectName();
   }
 
   /**
@@ -85,7 +87,6 @@ public class MXBeanCreationRule<T> extends DescribedExternalResource {
     jmxConnector.close();
     jmxConnector = null;
     mbeanServer = null;
-    beanObjectName = null;
   }
 
 }

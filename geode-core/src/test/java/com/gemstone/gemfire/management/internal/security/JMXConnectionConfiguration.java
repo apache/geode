@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation is intended to be used with {@link MXBeanCreationRule} in order to configure a per-test JMX
+ * This annotation is intended to be used with {@link MBeanServerConnectionRule} in order to configure a per-test JMX
  * connection with a specific user and password.
  */
 @Retention(RetentionPolicy.RUNTIME)

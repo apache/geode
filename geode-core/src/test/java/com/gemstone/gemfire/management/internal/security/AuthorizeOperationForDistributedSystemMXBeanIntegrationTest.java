@@ -16,16 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static org.junit.Assert.*;
-
-import javax.management.remote.JMXPrincipal;
-
+import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import javax.management.remote.JMXPrincipal;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * Tests <code>JSONAuthorization.authorizeOperation(...)</code> for <code>DistributedSystemMXBean</code> operations.
@@ -34,9 +32,9 @@ import com.gemstone.gemfire.util.test.TestUtil;
 public class AuthorizeOperationForDistributedSystemMXBeanIntegrationTest {
 
   @Test
-  public void returnsFalseForUnauthorizedUser() throws Exception {    
-    System.setProperty("resource.secDescriptor", TestUtil.getResourcePath(getClass(), "auth1.json")); 
-    JSONAuthorization authorization = JSONAuthorization.create();        
+  public void returnsFalseForUnauthorizedUser() throws Exception {
+    JSONAuthorization.setUpWithJsonFile("auth1.json");
+    JSONAuthorization authorization = JSONAuthorization.create();
     authorization.init(new JMXPrincipal("tushark"), null, null);
     
     JMXOperationContext context = new JMXOperationContext(MBeanJMXAdapter.getDistributedSystemName(), "queryData");

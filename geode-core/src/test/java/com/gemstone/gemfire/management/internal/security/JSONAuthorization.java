@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.operations.OperationContext;
@@ -61,29 +60,33 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 	private static Map<String,User> acl = null;
 
 	public static JSONAuthorization create() throws IOException, JSONException {
-	  if(acl==null){
-	    readSecurityDescriptor(readDefault());
-	  }
 	  return new JSONAuthorization();
 	}
 
   public JSONAuthorization() {
-    if (acl == null) {
-      try {
-        readSecurityDescriptor(readDefault());
-      } catch (IOException e) {
-        throw new GemFireConfigException("Error creating JSONAuth", e);
-      } catch (JSONException e) {
-        throw new GemFireConfigException("Error creating JSONAuth", e);
-      }
-    }
   }
+
+	public JSONAuthorization(String jsonFileName) throws IOException, JSONException{
+		setUpWithJsonFile(jsonFileName);
+	}
+
+	public static void setUpWithJsonFile(String jsonFileName) throws IOException, JSONException {
+		String json = readFile(TestUtil.getResourcePath(JSONAuthorization.class, jsonFileName));
+		readSecurityDescriptor(json);
+	}
+
+	private static void readSecurityDescriptor(String json) throws IOException, JSONException {
+		JSONObject jsonBean = new JSONObject(json);
+		acl = new HashMap<String,User>();
+		Map<String,Role> roleMap = readRoles(jsonBean);
+		readUsers(acl,jsonBean,roleMap);
+	}
 
 	public static Set<ResourceOperationCode> getAuthorizedOps(User user, ResourceOperationContext context) {
     Set<ResourceOperationCode> codeList = new HashSet<ResourceOperationCode>();
     for(Role role : user.roles) {
       for (String perm : role.permissions) {
-        ResourceOperationCode code = ResourceOperationCode.parse(perm);
+				ResourceOperationCode code = ResourceOperationCode.parse(perm);
         if (role.regionName == null && role.serverGroup == null) {
           addPermissions(code, codeList);
         } else if (role.regionName != null) {
@@ -109,37 +112,8 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     if (code == null) {
       return;
     }
-
     codeList.add(code);
-    if (code.getChildren() != null) {
-      for (ResourceOperationCode c : code.getChildren()) {
-        codeList.add(c);
-      }
-    }
   }
-
-  private static String readDefault() throws IOException, JSONException {
-	  String str = System.getProperty(ResourceConstants.RESOURCE_SEC_DESCRIPTOR, ResourceConstants.RESORUCE_DEFAULT_SEC_DESCRIPTOR);
-		File file = new File(str);
-		FileReader reader = new FileReader(file);
-		char[] buffer = new char[(int) file.length()];
-		reader.read(buffer);
-		String json = new String(buffer);
-		reader.close();
-		return json;
-	}
-
-	public JSONAuthorization(String jsonFileName) throws IOException, JSONException{
-    String json = readFile(TestUtil.getResourcePath(getClass(), jsonFileName));
-		readSecurityDescriptor(json);
-	}
-
-	private static void readSecurityDescriptor(String json) throws IOException, JSONException {
-		JSONObject jsonBean = new JSONObject(json);
-		acl = new HashMap<String,User>();
-		Map<String,Role> roleMap = readRoles(jsonBean);
-		readUsers(acl,jsonBean,roleMap);
-	}
 
 	private static void readUsers(Map<String, User> acl, JSONObject jsonBean,
 			Map<String, Role> roleMap) throws JSONException {
@@ -306,7 +280,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
   }
 
-  private String readFile(String name) throws IOException, JSONException {
+  private static String readFile(String name) throws IOException, JSONException {
     File file = new File(name);
     FileReader reader = new FileReader(file);
     char[] buffer = new char[(int) file.length()];

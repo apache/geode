@@ -16,10 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import java.io.ObjectInputStream;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -42,6 +38,10 @@ import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
+import java.io.ObjectInputStream;
+import java.util.HashSet;
+import java.util.Set;
+
 import static com.gemstone.gemfire.management.internal.security.ResourceConstants.*;
 
 /**

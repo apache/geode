@@ -3,7 +3,7 @@
     {
       "name": "everything",
       "operationsAllowed": [
-        "INDEX:DESTROY",
+        "LIST_DS",
         "DESTROY_INDEX",
         "LOCATE_ENTRY",
         "QUERY"
@@ -12,8 +12,13 @@
     {
       "name": "nothing",
       "operationsAllowed": [
-      ],
-      "region": "secureRegion"
+      ]
+    },
+    {
+      "name": "something",
+      "operationsAllowed": [
+        "LIST_DS"
+      ]
     }
   ],
   "users": [
@@ -29,6 +34,13 @@
       "password": "1234567",
       "roles": [
         "nothing"
+      ]
+    },
+    {
+      "name": "user",
+      "password": "1234567",
+      "roles": [
+        "something"
       ]
     }
   ]
