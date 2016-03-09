@@ -363,3 +363,32 @@ integrationTest dependOnInstalledProduct
 build.dependsOn installDist
 
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
+
+/**Print the names of all jar files in a fileTree */
+def printJars(tree) {
+  tree.matching {include("**/*.jar")}.visit{ file -> 
+    if(!file.isDirectory()) {
+      println file.name
+    }
+  };
+}
+
+task dumpInstalledJars(dependsOn: installDist) << {
+  description "Dump a list of all of the jars shipped with the binary distribution, for validation purposes"
+
+  FileTree installDir = fileTree(dir: installDist.destinationDir)
+
+  println("Jars in the binary install")
+  println("==========================")
+  printJars(installDir)
+
+  installDir.include("**/*.war").visit{ file -> 
+    if(!file.isDirectory()) {
+        FileTree warContents = zipTree(file.file)
+        println ""
+        println file.name
+        println("==========================")
+        printJars(warContents);
+    } 
+  };
+}
