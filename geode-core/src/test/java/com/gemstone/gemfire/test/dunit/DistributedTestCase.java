@@ -241,11 +241,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    * @since 3.0
    */
   public Properties getDistributedSystemProperties() {
-    String logLevel = System.getProperty("logLevel");
     Properties props = new Properties();
-    if (logLevel != null) {
-      props.setProperty("log-level", logLevel);
-    }
     return props;
   }
 
