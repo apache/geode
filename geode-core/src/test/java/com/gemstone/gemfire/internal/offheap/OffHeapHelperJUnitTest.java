@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.VMCachedDeserializable;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -47,10 +46,8 @@ public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
   public void setUp() {
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
-    LogWriter lw = mock(LogWriter.class);
 
-    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 3, OffHeapStorage.MIN_SLAB_SIZE * 3,
-        OffHeapStorage.MIN_SLAB_SIZE);
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, 3, OffHeapStorage.MIN_SLAB_SIZE * 3, OffHeapStorage.MIN_SLAB_SIZE);
 
   }
 

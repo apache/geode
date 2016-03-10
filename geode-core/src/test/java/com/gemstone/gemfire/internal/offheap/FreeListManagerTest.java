@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -33,8 +34,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -736,7 +735,7 @@ public class FreeListManagerTest {
     OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
     OffHeapStoredObject.release(c2.getAddress(), this.freeListManager);
     
-    LogWriter lw = mock(LogWriter.class);
+    Logger lw = mock(Logger.class);
     this.freeListManager.logOffHeapState(lw, 1024);
   }
   

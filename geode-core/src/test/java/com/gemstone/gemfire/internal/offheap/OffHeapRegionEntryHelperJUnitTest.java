@@ -37,7 +37,6 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
@@ -65,9 +64,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
   public void setUp() {
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
-    LogWriter lw = mock(LogWriter.class);
 
-    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 1, OffHeapStorage.MIN_SLAB_SIZE * 1, OffHeapStorage.MIN_SLAB_SIZE);
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, 1, OffHeapStorage.MIN_SLAB_SIZE * 1, OffHeapStorage.MIN_SLAB_SIZE);
   }
 
   @After

@@ -29,14 +29,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-import com.gemstone.gemfire.LogWriter;
+import org.apache.logging.log4j.Logger;
+
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Manages the free lists for a SimpleMemoryAllocatorImpl
  */
 public class FreeListManager {
+  static final Logger logger = LogService.getLogger();
+
   /** The MemoryChunks that this allocator is managing by allocating smaller chunks of them.
    * The contents of this array never change.
    */
@@ -232,13 +235,10 @@ public class FreeListManager {
   }
 
   private void logOffHeapState(int chunkSize) {
-    if (InternalDistributedSystem.getAnyInstance() != null) {
-      LogWriter lw = InternalDistributedSystem.getAnyInstance().getLogWriter();
-      logOffHeapState(lw, chunkSize);
-    }
+    logOffHeapState(logger, chunkSize);
   }
 
-  void logOffHeapState(LogWriter lw, int chunkSize) {
+  void logOffHeapState(Logger lw, int chunkSize) {
     OffHeapMemoryStats stats = this.ma.getStats();
     lw.info("OutOfOffHeapMemory allocating size of " + chunkSize + ". allocated=" + this.allocatedSize.get() + " compactions=" + this.compactCount.get() + " objects=" + stats.getObjects() + " free=" + stats.getFreeMemory() + " fragments=" + stats.getFragments() + " largestFragment=" + stats.getLargestFragment() + " fragmentation=" + stats.getFragmentation());
     logFragmentState(lw);
@@ -246,12 +246,12 @@ public class FreeListManager {
     logHugeState(lw);
   }
 
-  private void logHugeState(LogWriter lw) {
+  private void logHugeState(Logger lw) {
     for (OffHeapStoredObject c: this.hugeChunkSet) {
       lw.info("Free huge of size " + c.getSize());
     }
   }
-  private void logTinyState(LogWriter lw) {
+  private void logTinyState(Logger lw) {
     for (int i=0; i < this.tinyFreeLists.length(); i++) {
       OffHeapStoredObjectAddressStack cl = this.tinyFreeLists.get(i);
       if (cl != null) {
@@ -259,7 +259,7 @@ public class FreeListManager {
       }
     }
   }
-  private void logFragmentState(LogWriter lw) {
+  private void logFragmentState(Logger lw) {
     for (Fragment f: this.fragmentList) {
       int freeSpace = f.freeSpace();
       if (freeSpace > 0) {

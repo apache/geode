@@ -19,6 +19,8 @@ package com.gemstone.gemfire.internal.offheap;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import org.apache.logging.log4j.Logger;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -28,7 +30,6 @@ import org.junit.experimental.categories.Category;
 import org.mockito.listeners.InvocationListener;
 import org.mockito.listeners.MethodInvocationReport;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -87,7 +88,7 @@ public class OffHeapStoredObjectAddressStackJUnitTest {
   @Test
   public void defaultStackLogsNothing() {
     OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
-    LogWriter lw = mock(LogWriter.class, withSettings().invocationListeners(new InvocationListener() {
+    Logger lw = mock(Logger.class, withSettings().invocationListeners(new InvocationListener() {
       @Override
       public void reportInvocation(MethodInvocationReport methodInvocationReport) {
         fail("Unexpected invocation");
@@ -223,7 +224,7 @@ public class OffHeapStoredObjectAddressStackJUnitTest {
       long addr = chunk.getAddress();
       OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
       stack.offer(addr);
-      LogWriter lw = mock(LogWriter.class);
+      Logger lw = mock(Logger.class);
       stack.logSizes(lw, "foo");
       verify(lw).info("foo"+chunkSize);
     } finally {
@@ -278,7 +279,7 @@ public class OffHeapStoredObjectAddressStackJUnitTest {
       long addr = chunk.getAddress();
       TestableSyncChunkStack stack = new TestableSyncChunkStack(ma);
       stack.offer(addr);
-      LogWriter lw = mock(LogWriter.class);
+      Logger lw = mock(Logger.class);
       stack.logSizes(lw, "foo");
       verify(lw).info("foo"+chunkSize);
       verify(lw).info("foo"+stack.chunk2Size);

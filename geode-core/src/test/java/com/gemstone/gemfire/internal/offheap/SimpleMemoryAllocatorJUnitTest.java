@@ -58,62 +58,27 @@ public class SimpleMemoryAllocatorJUnitTest {
     } catch (IllegalArgumentException expected) {
     }
   }
-  /**
-   * Logger that remembers the last severe message
-   */
-  private static class LastSevereLogger extends NullLogWriter {
-    private String lastSevereMessage;
-    private Throwable lastSevereThrowable;
-    
-    private void setLastSevere(String msg, Throwable ex) {
-      this.lastSevereMessage = msg;
-      this.lastSevereThrowable = ex;
-    }
-    public String getLastSevereMessage() {
-      return this.lastSevereMessage;
-    }
-    public Throwable getLastSevereThrowable() {
-      return this.lastSevereThrowable;
-    }
-    @Override
-    public void severe(String msg, Throwable ex) {
-      setLastSevere(msg, ex);
-    }
-    @Override
-    public void severe(String msg) {
-      setLastSevere(msg, null);
-    }
-    @Override
-    public void severe(Throwable ex) {
-      setLastSevere(null, ex);
-    }
-  }
   @Test
   public void testCreate() {
     System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "false");
     {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
-      LastSevereLogger logger = new LastSevereLogger();
       try {
-        SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats, logger, 10, 950, 100,
-            new SlabFactory() {
-          @Override
-          public Slab create(int size) {
-            throw new OutOfMemoryError("expected");
-          }
-        });
+        SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, new SlabFactory() {
+     @Override
+     public Slab create(int size) {
+        throw new OutOfMemoryError("expected");
+     }
+    });
       } catch (OutOfMemoryError expected) {
       }
       assertTrue(listener.isClosed());
       assertTrue(stats.isClosed());
-      assertEquals(null, logger.getLastSevereThrowable());
-      assertEquals(null, logger.getLastSevereMessage());
      }
     {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
-      LastSevereLogger logger = new LastSevereLogger();
       int MAX_SLAB_SIZE = 100;
       try {
         SlabFactory factory = new SlabFactory() {
@@ -128,13 +93,11 @@ public class SimpleMemoryAllocatorJUnitTest {
             }
           }
         };
-        SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats, logger, 10, 950, MAX_SLAB_SIZE, factory);
+        SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, MAX_SLAB_SIZE, factory);
       } catch (OutOfMemoryError expected) {
       }
       assertTrue(listener.isClosed());
       assertTrue(stats.isClosed());
-      assertEquals(null, logger.getLastSevereThrowable());
-      assertEquals("Off-heap memory creation failed after successfully allocating " + MAX_SLAB_SIZE + " bytes of off-heap memory.", logger.getLastSevereMessage());
     }
     {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
@@ -146,7 +109,7 @@ public class SimpleMemoryAllocatorJUnitTest {
         }
       };
       MemoryAllocator ma = 
-        SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats, new NullLogWriter(), 10, 950, 100, factory);
+        SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, factory);
       try {
         assertFalse(listener.isClosed());
         assertFalse(stats.isClosed());
@@ -171,7 +134,7 @@ public class SimpleMemoryAllocatorJUnitTest {
         }
         listener = new NullOutOfOffHeapMemoryListener();
         stats2 = new NullOffHeapMemoryStats();
-        MemoryAllocator ma2 = SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats2, new NullLogWriter(), 10, 950, 100, factory);
+        MemoryAllocator ma2 = SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats2, 10, 950, 100, factory);
         assertSame(ma, ma2);
         assertTrue(stats.isClosed());
         assertFalse(listener.isClosed());

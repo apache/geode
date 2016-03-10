@@ -122,17 +122,17 @@ public class OffHeapStorageJUnitTest {
   @Test
   public void createOffHeapStorageReturnsNullIfForceLocator() {
     System.setProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE, "true");
-    assertEquals(null, OffHeapStorage.createOffHeapStorage(null, null, 1, null));
+    assertEquals(null, OffHeapStorage.createOffHeapStorage(null, 1, null));
   }
   @Test
   public void createOffHeapStorageReturnsNullIfMemorySizeIsZero() {
-    assertEquals(null, OffHeapStorage.createOffHeapStorage(null, null, 0, null));
+    assertEquals(null, OffHeapStorage.createOffHeapStorage(null, 0, null));
   }
   @Test
   public void exceptionIfSlabCountTooSmall() {
     StatisticsFactory statsFactory = mock(StatisticsFactory.class);
     try {
-      OffHeapStorage.createOffHeapStorage(null, statsFactory, OffHeapStorage.MIN_SLAB_SIZE-1, null);
+      OffHeapStorage.createOffHeapStorage(statsFactory, OffHeapStorage.MIN_SLAB_SIZE-1, null);
     } catch (IllegalArgumentException expected) {
       expected.getMessage().equals("The amount of off heap memory must be at least " + OffHeapStorage.MIN_SLAB_SIZE + " but it was set to " + (OffHeapStorage.MIN_SLAB_SIZE-1));
     }
@@ -141,7 +141,7 @@ public class OffHeapStorageJUnitTest {
   public void exceptionIfDistributedSystemNull() {
     StatisticsFactory statsFactory = mock(StatisticsFactory.class);
     try {
-      OffHeapStorage.createOffHeapStorage(null, statsFactory, OffHeapStorage.MIN_SLAB_SIZE, (DistributedSystem)null);
+      OffHeapStorage.createOffHeapStorage(statsFactory, OffHeapStorage.MIN_SLAB_SIZE, (DistributedSystem)null);
     } catch (IllegalArgumentException expected) {
       expected.getMessage().equals("InternalDistributedSystem is null");
     }
@@ -151,7 +151,7 @@ public class OffHeapStorageJUnitTest {
   public void createOffHeapStorageWorks() {
     StatisticsFactory localStatsFactory = new LocalStatisticsFactory(null);
     InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
-    MemoryAllocator ma = OffHeapStorage.createOffHeapStorage(null, localStatsFactory, OffHeapStorage.MIN_SLAB_SIZE, ids);
+    MemoryAllocator ma = OffHeapStorage.createOffHeapStorage(localStatsFactory, OffHeapStorage.MIN_SLAB_SIZE, ids);
     System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
     ma.close();
   }
@@ -160,7 +160,7 @@ public class OffHeapStorageJUnitTest {
   public void testCreateOffHeapStorage() {
     StatisticsFactory localStatsFactory = new LocalStatisticsFactory(null);
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
-    MemoryAllocator ma = OffHeapStorage.basicCreateOffHeapStorage(null, localStatsFactory, 1024*1024, ooohml);
+    MemoryAllocator ma = OffHeapStorage.basicCreateOffHeapStorage(localStatsFactory, 1024*1024, ooohml);
     try {
       OffHeapMemoryStats stats = ma.getStats();
       assertNotNull(stats.getStats());

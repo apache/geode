@@ -614,7 +614,7 @@ public class InternalDistributedSystem
 
     final long offHeapMemorySize = OffHeapStorage.parseOffHeapMemorySize(getConfig().getOffHeapMemorySize());
 
-    this.offHeapStore = OffHeapStorage.createOffHeapStorage(getLogWriter(), this, offHeapMemorySize, this);
+    this.offHeapStore = OffHeapStorage.createOffHeapStorage(this, offHeapMemorySize, this);
     
     // Note: this can only happen on a linux system
     if (getConfig().getLockMemory()) {

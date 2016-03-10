@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import com.gemstone.gemfire.LogWriter;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A "stack" of addresses of OffHeapStoredObject instances. The stored objects are not kept
@@ -77,7 +77,7 @@ public class OffHeapStoredObjectAddressStack {
     }
     return result;
   }
-  public void logSizes(LogWriter lw, String msg) {
+  public void logSizes(Logger logger, String msg) {
     long headAddr = this.topAddr;
     long addr;
     boolean concurrentModDetected;
@@ -99,7 +99,7 @@ public class OffHeapStoredObjectAddressStack {
         }
         // TODO construct a single log msg
         // that gets reset when concurrentModDetected.
-        lw.info(msg + curSize);
+        logger.info(msg + curSize);
       }
     } while (concurrentModDetected);
   }
