@@ -69,7 +69,7 @@ public class Endpoint {
   }
   
   public boolean isClosed() {
-    return closed == true;
+    return closed;
   }
 
   public ConnectionStats getStats() {
