@@ -16,70 +16,41 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.CacheServerMXBean;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectInstance;
 import javax.management.ObjectName;
-import java.util.Properties;
+import java.io.IOException;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class CacheServerMBeanSecurityJUnitTest {
-
-  private static Cache cache;
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private CacheServerMXBean cacheServerMXBean;
-
-  @Rule
-  public MBeanServerConnectionRule<CacheServerMXBean> mxRule = new MBeanServerConnectionRule(jmxManagerPort);
+  private MBeanServerConnection con;
 
   @ClassRule
-  public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public static JsonAuthorizationMBeanServerStartRule serverRule = new JsonAuthorizationMBeanServerStartRule(jmxManagerPort, "cacheServer.json");
 
-  @BeforeClass
-  public static void beforeClassSetUp() throws Exception {
-    Properties properties = new Properties();
-    properties.put(DistributionConfig.NAME_NAME, CacheServerMBeanSecurityJUnitTest.class.getSimpleName());
-    properties.put(DistributionConfig.LOCATORS_NAME, "");
-    properties.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    properties.put(DistributionConfig.JMX_MANAGER_NAME, "true");
-    properties.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    properties.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxManagerPort));
-    properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
-    properties.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
-    properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
-        JSONAuthorization.class.getName() + ".create");
-    JSONAuthorization.setUpWithJsonFile("cacheServer.json");
-
-    cache = new CacheFactory(properties).create();
-    cache.addCacheServer().start();
-  }
+  @Rule
+  public MBeanServerConnectionRule<CacheServerMXBean> connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
 
   @Before
   public void setUp() throws Exception {
-    assertThat(cache.getCacheServers()).hasSize(1);
-    cacheServerMXBean = mxRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
+    //assertThat(cache.getCacheServers()).hasSize(1);
+    cacheServerMXBean = connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
+    con = connectionRule.getMBeanServerConnection();
   }
-
-  @AfterClass
-  public static void afterClassTearDown() throws Exception {
-    cache.close();
-    cache = null;
-  }
-
-
 
   /**
    * No user can call createBean or unregisterBean
@@ -88,11 +59,11 @@ public class CacheServerMBeanSecurityJUnitTest {
   @JMXConnectionConfiguration(user = "superuser", password = "1234567")
   public void testNoAccessWithWhoever() throws Exception{
     assertThatThrownBy(
-        () -> mxRule.getMBeanServerConnection().createMBean("FakeClassName", new ObjectName("GemFire", "name", "foo"))
+        () -> con.createMBean("FakeClassName", new ObjectName("GemFire", "name", "foo"))
     ).isInstanceOf(SecurityException.class);
 
     assertThatThrownBy(
-        () -> mxRule.getMBeanServerConnection().unregisterMBean(new ObjectName("GemFire", "name", "foo"))
+        () -> con.unregisterMBean(new ObjectName("GemFire", "name", "foo"))
     ).isInstanceOf(SecurityException.class);
   }
 
@@ -100,9 +71,14 @@ public class CacheServerMBeanSecurityJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "superuser", password = "1234567")
   public void testAllAccess() throws Exception {
-    cacheServerMXBean.removeIndex("foo");
-    cacheServerMXBean.executeContinuousQuery("bar");
-    cacheServerMXBean.fetchLoadProbe();
+    cacheServerMXBean.removeIndex("foo"); // "DESTROY_INDEX",
+    cacheServerMXBean.executeContinuousQuery("bar"); //QUERY
+    cacheServerMXBean.fetchLoadProbe(); //LIST_DS
+    cacheServerMXBean.getActiveCQCount(); //LIST_DS
+    cacheServerMXBean.stopContinuousQuery("bar"); //STOP_CONTINUOUS_QUERY
+    cacheServerMXBean.closeAllContinuousQuery("bar"); //STOP_CONTINUOUS_QUERY
+    cacheServerMXBean.isRunning(); //LIST_DS
+    cacheServerMXBean.showClientQueueDetails("foo"); //LIST_DS
   }
 
   @Test
@@ -118,5 +94,24 @@ public class CacheServerMBeanSecurityJUnitTest {
   public void testNoAccess() throws Exception {
     assertThatThrownBy(() -> cacheServerMXBean.removeIndex("foo")).isInstanceOf(SecurityException.class);
     assertThatThrownBy(() -> cacheServerMXBean.executeContinuousQuery("bar")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> cacheServerMXBean.fetchLoadProbe()).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> cacheServerMXBean.getActiveCQCount()).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> cacheServerMXBean.stopContinuousQuery("bar")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> cacheServerMXBean.closeAllContinuousQuery("bar")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> cacheServerMXBean.isRunning()).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> cacheServerMXBean.showClientQueueDetails("bar")).isInstanceOf(SecurityException.class);
+  }
+
+  /*
+   * looks like everyone can query for beans, but the AccessControlMXBean is filtered from the result
+   */
+  @Test
+  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  public void testQueryBean() throws MalformedObjectNameException, IOException {
+    Set<ObjectInstance> objects = con.queryMBeans(ObjectName.getInstance(ResourceConstants.OBJECT_NAME_ACCESSCONTROL), null);
+    assertThat(objects.size()).isEqualTo(0); // no AccessControlMBean in the query result
+
+    objects = con.queryMBeans(ObjectName.getInstance("GemFire:service=CacheServer,*"), null);
+    assertThat(objects.size()).isEqualTo(1);
   }
 }

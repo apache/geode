@@ -6,7 +6,13 @@
         "LIST_DS",
         "DESTROY_INDEX",
         "LOCATE_ENTRY",
-        "QUERY"
+        "QUERY",
+        "STOP_CONTINUOUS_QUERY",
+        "SHUTDOWN",
+        "COMPACT_DISKSTORE",
+        "CREATE_MANAGER",
+        "CREATE_REGION",
+        "some-nonsense"
       ]
     },
     {

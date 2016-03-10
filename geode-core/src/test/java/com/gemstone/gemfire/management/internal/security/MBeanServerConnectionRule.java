@@ -24,12 +24,15 @@ import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}
@@ -41,7 +44,7 @@ public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
 
   private final int jmxServerPort;
   private JMXConnector jmxConnector;
-  private MBeanServerConnection mbeanServer;
+  private MBeanServerConnection con;
 
 
   /**
@@ -56,14 +59,40 @@ public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
    * Retrieve a new proxy MBean
    * @return A new proxy MBean of the same type with which the class was constructed
    */
-  public T getProxyMBean(Class<T> proxyClass, String beanName) throws MalformedObjectNameException, IOException {
-    ObjectInstance bean = (ObjectInstance) mbeanServer.queryMBeans(ObjectName.getInstance(beanName), null).toArray()[0];
-    return JMX.newMXBeanProxy(mbeanServer, bean.getObjectName(), proxyClass);
+  public T getProxyMBean(Class<T> proxyClass, String beanQueryName) throws MalformedObjectNameException, IOException {
+    ObjectName name = null;
+    QueryExp query = null;
+
+    if(proxyClass != null){
+      query = Query.isInstanceOf(Query.value(proxyClass.getName()));
+    }
+
+    if(beanQueryName != null){
+      name = ObjectName.getInstance(beanQueryName);
+    }
+
+    Set<ObjectInstance> beans = con.queryMBeans(name, query);
+    if(beans.size() != 1){
+      throw new RuntimeException("failed to find only one instance of "+proxyClass.getName()+" with name "+beanQueryName);
+    }
+    return JMX.newMXBeanProxy(con, ((ObjectInstance)beans.toArray()[0]).getObjectName(), proxyClass);
+  }
+
+  /**
+   * Retrieve a new proxy MBean
+   * @return A new proxy MBean of the same type with which the class was constructed
+   */
+  public T getProxyMBean(Class<T> proxyClass) throws MalformedObjectNameException, IOException {
+    return getProxyMBean(proxyClass, null);
+  }
+
+  public T getProxyMBean(String beanQueryName) throws MalformedObjectNameException, IOException {
+    return getProxyMBean(null, beanQueryName);
   }
 
 
   public MBeanServerConnection getMBeanServerConnection() throws IOException {
-    return jmxConnector.getMBeanServerConnection();
+    return con;
   }
 
   protected void before(Description description) throws Throwable {
@@ -77,7 +106,7 @@ public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
     JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + jmxServerPort + "/jmxrmi");
 
     jmxConnector = JMXConnectorFactory.connect(url, env);
-    mbeanServer = jmxConnector.getMBeanServerConnection();
+    con = jmxConnector.getMBeanServerConnection();
   }
 
   /**
@@ -86,7 +115,7 @@ public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
   protected void after(Description description) throws Throwable {
     jmxConnector.close();
     jmxConnector = null;
-    mbeanServer = null;
+    con = null;
   }
 
 }
