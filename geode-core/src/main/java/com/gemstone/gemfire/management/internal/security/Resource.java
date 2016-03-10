@@ -17,19 +17,13 @@
 package com.gemstone.gemfire.management.internal.security;
 
 public enum Resource {
-//<<<<<<< HEAD
   ASYNC_EVENT_QUEUE,
   CLIENT,
   CLIENT_SERVER,
   CLUSTER_CONFIGURTION,
   CONTINUOUS_QUERY,
-//=======
   DEFAULT,
   MBEAN,
-//  DISTRIBUTED_SYSTEM,
-//  MEMBER,
-//  REGION,
-//>>>>>>> 38de96006d5841f71d82dd807bccb942b5fefb4e
   DISKSTORE,
   DISKSTORE_OFFLINE,
   DISTRIBUTED_SYSTEM,

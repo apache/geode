@@ -72,34 +72,7 @@ public class CLIOperationContext extends ResourceOperationContext {
 	}
 
 	private static void cache(String commandName, ResourceOperation op) {
-//<<<<<<< HEAD
-//    ResourceOperationCode resourceOpCode = null;
-//
-//		if (op != null) {
-//			String opString = op.operation().toString();
-//			if (opString != null)
-//        resourceOpCode = ResourceOperationCode.parse(opString);
-//		}
-//
-//    if(resourceOpCode==null){
-//      if (commandName.startsWith(GETTER_DESCRIBE) || commandName.startsWith(GETTER_LIST)
-//          || commandName.startsWith(GETTER_STATUS)) {
-//        resourceOpCode = ResourceOperationCode.LIST_DS;
-//			}
-//		}
-//
-//
-//    if(resourceOpCode!=null) {
-//      commandToCodeMapping.put(commandName, resourceOpCode);
-//		} else {
-//      throw new GemFireConfigException(
-//          "Error while configuring authorization for gfsh commands. No opCode defined for command " + commandName);
-//
-//		}
-//=======
 		commandToCodeMapping.put(commandName, op);
-//>>>>>>> 38de96006d5841f71d82dd807bccb942b5fefb4e
-		
 	}
 
 	public Map<String, String> getCommandOptions() {
