@@ -58,6 +58,7 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
@@ -77,6 +78,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   protected static final int JOINED = 0;
   protected static final int LEFT = 1;
   protected static final int CRASHED = 2;
+  
+  private static Properties properties;
     
   public ClientMembershipDUnitTest(String name) {
     super(name);
@@ -798,7 +801,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     DistributedMember serverMember = (DistributedMember) vm0.invoke(() -> ClientMembershipDUnitTest.getDistributedMember());
 
-    String serverMemberId = (String) vm0.invoke(() -> ClientMembershipDUnitTest.getMemberId());
+    String serverMemberId = serverMember.toString();
 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] ports[0]=" + ports[0]);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInClient] serverMember=" + serverMember);
@@ -1013,9 +1016,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     
     ports[0] = startBridgeServer(0);
     assertTrue(ports[0] != 0);
-    String serverMemberId = getMemberId();
-    DistributedMember serverMember = getDistributedMember();
-
+    DistributedMember serverMember = getMemberId();
+    String serverMemberId = serverMember.toString();
+    
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] ports[0]=" + ports[0]);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] serverMemberId=" + serverMemberId);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] serverMember=" + serverMember);
@@ -1057,9 +1060,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     resetArraysForTesting(fired, member, memberId, isClient);
     
     final Host host = Host.getHost(0);
-    SerializableRunnable createConnectionPool =
-    new CacheSerializableRunnable("Create connectionPool") {
-      public void run2() throws CacheException {
+    SerializableCallable createConnectionPool =
+    new SerializableCallable("Create connectionPool") {
+      public Object call() {
         com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testClientMembershipEventsInServer] create bridge client");
         Properties config = new Properties();
         config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -1070,13 +1073,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(host), ports, true, -1, 2, null);
         createRegion(name, factory.create());
         assertNotNull(getRootRegion().getSubregion(name));
+        return getMemberId();
       }
     };
 
     // create bridge client in vm0...
-    vm0.invoke(createConnectionPool);
-    String clientMemberId = (String) vm0.invoke(() -> ClientMembershipDUnitTest.getMemberId());
-    DistributedMember clientMember = (DistributedMember) vm0.invoke(() -> ClientMembershipDUnitTest.getDistributedMember());
+    DistributedMember clientMember = (DistributedMember)vm0.invoke(createConnectionPool);
+    String clientMemberId = clientMember.toString();
                                                 
     synchronized(listener) {
       if (!fired[JOINED] && !fired[LEFT] && !fired[CRASHED]) {
@@ -1138,8 +1141,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     resetArraysForTesting(fired, member, memberId, isClient);
 
     // reconnect bridge client to test for crashed event
-    vm0.invoke(createConnectionPool);
-    clientMemberId = (String) vm0.invoke(() -> ClientMembershipDUnitTest.getMemberId());
+    clientMemberId = vm0.invoke(createConnectionPool).toString();
                                                 
     synchronized(listener) {
       if (!fired[JOINED] && !fired[LEFT] && !fired[CRASHED]) {
@@ -1318,29 +1320,30 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     
     ports[0] = startBridgeServer(0);
     assertTrue(ports[0] != 0);
-    String serverMemberId = getMemberId();
+    String serverMemberId = getSystem().getDistributedMember().toString();
 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] ports[0]=" + ports[0]);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] serverMemberId=" + serverMemberId);
 
     final Host host = Host.getHost(0);
-    SerializableRunnable createPool =
-    new CacheSerializableRunnable("Create connection pool") {
-      public void run2() throws CacheException {
+    SerializableCallable createPool =
+    new SerializableCallable("Create connection pool") {
+      public Object call() {
         com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] create bridge client");
-        Properties config = new Properties();
-        config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        config.setProperty(DistributionConfig.LOCATORS_NAME, "");
+        properties = new Properties();
+        properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+        properties.setProperty(DistributionConfig.LOCATORS_NAME, "");
         // 11/30/2015 this test is periodically failing during distributedTest runs
         // so we are setting the log-level to fine to figure out what's going on
-        config.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        getSystem(config);
+        properties.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+        getSystem(properties);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
         Pool p = ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(host), ports, true, -1, -1, null);
         createRegion(name, factory.create());
         assertNotNull(getRootRegion().getSubregion(name));
         assertTrue(p.getServers().size() > 0);
+        return getMemberId();
       }
     };
 
@@ -1350,8 +1353,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     for (int i = 0; i < host.getVMCount(); i++) { 
       final VM vm = Host.getHost(0).getVM(i);
       System.out.println("creating pool in vm_"+i);
-      vm.invoke(createPool);
-      clientMemberIdArray[i] =  String.valueOf(vm.invoke(() -> ClientMembershipDUnitTest.getMemberId()));
+      clientMemberIdArray[i] = vm.invoke(createPool).toString();
     }
     Collection clientMemberIds = Arrays.asList(clientMemberIdArray);
                                                 
@@ -1378,12 +1380,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     Map connectedClients = InternalClientMembership.getConnectedClients(false);
     assertNotNull(connectedClients);
     assertEquals(clientMemberIds.size(), connectedClients.size());
+    System.out.println("connectedClients: " + connectedClients + "; clientMemberIds: " + clientMemberIds);
     for (Iterator iter = connectedClients.keySet().iterator(); iter.hasNext();) {
       String connectedClient = (String)iter.next();
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] checking for client " + connectedClient);
+      System.out.println("[testGetConnectedClients] checking for client " + connectedClient);
       assertTrue(clientMemberIds.contains(connectedClient));
       Object[] result = (Object[])connectedClients.get(connectedClient);
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testGetConnectedClients] result: " + 
+      System.out.println("[testGetConnectedClients] result: " + 
                           (result==null? "none"
                               : String.valueOf(result[0])+"; connections="+result[1]));
     }
@@ -1496,6 +1499,14 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     return testGetConnectedServers_port;
   }
 
+  
+  public Properties getDistributedSystemProperties() {
+    if (properties == null) {
+      properties = new Properties();
+    }
+    return properties;
+  }
+
   /**
    * Tests getConnectedClients(boolean onlyClientsNotifiedByThisServer) where
    * onlyClientsNotifiedByThisServer is true.
@@ -1556,7 +1567,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     region.registerInterest("KEY-1");
     region.get("KEY-1");
 
-    final String clientMemberId = getMemberId();
+    final String clientMemberId = getMemberId().toString();
     
     pauseForClientToJoin();
     
