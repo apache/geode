@@ -25,4 +25,5 @@ dependencies {
   // the following test dependencies are needed for mocking cache instance
   testRuntime 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
   testRuntime 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
+  runtime 'org.apache.hbase:hbase:' + project.'hbase.version'
 }
