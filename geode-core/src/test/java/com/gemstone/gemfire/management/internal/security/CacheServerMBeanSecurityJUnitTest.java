@@ -43,7 +43,8 @@ public class CacheServerMBeanSecurityJUnitTest {
   private MBeanServerConnection con;
 
   @ClassRule
-  public static JsonAuthorizationMBeanServerStartRule serverRule = new JsonAuthorizationMBeanServerStartRule(jmxManagerPort, "cacheServer.json");
+  public static JsonAuthorizationMBeanServerStartRule serverRule = new JsonAuthorizationMBeanServerStartRule(
+      jmxManagerPort, "cacheServer.json");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -51,7 +52,8 @@ public class CacheServerMBeanSecurityJUnitTest {
   @Before
   public void setUp() throws Exception {
     //assertThat(cache.getCacheServers()).hasSize(1);
-    cacheServerMXBean = (CacheServerMXBean)connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
+    cacheServerMXBean = (CacheServerMXBean) connectionRule.getProxyMBean(CacheServerMXBean.class,
+        "GemFire:service=CacheServer,*");
     con = connectionRule.getMBeanServerConnection();
   }
 
@@ -60,14 +62,12 @@ public class CacheServerMBeanSecurityJUnitTest {
    */
   @Test
   @JMXConnectionConfiguration(user = "superuser", password = "1234567")
-  public void testNoAccessWithWhoever() throws Exception{
-    assertThatThrownBy(
-        () -> con.createMBean("FakeClassName", new ObjectName("GemFire", "name", "foo"))
-    ).isInstanceOf(SecurityException.class);
+  public void testNoAccessWithWhoever() throws Exception {
+    assertThatThrownBy(() -> con.createMBean("FakeClassName", new ObjectName("GemFire", "name", "foo")))
+        .isInstanceOf(SecurityException.class);
 
-    assertThatThrownBy(
-        () -> con.unregisterMBean(new ObjectName("GemFire", "name", "foo"))
-    ).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> con.unregisterMBean(new ObjectName("GemFire", "name", "foo")))
+        .isInstanceOf(SecurityException.class);
   }
 
 
@@ -111,7 +111,8 @@ public class CacheServerMBeanSecurityJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testQueryBean() throws MalformedObjectNameException, IOException {
-    Set<ObjectInstance> objects = con.queryMBeans(ObjectName.getInstance(ResourceConstants.OBJECT_NAME_ACCESSCONTROL), null);
+    Set<ObjectInstance> objects = con.queryMBeans(ObjectName.getInstance(ResourceConstants.OBJECT_NAME_ACCESSCONTROL),
+        null);
     assertThat(objects.size()).isEqualTo(0); // no AccessControlMBean in the query result
 
     objects = con.queryMBeans(ObjectName.getInstance("GemFire:service=CacheServer,*"), null);

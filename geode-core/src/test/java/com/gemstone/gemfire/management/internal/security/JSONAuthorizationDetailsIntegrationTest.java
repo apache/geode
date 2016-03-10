@@ -55,7 +55,7 @@ public class JSONAuthorizationDetailsIntegrationTest {
   public void testUserAndRoleRegionServerGroup() throws Exception {
     new JSONAuthorization("testUserAndRoleRegionServerGroup.json");
     Map<String, User> acl = JSONAuthorization.getAcl();
-    
+
     assertNotNull(acl);
     assertEquals(1, acl.size());
     User user = acl.get("tushark");
@@ -74,7 +74,7 @@ public class JSONAuthorizationDetailsIntegrationTest {
   public void testUserMultipleRole() throws Exception {
     new JSONAuthorization("testUserMultipleRole.json");
     Map<String, User> acl = JSONAuthorization.getAcl();
-    
+
     assertNotNull(acl);
     assertEquals(1, acl.size());
     User user = acl.get("tushark");
@@ -107,7 +107,7 @@ public class JSONAuthorizationDetailsIntegrationTest {
   public void testInheritRole() throws Exception {
     new JSONAuthorization("testInheritRole.json");
     Map<String, User> acl = JSONAuthorization.getAcl();
-    
+
     assertNotNull(acl);
     assertEquals(3, acl.size());
     User user = acl.get("tushark");

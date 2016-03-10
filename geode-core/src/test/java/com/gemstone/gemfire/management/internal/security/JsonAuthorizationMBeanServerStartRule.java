@@ -28,7 +28,7 @@ public class JsonAuthorizationMBeanServerStartRule extends ExternalResource {
   private int jmxManagerPort;
   private String jsonFile;
 
-  public JsonAuthorizationMBeanServerStartRule(int jmxManagerPort, String jsonFile){
+  public JsonAuthorizationMBeanServerStartRule(int jmxManagerPort, String jsonFile) {
     this.jmxManagerPort = jmxManagerPort;
     this.jsonFile = jsonFile;
   }

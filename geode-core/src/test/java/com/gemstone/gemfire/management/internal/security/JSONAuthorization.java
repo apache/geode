@@ -44,47 +44,47 @@ import java.util.Set;
 
 public class JSONAuthorization implements AccessControl, Authenticator {
 
-	public static class Role{
-		String[] permissions;
-		String name;
-		String regionName;
-		String serverGroup;
-	}
+  public static class Role {
+    String[] permissions;
+    String name;
+    String regionName;
+    String serverGroup;
+  }
 
-	public static class User{
-		String name;
-		Role[] roles;
-		String pwd;
-	}
+  public static class User {
+    String name;
+    Role[] roles;
+    String pwd;
+  }
 
-	private static Map<String,User> acl = null;
+  private static Map<String, User> acl = null;
 
-	public static JSONAuthorization create() throws IOException, JSONException {
-	  return new JSONAuthorization();
-	}
+  public static JSONAuthorization create() throws IOException, JSONException {
+    return new JSONAuthorization();
+  }
 
   public JSONAuthorization() {
   }
 
-	public JSONAuthorization(String jsonFileName) throws IOException, JSONException{
-		setUpWithJsonFile(jsonFileName);
-	}
+  public JSONAuthorization(String jsonFileName) throws IOException, JSONException {
+    setUpWithJsonFile(jsonFileName);
+  }
 
-	public static void setUpWithJsonFile(String jsonFileName) throws IOException, JSONException {
-		String json = readFile(TestUtil.getResourcePath(JSONAuthorization.class, jsonFileName));
-		readSecurityDescriptor(json);
-	}
+  public static void setUpWithJsonFile(String jsonFileName) throws IOException, JSONException {
+    String json = readFile(TestUtil.getResourcePath(JSONAuthorization.class, jsonFileName));
+    readSecurityDescriptor(json);
+  }
 
-	private static void readSecurityDescriptor(String json) throws IOException, JSONException {
-		JSONObject jsonBean = new JSONObject(json);
-		acl = new HashMap<String,User>();
-		Map<String,Role> roleMap = readRoles(jsonBean);
-		readUsers(acl,jsonBean,roleMap);
-	}
+  private static void readSecurityDescriptor(String json) throws IOException, JSONException {
+    JSONObject jsonBean = new JSONObject(json);
+    acl = new HashMap<String, User>();
+    Map<String, Role> roleMap = readRoles(jsonBean);
+    readUsers(acl, jsonBean, roleMap);
+  }
 
-	public static Set<OperationCode> getAuthorizedOps(User user, ResourceOperationContext context) {
+  public static Set<OperationCode> getAuthorizedOps(User user, ResourceOperationContext context) {
     Set<OperationCode> codeList = new HashSet<OperationCode>();
-    for(Role role : user.roles) {
+    for (Role role : user.roles) {
       for (String perm : role.permissions) {
         OperationCode code = OperationCode.valueOf(perm);
         if (role.regionName == null && role.serverGroup == null) {
@@ -97,7 +97,8 @@ public class JSONAuthorization implements AccessControl, Authenticator {
             if (region != null && region.equals(role.regionName)) {
               addPermissions(code, codeList);
             } else {
-              LogService.getLogger().info("Not adding permission " + code + " since region=" + region + " does not match");
+              LogService.getLogger()
+                  .info("Not adding permission " + code + " since region=" + region + " does not match");
             }
           }
         }
@@ -115,110 +116,106 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     codeList.add(code);
   }
 
-	private static void readUsers(Map<String, User> acl, JSONObject jsonBean,
-			Map<String, Role> roleMap) throws JSONException {
-		JSONArray array = jsonBean.getJSONArray("users");
-		for(int i=0;i<array.length();i++){
-			JSONObject obj = array.getJSONObject(i);
-			User user = new User();
-			user.name = obj.getString("name");
-			if(obj.has("password")) {
+  private static void readUsers(Map<String, User> acl, JSONObject jsonBean,
+      Map<String, Role> roleMap) throws JSONException {
+    JSONArray array = jsonBean.getJSONArray("users");
+    for (int i = 0; i < array.length(); i++) {
+      JSONObject obj = array.getJSONObject(i);
+      User user = new User();
+      user.name = obj.getString("name");
+      if (obj.has("password")) {
         user.pwd = obj.getString("password");
       } else {
         user.pwd = user.name;
       }
 
-			JSONArray ops = obj.getJSONArray("roles");
-			user.roles = new Role[ops.length()];
-			for(int j=0;j<ops.length();j++){
-				String roleName = ops.getString(j);
-				user.roles[j] = roleMap.get(roleName);
-				if(user.roles[j]==null){
-					throw new RuntimeException("Role not present " + roleName);
-				}
-			}
-			acl.put(user.name, user);
-		}
-	}
+      JSONArray ops = obj.getJSONArray("roles");
+      user.roles = new Role[ops.length()];
+      for (int j = 0; j < ops.length(); j++) {
+        String roleName = ops.getString(j);
+        user.roles[j] = roleMap.get(roleName);
+        if (user.roles[j] == null) {
+          throw new RuntimeException("Role not present " + roleName);
+        }
+      }
+      acl.put(user.name, user);
+    }
+  }
 
-	private static Map<String, Role> readRoles(JSONObject jsonBean) throws JSONException {
-		Map<String,Role> roleMap = new HashMap<String,Role>();
-		JSONArray array = jsonBean.getJSONArray("roles");
-		for(int i=0;i<array.length();i++){
-			JSONObject obj = array.getJSONObject(i);
-			Role role = new Role();
-			role.name = obj.getString("name");
+  private static Map<String, Role> readRoles(JSONObject jsonBean) throws JSONException {
+    Map<String, Role> roleMap = new HashMap<String, Role>();
+    JSONArray array = jsonBean.getJSONArray("roles");
+    for (int i = 0; i < array.length(); i++) {
+      JSONObject obj = array.getJSONObject(i);
+      Role role = new Role();
+      role.name = obj.getString("name");
 
-			if(obj.has("operationsAllowed")){
-				JSONArray ops = obj.getJSONArray("operationsAllowed");
-				role.permissions = new String[ops.length()];
-				for(int j=0;j<ops.length();j++){
-					role.permissions[j] = ops.getString(j);
-				}
-			}else {
-				if (!obj.has("inherit"))
-					throw new RuntimeException(
-							"Role "
-									+ role.name
-									+ " does not have any permission neither it inherits any parent role");
-			}
+      if (obj.has("operationsAllowed")) {
+        JSONArray ops = obj.getJSONArray("operationsAllowed");
+        role.permissions = new String[ops.length()];
+        for (int j = 0; j < ops.length(); j++) {
+          role.permissions[j] = ops.getString(j);
+        }
+      } else {
+        if (!obj.has("inherit")) {
+          throw new RuntimeException(
+              "Role " + role.name + " does not have any permission neither it inherits any parent role");
+        }
+      }
 
-			roleMap.put(role.name,role);
+      roleMap.put(role.name, role);
 
-			if(obj.has("region")){
-				role.regionName = obj.getString("region");
-			}
+      if (obj.has("region")) {
+        role.regionName = obj.getString("region");
+      }
 
-			if(obj.has("serverGroup")){
-				role.serverGroup = obj.getString("serverGroup");
-			}
-		}
+      if (obj.has("serverGroup")) {
+        role.serverGroup = obj.getString("serverGroup");
+      }
+    }
 
-		for(int i=0;i<array.length();i++){
-			JSONObject obj = array.getJSONObject(i);
-			String name = obj.getString("name");
-			Role role = roleMap.get(name);
-			if (role == null) {
-				throw new RuntimeException("Role not present "
-						+ role);
-			}
-			if(obj.has("inherit")){
-				JSONArray parentRoles = obj.getJSONArray("inherit");
-				for (int m = 0; m < parentRoles.length(); m++) {
-					String parentRoleName = parentRoles.getString(m);
-					Role parentRole = roleMap.get(parentRoleName);
-					if (parentRole == null) {
-						throw new RuntimeException("Role not present "
-								+ parentRoleName);
-					}
-					int oldLenth=0;
-					if(role.permissions!=null)
-						oldLenth = role.permissions.length;
-					int newLength = oldLenth + parentRole.permissions.length;
-					String[] str = new String[newLength];
-					int k = 0;
-					if(role.permissions!=null) {
-						for (; k < role.permissions.length; k++) {
-							str[k] = role.permissions[k];
-						}
-					}
+    for (int i = 0; i < array.length(); i++) {
+      JSONObject obj = array.getJSONObject(i);
+      String name = obj.getString("name");
+      Role role = roleMap.get(name);
+      if (role == null) {
+        throw new RuntimeException("Role not present " + role);
+      }
+      if (obj.has("inherit")) {
+        JSONArray parentRoles = obj.getJSONArray("inherit");
+        for (int m = 0; m < parentRoles.length(); m++) {
+          String parentRoleName = parentRoles.getString(m);
+          Role parentRole = roleMap.get(parentRoleName);
+          if (parentRole == null) {
+            throw new RuntimeException("Role not present " + parentRoleName);
+          }
+          int oldLenth = 0;
+          if (role.permissions != null) oldLenth = role.permissions.length;
+          int newLength = oldLenth + parentRole.permissions.length;
+          String[] str = new String[newLength];
+          int k = 0;
+          if (role.permissions != null) {
+            for (; k < role.permissions.length; k++) {
+              str[k] = role.permissions[k];
+            }
+          }
 
-					for (int l = 0; l < parentRole.permissions.length; l++) {
-						str[k + l] = parentRole.permissions[l];
-					}
-					role.permissions = str;
-				}
-			}
+          for (int l = 0; l < parentRole.permissions.length; l++) {
+            str[k + l] = parentRole.permissions[l];
+          }
+          role.permissions = str;
+        }
+      }
 
-		}
-		return roleMap;
-	}
+    }
+    return roleMap;
+  }
 
-	public static Map<String, User> getAcl() {
-		return acl;
-	}
+  public static Map<String, User> getAcl() {
+    return acl;
+  }
 
-	private Principal principal=null;
+  private Principal principal = null;
 
   @Override
   public void close() {
@@ -228,27 +225,25 @@ public class JSONAuthorization implements AccessControl, Authenticator {
   @Override
   public boolean authorizeOperation(String arg0, OperationContext context) {
 
-    if(principal!=null) {
+    if (principal != null) {
       User user = acl.get(principal.getName());
-      if(user!=null) {
+      if (user != null) {
         LogService.getLogger().info("Context received " + context);
-        ResourceOperationContext ctx = (ResourceOperationContext)context;
+        ResourceOperationContext ctx = (ResourceOperationContext) context;
         LogService.getLogger().info("Checking for code " + ctx.getOperationCode());
 
         //TODO : This is for un-annotated commands
-        if(ctx.getOperationCode()==null)
-          return true;
+        if (ctx.getOperationCode() == null) return true;
 
         boolean found = false;
-        for(OperationCode code : getAuthorizedOps(user, (ResourceOperationContext) context)) {
-          if(ctx.getOperationCode().equals(code)){
-            found =true;
+        for (OperationCode code : getAuthorizedOps(user, (ResourceOperationContext) context)) {
+          if (ctx.getOperationCode().equals(code)) {
+            found = true;
             LogService.getLogger().info("found code " + code.toString());
             break;
           }
         }
-        if(found)
-          return true;
+        if (found) return true;
         LogService.getLogger().info("Did not find code " + ctx.getOperationCode());
         return false;
       }
@@ -266,10 +261,9 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     String user = props.getProperty(ResourceConstants.USER_NAME);
     String pwd = props.getProperty(ResourceConstants.PASSWORD);
     User userObj = acl.get(user);
-    if(userObj==null)
-      throw new AuthenticationFailedException("Wrong username/password");
-    LogService.getLogger().info("User="+user + " pwd="+pwd);
-    if (user!=null && !userObj.pwd.equals(pwd) && !"".equals(user))
+    if (userObj == null) throw new AuthenticationFailedException("Wrong username/password");
+    LogService.getLogger().info("User=" + user + " pwd=" + pwd);
+    if (user != null && !userObj.pwd.equals(pwd) && !"".equals(user))
       throw new AuthenticationFailedException("Wrong username/password");
     LogService.getLogger().info("Authentication successful!! for " + user);
     return new JMXPrincipal(user);

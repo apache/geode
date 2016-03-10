@@ -16,16 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static org.junit.Assert.*;
-
-import javax.management.remote.JMXPrincipal;
-
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import javax.management.remote.JMXPrincipal;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests <code>JSONAuthorization.authorizeOperation(...)</code> for <code>DistributedSystemMXBean</code> operations.
@@ -34,16 +32,16 @@ import com.gemstone.gemfire.util.test.TestUtil;
 public class AuthorizeOperationForDistributedSystemMXBeanIntegrationTest {
 
   @Test
-  public void returnsFalseForUnauthorizedUser() throws Exception {    
+  public void returnsFalseForUnauthorizedUser() throws Exception {
     JSONAuthorization authorization = new JSONAuthorization("auth1.json");
     authorization.init(new JMXPrincipal("tushark"), null, null);
-    
+
     ResourceOperationContext context = new ResourceOperationContext(null, "QUERY");
     boolean result = authorization.authorizeOperation(null, context);
     assertTrue(result);
-    
+
     context = new ResourceOperationContext(null, "MANAGE");
-    result = authorization.authorizeOperation(null,context);
+    result = authorization.authorizeOperation(null, context);
     assertFalse(result);
   }
 }

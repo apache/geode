@@ -37,7 +37,9 @@ import java.lang.management.ManagementFactory;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests <code>JSONAuthorization.authorizeOperation(...)</code> for Region commands.
@@ -45,17 +47,17 @@ import static org.junit.Assert.*;
 @Category(IntegrationTest.class)
 @SuppressWarnings("deprecation")
 public class AuthorizeOperationForRegionCommandsIntegrationTest {
-  
+
   private GemFireCacheImpl cache;
   private DistributedSystem ds;
   private int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   @Rule
   public TestName testName = new TestName();
-  
+
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  
+
   @Before
   public void setUp() {
     Properties properties = new Properties();
@@ -67,7 +69,8 @@ public class AuthorizeOperationForRegionCommandsIntegrationTest {
     properties.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(this.jmxManagerPort));
     properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
     properties.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
-    properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
+    properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
+        JSONAuthorization.class.getName() + ".create");
 
     this.ds = DistributedSystem.connect(properties);
     this.cache = (GemFireCacheImpl) CacheFactory.create(ds);
@@ -84,14 +87,14 @@ public class AuthorizeOperationForRegionCommandsIntegrationTest {
       ds = null;
     }
   }
-  
+
   @Test
   public void testAuthorizeOperationWithRegionOperations() throws Exception {
     JSONAuthorization authorization = new JSONAuthorization("auth3.json");
     authorization.init(new JMXPrincipal("tushark"), null, null);
-    
+
     checkAccessControlMBean();
-    
+
     CLIOperationContext cliContext = new CLIOperationContext("locate entry --key=k1 --region=region1");
     boolean result = authorization.authorizeOperation(null, cliContext);
     assertTrue("Operation not authorized", result);
@@ -115,6 +118,6 @@ public class AuthorizeOperationForRegionCommandsIntegrationTest {
     Set<ObjectName> names = platformMBeanServer.queryNames(name, null);
     assertFalse(names.isEmpty());
     assertEquals(1, names.size());
-    assertEquals(name,names.iterator().next());
+    assertEquals(name, names.iterator().next());
   }
 }

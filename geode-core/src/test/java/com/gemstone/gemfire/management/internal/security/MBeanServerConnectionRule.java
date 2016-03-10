@@ -37,7 +37,6 @@ import java.util.Set;
 /**
  * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}
  * it allows for the creation of per-test connections with different user/password combinations.
- *
  */
 public class MBeanServerConnectionRule extends DescribedExternalResource {
 
@@ -48,6 +47,7 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
 
   /**
    * Rule constructor
+   *
    * @param port The JMX server port to connect to
    */
   public MBeanServerConnectionRule(int port) {
@@ -56,29 +56,32 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
 
   /**
    * Retrieve a new proxy MBean
+   *
    * @return A new proxy MBean of the same type with which the class was constructed
    */
   public Object getProxyMBean(Class proxyClass, String beanQueryName) throws MalformedObjectNameException, IOException {
     ObjectName name = null;
     QueryExp query = null;
 
-    if(proxyClass != null){
+    if (proxyClass != null) {
       query = Query.isInstanceOf(Query.value(proxyClass.getName()));
     }
 
-    if(beanQueryName != null){
+    if (beanQueryName != null) {
       name = ObjectName.getInstance(beanQueryName);
     }
 
     Set<ObjectInstance> beans = con.queryMBeans(name, query);
-    if(beans.size() != 1){
-      throw new RuntimeException("failed to find only one instance of "+proxyClass.getName()+" with name "+beanQueryName);
+    if (beans.size() != 1) {
+      throw new RuntimeException(
+          "failed to find only one instance of " + proxyClass.getName() + " with name " + beanQueryName);
     }
-    return JMX.newMXBeanProxy(con, ((ObjectInstance)beans.toArray()[0]).getObjectName(), proxyClass);
+    return JMX.newMXBeanProxy(con, ((ObjectInstance) beans.toArray()[0]).getObjectName(), proxyClass);
   }
 
   /**
    * Retrieve a new proxy MBean
+   *
    * @return A new proxy MBean of the same type with which the class was constructed
    */
   public Object getProxyMBean(Class proxyClass) throws MalformedObjectNameException, IOException {
@@ -97,10 +100,10 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
   protected void before(Description description) throws Throwable {
     JMXConnectionConfiguration config = description.getAnnotation(JMXConnectionConfiguration.class);
     Map<String, String[]> env = new HashMap<>();
-    if(config!=null) {
+    if (config != null) {
       String user = config.user();
       String password = config.password();
-      env.put(JMXConnector.CREDENTIALS, new String[] { user, password });
+      env.put(JMXConnector.CREDENTIALS, new String[]{user, password});
     }
     JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + jmxServerPort + "/jmxrmi");
 

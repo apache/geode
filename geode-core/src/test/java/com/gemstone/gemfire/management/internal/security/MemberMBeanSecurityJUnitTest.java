@@ -37,14 +37,15 @@ public class MemberMBeanSecurityJUnitTest {
   private MBeanServerConnection con;
 
   @ClassRule
-  public static JsonAuthorizationMBeanServerStartRule serverRule = new JsonAuthorizationMBeanServerStartRule(jmxManagerPort, "cacheServer.json");
+  public static JsonAuthorizationMBeanServerStartRule serverRule = new JsonAuthorizationMBeanServerStartRule(
+      jmxManagerPort, "cacheServer.json");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
 
   @Before
   public void setUp() throws Exception {
-    bean = (MemberMXBean)connectionRule.getProxyMBean(MemberMXBean.class);
+    bean = (MemberMXBean) connectionRule.getProxyMBean(MemberMXBean.class);
     con = connectionRule.getMBeanServerConnection();
   }
 
