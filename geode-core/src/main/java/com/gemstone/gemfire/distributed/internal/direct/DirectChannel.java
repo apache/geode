@@ -70,8 +70,6 @@ import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.internal.util.concurrent.ReentrantSemaphore;
 
 /**
- * @author Bruce Schuchardt
- * @author Darrel Schneider
  * DirectChannel is used to interact directly with other Direct servers to
  * distribute GemFire messages to other nodes.  It is held by a
  * com.gemstone.gemfire.internal.cache.distribution.DistributionChannel,
@@ -191,13 +189,8 @@ public class DirectChannel {
    * The maximum number of concurrent senders sending a message to a group of recipients.
    */
   static private final int MAX_GROUP_SENDERS = Integer.getInteger("p2p.maxGroupSenders", DEFAULT_CONCURRENCY_LEVEL).intValue();
-  private Semaphore groupUnorderedSenderSem; // TODO this should be final?
-  private Semaphore groupOrderedSenderSem; // TODO this should be final?
-
-//  /**
-//   * cause of abnormal shutdown, if any
-//   */
-//  private volatile Exception shutdownCause;
+  private Semaphore groupUnorderedSenderSem;
+  private Semaphore groupOrderedSenderSem;
 
   private Semaphore getGroupSem(boolean ordered) {
     if (ordered) {
@@ -248,14 +241,6 @@ public class DirectChannel {
     }
     return false;
     
-//    Boolean b = getThreadOwnsResourcesRegistration();
-//    if (b == null) {
-//      // thread does not have a preference so return default
-//      return !this.owner.shareSockets;
-//      return false;
-//    } else {
-//      return b.booleanValue();
-//    }
   }
 
   /**
@@ -809,8 +794,16 @@ public class DirectChannel {
 //    this.shutdownCause = cause;
     this.disconnected = true;
     this.disconnectCompleted = false;
-    releaseGroupSendPermission(true);
-    releaseGroupSendPermission(false);
+    try {
+      groupOrderedSenderSem.release();
+    } catch (Error e) {
+      // GEODE-1076 - already released
+    }
+    try {
+      groupUnorderedSenderSem.release();
+    } catch (Error e) {
+      // GEODE-1076 - already released
+    }
     this.conduit.stop(cause);
     this.disconnectCompleted = true;
   }
