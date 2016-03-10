@@ -41,15 +41,28 @@ dependencies {
     exclude module: 'commons-logging-api'
     exclude module: 'mx4j-jmx'
     exclude module: 'xml-apis'
+    ext.optional = true
   }
-  compile 'io.netty:netty-all:' + project.'netty-all.version'
+  compile ('io.netty:netty-all:' + project.'netty-all.version') {
+    ext.optional = true
+  }
   compile 'it.unimi.dsi:fastutil:' + project.'fastutil.version'
-  compile 'javax.mail:javax.mail-api:' + project.'javax.mail-api.version'
+  compile ('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
+    ext.optional = true;
+  }
   compile 'javax.resource:javax.resource-api:' + project.'javax.resource-api.version'
-  compile 'mx4j:mx4j:' + project.'mx4j.version'
-  compile 'mx4j:mx4j-remote:' + project.'mx4j.version'
-  compile 'mx4j:mx4j-tools:' + project.'mx4j.version'
-  compile 'net.java.dev.jna:jna:' + project.'jna.version'
+  compile ('mx4j:mx4j:' + project.'mx4j.version') {
+    ext.optional = true;
+  }
+  compile ('mx4j:mx4j-remote:' + project.'mx4j.version') {
+    ext.optional = true;
+  }
+  compile ('mx4j:mx4j-tools:' + project.'mx4j.version') { 
+    ext.optional = true;
+  }
+  compile ('net.java.dev.jna:jna:' + project.'jna.version') {
+    ext.optional = true
+  }
   provided ('org.apache.hadoop:hadoop-common:' + project.'hadoop.version') {
     transitive=false
   }
@@ -71,16 +84,26 @@ dependencies {
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
   runtime 'org.fusesource.jansi:jansi:' + project.'jansi.version'
-  runtime 'org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version'
-  runtime 'org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version'
-  runtime 'org.apache.logging.log4j:log4j-jul:' + project.'log4j.version'
-  compile 'org.eclipse.jetty:jetty-webapp:' + project.'jetty.version'
+  runtime ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+    ext.optional = true
+  }
+  runtime ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+    ext.optional = true
+  }
+  runtime ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
+    ext.optional = true
+  }
+  compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
+    ext.optional = true
+  }
   runtime ('org.springframework:spring-aop:' + project.'springframework.version') {
     exclude module: 'aopalliance'
+    ext.optional = true
   }
   compile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
+    ext.optional = true
   }
   compile ('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
     exclude module: 'aopalliance'
@@ -88,8 +111,11 @@ dependencies {
     exclude module: 'cglib'
     exclude module: 'guava'
     exclude module: 'spring-aop'
+    ext.optional = true
   }
-  compile 'org.xerial.snappy:snappy-java:' + project.'snappy-java.version'
+  compile ('org.xerial.snappy:snappy-java:' + project.'snappy-java.version') {
+    ext.optional = true
+  }
  
   compile project(':geode-common')
   compile project(':geode-joptsimple')
