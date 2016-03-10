@@ -3,13 +3,13 @@
     {
       "name": "dataUsers",
       "operationsAllowed": [
-        "LOCATE_ENTRY"
+        "GET"
       ]
     },
     {
       "name": "secureDataUsers",
       "operationsAllowed": [
-        "LOCATE_ENTRY"
+        "GET"
       ],
       "region": "secureRegion"
     }

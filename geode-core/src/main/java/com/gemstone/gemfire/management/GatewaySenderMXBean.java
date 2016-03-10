@@ -18,8 +18,9 @@ package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -174,31 +175,31 @@ public interface GatewaySenderMXBean {
    * configuration cannot be changed.
    * 
    */
-  @ResourceOperation(resource=Resource.GATEWAY_SENDER, operation=ResourceConstants.START_GW_SENDER)
+  @ResourceOperation(resource = Resource.GATEWAY_SENDER, operation = OperationCode.START)
   public void start();
 
   /**
    * Stops this GatewaySender.
    */
-  @ResourceOperation(resource=Resource.GATEWAY_SENDER, operation=ResourceConstants.STOP_GW_SENDER)
+  @ResourceOperation(resource=Resource.GATEWAY_SENDER, operation=OperationCode.STOP)
   public void stop();
 
   /**
    * Pauses this GatewaySender.
    */
-  @ResourceOperation(resource=Resource.GATEWAY_SENDER, operation=ResourceConstants.PAUSE_GW_SENDER)
+  @ResourceOperation(resource = Resource.GATEWAY_SENDER, operation = OperationCode.PAUSE)
   public void pause();
 
   /**
    * Resumes this paused GatewaySender.
    */
-  @ResourceOperation(resource=Resource.GATEWAY_SENDER, operation=ResourceConstants.RESUME_GW_SENDER)
+  @ResourceOperation(resource = Resource.GATEWAY_SENDER, operation = OperationCode.RESUME)
   public void resume();
 
   /**
    * Rebalances this GatewaySender.
    */
-  @ResourceOperation(resource=Resource.GATEWAY_SENDER, operation=ResourceConstants.LOAD_BALANCE_GW_SENDER)
+  @ResourceOperation(resource = Resource.GATEWAY_SENDER, operation = OperationCode.REBALANCE)
   public void rebalance();
   
   /**

@@ -16,17 +16,17 @@
  */
 package com.gemstone.gemfire.management;
 
-import java.util.Map;
-
-import javax.management.ObjectName;
-
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
+import javax.management.ObjectName;
+import java.util.Map;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * MBean that provides access to information and management operations for a
@@ -160,7 +160,7 @@ public interface DistributedSystemMXBean {
    *          Minimum level for alerts to be delivered.
    *          Must be one of: WARNING, ERROR, SEVERE or NONE.
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.CHANGE_ALERT_LEVEL)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.SET_ALERT_LEVEL)
   public void changeAlertLevel(String alertLevel) throws Exception;
 
   /**
@@ -243,7 +243,7 @@ public interface DistributedSystemMXBean {
    *          path of the directory for baseline backup.
    * @return The results of the backup request.
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.BACKUP_MEMBERS)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.BACKUP)
   public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath)
       throws Exception;
 
@@ -328,7 +328,7 @@ public interface DistributedSystemMXBean {
    *
    * @return List of names of all distributed members that were shutdown.
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.SHUTDOWN)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.SHUTDOWN)
   public String[] shutDownAllMembers() throws Exception;
 
   /**
@@ -348,7 +348,7 @@ public interface DistributedSystemMXBean {
    *          UUID of the disk store to remove
    * @return True if the request is successful, false otherwise.
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.REVOKE_MISSING_DISKSTORE)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.REVOKE_MISSING)
   public boolean revokeMissingDiskStores(String diskStoreId)
       throws Exception;
 
@@ -624,7 +624,7 @@ public interface DistributedSystemMXBean {
    *          will be set.
    * @return a JSON formated string containing data and its type
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.QUERY)
+  @ResourceOperation(resource = Resource.QUERY, operation = OperationCode.QUERY)
   public String queryData(String queryString, String members, int limit) throws Exception;
   
   /**
@@ -654,7 +654,7 @@ public interface DistributedSystemMXBean {
    *          will be set.
    * @return a byte[] which is a compressed JSON string.
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.QUERY)
+  @ResourceOperation(resource = Resource.QUERY, operation = OperationCode.QUERY)
   public byte[] queryDataForCompressedResult(String queryString, String members, int limit) throws Exception;
   
   
@@ -680,7 +680,7 @@ public interface DistributedSystemMXBean {
    */
   public int getQueryResultSetLimit();
 
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.QUERY)
+  @ResourceOperation(resource = Resource.QUERY, operation = OperationCode.SET_QUERY_RESULT_LIMIT)
   public void setQueryResultSetLimit(int queryResultSetLimit);
 
   /**
@@ -690,6 +690,6 @@ public interface DistributedSystemMXBean {
    */
   public int getQueryCollectionsDepth();
 
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.QUERY)
+  @ResourceOperation(resource = Resource.QUERY, operation = OperationCode.SET_QUERY_COLLECTION_DEPTH)
   public void setQueryCollectionsDepth(int queryCollectionsDepth);
 }

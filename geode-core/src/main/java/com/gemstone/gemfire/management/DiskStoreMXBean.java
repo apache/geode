@@ -17,10 +17,11 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -160,7 +161,7 @@ public interface DiskStoreMXBean {
    * compaction is true then the application will wait for the other op-logs to
    * be compacted and additional space is available.
    */
-  @ResourceOperation(resource=Resource.DISKSTORE, operation=ResourceConstants.FORCE_ROLL)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationContext.OperationCode.ROLL)
   public void forceRoll();
 
   /**
@@ -174,14 +175,14 @@ public interface DiskStoreMXBean {
    *         that no op-logs were ready to be compacted or that a compaction was
    *         already in progress.
    */
-  @ResourceOperation(resource=Resource.DISKSTORE, operation=ResourceConstants.FORCE_COMPACTION)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.COMPACT)
   public boolean forceCompaction();
   
   /**
    * Causes any data that is currently in the asynchronous queue to be written
    * to disk. Does not return until the flush is complete.
    */
-  @ResourceOperation(resource=Resource.DISKSTORE, operation=ResourceConstants.FLUSH_DISKSTORE)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.FLUSH)
   public void flush();
 
   /**
@@ -207,7 +208,7 @@ public interface DiskStoreMXBean {
    * 
    * @param warningPercent the warning percent
    */
-  @ResourceOperation(resource=Resource.DISKSTORE, operation=ResourceConstants.SET_DISK_USAGE)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.SET_DISK_USAGE_WARNING)
   public void setDiskUsageWarningPercentage(float warningPercent);
   
   /**
@@ -215,6 +216,6 @@ public interface DiskStoreMXBean {
    * 
    * @param criticalPercent the critical percent
    */
-  @ResourceOperation(resource=Resource.DISKSTORE, operation=ResourceConstants.SET_DISK_USAGE)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.SET_DISK_USAGE_CRITICAL)
   public void setDiskUsageCriticalPercentage(float criticalPercent);
 }

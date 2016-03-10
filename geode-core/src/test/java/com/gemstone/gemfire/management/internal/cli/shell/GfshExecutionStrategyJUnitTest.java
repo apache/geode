@@ -16,10 +16,16 @@
  */
 package com.gemstone.gemfire.management.internal.cli.shell;
 
-import static org.junit.Assert.*;
-
-import java.util.List;
-
+import com.gemstone.gemfire.management.cli.CliMetaData;
+import com.gemstone.gemfire.management.cli.ConverterHint;
+import com.gemstone.gemfire.management.cli.Result;
+import com.gemstone.gemfire.management.internal.cli.CommandManager;
+import com.gemstone.gemfire.management.internal.cli.GfshParser;
+import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
+import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -28,20 +34,11 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.shell.event.ParseResult;
 
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.CommandManager;
-import com.gemstone.gemfire.management.internal.cli.GfshParser;
-import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.shell.GfshConfig;
-import com.gemstone.gemfire.management.internal.cli.shell.GfshExecutionStrategy;
-import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import java.util.List;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * GfshExecutionStrategyTest - Includes tests to for GfshExecutionStrategyTest
@@ -104,20 +101,20 @@ public class GfshExecutionStrategyJUnitTest {
 
     @CliCommand(value = { COMMAND1_NAME, COMMAND1_NAME_ALIAS }, help = COMMAND1_HELP)
     @CliMetaData(shellOnly = true )
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
     public static Result command1() {
       return ResultBuilder.createInfoResult(COMMAND1_SUCESS);      
     }
 
     @CliCommand(value = { COMMAND2_NAME })
     @CliMetaData(shellOnly = false )
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
     public static Result command2() {
       return ResultBuilder.createInfoResult(COMMAND2_SUCESS);      
     }
 
     @CliCommand(value = { "testParamConcat" })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
     public static Result testParamConcat(
         @CliOption(key = { "string" })
         String string,
@@ -134,7 +131,7 @@ public class GfshExecutionStrategyJUnitTest {
     }
 
     @CliCommand(value = { "testMultiWordArg" })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
     public static Result testMultiWordArg(@CliArgument(name = "arg1")
     String arg1, @CliArgument(name = "arg2")
     String arg2) {

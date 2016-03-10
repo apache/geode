@@ -23,14 +23,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface ResourceOperation {
+
   @DescriptorKey("resource")
   Resource resource();
-  String label() default ResourceConstants.DEFAULT_LABEL;
-  @DescriptorKey("operation")
-  String operation() default ResourceConstants.LIST_DS;
 
+  String label() default ResourceConstants.DEFAULT_LABEL;
+
+  @DescriptorKey("operation")
+  OperationCode operation() default OperationCode.ALL;
 }

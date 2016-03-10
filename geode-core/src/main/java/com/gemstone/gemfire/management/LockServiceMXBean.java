@@ -16,12 +16,13 @@
  */
 package com.gemstone.gemfire.management;
 
-import java.util.Map;
-
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
+import java.util.Map;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -72,7 +73,7 @@ public interface LockServiceMXBean {
   /**
    * Requests that this member become the granter.
    */
-  @ResourceOperation(resource=Resource.MEMBER, operation=ResourceConstants.BECOME_LOCK_GRANTOR)
+  @ResourceOperation(resource = Resource.LOCK_SERVICE, operation = OperationCode.BECOME_LOCK_GRANTOR)
   public void becomeLockGrantor();
 
   /**

@@ -16,32 +16,13 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.cli.CliMetaData;
 import com.gemstone.gemfire.management.cli.ConverterHint;
+import com.gemstone.gemfire.management.cli.Result;
+import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.domain.DurableCqNamesResult;
-import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails.IndexStatisticsDetails;
 import com.gemstone.gemfire.management.internal.cli.domain.MemberResult;
 import com.gemstone.gemfire.management.internal.cli.domain.SubscriptionQueueSizeResult;
 import com.gemstone.gemfire.management.internal.cli.functions.CloseDurableClientFunction;
@@ -50,15 +31,24 @@ import com.gemstone.gemfire.management.internal.cli.functions.GetSubscriptionQue
 import com.gemstone.gemfire.management.internal.cli.functions.ListDurableCqNamesFunction;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
-import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
 import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.result.ResultData;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * The DurableClientCommands class encapsulates all GemFire shell (Gfsh) commands related to 
@@ -77,7 +67,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
 
 	@CliCommand(value = CliStrings.LIST_DURABLE_CQS, help = CliStrings.LIST_DURABLE_CQS__HELP)
 	@CliMetaData(shellOnly = false)
-	@ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+	@ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.LIST)
 	public Result listDurableClientCqs(
 	@CliOption (key = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID,
 	mandatory=true,
@@ -154,7 +144,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
 
 	@CliCommand(value = CliStrings.COUNT_DURABLE_CQ_EVENTS, help = CliStrings.COUNT_DURABLE_CQ_EVENTS__HELP)
 	@CliMetaData(shellOnly = false)
-	@ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+	@ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.LIST)
 	public Result countDurableCqEvents(
 	@CliOption (key = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID,
 	mandatory=true,
@@ -206,7 +196,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
 
 	@CliCommand(value = CliStrings.CLOSE_DURABLE_CLIENTS, help = CliStrings.CLOSE_DURABLE_CLIENTS__HELP)
 	@CliMetaData(shellOnly = false)
-	@ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.CLOSE_DURABLE_CLIENT)
+	@ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation= OperationCode.STOP)
 	public Result closeDurableClient(
 	@CliOption (key = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID,
 				mandatory=true,
@@ -245,8 +235,8 @@ public class DurableClientCommands extends AbstractCommandsSupport {
 	
 	@CliCommand(value = CliStrings.CLOSE_DURABLE_CQS, help = CliStrings.CLOSE_DURABLE_CQS__HELP)
 	@CliMetaData(shellOnly = false)
-	@ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.CLOSE_DURABLE_CQ)
-	public Result closeDurableCqs(
+  @ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.STOP)
+  public Result closeDurableCqs(
 	@CliOption (key = CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID,
 	mandatory=true,
 	help = CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID__HELP

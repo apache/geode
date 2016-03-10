@@ -3,15 +3,22 @@
     {
       "name": "everything",
       "operationsAllowed": [
+        "CREATE",
         "LIST_DS",
+        "DESTROY",
         "DESTROY_INDEX",
+        "EXECUTE",
         "LOCATE_ENTRY",
         "QUERY",
+        "STOP",
         "STOP_CONTINUOUS_QUERY",
         "SHUTDOWN",
+        "COMPACT",
         "COMPACT_DISKSTORE",
         "CREATE_MANAGER",
-        "CREATE_REGION"
+        "CREATE_REGION",
+        "PROCESS_COMMAND",
+        "STATUS"
       ]
     },
     {

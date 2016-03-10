@@ -16,43 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.awt.Desktop;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
-
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -76,7 +39,6 @@ import com.gemstone.gemfire.internal.lang.ObjectUtils;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.lang.SystemUtils;
 import com.gemstone.gemfire.internal.process.ClusterConfigurationNotAvailableException;
-import com.gemstone.gemfire.internal.process.NonBlockingProcessStreamReader;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.internal.process.ProcessStreamReader;
 import com.gemstone.gemfire.internal.process.ProcessStreamReader.InputListener;
@@ -118,6 +80,44 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+import java.awt.Desktop;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * The LauncherLifecycleCommands class encapsulates all GemFire launcher commands for GemFire tools (like starting
@@ -202,7 +202,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.START_LOCATOR, help = CliStrings.START_LOCATOR__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_LOCATOR, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result startLocator(@CliOption(key = CliStrings.START_LOCATOR__MEMBER_NAME,
                                         mandatory = true,
                                         unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -783,7 +783,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.STATUS_LOCATOR, help = CliStrings.STATUS_LOCATOR__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_LOCATOR, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result statusLocator(@CliOption(key = CliStrings.STATUS_LOCATOR__MEMBER,
                                          optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
                                          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -860,7 +860,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value=CliStrings.STOP_LOCATOR, help=CliStrings.STOP_LOCATOR__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_LOCATOR, CliStrings.TOPIC_GEMFIRE_LIFECYCLE})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.LOCATOR, operation = OperationCode.STOP)
   public Result stopLocator(@CliOption(key = CliStrings.STOP_LOCATOR__MEMBER,
                                        optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
                                        unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
@@ -1376,7 +1376,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.START_SERVER, help = CliStrings.START_SERVER__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_SERVER, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.START)
   public Result startServer(@CliOption(key = CliStrings.START_SERVER__ASSIGN_BUCKETS,
                                       unspecifiedDefaultValue = "false",
                                       specifiedDefaultValue = "true",
@@ -1943,7 +1943,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.STATUS_SERVER, help = CliStrings.STATUS_SERVER__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_SERVER, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.STATUS)
   public Result statusServer(@CliOption(key = CliStrings.STATUS_SERVER__MEMBER,
                                         optionContext = ConverterHint.MEMBERIDNAME,
                                         unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -2014,7 +2014,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.STOP_SERVER, help = CliStrings.STOP_SERVER__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_SERVER, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.MEMBER, operation= OperationCode.STOP)
   public Result stopServer(@CliOption(key = CliStrings.STOP_SERVER__MEMBER,
                                       optionContext = ConverterHint.MEMBERIDNAME,
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -2111,7 +2111,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   //@CliCommand(value=CliStrings.START_MANAGER, help=CliStrings.START_MANAGER__HELP)
   //@CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_MANAGER, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_LIFECYCLE})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.MANAGER, operation = OperationCode.START)
   public Result startManager(@CliOption(key=CliStrings.START_MANAGER__MEMBERNAME,
                               unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
                               help=CliStrings.START_MANAGER__MEMBERNAME__HELP)
@@ -2154,7 +2154,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.START_JCONSOLE, help = CliStrings.START_JCONSOLE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_MANAGER, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_M_AND_M })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result startJConsole(@CliOption(key = CliStrings.START_JCONSOLE__INTERVAL,
                                          unspecifiedDefaultValue = "4",
                                          help = CliStrings.START_JCONSOLE__INTERVAL__HELP)
@@ -2348,7 +2348,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.START_JVISUALVM, help = CliStrings.START_JVISUALVM__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_MANAGER, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_M_AND_M })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result startJVisualVM(@CliOption(key = CliStrings.START_JCONSOLE__J,
                                           optionContext = ConverterHint.STRING_LIST,
                                           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -2438,7 +2438,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.START_PULSE, help = CliStrings.START_PULSE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_MANAGER, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_M_AND_M })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   // TODO change url parameter type to URL when I figure out the Converter logic in Gfsh
   public Result startPulse(@CliOption(key = CliStrings.START_PULSE__URL,
                                       unspecifiedDefaultValue = "http://localhost:7070/pulse",
@@ -2530,7 +2530,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value=CliStrings.START_VSD, help=CliStrings.START_VSD__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_M_AND_M, CliStrings.TOPIC_GEMFIRE_STATISTICS })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result startVsd(@CliOption(key=CliStrings.START_VSD__FILE, help=CliStrings.START_VSD__FILE__HELP)
                          final String[] statisticsArchiveFilePathnames)
   {

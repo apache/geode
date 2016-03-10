@@ -20,16 +20,15 @@ import com.gemstone.gemfire.cache.operations.OperationContext;
 
 /**
  * This is base class for OperationContext for resource (JMX and CLI) operations
- *
  */
 public class ResourceOperationContext extends OperationContext {
-	
-  private boolean isPostOperation=false;
+
+  private boolean isPostOperation = false;
   private Object opResult = null;
   private Resource resource = Resource.DEFAULT;
   private OperationCode operation = OperationCode.MANAGE;
 
-  public ResourceOperationContext(){
+  public ResourceOperationContext() {
   }
 
   public ResourceOperationContext(Resource resource, OperationCode operation) {
@@ -37,21 +36,19 @@ public class ResourceOperationContext extends OperationContext {
     this.operation = operation;
   }
 
-  public ResourceOperationContext(String resource, String operation){
-    if(resource!=null)
-      this.resource = Resource.valueOf(resource);
-    if(operation!=null)
-      this.operation = OperationCode.valueOf(operation);
+  public ResourceOperationContext(String resource, String operation) {
+    if (resource != null) this.resource = Resource.valueOf(resource);
+    if (operation != null) this.operation = OperationCode.valueOf(operation);
   }
 
-  public void setResourceOperation(ResourceOperation op){
-    if(op!=null){
+  public void setResourceOperation(ResourceOperation op) {
+    if (op != null) {
       resource = op.resource();
-      operation = OperationCode.valueOf(op.operation());
+      operation = op.operation();
     }
   }
 
-	@Override
+  @Override
   public boolean isClientUpdate() {
     return false;
   }
@@ -62,19 +59,19 @@ public class ResourceOperationContext extends OperationContext {
   }
 
   @Override
-  public Resource getResource(){
+  public Resource getResource() {
     return resource;
   }
 
   @Override
-	public boolean isPostOperation() {
+  public boolean isPostOperation() {
     return isPostOperation;
-	}
+  }
 
   public void setPostOperationResult(Object result) {
     this.isPostOperation = true;
     this.opResult = result;
-}
+  }
 
   public Object getOperationResult() {
     return this.opResult;

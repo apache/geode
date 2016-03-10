@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.Region;
 
-
 /**
  * MBean that provides access to information and management functionality for a
  * local {@link Region}.

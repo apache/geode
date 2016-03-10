@@ -84,8 +84,9 @@ import com.gemstone.gemfire.management.internal.cli.util.RegionPath;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * 
@@ -112,7 +113,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
   @CliCommand (value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.CREATE_REGION)
+  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.CREATE)
   public Result createRegion(
       @CliOption (key = CliStrings.CREATE_REGION__REGION,
                   mandatory = true,
@@ -441,7 +442,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   
   @CliCommand (value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.ALTER_REGION)
+  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.ALTER)
   public Result alterRegion(
       @CliOption (key = CliStrings.ALTER_REGION__REGION,
                   mandatory = true,
@@ -1000,7 +1001,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = { CliStrings.DESTROY_REGION }, help = CliStrings.DESTROY_REGION__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.DESTROY_REGION)
+  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.DESTROY)
   public Result destroyRegion(
       @CliOption(key = CliStrings.DESTROY_REGION__REGION,
           optionContext = ConverterHint.REGIONPATH,

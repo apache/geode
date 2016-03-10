@@ -16,18 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
@@ -47,13 +35,26 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
 import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxType;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Collection;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 public class PDXCommands extends AbstractCommandsSupport{
 
 
   @CliCommand (value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.CONFIGURE_PDX)
+  @ResourceOperation( resource=Resource.PDX, operation = OperationCode.CONFIGURE)
   public Result configurePDX(
       @CliOption (key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -175,7 +176,7 @@ public class PDXCommands extends AbstractCommandsSupport{
 
   @CliCommand (value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.RENAME_PDX)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.RENAME)
   public Result pdxRename(
       @CliOption (key = CliStrings.PDX_RENAME_OLD,
       mandatory=true,

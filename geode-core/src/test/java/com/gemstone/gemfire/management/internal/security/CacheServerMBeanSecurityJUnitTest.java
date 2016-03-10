@@ -18,10 +18,12 @@ package com.gemstone.gemfire.management.internal.security;
 
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.CacheServerMXBean;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
@@ -33,6 +35,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@Category(IntegrationTest.class)
 public class CacheServerMBeanSecurityJUnitTest {
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 

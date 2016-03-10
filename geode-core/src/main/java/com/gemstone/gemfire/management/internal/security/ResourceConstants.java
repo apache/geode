@@ -78,7 +78,7 @@ public class ResourceConstants {
   public static final String REMOVE = "REMOVE";
   public static final String RENAME_PDX = "RENAME_PDX";
   public static final String RESUME_GW_SENDER = "RESUME_GW_SENDER";
-  public static final String REVOKE_MISSING_DISKSTORE = "REVOKE_MISSING_DISKSTORE";
+  public static final String REVOKE_MISSING_DISKSTORE = "REVOKE_MISSING";
   public static final String SHOW_DEADLOCKS = "SHOW_DEADLOCKS";
   public static final String SHOW_LOG = "SHOW_LOG";
   public static final String SHOW_METRICS = "SHOW_METRICS";

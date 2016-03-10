@@ -53,8 +53,9 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * 
@@ -70,7 +71,7 @@ public class ClientCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.LIST_CLIENTS, help = CliStrings.LIST_CLIENT__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_LIST })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.CLIENT, operation = OperationCode.LIST)
   public Result listClient() {
     Result result = null;
 
@@ -154,7 +155,7 @@ public class ClientCommands implements CommandMarker {
   
   @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_LIST })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.CLIENT, operation= OperationCode.LIST)
   public Result describeClient(
       @CliOption(key = CliStrings.DESCRIBE_CLIENT__ID, mandatory = true, help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId) {
     Result result = null;   

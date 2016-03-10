@@ -16,17 +16,19 @@
  */
 package com.gemstone.gemfire.management.internal.cli;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.gemstone.gemfire.management.cli.CliMetaData;
+import com.gemstone.gemfire.management.cli.CommandProcessingException;
+import com.gemstone.gemfire.management.cli.ConverterHint;
+import com.gemstone.gemfire.management.cli.Result;
+import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
+import com.gemstone.gemfire.management.internal.cli.converters.StringArrayConverter;
+import com.gemstone.gemfire.management.internal.cli.converters.StringListConverter;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
+import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,20 +43,14 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.shell.event.ParseResult;
 
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.CommandProcessingException;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
-import com.gemstone.gemfire.management.internal.cli.converters.StringArrayConverter;
-import com.gemstone.gemfire.management.internal.cli.converters.StringListConverter;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * GfshParserJUnitTest - Includes tests to check the parsing and auto-completion
@@ -1051,7 +1047,7 @@ public class GfshParserJUnitTest {
   static class Commands implements CommandMarker {
 
     @CliCommand(value = { COMMAND1_NAME, COMMAND1_NAME_ALIAS }, help = COMMAND1_HELP)
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
     public static String command1(
         @CliArgument(name = ARGUMENT1_NAME, argumentContext = ARGUMENT1_CONTEXT, help = ARGUMENT1_HELP, mandatory = true)
         String argument1,
@@ -1067,13 +1063,13 @@ public class GfshParserJUnitTest {
     }
 
     @CliCommand(value = { COMMAND2_NAME })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
     public static String command2() {
       return null;
     }
 
     @CliCommand(value = { "testParamConcat" })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
     public static Result testParamConcat(
         @CliOption(key = { "string" }) String string,
         @CliOption(key = { "stringArray" }) @CliMetaData(valueSeparator = ",") String[] stringArray,
@@ -1084,7 +1080,7 @@ public class GfshParserJUnitTest {
     }
 
     @CliCommand(value = { "testMultiWordArg" })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
     public static Result testMultiWordArg(
         @CliArgument(name = "arg1" ) String arg1,
         @CliArgument(name = "arg2" ) String arg2) {
@@ -1141,13 +1137,13 @@ public class GfshParserJUnitTest {
     static final String C2_MSG_AVAILABLE   = C2_NAME + " is available.";
 
     @CliCommand(value = { C1_NAME })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
     public Result command1() {
       return ResultBuilder.createInfoResult(C1_MSG_AVAILABLE);
     }
 
     @CliCommand(value = { C2_NAME })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.LIST_DS)
+    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
     public Result command2() {
       return ResultBuilder.createInfoResult(C2_MSG_AVAILABLE);
     }

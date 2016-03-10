@@ -18,8 +18,9 @@ package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -282,7 +283,7 @@ public interface CacheServerMXBean {
    * @param indexName
    *          Name of the index to be removed.
    */
-  @ResourceOperation(resource=Resource.REGION, operation=ResourceConstants.DESTROY_INDEX)
+  @ResourceOperation(resource = Resource.INDEX, operation = OperationCode.DESTROY)
   public void removeIndex(String indexName) throws Exception;
 
   /**
@@ -299,8 +300,8 @@ public interface CacheServerMXBean {
    * target cache server - other copies of the CQ on other servers are
    * not affected. Using the client side CQ methods to modify a CQ.
    */
-  @Deprecated 
-  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.QUERY)
+  @Deprecated
+  @ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.EXECUTE)
   public void executeContinuousQuery(String queryName) throws Exception;
 
   /**
@@ -314,7 +315,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
-  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.STOP_CONTINUOUS_QUERY)
+  @ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.STOP)
   public void stopContinuousQuery(String queryName) throws Exception;
 
   /**
@@ -327,7 +328,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
-  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.STOP_CONTINUOUS_QUERY)
+  @ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.STOP)
   public void closeAllContinuousQuery(String regionName) throws Exception;
   
   
@@ -341,7 +342,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
-  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.STOP_CONTINUOUS_QUERY)
+  @ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.STOP)
   public void closeContinuousQuery(String queryName) throws Exception;
 
 

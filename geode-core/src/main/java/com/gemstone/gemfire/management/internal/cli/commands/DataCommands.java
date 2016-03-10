@@ -16,26 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -77,8 +57,27 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * 
@@ -99,7 +98,7 @@ public class DataCommands implements CommandMarker {
   @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
       CliStrings.TOPIC_GEMFIRE_REGION })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.REBALANCE)
+  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.REBALANCE)
   public Result rebalance(
       @CliOption(key = CliStrings.REBALANCE__INCLUDEREGION, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.REBALANCE__INCLUDEREGION__HELP) String[] includeRegions,
       @CliOption(key = CliStrings.REBALANCE__EXCLUDEREGION, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.REBALANCE__EXCLUDEREGION__HELP) String[] excludeRegions,
@@ -836,7 +835,7 @@ public class DataCommands implements CommandMarker {
   @CliCommand(value = CliStrings.EXPORT_DATA, help = CliStrings.EXPORT_DATA__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
       CliStrings.TOPIC_GEMFIRE_REGION })
-  @ResourceOperation(resource = Resource.REGION, operation= ResourceConstants.EXPORT_DATA)
+  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.EXPORT)
   public Result exportData(
       @CliOption(key = CliStrings.EXPORT_DATA__REGION, mandatory = true, optionContext = ConverterHint.REGIONPATH, help = CliStrings.EXPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.EXPORT_DATA__FILE, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, mandatory = true, help = CliStrings.EXPORT_DATA__FILE__HELP) String filePath,
@@ -892,7 +891,7 @@ public class DataCommands implements CommandMarker {
   @CliCommand(value = CliStrings.IMPORT_DATA, help = CliStrings.IMPORT_DATA__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
       CliStrings.TOPIC_GEMFIRE_REGION })
-  @ResourceOperation(resource = Resource.REGION, operation= ResourceConstants.IMPORT_DATA)
+  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.IMPORT)
   public Result importData(
       @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGIONPATH, mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.IMPORT_DATA__FILE, mandatory = true, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
@@ -948,7 +947,7 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.PUT }, help = CliStrings.PUT__HELP)
-  @ResourceOperation(resource = Resource.REGION, operation= ResourceConstants.PUT)
+  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.PUT)
   public Result put(
       @CliOption(key = { CliStrings.PUT__KEY }, mandatory = true, help = CliStrings.PUT__KEY__HELP) String key,
       @CliOption(key = { CliStrings.PUT__VALUE }, mandatory = true, help = CliStrings.PUT__VALUE__HELP) String value,
@@ -1016,7 +1015,7 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.GET }, help = CliStrings.GET__HELP)
-  @ResourceOperation(resource = Resource.REGION, operation= ResourceConstants.GET)
+  @ResourceOperation(resource = Resource.REGION, operation= OperationCode.GET)
   public Result get(
       @CliOption(key = { CliStrings.GET__KEY }, mandatory = true, help = CliStrings.GET__KEY__HELP) String key,
       @CliOption(key = { CliStrings.GET__REGIONNAME }, mandatory = true, help = CliStrings.GET__REGIONNAME__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,
@@ -1071,7 +1070,7 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.LOCATE_ENTRY }, help = CliStrings.LOCATE_ENTRY__HELP)
-  @ResourceOperation(resource = Resource.REGION, operation= ResourceConstants.LOCATE_ENTRY)
+  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.GET)
   public Result locateEntry(
       @CliOption(key = { CliStrings.LOCATE_ENTRY__KEY }, mandatory = true, help = CliStrings.LOCATE_ENTRY__KEY__HELP) String key,
       @CliOption(key = { CliStrings.LOCATE_ENTRY__REGIONNAME }, mandatory = true, help = CliStrings.LOCATE_ENTRY__REGIONNAME__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,
@@ -1119,7 +1118,7 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.REMOVE }, help = CliStrings.REMOVE__HELP)
-  @ResourceOperation(resource = Resource.REGION, operation= ResourceConstants.REMOVE)
+  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.DELETE)
   public Result remove(
       @CliOption(key = { CliStrings.REMOVE__KEY }, help = CliStrings.REMOVE__KEY__HELP) String key,
       @CliOption(key = { CliStrings.REMOVE__REGION }, mandatory = true, help = CliStrings.REMOVE__REGION__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,
@@ -1174,10 +1173,10 @@ public class DataCommands implements CommandMarker {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @MultiStepCommand
   @CliCommand(value = { CliStrings.QUERY }, help = CliStrings.QUERY__HELP)
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation= ResourceConstants.QUERY)
+  @ResourceOperation(resource = Resource.QUERY, operation = OperationCode.QUERY)
   public Object query(
       @CliOption(key = CliStrings.QUERY__QUERY, help = CliStrings.QUERY__QUERY__HELP, mandatory = true) final String query,
-      @CliOption(key = CliStrings.QUERY__STEPNAME, mandatory = false, help = "Stpe name", unspecifiedDefaultValue = CliStrings.QUERY__STEPNAME__DEFAULTVALUE) String stepName,
+      @CliOption(key = CliStrings.QUERY__STEPNAME, mandatory = false, help = "Step name", unspecifiedDefaultValue = CliStrings.QUERY__STEPNAME__DEFAULTVALUE) String stepName,
       @CliOption(key = CliStrings.QUERY__INTERACTIVE, mandatory = false, help = CliStrings.QUERY__INTERACTIVE__HELP, unspecifiedDefaultValue = "true") final boolean interactive) {
 
     if (!CliUtil.isGfshVM()

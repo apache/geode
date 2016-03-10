@@ -66,10 +66,10 @@ public class OperationCodesForDataCommandsIntegrationTest {
     this.cache = (GemFireCacheImpl) CacheFactory.create(ds);
 
     this.commands.put("put --key=k1 --value=v1 --region=/region1", OperationCode.PUT);
-    this.commands.put("locate entry --key=k1 --region=/region1", OperationCode.LOCATE_ENTRY);
+    this.commands.put("locate entry --key=k1 --region=/region1", OperationCode.GET);
     this.commands.put("query --query=\"select * from /region1\"", OperationCode.QUERY);
-    this.commands.put("export data --region=value --file=value --member=value", OperationCode.EXPORT_DATA);
-    this.commands.put("import data --region=value --file=value --member=value", OperationCode.IMPORT_DATA);
+    this.commands.put("export data --region=value --file=value --member=value", OperationCode.EXPORT);
+    this.commands.put("import data --region=value --file=value --member=value", OperationCode.IMPORT);
     this.commands.put("rebalance", OperationCode.REBALANCE);
   }
 

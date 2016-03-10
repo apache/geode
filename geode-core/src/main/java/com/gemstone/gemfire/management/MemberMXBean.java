@@ -16,13 +16,13 @@
  */
 package com.gemstone.gemfire.management;
 
-import java.util.Map;
-
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
+import java.util.Map;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -148,7 +148,7 @@ public interface MemberMXBean {
    * @param numberOfLines
    *          Number of lines to return, up to a maximum of 100.
    */
-  @ResourceOperation(resource=Resource.MEMBER, operation=ResourceConstants.SHOW_LOG)
+  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.SHOW_LOG)
   public String showLog(int numberOfLines);
 
   /**
@@ -164,22 +164,22 @@ public interface MemberMXBean {
    * 
    * @return A list of names of the disk stores that were compacted.
    */
-  @ResourceOperation(resource=Resource.DISKSTORE, operation=ResourceConstants.COMPACT_DISKSTORE)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.COMPACT)
   public String[] compactAllDiskStores();
   
   /**
    * Creates a Manager MBean on this member.
    * 
-   * @return True if the Manager MBean was successfully create, false otherwise.
+   * @return True if the Manager MBean was successfully created, false otherwise.
    */
-  @ResourceOperation(resource=Resource.MEMBER, operation=ResourceConstants.CREATE_MANAGER)
+  @ResourceOperation(resource = Resource.MANAGER, operation = OperationCode.CREATE)
   public boolean createManager();
   
   /**
    * Shuts down the member. This is an asynchronous call and it will 
    * return immediately without waiting for a result.
    */
-  @ResourceOperation(resource=Resource.MEMBER, operation=ResourceConstants.SHUTDOWN)
+  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.SHUTDOWN)
   public void shutDownMember();
   
   /**
@@ -200,7 +200,7 @@ public interface MemberMXBean {
    * 
    * @return Result of the execution in JSON format.
    */
-  @ResourceOperation(resource=Resource.MEMBER, operation=ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.PROCESS_COMMAND)
   String processCommand(String commandString);
   
   /**
@@ -212,7 +212,7 @@ public interface MemberMXBean {
    *          Environmental properties to use during command execution.
    * @return Result of the execution in JSON format.
    */
-  @ResourceOperation(resource=Resource.MEMBER, operation=ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.PROCESS_COMMAND)
   String processCommand(String commandString, Map<String, String> env);
   
   /**
@@ -226,7 +226,7 @@ public interface MemberMXBean {
    *          Binary data specific to the command being executed.
    * @return Result of the execution in JSON format.
    */
-  @ResourceOperation(resource=Resource.MEMBER, operation=ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.PROCESS_COMMAND)
   String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData);
 
   /**
@@ -283,7 +283,7 @@ public interface MemberMXBean {
   /**
    * Returns the status.
    */
-  @ResourceOperation(resource=Resource.MEMBER, operation=ResourceConstants.LIST_DS)
+  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.STATUS)
   public String status();
 
   /**
