@@ -71,8 +71,6 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.Assert;
@@ -155,11 +153,10 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client1 = host.getVM(2);
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
     // set <false, true> means <PR=false, notifyBySubscription=true> to enable registerInterest and CQ
-    createBridgeServer(server, regionName, serverPort, false, 0, null);
+    final int serverPort = createBridgeServer(server, regionName, 0, false, 0, null);
     createClient(client1, regionName, serverHost, new int[] {serverPort}, -1, -1, false, true, true);
     createClient(client2, regionName, serverHost, new int[] {serverPort}, -1, -1, false, true, true);
 
@@ -426,14 +423,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
   
     // set notifyBySubscription=false to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, false, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, false, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, false, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, false, 0, null);
     createClient(client1, regionName, serverHost, new int[] {serverPort1}, -1, -1, false, true, true);
     createClient(client2, regionName, serverHost, new int[] {serverPort2}, -1, -1, false, true, true);
   
@@ -497,14 +491,12 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set notifyBySubscription=false to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, false, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, false, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, false, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, false, 0, null);
+    
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort1}, -1, -1, true);
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2}, -1, -1, true);
 
@@ -897,9 +889,10 @@ public void testOneServer() throws CacheException, InterruptedException {
         Region region = createRegion(regionName, af.create());
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = 0;
         server.setPort(port);
         server.start();
+        port = server.getPort();
         return port;
       }
     };
@@ -1142,14 +1135,12 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
 
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, isPR, redundantCopies, null);
-    createBridgeServer(server2, regionName, serverPort2, isPR, redundantCopies, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, isPR, redundantCopies, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, isPR, redundantCopies, null);
+    
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort1}, -1, 59000, false);
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2}, -1, 59000, false);
 
@@ -1291,14 +1282,12 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
-    // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, true, 0, "ds1");
-    createBridgeServer(server2, regionName, serverPort2, true, 0, "ds1");
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 0, "ds1");
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 0, "ds1");
+    
+    
     createClient(client1, regionName, serverHost, new int[] {serverPort1}, -1, 59000, false, false, enableSingleHop);
     createClient(client2, regionName, serverHost, new int[] {serverPort1}, -1, 59000, false, false, enableSingleHop);
 
@@ -1396,14 +1385,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, true, 1, null);
-    createBridgeServer(server2, regionName, serverPort2, true, 1, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 1, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 1, null);
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort1}, -1, 59000, false);
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2}, -1, 59000, false);
     
@@ -1772,11 +1758,10 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client1 = host.getVM(1);
     final String regionName = getUniqueName();
 
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, false, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, false, 0, null);
     createClient(client1, regionName, serverHost, new int[] {serverPort1}, -1, -1, false, true, true);
  
     server1.invoke(addExceptionTag1(expectedExceptions));
@@ -1825,14 +1810,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, false, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, false, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, false, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, false, 0, null);
     createClient(client1, regionName, serverHost, new int[] {serverPort1}, -1, -1, false, true, true);
     createClient(client2, regionName, serverHost, new int[] {serverPort1}, -1, -1, false, true, true);
     
@@ -2113,14 +2095,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, true, 0, "ds1");
-    createBridgeServer(server2, regionName, serverPort2, true, 0, "ds1");
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 0, "ds1");
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 0, "ds1");
     createClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true);
     createClient(client2, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true);
 
@@ -2293,14 +2272,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, true, 0, "ds1");
-    createBridgeServer(server2, regionName, serverPort2, true, 0, "ds1");
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 0, "ds1");
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 0, "ds1");
     createClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true);
     createClient(client2, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true);
 
@@ -2525,14 +2501,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, true, 1, "ds1");
-    createBridgeServer(server2, regionName, serverPort2, true, 1, "ds1");
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 1, "ds1");
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 1, "ds1");
     createClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true);
     createClient(client2, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true);
 
@@ -2684,7 +2657,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client1 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int[] serverPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    final int[] serverPorts = new int[3];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
     
     final SharedCounter sc_server1 = new SharedCounter("server1");
@@ -2693,9 +2666,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     final SharedCounter sc_client2 = new SharedCounter("client2");
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    createBridgeServer(server1, regionName, serverPorts[0], true, 0, null);
-    createBridgeServer(server2, regionName, serverPorts[1], true, 0, null);
-    createBridgeServer(server3, regionName, serverPorts[2], true, 0, null);
+    serverPorts[0] = createBridgeServer(server1, regionName, 0, true, 0, null);
+    serverPorts[1] = createBridgeServer(server2, regionName, 0, true, 0, null);
+    serverPorts[2] = createBridgeServer(server3, regionName, 0, true, 0, null);
     createClient(client1, regionName, serverHost, serverPorts, -1, -1, false, true, true);
 
     {
@@ -2828,14 +2801,12 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
-    createBridgeServer(server1, regionName, serverPort1, false, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, false, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, false, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, false, 0, null);
+    
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, true);
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2, serverPort1}, -1, -1, true);
 
@@ -2928,14 +2899,12 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int serverPort1 = serverPorts[0];
-    final int serverPort2 = serverPorts[1];
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
-    createBridgeServer(server1, regionName, serverPort1, false, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, false, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, false, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, false, 0, null);
+    
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, true);
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2, serverPort1}, -1, -1, true);
 
@@ -2991,13 +2960,12 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
-    createBridgeServer(server1, regionName, serverPort1, false, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, false, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, false, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, false, 0, null);
+    
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, 1, -1, true);
     createClient(client2, regionName, serverHost, new int[] {serverPort2, serverPort1}, 1, -1, false, true, true);
 
@@ -3045,56 +3013,6 @@ public void testOneServer() throws CacheException, InterruptedException {
     stopBridgeServers(getCache());
   }
 
-  /**
-   * Tests while putAll OOM behaviors: Dunit test does not support it so far
-   */
-  /*
-   * public void testOOMBehaviors() throws CacheException,InterruptedException {
-   * final String title = "testOOM:"; disconnectAllFromDS();
-   * 
-   * final Host host = Host.getHost(0); VM server1 = host.getVM(0); VM client1 =
-   * host.getVM(2);
-   *  // Start server server1.invoke(new CacheSerializableRunnable(title+"Create
-   * Bridge Server 1") { public void run2() throws CacheException { Properties
-   * config = new Properties(); config.setProperty("log-level", "info"); // int
-   * unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS); //
-   * config.setProperty("mcast-port", String.valueOf(unusedPort)); // system =
-   * (InternalDistributedSystem) DistributedSystem.connect(config); system =
-   * (new PutAllCSDUnitTest("temp")).getSystem(config); AttributesFactory
-   * factory = new AttributesFactory(); factory.setScope(Scope.DISTRIBUTED_ACK);
-   * factory.setDataPolicy(DataPolicy.REPLICATE); Region region =
-   * createRegion(name, factory.create()); pause(1000); try {
-   * startBridgeServer(0, true, 0); } catch (Exception ex) { fail("While
-   * starting CacheServer", ex); } } });
-   *  // Create client region Object params[] = new Object[1]; params[0] = new
-   * Integer(0); final int port0 = server1.invokeInt(PutAllCSDUnitTest.class,
-   * "getCacheServerPort", params); final String host0 =
-   * server1.getHost().getHostName(); client1.invoke(new
-   * CacheSerializableRunnable(title+"client1 Create region") { public void
-   * run2() throws CacheException { Properties config = new Properties();
-   * config.setProperty("mcast-port", "0"); system = (InternalDistributedSystem)
-   * DistributedSystem.connect(config); getCache(); AttributesFactory factory =
-   * new AttributesFactory(); factory.setScope(Scope.LOCAL);
-   * factory.setDataPolicy(DataPolicy.EMPTY); PoolManager.createFactory()
-   * .addServer(host0, port0) .setQueueEnabled(true) .setReadTimeout(600000)
-   * .create("myPool"); factory.setPoolName("myPool"); Region region =
-   * createRegion(name, factory.create()); } });
-   *  // test OOM exception try { client1.invoke(new
-   * CacheSerializableRunnable(title+"client1 execute putAll") { public void
-   * run2() throws CacheException { Region region =
-   * getRootRegion().getSubregion(name); for (int j=0; j<5; j++) {
-   * LinkedHashMap map = new LinkedHashMap(); for (int i=0; i<bignumberOfEntries;
-   * i++) { map.put("key-"+j+"-"+i, new TestObject(i)); } try {
-   * region.putAll(map); } catch (OutOfMemoryError oome) {
-   * System.out.println("GGGY:"+oome.getClass()+":"+oome.getMessage());
-   *  } catch (Throwable e) {
-   * System.out.println("GGGX:"+e.getClass()+":"+e.getMessage()); } } // for j }
-   * }); } finally { client1.bounce(); }
-   *  // clean up server1.invoke(new SerializableRunnable(title+"Stop
-   * CacheServer 1") { public void run() { pause(2000);
-   * stopBridgeServer(getCache()); } });
-   *  }
-   */
 
   /**
    * Tests while putAll to 2 distributed servers, one server failed over Add a
@@ -3111,13 +3029,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
-    createBridgeServer(server1, regionName, serverPort1, false, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, false, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, false, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, false, 0, null);
     // set queueRedundency=1
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, 1, -1, true);
     createClient(client2, regionName, serverHost, new int[] {serverPort2, serverPort1}, 1, -1, false, true, true);
@@ -3203,13 +3119,13 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM server2 = host.getVM(1);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, false, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, false, 0, null);
 //    final String serverHost = getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
-    createBridgeServer(server1, regionName, serverPort1, false, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, false, 0, null);
+    
+    
 
     // add slow listener
     server1.invoke(new CacheSerializableRunnable(title+"server1 add slow listener") {
@@ -3368,13 +3284,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
-    createBridgeServer(server1, regionName, serverPort1, true, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, true, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 0, null);
     // set queueRedundency=1
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort1}, 0, 59000, true);
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2}, 0, 59000, true);
@@ -3468,13 +3382,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
-    createBridgeServer(server1, regionName, serverPort1, true, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, true, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 0, null);
     // set queueRedundency=1
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort1}, 0, 59000, true);
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2}, 0, 59000, true);
@@ -3570,15 +3482,12 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client1 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
-    createBridgeServer(server1, regionName, serverPort1, true, 1, null);
-    createBridgeServer(server2, regionName, serverPort2, true, 1, null);
-    createBridgeServer(server3, regionName, serverPort3, true, 1, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 1, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 1, null);
+    final int serverPort3 = createBridgeServer(server3, regionName, 0, true, 1, null);
     // set queueRedundency=1
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort3}, 0, 59000, true);
     
@@ -3678,15 +3587,12 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client1 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
-    createBridgeServer(server1, regionName, serverPort1, true, 1, null);
-    createBridgeServer(server2, regionName, serverPort2, true, 1, null);
-    createBridgeServer(server3, regionName, serverPort3, true, 1, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 1, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 1, null);
+    final int serverPort3 = createBridgeServer(server3, regionName, 0, true, 1, null);
     // set queueRedundency=1
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort3}, 0, 59000, true);
     
@@ -3789,13 +3695,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client1 = host.getVM(2);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
-    createBridgeServer(server1, regionName, serverPort1, false, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, false, 0, null);
+    final int serverPort1 = createBridgeServer(server1, regionName, 0, false, 0, null);
+    final int serverPort2 = createBridgeServer(server2, regionName, 0, false, 0, null);
     // set queueRedundency=1
     createBridgeClient(client1, regionName, serverHost, new int[] {serverPort1}, 0, 59000, true);
 
@@ -3866,10 +3770,10 @@ public void testOneServer() throws CacheException, InterruptedException {
     
   }
 
-  private void createBridgeServer(VM server, final String regionName, final int serverPort, final boolean createPR, final int redundantCopies, final String diskStoreName) {
-    server.invoke(new CacheSerializableRunnable("Create server") {
+  private int createBridgeServer(VM server, final String regionName, final int serverPort, final boolean createPR, final int redundantCopies, final String diskStoreName) {
+    return (Integer)server.invoke(new SerializableCallable("Create server") {
       @SuppressWarnings("synthetic-access")
-      public void run2() throws CacheException {
+      public Object call() throws Exception {
         // Create DS
         Properties config = new Properties();
         config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
@@ -3924,12 +3828,9 @@ public void testOneServer() throws CacheException, InterruptedException {
         } else {
           assertTrue(region instanceof DistributedRegion);
         }
-        try {
-          int retPort = startBridgeServer(serverPort);
-          LogWriterUtils.getLogWriter().info("Cache Server Started:"+retPort+":"+serverPort);
-        } catch (Exception e) {
-          Assert.fail("While starting CacheServer", e);
-        }
+        int retPort = startBridgeServer(serverPort);
+        LogWriterUtils.getLogWriter().info("Cache Server Started:"+retPort+":"+serverPort);
+        return retPort;
       }
     });
   }
