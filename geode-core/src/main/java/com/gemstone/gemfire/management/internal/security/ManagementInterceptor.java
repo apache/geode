@@ -56,8 +56,6 @@ import static com.gemstone.gemfire.management.internal.security.ResourceConstant
  *
  * ManagementInterceptor is central go-to place for all M&M Clients Authentication and Authorization
  * requests
- *
- * @author tushark
  * @since 9.0
  *
  */
@@ -135,8 +133,8 @@ public class ManagementInterceptor implements JMXAuthenticator{
 			final String[] aCredentials = (String[]) credentials;
 			username = (String) aCredentials[0];
 			password = (String) aCredentials[1];
-		pr.put(USER_NAME, username);
-		pr.put(PASSWORD, password);
+		  pr.put(USER_NAME, username);
+		  pr.put(PASSWORD, password);
     } else if (credentials instanceof Properties) {
       pr = (Properties) credentials;
     } else {

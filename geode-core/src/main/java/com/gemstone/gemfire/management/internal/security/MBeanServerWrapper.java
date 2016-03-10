@@ -28,10 +28,9 @@ import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
 import javax.management.InvalidAttributeValueException;
 import javax.management.ListenerNotFoundException;
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
+import javax.management.MBeanFeatureInfo;
 import javax.management.MBeanInfo;
-import javax.management.MBeanOperationInfo;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
@@ -48,7 +47,7 @@ import java.io.ObjectInputStream;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.*;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.ACCESS_DENIED_MESSAGE;
 
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to
@@ -163,7 +162,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public Object getAttribute(ObjectName name, String attribute) throws MBeanException, AttributeNotFoundException,
       InstanceNotFoundException, ReflectionException {
-    ResourceOperationContext ctx = getAttributeContext(name, attribute);
+    ResourceOperationContext ctx = getOperationContext(name, attribute, false);
     doAuthorization(ctx);
     Object result = mbs.getAttribute(name, attribute);
     ctx.setPostOperationResult(result);
@@ -190,57 +189,9 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException,
       AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException {
-    ResourceOperationContext ctx = getAttributeContext(name, attribute.getName());
+    ResourceOperationContext ctx = getOperationContext(name, attribute.getName(), false);
     doAuthorization(ctx);
     mbs.setAttribute(name, attribute);
-  }
-
-  // TODO: cache this
-  private ResourceOperationContext getAttributeContext(ObjectName name, String attribute)
-      throws InstanceNotFoundException, ReflectionException {
-    MBeanInfo beanInfo = null;
-    try {
-      beanInfo = mbs.getMBeanInfo(name);
-    } catch (IntrospectionException e) {
-      throw new GemFireSecurityException("error getting beanInfo of "+name);
-    }
-    MBeanAttributeInfo[] attributeInfos = beanInfo.getAttributes();
-    for(MBeanAttributeInfo attributeInfo:attributeInfos){
-      if(attributeInfo.getName().equals(attribute)){
-        // found the operationInfo of this method on the bean
-        Descriptor descriptor = attributeInfo.getDescriptor();
-        Resource resource = (Resource)descriptor.getFieldValue("resource");
-        OperationCode operationCode = (OperationCode)descriptor.getFieldValue("operation");
-        if(resource!=null && operationCode!=null){
-          return new ResourceOperationContext(resource, operationCode);
-        }
-      }
-    }
-    return new ResourceOperationContext(Resource.DEFAULT, OperationCode.LIST_DS);
-  }
-
-  // TODO: cache this
-  private ResourceOperationContext getOperationContext(ObjectName name, String operationName)
-      throws InstanceNotFoundException, ReflectionException {
-    MBeanInfo beanInfo = null;
-    try {
-      beanInfo = mbs.getMBeanInfo(name);
-    } catch (IntrospectionException e) {
-      throw new GemFireSecurityException("error getting beanInfo of "+name);
-    }
-    MBeanOperationInfo[] opInfos = beanInfo.getOperations();
-    for(MBeanOperationInfo opInfo:opInfos){
-      if(opInfo.getName().equals(operationName)){
-        // found the operationInfo of this method on the bean
-        Descriptor descriptor = opInfo.getDescriptor();
-        String resource = (String)descriptor.getFieldValue("resource");
-        String operationCode = (String)descriptor.getFieldValue("operation");
-        if(resource!=null && operationCode!=null){
-          return new ResourceOperationContext(resource, operationCode);
-        }
-      }
-    }
-    return new ResourceOperationContext(Resource.DEFAULT, OperationCode.LIST_DS);
   }
 
   @Override
@@ -260,13 +211,56 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
       throws InstanceNotFoundException, MBeanException, ReflectionException {
-    ResourceOperationContext ctx = getOperationContext(name, operationName);
+    ResourceOperationContext ctx = getOperationContext(name, operationName, true);
     doAuthorization(ctx);
     Object result = mbs.invoke(name, operationName, params, signature);
     ctx.setPostOperationResult(result);
     doAuthorizationPost(ctx);
     return result;
   }
+
+  // TODO: cache this
+  private ResourceOperationContext getOperationContext(ObjectName objectName, String featureName, boolean isOp)
+      throws InstanceNotFoundException, ReflectionException {
+    MBeanInfo beanInfo = null;
+    try {
+      beanInfo = mbs.getMBeanInfo(objectName);
+    } catch (IntrospectionException e) {
+      throw new GemFireSecurityException("error getting beanInfo of "+objectName);
+    }
+    // Initialize the context with the default value
+    ResourceOperationContext result = new ResourceOperationContext(Resource.DEFAULT, OperationCode.LIST_DS);
+
+    // find the context in the beanInfo if defined in the class level
+    result = getOperationContext(beanInfo.getDescriptor(), result);
+
+    MBeanFeatureInfo[] featureInfos = null;
+    if(isOp){
+      featureInfos = beanInfo.getOperations();
+    }
+    else{
+      featureInfos = beanInfo.getAttributes();
+    }
+    // still look into the attributes/operations to see if it's defined in the method level
+    for(MBeanFeatureInfo info:featureInfos){
+      if(info.getName().equals(featureName)){
+        // found the featureInfo of this method on the bean
+        result = getOperationContext(info.getDescriptor(), result);
+        break;
+      }
+    }
+    return result;
+  }
+
+  private ResourceOperationContext getOperationContext(Descriptor descriptor, ResourceOperationContext defaultValue){
+    String resource = (String)descriptor.getFieldValue("resource");
+    String operationCode = (String)descriptor.getFieldValue("operation");
+    if(resource!=null && operationCode!=null){
+      return new ResourceOperationContext(resource, operationCode);
+    }
+    return defaultValue;
+  }
+
 
   @Override
   public String getDefaultDomain() {

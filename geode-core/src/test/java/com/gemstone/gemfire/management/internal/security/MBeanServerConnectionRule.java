@@ -38,9 +38,8 @@ import java.util.Set;
  * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}
  * it allows for the creation of per-test connections with different user/password combinations.
  *
- * @param <T> The type of MBean which will be returned.
  */
-public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
+public class MBeanServerConnectionRule extends DescribedExternalResource {
 
   private final int jmxServerPort;
   private JMXConnector jmxConnector;
@@ -59,7 +58,7 @@ public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
    * Retrieve a new proxy MBean
    * @return A new proxy MBean of the same type with which the class was constructed
    */
-  public T getProxyMBean(Class<T> proxyClass, String beanQueryName) throws MalformedObjectNameException, IOException {
+  public Object getProxyMBean(Class proxyClass, String beanQueryName) throws MalformedObjectNameException, IOException {
     ObjectName name = null;
     QueryExp query = null;
 
@@ -82,11 +81,11 @@ public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
    * Retrieve a new proxy MBean
    * @return A new proxy MBean of the same type with which the class was constructed
    */
-  public T getProxyMBean(Class<T> proxyClass) throws MalformedObjectNameException, IOException {
+  public Object getProxyMBean(Class proxyClass) throws MalformedObjectNameException, IOException {
     return getProxyMBean(proxyClass, null);
   }
 
-  public T getProxyMBean(String beanQueryName) throws MalformedObjectNameException, IOException {
+  public Object getProxyMBean(String beanQueryName) throws MalformedObjectNameException, IOException {
     return getProxyMBean(null, beanQueryName);
   }
 

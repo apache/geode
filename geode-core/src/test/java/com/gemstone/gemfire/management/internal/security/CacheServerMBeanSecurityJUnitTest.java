@@ -46,12 +46,12 @@ public class CacheServerMBeanSecurityJUnitTest {
   public static JsonAuthorizationMBeanServerStartRule serverRule = new JsonAuthorizationMBeanServerStartRule(jmxManagerPort, "cacheServer.json");
 
   @Rule
-  public MBeanServerConnectionRule<CacheServerMXBean> connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
+  public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
 
   @Before
   public void setUp() throws Exception {
     //assertThat(cache.getCacheServers()).hasSize(1);
-    cacheServerMXBean = connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
+    cacheServerMXBean = (CacheServerMXBean)connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
     con = connectionRule.getMBeanServerConnection();
   }
 
