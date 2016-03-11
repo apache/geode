@@ -1,20 +1,26 @@
 {
-"roles" : [	
-			{
-				"name" : "jmxReader",
-				"operationsAllowed" : ["QUERY"]				
-			},
-			{
-				"name" : "sysMonitors",
-				"operationsAllowed" : [
-					"CMD_EXPORT_LOGS","CMD_STACK_TRACES","CMD_GC","CMD_NETSTAT","CMD_SHOW_DEADLOCKS", "CMD_SHOW_LOG", "SHOW_METRICS"
-				]
-			}
-		],
-users : [
-	 		{
-	 			"name" : "tushark",
-	 			"roles" : ["jmxReader", "sysMonitors"]
-	 		}
-		]
+  "roles": [
+    {
+      "name": "jmxReader",
+      "operationsAllowed": [
+        "QUERY:EXECUTE"
+      ]
+    },
+    {
+      "name": "sysMonitors",
+      "operationsAllowed": [
+        "MEMBER:EXPORT_LOGS",
+        "MEMBER:GC"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "name": "tushark",
+      "roles": [
+        "jmxReader",
+        "sysMonitors"
+      ]
+    }
+  ]
 }

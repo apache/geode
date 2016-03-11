@@ -25,8 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.management.MBeanServerConnection;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Category(IntegrationTest.class)
@@ -34,7 +32,6 @@ public class MemberMBeanSecurityJUnitTest {
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private MemberMXBean bean;
-  private MBeanServerConnection con;
 
   @ClassRule
   public static JsonAuthorizationMBeanServerStartRule serverRule = new JsonAuthorizationMBeanServerStartRule(
@@ -46,25 +43,24 @@ public class MemberMBeanSecurityJUnitTest {
   @Before
   public void setUp() throws Exception {
     bean = (MemberMXBean) connectionRule.getProxyMBean(MemberMXBean.class);
-    con = connectionRule.getMBeanServerConnection();
   }
 
   @Test
   @JMXConnectionConfiguration(user = "superuser", password = "1234567")
   public void testAllAccess() throws Exception {
-    bean.shutDownMember();  //SHUTDOWN
-    bean.compactAllDiskStores(); //COMPACT_DISKSTORE
-    bean.createManager(); //CREATE_MANAGER
-    bean.fetchJvmThreads(); //LIST_DS
-    bean.getName(); //LIST_DS
-    bean.getDiskStores(); //LIST_DS
-    bean.hasGatewayReceiver(); //LIST_DS
-    bean.isCacheServer(); //LIST_DS
-    bean.isServer(); //LIST_DS
-    bean.listConnectedGatewayReceivers(); //LIST_DS
-    bean.processCommand("create region --name=Region_A"); //CREATE_REGION
-    bean.showJVMMetrics(); //LIST_DS
-    bean.status(); //LIST_DS
+    bean.shutDownMember();  // MEMBER:SHUTDOWN
+    bean.compactAllDiskStores(); // DISKSTORE:COMPACT
+    bean.createManager(); // MANAGER:CREATE
+    bean.fetchJvmThreads(); // DEFAULT:LIST_DS
+    bean.getName(); // DEFAULT:LIST_DS
+    bean.getDiskStores(); // DEFAULT:LIST_DS
+    bean.hasGatewayReceiver(); // DEFAULT:LIST_DS
+    bean.isCacheServer(); // DEFAULT:LIST_DS
+    bean.isServer(); // DEFAULT:LIST_DS
+    bean.listConnectedGatewayReceivers(); // DEFAULT:LIST_DS
+    bean.processCommand("create region --name=Region_A"); // REGION:CREATE
+    bean.showJVMMetrics(); // DEFAULT:LIST_DS
+    bean.status(); // DEFAULT:LIST_DS
   }
 
   @Test

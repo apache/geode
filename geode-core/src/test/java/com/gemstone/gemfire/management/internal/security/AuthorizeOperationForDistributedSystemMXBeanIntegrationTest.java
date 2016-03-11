@@ -36,11 +36,11 @@ public class AuthorizeOperationForDistributedSystemMXBeanIntegrationTest {
     JSONAuthorization authorization = new JSONAuthorization("auth1.json");
     authorization.init(new JMXPrincipal("tushark"), null, null);
 
-    ResourceOperationContext context = new ResourceOperationContext(null, "QUERY");
+    ResourceOperationContext context = new ResourceOperationContext("QUERY", "EXECUTE");
     boolean result = authorization.authorizeOperation(null, context);
     assertTrue(result);
 
-    context = new ResourceOperationContext(null, "MANAGE");
+    context = new ResourceOperationContext("REGION", "CREATE");
     result = authorization.authorizeOperation(null, context);
     assertFalse(result);
   }

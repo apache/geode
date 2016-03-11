@@ -3,22 +3,19 @@
     {
       "name": "everything",
       "operationsAllowed": [
-        "CREATE",
-        "LIST_DS",
-        "DESTROY",
-        "DESTROY_INDEX",
-        "EXECUTE",
-        "LOCATE_ENTRY",
-        "QUERY",
-        "STOP",
-        "STOP_CONTINUOUS_QUERY",
-        "SHUTDOWN",
-        "COMPACT",
-        "COMPACT_DISKSTORE",
-        "CREATE_MANAGER",
-        "CREATE_REGION",
-        "PROCESS_COMMAND",
-        "STATUS"
+        "DEFAULT:LIST_DS",
+        "DISTRIBUTED_SYSTEM:LIST_DS",
+        "INDEX:DESTROY",
+        "QUERY:EXECUTE",
+        "DEFAULT:LOCATE_ENTRY",
+        "CONTINUOUS_QUERY:EXECUTE",
+        "CONTINUOUS_QUERY:STOP",
+        "MEMBER:SHUTDOWN",
+        "DISKSTORE:COMPACT",
+        "MANAGER:CREATE",
+        "REGION:CREATE",
+        "MEMBER:PROCESS_COMMAND",
+        "MEMBER:STATUS"
       ]
     },
     {
@@ -29,7 +26,7 @@
     {
       "name": "something",
       "operationsAllowed": [
-        "LIST_DS"
+        "DISTRIBUTED_SYSTEM:LIST_DS"
       ]
     }
   ],

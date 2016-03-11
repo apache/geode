@@ -3,13 +3,13 @@
     {
       "name": "dataUsers",
       "operationsAllowed": [
-        "GET"
+        "REGION:GET"
       ]
     },
     {
       "name": "secureDataUsers",
       "operationsAllowed": [
-        "GET"
+        "REGION:GET"
       ],
       "region": "secureRegion"
     }

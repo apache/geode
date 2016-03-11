@@ -51,7 +51,6 @@ public class CacheServerMBeanSecurityJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    //assertThat(cache.getCacheServers()).hasSize(1);
     cacheServerMXBean = (CacheServerMXBean) connectionRule.getProxyMBean(CacheServerMXBean.class,
         "GemFire:service=CacheServer,*");
     con = connectionRule.getMBeanServerConnection();
@@ -74,14 +73,14 @@ public class CacheServerMBeanSecurityJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "superuser", password = "1234567")
   public void testAllAccess() throws Exception {
-    cacheServerMXBean.removeIndex("foo"); // "DESTROY_INDEX",
-    cacheServerMXBean.executeContinuousQuery("bar"); //QUERY
-    cacheServerMXBean.fetchLoadProbe(); //LIST_DS
-    cacheServerMXBean.getActiveCQCount(); //LIST_DS
-    cacheServerMXBean.stopContinuousQuery("bar"); //STOP_CONTINUOUS_QUERY
-    cacheServerMXBean.closeAllContinuousQuery("bar"); //STOP_CONTINUOUS_QUERY
-    cacheServerMXBean.isRunning(); //LIST_DS
-    cacheServerMXBean.showClientQueueDetails("foo"); //LIST_DS
+    cacheServerMXBean.removeIndex("foo"); // "INDEX:DESTROY",
+    cacheServerMXBean.executeContinuousQuery("bar"); // CONTNUOUS_QUERY:EXECUTE
+    cacheServerMXBean.fetchLoadProbe(); // DISTRIBUTED_SYSTEM:LIST_DS
+    cacheServerMXBean.getActiveCQCount(); // DISTRIBUTED_SYSTEM:LIST_DS
+    cacheServerMXBean.stopContinuousQuery("bar"); // CONTINUOUS_QUERY:STOP
+    cacheServerMXBean.closeAllContinuousQuery("bar"); // CONTINUOUS_QUERY:STOP
+    cacheServerMXBean.isRunning(); // DISTRIBUTED_SYSTEM:LIST_DS
+    cacheServerMXBean.showClientQueueDetails("foo"); // DISTRIBUTED_SYSTEM:LIST_DS
   }
 
   @Test
