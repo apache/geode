@@ -183,6 +183,17 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
   private static final boolean UPDATE_ACCESS_TIME_ON_INTEREST = Boolean
       .getBoolean("gemfire.updateAccessTimeOnClientInterest");
 
+  
+  //Only for testing
+  PartitionedRegionDataStore() {
+    this.bucketCreationLock = null;
+    bucketStats = null;
+    partitionedRegion = null;
+    maximumLocalBytes = -1;
+    this.localBucket2RegionMap = new ConcurrentHashMap<Integer, BucketRegion>();
+    keysOfInterest = null;
+  }
+  
   /**
    * Creates PartitionedRegionDataStore for dataStorage of PR and starts a
    * PartitionService to handle remote operations on this DataStore from other
@@ -261,7 +272,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    *          the id of the bucket
    * @return true if the provided bucket is being managed
    */
-  public final boolean isManagingBucket(int bucketId)
+  public boolean isManagingBucket(int bucketId)
   {
     BucketRegion buk = this.localBucket2RegionMap.get(Integer.valueOf(bucketId));    
     if (buk != null && !buk.isDestroyed()) {

@@ -1969,7 +1969,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return this.serialNumber;
   }
 
-  public final GemFireCacheImpl getCache() {
+  public /*final*/ GemFireCacheImpl getCache() {
     return this.cache;
   }
 
