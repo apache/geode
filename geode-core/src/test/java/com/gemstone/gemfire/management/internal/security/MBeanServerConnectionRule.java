@@ -37,6 +37,7 @@ import java.util.Set;
 /**
  * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}
  * it allows for the creation of per-test connections with different user/password combinations.
+ *
  */
 public class MBeanServerConnectionRule extends DescribedExternalResource {
 
@@ -103,20 +104,22 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     if (config != null) {
       String user = config.user();
       String password = config.password();
-      env.put(JMXConnector.CREDENTIALS, new String[]{user, password});
-    }
-    JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + jmxServerPort + "/jmxrmi");
+      env.put(JMXConnector.CREDENTIALS, new String[] { user, password });
 
-    jmxConnector = JMXConnectorFactory.connect(url, env);
-    con = jmxConnector.getMBeanServerConnection();
+      JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + jmxServerPort + "/jmxrmi");
+      jmxConnector = JMXConnectorFactory.connect(url, env);
+      con = jmxConnector.getMBeanServerConnection();
+    }
   }
 
   /**
    * Override to tear down your specific external resource.
    */
   protected void after(Description description) throws Throwable {
-    jmxConnector.close();
-    jmxConnector = null;
+    if (jmxConnector != null) {
+      jmxConnector.close();
+      jmxConnector = null;
+    }
     con = null;
   }
 

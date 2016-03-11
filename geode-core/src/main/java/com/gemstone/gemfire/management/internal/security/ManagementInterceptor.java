@@ -37,7 +37,6 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.management.remote.JMXAuthenticator;
 import javax.management.remote.JMXPrincipal;
-import javax.management.remote.MBeanServerForwarder;
 import javax.security.auth.Subject;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
@@ -50,7 +49,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.*;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.ACCESS_DENIED_MESSAGE;
+import static com.gemstone.gemfire.management.internal.security.ResourceConstants.WRONGE_CREDENTIALS_MESSAGE;
 
 /**
  *
@@ -66,9 +66,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
 	public static final String PASSWORD = "security-password";
 	public static final String OBJECT_NAME_ACCESSCONTROL = "GemFire:service=AccessControl,type=Distributed";
 
-	private MBeanServerWrapper mBeanServerForwarder;
-	private Logger logger;  
-  private ObjectName accessControlMBeanON;
+	private Logger logger;
   private Cache cache;
   private String authzFactoryName;
   private String postAuthzFactoryName;
@@ -79,7 +77,6 @@ public class ManagementInterceptor implements JMXAuthenticator{
   public ManagementInterceptor(Cache gemFireCacheImpl, Logger logger) {
     this.cache = gemFireCacheImpl;
 		this.logger = logger;
-		this.mBeanServerForwarder = new MBeanServerWrapper(this);
     DistributedSystem system = cache.getDistributedSystem();
     Properties sysProps = system.getProperties();
     this.authzFactoryName = sysProps.getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME);
@@ -98,7 +95,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
 	private void registerAccessContorlMbean() {
     try {
       AccessControlMBean acc = new AccessControlMBean(this);
-      accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
+      ObjectName accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
       MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
 
       Set<ObjectName> names = platformMBeanServer.queryNames(accessControlMBeanON, null);
@@ -162,22 +159,12 @@ public class ManagementInterceptor implements JMXAuthenticator{
    *           if access is not granted
    */
   public void authorize(ResourceOperationContext context) {
-    if(context==null){
-      return;
-    }
-
     if (StringUtils.isBlank(authzFactoryName)){
       return;
     }
 
-		AccessControlContext acc = AccessController.getContext();
-		Subject subject = Subject.getSubject(acc);
-
-    // Allow operations performed locally on behalf of the connector server itself
-		if (subject == null) {
-      return;
-		}
-
+    AccessControlContext acc = AccessController.getContext();
+    Subject subject = Subject.getSubject(acc);
     Set<JMXPrincipal> principals = subject.getPrincipals(JMXPrincipal.class);
 
     if (principals == null || principals.isEmpty()) {
@@ -192,10 +179,6 @@ public class ManagementInterceptor implements JMXAuthenticator{
       throw new SecurityException(ACCESS_DENIED_MESSAGE);
     }
   }
-
-	public MBeanServerForwarder getMBeanServerForwarder() {
-		return mBeanServerForwarder;
-	}
 
   public AccessControl getAccessControl(Principal principal, boolean isPost) {
     if (!isPost) {
@@ -249,20 +232,10 @@ public class ManagementInterceptor implements JMXAuthenticator{
     return auth;
 	}
 
-  public ObjectName getAccessControlMBeanON() {
-    return accessControlMBeanON;
-    }
-
   public void postAuthorize(ResourceOperationContext context) {
-
-    if(context==null){
-      return;
-    }
-
     if (StringUtils.isBlank(postAuthzFactoryName)){
       return ;
     }
-
 
     AccessControlContext acc = AccessController.getContext();
     Subject subject = Subject.getSubject(acc);

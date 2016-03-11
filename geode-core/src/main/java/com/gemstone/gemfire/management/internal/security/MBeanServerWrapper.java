@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 import javax.management.Attribute;
@@ -39,78 +38,80 @@ import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.OperationsException;
+import javax.management.Query;
 import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
 import java.io.ObjectInputStream;
-import java.util.HashSet;
 import java.util.Set;
-
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.ACCESS_DENIED_MESSAGE;
 
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to
  * ManagementInterceptor for authorization
- *
- *
- * @author tushark
  * @since 9.0
  *
  */
 public class MBeanServerWrapper implements MBeanServerForwarder {
-  
   private MBeanServer mbs;
   private ManagementInterceptor interceptor;
+
   
   public MBeanServerWrapper(ManagementInterceptor interceptor){
     this.interceptor = interceptor;
   }
-  
+
   private void doAuthorization(ResourceOperationContext context){
+    // allow operations which requires no permissions
+    if(context == null)
+      return;
+
     interceptor.authorize(context);
   }
 
   private void doAuthorizationPost(ResourceOperationContext context){
+    if(context == null)
+      return;
+
     interceptor.postAuthorize(context);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name) throws ReflectionException,
-      InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException, NotCompliantMBeanException {
-    throw new SecurityException(ACCESS_DENIED_MESSAGE);
+      InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException {
+    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName)
-      throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException,
+      throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
       NotCompliantMBeanException, InstanceNotFoundException {
-    throw new SecurityException(ACCESS_DENIED_MESSAGE);
+    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name, Object[] params, String[] signature)
-      throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException,
+      throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
       NotCompliantMBeanException {
-    throw new SecurityException(ACCESS_DENIED_MESSAGE);
+    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName, Object[] params,
-      String[] signature) throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException,
+      String[] signature) throws ReflectionException, InstanceAlreadyExistsException,
       MBeanException, NotCompliantMBeanException, InstanceNotFoundException {
-    throw new SecurityException(ACCESS_DENIED_MESSAGE);
+    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
   }
 
   @Override
   public ObjectInstance registerMBean(Object object, ObjectName name) throws InstanceAlreadyExistsException,
       MBeanRegistrationException, NotCompliantMBeanException {
-    throw new SecurityException(ACCESS_DENIED_MESSAGE);
+    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
   }
 
   @Override
   public void unregisterMBean(ObjectName name) throws InstanceNotFoundException, MBeanRegistrationException {
-    throw new SecurityException(ACCESS_DENIED_MESSAGE);
+    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
   }
 
   @Override
@@ -118,35 +119,22 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     return mbs.getObjectInstance(name);
   }
 
+  private static QueryExp notAccessControlMBean = Query.not(Query.isInstanceOf(Query.value(AccessControlMXBean.class.getName())));
   @Override
   public Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query) {
-    ResourceOperationContext ctx = new ResourceOperationContext(Resource.MBEAN, OperationCode.QUERY);
-    return filterAccessControlMBeanInstance(mbs.queryMBeans(name, query));
-  }
-
-  private Set<ObjectInstance> filterAccessControlMBeanInstance(Set<ObjectInstance> queryMBeans) {
-    Set<ObjectInstance> set = new HashSet<ObjectInstance>();
-    for(ObjectInstance oi : queryMBeans) {
-      if(!oi.getObjectName().equals(interceptor.getAccessControlMBeanON())){
-        set.add(oi);
-      }
-    }
-    return set;
+    // We need to filter out the AccessControlMXBean so that the clients wouldn't see it
+    if(query!=null)
+      return mbs.queryMBeans(name, Query.and(query, notAccessControlMBean));
+    else
+      return mbs.queryMBeans(name,notAccessControlMBean);
   }
 
   @Override
   public Set<ObjectName> queryNames(ObjectName name, QueryExp query) {
-    return filterAccessControlMBean(mbs.queryNames(name, query));
-  }
-
-  private Set<ObjectName> filterAccessControlMBean(Set<ObjectName> queryNames) {
-    Set<ObjectName> set = new HashSet<ObjectName>();
-    for(ObjectName oi : queryNames) {
-      if(!oi.equals(interceptor.getAccessControlMBeanON())){
-        set.add(oi);
-      }
-    }
-    return set;
+    if(query!=null)
+      return mbs.queryNames(name, Query.and(query, notAccessControlMBean));
+    else
+      return mbs.queryNames(name,notAccessControlMBean);
   }
 
   @Override
@@ -165,7 +153,9 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     ResourceOperationContext ctx = getOperationContext(name, attribute, false);
     doAuthorization(ctx);
     Object result = mbs.getAttribute(name, attribute);
-    ctx.setPostOperationResult(result);
+    if(ctx != null) {
+      ctx.setPostOperationResult(result);
+    }
     doAuthorizationPost(ctx);
     return result;
   }
@@ -214,7 +204,8 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     ResourceOperationContext ctx = getOperationContext(name, operationName, true);
     doAuthorization(ctx);
     Object result = mbs.invoke(name, operationName, params, signature);
-    ctx.setPostOperationResult(result);
+    if(ctx!=null)
+      ctx.setPostOperationResult(result);
     doAuthorizationPost(ctx);
     return result;
   }
@@ -228,8 +219,8 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     } catch (IntrospectionException e) {
       throw new GemFireSecurityException("error getting beanInfo of "+objectName);
     }
-    // Initialize the context with the default value
-    ResourceOperationContext result = new ResourceOperationContext(Resource.DEFAULT, OperationCode.LIST_DS);
+    // If there is no annotation defined either in the class level or method level, we should consider this operation/attribute freely accessible
+    ResourceOperationContext result = null;
 
     // find the context in the beanInfo if defined in the class level
     result = getOperationContext(beanInfo.getDescriptor(), result);
@@ -380,6 +371,10 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public MBeanServer getMBeanServer() {    
     return mbs;
+  }
+
+  public ManagementInterceptor getInterceptor() {
+    return interceptor;
   }
 
   @Override

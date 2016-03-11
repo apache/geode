@@ -16,6 +16,32 @@
  */
 package com.gemstone.gemfire.management.internal;
 
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.tcp.TCPConduit;
+import com.gemstone.gemfire.management.ManagementException;
+import com.gemstone.gemfire.management.ManagementService;
+import com.gemstone.gemfire.management.ManagerMXBean;
+import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
+import com.gemstone.gemfire.management.internal.security.ManagementInterceptor;
+import com.gemstone.gemfire.management.internal.unsafe.ReadOpFileAccessController;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+
+import javax.management.MBeanServer;
+import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXServiceURL;
+import javax.management.remote.rmi.RMIConnectorServer;
+import javax.management.remote.rmi.RMIJRMPServerImpl;
+import javax.management.remote.rmi.RMIServerImpl;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
@@ -30,33 +56,6 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
-
-import javax.management.MBeanServer;
-import javax.management.remote.JMXConnectorServer;
-import javax.management.remote.JMXServiceURL;
-import javax.management.remote.rmi.RMIConnectorServer;
-import javax.management.remote.rmi.RMIJRMPServerImpl;
-import javax.management.remote.rmi.RMIServerImpl;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
-
-import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.tcp.TCPConduit;
-import com.gemstone.gemfire.management.ManagementException;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.ManagerMXBean;
-import com.gemstone.gemfire.management.internal.security.ManagementInterceptor;
-import com.gemstone.gemfire.management.internal.unsafe.ReadOpFileAccessController;
 
 /**
  * Agent implementation that controls the JMX server end points for JMX clients
@@ -83,7 +82,6 @@ public class ManagementAgent {
   private JMXConnectorServer cs;
   private final DistributionConfig config;
   private boolean isHttpServiceRunning = false;
-  private ManagementInterceptor securityInterceptor;
 
   /**
    * This system property is set to true when the embedded HTTP server is
@@ -386,11 +384,12 @@ public class ManagementAgent {
     // Environment map. KIRK: why is this declared as HashMap?
     final HashMap<String, Object> env = new HashMap<String, Object>();
 
-    boolean integratedSecEnabled = isIntegratedSecEnabled();
-    if (integratedSecEnabled) {
+    ManagementInterceptor securityInterceptor = null;
+    if (isCustomAuthenticator()) {
       securityInterceptor = new ManagementInterceptor((GemFireCacheImpl)CacheFactory.getAnyInstance(), logger);
       env.put(JMXConnectorServer.AUTHENTICATOR, securityInterceptor);
-    } else {
+    }
+    else {
       /* Disable the old authenticator mechanism */
       String pwFile = this.config.getJmxManagerPasswordFile();
       if (pwFile != null && pwFile.length() > 0) {
@@ -460,12 +459,13 @@ public class ManagementAgent {
         super.start();
       }
     };
-    // This may be the 1.6 way of doing it but the problem is it does not use
-    // our "stub".
-    // cs = JMXConnectorServerFactory.newJMXConnectorServer(url, env, mbs);
 
-    if (integratedSecEnabled) {
-      cs.setMBeanServerForwarder(securityInterceptor.getMBeanServerForwarder());
+    if (isCustomAuthorizer()) {
+      if(securityInterceptor==null){
+        securityInterceptor = new ManagementInterceptor((GemFireCacheImpl)CacheFactory.getAnyInstance(), logger);
+      }
+      MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(securityInterceptor);
+      cs.setMBeanServerForwarder(mBeanServerWrapper);
       logger.info("Starting RMI Connector with Security Interceptor");
     }
 
@@ -473,17 +473,16 @@ public class ManagementAgent {
     if (logger.isDebugEnabled()) {
       logger.debug("Finished starting jmx manager agent.");
     }
-    // System.out.println("Server started at: "+cs.getAddress());
-
-    // Start the CleanThread daemon... KIRK: not sure what CleanThread is...
-    //
-    // final Thread clean = new CleanThread(cs);
-    // clean.start();
   }
 
-  private boolean isIntegratedSecEnabled() {
-    String authenticatorFactoryName = config.getSecurityClientAuthenticator();
-    return authenticatorFactoryName != null && !authenticatorFactoryName.isEmpty();
+  private boolean isCustomAuthenticator() {
+    String factoryName = config.getSecurityClientAuthenticator();
+    return factoryName != null && !factoryName.isEmpty();
+  }
+
+  private boolean isCustomAuthorizer() {
+    String factoryName = config.getSecurityClientAccessor();
+    return factoryName != null && !factoryName.isEmpty();
   }
 
   private static class GemFireRMIClientSocketFactory implements RMIClientSocketFactory,

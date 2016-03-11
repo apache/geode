@@ -25,8 +25,8 @@ public class ResourceOperationContext extends OperationContext {
 
   private boolean isPostOperation = false;
   private Object opResult = null;
-  private Resource resource = Resource.DEFAULT;
-  private OperationCode operation = OperationCode.MANAGE;
+  private Resource resource = null;
+  private OperationCode operation = null;
 
   public ResourceOperationContext() {
   }

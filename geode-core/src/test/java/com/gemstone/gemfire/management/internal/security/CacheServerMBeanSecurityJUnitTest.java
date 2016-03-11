@@ -26,13 +26,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectInstance;
-import javax.management.ObjectName;
-import java.io.IOException;
-import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Category(IntegrationTest.class)
@@ -53,22 +47,7 @@ public class CacheServerMBeanSecurityJUnitTest {
   public void setUp() throws Exception {
     cacheServerMXBean = (CacheServerMXBean) connectionRule.getProxyMBean(CacheServerMXBean.class,
         "GemFire:service=CacheServer,*");
-    con = connectionRule.getMBeanServerConnection();
   }
-
-  /**
-   * No user can call createBean or unregisterBean
-   */
-  @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
-  public void testNoAccessWithWhoever() throws Exception {
-    assertThatThrownBy(() -> con.createMBean("FakeClassName", new ObjectName("GemFire", "name", "foo")))
-        .isInstanceOf(SecurityException.class);
-
-    assertThatThrownBy(() -> con.unregisterMBean(new ObjectName("GemFire", "name", "foo")))
-        .isInstanceOf(SecurityException.class);
-  }
-
 
   @Test
   @JMXConnectionConfiguration(user = "superuser", password = "1234567")
@@ -102,19 +81,5 @@ public class CacheServerMBeanSecurityJUnitTest {
     assertThatThrownBy(() -> cacheServerMXBean.closeAllContinuousQuery("bar")).isInstanceOf(SecurityException.class);
     assertThatThrownBy(() -> cacheServerMXBean.isRunning()).isInstanceOf(SecurityException.class);
     assertThatThrownBy(() -> cacheServerMXBean.showClientQueueDetails("bar")).isInstanceOf(SecurityException.class);
-  }
-
-  /*
-   * looks like everyone can query for beans, but the AccessControlMXBean is filtered from the result
-   */
-  @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
-  public void testQueryBean() throws MalformedObjectNameException, IOException {
-    Set<ObjectInstance> objects = con.queryMBeans(ObjectName.getInstance(ResourceConstants.OBJECT_NAME_ACCESSCONTROL),
-        null);
-    assertThat(objects.size()).isEqualTo(0); // no AccessControlMBean in the query result
-
-    objects = con.queryMBeans(ObjectName.getInstance("GemFire:service=CacheServer,*"), null);
-    assertThat(objects.size()).isEqualTo(1);
   }
 }

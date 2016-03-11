@@ -51,6 +51,10 @@ public class JsonAuthorizationMBeanServerStartRule extends ExternalResource {
     cache.addCacheServer().start();
   }
 
+  public Cache getCache(){
+    return cache;
+  }
+
   /**
    * Override to tear down your specific external resource.
    */
