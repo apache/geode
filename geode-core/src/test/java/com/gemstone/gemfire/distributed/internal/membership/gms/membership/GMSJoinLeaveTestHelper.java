@@ -21,6 +21,8 @@ import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 public class GMSJoinLeaveTestHelper {
 
@@ -43,6 +45,24 @@ public class GMSJoinLeaveTestHelper {
     throw new RuntimeException("This should not have happened. There should be a JoinLeave for every DS");
   }
 
+  private static void waitCriterion() {
+    WaitCriterion waitCriterion = new WaitCriterion() {
+      public boolean done() {
+        try {
+          return getIDS() != null;
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        return false; // NOTREACHED
+      }
+
+      public String description() {
+        return "Distributed system is null";
+      }
+    };
+    Wait.waitForCriterion(waitCriterion, 10 * 1000, 200, true);
+  }
+  
   private static GMSJoinLeave getGmsJoinLeave() {
     InternalDistributedSystem distributedSystem = getInternalDistributedSystem();
     DM dm = distributedSystem.getDM();
@@ -56,6 +76,10 @@ public class GMSJoinLeaveTestHelper {
   }
 
   private static InternalDistributedSystem getInternalDistributedSystem() {
+    waitCriterion();
+    return getIDS();
+  }
+  private static InternalDistributedSystem getIDS() {
     InternalDistributedSystem distributedSystem = InternalDistributedSystem.getAnyInstance();
     if (distributedSystem == null) {
       Locator locator = Locator.getLocator();
