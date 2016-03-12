@@ -831,6 +831,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private void processViewMessage(final InstallViewMessage m) {
 
     NetView view = m.getView();
+    
+    if(currentView != null && !currentView.contains(m.getSender())) {
+      logger.info("Ignoring the view {} from member {}, which is not in my current view {} ", view, m.getSender(), currentView);
+      return;
+    }
 
     if (currentView != null && view.getViewId() < currentView.getViewId()) {
       // ignore old views
@@ -1445,9 +1450,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       processRemoveRequest(msg);
       if (!this.isCoordinator) {
         msg.resetRecipients();
-        msg.setRecipients(v.getPreferredCoordinators(Collections.<InternalDistributedMember>emptySet(), localAddress, 10));
+        msg.setRecipients(v.getPreferredCoordinators(Collections.<InternalDistributedMember> emptySet(), localAddress, 10));
         services.getMessenger().send(msg);
       }
+    } else {
+      RemoveMemberMessage msg = new RemoveMemberMessage(m, m, reason);
+      services.getMessenger().send(msg);
     }
   }
 
