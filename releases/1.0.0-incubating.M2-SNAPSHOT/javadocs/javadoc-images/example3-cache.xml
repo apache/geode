@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!-- A sample GemFire declarative caching XML File that demonstrates
+     the "named region attributes" feature.
+-->
+
+<cache
+    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
+    version="8.1">
+  <region-attributes id="template" statistics-enabled="true" 
+                     scope="distributed-ack">
+    <key-constraint>java.lang.String</key-constraint>
+    <value-constraint>com.company.app.Customer</value-constraint>
+    <entry-idle-time>
+      <expiration-attributes timeout="60"/>
+    </entry-idle-time>
+  </region-attributes>
+
+  <!-- define a named region-attributes that uses the predefined REPLICATE -->
+  <region-attributes id="distributed" refid="REPLICATE">
+    <cache-loader>
+      <class-name>com.company.app.DBLoader</class-name>
+    </cache-loader>
+  </region-attributes>
+
+  <region-attributes id="persistent" refid="distributed"
+                     data-policy="persistent-replicate"> 
+    <eviction-attributes>
+      <lru-entry-count maximum="1000" action="overflow-to-disk"/>
+    </eviction-attributes>
+  </region-attributes>
+
+  <region name="customers" refid="template"/>
+  <region name="customers-west" refid="template"/>
+  <region name="customers-central" refid="template"/>
+  <region name="customers-east" refid="template"/>
+
+  <region name="orders" refid="template"/>
+  <region name="orders-west" refid="persistent"/>
+  <region name="orders-central" refid="persistent"/>
+  <region name="orders-east" refid="persistent"/>
+</cache>
