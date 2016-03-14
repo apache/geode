@@ -336,7 +336,7 @@ public abstract class OperationContext {
   public abstract OperationCode getOperationCode();
 
   public Resource getResource(){
-    return Resource.DEFAULT;
+    return Resource.CLIENT_SERVER;
   }
 
   /**

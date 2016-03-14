@@ -28,6 +28,22 @@
       "operationsAllowed": [
         "DISTRIBUTED_SYSTEM:LIST_DS"
       ]
+    },
+    {
+      "name": "dataUsers",
+      "operationsAllowed": [
+        "REGION:GET",
+        "MEMBER:PROCESS_COMMAND"
+      ],
+      "region": "region1"
+    },
+    {
+      "name": "secureDataUsers",
+      "operationsAllowed": [
+        "REGION:GET",
+        "MEMBER:PROCESS_COMMAND"
+      ],
+      "regions": ["region1", "secureRegion"]
     }
   ],
   "users": [
@@ -50,6 +66,21 @@
       "password": "1234567",
       "roles": [
         "something"
+      ]
+    },
+    {
+      "name": "dataUser",
+      "password": "1234567",
+      "roles": [
+        "dataUsers"
+      ]
+    },
+    {
+      "name": "secureDataUser",
+      "password": "1234567",
+      "roles": [
+        "secureDataUsers",
+        "dataUsers"
       ]
     }
   ]

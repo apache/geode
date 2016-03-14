@@ -50,12 +50,10 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
     private final Resource resource;
     private final OperationCode operationCode;
-    private final String region;
 
-    Permission(Resource resource, OperationCode operationCode, String region) {
+    Permission(Resource resource, OperationCode operationCode) {
       this.resource = resource;
       this.operationCode = operationCode;
-      this.region = region;
     }
 
     public Resource getResource() {
@@ -66,14 +64,9 @@ public class JSONAuthorization implements AccessControl, Authenticator {
       return operationCode;
     }
 
-    public String getRegion() {
-      return region;
-    }
-
     @Override
     public String toString() {
       String result = resource.toString() + ":" + operationCode.toString();
-      result += (region != null) ? "[" + region + "]" : "";
       return result;
     }
   }
@@ -81,13 +74,13 @@ public class JSONAuthorization implements AccessControl, Authenticator {
   public static class Role {
     List<Permission> permissions = new ArrayList<>();
     String name;
-    String regionName;
+    List<String> regionNames = null; // when checking, if regionNames is null, that means all regions are allowed.
     String serverGroup;
   }
 
   public static class User {
     String name;
-    Set<Permission> permissions = new HashSet<>();
+    Set<Role> roles = new HashSet<>();
     String pwd;
   }
 
@@ -132,8 +125,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
       JSONArray ops = obj.getJSONArray("roles");
       for (int j = 0; j < ops.length(); j++) {
         String roleName = ops.getString(j);
-
-        user.permissions.addAll(roleMap.get(roleName).permissions);
+        user.roles.add(roleMap.get(roleName));
       }
       acl.put(user.name, user);
     }
@@ -146,29 +138,32 @@ public class JSONAuthorization implements AccessControl, Authenticator {
       JSONObject obj = array.getJSONObject(i);
       Role role = new Role();
       role.name = obj.getString("name");
+      JSONArray ops = obj.getJSONArray("operationsAllowed");
+      for (int j = 0; j < ops.length(); j++) {
+        String[] parts = ops.getString(j).split(":");
+        Resource r = Resource.valueOf(parts[0]);
+        OperationCode op = parts.length > 1 ? OperationCode.valueOf(parts[1]) : OperationCode.ALL;
+        role.permissions.add(new Permission(r, op));
+      }
 
-      if (obj.has("operationsAllowed")) {
-        // The default region is null and not the empty string
-        String region = obj.optString("region", null);
-        JSONArray ops = obj.getJSONArray("operationsAllowed");
-        for (int j = 0; j < ops.length(); j++) {
-          String[] parts = ops.getString(j).split(":");
-          Resource r = Resource.valueOf(parts[0]);
-          OperationCode op = parts.length > 1 ? OperationCode.valueOf(parts[1]) : OperationCode.ALL;
-          role.permissions.add(new Permission(r, op, region));
+      if(obj.has("region")) {
+        if (role.regionNames == null) {
+          role.regionNames = new ArrayList<>();
         }
-      } else {
-        if (!obj.has("inherit")) {
-          throw new RuntimeException(
-              "Role " + role.name + " does not have any permission neither it inherits any parent role");
+        role.regionNames.add(obj.getString("region"));
+      }
+
+      if(obj.has("regions")) {
+        JSONArray regions = obj.getJSONArray("regions");
+        if (role.regionNames == null) {
+          role.regionNames = new ArrayList<>();
+        }
+        for (int j = 0; j < regions.length(); j++) {
+          role.regionNames.add(regions.getString(j));
         }
       }
 
       roleMap.put(role.name, role);
-
-      if (obj.has("region")) {
-        role.regionName = obj.getString("region");
-      }
 
       if (obj.has("serverGroup")) {
         role.serverGroup = obj.getString("serverGroup");
@@ -191,34 +186,39 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
   @Override
   public boolean authorizeOperation(String arg0, OperationContext context) {
+    if (principal == null)
+      return false;
 
-    if (principal != null) {
-      User user = acl.get(principal.getName());
-      if (user != null) {
-        LogService.getLogger().info("Context received " + context);
-        ResourceOperationContext ctx = (ResourceOperationContext) context;
-        LogService.getLogger().info("Checking for permission " + ctx.getResource() + ":" + ctx.getOperationCode());
+    User user = acl.get(principal.getName());
+    if(user == null)
+      return false; // this user is not authorized to do anything
 
-        //TODO : This is for un-annotated commands
-        if (ctx.getOperationCode() == null) {
-          return true;
-        }
+    LogService.getLogger().info("Context received " + context);
+    LogService.getLogger().info("Checking for permission " + context.getResource() + ":" + context.getOperationCode());
 
-        boolean found = false;
-        for (Permission perm : acl.get(user.name).permissions) {
-          if (ctx.getResource() == perm.getResource() && ctx.getOperationCode() == perm.getOperationCode()) {
-            found = true;
-            LogService.getLogger().info("Found permission " + perm);
-            break;
+    // check if the user has this permission defined in the context
+    for(Role role:acl.get(user.name).roles) {
+      for (Permission perm : role.permissions) {
+        if (context.getResource() == perm.getResource() && context.getOperationCode() == perm.getOperationCode()) {
+          LogService.getLogger().info("Found permission " + perm);
+
+          //if this is only for JMX aurthorization, we've found the permission needed, i.e, this operation is authorized
+          if(!(context instanceof CLIOperationContext)){
+            return true;
+          }
+
+          // If this is a Command operation context, we need to further check if the region is allowed in this role
+          CLIOperationContext ctx = (CLIOperationContext) context;
+          String region = ctx.getCommandOptions().get("region");
+          if(role.regionNames == null || role.regionNames.contains(region)){
+            // if regionName is null, i.e. all regions are allowed
+            return true;
           }
         }
-        if (found) {
-          return true;
-        }
-        LogService.getLogger().info("Did not find code " + ctx.getOperationCode());
-        return false;
       }
     }
+
+    LogService.getLogger().info("Did not find code " + context.getOperationCode());
     return false;
   }
 

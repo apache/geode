@@ -28,7 +28,7 @@ import org.junit.experimental.categories.Category;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Category(IntegrationTest.class)
-public class MemberMBeanSecurityJUnitTest {
+public class DataCommandsSecurityTest {
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private MemberMXBean bean;
@@ -46,26 +46,17 @@ public class MemberMBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
-  public void testAllAccess() throws Exception {
-    bean.shutDownMember();  // MEMBER:SHUTDOWN
-    bean.compactAllDiskStores(); // DISKSTORE:COMPACT
-    bean.createManager(); // MANAGER:CREATE
-    bean.fetchJvmThreads(); // DEFAULT:LIST_DS
-    bean.getName(); // DEFAULT:LIST_DS
-    bean.getDiskStores(); // DEFAULT:LIST_DS
-    bean.hasGatewayReceiver(); // DEFAULT:LIST_DS
-    bean.isCacheServer(); // DEFAULT:LIST_DS
-    bean.isServer(); // DEFAULT:LIST_DS
-    bean.listConnectedGatewayReceivers(); // DEFAULT:LIST_DS
-    bean.processCommand("create region --name=Region_A"); // REGION:CREATE
-    bean.showJVMMetrics(); // DEFAULT:LIST_DS
-    bean.status(); // DEFAULT:LIST_DS
+  @JMXConnectionConfiguration(user = "dataUser", password = "1234567")
+  public void testDataUser() throws Exception {
+    bean.processCommand("locate entry --key=k1 --region=region1");
+    assertThatThrownBy(() -> bean.processCommand("locate entry --key=k1 --region=secureRegion")).isInstanceOf(SecurityException.class);
   }
 
+  @JMXConnectionConfiguration(user = "secureDataUser", password = "1234567")
   @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
-  public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.shutDownMember()).isInstanceOf(SecurityException.class);
+  public void testSecureDataUser(){
+    bean.processCommand("locate entry --key=k1 --region=region1");
+    bean.processCommand("locate entry --key=k1 --region=secureRegion");
   }
+
 }

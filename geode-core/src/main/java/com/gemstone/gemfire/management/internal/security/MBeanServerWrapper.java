@@ -215,6 +215,12 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throws InstanceNotFoundException, MBeanException, ReflectionException {
     ResourceOperationContext ctx = getOperationContext(name, operationName, true);
     doAuthorization(ctx);
+    // further authorize the processCommand call
+    if("processCommand".equals(operationName) && params.length==1){
+      CLIOperationContext cliContext = new CLIOperationContext((String)params[0]);
+      doAuthorization(cliContext);
+    }
+
     Object result = mbs.invoke(name, operationName, params, signature);
     if(ctx!=null)
       ctx.setPostOperationResult(result);

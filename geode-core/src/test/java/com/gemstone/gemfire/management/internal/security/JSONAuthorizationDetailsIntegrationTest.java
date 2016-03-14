@@ -40,8 +40,10 @@ public class JSONAuthorizationDetailsIntegrationTest {
     assertEquals(1, acl.size());
     User user = acl.get("tushark");
     assertNotNull(user);
-    assertEquals(1, user.permissions.size());
-    JSONAuthorization.Permission p = user.permissions.iterator().next();
+    assertEquals(1, user.roles.size());
+    JSONAuthorization.Role r  = user.roles.iterator().next();
+    assertEquals(1, r.permissions.size());
+    JSONAuthorization.Permission p = r.permissions.get(0);
     assertEquals("QUERY:EXECUTE", p.toString());
   }
 
@@ -54,9 +56,9 @@ public class JSONAuthorizationDetailsIntegrationTest {
     assertEquals(1, acl.size());
     User user = acl.get("tushark");
     assertNotNull(user);
-    assertEquals(1, user.permissions.size());
-    JSONAuthorization.Permission p = user.permissions.iterator().next();
-    assertEquals("secureRegion", p.getRegion());
+    assertEquals(1, user.roles.size());
+    JSONAuthorization.Role r  = user.roles.iterator().next();
+    assertEquals("secureRegion", r.regionNames.get(0));
   }
 
   @Test
@@ -68,6 +70,6 @@ public class JSONAuthorizationDetailsIntegrationTest {
     assertEquals(1, acl.size());
     User user = acl.get("tushark");
     assertNotNull(user);
-    assertEquals(3, user.permissions.size());
+    assertEquals(2, user.roles.size());
   }
 }
