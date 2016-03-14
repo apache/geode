@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.security.AccessControl;
 
 import javax.management.remote.JMXPrincipal;
@@ -42,7 +41,7 @@ public class AccessControlMBean implements AccessControlMXBean {
   }
 
   @Override
-  public boolean authorize(String role) {
+  public boolean authorize(String resource, String permission) {
     AccessControlContext acc = AccessController.getContext();
     Subject subject = Subject.getSubject(acc);
     Set<JMXPrincipal> principals = subject.getPrincipals(JMXPrincipal.class);
@@ -52,7 +51,7 @@ public class AccessControlMBean implements AccessControlMXBean {
     Principal principal = principals.iterator().next();
     AccessControl gemAccControl = interceptor.getAccessControl(principal, false);
     boolean authorized = gemAccControl.authorizeOperation(null,
-        new ResourceOperationContext(Resource.DEFAULT, OperationContext.OperationCode.valueOf(role)));
+        new ResourceOperationContext(resource, permission));
     return authorized;
   }
 

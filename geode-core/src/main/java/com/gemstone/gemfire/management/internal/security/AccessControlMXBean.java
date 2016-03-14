@@ -16,16 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-
 /**
  * Interface for AccessControlMBean
- * @author tushark
  * @since 9.0
  */
 public interface AccessControlMXBean {
 
-  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.ALL)
-  public boolean authorize(String role);
+  public boolean authorize(String resource, String permission);
   
 }

@@ -42,7 +42,7 @@ public class MemberMBeanSecurityJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    bean = (MemberMXBean) connectionRule.getProxyMBean(MemberMXBean.class);
+    bean = connectionRule.getProxyMBean(MemberMXBean.class);
   }
 
   @Test

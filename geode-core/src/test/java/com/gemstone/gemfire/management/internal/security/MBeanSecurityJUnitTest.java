@@ -52,7 +52,7 @@ public class MBeanSecurityJUnitTest {
 
 
   /**
-   * No user can call createBean or unregisterBean of any domain
+   * No user can call createBean or unregisterBean of GemFire Domain
    */
   @Test
   @JMXConnectionConfiguration(user = "superuser", password = "1234567")
@@ -66,10 +66,10 @@ public class MBeanSecurityJUnitTest {
         () -> con.unregisterMBean(new ObjectName("GemFire", "name", "foo"))
     ).isInstanceOf(SecurityException.class);
 
-    // user is not allowed to create beans of other domains either
+    // user is allowed to create beans of other domains
     assertThatThrownBy(
         () -> con.createMBean("FakeClassName", new ObjectName("OtherDomain", "name", "foo"))
-    ).isInstanceOf(SecurityException.class);
+    ).isInstanceOf(ReflectionException.class);
   }
 
   /*

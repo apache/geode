@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 import javax.management.Attribute;
@@ -76,42 +77,53 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     interceptor.postAuthorize(context);
   }
 
+  private void checkDomain(ObjectName name){
+    if (ManagementConstants.OBJECTNAME__DEFAULTDOMAIN.equals(name.getDomain()))
+      throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
+  }
+
   @Override
   public ObjectInstance createMBean(String className, ObjectName name) throws ReflectionException,
       InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException {
-    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
+    checkDomain(name);
+    return mbs.createMBean(className, name);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName)
       throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
       NotCompliantMBeanException, InstanceNotFoundException {
-    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
+    checkDomain(name);
+    return mbs.createMBean(className, name, loaderName);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name, Object[] params, String[] signature)
       throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
       NotCompliantMBeanException {
-    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
+    checkDomain(name);
+    return mbs.createMBean(className, name, params, signature);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName, Object[] params,
       String[] signature) throws ReflectionException, InstanceAlreadyExistsException,
       MBeanException, NotCompliantMBeanException, InstanceNotFoundException {
-    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
+    checkDomain(name);
+    return mbs.createMBean(className, name, loaderName, params, signature);
   }
 
   @Override
   public ObjectInstance registerMBean(Object object, ObjectName name) throws InstanceAlreadyExistsException,
       MBeanRegistrationException, NotCompliantMBeanException {
-    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
+    checkDomain(name);
+    return mbs.registerMBean(object, name);
   }
 
   @Override
   public void unregisterMBean(ObjectName name) throws InstanceNotFoundException, MBeanRegistrationException {
-    throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
+    checkDomain(name);
+    mbs.unregisterMBean(name);
   }
 
   @Override

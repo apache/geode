@@ -38,11 +38,11 @@ public class CacheServerMBeanAuthorizationJUnitTest {
       jmxManagerPort, "cacheServer.json");
 
   @Rule
-  public MBeanServerConnectionRule<CacheServerMXBean> connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
+  public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
 
   @Before
   public void setUp() throws Exception {
-    cacheServerMXBean = connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
+    cacheServerMXBean = connectionRule.getProxyMBean(CacheServerMXBean.class);
   }
 
   @Test

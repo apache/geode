@@ -39,7 +39,7 @@ import java.util.Set;
  * it allows for the creation of per-test connections with different user/password combinations.
  *
  */
-public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
+public class MBeanServerConnectionRule extends DescribedExternalResource {
 
   private final int jmxServerPort;
   private JMXConnector jmxConnector;
@@ -60,7 +60,7 @@ public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
    *
    * @return A new proxy MBean of the same type with which the class was constructed
    */
-  public T getProxyMBean(Class<T> proxyClass, String beanQueryName) throws MalformedObjectNameException, IOException {
+  public <T> T getProxyMBean(Class<T> proxyClass, String beanQueryName) throws MalformedObjectNameException, IOException {
     ObjectName name = null;
     QueryExp query = null;
 
@@ -80,16 +80,20 @@ public class MBeanServerConnectionRule<T> extends DescribedExternalResource {
     return JMX.newMXBeanProxy(con, ((ObjectInstance) beans.toArray()[0]).getObjectName(), proxyClass);
   }
 
+  public AccessControlMXBean getAccessControlMBean() throws Exception{
+    return JMX.newMXBeanProxy(con, new ObjectName("GemFire:service=AccessControl,type=Distributed"), AccessControlMXBean.class);
+  }
+
   /**
    * Retrieve a new proxy MBean
    *
    * @return A new proxy MBean of the same type with which the class was constructed
    */
-  public Object getProxyMBean(Class proxyClass) throws MalformedObjectNameException, IOException {
+  public <T> T getProxyMBean(Class<T> proxyClass) throws MalformedObjectNameException, IOException {
     return getProxyMBean(proxyClass, null);
   }
 
-  public Object getProxyMBean(String beanQueryName) throws MalformedObjectNameException, IOException {
+  public <T> T getProxyMBean(String beanQueryName) throws MalformedObjectNameException, IOException {
     return getProxyMBean(null, beanQueryName);
   }
 
