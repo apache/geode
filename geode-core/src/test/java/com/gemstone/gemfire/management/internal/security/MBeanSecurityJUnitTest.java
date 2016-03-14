@@ -19,9 +19,11 @@ package com.gemstone.gemfire.management.internal.security;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import javax.management.DynamicMBean;
 import javax.management.MBeanServer;
@@ -37,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+@Category(IntegrationTest.class)
 public class MBeanSecurityJUnitTest {
 
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
