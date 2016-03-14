@@ -119,141 +119,214 @@ public abstract class OperationContext {
     VALIDATE;
 
     /**
-     * Returns true if this is a entry get operation.
+     * Check if this is an entry get operation.
+     *
+     * @return true if this is an entry get operation
+     * @deprecated Use {@code getOperationCode() == GET} instead
      */
+    @Deprecated
     public boolean isGet() {
       return (this == GET);
     }
 
     /**
-     * Returns true if this is a entry create/update operation.
+     * Check if this is a entry create/update operation.
+     *
+     * @return true if this is a entry create/update operation.
+     * @deprecated Use {@code getOperationCode() == PUT} instead
      */
+    @Deprecated
     public boolean isPut() {
       return (this == PUT);
     }
 
     /**
-     * Returns true if this is a map putAll operation.
+     * Check if this is a map putAll operation.
+     *
+     * @return true if this is a map putAll operation.
+     * @deprecated Use {@code getOperationCode() == PUTALL} instead
      */
+    @Deprecated
     public boolean isPutAll() {
       return (this == PUTALL);
     }
 
     /**
-     * Returns true if this is a region removeAll operation.
+     * Check if this is a region removeAll operation.
+     *
+     * @return true if this is a region removeAll operation.
+     * @deprecated Use {@code getOperationCode() == REMOVEALL} instead
      * @since 8.1
      */
+    @Deprecated
     public boolean isRemoveAll() {
       return (this == REMOVEALL);
     }
 
     /**
-     * Returns true if this is an entry destroy operation.
+     * Check if this is an entry destroy operation.
+     *
+     * @return true if this is an entry destroy operation.
+     * @deprecated Use {@code getOperationCode() == DESTROY} instead
      */
+    @Deprecated
     public boolean isDestroy() {
       return (this == DESTROY);
     }
 
     /**
-     * Returns true if this is an entry invalidate operation.
+     * Check if this is an entry invalidate operation.
+     *
+     * @return true if this is an entry invalidate operation.
+     * @deprecated Use {@code getOperationCode() == INVALIDATE} instead
      */
+    @Deprecated
     public boolean isInvalidate() {
       return (this == INVALIDATE);
     }
 
     /**
-     * Returns true if this is a register interest operation.
+     * Check if this is a register interest operation.
+     *
+     * @return true if this is a register interest operation.
+     * @deprecated Use {@code getOperationCode() == REGISTER_INTEREST} instead
      */
+    @Deprecated
     public boolean isRegisterInterest() {
       return (this == REGISTER_INTEREST);
     }
 
     /**
-     * Returns true if this is an unregister interest operation.
+     * Check if this is an unregister interest operation.
+     *
+     * @return true if this is an unregister interest operation.
+     * @deprecated Use {@code getOperationCode() ==  UNREGISTER_INTEREST} instead
      */
+    @Deprecated
     public boolean isUnregisterInterest() {
       return (this == UNREGISTER_INTEREST);
     }
 
     /**
-     * Returns true if this is a region <code>containsKey</code> operation.
+     * Check if this is a region <code>containsKey</code> operation.
+     *
+     * @return true if this is a region <code>containsKey</code> operation.
+     * @deprecated Use {@code getOperationCode() == CONTAINS_KEY} instead
      */
+    @Deprecated
     public boolean isContainsKey() {
       return (this == CONTAINS_KEY);
     }
 
     /**
-     * Returns true if this is a region <code>keySet</code> operation.
+     * Check if this is a region <code>keySet</code> operation.
+     *
+     * @return true if this is a region <code>keySet</code> operation.
+     * @deprecated Use {@code getOperationCode() == KEY_SET} instead
      */
+    @Deprecated
     public boolean isKeySet() {
       return (this == KEY_SET);
     }
 
     /**
-     * Returns true if this is a cache query operation.
+     * Check if this is a cache query operation.
+     *
+     * @return true if this is a cache query operation.
+     * @deprecated Use {@code getOperationCode() == QUERY} instead
      */
+    @Deprecated
     public boolean isQuery() {
       return (this == QUERY);
     }
 
     /**
-     * Returns true if this is a continuous query execution operation.
+     * Check if this is a continuous query execution operation.
+     *
+     * @return true if this is a continuous query execution operation.
+     * @deprecated Use {@code getOperationCode() == EXECUTE_CQ} instead
      */
+    @Deprecated
     public boolean isExecuteCQ() {
       return (this == EXECUTE_CQ);
     }
 
     /**
-     * Returns true if this is a continuous query stop operation.
+     * Check if this is a continuous query stop operation.
+     *
+     * @return true if this is a continuous query stop operation.
+     * @deprecated Use {@code getOperationCode() == STOP_CQ} instead
      */
+    @Deprecated
     public boolean isStopCQ() {
       return (this == STOP_CQ);
     }
 
     /**
-     * Returns true if this is a continuous query close operation.
+     * Check if this is a continuous query close operation.
+     *
+     * @return true if this is a continuous query close operation.
+     * @deprecated Use {@code getOperationCode() == CLOSE_CQ} instead
      */
+    @Deprecated
     public boolean isCloseCQ() {
       return (this == CLOSE_CQ);
     }
 
     /**
-     * Returns true if this is a region clear operation.
+     * Check if this is a region clear operation.
+     *
+     * @return true if this is a region clear operation.
+     * @deprecated Use {@code getOperationCode() == REGION_CLEAR} instead
      */
+    @Deprecated
     public boolean isRegionClear() {
       return (this == REGION_CLEAR);
     }
 
     /**
-     * Returns true if this is a region create operation.
+     * Check if this is a region create operation.
+     *
+     * @return true if this is a region create operation.
+     * @deprecated Use {@code getOperationCode() == REGION_CREATE} instead
      */
+    @Deprecated
     public boolean isRegionCreate() {
       return (this == REGION_CREATE);
     }
 
     /**
-     * Returns true if this is a region destroy operation.
+     * Check if this is a region destroy operation.
+     *
+     * @return true if this is a region destroy operation.
+     * @deprecated Use {@code getOperationCode() == REGION_DESTROY} instead
      */
+    @Deprecated
     public boolean isRegionDestroy() {
       return (this == REGION_DESTROY);
     }
 
     /**
-     * Returns true if this is a execute region function operation.
+     * Check if this is a execute region function operation.
+     *
+     * @return true if this is a execute region function operation.
+     * @deprecated Use {@code getOperationCode() == EXECUTE_FUNCTION} instead
      */
+    @Deprecated
     public boolean isExecuteRegionFunction() {
       return (this == EXECUTE_FUNCTION);
     }
 
     /**
-     * Returns true if this is a get durable cqs operation.
+     * Check if this is a get durable cqs operation.
+     *
+     * @return true if this is a get durable cqs operation.
+     * @deprecated Use {@code getOperationCode() == GET_DURABLE_CQS} instead
      */
+    @Deprecated
     public boolean isGetDurableCQs() {
       return (this == GET_DURABLE_CQS);
     }
-
-
-
   }
 
   /**
@@ -265,7 +338,6 @@ public abstract class OperationContext {
   public Resource getResource(){
     return Resource.DEFAULT;
   }
-
 
   /**
    * True if the context is for post-operation.
