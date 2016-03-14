@@ -204,6 +204,10 @@ subprojects {
         systemProperty 'gemfire.DEFAULT_MAX_OPLOG_SIZE', '10'
         systemProperty 'gemfire.disallowMcastDefaults', 'true'
         systemProperty 'jline.terminal', 'jline.UnsupportedTerminal'
+        def logLevel = System.getProperty('logLevel')
+        if (logLevel != null) {
+          systemProperty 'logLevel', logLevel
+        }
 
         def eol = System.getProperty('line.separator')
         def progress = new File(resultsDir, "$test.name-progress.txt")

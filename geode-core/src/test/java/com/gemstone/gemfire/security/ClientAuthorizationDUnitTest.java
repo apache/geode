@@ -254,6 +254,35 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
           new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
   }
 
+  public void testPutAllWithSecurity() {
+    AuthzCredentialGenerator gen = getXmlAuthzGenerator();
+    CredentialGenerator cGen = gen.getCredentialGenerator();
+    Properties extraAuthProps = cGen.getSystemProperties();
+    Properties javaProps = cGen.getJavaProperties();
+    Properties extraAuthzProps = gen.getSystemProperties();
+    String authenticator = cGen.getAuthenticator();
+    String authInit = cGen.getAuthInit();
+    String accessor = gen.getAuthorizationCallback();
+
+    LogWriterUtils.getLogWriter().info("testPutAllWithSecurity: Using authinit: " + authInit);
+    LogWriterUtils.getLogWriter().info("testPutAllWithSecurity: Using authenticator: " + authenticator);
+    LogWriterUtils.getLogWriter().info("testPutAllWithSecurity: Using accessor: " + accessor);
+
+    // Start servers with all required properties
+    Properties serverProps = buildProperties(authenticator, accessor, false, extraAuthProps, extraAuthzProps);
+    Integer port1 = createServer1(javaProps, serverProps);
+    Integer port2 = createServer2(javaProps, serverProps);
+
+    // Start client1 with valid CREATE credentials
+    Properties createCredentials = gen.getAllowedCredentials(new OperationCode[] { OperationCode.PUTALL }, new String[] { regionName }, 1);
+    javaProps = cGen.getJavaProperties();
+    LogWriterUtils.getLogWriter().info("testPutAllWithSecurity: For first client credentials: " + createCredentials);
+    createClient1NoException(javaProps, authInit, port1, port2, createCredentials);
+
+    // Perform some put all operations from client1
+    client1.invoke(() -> SecurityTestUtil.doPutAllP());
+  }
+  
   protected void createClient2NoException(Properties javaProps, String authInit,
       Integer port1, Integer port2, Properties getCredentials) {
     client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, getCredentials, javaProps, port1, port2,

@@ -31,10 +31,16 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.ReplyException;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
+import com.gemstone.gemfire.pdx.PdxReader;
+import com.gemstone.gemfire.pdx.PdxSerializable;
+import com.gemstone.gemfire.pdx.PdxSerializationException;
+import com.gemstone.gemfire.pdx.PdxWriter;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
@@ -91,7 +97,8 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
     //1. start locator with mcast port
     vm0.invoke(create);
     vm1.invoke(create);
-    
+    //There is possibility that you may get this packet from other tests
+    /*
     SerializableRunnable validateMulticastBeforeRegionOps =
         new CacheSerializableRunnable("validateMulticast before region ops") {
             public void run2() throws CacheException {
@@ -101,6 +108,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
       
     vm0.invoke(validateMulticastBeforeRegionOps);
     vm1.invoke(validateMulticastBeforeRegionOps);
+    */
     
     SerializableRunnable doPuts =
       new CacheSerializableRunnable("do put") {
@@ -126,6 +134,109 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
       vm1.invoke(validateMulticastAfterRegionOps);
    
       closeLocator();      
+  }
+  
+  public class TestObjectThrowsException implements PdxSerializable {
+    String name = "TestObjectThrowsException";
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("name", name);      
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      throw new RuntimeException("Unable to desrialize message ");
+      //name = reader.readString("name");
+    }
+    
+  }
+  
+  public void testMulticastWithRegionOpsException() {
+    Host host = Host.getHost(0);
+    final VM vm0 = host.getVM(0);
+    final VM vm1 = host.getVM(1);
+
+    try {
+      final String name = "mcastRegion";
+      
+      SerializableRunnable setSysProp = new CacheSerializableRunnable("Create Region") {
+        public void run2() throws CacheException {
+          CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = true;
+        }
+      };
+      
+      
+      SerializableRunnable create =
+        new CacheSerializableRunnable("Create Region") {
+            public void run2() throws CacheException {
+              createRegion(name, getRegionAttributes());
+            }
+          };
+  
+      locatorPort = startLocator();
+      
+      vm0.invoke(setSysProp);
+      vm1.invoke(setSysProp);
+      
+      //1. start locator with mcast port
+      vm0.invoke(create);
+      vm1.invoke(create);
+      
+    //There is possibility that you may get this packet from other tests
+      /*
+      SerializableRunnable validateMulticastBeforeRegionOps =
+          new CacheSerializableRunnable("validateMulticast before region ops") {
+              public void run2() throws CacheException {
+                validateMulticastOpsBeforeRegionOps();
+              }
+          };
+        
+      vm0.invoke(validateMulticastBeforeRegionOps);
+      vm1.invoke(validateMulticastBeforeRegionOps);
+      */
+      
+      SerializableRunnable doPuts =
+        new CacheSerializableRunnable("do put") {
+            public void run2() throws CacheException {
+              final Region region =
+                  getRootRegion().getSubregion(name);
+              boolean gotReplyException = false;
+              for(int i =0 ; i < 1; i++) {
+                try {
+                  region.put(i, new TestObjectThrowsException());
+                }catch(PdxSerializationException e) {
+                  gotReplyException = true;
+                }catch(Exception e ) {
+                  region.getCache().getLogger().info("Got exception of type " + e.getClass().toString());
+                } 
+              }
+              assertTrue("We should have got ReplyEception ", gotReplyException);
+            }
+        };
+        
+      vm0.invoke(doPuts);
+      
+      SerializableRunnable validateMulticastAfterRegionOps =
+        new CacheSerializableRunnable("validateMulticast after region ops") {
+            public void run2() throws CacheException {
+              validateMulticastOpsAfterRegionOps();
+            }
+        };
+      
+        vm0.invoke(validateMulticastAfterRegionOps);
+        vm1.invoke(validateMulticastAfterRegionOps);
+     
+        closeLocator();
+    }finally {
+      SerializableRunnable unsetSysProp = new CacheSerializableRunnable("Create Region") {
+        public void run2() throws CacheException {
+          CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = false;
+        }
+      };
+      vm0.invoke(unsetSysProp);
+      vm1.invoke(unsetSysProp);
+    }
   }
   
   protected RegionAttributes getRegionAttributes() {

@@ -37,7 +37,7 @@ import org.junit.runners.Suite;
    ServerLauncherLocalFileJUnitTest.class,
    ServerLauncherRemoteJUnitTest.class,
    ServerLauncherRemoteFileJUnitTest.class,
-   ServerLauncherWithSpringJUnitTest.class,
+   ServerLauncherWithProviderJUnitTest.class,
 })
 /**
  * Suite of tests for the Launcher classes.

@@ -23,8 +23,14 @@ import java.io.Serializable;
 
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
-@SuppressWarnings("serial")
-public class RemoteInvoker implements Serializable {
+/**
+ * Provides remote invocation support to a {@code TestRule}. These methods
+ * will invoke a SerializableRunnable in all remote DUnit JVMs including the
+ * Locator JVM.
+ */
+class RemoteInvoker implements Serializable {
+
+  private static final long serialVersionUID = -1759722991299584649L;
 
   public void invokeEverywhere(final SerializableRunnable runnable) {
     try {

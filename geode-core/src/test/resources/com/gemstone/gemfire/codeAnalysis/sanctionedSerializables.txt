@@ -140,7 +140,6 @@ com/gemstone/gemfire/cache/hdfs/internal/hoplog/HdfsSortedOplogOrganizer$HoplogR
 com/gemstone/gemfire/cache/hdfs/internal/hoplog/Hoplog$HoplogVersion,false
 com/gemstone/gemfire/cache/hdfs/internal/hoplog/Hoplog$Meta,false
 com/gemstone/gemfire/cache/hdfs/internal/org/apache/hadoop/io/SequenceFile$CompressionType,false
-com/gemstone/gemfire/cache/operations/PutAllOperationContext$UpdateOnlyMap,true,-1034234728574286014,m:java/util/Map
 com/gemstone/gemfire/cache/partition/PartitionNotAvailableException,true,1
 com/gemstone/gemfire/cache/persistence/ConflictingPersistentDataException,true,-2629287782021455875
 com/gemstone/gemfire/cache/persistence/PartitionOfflineException,true,-6471045959318795870,offlineMembers:java/util/Set
@@ -342,8 +341,6 @@ com/gemstone/gemfire/internal/cache/execute/util/NestedTransactionFunction,true,
 com/gemstone/gemfire/internal/cache/execute/util/RollbackFunction,true,1377183180063184795
 com/gemstone/gemfire/internal/cache/ha/ThreadIdentifier$Bits,false,position:int,width:int
 com/gemstone/gemfire/internal/cache/ha/ThreadIdentifier$WanType,false
-com/gemstone/gemfire/internal/cache/locks/GFEAbstractQueuedSynchronizer,true,7373984972572414691,state:int
-com/gemstone/gemfire/internal/cache/locks/ReentrantReadWriteWriteShareLock$CASSync,false,allowUpgradeOfWriteShare:boolean,ownerId:java/lang/Object
 com/gemstone/gemfire/internal/cache/lru/HeapLRUCapacityController,true,4970685814429530675,perEntryOverhead:int,sizer:com/gemstone/gemfire/cache/util/ObjectSizer
 com/gemstone/gemfire/internal/cache/lru/LRUAlgorithm,false,bucketRegion:com/gemstone/gemfire/internal/cache/BucketRegion,evictionAction:com/gemstone/gemfire/cache/EvictionAction
 com/gemstone/gemfire/internal/cache/lru/LRUCapacityController,true,-4383074909189355938,maximumEntries:int
@@ -357,12 +354,7 @@ com/gemstone/gemfire/internal/cache/partitioned/RedundancyAlreadyMetException,fa
 com/gemstone/gemfire/internal/cache/partitioned/rebalance/PartitionedRegionLoadModel$RefusalReason,false
 com/gemstone/gemfire/internal/cache/persistence/OplogType,false,prefix:java/lang/String
 com/gemstone/gemfire/internal/cache/persistence/PersistentMemberState,false
-com/gemstone/gemfire/internal/cache/persistence/soplog/SoplogToken,false,val:byte
-com/gemstone/gemfire/internal/cache/persistence/soplog/SortedOplogFactory$SortedOplogConfiguration$Checksum,false
-com/gemstone/gemfire/internal/cache/persistence/soplog/SortedOplogFactory$SortedOplogConfiguration$Compression,false
-com/gemstone/gemfire/internal/cache/persistence/soplog/SortedOplogFactory$SortedOplogConfiguration$KeyEncoding,false
 com/gemstone/gemfire/internal/cache/persistence/soplog/SortedReader$Metadata,false
-com/gemstone/gemfire/internal/cache/persistence/soplog/hfile/HFileSortedOplog$InternalMetadata,false
 com/gemstone/gemfire/internal/cache/snapshot/ClientExporter$ClientArgs,true,1,options:com/gemstone/gemfire/cache/snapshot/SnapshotOptions,prSingleHop:boolean,region:java/lang/String
 com/gemstone/gemfire/internal/cache/snapshot/ClientExporter$ProxyExportFunction,true,1
 com/gemstone/gemfire/internal/cache/snapshot/RegionSnapshotServiceImpl$1,true,1
@@ -821,7 +813,7 @@ com/gemstone/gemfire/pdx/internal/PdxReaderImpl,true,-6094553093860427759,blobTy
 com/gemstone/gemfire/pdx/internal/WritablePdxInstanceImpl,true,7398999150097596214,dirtyFields:java/lang/Object[]
 com/gemstone/gemfire/security/AuthenticationFailedException,true,-8202866472279088879
 com/gemstone/gemfire/security/AuthenticationRequiredException,true,4675976651103154919
-com/gemstone/gemfire/security/GemFireSecurityException,true,3814254578203076926
+com/gemstone/gemfire/security/GemFireSecurityException,true,3814254578203076926,cause:java/lang/Throwable
 com/gemstone/gemfire/security/NotAuthorizedException,true,419215768216387745,principal:java/security/Principal
 com/gemstone/org/apache/logging/log4j/message/GemFireParameterizedMessage,true,-665975803997290697,messagePattern:java/lang/String,stringArgs:java/lang/String[]
 com/gemstone/org/apache/logging/log4j/message/GemFireParameterizedMessageFactory,true,1

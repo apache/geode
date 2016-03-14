@@ -211,6 +211,8 @@ public abstract class AbstractConfig implements Config {
       return true;
     } else if (attName.equals(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME)) {
       return true;
+    } else if (attName.equals(DistributionConfig.JMX_MANAGER_SSL_NAME)) {
+      return true;
     }
     return false; 
   }

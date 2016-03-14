@@ -28,9 +28,6 @@ import org.junit.runners.model.Statement;
 
 /**
  * Expect an Exception within a specified timeout.
- * 
- * @author Kirk Lund
- * @since 8.2
  */
 public class ExpectedTimeoutRule implements TestRule {
 
@@ -64,19 +61,8 @@ public class ExpectedTimeoutRule implements TestRule {
     return this;
   }
 
-  public ExpectedTimeoutRule handleAssertionErrors() {
-    this.delegate.handleAssertionErrors();
-    return this;
-  }
-  
-  public ExpectedTimeoutRule handleAssumptionViolatedExceptions() {
-    this.delegate.handleAssumptionViolatedExceptions();
-    return this;
-  }
-  
   /**
-   * Adds {@code matcher} to the list of requirements for any thrown
-   * exception.
+   * Adds {@code matcher} to the list of requirements for any thrown exception.
    */
   public void expect(final Matcher<?> matcher) {
     this.delegate.expect(matcher);
@@ -84,7 +70,7 @@ public class ExpectedTimeoutRule implements TestRule {
 
   /**
    * Adds to the list of requirements for any thrown exception that it should
-   * be an instance of {@code type}
+   * be an instance of {@code type}.
    */
   public void expect(final Class<? extends Throwable> type) {
     this.delegate.expect(type);
@@ -115,23 +101,29 @@ public class ExpectedTimeoutRule implements TestRule {
     this.delegate.expectCause(expectedCause);
   }
 
-  public boolean expectsTimeout() {
-    return minDuration > 0 || maxDuration > 0;
+  /**
+   * Returns true if a timeout is expected.
+   */
+  protected boolean expectsTimeout() {
+    return this.minDuration > 0 || this.maxDuration > 0;
   }
-  
-  public boolean expectsThrowable() {
-    return expectsThrowable = true;
+
+  /**
+   * Returns true if a Throwable is expected.
+   */
+  protected boolean expectsThrowable() {
+    return this.expectsThrowable;
   }
   
   @Override
   public Statement apply(final Statement base, final Description description) {
-    Statement next = delegate.apply(base, description);
+    Statement next = this.delegate.apply(base, description);
     return new ExpectedTimeoutStatement(next);
   }
   
   private void handleTime(final Long duration) {
     if (expectsTimeout()) {
-      assertThat(timeUnit.convert(duration, TimeUnit.NANOSECONDS), new TimeMatcher(timeUnit, minDuration, maxDuration));
+      assertThat(this.timeUnit.convert(duration, TimeUnit.NANOSECONDS), new TimeMatcher(this.timeUnit, this.minDuration, this.maxDuration));
     }
   }
   
@@ -167,13 +159,13 @@ public class ExpectedTimeoutRule implements TestRule {
     private final Statement next;
 
     public ExpectedTimeoutStatement(final Statement base) {
-      next = base;
+      this.next = base;
     }
 
     @Override
     public void evaluate() throws Throwable {
       long start = System.nanoTime();
-      next.evaluate();
+      this.next.evaluate();
       handleTime(System.nanoTime() - start);
     }
   }

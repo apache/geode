@@ -61,7 +61,7 @@ rat {
     '**/*.log',
     '**/*.patch',
     '**/*.diff',
-          '**/*.MF',
+    '**/*.MF',
 
     // binary files
     '**/*.cer',
@@ -127,6 +127,7 @@ rat {
     '**/META-INF/services/org.xml.sax.ext.EntityResolver2',
     '**/META-INF/services/com.gemstone.gemfire.internal.cache.CacheService',
     '**/META-INF/services/com.gemstone.gemfire.internal.cache.xmlcache.XmlParser',
+    '**/META-INF/services/com.gemstone.gemfire.distributed.ServerLauncherCacheProvider',
     '**/META-INF/services/org.springframework.shell.core.CommandMarker',
 
     // --- Other Licenses ---

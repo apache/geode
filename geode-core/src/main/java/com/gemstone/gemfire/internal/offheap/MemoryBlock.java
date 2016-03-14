@@ -40,7 +40,7 @@ public interface MemoryBlock {
   /**
    * Returns the unsafe memory address of the first byte of this block.
    */
-  public long getMemoryAddress();
+  public long getAddress();
   
   /**
    * Returns the size of this memory block in bytes.

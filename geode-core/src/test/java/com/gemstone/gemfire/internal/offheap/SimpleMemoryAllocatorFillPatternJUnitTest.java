@@ -57,7 +57,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
   private SimpleMemoryAllocatorImpl allocator = null;
   
   /** Our test victim's memory slab. */
-  private UnsafeMemoryChunk slab = null;
+  private SlabImpl slab = null;
 
   /**
    * Enables fill validation and creates the test victim.
@@ -65,8 +65,8 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty("gemfire.validateOffHeapWithFill", "true");
-    this.slab = new UnsafeMemoryChunk(SLAB_SIZE);
-    this.allocator = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{this.slab});
+    this.slab = new SlabImpl(SLAB_SIZE);
+    this.allocator = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{this.slab});
   }
 
   /**
@@ -101,7 +101,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
      * Pull a chunk off the fragment.  This will have no fill because
      * it is a "fresh" chunk.
      */
-    ObjectChunk chunk = (ObjectChunk) this.allocator.allocate(chunkSize);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) this.allocator.allocate(chunkSize);
 
     /*
      * Chunk should have valid fill from initial fragment allocation.
@@ -109,7 +109,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
     chunk.validateFill();
          
     // "Dirty" the chunk so the release has something to fill over
-    chunk.writeBytes(ObjectChunk.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
+    chunk.writeDataBytes(OffHeapStoredObject.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
 
     // This should free the Chunk (ref count == 1)
     chunk.release();
@@ -118,24 +118,24 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
      * This chunk should have a fill because it was reused from the
      * free list (assuming no fragmentation at this point...)
      */
-    chunk = (ObjectChunk) this.allocator.allocate(chunkSize);
+    chunk = (OffHeapStoredObject) this.allocator.allocate(chunkSize);
     
     // Make sure we have a fill this time
     chunk.validateFill();
     
     // Give the fill code something to write over during the release
-    chunk.writeBytes(ObjectChunk.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
+    chunk.writeDataBytes(OffHeapStoredObject.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
     chunk.release();
 
     // Again, make sure the release implemented the fill
     chunk.validateFill();
 
     // "Dirty up" the free chunk
-    chunk.writeBytes(ObjectChunk.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
+    chunk.writeDataBytes(OffHeapStoredObject.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
     
     catchException(chunk).validateFill();
     assertTrue(caughtException() instanceof IllegalStateException);
-    assertEquals("Fill pattern violated for chunk " + chunk.getMemoryAddress() + " with size " + chunk.getSize(), caughtException().getMessage());
+    assertEquals("Fill pattern violated for chunk " + chunk.getAddress() + " with size " + chunk.getSize(), caughtException().getMessage());
     
   }
 
@@ -149,14 +149,14 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
     /*
      * Stores our allocated memory.
      */
-    ObjectChunk[] allocatedChunks = new ObjectChunk[COMPACTION_CHUNKS];
+    OffHeapStoredObject[] allocatedChunks = new OffHeapStoredObject[COMPACTION_CHUNKS];
     
     /*
      * Use up most of our memory
      * Our memory looks like [      ][      ][      ]
      */
     for(int i =0;i < allocatedChunks.length;++i) {
-      allocatedChunks[i] = (ObjectChunk) this.allocator.allocate(COMPACTION_CHUNK_SIZE);
+      allocatedChunks[i] = (OffHeapStoredObject) this.allocator.allocate(COMPACTION_CHUNK_SIZE);
       allocatedChunks[i].validateFill();
     }
 
@@ -173,7 +173,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
      * our initial chunks.  This should force a compaction causing our
      * memory to look like [            ][      ].
      */
-    ObjectChunk slightlyLargerChunk = (ObjectChunk) this.allocator.allocate(FORCE_COMPACTION_CHUNK_SIZE);
+    OffHeapStoredObject slightlyLargerChunk = (OffHeapStoredObject) this.allocator.allocate(FORCE_COMPACTION_CHUNK_SIZE);
     
     /*
      * Make sure the compacted memory has the fill validation.

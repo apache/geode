@@ -74,14 +74,14 @@ public class PdxRegistryRecoveryListener extends EndpointManager.EndpointListene
     if (logger.isDebugEnabled()) {
       logger.debug("PdxRegistryRecoveryListener - EndpointNowInUse. Now have {} endpoints", count);
     }
-    if(count == 1) {
+    if (count == 1) {
       GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if(cache == null) {
+      if (cache == null) {
         return;
       }
       TypeRegistry registry = cache.getPdxRegistry();
       
-      if(registry == null) {
+      if (registry == null) {
         return;
       }
       registry.clear();

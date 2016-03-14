@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl.AsyncDiskEntry;
 import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
 import com.gemstone.gemfire.internal.cache.lru.LRUClockNode;
@@ -40,11 +39,9 @@ import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
+import com.gemstone.gemfire.internal.offheap.AddressableMemoryManager;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
-import com.gemstone.gemfire.internal.offheap.Releasable;
-import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
@@ -200,7 +197,7 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Get the value of an entry that is on disk without
      * faulting it in . It checks for the presence in the buffer also.
-     * This method is used for concurrent map operations, SQLFabric and CQ processing
+     * This method is used for concurrent map operations and CQ processing
      * 
      * @throws DiskAccessException
      * @since 5.1
@@ -208,18 +205,11 @@ public interface DiskEntry extends RegionEntry {
     static Object getValueOnDiskOrBuffer(DiskEntry entry, DiskRegion dr, RegionEntryContext context) {
       @Released Object v = getOffHeapValueOnDiskOrBuffer(entry, dr, context);
       if (v instanceof CachedDeserializable) {
-        if (v instanceof ObjectChunk) {
-          @Released ObjectChunk ohv = (ObjectChunk) v;
-          try {
-            v = ohv.getDeserializedValue(null, null);
-            if (v == ohv) {
-              throw new IllegalStateException("sqlf tried to use getValueOnDiskOrBuffer");
-            }
-          } finally {
-            ohv.release(); // OFFHEAP the offheap ref is decremented here
-          }
-        } else {
-          v = ((CachedDeserializable)v).getDeserializedValue(null, null);
+        CachedDeserializable cd = (CachedDeserializable) v;
+        try {
+          v = cd.getDeserializedValue(null, null);
+        } finally {
+          OffHeapHelper.release(cd); // If v was off-heap it is released here
         }
       }
       return v;
@@ -391,10 +381,11 @@ public interface DiskEntry extends RegionEntry {
         // fix for bug 31757
         return false;
       } else if (v instanceof CachedDeserializable) {
+        CachedDeserializable cd = (CachedDeserializable) v;
         try {
-          if (v instanceof StoredObject && !((StoredObject) v).isSerialized()) {
+          if (!cd.isSerialized()) {
             entry.setSerialized(false);
-            entry.value = ((StoredObject) v).getDeserializedForReading();
+            entry.value = cd.getDeserializedForReading();
             
             //For SQLFire we prefer eager deserialized
 //            if(v instanceof ByteSource) {
@@ -403,7 +394,7 @@ public interface DiskEntry extends RegionEntry {
           } else {
             // don't serialize here if it is not already serialized
             
-            Object tmp = ((CachedDeserializable)v).getValue();
+            Object tmp = cd.getValue();
           //For SQLFire we prefer eager deserialized
 //            if(v instanceof ByteSource) {
 //              entry.setEagerDeserialize();
@@ -679,27 +670,28 @@ public interface DiskEntry extends RegionEntry {
     }
     
     /**
-     * Note that the Chunk this ValueWrapper is created with
+     * Note that the StoredObject this ValueWrapper is created with
      * is unretained so it must be used before the owner of
-     * the chunk releases it.
+     * the StoredObject releases it.
      * Since the RegionEntry that has the value we are writing to
      * disk has it retained we are ok as long as this ValueWrapper's
      * life ends before the RegionEntry sync is released.
-     * Note that this class is only used with uncompressed chunks.
+     * Note that this class is only used with uncompressed StoredObjects.
      */
-    public static class ChunkValueWrapper implements ValueWrapper {
-      private final @Unretained ObjectChunk chunk;
-      public ChunkValueWrapper(ObjectChunk c) {
-        assert !c.isCompressed();
-        this.chunk = c;
+    public static class OffHeapValueWrapper implements ValueWrapper {
+      private final @Unretained StoredObject offHeapData;
+      public OffHeapValueWrapper(StoredObject so) {
+        assert so.hasRefCount();
+        assert !so.isCompressed();
+        this.offHeapData = so;
       }
       @Override
       public boolean isSerialized() {
-        return this.chunk.isSerialized();
+        return this.offHeapData.isSerialized();
       }
       @Override
       public int getLength() {
-        return this.chunk.getDataSize();
+        return this.offHeapData.getDataSize();
       }
       @Override
       public byte getUserBits() {
@@ -716,21 +708,21 @@ public interface DiskEntry extends RegionEntry {
           return;
         }
         if (maxOffset > bb.capacity()) {
-          ByteBuffer chunkbb = this.chunk.createDirectByteBuffer();
+          ByteBuffer chunkbb = this.offHeapData.createDirectByteBuffer();
           if (chunkbb != null) {
             flushable.flush(bb, chunkbb);
             return;
           }
         }
-        final long bbAddress = ObjectChunk.getDirectByteBufferAddress(bb);
+        final long bbAddress = AddressableMemoryManager.getDirectByteBufferAddress(bb);
         if (bbAddress != 0L) {
           int bytesRemaining = maxOffset;
           int availableSpace = bb.remaining();
           long addrToWrite = bbAddress + bb.position();
-          long addrToRead = this.chunk.getAddressForReading(0, maxOffset);
+          long addrToRead = this.offHeapData.getAddressForReadingData(0, maxOffset);
           if (bytesRemaining > availableSpace) {
             do {
-              UnsafeMemoryChunk.copyMemory(addrToRead, addrToWrite, availableSpace);
+              AddressableMemoryManager.copyMemory(addrToRead, addrToWrite, availableSpace);
               bb.position(bb.position()+availableSpace);
               addrToRead += availableSpace;
               bytesRemaining -= availableSpace;
@@ -739,13 +731,13 @@ public interface DiskEntry extends RegionEntry {
               availableSpace = bb.remaining();
             } while (bytesRemaining > availableSpace);
           }
-          UnsafeMemoryChunk.copyMemory(addrToRead, addrToWrite, bytesRemaining);
+          AddressableMemoryManager.copyMemory(addrToRead, addrToWrite, bytesRemaining);
           bb.position(bb.position()+bytesRemaining);
         } else {
-          long addr = this.chunk.getAddressForReading(0, maxOffset);
+          long addr = this.offHeapData.getAddressForReadingData(0, maxOffset);
           final long endAddr = addr + maxOffset;
           while (addr != endAddr) {
-            bb.put(UnsafeMemoryChunk.readAbsoluteByte(addr));
+            bb.put(AddressableMemoryManager.readByte(addr));
             addr++;
             if (!bb.hasRemaining()) {
               flushable.flush();
@@ -755,10 +747,28 @@ public interface DiskEntry extends RegionEntry {
       }
       @Override
       public String getBytesAsString() {
-        return this.chunk.getStringForm();
+        return this.offHeapData.getStringForm();
       }
     }
 
+    /**
+     * Returns true if the given object is off-heap
+     * and it is worth wrapping a reference to it
+     * instead of copying its data to the heap.
+     * Currently all StoredObject's with a refCount are
+     * wrapped.
+     */
+    public static boolean wrapOffHeapReference(Object o) {
+      if (o instanceof StoredObject) {
+        StoredObject so = (StoredObject) o;
+        if (so.hasRefCount()) {
+          // 
+          return true;
+        }
+      }
+      return false;
+    }
+    
     public static ValueWrapper createValueWrapper(Object value, EntryEventImpl event) {
       if (value == Token.INVALID) {
         // even though it is not serialized we say it is because
@@ -782,19 +792,14 @@ public interface DiskEntry extends RegionEntry {
         byte[] bytes;
         if (value instanceof CachedDeserializable) {
           CachedDeserializable proxy = (CachedDeserializable)value;
-          if (proxy instanceof ObjectChunk) {
-            return new ChunkValueWrapper((ObjectChunk) proxy);
+          if (wrapOffHeapReference(proxy)) {
+            return new OffHeapValueWrapper((StoredObject) proxy);
           }
-          if (proxy instanceof StoredObject) {
-            StoredObject ohproxy = (StoredObject) proxy;
-            isSerializedObject = ohproxy.isSerialized();
-            if (isSerializedObject) {
-              bytes = ohproxy.getSerializedValue();
-            } else {
-              bytes = (byte[]) ohproxy.getDeserializedForReading();
-            }
-          } else {
+          isSerializedObject = proxy.isSerialized();
+          if (isSerializedObject) {
             bytes = proxy.getSerializedValue();
+          } else {
+            bytes = (byte[]) proxy.getDeserializedForReading();
           }
           if (event != null && isSerializedObject) {
             event.setCachedSerializedNewValue(bytes);
@@ -826,15 +831,15 @@ public interface DiskEntry extends RegionEntry {
         // For off-heap it should be faster to pass a reference to the
         // StoredObject instead of using the cached byte[] (unless it is also compressed).
         // Since NIO is used if the chunk of memory is large we can write it
-        // to the file with using the off-heap memory with no extra copying.
+        // to the file using the off-heap memory with no extra copying.
         // So we give preference to getRawNewValue over getCachedSerializedNewValue
         Object rawValue = null;
         if (!event.hasDelta()) {
           // We don't do this for the delta case because getRawNewValue returns delta
           // and we want to write the entire new value to disk.
           rawValue = event.getRawNewValue();
-          if (rawValue instanceof ObjectChunk) {
-            return new ChunkValueWrapper((ObjectChunk) rawValue);
+          if (wrapOffHeapReference(rawValue)) {
+            return new OffHeapValueWrapper((StoredObject) rawValue);
           }
         }
         if (event.getCachedSerializedNewValue() != null) {
@@ -1160,10 +1165,6 @@ public interface DiskEntry extends RegionEntry {
       Object result = OffHeapHelper.copyAndReleaseIfNeeded(getValueOffHeapOrDiskWithoutFaultIn(entry, region));
       if (result instanceof CachedDeserializable) {
         result = ((CachedDeserializable)result).getDeserializedValue(null, null);
-      }
-      if (result instanceof StoredObject) {
-        ((StoredObject) result).release();
-        throw new IllegalStateException("sqlf tried to use getValueInVMOrDiskWithoutFaultIn");
       }
       return result;
     }

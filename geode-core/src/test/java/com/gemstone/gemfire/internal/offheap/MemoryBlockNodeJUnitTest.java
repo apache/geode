@@ -49,13 +49,11 @@ public class MemoryBlockNodeJUnitTest {
   private SimpleMemoryAllocatorImpl ma;
   private OutOfOffHeapMemoryListener ooohml;
   private OffHeapMemoryStats stats;
-  private LogWriter lw;
-  private int numSlabs;
-  private AddressableMemoryChunk[] slabs = {
-      new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE), 
-      new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE * 2)
+  private Slab[] slabs = {
+      new SlabImpl((int)OffHeapStorage.MIN_SLAB_SIZE), 
+      new SlabImpl((int)OffHeapStorage.MIN_SLAB_SIZE * 2)
   };
-  private MemoryChunkWithRefCount storedObject = null;
+  private StoredObject storedObject = null;
 
   static {
     ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
@@ -84,8 +82,6 @@ public class MemoryBlockNodeJUnitTest {
   public void setUp() {
     ooohml = mock(OutOfOffHeapMemoryListener.class);
     stats = mock(OffHeapMemoryStats.class);
-    lw = mock(LogWriter.class);
-    numSlabs = 3;
     ma = (SimpleMemoryAllocatorImpl) SimpleMemoryAllocatorImpl.createForUnitTest(ooohml, stats, slabs);
   }
 
@@ -98,11 +94,11 @@ public class MemoryBlockNodeJUnitTest {
     return Long.valueOf(Long.MAX_VALUE);
   }
 
-  protected MemoryChunkWithRefCount createValueAsUnserializedStoredObject(Object value) {
-    MemoryChunkWithRefCount createdObject = createValueAsUnserializedStoredObject(value, false);
+  protected StoredObject createValueAsUnserializedStoredObject(Object value) {
+    StoredObject createdObject = createValueAsUnserializedStoredObject(value, false);
     return createdObject;
   }
-  protected MemoryChunkWithRefCount createValueAsUnserializedStoredObject(Object value, boolean isCompressed) {
+  protected StoredObject createValueAsUnserializedStoredObject(Object value, boolean isCompressed) {
     byte[] valueInByteArray;
     if (value instanceof Long) {
       valueInByteArray = convertValueToByteArray(value);
@@ -112,7 +108,7 @@ public class MemoryBlockNodeJUnitTest {
 
     boolean isSerialized = false;
 
-    MemoryChunkWithRefCount createdObject = createChunk(valueInByteArray, isSerialized, isCompressed);
+    StoredObject createdObject = createChunk(valueInByteArray, isSerialized, isCompressed);
     return createdObject;
   }
 
@@ -120,23 +116,23 @@ public class MemoryBlockNodeJUnitTest {
     return ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong((Long) value).array();
   }
 
-  private MemoryChunkWithRefCount createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
-    MemoryChunkWithRefCount chunk = (MemoryChunkWithRefCount) ma.allocateAndInitialize(v, isSerialized, isCompressed);
+  private StoredObject createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
+    StoredObject chunk = (StoredObject) ma.allocateAndInitialize(v, isSerialized, isCompressed);
     return chunk;
   }
 
 
-  protected MemoryChunkWithRefCount createValueAsSerializedStoredObject(Object value) {
-    MemoryChunkWithRefCount createdObject = createValueAsSerializedStoredObject(value, false);
+  protected StoredObject createValueAsSerializedStoredObject(Object value) {
+    StoredObject createdObject = createValueAsSerializedStoredObject(value, false);
     return createdObject;
   }
   
-  protected MemoryChunkWithRefCount createValueAsSerializedStoredObject(Object value, boolean isCompressed) {
+  protected StoredObject createValueAsSerializedStoredObject(Object value, boolean isCompressed) {
     byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
 
     boolean isSerialized = true;
 
-    MemoryChunkWithRefCount createdObject = createChunk(valueInSerializedByteArray, isSerialized, isCompressed);
+    StoredObject createdObject = createChunk(valueInSerializedByteArray, isSerialized, isCompressed);
     return createdObject;
   }
   
@@ -151,7 +147,7 @@ public class MemoryBlockNodeJUnitTest {
     expectedException.expect(NullPointerException.class);
     
     MemoryBlock mb = new MemoryBlockNode(ma, null);
-    Long addr = mb.getMemoryAddress();
+    Long addr = mb.getAddress();
     fail("Operations on MemoryBlockNodes with null block argument expected to throw NullPointerException ");
   }
   
@@ -175,7 +171,7 @@ public class MemoryBlockNodeJUnitTest {
   public void getMemoryAddressReturnsAddressOfBlock() {
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     MemoryBlock mb = new MemoryBlockNode(ma, fragment);
-    softly.assertThat(mb.getMemoryAddress()).isEqualTo(fragment.getMemoryAddress());
+    softly.assertThat(mb.getAddress()).isEqualTo(fragment.getAddress());
  }
   
   @Test
@@ -315,7 +311,7 @@ public class MemoryBlockNodeJUnitTest {
     storedObject = createValueAsSerializedStoredObject(obj, true);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
     byte[] storedObjectBytes = new byte[storedObject.getValueSizeInBytes()];
-    storedObject.readBytes(0, storedObjectBytes);
+    storedObject.readDataBytes(0, storedObjectBytes);
     softly.assertThat(mb.getDataValue()).isEqualTo(storedObjectBytes);
   }
   
@@ -325,7 +321,7 @@ public class MemoryBlockNodeJUnitTest {
     storedObject = createValueAsUnserializedStoredObject(obj, true);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
     byte[] storedObjectBytes = new byte[storedObject.getValueSizeInBytes()];
-    storedObject.readBytes(0, storedObjectBytes);
+    storedObject.readDataBytes(0, storedObjectBytes);
     softly.assertThat(mb.getDataValue()).isEqualTo(storedObjectBytes);
   }
   
@@ -335,7 +331,7 @@ public class MemoryBlockNodeJUnitTest {
     storedObject = createValueAsUnserializedStoredObject(obj, false);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
     byte[] storedObjectBytes = new byte[storedObject.getValueSizeInBytes()];
-    storedObject.readBytes(0, storedObjectBytes);
+    storedObject.readDataBytes(0, storedObjectBytes);
     softly.assertThat(mb.getDataValue()).isEqualTo(storedObjectBytes);
   }
   
@@ -343,7 +339,7 @@ public class MemoryBlockNodeJUnitTest {
   public void getDataValueWithIllegalDataTypeCatchesIOException() {
     Object obj = getValue();
     storedObject = createValueAsSerializedStoredObject(obj);
-    storedObject.writeByte(0, DSCODE.ILLEGAL);
+    storedObject.writeDataByte(0, DSCODE.ILLEGAL);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
@@ -356,7 +352,7 @@ public class MemoryBlockNodeJUnitTest {
     storedObject = createValueAsSerializedStoredObject(obj);
     StoredObject spyStoredObject = spy(storedObject);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) spyStoredObject);
-    when(((ObjectChunk)spyStoredObject).getRawBytes()).thenCallRealMethod().thenThrow(new CacheClosedException("Unit test forced exception"));
+    when(((OffHeapStoredObject)spyStoredObject).getRawBytes()).thenCallRealMethod().thenThrow(new CacheClosedException("Unit test forced exception"));
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
     softly.assertThat(mb.getDataValue()).isEqualTo("CacheClosedException:Unit test forced exception");
@@ -369,7 +365,7 @@ public class MemoryBlockNodeJUnitTest {
     storedObject = createValueAsSerializedStoredObject(obj);
     StoredObject spyStoredObject = spy(storedObject);
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) spyStoredObject);
-    when(((ObjectChunk)spyStoredObject).getRawBytes()).thenCallRealMethod().thenThrow(ClassNotFoundException.class);
+    when(((OffHeapStoredObject)spyStoredObject).getRawBytes()).thenCallRealMethod().thenThrow(ClassNotFoundException.class);
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
     softly.assertThat(mb.getDataValue()).isEqualTo("ClassNotFoundException:null");

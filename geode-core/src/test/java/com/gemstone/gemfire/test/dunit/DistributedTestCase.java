@@ -42,6 +42,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.CreationStackGenerator;
+import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.ClientStatsManager;
 import com.gemstone.gemfire.internal.cache.DiskStoreObserver;
@@ -241,7 +242,8 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    * @since 3.0
    */
   public Properties getDistributedSystemProperties() {
-    return new Properties();
+    Properties props = new Properties();
+    return props;
   }
 
   public static void disconnectAllFromDS() {
@@ -486,6 +488,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     RegionTestCase.preSnapshotRegion = null;
     SocketCreator.resetHostNameCache();
     SocketCreator.resolve_dns = true;
+    TcpClient.clearStaticData();
 
     // clear system properties -- keep alphabetized
     System.clearProperty("gemfire.log-level");

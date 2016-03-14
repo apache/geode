@@ -1837,8 +1837,7 @@ public class HandShake implements ClientHandShake
   public void sendCredentialsForWan(OutputStream out, InputStream in) {
 
     try {
-      Properties wanCredentials = getCredentials(this.system
-          .getDistributedMember());
+      Properties wanCredentials = getCredentials(this.id.getDistributedMember());
       DataOutputStream dos = new DataOutputStream(out);
       DataInputStream dis = new DataInputStream(in);
       writeCredentials(dos, dis, wanCredentials, false, this.system.getDistributedMember());

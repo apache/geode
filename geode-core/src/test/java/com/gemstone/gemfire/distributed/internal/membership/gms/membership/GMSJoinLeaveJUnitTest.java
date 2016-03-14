@@ -214,7 +214,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testViewWithoutMemberInitiatesForcedDisconnect() throws Exception {
     initMocks();
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
     List<InternalDistributedMember> members = Arrays.asList(mockMembers);
     NetView v = new NetView(mockMembers[0], 2, members);
     InstallViewMessage message = new InstallViewMessage(v, null);
@@ -329,7 +329,7 @@ public class GMSJoinLeaveJUnitTest {
         any(String.class), any(Boolean.class))).thenReturn(true);
     
     gmsJoinLeave.delayViewCreationForTest(5000); // ensures multiple requests are queued for a view change
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
 
     NetView oldView = null;
     long giveup = System.currentTimeMillis() + viewInstallationTime;
@@ -422,9 +422,8 @@ public class GMSJoinLeaveJUnitTest {
     String reason = "testing";
     initMocks();
     gmsJoinLeave.unitTesting.add("noRandomViewChange");
-    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
-    gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
-    gmsJoinLeave.becomeCoordinatorForTest();
+    prepareAndInstallView(gmsJoinLeaveMemberId, createMemberList(gmsJoinLeaveMemberId,mockMembers[0]));
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
 
     LeaveRequestMessage msg = new LeaveRequestMessage(gmsJoinLeave.getMemberID(), mockMembers[0], reason);
     msg.setSender(mockMembers[0]);
@@ -446,11 +445,10 @@ public class GMSJoinLeaveJUnitTest {
   public void testDuplicateRemoveRequestDoesNotCauseNewView() throws Exception {
     String reason = "testing";
     initMocks();
-    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
-    gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
+    prepareAndInstallView(gmsJoinLeaveMemberId, createMemberList(gmsJoinLeaveMemberId,mockMembers[0]));
     gmsJoinLeave.getView().add(mockMembers[1]);
     gmsJoinLeave.unitTesting.add("noRandomViewChange");
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
     RemoveMemberMessage msg = new RemoveMemberMessage(gmsJoinLeave.getMemberID(), mockMembers[0], reason);
     msg.setSender(mockMembers[0]);
     gmsJoinLeave.processMessage(msg);
@@ -474,10 +472,9 @@ public class GMSJoinLeaveJUnitTest {
     when(healthMonitor.checkIfAvailable(any(InternalDistributedMember.class),
         any(String.class), any(Boolean.class))).thenReturn(true);
     gmsJoinLeave.unitTesting.add("noRandomViewChange");
-    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
-    gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
+    prepareAndInstallView(gmsJoinLeaveMemberId, createMemberList(gmsJoinLeaveMemberId,mockMembers[0]));
     gmsJoinLeave.getView().add(mockMembers[1]);
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
     JoinRequestMessage msg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[2], null, -1);
     msg.setSender(mockMembers[2]);
     gmsJoinLeave.processMessage(msg);
@@ -522,7 +519,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testRemoveCausesForcedDisconnect() throws Exception {
     String reason = "testing";
     initMocks();
-    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId)); 
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     gmsJoinLeave.getView().add(mockMembers[1]);
     RemoveMemberMessage msg = new RemoveMemberMessage(mockMembers[0], gmsJoinLeave.getMemberID(), reason);
     msg.setSender(mockMembers[1]);
@@ -534,8 +531,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testLeaveCausesForcedDisconnect() throws Exception {
     String reason = "testing";
     initMocks();
-    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
-    gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
+    prepareAndInstallView(gmsJoinLeaveMemberId, createMemberList(gmsJoinLeaveMemberId,mockMembers[0]));
     gmsJoinLeave.getView().add(mockMembers[1]);
     LeaveRequestMessage msg = new LeaveRequestMessage(gmsJoinLeave.getMemberID(), gmsJoinLeave.getMemberID(), reason);
     msg.setSender(mockMembers[1]);
@@ -558,7 +554,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testBecomeCoordinatorOnStartup() throws Exception {
     initMocks();
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
     long giveup = System.currentTimeMillis() + 20000;
     while (System.currentTimeMillis() < giveup && !gmsJoinLeave.isCoordinator()) {
       Thread.sleep(1000);
@@ -616,7 +612,7 @@ public class GMSJoinLeaveJUnitTest {
     NetView oldView = gmsJoinLeave.getView();
     oldView.add(gmsJoinLeaveMemberId);
     InternalDistributedMember creator = oldView.getCreator();
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
     NetView view = new NetView(2, gmsJoinLeave.getView().getViewId()+1);
     view.setCreator(creator);
     view.add(creator);
@@ -665,7 +661,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testNetworkPartitionMessageReceived() throws Exception {
     initMocks();
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
     NetworkPartitionMessage message = new NetworkPartitionMessage();
     gmsJoinLeave.processMessage(message);
     verify(manager).forceDisconnect(any(String.class));
@@ -838,7 +834,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeaveMemberId.setVmViewId(1);
     members.add(gmsJoinLeaveMemberId);
     prepareAndInstallView(gmsJoinLeaveMemberId, members);
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
     GMSJoinLeave.ViewBroadcaster b = gmsJoinLeave.new ViewBroadcaster();
     b.run();
     verify(messenger).sendUnreliably(isA(InstallViewMessage.class));
@@ -945,20 +941,22 @@ public class GMSJoinLeaveJUnitTest {
         System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
       }
   }
-  
-  @Test
-  public void testJoinResponseMsgWithBecomeCoordinator() throws Exception {
-    initMocks(false);
-    gmsJoinLeaveMemberId.getNetMember().setPreferredForCoordinator(false);
-    JoinRequestMessage reqMsg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[0], null, 56734);
-    InternalDistributedMember ids = new InternalDistributedMember("localhost", 97898);
-    ids.getNetMember().setPreferredForCoordinator(true);
-    gmsJoinLeave.processMessage(reqMsg);
-    ArgumentCaptor<JoinResponseMessage> ac = ArgumentCaptor.forClass(JoinResponseMessage.class);
-    verify(messenger).send(ac.capture());
-    
-    assertTrue("Should have asked for becoming a coordinator", ac.getValue().getBecomeCoordinator());
-  }
+
+//  With the removal of the JoinResponse message from GMSJoinLeave.processJoinRequest (GEODE-870)
+//  This test now seems to be invalid
+//  @Test
+//  public void testJoinResponseMsgWithBecomeCoordinator() throws Exception {
+//    initMocks(false);
+//    gmsJoinLeaveMemberId.getNetMember().setPreferredForCoordinator(false);
+//    JoinRequestMessage reqMsg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[0], null, 56734);
+//    InternalDistributedMember ids = new InternalDistributedMember("localhost", 97898);
+//    ids.getNetMember().setPreferredForCoordinator(true);
+//    gmsJoinLeave.processMessage(reqMsg);
+//    ArgumentCaptor<JoinResponseMessage> ac = ArgumentCaptor.forClass(JoinResponseMessage.class);
+//    verify(messenger).send(ac.capture());
+//
+//    assertTrue("Should have asked for becoming a coordinator", ac.getValue().getBecomeCoordinator());
+//  }
   
   @Test
   public void testNetworkPartionMessage() throws Exception {
@@ -1004,8 +1002,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testPreparedViewFoundDuringBecomeCoordinator() throws Exception {
     initMocks(false);
-    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
-    
+    prepareAndInstallView(gmsJoinLeaveMemberId, createMemberList(gmsJoinLeaveMemberId,mockMembers[0]));
     // a new member is joining
     NetView preparedView = new NetView(gmsJoinLeave.getView(), gmsJoinLeave.getView().getViewId()+5);
     mockMembers[1].setVmViewId(preparedView.getViewId());
@@ -1014,18 +1011,24 @@ public class GMSJoinLeaveJUnitTest {
     InstallViewMessage msg = new InstallViewMessage(preparedView, null, true);
     gmsJoinLeave.processMessage(msg);
     
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
 
     Thread.sleep(2000);
     ViewCreator vc = gmsJoinLeave.getViewCreator();
-    
-    ViewAckMessage vack = new ViewAckMessage(gmsJoinLeaveMemberId, gmsJoinLeave.getPreparedView().getViewId(), true);
+    int viewId = 0;
+    if (gmsJoinLeave.getPreparedView() == null) {
+      viewId = gmsJoinLeave.getView().getViewId();
+    }
+    else {
+      viewId = gmsJoinLeave.getPreparedView().getViewId();
+    }
+    ViewAckMessage vack = new ViewAckMessage(gmsJoinLeaveMemberId, viewId, true);
     vack.setSender(mockMembers[0]);
     gmsJoinLeave.processMessage(vack);
-    vack = new ViewAckMessage(gmsJoinLeaveMemberId, gmsJoinLeave.getPreparedView().getViewId(), true);
+    vack = new ViewAckMessage(gmsJoinLeaveMemberId, viewId, true);
     vack.setSender(mockMembers[1]);
     gmsJoinLeave.processMessage(vack);
-    vack = new ViewAckMessage(gmsJoinLeaveMemberId, gmsJoinLeave.getPreparedView().getViewId(), true);
+    vack = new ViewAckMessage(gmsJoinLeaveMemberId, viewId, true);
     vack.setSender(gmsJoinLeaveMemberId);
     gmsJoinLeave.processMessage(vack);
     
@@ -1152,7 +1155,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testRemoveRequestWhileWaitingForFinalResponse() throws Exception {
     initMocks(true, true);
     
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
     
     installView();
     
@@ -1174,7 +1177,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testLeaveRequestWhileWaitingForFinalResponse() throws Exception {
     initMocks(true, true);
     
-    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
     
     installView();
     

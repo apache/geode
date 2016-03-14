@@ -355,7 +355,7 @@ public class SSLConfigJUnitTest {
     try{
       DistributionConfigImpl config = new DistributionConfigImpl( gemFireProps );
     }catch(IllegalArgumentException e){
-      if (! e.toString().contains( "Gemfire property \'jmx-manager-ssl\' and \'jmx-manager-ssl-enabled\' can not be used at the same time")) {
+      if (! e.toString().contains( "GemFire properties \'jmx-manager-ssl\' and \'jmx-manager-ssl-enabled\' can not be used at the same time")) {
         throw new Exception( "did not get expected exception, got this instead...", e );
       }
     }
@@ -471,59 +471,102 @@ public class SSLConfigJUnitTest {
     Properties gemFireProps = new Properties();
     gemFireProps.setProperty( "mcast-port", "0" );
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
-    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
+    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "false");
     DistributionConfigImpl config = null;
     try{
       config = new DistributionConfigImpl( gemFireProps );
+      throw new Exception();
     }catch(IllegalArgumentException e){
-      if (! e.toString().contains( "Gemfire property \'ssl-enabled\' and \'cluster-ssl-enabled\' can not be used at the same time")) {
+      if (! e.toString().contains( "GemFire properties \'ssl-enabled\' and \'cluster-ssl-enabled\' can not be used at the same time")) {
         throw new Exception( "did not get expected exception, got this instead...", e );
       }
     }
     
-    //ssl-protocol and clsuter-ssl-protocol set at the same time
+    //ssl-protocol and cluster-ssl-protocol set at the same time
     gemFireProps = new Properties();
     gemFireProps.setProperty( "mcast-port", "0" );
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.SSL_PROTOCOLS_NAME, sslprotocols);
-    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "false");
+    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, clusterSslprotocols);
     try{
       config = new DistributionConfigImpl( gemFireProps );
+      throw new Exception();
     }catch(IllegalArgumentException e){
-      if (! e.toString().contains( "Gemfire property \'ssl-protocols\' and \'cluster-ssl-protocols\' can not be used at the same time") ) {
+      if (! e.toString().contains( "GemFire properties \'ssl-protocols\' and \'cluster-ssl-protocols\' can not be used at the same time") ) {
         throw new Exception( "did not get expected exception, got this instead...", e );
       }
     }
     
-    //ssl-cipher and clsuter-ssl-cipher set at the same time
+    //ssl-protocol and cluster-ssl-protocol set at the same time with same value
+    gemFireProps = new Properties();
+    gemFireProps.setProperty( "mcast-port", "0" );
+    gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
+    gemFireProps.put(DistributionConfig.SSL_PROTOCOLS_NAME, sslprotocols);
+    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
+    gemFireProps.put(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, sslprotocols);
+    try{
+      config = new DistributionConfigImpl( gemFireProps );
+    } catch(IllegalArgumentException e){
+      throw new Exception();
+    }
+    
+    //ssl-cipher and cluster-ssl-cipher set at the same time
     gemFireProps = new Properties();
     gemFireProps.setProperty( "mcast-port", "0" );
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.SSL_CIPHERS_NAME, sslciphers);
-    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "false");
+    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, clusterSslciphers);
     try{
       config = new DistributionConfigImpl( gemFireProps );
-    }catch(IllegalArgumentException e){
-      if (! e.toString().contains( "Gemfire property \'ssl-cipher\' and \'cluster-ssl-cipher\' can not be used at the same time") ) {
+      throw new Exception();
+    } catch(IllegalArgumentException e){
+      if (! e.toString().contains( "GemFire properties \'ssl-cipher\' and \'cluster-ssl-cipher\' can not be used at the same time") ) {
         throw new Exception( "did not get expected exception, got this instead...", e );
       }
     }
     
-  //ssl-require-authentication and clsuter-ssl-require-authentication set at the same time
+    //ssl-cipher and cluster-ssl-cipher set at the same time with same value
+    gemFireProps = new Properties();
+    gemFireProps.setProperty( "mcast-port", "0" );
+    gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
+    gemFireProps.put(DistributionConfig.SSL_CIPHERS_NAME, sslciphers);
+    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
+    gemFireProps.put(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, sslciphers);
+    try{
+      config = new DistributionConfigImpl( gemFireProps );
+    } catch(IllegalArgumentException e){
+      throw new Exception();
+    }
+    
+    //ssl-require-authentication and cluster-ssl-require-authentication set at the same time
     gemFireProps = new Properties();
     gemFireProps.setProperty( "mcast-port", "0" );
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
-    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "false");
+    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
+    gemFireProps.put(DistributionConfig.CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME, "false");
+    try{
+      config = new DistributionConfigImpl( gemFireProps );
+      throw new Exception();
+    } catch(IllegalArgumentException e){
+      if (! e.toString().contains( "GemFire properties \'ssl-require-authentication\' and \'cluster-ssl-require-authentication\' can not be used at the same time") ) {
+        throw new Exception( "did not get expected exception, got this instead...", e );
+      }
+    }
+    
+    //ssl-require-authentication and cluster-ssl-require-authentication set at the same time and have the same value
+    gemFireProps = new Properties();
+    gemFireProps.setProperty( "mcast-port", "0" );
+    gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
+    gemFireProps.put(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
+    gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME, "true");
     try{
       config = new DistributionConfigImpl( gemFireProps );
-    }catch(IllegalArgumentException e){
-      if (! e.toString().contains( "Gemfire property \'ssl-require-authentication\' and \'cluster-ssl-require-authentication\' can not be used at the same time") ) {
-        throw new Exception( "did not get expected exception, got this instead...", e );
-      }
+    } catch(IllegalArgumentException e){
+      throw new Exception();
     }
     
     // only ssl-* properties provided. same should reflect in cluster-ssl properties

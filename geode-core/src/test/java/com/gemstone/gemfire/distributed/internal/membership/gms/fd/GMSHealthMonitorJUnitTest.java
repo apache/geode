@@ -81,7 +81,8 @@ public class GMSHealthMonitorJUnitTest {
   private long statsId = 123;
   final long memberTimeout = 1000l;
   private int[] portRange= new int[]{0, 65535};
-
+  private boolean useGMSHealthMonitorTestClass = false;
+  
   @Before
   public void initMocks() throws UnknownHostException {
     //System.setProperty("gemfire.bind-address", "localhost");
@@ -131,7 +132,7 @@ public class GMSHealthMonitorJUnitTest {
     }
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
     when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-    gmsHealthMonitor = new GMSHealthMonitor();
+    gmsHealthMonitor = new GMSHealthMonitorTest();
     gmsHealthMonitor.init(services);
     gmsHealthMonitor.start();
   }
@@ -174,7 +175,7 @@ public class GMSHealthMonitorJUnitTest {
 
     // allow the monitor to give up on the initial "next neighbor" and
     // move on to the one after it
-    long giveup = System.currentTimeMillis() + memberTimeout + 500;
+    long giveup = System.currentTimeMillis() + memberTimeout + 1500;
     InternalDistributedMember expected = mockMembers.get(5);
     InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
     while (System.currentTimeMillis() < giveup && neighbor != expected) {
@@ -228,8 +229,8 @@ public class GMSHealthMonitorJUnitTest {
     Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsSent() > 0);
   }
 
-  private void installAView() {
-    System.out.println("testSuspectMembersCalledThroughMemberCheckThread starting");
+  private NetView installAView() {
+    System.out.println("installAView starting");
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
 
     // 3rd is current member
@@ -237,6 +238,17 @@ public class GMSHealthMonitorJUnitTest {
     gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
+    
+    return v;
+  }
+  
+  private void setFailureDetectionPorts(NetView v) {
+    java.util.Iterator<InternalDistributedMember> itr = mockMembers.iterator();
+    
+    int port = 7899;
+    while(itr.hasNext()) {
+      v.setFailureDetectionPort(itr.next(), port++);
+    }
   }
 
   /***
@@ -414,8 +426,8 @@ public class GMSHealthMonitorJUnitTest {
 
   @Test
   public void testCheckIfAvailableWithSimulatedHeartBeat() {
-    installAView();
-    
+    NetView v = installAView();
+   
     InternalDistributedMember memberToCheck = mockMembers.get(1);
     HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
     fakeHeartbeat.setSender(memberToCheck);
@@ -429,6 +441,25 @@ public class GMSHealthMonitorJUnitTest {
     
     boolean retVal = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
     assertTrue("CheckIfAvailable should have return true", retVal);
+  }
+  
+  @Test
+  public void testCheckIfAvailableWithSimulatedHeartBeatWithTcpCheck() {
+    System.out.println("testCheckIfAvailableWithSimulatedHeartBeatWithTcpCheck");
+    useGMSHealthMonitorTestClass = true;
+    
+    try {
+      NetView v = installAView();
+      
+      setFailureDetectionPorts(v);
+      
+      InternalDistributedMember memberToCheck = mockMembers.get(1);
+      
+      boolean retVal = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
+      assertTrue("CheckIfAvailable should have return true", retVal);
+    }finally {
+      useGMSHealthMonitorTestClass = false;
+    }    
   }
   
   
@@ -635,4 +666,16 @@ public class GMSHealthMonitorJUnitTest {
     return baos.toByteArray();
   }
 
+  public class GMSHealthMonitorTest extends GMSHealthMonitor {
+    @Override
+    boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
+      if(useGMSHealthMonitorTestClass) {       
+        HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
+        fakeHeartbeat.setSender(suspectMember);
+        gmsHealthMonitor.processMessage(fakeHeartbeat);                
+        return false;
+      }
+      return super.doTCPCheckMember(suspectMember, port);
+    }
+  }
 }

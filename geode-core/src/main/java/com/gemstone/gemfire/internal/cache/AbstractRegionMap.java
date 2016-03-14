@@ -75,7 +75,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
@@ -832,6 +831,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                                        boolean deferLRUCallback,
                                        VersionTag entryVersion, InternalDistributedMember sender, boolean isSynchronizing)
   {
+    assert indexUpdater == null : "indexUpdater should only exist if sqlfire";
     boolean result = false;
     boolean done = false;
     boolean cleared = false;
@@ -922,73 +922,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 }
                 final boolean oldIsTombstone = oldRe.isTombstone();
                 final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
-                // Neeraj: The below if block is to handle the special
-                // scenario witnessed in SqlFabric for now. (Though its
-                // a general scenario). The scenario is that during GII
-                // it is possible that updates start coming before the
-                // base value reaches through GII. In that scenario the deltas
-                // for that particular key is kept on being added to a list
-                // of deltas. When the base value arrives through this path
-                // of GII the oldValue will be that list of deltas. When the
-                // base values arrives the deltas are applied one by one on that list.
-                // The same scenario is applicable for GemFire also but the below 
-                // code will be executed only in case of sqlfabric now. Probably
-                // the code can be made more generic for both SQL Fabric and GemFire.
-                if (indexUpdater != null) {
-                  oldValue = oldRe.getValueInVM(owner); // OFFHEAP: ListOfDeltas
-                  if (oldValue instanceof ListOfDeltas) {
-                  // apply the deltas on this new value. update index
-                  // Make a new event object
-                  // make it an insert operation
-                  LocalRegion rgn = owner;
-                  if (owner instanceof BucketRegion) {
-                    rgn = ((BucketRegion)owner).getPartitionedRegion();
-                  }
-                  event = EntryEventImpl.create(rgn, Operation.CREATE, key, null,
-                      Boolean.TRUE /* indicate that GII is in progress */,
-                      false, null);
-                  try {
-                  event.setOldValue(newValue);
-                  if (logger.isDebugEnabled()) {
-                    logger.debug("initialImagePut: received base value for list of deltas; event: {}", event);
-                  }
-                  ((ListOfDeltas)oldValue).apply(event);
-                  Object preparedNewValue =oldRe.prepareValueForCache(owner,
-                      event.getNewValueAsOffHeapDeserializedOrRaw(), true);
-                  if(preparedNewValue instanceof ObjectChunk) {
-                    event.setNewValue(preparedNewValue);
-                  }
-                  oldRe.setValue(owner, preparedNewValue, event);
-                  //event.setNewValue(event.getOldValue());
-                  event.setOldValue(null);
-                  try {
-                    indexUpdater.onEvent(owner, event, oldRe);
-                    lruEntryUpdate(oldRe);
-                    owner.updateSizeOnPut(key, oldSize, owner.calculateRegionEntryValueSize(oldRe));
-                    EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
-                    result = true;
-                    done = true;
-                    break;
-                  } finally {
-                    // this must be done within the oldRe sync block
-                    indexUpdater.postEvent(owner, event, oldRe, done);
-                  }
-                  } finally {
-                    if (event != null) {
-                      event.release();
-                      event = null;
-                    }
-                  }
-                  }
-                }
                 try {
-                  if (indexUpdater != null) {
-                    event = EntryEventImpl.create(owner, Operation.CREATE, key,
-                        newValue,
-                        Boolean.TRUE /* indicate that GII is in progress */,
-                        false, null);
-                    indexUpdater.onEvent(owner, event, oldRe);
-                  }
                   result = oldRe.initialImagePut(owner, lastModified, newValue, wasRecovered, acceptedVersionTag);
                   if (result) {
                     if (oldIsTombstone) {
@@ -1025,9 +959,6 @@ public abstract class AbstractRegionMap implements RegionMap {
                   }
                   done = true;
                 } finally {
-                  if (indexUpdater != null) {
-                    indexUpdater.postEvent(owner, event, oldRe, result);
-                  }
                   if (event != null) {
                     event.release();
                     event = null;
@@ -1052,13 +983,6 @@ public abstract class AbstractRegionMap implements RegionMap {
                 true, wasRecovered, versionTagAccepted);
             try {
               if (result) {
-                if (indexUpdater != null) {
-                  event = EntryEventImpl.create(owner, Operation.CREATE, key,
-                      newValue,
-                      Boolean.TRUE /* indicate that GII is in progress */,
-                      false, null);
-                  indexUpdater.onEvent(owner, event, newRe);
-                }
                 if (newValue == Token.TOMBSTONE) {
                   owner.scheduleTombstone(newRe, entryVersion);
                 } else {
@@ -1075,9 +999,6 @@ public abstract class AbstractRegionMap implements RegionMap {
               }
               done = true;
             } finally {
-              if (result && indexUpdater != null) {
-                indexUpdater.postEvent(owner, event, newRe, done);
-              }
               if (event != null) {
                 event.release();
                 event = null;

@@ -14,18 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package templates.security;
-
-import java.security.Principal;
-import java.util.Properties;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
-import templates.security.UserPasswordAuthInit;
-import templates.security.UsernamePrincipal;
+
+import java.security.Principal;
+import java.util.Properties;
 
 /**
  * A dummy implementation of the {@link Authenticator} interface that expects a

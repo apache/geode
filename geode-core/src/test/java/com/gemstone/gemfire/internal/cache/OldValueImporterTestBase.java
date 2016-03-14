@@ -26,12 +26,12 @@ import org.junit.Test;
 
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl.OldValueImporter;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
-import com.gemstone.gemfire.internal.offheap.DataAsAddress;
+import com.gemstone.gemfire.internal.offheap.OffHeapStoredObject;
+import com.gemstone.gemfire.internal.offheap.TinyStoredObject;
 import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
+import com.gemstone.gemfire.internal.offheap.SlabImpl;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
 public abstract class OldValueImporterTestBase {
@@ -110,10 +110,10 @@ public abstract class OldValueImporterTestBase {
     // off-heap DataAsAddress byte array
     {
       SimpleMemoryAllocatorImpl sma =
-          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
+          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
       try {
         byte[] baValue = new byte[] {1,2};
-        DataAsAddress baValueSO = (DataAsAddress) sma.allocateAndInitialize(baValue, false, false);
+        TinyStoredObject baValueSO = (TinyStoredObject) sma.allocateAndInitialize(baValue, false, false);
         OldValueImporter omsg = createImporter();
         omsg.importOldObject(baValueSO, false);
         hdos = new HeapDataOutputStream(bytes);
@@ -127,10 +127,10 @@ public abstract class OldValueImporterTestBase {
     // off-heap Chunk byte array
     {
       SimpleMemoryAllocatorImpl sma =
-          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
+          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
       try {
         byte[] baValue = new byte[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};
-        ObjectChunk baValueSO = (ObjectChunk) sma.allocateAndInitialize(baValue, false, false);
+        OffHeapStoredObject baValueSO = (OffHeapStoredObject) sma.allocateAndInitialize(baValue, false, false);
         OldValueImporter omsg = createImporter();
         omsg.importOldObject(baValueSO, false);
         hdos = new HeapDataOutputStream(bytes);
@@ -144,11 +144,11 @@ public abstract class OldValueImporterTestBase {
     // off-heap DataAsAddress String
     {
       SimpleMemoryAllocatorImpl sma =
-          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
+          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
       try {
         String baValue = "12";
         byte[] baValueBlob = BlobHelper.serializeToBlob(baValue);
-        DataAsAddress baValueSO = (DataAsAddress) sma.allocateAndInitialize(baValueBlob, true, false);
+        TinyStoredObject baValueSO = (TinyStoredObject) sma.allocateAndInitialize(baValueBlob, true, false);
         OldValueImporter omsg = createImporter();
         omsg.importOldObject(baValueSO, true);
         hdos = new HeapDataOutputStream(bytes);
@@ -162,11 +162,11 @@ public abstract class OldValueImporterTestBase {
     // off-heap Chunk String
     {
       SimpleMemoryAllocatorImpl sma =
-          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
+          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
       try {
         String baValue = "12345678";
         byte[] baValueBlob = BlobHelper.serializeToBlob(baValue);
-        ObjectChunk baValueSO = (ObjectChunk) sma.allocateAndInitialize(baValueBlob, true, false);
+        OffHeapStoredObject baValueSO = (OffHeapStoredObject) sma.allocateAndInitialize(baValueBlob, true, false);
         OldValueImporter omsg = createImporter();
         omsg.importOldObject(baValueSO, true);
         hdos = new HeapDataOutputStream(bytes);

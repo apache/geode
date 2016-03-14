@@ -24,10 +24,9 @@ import org.junit.runners.model.Statement;
 import com.gemstone.gemfire.test.junit.Repeat;
 
 /**
- * The RepeatRule class is a JUnit TestRule that enables an appropriately @Repeat annotated test case method
+ * The RepeatRule class is a JUnit TestRule that enables an appropriately {@literal @}Repeat annotated test case method
  * to be repeated a specified number of times.
  *
- * @author John Blum
  * @see org.junit.rules.TestRule
  * @see org.junit.runner.Description
  * @see org.junit.runners.model.Statement

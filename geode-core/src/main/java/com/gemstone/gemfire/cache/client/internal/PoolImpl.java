@@ -79,6 +79,8 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * @since 5.7
  */
 public class PoolImpl implements InternalPool {
+  public static final String ON_DISCONNECT_CLEAR_PDXTYPEIDS = "gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS";
+
   private static final Logger logger = LogService.getLogger();
   
   public static final int HANDSHAKE_TIMEOUT = Long.getLong("gemfire.PoolImpl.HANDSHAKE_TIMEOUT", AcceptorImpl.DEFAULT_HANDSHAKE_TIMEOUT_MS).intValue();
@@ -320,8 +322,9 @@ public class PoolImpl implements InternalPool {
     connectionFactory.start(backgroundProcessor);
     endpointManager.addListener(new InstantiatorRecoveryListener(backgroundProcessor, this));
     endpointManager.addListener(new DataSerializerRecoveryListener(backgroundProcessor, this));
-    if(Boolean.getBoolean("gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS"))
+    if (Boolean.getBoolean(ON_DISCONNECT_CLEAR_PDXTYPEIDS)) {
       endpointManager.addListener(new PdxRegistryRecoveryListener(this));
+    }
     endpointManager.addListener(new LiveServerPinger(this));
     
     manager.start(backgroundProcessor);

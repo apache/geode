@@ -19,36 +19,37 @@ package com.gemstone.gemfire.cache.query.internal.index;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.query.MultithreadedTester;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class IndexElemArrayJUnitTest {
   
-  private IndexElemArray list;
+  private IndexElemArray list = new IndexElemArray(7);
 
   @After
   public void tearDown() {
-    System.clearProperty("index_elemarray_size");
+    //System.clearProperty("index_elemarray_size");
   }
   
   @Test
   public void testFunctionality() throws Exception {
-    // test disabled due to frequent failures that indicate that the product
-    // is malfunctioning.  See internal ticket #52285
-    if (true) {
-      return;
-    }
-    System.setProperty("index_elemarray_size", "7");
-    list = new IndexElemArray();
+    list.clear();
     boundaryCondition();
     add();
     clearAndAdd();
@@ -62,6 +63,52 @@ public class IndexElemArrayJUnitTest {
     clearAndAdd();
   }
 
+  @Test
+  /**
+   * This tests concurrent modification of IndexElemArray and to make 
+   * sure elementData and size are updated atomically. Ticket# GEODE-106.   
+   */
+  public void testFunctionalityUsingMultiThread() throws Exception {
+    list.clear();
+    Collection<Callable> callables = new ConcurrentLinkedQueue<>();    
+    IntStream.range(0, 1000).parallel().forEach(i -> {
+      callables.add(() -> {
+        if (i%3 == 0) {
+          return add(Integer.valueOf(new Random().nextInt(4)));
+        } else if (i%3 == 1) {
+          return remove(Integer.valueOf(new Random().nextInt(4)));
+        } else {
+          return iterateList();
+        }
+      });
+    });
+
+    Collection<Object> results = MultithreadedTester.runMultithreaded(callables);
+    results.forEach(result -> {
+      // There should not be any Exception here. 
+      // E.g. ArrayIndexOutOfBoundsException when multiple threads are acting.
+      assertTrue(result.getClass().getName() + " was not an expected result", result instanceof Integer);
+    });
+  }
+  
+  private Integer add(Integer i) {
+    list.add(i);
+    return i;
+  }
+  
+  private Integer remove(Integer i) {
+    list.remove(i);
+    return i;
+  }
+  
+  private Integer iterateList() {    
+    Iterator iter = list.iterator();
+    if (iter.hasNext()){ 
+      iter.next(); 
+    }
+    return Integer.valueOf(list.size());
+  }
+  
   private void add() {
     Object objBefore = list.getElementData();
     insert(7);
@@ -134,4 +181,5 @@ public class IndexElemArrayJUnitTest {
       // ok
     }
   }
+  
 }

@@ -72,7 +72,7 @@ import java.io.*;
  * <P>
  *
  * <CENTER>
- * <IMG src="doc-files/data-serialization-exceptions.gif" 
+ * <IMG src="{@docRoot}/javadoc-images/data-serialization-exceptions.gif"
  *      HEIGHT="219" WIDTH="698">
  * </CENTER>
  *

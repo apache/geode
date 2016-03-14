@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
@@ -104,4 +105,27 @@ public abstract class AbstractStoredObject implements StoredObject {
     InternalDataSerializer.writeDSFIDHeader(DataSerializableFixedID.VM_CACHED_DESERIALIZABLE, out);
     sendAsByteArray(out);
   }
+  
+  @Override
+  public boolean usesHeapForStorage() {
+    return false;
+  }
+  
+  @Override
+  public boolean isSerializedPdxInstance() {
+    if (!isSerialized()) {
+      return false;
+    }
+    // TODO OFFHEAP: what if the data is compressed?
+    byte dsCode = this.readDataByte(0);
+    return dsCode == DSCODE.PDX || dsCode == DSCODE.PDX_ENUM || dsCode == DSCODE.PDX_INLINE_ENUM;
+  }
+
+  @Override
+  public StoredObject getStoredObjectWithoutHeapForm() {
+    // the only implementation that needs to override this
+    // is OffHeapStoredObjectWithHeapForm.
+    return this;
+  }
+
 }

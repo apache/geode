@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package templates.security;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.security.Key;
@@ -43,6 +44,7 @@ import java.util.Properties;
  * @since 5.5
  */
 public class PKCSAuthInit implements AuthInitialize {
+  private static final Logger logger = LogService.getLogger();
 
   public static final String KEYSTORE_FILE_PATH = "security-keystorepath";
 
@@ -121,9 +123,6 @@ public class PKCSAuthInit implements AuthInitialize {
         throw new AuthenticationFailedException("PKCSAuthInit: "
             + "Failed to load private key from the given file: " + keyStorePath);
       }
-    }
-    catch (GemFireSecurityException ex) {
-      throw ex;
     }
     catch (Exception ex) {
       throw new AuthenticationFailedException(

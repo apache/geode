@@ -34,6 +34,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -287,27 +288,26 @@ public class ClientServerTestCase extends CacheTestCase {
     return dm.getDistributionManagerId();
   }*/
 
-  protected static String getMemberId() {
-    final InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
+  protected static DistributedMember getMemberId() {
     WaitCriterion w = new WaitCriterion() {
 
       public String description() {
-        return "bridge never finished connecting: " + system.getMemberId();
+        return "client never finished connecting: " + system.getMemberId();
       }
 
       public boolean done() {
 //        getLogWriter().warning("checking member id " + system.getMemberId() +
 //            " for member " + system.getDistributedMember() + " hash " +
 //            System.identityHashCode(system.getDistributedMember()));
-        return !system.getMemberId().contains("):0:");
+        return system.getDistributedMember().getPort() > 0;
       }
       
     };
-    int waitMillis = 10000;
+    int waitMillis = 20000;
     int interval = 100;
     boolean throwException = true;
     Wait.waitForCriterion(w, waitMillis, interval, throwException);
-    return system.getMemberId();
+    return system.getDistributedMember();
   }
 
   protected static DistributedMember getDistributedMember() {

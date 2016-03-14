@@ -39,6 +39,7 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.query.QueryException;
+import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.logging.LogService;
 
@@ -47,7 +48,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * and arguments like region and buckets. It invokes search on the local index and provides a result collector. The
  * locally collected results are sent to the search coordinator.
  */
-public class LuceneFunction extends FunctionAdapter {
+public class LuceneFunction extends FunctionAdapter implements InternalEntity {
   private static final long serialVersionUID = 1L;
   public static final String ID = LuceneFunction.class.getName();
 

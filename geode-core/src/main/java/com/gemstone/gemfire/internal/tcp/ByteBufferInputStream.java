@@ -31,8 +31,8 @@ import java.nio.ByteOrder;
 
 import com.gemstone.gemfire.internal.ByteBufferWriter;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
-import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
+import com.gemstone.gemfire.internal.offheap.AddressableMemoryManager;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 
 /**
  * <p>
@@ -109,15 +109,15 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
     public static ByteSource create(ByteBuffer bb) {
       return new ByteBufferByteSource(bb);
     }
-    public static ByteSource create(ObjectChunk chunk) {
-      // Since I found a way to create a DirectByteBuffer (using reflection) from a Chunk
+    public static ByteSource create(StoredObject so) {
+      // Since I found a way to create a DirectByteBuffer (using reflection) from a StoredObject
       // we might not even need the ByteSource abstraction any more.
       // But it is possible that createByteBuffer will not work on a different jdk so keep it for now.
-      ByteBuffer bb = chunk.createDirectByteBuffer();
+      ByteBuffer bb = so.createDirectByteBuffer();
       if (bb != null) {
         return create(bb);
       } else {
-        return new OffHeapByteSource(chunk);
+        return new OffHeapByteSource(so);
       }
     }
   }
@@ -323,10 +323,10 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
   public static class OffHeapByteSource implements ByteSource {
     private int position;
     private int limit;
-    private final ObjectChunk chunk;
+    private final StoredObject chunk;
 
-    public OffHeapByteSource(ObjectChunk c) {
-      this.chunk = c;
+    public OffHeapByteSource(StoredObject so) {
+      this.chunk = so;
       this.position = 0;
       this.limit = capacity();
     }
@@ -474,17 +474,17 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
       }
       int p = this.position;
       this.position += length;
-      this.chunk.readBytes(p, dst, offset, length);
+      this.chunk.readDataBytes(p, dst, offset, length);
     }
 
     @Override
     public byte get() {
-      return this.chunk.readByte(nextGetIndex());
+      return this.chunk.readDataByte(nextGetIndex());
     }
     @Override
     public byte get(int pos) {
       checkIndex(pos);
-      return this.chunk.readByte(pos);
+      return this.chunk.readDataByte(pos);
     }
 
     /**
@@ -513,16 +513,16 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
       return basicGetShort(pos);
     }
     private short basicGetShort(int pos) {
-      long addr = this.chunk.getAddressForReading(pos, 2);
+      long addr = this.chunk.getAddressForReadingData(pos, 2);
       if (unaligned) {
-        short result = UnsafeMemoryChunk.readAbsoluteShort(addr);
+        short result = AddressableMemoryManager.readShort(addr);
         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
           result = Short.reverseBytes(result);
         }
         return result;
       } else {
-        int ch1 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        int ch2 = UnsafeMemoryChunk.readAbsoluteByte(addr);
+        int ch1 = AddressableMemoryManager.readByte(addr++);
+        int ch2 = AddressableMemoryManager.readByte(addr);
         return (short)((ch1 << 8) + (ch2 << 0));
       }
     }
@@ -537,16 +537,16 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
       return basicGetChar(pos);
     }
     private char basicGetChar(int pos) {
-      long addr = this.chunk.getAddressForReading(pos, 2);
+      long addr = this.chunk.getAddressForReadingData(pos, 2);
       if (unaligned) {
-        char result = UnsafeMemoryChunk.readAbsoluteChar(addr);
+        char result = AddressableMemoryManager.readChar(addr);
         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
           result = Character.reverseBytes(result);
         }
         return result;
       } else {
-        int ch1 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        int ch2 = UnsafeMemoryChunk.readAbsoluteByte(addr);
+        int ch1 = AddressableMemoryManager.readByte(addr++);
+        int ch2 = AddressableMemoryManager.readByte(addr);
         return (char)((ch1 << 8) + (ch2 << 0));
       }
     }
@@ -562,18 +562,18 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
     }
     
     private int basicGetInt(final int pos) {
-      long addr = this.chunk.getAddressForReading(pos, 4);
+      long addr = this.chunk.getAddressForReadingData(pos, 4);
       if (unaligned) {
-        int result = UnsafeMemoryChunk.readAbsoluteInt(addr);
+        int result = AddressableMemoryManager.readInt(addr);
         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
           result = Integer.reverseBytes(result);
         }
         return result;
       } else {
-        byte b0 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        byte b1 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        byte b2 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        byte b3 = UnsafeMemoryChunk.readAbsoluteByte(addr);
+        byte b0 = AddressableMemoryManager.readByte(addr++);
+        byte b1 = AddressableMemoryManager.readByte(addr++);
+        byte b2 = AddressableMemoryManager.readByte(addr++);
+        byte b3 = AddressableMemoryManager.readByte(addr);
         return (b0 << 24) + ((b1 & 255) << 16) + ((b2 & 255) << 8) + ((b3 & 255) << 0);
       }
     }
@@ -588,22 +588,22 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
       return basicGetLong(pos);
     }
     private long basicGetLong(final int pos) {
-      long addr = this.chunk.getAddressForReading(pos, 8);
+      long addr = this.chunk.getAddressForReadingData(pos, 8);
       if (unaligned) {
-        long result = UnsafeMemoryChunk.readAbsoluteLong(addr);
+        long result = AddressableMemoryManager.readLong(addr);
         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
           result = Long.reverseBytes(result);
         }
         return result;
       } else {
-        byte b0 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        byte b1 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        byte b2 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        byte b3 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        byte b4 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        byte b5 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        byte b6 = UnsafeMemoryChunk.readAbsoluteByte(addr++);
-        byte b7 = UnsafeMemoryChunk.readAbsoluteByte(addr);
+        byte b0 = AddressableMemoryManager.readByte(addr++);
+        byte b1 = AddressableMemoryManager.readByte(addr++);
+        byte b2 = AddressableMemoryManager.readByte(addr++);
+        byte b3 = AddressableMemoryManager.readByte(addr++);
+        byte b4 = AddressableMemoryManager.readByte(addr++);
+        byte b5 = AddressableMemoryManager.readByte(addr++);
+        byte b6 = AddressableMemoryManager.readByte(addr++);
+        byte b7 = AddressableMemoryManager.readByte(addr);
         return (((long)b0 << 56) +
             ((long)(b1 & 255) << 48) +
             ((long)(b2 & 255) << 40) +
@@ -724,7 +724,7 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
     this.buffer = copy.buffer.duplicate();
   }
 
-  public ByteBufferInputStream(ObjectChunk blob) {
+  public ByteBufferInputStream(StoredObject blob) {
     this.buffer = ByteSourceFactory.create(blob);
   }
 

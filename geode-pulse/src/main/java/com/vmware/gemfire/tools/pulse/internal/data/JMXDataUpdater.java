@@ -1246,10 +1246,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * Add member specific region information on the region
    *
-   * @param regionFullPath
+   * @param regionObjectName: used to construct the jmx objectname. For region name that has special characters in, it will have double quotes around it.
    * @param region
    */
-  private void updateRegionOnMembers(String regionFullPath, Cluster.Region region) throws IOException {
+  private void updateRegionOnMembers(String regionObjectName, String regionFullPath, Cluster.Region region) throws IOException {
 
     try{
         List<String> memberNamesTemp = region.getMemberName();
@@ -1272,7 +1272,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               regionOnMemberListNew.add(anRom);
 
               LOGGER.fine("updateRegionOnMembers : Processing existing Member name = " + anRom.getMemberName());
-              String objectNameROM = PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_REGION + regionFullPath + PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_MEMBER + anRom.getMemberName();
+              String objectNameROM = PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_REGION + regionObjectName + PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_MEMBER + anRom.getMemberName();
               ObjectName regionOnMemberMBean = new ObjectName(objectNameROM);
               LOGGER.fine("updateRegionOnMembers : Object name = " + regionOnMemberMBean.getCanonicalName());
 
@@ -1339,7 +1339,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         LOGGER.fine("updateRegionOnMembers : Remaining new members in this region = " + memberNames.size());
         //loop over the remaining regions members and add new members for this region
         for(String memberName : memberNames) {
-          String objectNameROM = PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_REGION + regionFullPath + PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_MEMBER + memberName;
+          String objectNameROM = PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_REGION + regionObjectName + PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_MEMBER + memberName;
           ObjectName regionOnMemberMBean = new ObjectName(objectNameROM);
           Cluster.RegionOnMember regionOnMember = new Cluster.RegionOnMember();
           regionOnMember.setMemberName(memberName);
@@ -1419,6 +1419,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           PulseConstants.REGION_MBEAN_ATTRIBUTES);
 
       // retrieve the full path of the region
+      String regionObjectName = mbeanName.getKeyProperty("name");
       String regionFullPath = null;
       for (int i = 0; i < attributeList.size(); i++) {
         Attribute attribute = (Attribute) attributeList.get(i);
@@ -1512,82 +1513,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         }
       }
 
-      /* GemfireXD related code
-      try{// Added for Rolling upgrade
-    	  CompositeData compositeData = (CompositeData) (this.mbs.invoke(mbeanName,
-    	          PulseConstants.MBEAN_OPERATION_LISTREGIONATTRIBUTES, null, null));
-
-    	      if (compositeData != null) {
-    	        if (compositeData
-    	            .containsKey(PulseConstants.COMPOSITE_DATA_KEY_COMPRESSIONCODEC)) {
-    	          String regCompCodec = (String) compositeData
-    	              .get(PulseConstants.COMPOSITE_DATA_KEY_COMPRESSIONCODEC);
-    	          if (null != regCompCodec) {
-    	            region.setCompressionCodec(regCompCodec);
-    	          }
-    	        }
-    	        if (compositeData
-    	            .containsKey(PulseConstants.COMPOSITE_DATA_KEY_ENABLEOFFHEAPMEMORY)) {
-    	          region.setEnableOffHeapMemory((Boolean) compositeData
-    	              .get(PulseConstants.COMPOSITE_DATA_KEY_ENABLEOFFHEAPMEMORY));
-    	        }
-    	        if (compositeData
-    	            .containsKey(PulseConstants.COMPOSITE_DATA_KEY_HDFSWRITEONLY)) {
-    	          region.setHdfsWriteOnly((Boolean) compositeData
-    	              .get(PulseConstants.COMPOSITE_DATA_KEY_HDFSWRITEONLY));
-    	        }
-    	      }
-      } catch (MBeanException anfe) {
-          LOGGER.warning(anfe);
-          region.setHdfsWriteOnly(false);
-          region.setEnableOffHeapMemory(false);
-          region.setCompressionCodec("NA");
-      }catch (javax.management.RuntimeMBeanException invalidOe) {
-    	    region.setHdfsWriteOnly(false);
-            region.setEnableOffHeapMemory(false);
-            region.setCompressionCodec("NA");
-           // LOGGER.info("Some of the Pulse elements are not available currently. There might be a GemFire upgrade going on.");
-      }
-      */
-
-      // TODO : Uncomment below code when sql fire mbean attributes are
-      // available
-      /*
-       * // IF SQLFIRE if
-       * (PulseConstants.PRODUCT_NAME_SQLFIRE.equalsIgnoreCase(PulseController
-       * .getPulseProductSupport())) {
-       *
-       * try { String tableName = this.getTableNameFromRegionName(region
-       * .getFullPath());
-       *
-       * ObjectName tableObjName = new ObjectName(
-       * PulseConstants.OBJECT_NAME_TABLE_AGGREGATE_PATTERN + tableName);
-       *
-       * AttributeList tableAttributeList = this.mbs.getAttributes(
-       * tableObjName, PulseConstants.SF_TABLE_MBEAN_ATTRIBUTES);
-       *
-       * for (int i = 0; i < tableAttributeList.size(); i++) {
-       *
-       * Attribute attribute = (Attribute) tableAttributeList.get(i);
-       *
-       * if (attribute.getName().equals(
-       * PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE)) {
-       * System.out.println("[SQLfire] setting entry size");
-       * region.setEntrySize(getLongAttribute(attribute.getValue(),
-       * attribute.getName())); } else if (attribute.getName().equals(
-       * PulseConstants.MBEAN_ATTRIBUTE_NUMBEROFROWS)) {
-       * System.out.println("[SQLfire] setting num of rows");
-       * region.setSystemRegionEntryCount(getLongAttribute(
-       * attribute.getValue(), attribute.getName())); } } } catch
-       * (MalformedObjectNameException e) { LOGGER.warning(e); } catch
-       * (NullPointerException e) { LOGGER.warning(e); } }
-       */
-
-      // Add to map even if region is present. If region is already there it
-      // will be a no-op.
-
       //add for each member
-      updateRegionOnMembers(regionFullPath, region);
+      updateRegionOnMembers(regionObjectName, regionFullPath, region);
 
       cluster.addClusterRegion(regionFullPath, region);
       cluster.getDeletedRegions().remove(region.getFullPath());

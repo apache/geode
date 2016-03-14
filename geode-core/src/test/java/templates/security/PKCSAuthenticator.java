@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package templates.security;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.security.KeyStore;
@@ -41,6 +42,7 @@ import java.util.Properties;
  * 
  */
 public class PKCSAuthenticator implements Authenticator {
+  private static final Logger logger = LogService.getLogger();
 
   public static final String PUBLIC_KEY_FILE = "security-publickey-filepath";
 
@@ -85,7 +87,7 @@ public class PKCSAuthenticator implements Authenticator {
     }
     catch (Exception e) {
       throw new AuthenticationFailedException(
-          "Exception while getting public keys: " + e.getMessage());
+          "Exception while getting public keys: " + e.getMessage(), e);
     }
   }
 
@@ -152,9 +154,6 @@ public class PKCSAuthenticator implements Authenticator {
         throw getException("verification of client signature failed");
       }
       return new PKCSPrincipal(alias);
-    }
-    catch (GemFireSecurityException ex) {
-      throw ex;
     }
     catch (Exception ex) {
       throw getException(ex.toString(), ex);

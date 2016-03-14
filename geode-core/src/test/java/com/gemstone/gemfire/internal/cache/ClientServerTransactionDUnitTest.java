@@ -388,22 +388,26 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   }
 
   public void testBasicCommitOnEmpty() {
-    doBasicCommit(false, false);
+    doBasicTransaction(false, false, true);
   }
   
   public void testBasicCommitOnEmptyUsingJTA() {
-    doBasicCommit(false, true);
+    doBasicTransaction(false, true, true);
   }
 
   public void testBasicCommit() {
-    doBasicCommit(true, false);
+    doBasicTransaction(true, false, true);
   }
   
   public void testBasicCommitUsingJTA() {
-    doBasicCommit(true, true);
+    doBasicTransaction(true, true, true);
   }
   
-  private void doBasicCommit(final boolean prePopulateData, final boolean useJTA) {
+  public void testBasicRollbackUsingJTA() {
+    doBasicTransaction(true, true, false);
+  }
+  
+  private void doBasicTransaction(final boolean prePopulateData, final boolean useJTA, final boolean isCommit) {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(1);
@@ -473,18 +477,28 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             "pr sized should be " + MAX_ENTRIES + " but it is:" + pr.size(),
             MAX_ENTRIES, pr.size());
         com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("committing transaction");
-        if (useJTA) {
-          utx.commit();
+        if (isCommit) {
+          if (useJTA) {
+            utx.commit();
+          } else {
+            getCache().getCacheTransactionManager().commit();
+          }
         } else {
-          getCache().getCacheTransactionManager().commit();
+          if (useJTA) {
+            utx.rollback();
+          } else {
+            getCache().getCacheTransactionManager().rollback();
+          }
         }
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("done committing transaction");
+        com.gemstone.gemfire.test.dunit.LogWriterUtils. getLogWriter().info("done " + (isCommit ? "committing" : "rollingback") + "transaction");
+        int expectedRegionSize = isCommit ? MAX_ENTRIES : 5;
+
         assertEquals(
-            "r sized should be " + MAX_ENTRIES + " but it is:" + r.size(),
-            MAX_ENTRIES, r.size());
+            "r sized should be " + expectedRegionSize + " but it is:" + r.size(),
+            expectedRegionSize, r.size());
         assertEquals(
-            "pr sized should be " + MAX_ENTRIES + " but it is:" + pr.size(),
-            MAX_ENTRIES, pr.size());
+            "pr sized should be " + expectedRegionSize + " but it is:" + pr.size(),
+            expectedRegionSize, pr.size());
 
         return null;
       }
@@ -494,12 +508,13 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       public Object call() throws Exception {
         Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
+        int expectedRegionSize = isCommit ? MAX_ENTRIES : 5;
         assertEquals(
-            "r sized should be " + MAX_ENTRIES + " but it is:" + r.size(),
-            MAX_ENTRIES, r.size());
+            "r sized should be " + expectedRegionSize + " but it is:" + r.size(),
+            expectedRegionSize, r.size());
         assertEquals(
-            "pr sized should be " + MAX_ENTRIES + " but it is:" + pr.size(),
-            MAX_ENTRIES, pr.size());
+            "pr sized should be " + expectedRegionSize + " but it is:" + pr.size(),
+            expectedRegionSize, pr.size());
         return null;
       }
     });
@@ -512,8 +527,13 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         for (int i = 0; i < MAX_ENTRIES; i++) {
           CustId custId = new CustId(i);
           Customer cust = new Customer("name"+suffix+i, "address"+suffix+i);
-          assertEquals(cust, r.get(custId));
-          assertEquals(cust, pr.get(custId));
+          if (isCommit) {
+            assertEquals(cust, r.get(custId));
+            assertEquals(cust, pr.get(custId));
+          } else {
+            assertNotSame(cust, r.get(custId));
+            assertNotSame(cust, pr.get(custId));
+          }
         }
         return null;
       }

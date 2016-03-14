@@ -19,7 +19,14 @@ apply plugin: 'war'
 
 dependencies {
   runtime 'org.springframework:spring-aspects:' + project.'springframework.version'
+  runtime 'org.springframework:spring-aop:' + project.'springframework.version'
+  runtime 'org.springframework:spring-beans:' + project.'springframework.version'
+  runtime 'org.springframework:spring-context:' + project.'springframework.version'
+  runtime 'org.springframework:spring-expression:' + project.'springframework.version'
   runtime 'org.springframework:spring-oxm:' + project.'springframework.version'
+  runtime 'org.springframework:spring-web:' + project.'springframework.version'
+  runtime 'org.springframework:spring-webmvc:' + project.'springframework.version'
+
   runtime 'commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version'
 
   testCompile 'org.springframework:spring-test:' + project.'springframework.version'

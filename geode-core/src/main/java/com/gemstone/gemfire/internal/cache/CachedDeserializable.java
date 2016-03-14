@@ -111,4 +111,12 @@ public interface CachedDeserializable extends Sizeable
    * added by this wrapper class.
    */
   public int getValueSizeInBytes();
+  /**
+   * Returns true if the value stored in this memory chunk is a serialized object. Returns false if it is a byte array.
+   */
+  public boolean isSerialized();
+  /**
+   * Return true if the value uses the java heap; false if not.
+   */
+  public boolean usesHeapForStorage();
 }

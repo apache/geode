@@ -50,8 +50,6 @@ import com.gemstone.gemfire.internal.cache.WrappedCallbackArgument;
 import com.gemstone.gemfire.internal.cache.lru.Sizeable;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
-import com.gemstone.gemfire.internal.offheap.ObjectChunkWithHeapForm;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.Releasable;
@@ -518,6 +516,9 @@ public class GatewaySenderEventImpl implements
     }
     Object rawValue = this.value;
     if (rawValue == null) {
+      rawValue = this.substituteValue;
+    }
+    if (rawValue == null) {
       @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
       Object vo = this.valueObj;
       if (vo instanceof StoredObject) {
@@ -548,12 +549,14 @@ public class GatewaySenderEventImpl implements
     @Retained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
     Object result = this.value;
     if (result == null) {
+      result = this.substituteValue;
+      if (result == null) {
       result = this.valueObj;
-      if (result instanceof ObjectChunk) {
+      if (result instanceof StoredObject && ((StoredObject) result).hasRefCount()) {
         if (this.valueObjReleased) {
           result = null;
         } else {
-          ObjectChunk ohref = (ObjectChunk) result;
+          StoredObject ohref = (StoredObject) result;
           if (!ohref.retain()) {
             result = null;
           } else if (this.valueObjReleased) {
@@ -561,6 +564,7 @@ public class GatewaySenderEventImpl implements
             result = null;
           }
         }
+      }
       }
     }
     return result;
@@ -582,7 +586,6 @@ public class GatewaySenderEventImpl implements
    * @return this event's deserialized value
    */
   public Object getDeserializedValue() {
-// TODO OFFHEAP MERGE: handle substituteValue here?
     if (this.valueIsObject == 0x00) {
       Object result = this.value;
       if (result == null) {
@@ -616,6 +619,9 @@ public class GatewaySenderEventImpl implements
           Object result = EntryEventImpl.deserialize(this.value);
           this.valueObj = result;
           return result;
+        } else if (this.substituteValue != null) {
+          // If the substitute value is set, return it.
+          return this.substituteValue;
         } else {
           if (this.valueObjReleased) {
             throw new IllegalStateException("Value is no longer available. getDeserializedValue must be called before processEvents returns.");
@@ -633,8 +639,10 @@ public class GatewaySenderEventImpl implements
    * the value. This is a debugging exception.
    */
   public String getValueAsString(boolean deserialize) {
-// TODO OFFHEAP MERGE: handle substituteValue here?
     Object v = this.value;
+    if (v == null) {
+      v = this.substituteValue;
+    }
     if (deserialize) {
       try {
         v = getDeserializedValue();
@@ -672,6 +680,13 @@ public class GatewaySenderEventImpl implements
   public byte[] getSerializedValue() {
     byte[] result = this.value;
     if (result == null) {
+      if (this.substituteValue != null) {
+        // The substitute value is set. Serialize it
+        isSerializingValue.set(Boolean.TRUE);
+        result = EntryEventImpl.serialize(this.substituteValue);
+        isSerializingValue.set(Boolean.FALSE);
+        return result;
+      }
       @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
       Object vo = this.valueObj;
       if (vo instanceof StoredObject) {
@@ -687,7 +702,9 @@ public class GatewaySenderEventImpl implements
         synchronized (this) {
           result = this.value;
           if (result == null && vo != null && !(vo instanceof Token)) {
+            isSerializingValue.set(Boolean.TRUE);
             result = EntryEventImpl.serialize(vo);
+            isSerializingValue.set(Boolean.FALSE);
             this.value = result;
           } else if (result == null) {
             if (this.valueObjReleased) {
@@ -947,9 +964,7 @@ public class GatewaySenderEventImpl implements
 //    if (so != null  && !event.hasDelta()) {
       // Since GatewaySenderEventImpl instances can live for a long time in the gateway region queue
       // we do not want the StoredObject to be one that keeps the heap form cached.
-      if (so instanceof ObjectChunkWithHeapForm) {
-        so = ((ObjectChunkWithHeapForm) so).getChunkWithoutHeapForm(); // fixes 51999
-      }
+      so = so.getStoredObjectWithoutHeapForm(); // fixes 51999
       this.valueObj = so;
       if (!so.isSerialized()) {
         this.valueIsObject = 0x00;
@@ -982,15 +997,12 @@ public class GatewaySenderEventImpl implements
         this.value = (byte[]) this.substituteValue;
         this.valueIsObject = 0x00;
       } else if (this.substituteValue == TOKEN_NULL) {
-        // The substituteValue represents null. Set the value to null.
+        // The substituteValue represents null. Set the value and substituteValue to null.
         this.value = null;
+        this.substituteValue = null;
         this.valueIsObject = 0x01;
       } else {
-        // The substituteValue is an object. Serialize it.
-        isSerializingValue.set(Boolean.TRUE);
-        this.value = CacheServerHelper.serialize(this.substituteValue);
-        isSerializingValue.set(Boolean.FALSE);
-        event.setCachedSerializedNewValue(this.value);
+        // The substituteValue is an object. Leave it as is.
         this.valueIsObject = 0x01;
       }
     }
@@ -1219,7 +1231,11 @@ public class GatewaySenderEventImpl implements
     if (vo instanceof StoredObject) {
       return ((StoredObject) vo).getSizeInBytes();
     } else {
+      if (this.substituteValue != null) {
+        return sizeOf(this.substituteValue);
+      } else {
       return CachedDeserializableFactory.calcMemSize(getSerializedValue());
+      }
     }
   }
   
@@ -1247,7 +1263,7 @@ public class GatewaySenderEventImpl implements
    * If it was stored off-heap and is no longer available (because it was released) then return null.
    */
   public GatewaySenderEventImpl makeHeapCopyIfOffHeap() {
-    if (this.value != null) {
+    if (this.value != null || this.substituteValue != null) {
       // we have the value stored on the heap so return this
       return this;
     } else {
@@ -1260,7 +1276,7 @@ public class GatewaySenderEventImpl implements
           return this;
         }
       }
-      if (v instanceof ObjectChunk) {
+      if (v instanceof StoredObject && ((StoredObject) v).hasRefCount()) {
         try {
           return makeCopy();
         } catch (IllegalStateException ex) {

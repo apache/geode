@@ -347,7 +347,7 @@ public class PdxType implements DataSerializable {
   public String toFormattedString() {
     StringBuffer sb = new StringBuffer("PdxType[\n    ");
     sb.append("dsid=").append(getDSId());
-    sb.append("typenum=").append(getTypeNum());
+    sb.append(", typenum=").append(getTypeNum());
     sb.append(", name=").append(this.className);
     sb.append(", fields=[");
     for (PdxField vft : fields) {

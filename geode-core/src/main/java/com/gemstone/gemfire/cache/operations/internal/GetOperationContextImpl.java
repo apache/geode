@@ -18,7 +18,6 @@ package com.gemstone.gemfire.cache.operations.internal;
 
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.Releasable;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
@@ -68,9 +67,9 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
     super.setValue(value, isObject);
   }
 
-  private void checkForReleasedOffHeapValue(Object v) {
-    // Note that we only care about Chunk (instead of all StoredObject) because it is the only one using a refcount
-    if (this.released && v instanceof ObjectChunk) {
+  private void checkForReleasedOffHeapValue(StoredObject so) {
+    // Note that we only care about stored objects with a ref count
+    if (this.released && so.hasRefCount()) {
       throw new IllegalStateException("Attempt to access off-heap value after the OperationContext callback returned.");
     }
   }
@@ -81,8 +80,9 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
     if (result == null) {
       Object v = super.getValue();
       if (v instanceof StoredObject) {
-        checkForReleasedOffHeapValue(v);
-        result = ((StoredObject) v).getValueAsHeapByteArray();
+        StoredObject so = (StoredObject) v;
+        checkForReleasedOffHeapValue(so);
+        result = so.getValueAsHeapByteArray();
       }
     }
     return result;
@@ -92,8 +92,9 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
   public Object getDeserializedValue() throws SerializationException {
     Object result = super.getDeserializedValue();
     if (result instanceof StoredObject) {
-      checkForReleasedOffHeapValue(result);
-      result = ((StoredObject) result).getValueAsDeserializedHeapObject();
+      StoredObject so = (StoredObject) result;
+      checkForReleasedOffHeapValue(so);
+      result = so.getValueAsDeserializedHeapObject();
     }
     return result;
   }
@@ -102,9 +103,10 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
   public Object getValue() {
     Object result = super.getValue();
     if (result instanceof StoredObject) {
-      checkForReleasedOffHeapValue(result);
+      StoredObject so = (StoredObject) result;
+      checkForReleasedOffHeapValue(so);
       // since they called getValue they don't care if it is serialized or deserialized so return it as serialized
-      result = ((StoredObject) result).getValueAsHeapByteArray();
+      result = so.getValueAsHeapByteArray();
     }
     return result;
   }
@@ -116,7 +118,7 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
     // our value (since this context did not retain it)
     // but we do make sure that any future attempt to access
     // the off-heap value fails.
-    if (super.getValue() instanceof ObjectChunk) {
+    if (super.getValue() instanceof StoredObject) {
       this.released = true;
     }
   }

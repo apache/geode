@@ -1,6 +1,3 @@
-
-package security;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,9 +6,9 @@ package security;
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,10 +16,7 @@ package security;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-
-import java.security.Principal;
-import java.util.Properties;
+package security;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
@@ -30,6 +24,8 @@ import com.gemstone.gemfire.util.test.TestUtil;
 import templates.security.LdapUserAuthenticator;
 import templates.security.UserPasswordAuthInit;
 
+import java.security.Principal;
+import java.util.Properties;
 import java.util.Random;
 
 public class LdapUserCredentialGenerator extends CredentialGenerator {
@@ -81,12 +77,12 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
 
   @Override
   public String getAuthInit() {
-    return "templates.security.UserPasswordAuthInit.create";
+    return templates.security.UserPasswordAuthInit.class.getName() + ".create";
   }
 
   @Override
   public String getAuthenticator() {
-    return "templates.security.LdapUserAuthenticator.create";
+    return templates.security.LdapUserAuthenticator.class.getName() + ".create";
   }
 
   @Override

@@ -35,8 +35,8 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  *
  */
 public class CachedDeserializableFactory {
-  private static final boolean PREFER_DESERIALIZED = ! Boolean.getBoolean("gemfire.PREFER_SERIALIZED");
-  private static final boolean STORE_ALL_VALUE_FORMS = Boolean.getBoolean("gemfire.STORE_ALL_VALUE_FORMS");
+  public static boolean PREFER_DESERIALIZED = ! Boolean.getBoolean("gemfire.PREFER_SERIALIZED");
+  public static boolean STORE_ALL_VALUE_FORMS = Boolean.getBoolean("gemfire.STORE_ALL_VALUE_FORMS");
 
   /**
    * Currently GFE always wants a CachedDeserializable wrapper.

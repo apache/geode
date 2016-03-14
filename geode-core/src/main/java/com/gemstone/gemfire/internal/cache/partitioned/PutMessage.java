@@ -67,7 +67,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
@@ -231,10 +230,11 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     }
     else{
       if(original.valObj instanceof CachedDeserializable) {
-        if (original.valObj instanceof StoredObject && !((StoredObject)original.valObj).isSerialized()) {
-          this.valObj = ((StoredObject)original.valObj).getDeserializedForReading();
+        CachedDeserializable cd = (CachedDeserializable) original.valObj;
+        if (!cd.isSerialized()) {
+          this.valObj = cd.getDeserializedForReading();
         } else {
-          Object val = ((CachedDeserializable) original.valObj).getValue();
+          Object val = cd.getValue();
           if(val instanceof byte[]) {
             this.valBytes = (byte[]) val; 
           } else {

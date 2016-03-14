@@ -922,13 +922,7 @@ implements Bucket
           logger.trace(LogMarker.DM, "LR.basicInvalidate: this cache has already seen this event {}", event);
         }
         if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
-          if (!event.isOriginRemote()
-              && getBucketAdvisor().isPrimary()) {
-            // This cache has processed the event, forward operation
-            // and event messages to backup buckets
-            new InvalidateOperation(event).distribute();
-          }
-          event.invokeCallbacks(this,true, false);
+          distributeInvalidateOperation(event);
         }
         return;
       }
@@ -936,6 +930,17 @@ implements Bucket
       endLocalWrite(event);
     }
   }
+
+  protected void distributeInvalidateOperation(EntryEventImpl event) {
+    if (!event.isOriginRemote()
+        && getBucketAdvisor().isPrimary()) {
+      // This cache has processed the event, forward operation
+      // and event messages to backup buckets
+      new InvalidateOperation(event).distribute();
+    }
+    event.invokeCallbacks(this,true, false);
+  }
+  
   @Override
   void basicInvalidatePart2(final RegionEntry re, final EntryEventImpl event,
       boolean clearConflict, boolean invokeCallbacks)
@@ -1312,7 +1317,7 @@ implements Bucket
         // This cache has processed the event, forward operation
         // and event messages to backup buckets
     	if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
-          new UpdateEntryVersionOperation(event).distribute();
+          distributeUpdateEntryVersionOperation(event);
     	}
       }
       return;
@@ -1321,6 +1326,10 @@ implements Bucket
     }
   }
 
+  protected void distributeUpdateEntryVersionOperation(EntryEventImpl event) {
+    new UpdateEntryVersionOperation(event).distribute();
+  }
+  
   public int getRedundancyLevel()
   {
     return this.redundancy;
@@ -1820,11 +1829,12 @@ implements Bucket
       if (!(rawNewValue instanceof CachedDeserializable)) {
         return;
       }
-      if (rawNewValue instanceof StoredObject && !((StoredObject) rawNewValue).isSerialized()) {
+      CachedDeserializable cd = (CachedDeserializable) rawNewValue;
+      if (!cd.isSerialized()) {
         // it is a byte[]; not a Delta
         return;
       }
-      Object instance = ((CachedDeserializable)rawNewValue).getValue();
+      Object instance = cd.getValue();
       if (instance instanceof com.gemstone.gemfire.Delta
           && ((com.gemstone.gemfire.Delta)instance).hasDelta()) {
         try {

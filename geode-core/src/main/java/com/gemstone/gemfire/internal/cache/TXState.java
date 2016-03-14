@@ -1351,7 +1351,7 @@ public class TXState implements TXStateInterface {
       boolean rememberRead, Object expectedOldValue, boolean createIfAbsent)
   throws EntryNotFoundException
   {
-    LocalRegion dataReg = localRegion.getDataRegionForRead(keyInfo);
+    LocalRegion dataReg = localRegion.getDataRegionForWrite(keyInfo);
     TXRegionState txr = txReadRegion(dataReg);
     TXEntryState result = null;
     if (txr != null) {
@@ -1362,7 +1362,7 @@ public class TXState implements TXStateInterface {
       if (txr == null) {
         txr = txWriteRegion(localRegion, keyInfo);
       }
-      result = localRegion.createReadEntry(txr, keyInfo, createIfAbsent);
+      result = dataReg.createReadEntry(txr, keyInfo, createIfAbsent);
     }
     
     if (result != null) {
@@ -1379,7 +1379,7 @@ public class TXState implements TXStateInterface {
        * 
        */
       if (txr!=null) {
-        txr.cleanupNonDirtyEntries(localRegion);
+        txr.cleanupNonDirtyEntries(dataReg);
       }
       if (expectedOldValue==null) {
         /*

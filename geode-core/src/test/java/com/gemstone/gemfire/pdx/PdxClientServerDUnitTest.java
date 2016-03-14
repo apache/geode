@@ -32,6 +32,7 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -92,8 +93,9 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
   }
   
   /**
-   * Test of bug 47338 - what happens to the client type
-   * registry if the server is restarted.
+   * Test what happens to the client type
+   * registry if the server is restarted and PDX serialization
+   * for a class has changed.  This was reported in Pivotal bug #47338
    */
   public void testNonPersistentServerRestart() {
     Host host = Host.getHost(0);
@@ -115,6 +117,22 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     });
     
     closeCache(vm0);
+    
+    // GEODE-1037: make sure the client knows that the server
+    // is gone
+    vm1.invoke(new SerializableRunnable() {
+      public void run() throws Exception {
+        Region r = getRootRegion("testSimplePdx");
+        // make sure the client has reconnected to the server
+        // by performing a get() on a key the client cache does
+        // not contain
+        try {
+          r.get(4);
+          throw new Error("expected an exception to be thrown");
+        } catch(Exception expected) { }
+      }
+    });
+    
     createServerRegion(vm0, port);
     createClientRegion(vm2, port, false, true);
     
@@ -129,17 +147,15 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
       }
     });
     
-    //See what happens when vm1 tries to read the type.
-    //If it cached the type id it will have problems.
+    // See what happens when vm1 tries to read the type.
+    // If it cached the type id it will try to read a PdxType2
+    // and fail with a ServerOperationException having a
+    // PdxSerializationException "cause" 
     vm1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region r = getRootRegion("testSimplePdx");
-        try {
-          r.get(4);
-        } catch(Exception expected) {
-          //The client may not have noticed the server go away and come
-          //back. Let's trigger the exception so the client will retry.
-        }
+
+        // now get object 3, which was put in the server by vm2
         PdxType1 results = (PdxType1) r.get(3);
         assertEquals(3, results.int1);
         
@@ -700,18 +716,18 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
       final String ... autoSerializerPatterns) {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
-	    if(setPdxTypeClearProp) {
-		  System.setProperty("gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS", "true");	
-		}
+        if (setPdxTypeClearProp) {
+          System.setProperty(PoolImpl.ON_DISCONNECT_CLEAR_PDXTYPEIDS, "true");	
+        }
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
         cf.setPoolThreadLocalConnections(threadLocalConnections);
-        if(autoSerializerPatterns != null && autoSerializerPatterns.length != 0) {
+        if (autoSerializerPatterns != null && autoSerializerPatterns.length != 0) {
           cf.setPdxSerializer(new ReflectionBasedAutoSerializer(autoSerializerPatterns));
         }
         ClientCache cache = getClientCache(cf);
         cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-        .create("testSimplePdx");
+          .create("testSimplePdx");
         return null;
       }
     };

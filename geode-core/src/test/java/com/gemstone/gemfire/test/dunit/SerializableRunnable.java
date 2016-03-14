@@ -51,6 +51,7 @@ public abstract class SerializableRunnable implements SerializableRunnableIF {
   private static final long serialVersionUID = 7584289978241650456L;
   
   private String name;
+  protected Object[] args;
 
   public SerializableRunnable() {
     this.name = null;
@@ -70,7 +71,12 @@ public abstract class SerializableRunnable implements SerializableRunnableIF {
   public SerializableRunnable(String name) {
     this.name = name;
   }
-  
+
+  public SerializableRunnable(String name, Object[] args) {
+    this.name = name;
+    this.args = args;
+  }
+
   public void setName(String newName) {
     this.name = newName;
   }

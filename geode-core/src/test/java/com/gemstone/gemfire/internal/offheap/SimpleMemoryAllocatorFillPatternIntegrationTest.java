@@ -84,7 +84,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
   private SimpleMemoryAllocatorImpl allocator = null;
   
   /** Our test victim's memory slab. */
-  private UnsafeMemoryChunk slab = null;
+  private SlabImpl slab = null;
 
   /**
    * Enables fill validation and creates the test victim.
@@ -92,8 +92,8 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty("gemfire.validateOffHeapWithFill", "true");
-    this.slab = new UnsafeMemoryChunk(SLAB_SIZE);
-    this.allocator = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{this.slab});
+    this.slab = new SlabImpl(SLAB_SIZE);
+    this.allocator = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{this.slab});
   }
 
   /**
@@ -163,7 +163,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
         private int totalAllocation = 0;
         
         // List of Chunks allocated by this thread
-        private List<ObjectChunk> chunks = new LinkedList<ObjectChunk>();
+        private List<OffHeapStoredObject> chunks = new LinkedList<OffHeapStoredObject>();
         
         // Time to end thread execution
         private long endTime = System.currentTimeMillis() + RUN_TIME_IN_MILLIS;
@@ -173,7 +173,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
          */
         private void allocate() {          
           int allocation = chunkSizer.allocationSize();
-          ObjectChunk chunk = (ObjectChunk) allocator.allocate(allocation);
+          OffHeapStoredObject chunk = (OffHeapStoredObject) allocator.allocate(allocation);
           
           // This should always work just after allocation
           chunk.validateFill();
@@ -186,7 +186,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
          * Frees a random chunk from the Chunk list.
          */
         private void free() {
-          ObjectChunk chunk = chunks.remove(random.nextInt(chunks.size()));
+          OffHeapStoredObject chunk = chunks.remove(random.nextInt(chunks.size()));
           totalAllocation -= chunk.getSize();
           
           /*
@@ -200,8 +200,8 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
          * Writes canned data to a random Chunk from the Chunk list.
          */
         private void write() {
-          ObjectChunk chunk = chunks.get(random.nextInt(chunks.size()));
-          chunk.writeBytes(0, WRITE_BYTES);
+          OffHeapStoredObject chunk = chunks.get(random.nextInt(chunks.size()));
+          chunk.writeDataBytes(0, WRITE_BYTES);
         }
         
         /**

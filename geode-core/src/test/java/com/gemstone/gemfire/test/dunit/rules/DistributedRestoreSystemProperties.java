@@ -24,15 +24,12 @@ import java.util.Properties;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.junit.rules.SerializableTestRule;
+import com.gemstone.gemfire.test.junit.rules.serializable.SerializableTestRule;
 
 /**
  * Distributed version of RestoreSystemProperties which affects all DUnit 
  * JVMs including the Locator JVM.
- * 
- * @author Kirk Lund
  */
-@SuppressWarnings("serial")
 public class DistributedRestoreSystemProperties extends RestoreSystemProperties implements SerializableTestRule {
   
   private static volatile Properties originalProperties;

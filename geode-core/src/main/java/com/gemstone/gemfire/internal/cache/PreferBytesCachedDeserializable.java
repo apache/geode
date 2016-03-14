@@ -150,8 +150,17 @@ public final class PreferBytesCachedDeserializable implements CachedDeserializab
 
   @Override
   public Version[] getSerializationVersions() {
-    // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public boolean isSerialized() {
+    return true;
+  }
+
+  @Override
+  public boolean usesHeapForStorage() {
+    return true;
   }
 
 }

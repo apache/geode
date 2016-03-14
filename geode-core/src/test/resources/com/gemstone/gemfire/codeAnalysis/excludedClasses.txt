@@ -116,3 +116,4 @@ com/gemstone/org/apache/logging/log4j/core/config/xml/GemFireXmlConfiguration$Er
 com/gemstone/gemfire/internal/ra/GFConnectionFactoryImpl
 com/gemstone/gemfire/internal/ra/GFConnectionImpl
 com/gemstone/gemfire/internal/ra/spi/JCAManagedConnectionFactory
+com/gemstone/gemfire/cache/operations/internal/UpdateOnlyMap

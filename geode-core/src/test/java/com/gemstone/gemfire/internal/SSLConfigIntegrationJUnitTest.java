@@ -36,7 +36,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 public class SSLConfigIntegrationJUnitTest {
 
   @Test
-  public void test51531() {
+  public void testIsClusterSSLRequireAuthentication() {
     Cache mCache = new CacheFactory().set("mcast-port", "0").set("jmx-manager", "true").create();
     ManagementService mService = ManagementService.getManagementService(mCache);
     MemberMXBean mMemberBean = mService.getMemberMXBean();

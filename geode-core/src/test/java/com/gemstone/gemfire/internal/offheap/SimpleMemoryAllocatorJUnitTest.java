@@ -97,9 +97,9 @@ public class SimpleMemoryAllocatorJUnitTest {
       LastSevereLogger logger = new LastSevereLogger();
       try {
         SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats, logger, 10, 950, 100,
-            new AddressableMemoryChunkFactory() {
+            new SlabFactory() {
           @Override
-          public AddressableMemoryChunk create(int size) {
+          public Slab create(int size) {
             throw new OutOfMemoryError("expected");
           }
         });
@@ -116,13 +116,13 @@ public class SimpleMemoryAllocatorJUnitTest {
       LastSevereLogger logger = new LastSevereLogger();
       int MAX_SLAB_SIZE = 100;
       try {
-        AddressableMemoryChunkFactory factory = new AddressableMemoryChunkFactory() {
+        SlabFactory factory = new SlabFactory() {
           private int createCount = 0;
           @Override
-          public AddressableMemoryChunk create(int size) {
+          public Slab create(int size) {
             createCount++;
             if (createCount == 1) {
-              return new UnsafeMemoryChunk(size);
+              return new SlabImpl(size);
             } else {
               throw new OutOfMemoryError("expected");
             }
@@ -139,10 +139,10 @@ public class SimpleMemoryAllocatorJUnitTest {
     {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
-      AddressableMemoryChunkFactory factory = new AddressableMemoryChunkFactory() {
+      SlabFactory factory = new SlabFactory() {
         @Override
-        public AddressableMemoryChunk create(int size) {
-          return new UnsafeMemoryChunk(size);
+        public Slab create(int size) {
+          return new SlabImpl(size);
         }
       };
       MemoryAllocator ma = 
@@ -156,14 +156,14 @@ public class SimpleMemoryAllocatorJUnitTest {
         listener = new NullOutOfOffHeapMemoryListener();
         NullOffHeapMemoryStats stats2 = new NullOffHeapMemoryStats();
         {
-          UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+          SlabImpl slab = new SlabImpl(1024);
           try {
-            SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats2, new UnsafeMemoryChunk[]{slab});
+            SimpleMemoryAllocatorImpl.createForUnitTest(listener, stats2, new SlabImpl[]{slab});
           } catch (IllegalStateException expected) {
             assertTrue("unexpected message: " + expected.getMessage(), 
                 expected.getMessage().equals("attempted to reuse existing off-heap memory even though new off-heap memory was allocated"));
           } finally {
-            slab.release();
+            slab.free();
           }
           assertFalse(stats.isClosed());
           assertTrue(listener.isClosed());
@@ -189,23 +189,23 @@ public class SimpleMemoryAllocatorJUnitTest {
   @Test
   public void testBasics() {
     int BATCH_SIZE = 1;
-    int TINY_MULTIPLE = com.gemstone.gemfire.internal.offheap.FreeListManager.TINY_MULTIPLE;
-    int HUGE_MULTIPLE = com.gemstone.gemfire.internal.offheap.FreeListManager.HUGE_MULTIPLE;
-    int perObjectOverhead = com.gemstone.gemfire.internal.offheap.ObjectChunk.OFF_HEAP_HEADER_SIZE;
-    int maxTiny = com.gemstone.gemfire.internal.offheap.FreeListManager.MAX_TINY-perObjectOverhead;
+    int TINY_MULTIPLE = FreeListManager.TINY_MULTIPLE;
+    int HUGE_MULTIPLE = FreeListManager.HUGE_MULTIPLE;
+    int perObjectOverhead = OffHeapStoredObject.HEADER_SIZE;
+    int maxTiny = FreeListManager.MAX_TINY-perObjectOverhead;
     int minHuge = maxTiny+1;
     int TOTAL_MEM = (maxTiny+perObjectOverhead)*BATCH_SIZE /*+ (maxBig+perObjectOverhead)*BATCH_SIZE*/ + round(TINY_MULTIPLE, minHuge+1+perObjectOverhead)*BATCH_SIZE + (TINY_MULTIPLE+perObjectOverhead)*BATCH_SIZE /*+ (MIN_BIG_SIZE+perObjectOverhead)*BATCH_SIZE*/ + round(TINY_MULTIPLE, minHuge+perObjectOverhead+1);
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(TOTAL_MEM);
+    SlabImpl slab = new SlabImpl(TOTAL_MEM);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
       assertEquals(TOTAL_MEM, ma.getFreeMemory());
       assertEquals(TOTAL_MEM, ma.freeList.getFreeFragmentMemory());
       assertEquals(0, ma.freeList.getFreeTinyMemory());
       assertEquals(0, ma.freeList.getFreeHugeMemory());
-      MemoryChunk tinymc = ma.allocate(maxTiny);
+      StoredObject tinymc = ma.allocate(maxTiny);
       assertEquals(TOTAL_MEM-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
       assertEquals(round(TINY_MULTIPLE, maxTiny+perObjectOverhead)*(BATCH_SIZE-1), ma.freeList.getFreeTinyMemory());
-      MemoryChunk hugemc = ma.allocate(minHuge);
+      StoredObject hugemc = ma.allocate(minHuge);
       assertEquals(TOTAL_MEM-round(TINY_MULTIPLE, minHuge+perObjectOverhead)/*-round(BIG_MULTIPLE, maxBig+perObjectOverhead)*/-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
       long freeSlab = ma.freeList.getFreeFragmentMemory();
       long oldFreeHugeMemory = ma.freeList.getFreeHugeMemory();
@@ -249,7 +249,7 @@ public class SimpleMemoryAllocatorJUnitTest {
       hugemc = ma.allocate(minHuge);
       assertEquals(round(TINY_MULTIPLE, minHuge+perObjectOverhead)*(BATCH_SIZE-1), ma.freeList.getFreeHugeMemory());
       if (BATCH_SIZE > 1) {
-        MemoryChunk hugemc2 = ma.allocate(minHuge);
+        StoredObject hugemc2 = ma.allocate(minHuge);
         assertEquals(round(TINY_MULTIPLE, minHuge+perObjectOverhead)*(BATCH_SIZE-2), ma.freeList.getFreeHugeMemory());
         hugemc2.release();
         assertEquals(round(TINY_MULTIPLE, minHuge+perObjectOverhead)*(BATCH_SIZE-1), ma.freeList.getFreeHugeMemory());
@@ -265,15 +265,15 @@ public class SimpleMemoryAllocatorJUnitTest {
   
   @Test
   public void testChunkCreateDirectByteBuffer() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024*1024);
+    SlabImpl slab = new SlabImpl(1024*1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
       ByteBuffer bb = ByteBuffer.allocate(1024);
       for (int i=0; i < 1024; i++) {
         bb.put((byte) i);
       }
       bb.position(0);
-      ObjectChunk c = (ObjectChunk) ma.allocateAndInitialize(bb.array(), false, false);
+      OffHeapStoredObject c = (OffHeapStoredObject) ma.allocateAndInitialize(bb.array(), false, false);
       assertEquals(1024, c.getDataSize());
       if (!Arrays.equals(bb.array(), c.getRawBytes())) {
         fail("arrays are not equal. Expected " + Arrays.toString(bb.array()) + " but found: " + Arrays.toString(c.getRawBytes()));
@@ -293,9 +293,9 @@ public class SimpleMemoryAllocatorJUnitTest {
   }
   @Test
   public void testGetLostChunks() {
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024*1024);
+    SlabImpl slab = new SlabImpl(1024*1024);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
       assertEquals(Collections.emptyList(), ma.getLostChunks());
     } finally {
       SimpleMemoryAllocatorImpl.freeOffHeapMemory();
@@ -304,9 +304,9 @@ public class SimpleMemoryAllocatorJUnitTest {
   @Test
   public void testFindSlab() {
     final int SLAB_SIZE = 1024*1024;
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(SLAB_SIZE);
+    SlabImpl slab = new SlabImpl(SLAB_SIZE);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
       assertEquals(0, ma.findSlab(slab.getMemoryAddress()));
       assertEquals(0, ma.findSlab(slab.getMemoryAddress()+SLAB_SIZE-1));
       try {
@@ -326,9 +326,9 @@ public class SimpleMemoryAllocatorJUnitTest {
   @Test
   public void testValidateAddressAndSize() {
     final int SLAB_SIZE = 1024*1024;
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(SLAB_SIZE);
+    SlabImpl slab = new SlabImpl(SLAB_SIZE);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
       try {
         SimpleMemoryAllocatorImpl.validateAddress(0L);
         fail("expected IllegalStateException");
@@ -363,9 +363,9 @@ public class SimpleMemoryAllocatorJUnitTest {
   @Test
   public void testMemoryInspection() {
     final int SLAB_SIZE = 1024*1024;
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(SLAB_SIZE);
+    SlabImpl slab = new SlabImpl(SLAB_SIZE);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
       MemoryInspector inspector = ma.getMemoryInspector();
       assertNotNull(inspector);
       assertEquals(null, inspector.getFirstBlock());
@@ -382,7 +382,7 @@ public class SimpleMemoryAllocatorJUnitTest {
         assertEquals(1024*1024, firstBlock.getBlockSize());
         assertEquals("N/A", firstBlock.getDataType());
         assertEquals(-1, firstBlock.getFreeListId());
-        assertTrue(firstBlock.getMemoryAddress() > 0);
+        assertTrue(firstBlock.getAddress() > 0);
         assertNull(firstBlock.getNextBlock());
         assertEquals(0, firstBlock.getRefCount());
         assertEquals(0, firstBlock.getSlabId());
@@ -401,9 +401,9 @@ public class SimpleMemoryAllocatorJUnitTest {
   @Test
   public void testClose() {
     System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "false");
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024*1024);
+    SlabImpl slab = new SlabImpl(1024*1024);
     boolean freeSlab = true;
-    UnsafeMemoryChunk[] slabs = new UnsafeMemoryChunk[]{slab};
+    SlabImpl[] slabs = new SlabImpl[]{slab};
     try {
       SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), slabs);
       ma.close();
@@ -427,23 +427,23 @@ public class SimpleMemoryAllocatorJUnitTest {
   
   @Test
   public void testCompaction() {
-    final int perObjectOverhead = com.gemstone.gemfire.internal.offheap.ObjectChunk.OFF_HEAP_HEADER_SIZE;
+    final int perObjectOverhead = OffHeapStoredObject.HEADER_SIZE;
     final int BIG_ALLOC_SIZE = 150000;
     final int SMALL_ALLOC_SIZE = BIG_ALLOC_SIZE/2;
     final int TOTAL_MEM = BIG_ALLOC_SIZE;
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(TOTAL_MEM);
+    SlabImpl slab = new SlabImpl(TOTAL_MEM);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
-      MemoryChunk bmc = ma.allocate(BIG_ALLOC_SIZE-perObjectOverhead);
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
+      StoredObject bmc = ma.allocate(BIG_ALLOC_SIZE-perObjectOverhead);
       try {
-        MemoryChunk smc = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead);
+        StoredObject smc = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead);
         fail("Expected out of memory");
       } catch (OutOfOffHeapMemoryException expected) {
       }
       bmc.release();
       assertEquals(TOTAL_MEM, ma.freeList.getFreeMemory());
-      MemoryChunk smc1 = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead);
-      MemoryChunk smc2 = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead);
+      StoredObject smc1 = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead);
+      StoredObject smc2 = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead);
       smc2.release();
       assertEquals(TOTAL_MEM-SMALL_ALLOC_SIZE, ma.freeList.getFreeMemory());
       try {
@@ -456,7 +456,7 @@ public class SimpleMemoryAllocatorJUnitTest {
       bmc = ma.allocate(BIG_ALLOC_SIZE-perObjectOverhead);
       bmc.release();
       assertEquals(TOTAL_MEM, ma.freeList.getFreeMemory());
-      ArrayList<MemoryChunk> mcs = new ArrayList<MemoryChunk>();
+      ArrayList<StoredObject> mcs = new ArrayList<StoredObject>();
       for (int i=0; i < BIG_ALLOC_SIZE/(8+perObjectOverhead); i++) {
         mcs.add(ma.allocate(8));
       }
@@ -492,11 +492,11 @@ public class SimpleMemoryAllocatorJUnitTest {
       assertEquals((8+perObjectOverhead)*6, ma.freeList.getFreeMemory());
       checkMcs(mcs);
       // At this point I should have 8*6 + perObjectOverhead*6 of free memory
-      MemoryChunk mc24 = ma.allocate(24);
+      StoredObject mc24 = ma.allocate(24);
       checkMcs(mcs);
       assertEquals((8+perObjectOverhead)*6 - (24+perObjectOverhead), ma.freeList.getFreeMemory());
       // At this point I should have 8*3 + perObjectOverhead*5 of free memory
-      MemoryChunk mc16 = ma.allocate(16);
+      StoredObject mc16 = ma.allocate(16);
       checkMcs(mcs);
       assertEquals((8+perObjectOverhead)*6 - (24+perObjectOverhead) - (16+perObjectOverhead), ma.freeList.getFreeMemory());
       // At this point I should have 8*1 + perObjectOverhead*4 of free memory
@@ -504,7 +504,7 @@ public class SimpleMemoryAllocatorJUnitTest {
       checkMcs(mcs);
       assertEquals((8+perObjectOverhead)*6 - (24+perObjectOverhead) - (16+perObjectOverhead) - (8+perObjectOverhead), ma.freeList.getFreeMemory());
       // At this point I should have 8*0 + perObjectOverhead*3 of free memory
-      MemoryChunk mcDO = ma.allocate(perObjectOverhead*2);
+      StoredObject mcDO = ma.allocate(perObjectOverhead*2);
       checkMcs(mcs);
       // At this point I should have 8*0 + perObjectOverhead*0 of free memory
       assertEquals(0, ma.freeList.getFreeMemory());
@@ -525,7 +525,7 @@ public class SimpleMemoryAllocatorJUnitTest {
       assertEquals((perObjectOverhead*3)+(8+perObjectOverhead)+(16+perObjectOverhead)+(24+perObjectOverhead), ma.freeList.getFreeMemory());
       
       long freeMem = ma.freeList.getFreeMemory();
-      for (MemoryChunk mc: mcs) {
+      for (StoredObject mc: mcs) {
         mc.release();
         assertEquals(freeMem+(8+perObjectOverhead), ma.freeList.getFreeMemory());
         freeMem += (8+perObjectOverhead);
@@ -543,11 +543,11 @@ public class SimpleMemoryAllocatorJUnitTest {
   boolean memoryUsageEventReceived;
   @Test
   public void testUsageEventListener() {
-    final int perObjectOverhead = com.gemstone.gemfire.internal.offheap.ObjectChunk.OFF_HEAP_HEADER_SIZE;
+    final int perObjectOverhead = OffHeapStoredObject.HEADER_SIZE;
     final int SMALL_ALLOC_SIZE = 1000;
-    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(3000);
+    SlabImpl slab = new SlabImpl(3000);
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
       MemoryUsageListener listener = new MemoryUsageListener() {
         @Override
         public void updateMemoryUsed(final long bytesUsed) {
@@ -559,7 +559,7 @@ public class SimpleMemoryAllocatorJUnitTest {
       
       this.expectedMemoryUsage = SMALL_ALLOC_SIZE;
       this.memoryUsageEventReceived = false;
-      MemoryChunk smc = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead);
+      StoredObject smc = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead);
       assertEquals(true, this.memoryUsageEventReceived);
       
       this.expectedMemoryUsage = SMALL_ALLOC_SIZE * 2;
@@ -588,19 +588,19 @@ public class SimpleMemoryAllocatorJUnitTest {
       SimpleMemoryAllocatorImpl.freeOffHeapMemory();
     }
   }
-  private void checkMcs(ArrayList<MemoryChunk> mcs) {
-    for (MemoryChunk mc: mcs) {
+  private void checkMcs(ArrayList<StoredObject> mcs) {
+    for (StoredObject mc: mcs) {
       assertEquals(8+8, mc.getSize());
     }
   }
   
   @Test
   public void testOutOfOffHeapMemory() {
-    final int perObjectOverhead = com.gemstone.gemfire.internal.offheap.ObjectChunk.OFF_HEAP_HEADER_SIZE;
+    final int perObjectOverhead = OffHeapStoredObject.HEADER_SIZE;
     final int BIG_ALLOC_SIZE = 150000;
     final int SMALL_ALLOC_SIZE = BIG_ALLOC_SIZE/2;
     final int TOTAL_MEM = BIG_ALLOC_SIZE;
-    final UnsafeMemoryChunk slab = new UnsafeMemoryChunk(TOTAL_MEM);
+    final SlabImpl slab = new SlabImpl(TOTAL_MEM);
     final AtomicReference<OutOfOffHeapMemoryException> ooom = new AtomicReference<OutOfOffHeapMemoryException>();
     final OutOfOffHeapMemoryListener oooml = new OutOfOffHeapMemoryListener() {
       @Override
@@ -612,13 +612,13 @@ public class SimpleMemoryAllocatorJUnitTest {
       }
     };
     try {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(oooml, new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.createForUnitTest(oooml, new NullOffHeapMemoryStats(), new SlabImpl[]{slab});
       // make a big allocation
-      MemoryChunk bmc = ma.allocate(BIG_ALLOC_SIZE-perObjectOverhead);
+      StoredObject bmc = ma.allocate(BIG_ALLOC_SIZE-perObjectOverhead);
       assertNull(ooom.get());
       // drive the ma to ooom with small allocations
       try {
-        MemoryChunk smc = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead);
+        StoredObject smc = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead);
         fail("Expected out of memory");
       } catch (OutOfOffHeapMemoryException expected) {
       }

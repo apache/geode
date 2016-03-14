@@ -87,7 +87,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * use this option.<p>
  *
  * <CENTER>
- * <IMG SRC="doc-files/merge-log-files.gif"
+ * <IMG SRC="{@docRoot}/javadoc-images/merge-log-files.gif"
  *      WIDTH="353" HEIGHT="246"/>
  * </CENTER>
  *

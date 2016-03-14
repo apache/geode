@@ -14,12 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package templates.security;
-
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
@@ -28,6 +23,10 @@ import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.NotAuthorizedException;
+
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A dummy implementation of the <code>AccessControl</code> interface that
