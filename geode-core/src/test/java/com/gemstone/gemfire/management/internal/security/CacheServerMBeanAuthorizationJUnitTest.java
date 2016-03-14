@@ -25,28 +25,24 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.management.MBeanServerConnection;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Category(IntegrationTest.class)
-public class CacheServerMBeanSecurityJUnitTest {
+public class CacheServerMBeanAuthorizationJUnitTest {
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private CacheServerMXBean cacheServerMXBean;
-  private MBeanServerConnection con;
 
   @ClassRule
-  public static JsonAuthorizationMBeanServerStartRule serverRule = new JsonAuthorizationMBeanServerStartRule(
+  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
       jmxManagerPort, "cacheServer.json");
 
   @Rule
-  public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
+  public MBeanServerConnectionRule<CacheServerMXBean> connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
 
   @Before
   public void setUp() throws Exception {
-    cacheServerMXBean = (CacheServerMXBean) connectionRule.getProxyMBean(CacheServerMXBean.class,
-        "GemFire:service=CacheServer,*");
+    cacheServerMXBean = connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
   }
 
   @Test

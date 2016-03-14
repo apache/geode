@@ -23,28 +23,38 @@ import org.junit.rules.ExternalResource;
 
 import java.util.Properties;
 
-public class JsonAuthorizationMBeanServerStartRule extends ExternalResource {
+public class JsonAuthorizationCacheStartRule extends ExternalResource {
   private Cache cache;
   private int jmxManagerPort;
   private String jsonFile;
+  private boolean doAuthorization;
 
-  public JsonAuthorizationMBeanServerStartRule(int jmxManagerPort, String jsonFile) {
+  public JsonAuthorizationCacheStartRule(int jmxManagerPort, String jsonFile) {
     this.jmxManagerPort = jmxManagerPort;
     this.jsonFile = jsonFile;
+    this.doAuthorization = true;
+  }
+
+  public JsonAuthorizationCacheStartRule(int jmxManagerPort, String jsonFile, boolean doAuthorization) {
+    this.jmxManagerPort = jmxManagerPort;
+    this.jsonFile = jsonFile;
+    this.doAuthorization = doAuthorization;
   }
 
   protected void before() throws Throwable {
     Properties properties = new Properties();
-    properties.put(DistributionConfig.NAME_NAME, JsonAuthorizationMBeanServerStartRule.class.getSimpleName());
+    properties.put(DistributionConfig.NAME_NAME, JsonAuthorizationCacheStartRule.class.getSimpleName());
     properties.put(DistributionConfig.LOCATORS_NAME, "");
     properties.put(DistributionConfig.MCAST_PORT_NAME, "0");
     properties.put(DistributionConfig.JMX_MANAGER_NAME, "true");
     properties.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     properties.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxManagerPort));
     properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
-    properties.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
     properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
         JSONAuthorization.class.getName() + ".create");
+    if (doAuthorization) {
+      properties.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+    }
     JSONAuthorization.setUpWithJsonFile(jsonFile);
 
     cache = new CacheFactory(properties).create();
