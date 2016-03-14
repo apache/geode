@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
@@ -92,11 +91,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     VM vm = Host.getHost(0).getVM(1);
 
     // Create a cache in vm 1
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        assertNotNull(getCache());
-      }
+    vm.invoke(() -> {
+      assertNotNull(getCache());
     });
 
     // Run create region command with compression
@@ -109,13 +105,10 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure our region exists with compression enabled
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Region region = getCache().getRegion("compressedRegion");
-        assertNotNull(region);
-        assertTrue(SnappyCompressor.getDefaultInstance().equals(region.getAttributes().getCompressor()));
-      }
+    vm.invoke(() -> {
+      Region region = getCache().getRegion("compressedRegion");
+      assertNotNull(region);
+      assertTrue(SnappyCompressor.getDefaultInstance().equals(region.getAttributes().getCompressor()));
     });
 
     // cleanup
@@ -134,11 +127,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     VM vm = Host.getHost(0).getVM(1);
 
     // Create a cache in vm 1
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
+    vm.invoke(() -> {
         assertNotNull(getCache());
-      }
     });
 
     // Create a region with an unrecognized compressor
@@ -150,12 +140,9 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.ERROR, cmdResult.getStatus());
 
     // Assert that our region was not created
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Region region = getCache().getRegion("compressedRegion");
-        assertNull(region);
-      }
+    vm.invoke(() -> {
+      Region region = getCache().getRegion("compressedRegion");
+      assertNull(region);
     });
   }
 
@@ -169,11 +156,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     VM vm = Host.getHost(0).getVM(1);
 
     // Create a cache in vm 1
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
+    vm.invoke(() -> {
         assertNotNull(getCache());
-      }
     });
 
     // Create a region with no compression
@@ -184,13 +168,10 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Assert that our newly created region has no compression
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Region region = getCache().getRegion("testRegion");
-        assertNotNull(region);
-        assertNull(region.getAttributes().getCompressor());
-      }
+    vm.invoke(() -> {
+      Region region = getCache().getRegion("testRegion");
+      assertNotNull(region);
+      assertNull(region.getAttributes().getCompressor());
     });
 
     // Cleanup
@@ -204,50 +185,44 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     createDefaultSetup(null);
 
     for (int i = 1; i <= 2; i++) {
-      Host.getHost(0).getVM(i).invoke(new SerializableRunnable() {
-        @Override
-        public void run() {
-          final Cache cache = getCache();
+      Host.getHost(0).getVM(i).invoke(() -> {
+        final Cache cache = getCache();
 
-          RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
-          factory.create("Customer");
+        RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        factory.create("Customer");
 
-          PartitionAttributesFactory paFactory = new PartitionAttributesFactory();
-          paFactory.setColocatedWith("Customer");
-          factory.setPartitionAttributes(paFactory.create());
-          factory.create("Order");
-        }
+        PartitionAttributesFactory paFactory = new PartitionAttributesFactory();
+        paFactory.setColocatedWith("Customer");
+        factory.setPartitionAttributes(paFactory.create());
+        factory.create("Order");
       });
     }
 
     // Make sure that the region has been registered with the Manager MXBean
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        WaitCriterion wc = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            try {
-              MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-              String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN,
-                  new Object[]{"/Customer", "*"});
-              ObjectName queryExpON = new ObjectName(queryExp);
-              return !(mbeanServer.queryNames(null, queryExpON).isEmpty());
-            } catch (MalformedObjectNameException mone) {
-              LogWriterUtils.getLogWriter().error(mone);
-              fail(mone.getMessage());
-              return false;
-            }
+    Host.getHost(0).getVM(0).invoke(() -> {
+      WaitCriterion wc = new WaitCriterion() {
+        @Override
+        public boolean done() {
+          try {
+            MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+            String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN,
+                new Object[]{"/Customer", "*"});
+            ObjectName queryExpON = new ObjectName(queryExp);
+            return !(mbeanServer.queryNames(null, queryExpON).isEmpty());
+          } catch (MalformedObjectNameException mone) {
+            LogWriterUtils.getLogWriter().error(mone);
+            fail(mone.getMessage());
+            return false;
           }
+        }
 
-          @Override
-          public String description() {
-            return "Waiting for the region to be registed with the MXBean";
-          }
-        };
+        @Override
+        public String description() {
+          return "Waiting for the region to be registed with the MXBean";
+        }
+      };
 
-        Wait.waitForCriterion(wc, 5000, 500, true);
-      }
+      Wait.waitForCriterion(wc, 5000, 500, true);
     });
 
     // Test failure when region not found
@@ -325,63 +300,54 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     assertTrue(commandResultToString(cmdResult).contains("No Regions Found"));
 
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        cache.createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true).create(alterRegionName);
-      }
+    Host.getHost(0).getVM(0).invoke(() -> {
+      Cache cache = getCache();
+      cache.createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true).create(alterRegionName);
     });
 
     this.alterVm1 = Host.getHost(0).getVM(1);
     this.alterVm1Name = "VM" + this.alterVm1.getPid();
-    this.alterVm1.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, alterVm1Name);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-        getSystem(localProps);
-        Cache cache = getCache();
+    this.alterVm1.invoke(() -> {
+      Properties localProps = new Properties();
+      localProps.setProperty(DistributionConfig.NAME_NAME, alterVm1Name);
+      localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+      getSystem(localProps);
+      Cache cache = getCache();
 
-        // Setup queues and gateway senders to be used by all tests
-        cache.createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true).create(alterRegionName);
-        AsyncEventListener listener = new AsyncEventListener() {
-          @Override
-          public void close() {
-            // Nothing to do
-          }
+      // Setup queues and gateway senders to be used by all tests
+      cache.createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true).create(alterRegionName);
+      AsyncEventListener listener = new AsyncEventListener() {
+        @Override
+        public void close() {
+          // Nothing to do
+        }
 
-          @Override
-          public boolean processEvents(List<AsyncEvent> events) {
-            return true;
-          }
-        };
-        cache.createAsyncEventQueueFactory().create(alterAsyncEventQueueId1, listener);
-        cache.createAsyncEventQueueFactory().create(alterAsyncEventQueueId2, listener);
-        cache.createAsyncEventQueueFactory().create(alterAsyncEventQueueId3, listener);
+        @Override
+        public boolean processEvents(List<AsyncEvent> events) {
+          return true;
+        }
+      };
+      cache.createAsyncEventQueueFactory().create(alterAsyncEventQueueId1, listener);
+      cache.createAsyncEventQueueFactory().create(alterAsyncEventQueueId2, listener);
+      cache.createAsyncEventQueueFactory().create(alterAsyncEventQueueId3, listener);
 
-        GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
-        gatewaySenderFactory.setManualStart(true);
-        gatewaySenderFactory.create(alterGatewaySenderId1, 2);
-        gatewaySenderFactory.create(alterGatewaySenderId2, 3);
-        gatewaySenderFactory.create(alterGatewaySenderId3, 4);
-      }
+      GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
+      gatewaySenderFactory.setManualStart(true);
+      gatewaySenderFactory.create(alterGatewaySenderId1, 2);
+      gatewaySenderFactory.create(alterGatewaySenderId2, 3);
+      gatewaySenderFactory.create(alterGatewaySenderId3, 4);
     });
 
     this.alterVm2 = Host.getHost(0).getVM(2);
     this.alterVm2Name = "VM" + this.alterVm2.getPid();
-    this.alterVm2.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, alterVm2Name);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1,Group2");
-        getSystem(localProps);
-        Cache cache = getCache();
+    this.alterVm2.invoke(() -> {
+      Properties localProps = new Properties();
+      localProps.setProperty(DistributionConfig.NAME_NAME, alterVm2Name);
+      localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1,Group2");
+      getSystem(localProps);
+      Cache cache = getCache();
 
-        cache.createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true).create(alterRegionName);
-      }
+      cache.createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true).create(alterRegionName);
     });
 
     deployJarFilesForRegionAlter();
@@ -391,11 +357,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     regionAlterSetDefaultsTest();
     regionAlterManipulatePlugInsTest();
 
-    this.alterVm1.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        getCache().getRegion(alterRegionName).destroyRegion();
-      }
+    this.alterVm1.invoke(() -> {
+      getCache().getRegion(alterRegionName).destroyRegion();
     });
   }
 
@@ -414,20 +377,14 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertTrue(
         stringContainsLine(stringResult, this.alterVm2Name + ".*Region \"/" + this.alterRegionName + "\" altered.*"));
 
-    this.alterVm1.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
-        assertEquals(5764, attributes.getEvictionAttributes().getMaximum());
-      }
+    this.alterVm1.invoke(() -> {
+      RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
+      assertEquals(5764, attributes.getEvictionAttributes().getMaximum());
     });
 
-    this.alterVm2.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
-        assertEquals(5764, attributes.getEvictionAttributes().getMaximum());
-      }
+    this.alterVm2.invoke(() -> {
+      RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
+      assertEquals(5764, attributes.getEvictionAttributes().getMaximum());
     });
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
@@ -444,20 +401,14 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertTrue(
         stringContainsLine(stringResult, this.alterVm2Name + ".*Region \"/" + this.alterRegionName + "\" altered.*"));
 
-    this.alterVm1.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
-        assertEquals(5764, attributes.getEvictionAttributes().getMaximum());
-      }
+    this.alterVm1.invoke(() -> {
+      RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
+      assertEquals(5764, attributes.getEvictionAttributes().getMaximum());
     });
 
-    this.alterVm2.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
-        assertEquals(6963, attributes.getEvictionAttributes().getMaximum());
-      }
+    this.alterVm2.invoke(() -> {
+      RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
+      assertEquals(6963, attributes.getEvictionAttributes().getMaximum());
     });
   }
 
@@ -491,28 +442,25 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertTrue(
         stringContainsLine(stringResult, this.alterVm2Name + ".*Region \"/" + this.alterRegionName + "\" altered.*"));
 
-    this.alterVm1.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
-        assertEquals(35464, attributes.getEvictionAttributes().getMaximum());
-        assertEquals(3453, attributes.getEntryIdleTimeout().getTimeout());
-        assertTrue(attributes.getEntryIdleTimeout().getAction().isDestroy());
-        assertEquals(7563, attributes.getEntryTimeToLive().getTimeout());
-        assertTrue(attributes.getEntryTimeToLive().getAction().isDestroy());
-        assertEquals(6234, attributes.getRegionIdleTimeout().getTimeout());
-        assertTrue(attributes.getRegionIdleTimeout().getAction().isDestroy());
-        assertEquals(4562, attributes.getRegionTimeToLive().getTimeout());
-        assertTrue(attributes.getRegionTimeToLive().getAction().isDestroy());
-        assertEquals(1, attributes.getAsyncEventQueueIds().size());
-        assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId1));
-        assertEquals(1, attributes.getGatewaySenderIds().size());
-        assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId1));
-        assertEquals(1, attributes.getCacheListeners().length);
-        assertEquals("com.cadrdunit.RegionAlterCacheListenerA", attributes.getCacheListeners()[0].getClass().getName());
-        assertEquals("com.cadrdunit.RegionAlterCacheWriter", attributes.getCacheWriter().getClass().getName());
-        assertEquals("com.cadrdunit.RegionAlterCacheLoader", attributes.getCacheLoader().getClass().getName());
-      }
+    this.alterVm1.invoke(() -> {
+      RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
+      assertEquals(35464, attributes.getEvictionAttributes().getMaximum());
+      assertEquals(3453, attributes.getEntryIdleTimeout().getTimeout());
+      assertTrue(attributes.getEntryIdleTimeout().getAction().isDestroy());
+      assertEquals(7563, attributes.getEntryTimeToLive().getTimeout());
+      assertTrue(attributes.getEntryTimeToLive().getAction().isDestroy());
+      assertEquals(6234, attributes.getRegionIdleTimeout().getTimeout());
+      assertTrue(attributes.getRegionIdleTimeout().getAction().isDestroy());
+      assertEquals(4562, attributes.getRegionTimeToLive().getTimeout());
+      assertTrue(attributes.getRegionTimeToLive().getAction().isDestroy());
+      assertEquals(1, attributes.getAsyncEventQueueIds().size());
+      assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId1));
+      assertEquals(1, attributes.getGatewaySenderIds().size());
+      assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId1));
+      assertEquals(1, attributes.getCacheListeners().length);
+      assertEquals("com.cadrdunit.RegionAlterCacheListenerA", attributes.getCacheListeners()[0].getClass().getName());
+      assertEquals("com.cadrdunit.RegionAlterCacheWriter", attributes.getCacheWriter().getClass().getName());
+      assertEquals("com.cadrdunit.RegionAlterCacheLoader", attributes.getCacheLoader().getClass().getName());
     });
   }
 
@@ -532,28 +480,25 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertTrue(
         stringContainsLine(stringResult, this.alterVm2Name + ".*Region \"/" + this.alterRegionName + "\" altered.*"));
 
-    this.alterVm2.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
-        assertEquals(35464, attributes.getEvictionAttributes().getMaximum());
-        assertEquals(3453, attributes.getEntryIdleTimeout().getTimeout());
-        assertTrue(attributes.getEntryIdleTimeout().getAction().isDestroy());
-        assertEquals(7563, attributes.getEntryTimeToLive().getTimeout());
-        assertTrue(attributes.getEntryTimeToLive().getAction().isDestroy());
-        assertEquals(6234, attributes.getRegionIdleTimeout().getTimeout());
-        assertTrue(attributes.getRegionIdleTimeout().getAction().isDestroy());
-        assertEquals(4562, attributes.getRegionTimeToLive().getTimeout());
-        assertTrue(attributes.getRegionTimeToLive().getAction().isDestroy());
-        assertEquals(1, attributes.getAsyncEventQueueIds().size());
-        assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId1));
-        assertEquals(1, attributes.getGatewaySenderIds().size());
-        assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId1));
-        assertEquals(1, attributes.getCacheListeners().length);
-        assertEquals("com.cadrdunit.RegionAlterCacheListenerA", attributes.getCacheListeners()[0].getClass().getName());
-        assertEquals("com.cadrdunit.RegionAlterCacheWriter", attributes.getCacheWriter().getClass().getName());
-        assertEquals("com.cadrdunit.RegionAlterCacheLoader", attributes.getCacheLoader().getClass().getName());
-      }
+    this.alterVm2.invoke(() -> {
+      RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
+      assertEquals(35464, attributes.getEvictionAttributes().getMaximum());
+      assertEquals(3453, attributes.getEntryIdleTimeout().getTimeout());
+      assertTrue(attributes.getEntryIdleTimeout().getAction().isDestroy());
+      assertEquals(7563, attributes.getEntryTimeToLive().getTimeout());
+      assertTrue(attributes.getEntryTimeToLive().getAction().isDestroy());
+      assertEquals(6234, attributes.getRegionIdleTimeout().getTimeout());
+      assertTrue(attributes.getRegionIdleTimeout().getAction().isDestroy());
+      assertEquals(4562, attributes.getRegionTimeToLive().getTimeout());
+      assertTrue(attributes.getRegionTimeToLive().getAction().isDestroy());
+      assertEquals(1, attributes.getAsyncEventQueueIds().size());
+      assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId1));
+      assertEquals(1, attributes.getGatewaySenderIds().size());
+      assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId1));
+      assertEquals(1, attributes.getCacheListeners().length);
+      assertEquals("com.cadrdunit.RegionAlterCacheListenerA", attributes.getCacheListeners()[0].getClass().getName());
+      assertEquals("com.cadrdunit.RegionAlterCacheWriter", attributes.getCacheWriter().getClass().getName());
+      assertEquals("com.cadrdunit.RegionAlterCacheLoader", attributes.getCacheLoader().getClass().getName());
     });
   }
 
@@ -583,23 +528,20 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertTrue(
         stringContainsLine(stringResult, this.alterVm2Name + ".*Region \"/" + this.alterRegionName + "\" altered.*"));
 
-    this.alterVm1.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
-        assertEquals(0, attributes.getEvictionAttributes().getMaximum());
-        assertEquals(0, attributes.getEntryIdleTimeout().getTimeout());
-        assertTrue(attributes.getEntryIdleTimeout().getAction().isDestroy());
-        assertEquals(7563, attributes.getEntryTimeToLive().getTimeout());
-        assertTrue(attributes.getEntryTimeToLive().getAction().isInvalidate());
-        assertEquals(0, attributes.getRegionIdleTimeout().getTimeout());
-        assertTrue(attributes.getRegionIdleTimeout().getAction().isInvalidate());
-        assertEquals(4562, attributes.getRegionTimeToLive().getTimeout());
-        assertTrue(attributes.getRegionTimeToLive().getAction().isDestroy());
-        assertEquals(0, attributes.getAsyncEventQueueIds().size());
-        assertEquals(0, attributes.getGatewaySenderIds().size());
-        assertEquals(0, attributes.getCacheListeners().length);
-      }
+    this.alterVm1.invoke(() -> {
+      RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
+      assertEquals(0, attributes.getEvictionAttributes().getMaximum());
+      assertEquals(0, attributes.getEntryIdleTimeout().getTimeout());
+      assertTrue(attributes.getEntryIdleTimeout().getAction().isDestroy());
+      assertEquals(7563, attributes.getEntryTimeToLive().getTimeout());
+      assertTrue(attributes.getEntryTimeToLive().getAction().isInvalidate());
+      assertEquals(0, attributes.getRegionIdleTimeout().getTimeout());
+      assertTrue(attributes.getRegionIdleTimeout().getAction().isInvalidate());
+      assertEquals(4562, attributes.getRegionTimeToLive().getTimeout());
+      assertTrue(attributes.getRegionTimeToLive().getAction().isDestroy());
+      assertEquals(0, attributes.getAsyncEventQueueIds().size());
+      assertEquals(0, attributes.getGatewaySenderIds().size());
+      assertEquals(0, attributes.getCacheListeners().length);
     });
   }
 
@@ -629,23 +571,20 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertTrue(
         stringContainsLine(stringResult, this.alterVm2Name + ".*Region \"/" + this.alterRegionName + "\" altered.*"));
 
-    this.alterVm1.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
-        assertEquals(3, attributes.getAsyncEventQueueIds().size());
-        assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId1));
-        assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId2));
-        assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId3));
-        assertEquals(3, attributes.getGatewaySenderIds().size());
-        assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId1));
-        assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId2));
-        assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId3));
-        assertEquals(3, attributes.getCacheListeners().length);
-        assertEquals("com.cadrdunit.RegionAlterCacheListenerA", attributes.getCacheListeners()[0].getClass().getName());
-        assertEquals("com.cadrdunit.RegionAlterCacheListenerB", attributes.getCacheListeners()[1].getClass().getName());
-        assertEquals("com.cadrdunit.RegionAlterCacheListenerC", attributes.getCacheListeners()[2].getClass().getName());
-      }
+    this.alterVm1.invoke(() -> {
+      RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
+      assertEquals(3, attributes.getAsyncEventQueueIds().size());
+      assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId1));
+      assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId2));
+      assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId3));
+      assertEquals(3, attributes.getGatewaySenderIds().size());
+      assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId1));
+      assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId2));
+      assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId3));
+      assertEquals(3, attributes.getCacheListeners().length);
+      assertEquals("com.cadrdunit.RegionAlterCacheListenerA", attributes.getCacheListeners()[0].getClass().getName());
+      assertEquals("com.cadrdunit.RegionAlterCacheListenerB", attributes.getCacheListeners()[1].getClass().getName());
+      assertEquals("com.cadrdunit.RegionAlterCacheListenerC", attributes.getCacheListeners()[2].getClass().getName());
     });
 
     // Now take 1 entry out of each of the sets
@@ -668,22 +607,19 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertTrue(
         stringContainsLine(stringResult, this.alterVm2Name + ".*Region \"/" + this.alterRegionName + "\" altered.*"));
 
-    this.alterVm2.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
-        assertEquals(2, attributes.getAsyncEventQueueIds().size());
-        Iterator iterator = attributes.getAsyncEventQueueIds().iterator();
-        assertEquals(alterAsyncEventQueueId1, iterator.next());
-        assertEquals(alterAsyncEventQueueId2, iterator.next());
-        assertEquals(2, attributes.getGatewaySenderIds().size());
-        iterator = attributes.getGatewaySenderIds().iterator();
-        assertEquals(alterGatewaySenderId1, iterator.next());
-        assertEquals(alterGatewaySenderId3, iterator.next());
-        assertEquals(2, attributes.getCacheListeners().length);
-        assertEquals("com.cadrdunit.RegionAlterCacheListenerB", attributes.getCacheListeners()[0].getClass().getName());
-        assertEquals("com.cadrdunit.RegionAlterCacheListenerC", attributes.getCacheListeners()[1].getClass().getName());
-      }
+    this.alterVm2.invoke(() -> {
+      RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
+      assertEquals(2, attributes.getAsyncEventQueueIds().size());
+      Iterator iterator = attributes.getAsyncEventQueueIds().iterator();
+      assertEquals(alterAsyncEventQueueId1, iterator.next());
+      assertEquals(alterAsyncEventQueueId2, iterator.next());
+      assertEquals(2, attributes.getGatewaySenderIds().size());
+      iterator = attributes.getGatewaySenderIds().iterator();
+      assertEquals(alterGatewaySenderId1, iterator.next());
+      assertEquals(alterGatewaySenderId3, iterator.next());
+      assertEquals(2, attributes.getCacheListeners().length);
+      assertEquals("com.cadrdunit.RegionAlterCacheListenerB", attributes.getCacheListeners()[0].getClass().getName());
+      assertEquals("com.cadrdunit.RegionAlterCacheListenerC", attributes.getCacheListeners()[1].getClass().getName());
     });
 
     // Add 1 back to each of the sets
@@ -709,23 +645,20 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertTrue(
         stringContainsLine(stringResult, this.alterVm2Name + ".*Region \"/" + this.alterRegionName + "\" altered.*"));
 
-    this.alterVm1.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
-        assertEquals(3, attributes.getAsyncEventQueueIds().size());
-        assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId1));
-        assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId2));
-        assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId3));
-        assertEquals(3, attributes.getGatewaySenderIds().size());
-        assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId1));
-        assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId3));
-        assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId2));
-        assertEquals(3, attributes.getCacheListeners().length);
-        assertEquals("com.cadrdunit.RegionAlterCacheListenerB", attributes.getCacheListeners()[0].getClass().getName());
-        assertEquals("com.cadrdunit.RegionAlterCacheListenerC", attributes.getCacheListeners()[1].getClass().getName());
-        assertEquals("com.cadrdunit.RegionAlterCacheListenerA", attributes.getCacheListeners()[2].getClass().getName());
-      }
+    this.alterVm1.invoke(() -> {
+      RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
+      assertEquals(3, attributes.getAsyncEventQueueIds().size());
+      assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId1));
+      assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId2));
+      assertTrue(attributes.getAsyncEventQueueIds().contains(alterAsyncEventQueueId3));
+      assertEquals(3, attributes.getGatewaySenderIds().size());
+      assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId1));
+      assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId3));
+      assertTrue(attributes.getGatewaySenderIds().contains(alterGatewaySenderId2));
+      assertEquals(3, attributes.getCacheListeners().length);
+      assertEquals("com.cadrdunit.RegionAlterCacheListenerB", attributes.getCacheListeners()[0].getClass().getName());
+      assertEquals("com.cadrdunit.RegionAlterCacheListenerC", attributes.getCacheListeners()[1].getClass().getName());
+      assertEquals("com.cadrdunit.RegionAlterCacheListenerA", attributes.getCacheListeners()[2].getClass().getName());
     });
   }
 
@@ -740,35 +673,31 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Start the Locator and wait for shared configuration to be available
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
+    Host.getHost(0).getVM(3).invoke(() -> {
+      final File locatorLogFile = new File("locator-" + locatorPort + ".log");
+      final Properties locatorProps = new Properties();
+      locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator");
+      locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+      locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+      locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+      try {
+        final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
+            locatorProps);
 
-        final File locatorLogFile = new File("locator-" + locatorPort + ".log");
-        final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator");
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-        try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
-              locatorProps);
+        WaitCriterion wc = new WaitCriterion() {
+          @Override
+          public boolean done() {
+            return locator.isSharedConfigurationRunning();
+          }
 
-          WaitCriterion wc = new WaitCriterion() {
-            @Override
-            public boolean done() {
-              return locator.isSharedConfigurationRunning();
-            }
-
-            @Override
-            public String description() {
-              return "Waiting for shared configuration to be started";
-            }
-          };
-          Wait.waitForCriterion(wc, 5000, 500, true);
-        } catch (IOException ioex) {
-          fail("Unable to create a locator with a shared configuration");
-        }
+          @Override
+          public String description() {
+            return "Waiting for shared configuration to be started";
+          }
+        };
+        Wait.waitForCriterion(wc, 5000, 500, true);
+      } catch (IOException ioex) {
+        fail("Unable to create a locator with a shared configuration");
       }
     });
 
@@ -780,16 +709,13 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-        getSystem(localProps);
-        assertNotNull(getCache());
-      }
+    vm.invoke(() -> {
+      Properties localProps = new Properties();
+      localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+      localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+      localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+      getSystem(localProps);
+      assertNotNull(getCache());
     });
 
     // Test creating the region
@@ -802,69 +728,60 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure that the region has been registered with the Manager MXBean
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        WaitCriterion wc = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            try {
-              MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-              String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN,
-                  new Object[]{"/" + regionName, "*"});
-              ObjectName queryExpON = new ObjectName(queryExp);
-              return !(mbeanServer.queryNames(null, queryExpON).isEmpty());
-            } catch (MalformedObjectNameException mone) {
-              LogWriterUtils.getLogWriter().error(mone);
-              fail(mone.getMessage());
-              return false;
-            }
+    Host.getHost(0).getVM(0).invoke(() -> {
+      WaitCriterion wc = new WaitCriterion() {
+        @Override
+        public boolean done() {
+          try {
+            MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+            String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN,
+                new Object[]{"/" + regionName, "*"});
+            ObjectName queryExpON = new ObjectName(queryExp);
+            return !(mbeanServer.queryNames(null, queryExpON).isEmpty());
+          } catch (MalformedObjectNameException mone) {
+            LogWriterUtils.getLogWriter().error(mone);
+            fail(mone.getMessage());
+            return false;
           }
+        }
 
-          @Override
-          public String description() {
-            return "Waiting for the region to be registed with the MXBean";
-          }
-        };
+        @Override
+        public String description() {
+          return "Waiting for the region to be registed with the MXBean";
+        }
+      };
 
-        Wait.waitForCriterion(wc, 5000, 500, true);
-      }
+      Wait.waitForCriterion(wc, 5000, 500, true);
     });
 
     // Make sure the region exists in the shared config
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
-        try {
-          assertTrue(sharedConfig.getConfiguration(groupName).getCacheXmlContent().contains(regionName));
-        } catch (Exception e) {
-          Assert.fail("Error in cluster configuration service", e);
-        }
+    Host.getHost(0).getVM(3).invoke(() -> {
+      SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+      try {
+        assertTrue(sharedConfig.getConfiguration(groupName).getCacheXmlContent().contains(regionName));
+      } catch (Exception e) {
+        Assert.fail("Error in cluster configuration service", e);
       }
     });
 
     //Restart the data vm to make sure the changes are in place
     vm = Host.getHost(0).getVM(1);
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        assertNotNull(cache);
-        cache.close();
-        assertTrue(cache.isClosed());
+    vm.invoke(() -> {
+      Cache cache = getCache();
+      assertNotNull(cache);
+      cache.close();
+      assertTrue(cache.isClosed());
 
-        Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-        localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
-        getSystem(localProps);
-        cache = getCache();
-        assertNotNull(cache);
-        Region region = cache.getRegion(regionName);
-        assertNotNull(region);
-      }
+      Properties localProps = new Properties();
+      localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+      localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+      localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+      localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
+      getSystem(localProps);
+      cache = getCache();
+      assertNotNull(cache);
+      Region region = cache.getRegion(regionName);
+      assertNotNull(region);
     });
 
 
@@ -878,15 +795,12 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure the region was altered in the shared config
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
-        try {
-          assertTrue(sharedConfig.getConfiguration(groupName).getCacheXmlContent().contains("45635"));
-        } catch (Exception e) {
-          fail("Error in cluster configuration service");
-        }
+    Host.getHost(0).getVM(3).invoke(() -> {
+      SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+      try {
+        assertTrue(sharedConfig.getConfiguration(groupName).getCacheXmlContent().contains("45635"));
+      } catch (Exception e) {
+        fail("Error in cluster configuration service");
       }
     });
 
@@ -926,35 +840,31 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Start the Locator and wait for shared configuration to be available
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
+    Host.getHost(0).getVM(3).invoke(() -> {
+      final File locatorLogFile = new File("locator-" + locatorPort + ".log");
+      final Properties locatorProps = new Properties();
+      locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator");
+      locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+      locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+      locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+      try {
+        final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
+            locatorProps);
 
-        final File locatorLogFile = new File("locator-" + locatorPort + ".log");
-        final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator");
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-        try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
-              locatorProps);
+        WaitCriterion wc = new WaitCriterion() {
+          @Override
+          public boolean done() {
+            return locator.isSharedConfigurationRunning();
+          }
 
-          WaitCriterion wc = new WaitCriterion() {
-            @Override
-            public boolean done() {
-              return locator.isSharedConfigurationRunning();
-            }
-
-            @Override
-            public String description() {
-              return "Waiting for shared configuration to be started";
-            }
-          };
-          Wait.waitForCriterion(wc, 5000, 500, true);
-        } catch (IOException ioex) {
-          fail("Unable to create a locator with a shared configuration");
-        }
+          @Override
+          public String description() {
+            return "Waiting for shared configuration to be started";
+          }
+        };
+        Wait.waitForCriterion(wc, 5000, 500, true);
+      } catch (IOException ioex) {
+        fail("Unable to create a locator with a shared configuration");
       }
     });
 
@@ -966,16 +876,13 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-        getSystem(localProps);
-        assertNotNull(getCache());
-      }
+    vm.invoke(() -> {
+      Properties localProps = new Properties();
+      localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+      localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+      localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+      getSystem(localProps);
+      assertNotNull(getCache());
     });
 
     // Test creating the region
@@ -988,45 +895,39 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure that the region has been registered with the Manager MXBean
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        WaitCriterion wc = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            try {
-              MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-              String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN,
-                  new Object[]{"/" + regionName, "*"});
-              ObjectName queryExpON = new ObjectName(queryExp);
-              return !(mbeanServer.queryNames(null, queryExpON).isEmpty());
-            } catch (MalformedObjectNameException mone) {
-              LogWriterUtils.getLogWriter().error(mone);
-              fail(mone.getMessage());
-              return false;
-            }
+    Host.getHost(0).getVM(0).invoke(() -> {
+      WaitCriterion wc = new WaitCriterion() {
+        @Override
+        public boolean done() {
+          try {
+            MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+            String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN,
+                new Object[]{"/" + regionName, "*"});
+            ObjectName queryExpON = new ObjectName(queryExp);
+            return !(mbeanServer.queryNames(null, queryExpON).isEmpty());
+          } catch (MalformedObjectNameException mone) {
+            LogWriterUtils.getLogWriter().error(mone);
+            fail(mone.getMessage());
+            return false;
           }
+        }
 
-          @Override
-          public String description() {
-            return "Waiting for the region to be registed with the MXBean";
-          }
-        };
+        @Override
+        public String description() {
+          return "Waiting for the region to be registed with the MXBean";
+        }
+      };
 
-        Wait.waitForCriterion(wc, 5000, 500, true);
-      }
+      Wait.waitForCriterion(wc, 5000, 500, true);
     });
 
     // Make sure the region exists in the shared config
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
-        try {
-          assertTrue(sharedConfig.getConfiguration(groupName).getCacheXmlContent().contains(regionName));
-        } catch (Exception e) {
-          fail("Error occurred in cluster configuration service");
-        }
+    Host.getHost(0).getVM(3).invoke(() -> {
+      SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+      try {
+        assertTrue(sharedConfig.getConfiguration(groupName).getCacheXmlContent().contains(regionName));
+      } catch (Exception e) {
+        fail("Error occurred in cluster configuration service");
       }
     });
 
@@ -1038,42 +939,36 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure the region was removed from the shared config
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
-        try {
-          assertFalse(sharedConfig.getConfiguration(groupName).getCacheXmlContent().contains(regionName));
-        } catch (Exception e) {
-          fail("Error occurred in cluster configuration service");
-        }
+    Host.getHost(0).getVM(3).invoke(() -> {
+      SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+      try {
+        assertFalse(sharedConfig.getConfiguration(groupName).getCacheXmlContent().contains(regionName));
+      } catch (Exception e) {
+        fail("Error occurred in cluster configuration service");
       }
     });
 
 
     //Restart the data vm to make sure the region is not existing any more
     vm = Host.getHost(0).getVM(1);
-    vm.invoke(new SerializableCallable() {
-      @Override
-      public Object call() {
-        Cache cache = getCache();
-        assertNotNull(cache);
-        cache.close();
-        assertTrue(cache.isClosed());
+    vm.invoke(() -> {
+      Cache cache = getCache();
+      assertNotNull(cache);
+      cache.close();
+      assertTrue(cache.isClosed());
 
-        Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-        localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
-        getSystem(localProps);
-        cache = getCache();
-        assertNotNull(cache);
-        Region region = cache.getRegion(regionName);
-        assertNull(region);
+      Properties localProps = new Properties();
+      localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+      localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+      localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+      localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
+      getSystem(localProps);
+      cache = getCache();
+      assertNotNull(cache);
+      Region region = cache.getRegion(regionName);
+      assertNull(region);
 
-        return null;
-      }
+      return null;
     });
   }
 
