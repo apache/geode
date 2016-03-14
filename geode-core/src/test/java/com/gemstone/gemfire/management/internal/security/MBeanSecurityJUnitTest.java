@@ -18,6 +18,8 @@ package com.gemstone.gemfire.management.internal.security;
 
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.ManagementException;
+import com.gemstone.gemfire.management.ManagementService;
+import com.gemstone.gemfire.management.MemberMXBean;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.ClassRule;
@@ -101,5 +103,15 @@ public class MBeanSecurityJUnitTest {
         () -> adapter.registerMBean(mock(DynamicMBean.class), new ObjectName("MockDomain", "name", "mock"), false)
     ).isInstanceOf(ManagementException.class);
 
+
+  }
+
+  @Test
+  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  public void testServerSideCalls(){
+    // calls through ManagementService is not using the MBeanServerWrapper.
+    ManagementService service = ManagementService.getManagementService(serverRule.getCache());
+    MemberMXBean bean = service.getMemberMXBean();
+    bean.compactAllDiskStores();
   }
 }

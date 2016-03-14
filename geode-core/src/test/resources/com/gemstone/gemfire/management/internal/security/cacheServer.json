@@ -3,11 +3,9 @@
     {
       "name": "everything",
       "operationsAllowed": [
-        "DEFAULT:LIST_DS",
         "DISTRIBUTED_SYSTEM:LIST_DS",
         "INDEX:DESTROY",
         "QUERY:EXECUTE",
-        "DEFAULT:LOCATE_ENTRY",
         "CONTINUOUS_QUERY:EXECUTE",
         "CONTINUOUS_QUERY:STOP",
         "MEMBER:SHUTDOWN",
