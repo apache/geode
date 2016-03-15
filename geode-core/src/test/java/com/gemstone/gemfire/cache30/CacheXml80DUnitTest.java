@@ -183,6 +183,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     CacheCreation cache = new CacheCreation();
 
     CacheServer cs = cache.addCacheServer();
+    cs.setPort(0);
     cs.setTcpNoDelay(false);
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setDataPolicy(DataPolicy.NORMAL);
