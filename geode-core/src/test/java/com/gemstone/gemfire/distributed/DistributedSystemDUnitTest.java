@@ -316,23 +316,52 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     assertTrue(unicastPort <= idm.getPort() && idm.getPort() <= unicastPort+2);
     assertTrue(unicastPort <= idm.getPort() && idm.getDirectChannelPort() <= unicastPort+2);
   }
+  
+  /***
+   * this will return starting port, from it "range" of port will available
+   * @param range
+   * @return
+   */
+  private int getPortRange(int range) {
+    int port = DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0] + 10000;
+    int startPort = port;
+    int found = 0;
+    while (port <= DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1]) {
+      if (AvailablePort.isPortAvailable(port, AvailablePort.SOCKET)) {
+        found++;
+        if (found == range) {
+          break;
+        }
+        port++;
+      } else {
+        port++;
+        startPort = port;
+        found = 0;
+      }
+    }
+    if (port > DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1]) {
+      fail("Unable to find port range " + range);
+    }
+    return startPort;
+  }
 
   public void testMembershipPortRangeWithExactThreeValues() throws Exception {
     Properties config = new Properties();
-    config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, ""
-        + (DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1] - 2) + "-"
-        + (DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1]));
-    system = (InternalDistributedSystem)DistributedSystem.connect(config);
+    config.setProperty("locators", "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    int portRange = 3;
+    int portStartRange = getPortRange(portRange);
+    int portEndRange = portStartRange + portRange - 1;
+    config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, "" + (portStartRange) + "-" + (portEndRange));
+    system = (InternalDistributedSystem) DistributedSystem.connect(config);
     Cache cache = CacheFactory.create(system);
     cache.addCacheServer();
     DistributionManager dm = (DistributionManager) system.getDistributionManager();
     InternalDistributedMember idm = dm.getDistributionManagerId();
     system.disconnect();
-    assertTrue(idm.getPort() <= DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
-    assertTrue(idm.getPort() >= DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
-    assertTrue(idm.getDirectChannelPort() <= DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
-    assertTrue(idm.getDirectChannelPort() >= DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
+    assertTrue(idm.getPort() <= portEndRange);
+    assertTrue(idm.getPort() >= portStartRange);
+    assertTrue(idm.getDirectChannelPort() <= portEndRange);
+    assertTrue(idm.getDirectChannelPort() >= portStartRange);
   }
 
   public void testConflictingUDPPort() throws Exception {
