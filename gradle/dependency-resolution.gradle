@@ -23,16 +23,12 @@ subprojects {
       //These are forced to match our old non-transitive configuration
       //These force statements should be removed and tested with the automatically
       //resolved version
-      force 'commons-logging:commons-logging:' + project.'commons-logging.version'
       force 'org.springframework:spring-context-support:' + project.'springframework.version'
       force 'org.springframework:spring-context-support:' + project.'springframework.version'
       force 'org.springframework:spring-context:' + project.'springframework.version'
       force 'org.springframework:spring-web:' + project.'springframework.version'
       force 'org.springframework:spring-tx:' + project.'springframework.version'
       force 'org.springframework:spring-webmvc:' + project.'springframework.version'
-      force 'javax.activation:activation:' + project.'activation.version'
-      force 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
-      force 'com.thoughtworks.paranamer:paranamer:' + project.'paranamer.version'
       force 'jline:jline:' + project.'jline.version'
     }
   }

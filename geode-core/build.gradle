@@ -80,7 +80,9 @@ dependencies {
     transitive=false
   }
 
-  compile 'com.google.guava:guava:' + project.'guava.version'
+  compile ('com.google.guava:guava:' + project.'guava.version') {
+    ext.optional = true
+  }
   //jsr305 is included only to prevent javadoc warnings about missing annotations in the guava jar
   provided 'com.google.code.findbugs:jsr305:' + project.'jsr305.version'
 
