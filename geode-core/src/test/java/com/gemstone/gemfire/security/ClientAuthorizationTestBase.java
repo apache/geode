@@ -31,10 +31,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
-import security.AuthzCredentialGenerator;
-import security.CredentialGenerator;
-import security.AuthzCredentialGenerator.ClassCode;
-
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.Operation;
@@ -61,11 +57,13 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.util.Callable;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
+import security.AuthzCredentialGenerator;
+import security.AuthzCredentialGenerator.ClassCode;
+import security.CredentialGenerator;
 import security.DummyCredentialGenerator;
 import security.XmlAuthzCredentialGenerator;
 
@@ -144,13 +142,13 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
             SecurityTestUtil.NO_EXCEPTION));
   }
 
-  public static void createCacheServer(Integer locatorPort, Integer serverPort,
+  public static Integer createCacheServer(Integer locatorPort, Integer serverPort,
       Object authProps, Object javaProps) {
     if (locatorPort == null) {
       locatorPort = new Integer(AvailablePort
           .getRandomAvailablePort(AvailablePort.SOCKET));
     }
-    SecurityTestUtil.createCacheServer((Properties)authProps, javaProps,
+    return SecurityTestUtil.createCacheServer((Properties)authProps, javaProps,
         locatorPort, null, serverPort, Boolean.TRUE, new Integer(
             SecurityTestUtil.NO_EXCEPTION));
   }
@@ -267,7 +265,7 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
       policy = InterestResultPolicy.NONE;
     }
     final int numOps = indices.length;
-    LogWriterUtils.getLogWriter().info(
+    System.out.println(
         "Got doOp for op: " + op.toString() + ", numOps: " + numOps
             + ", indices: " + indicesToString(indices) + ", expect: " + expectedResult);
     boolean exceptionOccured = false;
@@ -307,7 +305,7 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
               // server
               if ((flags & OpFlags.CHECK_NOKEY) > 0) {
                 AbstractRegionEntry entry = (AbstractRegionEntry)((LocalRegion)region).getRegionEntry(searchKey);
-                LogWriterUtils.getLogWriter().info(""+keyNum+": key is " + searchKey + " and entry is " + entry);
+                System.out.println(""+keyNum+": key is " + searchKey + " and entry is " + entry);
                 assertFalse(region.containsKey(searchKey));
               }
               else {
@@ -648,7 +646,7 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
               }
               catch (RegionDestroyedException ex) {
                 // harmless to ignore this
-                LogWriterUtils.getLogWriter().info(
+                System.out.println(
                     "doOp: sub-region " + region.getFullPath()
                         + " already destroyed");
                 operationOmitted = true;
@@ -675,14 +673,14 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
             || ex instanceof QueryInvocationTargetException || ex instanceof CqException)
             && (expectedResult.intValue() == SecurityTestUtil.NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          LogWriterUtils.getLogWriter().info(
+          System.out.println(
               "doOp: Got expected NotAuthorizedException when doing operation ["
                   + op + "] with flags " + OpFlags.description(flags) 
                   + ": " + ex.getCause());
           continue;
         }
         else if (expectedResult.intValue() == SecurityTestUtil.OTHER_EXCEPTION) {
-          LogWriterUtils.getLogWriter().info(
+          System.out.println(
               "doOp: Got expected exception when doing operation: "
                   + ex.toString());
           continue;
@@ -728,7 +726,7 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
           fail("executeOpBlock: Unknown client number " + clientNum);
           break;
       }
-      LogWriterUtils.getLogWriter().info(
+      System.out.println(
           "executeOpBlock: performing operation number ["
               + currentOp.getOpNum() + "]: " + currentOp);
       if ((opFlags & OpFlags.USE_OLDCONN) == 0) {
@@ -764,7 +762,7 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
                 extraAuthzProps });
         // Start the client with valid credentials but allowed or disallowed to
         // perform an operation
-        LogWriterUtils.getLogWriter().info(
+        System.out.println(
             "executeOpBlock: For client" + clientNum + credentialsTypeStr
                 + " credentials: " + opCredentials);
         boolean setupDynamicRegionFactory = (opFlags & OpFlags.ENABLE_DRF) > 0;
@@ -849,21 +847,20 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
       String accessor = gen.getAuthorizationCallback();
       TestAuthzCredentialGenerator tgen = new TestAuthzCredentialGenerator(gen);
 
-      LogWriterUtils.getLogWriter().info(testName + ": Using authinit: " + authInit);
-      LogWriterUtils.getLogWriter().info(testName + ": Using authenticator: " + authenticator);
-      LogWriterUtils.getLogWriter().info(testName + ": Using accessor: " + accessor);
+      System.out.println(testName + ": Using authinit: " + authInit);
+      System.out.println(testName + ": Using authenticator: " + authenticator);
+      System.out.println(testName + ": Using accessor: " + accessor);
 
       // Start servers with all required properties
       Properties serverProps = buildProperties(authenticator, accessor, false,
           extraAuthProps, extraAuthzProps);
       // Get ports for the servers
-      Keeper port1Keeper = AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET);
+      int port1 = 0;
       Keeper port2Keeper = AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET);
-      int port1 = port1Keeper.getPort();
       int port2 = port2Keeper.getPort();
 
       // Perform all the ops on the clients
-      List opBlock = new ArrayList();
+      List<OperationWithAction> opBlock = new ArrayList<>();
       Random rnd = new Random();
       for (int opNum = 0; opNum < opCodes.length; ++opNum) {
         // Start client with valid credentials as specified in
@@ -874,20 +871,20 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
           // End of current operation block; execute all the operations
           // on the servers with/without failover
           if (opBlock.size() > 0) {
-            port1Keeper.release();
             // Start the first server and execute the operation block
-            server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
-                    SecurityTestUtil.getLocatorPort(), port1, serverProps,
+            final int locatorPort = 0;
+            port1 = server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+                    locatorPort, 0, serverProps,
                     javaProps ));
             server2.invoke(() -> SecurityTestUtil.closeCache());
             executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps,
                 extraAuthzProps, tgen, rnd);
             if (!currentOp.equals(OperationWithAction.OPBLOCK_NO_FAILOVER)) {
               // Failover to the second server and run the block again
-              port2Keeper.release();
-              server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
-                      SecurityTestUtil.getLocatorPort(), port2, serverProps,
-                      javaProps ));
+              final String locatorString = null;
+              port2 = server2.invoke(() -> SecurityTestUtil.createCacheServer(
+                      serverProps, javaProps, null, locatorString, 0, Boolean.TRUE,
+                          SecurityTestUtil.NO_EXCEPTION ));
               server1.invoke(() -> SecurityTestUtil.closeCache());
               executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps,
                   extraAuthzProps, tgen, rnd);
