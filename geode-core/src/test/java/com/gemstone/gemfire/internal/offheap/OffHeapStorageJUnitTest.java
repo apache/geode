@@ -152,7 +152,7 @@ public class OffHeapStorageJUnitTest {
     StatisticsFactory localStatsFactory = new LocalStatisticsFactory(null);
     InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
     MemoryAllocator ma = OffHeapStorage.createOffHeapStorage(localStatsFactory, OffHeapStorage.MIN_SLAB_SIZE, ids);
-    System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
+    System.setProperty(MemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
     ma.close();
   }
 
@@ -260,11 +260,11 @@ public class OffHeapStorageJUnitTest {
       verify(ooohml).outOfOffHeapMemory(ex);
 
     } finally {
-      System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
+      System.setProperty(MemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
       try {
         ma.close();
       } finally {
-        System.clearProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY);
+        System.clearProperty(MemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY);
       }
     }
   }

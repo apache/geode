@@ -34,10 +34,10 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * Tests fill pattern validation for the {@link SimpleMemoryAllocatorImpl}.
+ * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
  */
 @Category(IntegrationTest.class)
-public class SimpleMemoryAllocatorFillPatternIntegrationTest {
+public class MemoryAllocatorFillPatternIntegrationTest {
   private static Random random = ThreadLocalRandom.current();
 
   /**
@@ -81,7 +81,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
   private static final int HUGE_CHUNK_SIZE = 1024 * 200;
   
   /** Our test victim. */
-  private SimpleMemoryAllocatorImpl allocator = null;
+  private MemoryAllocatorImpl allocator = null;
   
   /** Our test victim's memory slab. */
   private SlabImpl slab = null;
@@ -93,7 +93,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
   public void setUp() throws Exception {
     System.setProperty("gemfire.validateOffHeapWithFill", "true");
     this.slab = new SlabImpl(SLAB_SIZE);
-    this.allocator = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{this.slab});
+    this.allocator = MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{this.slab});
   }
 
   /**
@@ -101,14 +101,14 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
    */
   @After
   public void tearDown() throws Exception {
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
     System.clearProperty("gemfire.validateOffHeapWithFill");
   }
   
   /**
-   * This test hammers a SimpleMemoryAllocatorImpl with multiple threads exercising
+   * This test hammers a MemoryAllocatorImpl with multiple threads exercising
    * the fill validation of tiny Chunks for one minute.  This, of course, exercises many aspects of
-   * the SimpleMemoryAllocatorImpl and its helper classes.
+   * the MemoryAllocatorImpl and its helper classes.
    * @throws Exception
    */
   @Test
@@ -127,9 +127,9 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
   }
 
   /**
-   * This test hammers a SimpleMemoryAllocatorImpl with multiple threads exercising
+   * This test hammers a MemoryAllocatorImpl with multiple threads exercising
    * the fill validation of huge Chunks for one minute.  This, of course, exercises many aspects of
-   * the SimpleMemoryAllocatorImpl and its helper classes.
+   * the MemoryAllocatorImpl and its helper classes.
    * @throws Exception
    */
   @Test

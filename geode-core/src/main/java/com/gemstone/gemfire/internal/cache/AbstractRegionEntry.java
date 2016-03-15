@@ -64,7 +64,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
@@ -1084,24 +1084,6 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       }
       return basicEquals(deserializedObj, cd.getDeserializedForReading());
       }
-//      boolean result = Arrays.equals((byte[])cdVal, serializedObj);
-//      if (!result) {
-//        try {
-//          Object o1 = BlobHelper.deserializeBlob((byte[])cdVal);
-//          Object o2 = BlobHelper.deserializeBlob(serializedObj);
-//          SimpleMemoryAllocatorImpl.debugLog("checkCDEquals o1=<" + o1 + "> o2=<" + o2 + ">", false);
-//          if (o1.equals(o2)) {
-//            SimpleMemoryAllocatorImpl.debugLog("they are equal! a1=<" + Arrays.toString((byte[])cdVal) + "> a2=<" + Arrays.toString(serializedObj) + ">", false);
-//          }
-//        } catch (IOException e) {
-//          // TODO Auto-generated catch block
-//          e.printStackTrace();
-//        } catch (ClassNotFoundException e) {
-//          // TODO Auto-generated catch block
-//          e.printStackTrace();
-//        }
-//      }
-//      return result;
     } else {
       // prefer object form
       if (obj instanceof CachedDeserializable) {
@@ -1337,7 +1319,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         byte[] compressedData = compressBytes(r, data);
         boolean isCompressed = compressedData != data;
         ReferenceCountHelper.setReferenceCountOwner(this);
-        MemoryAllocator ma = SimpleMemoryAllocatorImpl.getAllocator(); // fix for bug 47875
+        MemoryAllocator ma = MemoryAllocatorImpl.getAllocator(); // fix for bug 47875
         val = ma.allocateAndInitialize(compressedData, isSerialized, isCompressed, data);
         ReferenceCountHelper.setReferenceCountOwner(null);
       }

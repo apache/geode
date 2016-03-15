@@ -43,7 +43,7 @@ public class FreeListManagerTest {
   }
 
   private final int DEFAULT_SLAB_SIZE = 1024*1024*5;
-  private final SimpleMemoryAllocatorImpl ma = mock(SimpleMemoryAllocatorImpl.class);
+  private final MemoryAllocatorImpl ma = mock(MemoryAllocatorImpl.class);
   private final OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
   private TestableFreeListManager freeListManager;
   
@@ -68,7 +68,7 @@ public class FreeListManagerTest {
     }
   }
   
-  private static TestableFreeListManager createFreeListManager(SimpleMemoryAllocatorImpl ma, Slab[] slabs) {
+  private static TestableFreeListManager createFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
     return new TestableFreeListManager(ma, slabs);
   }
   
@@ -871,7 +871,7 @@ public class FreeListManagerTest {
       }
     }
     
-    public TestableFreeListManager(SimpleMemoryAllocatorImpl ma, Slab[] slabs) {
+    public TestableFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
       super(ma, slabs);
     }
     

@@ -29,7 +29,7 @@ public class OffHeapStoredObjectAddressStack {
   private volatile long topAddr;
   
   public OffHeapStoredObjectAddressStack(long addr) {
-    if (addr != 0L) SimpleMemoryAllocatorImpl.validateAddress(addr);
+    if (addr != 0L) MemoryAllocatorImpl.validateAddress(addr);
     this.topAddr = addr;
   }
   public OffHeapStoredObjectAddressStack() {
@@ -40,7 +40,7 @@ public class OffHeapStoredObjectAddressStack {
   }
   public void offer(long e) {
     assert e != 0;
-    SimpleMemoryAllocatorImpl.validateAddress(e);
+    MemoryAllocatorImpl.validateAddress(e);
     synchronized (this) {
       OffHeapStoredObject.setNext(e, this.topAddr);
       this.topAddr = e;

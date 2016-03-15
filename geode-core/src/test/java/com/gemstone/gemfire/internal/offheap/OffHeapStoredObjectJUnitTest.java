@@ -63,12 +63,12 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
 
-    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, 3, OffHeapStorage.MIN_SLAB_SIZE * 3, OffHeapStorage.MIN_SLAB_SIZE);
+    ma = MemoryAllocatorImpl.create(ooohml, stats, 3, OffHeapStorage.MIN_SLAB_SIZE * 3, OffHeapStorage.MIN_SLAB_SIZE);
   }
 
   @After
   public void tearDown() {
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
   }
 
   @Override

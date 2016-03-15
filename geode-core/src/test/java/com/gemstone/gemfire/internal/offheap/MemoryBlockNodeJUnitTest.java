@@ -46,7 +46,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class MemoryBlockNodeJUnitTest {
 
-  private SimpleMemoryAllocatorImpl ma;
+  private MemoryAllocatorImpl ma;
   private OutOfOffHeapMemoryListener ooohml;
   private OffHeapMemoryStats stats;
   private Slab[] slabs = {
@@ -82,12 +82,12 @@ public class MemoryBlockNodeJUnitTest {
   public void setUp() {
     ooohml = mock(OutOfOffHeapMemoryListener.class);
     stats = mock(OffHeapMemoryStats.class);
-    ma = (SimpleMemoryAllocatorImpl) SimpleMemoryAllocatorImpl.createForUnitTest(ooohml, stats, slabs);
+    ma = (MemoryAllocatorImpl) MemoryAllocatorImpl.createForUnitTest(ooohml, stats, slabs);
   }
 
   @After
   public void tearDown() {
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
   }
   
   protected Object getValue() {

@@ -54,7 +54,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * @author Kirk Lund
  * @since 9.0
  */
-public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
+public class MemoryAllocatorImpl implements MemoryAllocator {
 
   static final Logger logger = LogService.getLogger();
   
@@ -74,10 +74,10 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
 
   private volatile MemoryUsageListener[] memoryUsageListeners = new MemoryUsageListener[0];
   
-  private static SimpleMemoryAllocatorImpl singleton = null;
+  private static MemoryAllocatorImpl singleton = null;
   
-  public static SimpleMemoryAllocatorImpl getAllocator() {
-    SimpleMemoryAllocatorImpl result = singleton;
+  public static MemoryAllocatorImpl getAllocator() {
+    MemoryAllocatorImpl result = singleton;
     if (result == null) {
       throw new CacheClosedException("Off Heap memory allocator does not exist.");
     }
@@ -97,10 +97,10 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     });
   }
 
-  private static SimpleMemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, int slabCount, 
+  private static MemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, int slabCount, 
       long offHeapMemorySize, long maxSlabSize, Slab[] slabs, 
       SlabFactory slabFactory) {
-    SimpleMemoryAllocatorImpl result = singleton;
+    MemoryAllocatorImpl result = singleton;
     boolean created = false;
     try {
     if (result != null) {
@@ -137,7 +137,7 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
         }
       }
 
-      result = new SimpleMemoryAllocatorImpl(ooohml, stats, slabs);
+      result = new MemoryAllocatorImpl(ooohml, stats, slabs);
       singleton = result;
       LifecycleListener.invokeAfterCreate(result);
       created = true;
@@ -154,12 +154,12 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     }
     return result;
   }
-  static SimpleMemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, int slabCount, 
+  static MemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, int slabCount, 
       long offHeapMemorySize, long maxSlabSize, SlabFactory memChunkFactory) {
     return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null, 
         memChunkFactory);
   }
-  public static SimpleMemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener oooml, OffHeapMemoryStats stats, Slab[] slabs) {
+  public static MemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener oooml, OffHeapMemoryStats stats, Slab[] slabs) {
     int slabCount = 0;
     long offHeapMemorySize = 0;
     long maxSlabSize = 0;
@@ -195,7 +195,7 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     this.stats = newStats;
   }
 
-  private SimpleMemoryAllocatorImpl(final OutOfOffHeapMemoryListener oooml, final OffHeapMemoryStats stats, final Slab[] slabs) {
+  private MemoryAllocatorImpl(final OutOfOffHeapMemoryListener oooml, final OffHeapMemoryStats stats, final Slab[] slabs) {
     if (oooml == null) {
       throw new IllegalArgumentException("OutOfOffHeapMemoryListener is null");
     }
@@ -361,7 +361,7 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   }
   
   public static void freeOffHeapMemory() {
-    SimpleMemoryAllocatorImpl ma = singleton;
+    MemoryAllocatorImpl ma = singleton;
     if (ma != null) {
       ma.realClose();
     }
@@ -456,7 +456,7 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     if ((addr & 7) != 0) {
       StringBuilder sb = new StringBuilder();
       sb.append("address was not 8 byte aligned: 0x").append(Long.toString(addr, 16));
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.singleton;
+      MemoryAllocatorImpl ma = MemoryAllocatorImpl.singleton;
       if (ma != null) {
         sb.append(". Valid addresses must be in one of the following ranges: ");
         ma.freeList.getSlabDescriptions(sb);
@@ -471,7 +471,7 @@ public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
 
   static void validateAddressAndSizeWithinSlab(long addr, int size, boolean doExpensiveValidation) {
     if (doExpensiveValidation) {
-      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.singleton;
+      MemoryAllocatorImpl ma = MemoryAllocatorImpl.singleton;
       if (ma != null) {
         if (!ma.freeList.validateAddressAndSizeWithinSlab(addr, size)) {
           throw new IllegalStateException(" address 0x" + Long.toString(addr, 16) + " does not address the original slab memory");

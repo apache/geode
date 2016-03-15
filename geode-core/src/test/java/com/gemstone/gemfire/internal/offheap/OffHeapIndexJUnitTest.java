@@ -57,7 +57,7 @@ public class OffHeapIndexJUnitTest {
   @After
   public void tearDown() {
     this.gfc.close();
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
     // TODO cleanup default disk store files
   }
   

@@ -35,7 +35,7 @@ import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * Manages the free lists for a SimpleMemoryAllocatorImpl
+ * Manages the free lists and slabs for a MemoryAllocator
  */
 public class FreeListManager {
   static final Logger logger = LogService.getLogger();
@@ -127,9 +127,9 @@ public class FreeListManager {
    */
   private final AtomicInteger lastFragmentAllocation = new AtomicInteger(0);
   private final CopyOnWriteArrayList<Fragment> fragmentList;
-  private final SimpleMemoryAllocatorImpl ma;
+  private final MemoryAllocatorImpl ma;
 
-  public FreeListManager(SimpleMemoryAllocatorImpl ma, final Slab[] slabs) {
+  public FreeListManager(MemoryAllocatorImpl ma, final Slab[] slabs) {
     this.ma = ma;
     this.slabs = slabs;
     long total = 0;
@@ -762,7 +762,7 @@ public class FreeListManager {
   
   private List<MemoryBlock> getTinyFreeBlocks() {
     final List<MemoryBlock> value = new ArrayList<MemoryBlock>();
-    final SimpleMemoryAllocatorImpl sma = this.ma;
+    final MemoryAllocatorImpl sma = this.ma;
     for (int i = 0; i < this.tinyFreeLists.length(); i++) {
       if (this.tinyFreeLists.get(i) == null) continue;
       long addr = this.tinyFreeLists.get(i).getTopAddress();

@@ -29,11 +29,11 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import junit.framework.TestCase;
 
 /**
- * Tests fill pattern validation for the {@link SimpleMemoryAllocatorImpl}.
+ * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
  * @author rholmes
  */
 @Category(UnitTest.class)
-public class SimpleMemoryAllocatorFillPatternJUnitTest {
+public class MemoryAllocatorFillPatternJUnitTest {
   
   /** Size of single test slab.*/
   private static final int SLAB_SIZE = 1024 * 1024 * 50;
@@ -54,7 +54,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
   private static final int FORCE_COMPACTION_CHUNK_SIZE = COMPACTION_CHUNK_SIZE * 2;
 
   /** Our test victim. */
-  private SimpleMemoryAllocatorImpl allocator = null;
+  private MemoryAllocatorImpl allocator = null;
   
   /** Our test victim's memory slab. */
   private SlabImpl slab = null;
@@ -66,7 +66,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
   public void setUp() throws Exception {
     System.setProperty("gemfire.validateOffHeapWithFill", "true");
     this.slab = new SlabImpl(SLAB_SIZE);
-    this.allocator = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{this.slab});
+    this.allocator = MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{this.slab});
   }
 
   /**
@@ -74,7 +74,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
    */
   @After
   public void tearDown() throws Exception {
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
     System.clearProperty("gemfire.validateOffHeapWithFill");
   }
 

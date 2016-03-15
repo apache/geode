@@ -75,7 +75,7 @@ public abstract class OffHeapRegionBase {
   private void closeCache(GemFireCacheImpl gfc, boolean keepOffHeapAllocated) {
     gfc.close();
     if (!keepOffHeapAllocated) {
-      SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+      MemoryAllocatorImpl.freeOffHeapMemory();
     }
     // TODO cleanup default disk store files
   }
@@ -100,7 +100,7 @@ public abstract class OffHeapRegionBase {
       assertEquals(0, ma.getUsedMemory());
       // do an allocation larger than the slab size
       // TODO: currently the compact will product slabs bigger than the max slab size
-      // (see the todo comment on compact() in SimpleMemoryAllocator).
+      // (see the todo comment on compact() in FreeListManager).
       // So we request 20m here since that it the total size.
       try {
         ma.allocate(1024*1024*20);

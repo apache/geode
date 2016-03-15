@@ -96,7 +96,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     final static byte FILL_BYTE = 0x3c;
     
     protected OffHeapStoredObject(long memoryAddress, int chunkSize) {
-      SimpleMemoryAllocatorImpl.validateAddressAndSize(memoryAddress, chunkSize);
+      MemoryAllocatorImpl.validateAddressAndSize(memoryAddress, chunkSize);
       this.memoryAddress = memoryAddress;
       setSize(chunkSize);
       AddressableMemoryManager.writeIntVolatile(getAddress()+REF_COUNT_OFFSET, MAGIC_NUMBER);
@@ -121,7 +121,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
      * memoryAddress. The off heap header has already been initialized.
      */
     protected OffHeapStoredObject(long memoryAddress) {
-      SimpleMemoryAllocatorImpl.validateAddress(memoryAddress);
+      MemoryAllocatorImpl.validateAddress(memoryAddress);
       this.memoryAddress = memoryAddress;
     }
     
@@ -168,8 +168,8 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       // TODO OFFHEAP: no need to copy to heap. Just get the address of each and compare each byte. No need to call incReads when reading from address.
       int i;
       // inc it twice since we are reading two different objects
-      SimpleMemoryAllocatorImpl.getAllocator().getStats().incReads();
-      SimpleMemoryAllocatorImpl.getAllocator().getStats().incReads();
+      MemoryAllocatorImpl.getAllocator().getStats().incReads();
+      MemoryAllocatorImpl.getAllocator().getStats().incReads();
       for (i=0; i < mySize-(dataCache1.length-1); i+=dataCache1.length) {
         this.readDataBytes(i, dataCache1);
         other.readDataBytes(i, dataCache2);
@@ -206,7 +206,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       final byte[] dataCache = new byte[1024];
       int idx=0;
       int i;
-      SimpleMemoryAllocatorImpl.getAllocator().getStats().incReads();
+      MemoryAllocatorImpl.getAllocator().getStats().incReads();
       for (i=0; i < mySize-(dataCache.length-1); i+=dataCache.length) {
         this.readDataBytes(i, dataCache);
         for (int j=0; j < dataCache.length; j++) {
@@ -416,7 +416,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       byte[] result = new byte[getDataSize()];
       readDataBytes(0, result);
       //debugLog("reading", true);
-      SimpleMemoryAllocatorImpl.getAllocator().getStats().incReads();
+      MemoryAllocatorImpl.getAllocator().getStats().incReads();
       return result;
     }
     protected byte[] getRawBytes() {
@@ -487,19 +487,19 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     }
 
     public static int getSize(long memAddr) {
-      SimpleMemoryAllocatorImpl.validateAddress(memAddr);
+      MemoryAllocatorImpl.validateAddress(memAddr);
       return AddressableMemoryManager.readInt(memAddr+CHUNK_SIZE_OFFSET);
     }
     public static void setSize(long memAddr, int size) {
-      SimpleMemoryAllocatorImpl.validateAddressAndSize(memAddr, size);
+      MemoryAllocatorImpl.validateAddressAndSize(memAddr, size);
       AddressableMemoryManager.writeInt(memAddr+CHUNK_SIZE_OFFSET, size);
     }
     public static long getNext(long memAddr) {
-      SimpleMemoryAllocatorImpl.validateAddress(memAddr);
+      MemoryAllocatorImpl.validateAddress(memAddr);
       return AddressableMemoryManager.readLong(memAddr+HEADER_SIZE);
     }
     public static void setNext(long memAddr, long next) {
-      SimpleMemoryAllocatorImpl.validateAddress(memAddr);
+      MemoryAllocatorImpl.validateAddress(memAddr);
       AddressableMemoryManager.writeLong(memAddr+HEADER_SIZE, next);
     }
     
@@ -595,7 +595,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     }
 
     public static boolean retain(long memAddr) {
-      SimpleMemoryAllocatorImpl.validateAddress(memAddr);
+      MemoryAllocatorImpl.validateAddress(memAddr);
       int uc;
       int rawBits;
       int retryCount = 0;
@@ -628,7 +628,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       release(memAddr, null);
     }
     static void release(final long memAddr, FreeListManager freeListManager) {
-      SimpleMemoryAllocatorImpl.validateAddress(memAddr);
+      MemoryAllocatorImpl.validateAddress(memAddr);
       int newCount;
       int rawBits;
       boolean returnToAllocator;
@@ -661,7 +661,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
           ReferenceCountHelper.freeRefCountInfo(memAddr);
         }
         if (freeListManager == null) {
-          freeListManager = SimpleMemoryAllocatorImpl.getAllocator().getFreeListManager();
+          freeListManager = MemoryAllocatorImpl.getAllocator().getFreeListManager();
         }
         freeListManager.free(memAddr);
       } else {

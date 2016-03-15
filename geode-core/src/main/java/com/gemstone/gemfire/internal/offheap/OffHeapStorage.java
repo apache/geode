@@ -199,7 +199,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
 
     final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
 
-    return SimpleMemoryAllocatorImpl.create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize);
+    return MemoryAllocatorImpl.create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize);
   }
   
   private static final long MAX_SLAB_SIZE = Integer.MAX_VALUE;

@@ -65,12 +65,12 @@ public class OffHeapRegionEntryHelperJUnitTest {
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
 
-    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, 1, OffHeapStorage.MIN_SLAB_SIZE * 1, OffHeapStorage.MIN_SLAB_SIZE);
+    ma = MemoryAllocatorImpl.create(ooohml, stats, 1, OffHeapStorage.MIN_SLAB_SIZE * 1, OffHeapStorage.MIN_SLAB_SIZE);
   }
 
   @After
   public void tearDown() {
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
   }
 
   private OffHeapStoredObject createChunk(Object value) {

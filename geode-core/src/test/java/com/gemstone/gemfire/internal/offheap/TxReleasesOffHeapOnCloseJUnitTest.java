@@ -49,7 +49,7 @@ public class TxReleasesOffHeapOnCloseJUnitTest {
   @Test
   public void testTxReleasesOffHeapOnClose() {
     createCache();
-    SimpleMemoryAllocatorImpl sma = SimpleMemoryAllocatorImpl.getAllocator();
+    MemoryAllocatorImpl sma = MemoryAllocatorImpl.getAllocator();
     RegionFactory rf = cache.createRegionFactory();
     rf.setOffHeap(true);
     Region r = rf.create("testTxReleasesOffHeapOnClose");

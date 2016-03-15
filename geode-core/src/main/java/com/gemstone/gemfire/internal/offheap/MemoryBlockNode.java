@@ -26,9 +26,9 @@ import com.gemstone.gemfire.cache.CacheClosedException;
  * Basic implementation of MemoryBlock for test validation only.
  */
 public class MemoryBlockNode implements MemoryBlock {
-  private final SimpleMemoryAllocatorImpl ma;
+  private final MemoryAllocatorImpl ma;
   private final MemoryBlock block;
-  MemoryBlockNode(SimpleMemoryAllocatorImpl ma, MemoryBlock block) {
+  MemoryBlockNode(MemoryAllocatorImpl ma, MemoryBlock block) {
     this.ma = ma;
     this.block = block;
   }
