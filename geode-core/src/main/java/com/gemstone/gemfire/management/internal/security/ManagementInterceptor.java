@@ -168,7 +168,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
     Set<JMXPrincipal> principals = subject.getPrincipals(JMXPrincipal.class);
 
     if (principals == null || principals.isEmpty()) {
-      throw new SecurityException(ACCESS_DENIED_MESSAGE);
+      throw new SecurityException(ACCESS_DENIED_MESSAGE + ": No princial found.");
 		}
 
 		Principal principal = principals.iterator().next();
@@ -176,7 +176,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
     AccessControl accessControl = getAccessControl(principal, false);
 
     if (!accessControl.authorizeOperation(null, context)) {
-      throw new SecurityException(ACCESS_DENIED_MESSAGE);
+      throw new SecurityException(ACCESS_DENIED_MESSAGE + ": Not authorized for "+context);
     }
   }
 

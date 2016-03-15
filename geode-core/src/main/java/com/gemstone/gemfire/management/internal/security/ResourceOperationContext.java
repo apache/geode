@@ -77,4 +77,8 @@ public class ResourceOperationContext extends OperationContext {
     return this.opResult;
   }
 
+  public String toString(){
+    return getResource() + ":"+ getOperationCode();
+  }
+
 }

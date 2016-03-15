@@ -9,11 +9,16 @@
         "CONTINUOUS_QUERY:EXECUTE",
         "CONTINUOUS_QUERY:STOP",
         "MEMBER:SHUTDOWN",
+        "MEMBER:STATUS",
         "DISKSTORE:COMPACT",
         "MANAGER:CREATE",
         "REGION:CREATE",
-        "MEMBER:PROCESS_COMMAND",
-        "MEMBER:STATUS"
+        "REGION:REBALANCE",
+        "REGION:EXPORT",
+        "REGION:IMPORT",
+        "REGION:PUT",
+        "REGION:GET",
+        "REGION:DELETE"
       ]
     },
     {
@@ -31,15 +36,20 @@
       "name": "dataUsers",
       "operationsAllowed": [
         "REGION:GET",
-        "MEMBER:PROCESS_COMMAND"
+        "REGION:REBALANCE",
+        "REGION:EXPORT",
+        "REGION:IMPORT",
+        "REGION:PUT",
+        "REGION:GET",
+        "REGION:DELETE",
+        "QUERY:EXECUTE"
       ],
       "region": "region1"
     },
     {
       "name": "secureDataUsers",
       "operationsAllowed": [
-        "REGION:GET",
-        "MEMBER:PROCESS_COMMAND"
+        "REGION:GET"
       ],
       "regions": ["region1", "secureRegion"]
     }

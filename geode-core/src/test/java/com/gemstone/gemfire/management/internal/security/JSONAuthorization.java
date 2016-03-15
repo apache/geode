@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JSONAuthorization implements AccessControl, Authenticator {
 
@@ -210,7 +212,19 @@ public class JSONAuthorization implements AccessControl, Authenticator {
           // If this is a Command operation context, we need to further check if the region is allowed in this role
           CLIOperationContext ctx = (CLIOperationContext) context;
           String region = ctx.getCommandOptions().get("region");
-          if(role.regionNames == null || role.regionNames.contains(region)){
+          if(region==null) {
+            region = ctx.getCommandOptions().get("include-region");
+          }
+          if(region==null) {
+            String query = ctx.getCommandOptions().get("query");
+            if(query!=null) {
+              Matcher matcher = Pattern.compile("/\\s*(\\w+)").matcher(query);
+              if (matcher.find())
+                region = matcher.group(1);
+            }
+          }
+
+          if(role.regionNames == null || region == null || role.regionNames.contains(region)){
             // if regionName is null, i.e. all regions are allowed
             return true;
           }

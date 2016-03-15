@@ -39,6 +39,7 @@ import java.util.Map;
 public class CLIOperationContext extends ResourceOperationContext {
 
 	private Map<String,String> commandOptions = null;
+	private String command = null;
 	
 	private static Map<String,ResourceOperation> commandToCodeMapping = new HashMap<String,ResourceOperation>();
 	private static CommandManager commandManager = null;
@@ -46,9 +47,10 @@ public class CLIOperationContext extends ResourceOperationContext {
 	
 	public CLIOperationContext(String commandString) throws CommandProcessingException, IllegalStateException{
 		GfshParseResult parseResult = (GfshParseResult) parseCommand(commandString);
-		ResourceOperation op = findResourceCode(parseResult.getCommandName());
-		setResourceOperation(op);
+		this.command = parseResult.getCommandName();
 		this.commandOptions = parseResult.getParamValueStrings();
+		ResourceOperation op = findResourceCode(this.command);
+		setResourceOperation(op);
   }
 	
 	private static ParseResult parseCommand(String commentLessLine) throws CommandProcessingException, IllegalStateException {
@@ -79,13 +81,15 @@ public class CLIOperationContext extends ResourceOperationContext {
 		return commandOptions;
 	}
 
+	public String getCommand(){
+		return command;
+	}
+
 	private static ResourceOperation findResourceCode(String commandName) {
 		return commandToCodeMapping.get(commandName);
 	}
 	
 	public String toString(){
-	  String str;
-	  str = "CLIOperationContext(resourceCode=" + getOperationCode() + ") options=" + commandOptions+")";
-	  return str;
+	  return getResource() + ":"+ getOperationCode() + " commmand=" + command + " options=" + commandOptions;
 	}
 }

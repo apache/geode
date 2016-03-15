@@ -59,4 +59,56 @@ public class DataCommandsSecurityTest {
     bean.processCommand("locate entry --key=k1 --region=secureRegion");
   }
 
+  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
+  @Test
+  public void testAllAccess(){
+    bean.processCommand("rebalance --include-region=region1");
+    bean.processCommand("export data --region=region1 --file=foo.txt --member=value");
+    bean.processCommand("import data --region=region1 --file=foo.txt --member=value");
+    bean.processCommand("put --key=key1 --value=value1 --region=region1");
+    bean.processCommand("get --key=key1 --region=region1");
+    bean.processCommand("remove --region=region1");
+    bean.processCommand("query --query='SELECT * FROM /region1'");
+  }
+
+  // stranger has no permission granted
+  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  @Test
+  public void testNoAccess(){
+    assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region1")).isInstanceOf(SecurityException.class)
+    .hasMessageStartingWith("Access Denied: Not authorized for REGION:REBALANCE");
+
+    assertThatThrownBy(() -> bean.processCommand("export data --region=region1 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> bean.processCommand("import data --region=region1 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
+
+    assertThatThrownBy(() -> bean.processCommand("put --key=key1 --value=value1 --region=region1")).isInstanceOf(SecurityException.class)
+        .hasMessageStartingWith("Access Denied: Not authorized for REGION:PUT");
+
+    assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region1")).isInstanceOf(SecurityException.class)
+        .hasMessageStartingWith("Access Denied: Not authorized for REGION:GET");
+
+    assertThatThrownBy(() -> bean.processCommand("query --query='SELECT * FROM /region1'")).isInstanceOf(SecurityException.class)
+        .hasMessageStartingWith("Access Denied: Not authorized for QUERY:EXECUTE");
+  }
+
+  // dataUser has all the permissions granted, but not to region2 (only to region1)
+  @JMXConnectionConfiguration(user = "dataUser", password = "1234567")
+  @Test
+  public void testNoAccessToRegion(){
+    assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region2")).isInstanceOf(SecurityException.class)
+        .hasMessageStartingWith("Access Denied: Not authorized for REGION:REBALANCE");
+
+    assertThatThrownBy(() -> bean.processCommand("export data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> bean.processCommand("import data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
+
+    assertThatThrownBy(() -> bean.processCommand("put --key=key1 --value=value1 --region=region2")).isInstanceOf(SecurityException.class)
+        .hasMessageStartingWith("Access Denied: Not authorized for REGION:PUT");
+
+    assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region2")).isInstanceOf(SecurityException.class)
+        .hasMessageStartingWith("Access Denied: Not authorized for REGION:GET");
+
+    assertThatThrownBy(() -> bean.processCommand("query --query='SELECT * FROM /region2'")).isInstanceOf(SecurityException.class)
+        .hasMessageStartingWith("Access Denied: Not authorized for QUERY:EXECUTE");
+  }
+
 }
