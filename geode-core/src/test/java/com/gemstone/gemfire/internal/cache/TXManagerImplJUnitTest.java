@@ -331,4 +331,11 @@ public class TXManagerImplJUnitTest {
     assertNull(region.get("key"));
     System.setProperty("gemfire.suspendedTxTimeout", "");
   }
+
+  @Test
+  public void testIsDistributedDoesNotThrowNPE() {
+    TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
+    cache.getDistributedSystem().disconnect();
+    assertFalse(txMgr.isDistributed());
+  }
 }
