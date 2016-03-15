@@ -804,10 +804,11 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     });
     
     // gather details for later creation of ConnectionPool...
-    ports[0] = vm0.invoke(() -> ClientMembershipDUnitTest.getTestClientMembershipEventsInClient_port());
+    ports[0] = vm0.invoke("getTestClientMembershipEventsInClient_port",
+        () -> ClientMembershipDUnitTest.getTestClientMembershipEventsInClient_port());
     assertTrue(ports[0] != 0);
 
-    DistributedMember serverMember = (DistributedMember) vm0.invoke(() -> ClientMembershipDUnitTest.getDistributedMember());
+    DistributedMember serverMember = (DistributedMember) vm0.invoke("get distributed member", () -> ClientMembershipDUnitTest.getDistributedMember());
 
     String serverMemberId = serverMember.toString();
 
@@ -1440,7 +1441,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
             getDistributedMember());
         }
       });
-      ports[whichVM] = vm.invoke(() -> ClientMembershipDUnitTest.getTestGetConnectedServers_port());
+      ports[whichVM] = vm.invoke("getTestGetConnectedServers_port",
+          () -> ClientMembershipDUnitTest.getTestGetConnectedServers_port());
       assertTrue(ports[whichVM] != 0);
     }
     
@@ -1555,7 +1557,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
             getMemberId());
         }
       });
-      ports[whichVM] = vm.invoke(() -> ClientMembershipDUnitTest.getTestGetNotifiedClients_port());
+      ports[whichVM] = vm.invoke("getTestGetNotifiedClients_port",
+          () -> ClientMembershipDUnitTest.getTestGetNotifiedClients_port());
       assertTrue(ports[whichVM] != 0);
     }
     
@@ -1599,7 +1602,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           }
         }
       });
-      clientCounts[whichVM] = vm.invoke(() -> ClientMembershipDUnitTest.getTestGetNotifiedClients_clientCount());
+      clientCounts[whichVM] = vm.invoke("getTestGetNotifiedClients_clientCount",
+          () -> ClientMembershipDUnitTest.getTestGetNotifiedClients_clientCount());
     }
     
     // only one server should have a notifier for this client...
