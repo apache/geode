@@ -2582,21 +2582,20 @@ public class CacheClientProxy implements ClientSession {
         try {
           // If paused, wait to be told to resume (or interrupted if stopped)
           if (getProxy().isPaused()) {
-            try {
-              // ARB: Before waiting for resumption, process acks from client. 
-              // This will reduce the number of duplicates that a client receives after
-              // reconnecting.
-              if (this._messageQueue.size() > 0) {
-                Thread.sleep(50);
-              }
-              logger.info("available ids = " + this._messageQueue.size()+ " , isEmptyAckList =" + this._messageQueue.isEmptyAckList() 
+            // ARB: Before waiting for resumption, process acks from client. 
+            // This will reduce the number of duplicates that a client receives after
+            // reconnecting.
+            synchronized (_pausedLock) {
+              try {
+                logger.info("available ids = " + this._messageQueue.size()+ " , isEmptyAckList =" + this._messageQueue.isEmptyAckList() 
                             + ", peekInitialized = " + this._messageQueue.isPeekInitialized());
-              while (!this._messageQueue.isEmptyAckList()&& this._messageQueue.isPeekInitialized()) {
-                this._messageQueue.remove();
+                while (!this._messageQueue.isEmptyAckList()&& this._messageQueue.isPeekInitialized()) {
+                  this._messageQueue.remove();
+                }
               }
-            }
-            catch (InterruptedException ex) {
-              logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_SLEEP_INTERRUPTED, this));
+              catch (InterruptedException ex) {
+                logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_SLEEP_INTERRUPTED, this));
+              }
             }
             waitForResumption();
           }
