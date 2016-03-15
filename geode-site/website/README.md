@@ -6,7 +6,7 @@ Source files for the website are in ``${geode-project-dir}/geode-site/website/co
 
 Generated files for the website are in ``${geode-project-dir}/geode-site/content``
 
-The website is updated by a "sync" tool that monitors the __asf-site__ branch of our Git repo, so after to make changes you must push your updated source and generated files to that branch. The content will be published to the [Geode website](http://geode.incubator.apache.org), after a 5-20 minute delay.
+The website is updated by a "sync" tool that monitors the __asf-site__ branch of our Git repo, so after making changes you must push your updated source and generated files to that branch. The content will be published to the [Geode website](http://geode.incubator.apache.org), after a 5-20 minute delay.
 
 ## Prerequsites
 
