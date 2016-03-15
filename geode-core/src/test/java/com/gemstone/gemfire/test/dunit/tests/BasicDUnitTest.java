@@ -106,6 +106,48 @@ public class BasicDUnitTest extends DistributedTestCase {
     assertEquals(0, vm0num);
     
   }
+  
+  static class BasicDUnitException extends RuntimeException {
+    public BasicDUnitException() {
+    }
+  }
+  
+  public static void throwException() throws BasicDUnitException {
+    throw new BasicDUnitException();
+  }
+
+  public void testInvokeNamedRunnableLambdaAsync() throws Throwable {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    
+    AsyncInvocation<Integer> async0 = vm0.invokeAsync("throwSomething", () -> BasicDUnitTest.throwException());
+    try {
+      async0.getResult();
+      throw new Error("expected an exception to be thrown");
+    } catch (Exception e) {
+      Throwable cause = e.getCause();
+      if (cause == null) {
+        throw new Error("expected an exception with a cause to be thrown", e);
+      }
+      if ( !(cause.getCause() instanceof BasicDUnitException) ) {
+        throw new Error("expected a BasicDUnitException to be thrown", e.getCause());
+      }
+    }
+  }
+
+  public void testInvokeNamedRunnableLambda() throws Throwable {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    
+    try {
+      vm0.invoke("throwSomething", () -> BasicDUnitTest.throwException());
+      throw new Error("expected an exception to be thrown");
+    } catch (Exception e) {
+      if ( !(e.getCause() instanceof BasicDUnitException) ) {
+        throw new Error("expected a BasicDUnitException to be thrown", e.getCause());
+      }
+    }
+  }
 
   static class BasicTestException extends RuntimeException {
     BasicTestException() {

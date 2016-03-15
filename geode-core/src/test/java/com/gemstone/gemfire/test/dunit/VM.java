@@ -259,7 +259,7 @@ public class VM implements Serializable {
    */
   public AsyncInvocation invokeAsync(String name, SerializableRunnableIF r) {
     NamedRunnable nr = new NamedRunnable(name, r);
-    return invokeAsync(r, "run", new Object[0]);
+    return invokeAsync(nr, "run", new Object[0]);
   }
   
   /**
