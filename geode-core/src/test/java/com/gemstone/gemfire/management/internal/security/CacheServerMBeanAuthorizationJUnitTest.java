@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class CacheServerMBeanAuthorizationJUnitTest {
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
-  private CacheServerMXBean cacheServerMXBean;
+  private CacheServerMXBean bean;
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
@@ -42,40 +42,40 @@ public class CacheServerMBeanAuthorizationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    cacheServerMXBean = connectionRule.getProxyMBean(CacheServerMXBean.class);
+    bean = connectionRule.getProxyMBean(CacheServerMXBean.class);
   }
 
   @Test
   @JMXConnectionConfiguration(user = "superuser", password = "1234567")
   public void testAllAccess() throws Exception {
-    cacheServerMXBean.removeIndex("foo");
-    cacheServerMXBean.executeContinuousQuery("bar");
-    cacheServerMXBean.fetchLoadProbe();
-    cacheServerMXBean.getActiveCQCount();
-    cacheServerMXBean.stopContinuousQuery("bar");
-    cacheServerMXBean.closeAllContinuousQuery("bar");
-    cacheServerMXBean.isRunning();
-    cacheServerMXBean.showClientQueueDetails("foo");
+    bean.removeIndex("foo");
+    bean.executeContinuousQuery("bar");
+    bean.fetchLoadProbe();
+    bean.getActiveCQCount();
+    bean.stopContinuousQuery("bar");
+    bean.closeAllContinuousQuery("bar");
+    bean.isRunning();
+    bean.showClientQueueDetails("foo");
   }
 
   @Test
   @JMXConnectionConfiguration(user = "user", password = "1234567")
   public void testSomeAccess() throws Exception {
-    assertThatThrownBy(() -> cacheServerMXBean.removeIndex("foo")).isInstanceOf(SecurityException.class);
-    assertThatThrownBy(() -> cacheServerMXBean.executeContinuousQuery("bar")).isInstanceOf(SecurityException.class);
-    cacheServerMXBean.fetchLoadProbe();
+    assertThatThrownBy(() -> bean.removeIndex("foo")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).isInstanceOf(SecurityException.class);
+    bean.fetchLoadProbe();
   }
 
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> cacheServerMXBean.removeIndex("foo")).isInstanceOf(SecurityException.class).hasMessageContaining("INDEX:DESTROY");
-    assertThatThrownBy(() -> cacheServerMXBean.executeContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("CONTINUOUS_QUERY:EXECUTE");
-    assertThatThrownBy(() -> cacheServerMXBean.fetchLoadProbe()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> cacheServerMXBean.getActiveCQCount()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> cacheServerMXBean.stopContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("ONTINUOUS_QUERY:STOP");
-    assertThatThrownBy(() -> cacheServerMXBean.closeAllContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("ONTINUOUS_QUERY:STOP");
-    assertThatThrownBy(() -> cacheServerMXBean.isRunning()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> cacheServerMXBean.showClientQueueDetails("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.removeIndex("foo")).isInstanceOf(SecurityException.class).hasMessageContaining("INDEX:DESTROY");
+    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("CONTINUOUS_QUERY:EXECUTE");
+    assertThatThrownBy(() -> bean.fetchLoadProbe()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.getActiveCQCount()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.stopContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("ONTINUOUS_QUERY:STOP");
+    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("ONTINUOUS_QUERY:STOP");
+    assertThatThrownBy(() -> bean.isRunning()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.showClientQueueDetails("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
   }
 }

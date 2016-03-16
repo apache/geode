@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.management.internal.security.Resource;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
@@ -162,7 +161,7 @@ public interface DiskStoreMXBean {
    * compaction is true then the application will wait for the other op-logs to
    * be compacted and additional space is available.
    */
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationContext.OperationCode.ROLL)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.ROLL)
   public void forceRoll();
 
   /**
@@ -209,7 +208,7 @@ public interface DiskStoreMXBean {
    * 
    * @param warningPercent the warning percent
    */
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.SET_DISK_USAGE_WARNING)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.ALTER)
   public void setDiskUsageWarningPercentage(float warningPercent);
   
   /**
@@ -217,6 +216,6 @@ public interface DiskStoreMXBean {
    * 
    * @param criticalPercent the critical percent
    */
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.SET_DISK_USAGE_CRITICAL)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.ALTER)
   public void setDiskUsageCriticalPercentage(float criticalPercent);
 }

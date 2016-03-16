@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.management.internal.security;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -48,7 +47,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
 
   @BeforeClass
   public static void beforeClassSetUp() {
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = serverRule.getCache();
     DLockService.create("test-lock-service", (InternalDistributedSystem) cache.getDistributedSystem(), false, true, true);
   }
 
