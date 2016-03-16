@@ -855,12 +855,17 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
       Properties serverProps = buildProperties(authenticator, accessor, false,
           extraAuthProps, extraAuthzProps);
       // Get ports for the servers
-      int port1 = 0;
+      Keeper locator1PortKeeper = AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET);
+      Keeper locator2PortKeeper = AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET);
+      Keeper port1Keeper = AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET);
       Keeper port2Keeper = AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET);
+      int locator1Port = locator1PortKeeper.getPort();
+      int locator2Port = locator2PortKeeper.getPort();
+      int port1 = port1Keeper.getPort();
       int port2 = port2Keeper.getPort();
 
       // Perform all the ops on the clients
-      List<OperationWithAction> opBlock = new ArrayList<>();
+      List opBlock = new ArrayList();
       Random rnd = new Random();
       for (int opNum = 0; opNum < opCodes.length; ++opNum) {
         // Start client with valid credentials as specified in
@@ -871,20 +876,22 @@ public class ClientAuthorizationTestBase extends DistributedTestCase {
           // End of current operation block; execute all the operations
           // on the servers with/without failover
           if (opBlock.size() > 0) {
+            locator1PortKeeper.release();
+            port1Keeper.release();
             // Start the first server and execute the operation block
-            final int locatorPort = 0;
-            port1 = server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
-                    locatorPort, 0, serverProps,
+            server1.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+                    locator1Port, port1, serverProps,
                     javaProps ));
             server2.invoke(() -> SecurityTestUtil.closeCache());
             executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps,
                 extraAuthzProps, tgen, rnd);
             if (!currentOp.equals(OperationWithAction.OPBLOCK_NO_FAILOVER)) {
               // Failover to the second server and run the block again
-              final String locatorString = null;
-              port2 = server2.invoke(() -> SecurityTestUtil.createCacheServer(
-                      serverProps, javaProps, null, locatorString, 0, Boolean.TRUE,
-                          SecurityTestUtil.NO_EXCEPTION ));
+              locator2PortKeeper.release();
+              port2Keeper.release();
+              server2.invoke(() -> ClientAuthorizationTestBase.createCacheServer(
+                      locator2Port, port2, serverProps,
+                      javaProps ));
               server1.invoke(() -> SecurityTestUtil.closeCache());
               executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps,
                   extraAuthzProps, tgen, rnd);
