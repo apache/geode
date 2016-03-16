@@ -1118,7 +1118,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     services.getConfig().getDistributionConfig().setEnableNetworkPartitionDetection(enabled);
 
     if (response.isUsePreferredCoordinators()) {
-      this.quorumRequired = true;
+      this.quorumRequired = enabled;
       logger.debug("The locator indicates that all locators should be preferred as coordinators");
       if (services.getLocator() != null
           || Locator.hasLocator()
