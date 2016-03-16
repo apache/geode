@@ -16,13 +16,10 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.ManagerMXBean;
+import com.gemstone.gemfire.management.internal.beans.ManagerMBean;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -30,7 +27,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
+
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 @Category(IntegrationTest.class)
 public class ManagerMBeanAuthorizationJUnitTest {
@@ -46,18 +47,16 @@ public class ManagerMBeanAuthorizationJUnitTest {
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
 
   @BeforeClass
-  public static void beforeClassSetUp() {
-    Cache cache = CacheFactory.getAnyInstance();
+  public static void beforeClassSetup() throws Exception {
+    // Create a mock ManagerMBean that we will use to call against.
+    ObjectName managerMBeanName = ObjectName.getInstance("GemFire", "mock", "Manager");
+    ManagerMXBean bean = mock(ManagerMBean.class);
+    ManagementFactory.getPlatformMBeanServer().registerMBean(bean, managerMBeanName);
   }
 
   @Before
   public void setUp() throws Exception {
-    managerMXBean = connectionRule.getProxyMBean(ManagerMXBean.class);
-  }
-
-  @AfterClass
-  public static void afterClassTeardown() {
-    DLockService.destroyAll();
+    managerMXBean = connectionRule.getProxyMBean(ManagerMXBean.class, "GemFire:mock=Manager");
   }
 
   @Test
@@ -71,13 +70,13 @@ public class ManagerMBeanAuthorizationJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "user", password = "1234567")
   public void testSomeAccess() throws Exception {
-//    assertThatThrownBy(() -> managerMXBean.becomeLockGrantor()).isInstanceOf(SecurityException.class);
-//    managerMXBean.getMemberCount();
+    assertThatThrownBy(() -> managerMXBean.start()).isInstanceOf(SecurityException.class);
+    managerMXBean.getPulseURL();
   }
 
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-//    assertThatThrownBy(() -> managerMXBean.becomeLockGrantor()).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> managerMXBean.start()).isInstanceOf(SecurityException.class);
   }
 }
