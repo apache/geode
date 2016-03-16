@@ -23,10 +23,10 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -66,7 +66,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
 	public static final String PASSWORD = "security-password";
 	public static final String OBJECT_NAME_ACCESSCONTROL = "GemFire:service=AccessControl,type=Distributed";
 
-	private Logger logger;
+	private static final Logger logger = LogManager.getLogger(ManagementInterceptor.class);
   private Cache cache;
   private String authzFactoryName;
   private String postAuthzFactoryName;
@@ -74,17 +74,16 @@ public class ManagementInterceptor implements JMXAuthenticator{
   private ConcurrentMap<Principal, AccessControl> cachedAuthZCallback;
   private ConcurrentMap<Principal, AccessControl> cachedPostAuthZCallback;
 
-  public ManagementInterceptor(Cache gemFireCacheImpl, Logger logger) {
+  public ManagementInterceptor(Cache gemFireCacheImpl) {
     this.cache = gemFireCacheImpl;
-		this.logger = logger;
     DistributedSystem system = cache.getDistributedSystem();
     Properties sysProps = system.getProperties();
     this.authzFactoryName = sysProps.getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME);
     this.postAuthzFactoryName = sysProps.getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME);
     this.authenticatorFactoryName = sysProps.getProperty(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
-    this.cachedAuthZCallback = new ConcurrentHashMap<Principal, AccessControl>();
-    this.cachedPostAuthZCallback = new ConcurrentHashMap<Principal, AccessControl>();
-		registerAccessContorlMbean();
+    this.cachedAuthZCallback = new ConcurrentHashMap<>();
+    this.cachedPostAuthZCallback = new ConcurrentHashMap<>();
+		registerAccessControlMBean();
     logger.info("Started Management interceptor on JMX connector");
 	}
 
@@ -92,7 +91,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
    * This method registers an AccessControlMBean which allows any remote JMX Client (for example Pulse) to check for
    * access allowed for given Operation Code.
    */
-	private void registerAccessContorlMbean() {
+	private void registerAccessControlMBean() {
     try {
       AccessControlMBean acc = new AccessControlMBean(this);
       ObjectName accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
@@ -128,8 +127,8 @@ public class ManagementInterceptor implements JMXAuthenticator{
     Properties pr = new Properties();
     if (credentials instanceof String[]) {
 			final String[] aCredentials = (String[]) credentials;
-			username = (String) aCredentials[0];
-			password = (String) aCredentials[1];
+			username = aCredentials[0];
+			password = aCredentials[1];
 		  pr.put(USER_NAME, username);
 		  pr.put(PASSWORD, password);
     } else if (credentials instanceof Properties) {
@@ -228,7 +227,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
       throw new AuthenticationFailedException(
           LocalizedStrings.HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED.toLocalizedString());
 		}
-    auth.init(gfSecurityProperties,(InternalLogWriter) this.cache.getLogger(), (InternalLogWriter) this.cache.getSecurityLogger());
+    auth.init(gfSecurityProperties, this.cache.getLogger(), this.cache.getSecurityLogger());
     return auth;
 	}
 

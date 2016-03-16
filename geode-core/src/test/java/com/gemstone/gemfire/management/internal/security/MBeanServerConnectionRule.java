@@ -47,7 +47,6 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
   private JMXConnector jmxConnector;
   private MBeanServerConnection con;
 
-
   /**
    * Rule constructor
    *

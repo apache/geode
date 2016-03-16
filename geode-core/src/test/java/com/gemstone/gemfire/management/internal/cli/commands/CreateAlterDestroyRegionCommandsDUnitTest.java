@@ -240,11 +240,11 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
             }
           }
 
-          @Override
-          public String description() {
-            return "Waiting for the region to be registed with the MXBean";
-          }
-        };
+        @Override
+        public String description() {
+          return "Waiting for the region to be registered with the MXBean";
+        }
+      };
 
         Wait.waitForCriterion(wc, 5000, 500, true);
       }

@@ -386,7 +386,7 @@ public class ManagementAgent {
 
     ManagementInterceptor securityInterceptor = null;
     if (isCustomAuthenticator()) {
-      securityInterceptor = new ManagementInterceptor((GemFireCacheImpl)CacheFactory.getAnyInstance(), logger);
+      securityInterceptor = new ManagementInterceptor((GemFireCacheImpl)CacheFactory.getAnyInstance());
       env.put(JMXConnectorServer.AUTHENTICATOR, securityInterceptor);
     }
     else {
@@ -462,7 +462,7 @@ public class ManagementAgent {
 
     if (isCustomAuthorizer()) {
       if(securityInterceptor==null){
-        securityInterceptor = new ManagementInterceptor((GemFireCacheImpl)CacheFactory.getAnyInstance(), logger);
+        securityInterceptor = new ManagementInterceptor((GemFireCacheImpl)CacheFactory.getAnyInstance());
       }
       MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(securityInterceptor);
       cs.setMBeanServerForwarder(mBeanServerWrapper);
