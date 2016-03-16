@@ -27,7 +27,7 @@ cache:
     - $HOME/.gradle/wrapper/
 
 after_failure:
-  - cat build/reports/rat/rat-report.txt
+  - cat /home/travis/build/apache/incubator-geode/build/reports/rat/rat-report.txt
 
 notifications:
   email:
