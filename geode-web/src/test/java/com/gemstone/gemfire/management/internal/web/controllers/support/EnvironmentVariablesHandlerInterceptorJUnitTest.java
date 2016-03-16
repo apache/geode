@@ -16,18 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.web.controllers.support;
 
-import static org.junit.Assert.*;
-
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
-
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -37,7 +28,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 /**
  * The EnvironmentVariablesHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract
@@ -85,6 +82,7 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
   @Test
   public void testPreHandleAfterCompletion() throws Exception {
     final Map<String, String> requestParameters = new HashMap<>(2);
+    final Map<String, String> requestHeaders = new HashMap<>();
 
     requestParameters.put("parameter", "one");
     requestParameters.put(createEnvironmentVariable("variable"), "two");
@@ -94,6 +92,8 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
     mockContext.checking(new Expectations() {{
       oneOf(mockHttpRequest).getParameterNames();
       will(returnValue(enumeration(requestParameters.keySet().iterator())));
+      oneOf(mockHttpRequest).getHeaderNames();
+      will(returnValue(enumeration(requestHeaders.keySet().iterator())));
       oneOf(mockHttpRequest).getParameter(with(equal(createEnvironmentVariable("variable"))));
       will(returnValue(requestParameters.get(createEnvironmentVariable("variable"))));
     }});
@@ -139,6 +139,7 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
       super.initialize();
 
       final Map<String, String> requestParametersOne = new HashMap<>(3);
+      final Map<String, String> requestHeaders = new HashMap<>();
 
       requestParametersOne.put("param", "one");
       requestParametersOne.put(createEnvironmentVariable("STAGE"), "test");
@@ -149,6 +150,8 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
       mockContext.checking(new Expectations() {{
         oneOf(mockHttpRequestOne).getParameterNames();
         will(returnValue(enumeration(requestParametersOne.keySet().iterator())));
+        oneOf(mockHttpRequestOne).getHeaderNames();
+        will(returnValue(enumeration(requestHeaders.keySet().iterator())));
         oneOf(mockHttpRequestOne).getParameter(with(equal(createEnvironmentVariable("STAGE"))));
         will(returnValue(requestParametersOne.get(createEnvironmentVariable("STAGE"))));
         oneOf(mockHttpRequestOne).getParameter(with(equal(createEnvironmentVariable("GEMFIRE"))));
@@ -166,6 +169,8 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
       mockContext.checking(new Expectations() {{
         oneOf(mockHttpRequestTwo).getParameterNames();
         will(returnValue(enumeration(requestParametersTwo.keySet().iterator())));
+        oneOf(mockHttpRequestTwo).getHeaderNames();
+        will(returnValue(enumeration(requestHeaders.keySet().iterator())));
         oneOf(mockHttpRequestTwo).getParameter(with(equal(createEnvironmentVariable("HOST"))));
         will(returnValue(requestParametersTwo.get(createEnvironmentVariable("HOST"))));
         oneOf(mockHttpRequestTwo).getParameter(with(equal(createEnvironmentVariable("GEMFIRE"))));
