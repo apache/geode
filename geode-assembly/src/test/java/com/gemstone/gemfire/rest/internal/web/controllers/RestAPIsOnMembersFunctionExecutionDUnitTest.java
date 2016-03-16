@@ -114,12 +114,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
       assertHttpResponse(response, 200, 4);
     }
 
-    int c0 = vm0.invoke(() -> getInvocationCount());
-    int c1 = vm1.invoke(() -> getInvocationCount());
-    int c2 = vm2.invoke(() -> getInvocationCount());
-    int c3 = vm3.invoke(() -> getInvocationCount());
-
-    assertEquals(40, (c0 + c1 + c2 + c3));
+    assertCorrectInvocationCount(40,vm0,vm1,vm2,vm3);
 
     restURLs.clear();
   }
@@ -139,12 +134,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
       assertHttpResponse(response, 200, 3);
     }
 
-    int c0 = vm0.invoke(() -> getInvocationCount());
-    int c1 = vm1.invoke(() -> getInvocationCount());
-    int c2 = vm2.invoke(() -> getInvocationCount());
-    int c3 = vm3.invoke(() -> getInvocationCount());
-
-    assertEquals(30, (c0 + c1 + c2 + c3));
+    assertCorrectInvocationCount(30,vm0,vm1,vm2,vm3);
 
     restURLs.clear();
   }
@@ -157,12 +147,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
       assertHttpResponse(response, 500, 0);
     }
 
-    int c0 = vm0.invoke(() -> getInvocationCount());
-    int c1 = vm1.invoke(() -> getInvocationCount());
-    int c2 = vm2.invoke(() -> getInvocationCount());
-    int c3 = vm3.invoke(() -> getInvocationCount());
-
-    assertEquals(0, (c0 + c1 + c2 + c3));
+    assertCorrectInvocationCount(0,vm0,vm1,vm2,vm3);
 
     restURLs.clear();
   }

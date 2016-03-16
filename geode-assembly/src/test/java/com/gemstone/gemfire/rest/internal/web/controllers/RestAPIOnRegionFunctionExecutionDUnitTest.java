@@ -28,6 +28,7 @@ import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionTestHelper;
 import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
+import com.gemstone.gemfire.test.dunit.VM;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 import java.io.Serializable;
@@ -175,12 +176,6 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     }
   }
 
-  private void verifyAndResetInvocationCount(final int count) {
-    SampleFunction f = (SampleFunction) FunctionService
-        .getFunction(SampleFunction.Id);
-    assertEquals(count, f.invocationCount);
-  }
-
   private void createPeer(DataPolicy policy) {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -241,37 +236,32 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
   }
 
   private void createCacheAndRegisterFunction() {
-    restURLs.add(vm0.invoke(() -> createCacheWithGroups(vm0, null)));
-    restURLs.add(vm1.invoke(() -> createCacheWithGroups(vm1, null)));
-    restURLs.add(vm2.invoke(() -> createCacheWithGroups(vm2, null)));
-    restURLs.add(vm3.invoke(() -> createCacheWithGroups(vm3, null)));
+    restURLs.add(vm0.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm0, null)));
+    restURLs.add(vm1.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm1, null)));
+    restURLs.add(vm2.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm2, null)));
+    restURLs.add(vm3.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm3, null)));
 
-    vm0.invoke(() -> FunctionService.registerFunction(new SampleFunction()));
-    vm1.invoke(() -> FunctionService.registerFunction(new SampleFunction()));
-    vm2.invoke(() -> FunctionService.registerFunction(new SampleFunction()));
-    vm3.invoke(() -> FunctionService.registerFunction(new SampleFunction()));
+    vm0.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
+    vm1.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
+    vm2.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
+    vm3.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
   }
 
   public void testOnRegionExecutionWithReplicateRegion() {
     createCacheAndRegisterFunction();
 
-    vm3.invoke(() -> createPeer(DataPolicy.EMPTY));
-    vm0.invoke(() -> createPeer(DataPolicy.REPLICATE));
-    vm1.invoke(() -> createPeer(DataPolicy.REPLICATE));
-    vm2.invoke(() -> createPeer(DataPolicy.REPLICATE));
+    vm3.invoke("createPeer", () -> createPeer(DataPolicy.EMPTY));
+    vm0.invoke("createPeer", () -> createPeer(DataPolicy.REPLICATE));
+    vm1.invoke("createPeer", () -> createPeer(DataPolicy.REPLICATE));
+    vm2.invoke("createPeer", () -> createPeer(DataPolicy.REPLICATE));
 
-    vm3.invoke(() -> populateRRRegion());
+    vm3.invoke("populateRRRegion", () -> populateRRRegion());
 
     CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", REPLICATE_REGION_NAME, null, null, null, null);
     assertEquals(200, response.getStatusLine().getStatusCode());
     assertNotNull(response.getEntity());
 
-    int c0 = vm0.invoke(() -> getInvocationCount());
-    int c1 = vm1.invoke(() -> getInvocationCount());
-    int c2 = vm2.invoke(() -> getInvocationCount());
-    int c3 = vm3.invoke(() -> getInvocationCount());
-
-    assertEquals(1, c0 + c1 + c2 + c3);
+    assertCorrectInvocationCount(1, vm0, vm1, vm2, vm3);
 
     // remove the expected exception
     restURLs.clear();
@@ -280,21 +270,15 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
   public void testOnRegionExecutionWithPartitionRegion() throws Exception {
     createCacheAndRegisterFunction();
 
-    vm0.invoke(() -> createPeerWithPR());
-    vm1.invoke(() -> createPeerWithPR());
-    vm2.invoke(() -> createPeerWithPR());
-    vm3.invoke(() -> createPeerWithPR());
+    createPeersWithPR(vm0, vm1, vm2, vm3);
 
-    vm3.invoke(() -> populatePRRegion());
+    vm3.invoke("populatePRRegion", () -> populatePRRegion());
 
     CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, null, null, null, null);
     assertEquals(200, response.getStatusLine().getStatusCode());
     assertNotNull(response.getEntity());
 
-    vm0.invoke(() -> verifyAndResetInvocationCount(1));
-    vm1.invoke(() -> verifyAndResetInvocationCount(1));
-    vm2.invoke(() -> verifyAndResetInvocationCount(1));
-    vm3.invoke(() -> verifyAndResetInvocationCount(1));
+    assertCorrectInvocationCount(4, vm0, vm1, vm2, vm3);
 
     restURLs.clear();
   }
@@ -302,59 +286,67 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
   public void testOnRegionWithFilterExecutionWithPartitionRegion() throws Exception {
     createCacheAndRegisterFunction();
 
-    vm0.invoke(() -> createPeerWithPR());
-    vm1.invoke(() -> createPeerWithPR());
-    vm2.invoke(() -> createPeerWithPR());
-    vm3.invoke(() -> createPeerWithPR());
+    createPeersWithPR(vm0, vm1, vm2, vm3);
 
-    vm3.invoke(() -> populatePRRegion());
+    vm3.invoke("populatePRRegion",() -> populatePRRegion());
 
     CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, "key2", null, null, null);
     assertEquals(200, response.getStatusLine().getStatusCode());
     assertNotNull(response.getEntity());
 
-    int c0 = vm0.invoke(() -> getInvocationCount());
-    int c1 = vm1.invoke(() -> getInvocationCount());
-    int c2 = vm2.invoke(() -> getInvocationCount());
-    int c3 = vm3.invoke(() -> getInvocationCount());
-
-    assertEquals(1, (c0 + c1 + c2 + c3));
+    assertCorrectInvocationCount(1, vm0, vm1, vm2, vm3);
 
     restURLs.clear();
   }
 
-//  public void testOnRegionWithFilterExecutionWithPartitionRegionJsonArgs() throws Exception {
-//    createCacheAndRegisterFunction();
-//
-//    vm0.invoke(() -> createPeerWithPR());
-//    vm1.invoke(() -> createPeerWithPR());
-//    vm2.invoke(() -> createPeerWithPR());
-//    vm3.invoke(() -> createPeerWithPR());
-//
-//    vm3.invoke(() -> populatePRRegion());
-//
-//    String jsonBody = "["
-//        + "{\"@type\": \"double\",\"@value\": 210}"
-//        + ",{\"@type\":\"com.gemstone.gemfire.web.rest.domain.Item\","
-//        + "\"itemNo\":\"599\",\"description\":\"Part X Free on Bumper Offer\","
-//        + "\"quantity\":\"2\","
-//        + "\"unitprice\":\"5\","
-//        + "\"totalprice\":\"10.00\"}"
-//        + "]";
-//
-//    CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, null, jsonBody, null, null);
-//    assertEquals(200, response.getStatusLine().getStatusCode());
-//    assertNotNull(response.getEntity());
-//
-//    // Assert that only 1 node has executed the function.
-//    int c0 = vm0.invoke(() -> getInvocationCount());
-//    int c1 = vm1.invoke(() -> getInvocationCount());
-//    int c2 = vm2.invoke(() -> getInvocationCount());
-//    int c3 = vm3.invoke(() -> getInvocationCount());
-//
-//    assertEquals(1, (c0 + c1 + c2 + c3));
-//
-//    restURLs.clear();
-//  }
+  private void createPeersWithPR(VM... vms) {
+    for (int i = 0; i < vms.length; i++) {
+      vms[i].invoke("createPeerWithPR", () -> createPeerWithPR());
+    }
+  }
+
+  public void testOnRegionWithFilterExecutionWithPartitionRegionJsonArgs() throws Exception {
+    createCacheAndRegisterFunction();
+
+    createPeersWithPR(vm0, vm1, vm2, vm3);
+
+    vm3.invoke("populatePRRegion",() -> populatePRRegion());
+
+    String jsonBody = "["
+        + "{\"@type\": \"double\",\"@value\": 210}"
+        + ",{\"@type\":\"com.gemstone.gemfire.rest.internal.web.controllers.Item\","
+        + "\"itemNo\":\"599\",\"description\":\"Part X Free on Bumper Offer\","
+        + "\"quantity\":\"2\","
+        + "\"unitprice\":\"5\","
+        + "\"totalprice\":\"10.00\"}"
+        + "]";
+
+    CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, null, jsonBody, null, null);
+    assertEquals(200, response.getStatusLine().getStatusCode());
+    assertNotNull(response.getEntity());
+
+    // Assert that only 1 node has executed the function.
+    assertCorrectInvocationCount(4, vm0, vm1, vm2, vm3);
+
+    jsonBody = "["
+        + "{\"@type\": \"double\",\"@value\": 220}"
+        + ",{\"@type\":\"com.gemstone.gemfire.rest.internal.web.controllers.Item\","
+        + "\"itemNo\":\"609\",\"description\":\"Part X Free on Bumper Offer\","
+        + "\"quantity\":\"3\","
+        + "\"unitprice\":\"9\","
+        + "\"totalprice\":\"12.00\"}"
+        + "]";
+
+    resetInvocationCounts(vm0,vm1,vm2,vm3);
+
+    response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, "key2", jsonBody, null, null);
+    assertEquals(200, response.getStatusLine().getStatusCode());
+    assertNotNull(response.getEntity());
+
+    // Assert that only 1 node has executed the function.
+    assertCorrectInvocationCount(1, vm0, vm1, vm2, vm3);
+
+    restURLs.clear();
+  }
 
 }

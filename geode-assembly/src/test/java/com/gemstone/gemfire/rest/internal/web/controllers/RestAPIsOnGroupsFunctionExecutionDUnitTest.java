@@ -21,6 +21,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.VM;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 import java.util.ArrayList;
@@ -41,9 +42,14 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     return OnGroupsFunction.Id;
   }
 
-  private void resetInvocationCount() {
-    OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
-    f.invocationCount = 0;
+  private void setupCacheWithGroupsAndFunction() {
+    restURLs.add(vm0.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm0, "g0,gm")));
+    restURLs.add(vm1.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm1, "g1")));
+    restURLs.add(vm2.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm2, "g0,g1")));
+
+    vm0.invoke("registerFunction(new OnGroupsFunction())", () -> FunctionService.registerFunction(new OnGroupsFunction()));
+    vm1.invoke("registerFunction(new OnGroupsFunction())", () -> FunctionService.registerFunction(new OnGroupsFunction()));
+    vm2.invoke("registerFunction(new OnGroupsFunction())", () -> FunctionService.registerFunction(new OnGroupsFunction()));
   }
 
   public void testonGroupsExecutionOnAllMembers() {
@@ -54,23 +60,9 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
       assertHttpResponse(response, 200, 3);
     }
 
-    int c0 = vm0.invoke(() -> getInvocationCount());
-    int c1 = vm1.invoke(() -> getInvocationCount());
-    int c2 = vm2.invoke(() -> getInvocationCount());
-
-    assertEquals(30, (c0 + c1 + c2));
+    assertCorrectInvocationCount(30, vm0, vm1, vm2);
 
     restURLs.clear();
-  }
-
-  private void setupCacheWithGroupsAndFunction() {
-    restURLs.add(vm0.invoke(() -> createCacheWithGroups(vm0, "g0,gm")));
-    restURLs.add(vm1.invoke(() -> createCacheWithGroups(vm1, "g1")));
-    restURLs.add(vm2.invoke(() -> createCacheWithGroups(vm2, "g0,g1")));
-
-    vm0.invoke(() -> FunctionService.registerFunction(new OnGroupsFunction()));
-    vm1.invoke(() -> FunctionService.registerFunction(new OnGroupsFunction()));
-    vm2.invoke(() -> FunctionService.registerFunction(new OnGroupsFunction()));
   }
 
   public void testonGroupsExecutionOnAllMembersWithFilter() {
@@ -82,11 +74,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
       assertHttpResponse(response, 500, 0);
     }
 
-    int c0 = vm0.invoke(() -> getInvocationCount());
-    int c1 = vm1.invoke(() -> getInvocationCount());
-    int c2 = vm2.invoke(() -> getInvocationCount());
-
-    assertEquals(0, (c0 + c1 + c2));
+    assertCorrectInvocationCount(0, vm0, vm1, vm2);
     restURLs.clear();
   }
 
@@ -98,11 +86,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
       CloseableHttpResponse response = executeFunctionThroughRestCall("OnGroupsFunction", null, null, null, "no%20such%20group", null);
       assertHttpResponse(response, 500, 0);
     }
-    int c0 = vm0.invoke(() -> getInvocationCount());
-    int c1 = vm1.invoke(() -> getInvocationCount());
-    int c2 = vm2.invoke(() -> getInvocationCount());
-
-    assertEquals(0, (c0 + c1 + c2));
+    assertCorrectInvocationCount(0, vm0, vm1, vm2);
 
     for (int i = 0; i < 5; i++) {
 
@@ -110,15 +94,9 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
       assertHttpResponse(response, 200, 1);
     }
 
-    c0 = vm0.invoke(() -> getInvocationCount());
-    c1 = vm1.invoke(() -> getInvocationCount());
-    c2 = vm2.invoke(() -> getInvocationCount());
+    assertCorrectInvocationCount(5, vm0, vm1, vm2);
 
-    assertEquals(5, (c0 + c1 + c2));
-
-    vm0.invoke(() -> resetInvocationCount());
-    vm1.invoke(() -> resetInvocationCount());
-    vm2.invoke(() -> resetInvocationCount());
+    resetInvocationCounts(vm0,vm1,vm2);
 
     restURLs.clear();
   }

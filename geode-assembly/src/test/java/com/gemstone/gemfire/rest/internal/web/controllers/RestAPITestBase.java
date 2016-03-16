@@ -18,6 +18,7 @@ package com.gemstone.gemfire.rest.internal.web.controllers;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -49,10 +50,10 @@ import java.util.Random;
 public class RestAPITestBase extends DistributedTestCase {
   protected Cache cache = null;
   protected List<String> restURLs = new ArrayList();
-  VM vm0 = null;
-  VM vm1 = null;
-  VM vm2 = null;
-  VM vm3 = null;
+  protected VM vm0 = null;
+  protected VM vm1 = null;
+  protected VM vm2 = null;
+  protected VM vm3 = null;
 
   public RestAPITestBase(String name) {
     super(name);
@@ -208,4 +209,22 @@ public class RestAPITestBase extends DistributedTestCase {
     return "";
   }
 
+  protected void assertCorrectInvocationCount(int expectedInvocationCount, VM... vms) {
+    int count = 0;
+    for (int i = 0; i < vms.length; i++) {
+      count += vms[i].invoke("getInvocationCount",() -> getInvocationCount());
+    }
+    assertEquals(expectedInvocationCount,count);
+  }
+
+  protected void resetInvocationCount() {
+    RestFunctionTemplate f = (RestFunctionTemplate) FunctionService.getFunction(getFunctionID());
+    f.invocationCount = 0;
+  }
+
+  protected void resetInvocationCounts(VM... vms) {
+    for (int i = 0; i < vms.length; i++) {
+      vms[i].invoke("resetInvocationCount", () -> resetInvocationCount());
+    }
+  }
 }
