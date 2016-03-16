@@ -16,7 +16,10 @@
  */
 package com.gemstone.gemfire.management;
 
+import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.management.internal.security.Resource;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -25,6 +28,7 @@ import com.gemstone.gemfire.distributed.Locator;
  * @author rishim
  * @since 7.0
  */
+@ResourceOperation(resource = Resource.JMX, operation = OperationContext.OperationCode.GET)
 public interface LocatorMXBean {
 
   /**

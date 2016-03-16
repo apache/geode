@@ -20,7 +20,7 @@
         "REGION:GET",
         "REGION:DELETE",
         "LOCK_SERVICE:BECOME_LOCK_GRANTOR",
-        "GATEWAY_SENDER:GET",
+        "JMX:GET",
         "GATEWAY_SENDER:PAUSE",
         "GATEWAY_SENDER:REBALANCE",
         "GATEWAY_SENDER:RESUME",
@@ -36,7 +36,7 @@
     {
       "name": "something",
       "operationsAllowed": [
-        "DISTRIBUTED_SYSTEM:LIST_DS"
+        "JMX:GET"
       ]
     },
     {

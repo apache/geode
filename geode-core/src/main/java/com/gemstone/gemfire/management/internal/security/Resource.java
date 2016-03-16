@@ -29,6 +29,7 @@ public enum Resource {
   GATEWAY_RECEIVER,
   GATEWAY_SENDER,
   INDEX,
+  JMX,
   LOCATOR,
   LOCK_SERVICE,
   MANAGER,

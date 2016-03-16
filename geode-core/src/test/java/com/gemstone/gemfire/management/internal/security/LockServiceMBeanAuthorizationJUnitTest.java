@@ -18,13 +18,10 @@ package com.gemstone.gemfire.management.internal.security;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.management.CacheServerMXBean;
 import com.gemstone.gemfire.management.LockServiceMXBean;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -68,7 +65,11 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "superuser", password = "1234567")
   public void testAllAccess() throws Exception {
-    lockServiceMBean.becomeLockGrantor(); // "INDEX:DESTROY",
+    lockServiceMBean.becomeLockGrantor();
+    lockServiceMBean.fetchGrantorMember();
+    lockServiceMBean.getMemberCount();
+    lockServiceMBean.isDistributed();
+    lockServiceMBean.listThreadsHoldingLock();
   }
 
   @Test
@@ -81,6 +82,10 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).isInstanceOf(SecurityException.class).hasMessageContaining("LOCK_SERVICE:BECOME_LOCK_GRANTOR");
+    assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> lockServiceMBean.getMemberCount()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> lockServiceMBean.isDistributed()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
   }
 }

@@ -28,11 +28,11 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
  * MBean that provides access to information and management functionality for a
  * {@link DLockService}.  Since any number of DLockService objects can be created
  * by a member there may be 0 or more instances of this MBean available.
- * 
- * @author rishim
+ *
  * @since 7.0
  * 
  */
+@ResourceOperation(resource = Resource.JMX, operation = OperationCode.GET)
 public interface LockServiceMXBean {
 
   /**

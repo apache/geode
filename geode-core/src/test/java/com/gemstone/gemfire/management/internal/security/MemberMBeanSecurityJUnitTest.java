@@ -48,24 +48,35 @@ public class MemberMBeanSecurityJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "superuser", password = "1234567")
   public void testAllAccess() throws Exception {
-    bean.shutDownMember();  // MEMBER:SHUTDOWN
-    bean.compactAllDiskStores(); // DISKSTORE:COMPACT
-    bean.createManager(); // MANAGER:CREATE
-    bean.fetchJvmThreads(); // DEFAULT:LIST_DS
-    bean.getName(); // DEFAULT:LIST_DS
-    bean.getDiskStores(); // DEFAULT:LIST_DS
-    bean.hasGatewayReceiver(); // DEFAULT:LIST_DS
-    bean.isCacheServer(); // DEFAULT:LIST_DS
-    bean.isServer(); // DEFAULT:LIST_DS
-    bean.listConnectedGatewayReceivers(); // DEFAULT:LIST_DS
-    bean.processCommand("create region --name=Region_A"); // REGION:CREATE
-    bean.showJVMMetrics(); // DEFAULT:LIST_DS
-    bean.status(); // DEFAULT:LIST_DS
+    bean.shutDownMember();
+    bean.compactAllDiskStores();
+    bean.createManager();
+    bean.fetchJvmThreads();
+    bean.getName();
+    bean.getDiskStores();
+    bean.hasGatewayReceiver();
+    bean.isCacheServer();
+    bean.isServer();
+    bean.listConnectedGatewayReceivers();
+    bean.processCommand("create region --name=Region_A");
+    bean.showJVMMetrics();
+    bean.status();
   }
 
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.shutDownMember()).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> bean.shutDownMember()).isInstanceOf(SecurityException.class).hasMessageContaining("MEMBER:SHUTDOWN");
+    assertThatThrownBy(() -> bean.createManager()).hasMessageContaining("MANAGER:CREATE");
+    assertThatThrownBy(() -> bean.fetchJvmThreads()).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.getName()).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.getDiskStores()).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.hasGatewayReceiver()).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.isCacheServer()).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.isServer()).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.listConnectedGatewayReceivers()).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.processCommand("create region --name=Region_A")).hasMessageContaining("REGION:CREATE");
+    assertThatThrownBy(() -> bean.showJVMMetrics()).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.status()).hasMessageContaining("JMX:GET");
   }
 }

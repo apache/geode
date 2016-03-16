@@ -28,7 +28,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
  * @since 7.0
  *
  */
-@ResourceOperation(resource = Resource.GATEWAY_SENDER, operation = OperationCode.GET)
+@ResourceOperation(resource = Resource.JMX, operation = OperationCode.GET)
 public interface GatewaySenderMXBean {
 
   /**

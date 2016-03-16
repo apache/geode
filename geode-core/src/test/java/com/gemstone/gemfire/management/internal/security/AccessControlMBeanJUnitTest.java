@@ -51,7 +51,7 @@ public class AccessControlMBeanJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "user", password = "1234567")
   public void testAnyAccess() throws Exception {
-    assertThat(bean.authorize("DISTRIBUTED_SYSTEM", "LIST_DS")).isEqualTo(true);
+    assertThat(bean.authorize("JMX", "GET")).isEqualTo(true);
     assertThat(bean.authorize("INDEX", "DESTROY")).isEqualTo(false);
   }
 

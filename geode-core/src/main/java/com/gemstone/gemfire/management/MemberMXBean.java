@@ -136,10 +136,10 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
  * <td>Locator is Started in the VM</td>
  * </tr>
  * </table>
- * 
- * @author rishim
+
  * @since 7.0
  */
+@ResourceOperation(resource = Resource.JMX, operation = OperationCode.GET)
 public interface MemberMXBean {
 
   /**
@@ -283,7 +283,6 @@ public interface MemberMXBean {
   /**
    * Returns the status.
    */
-  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.STATUS)
   public String status();
 
   /**
