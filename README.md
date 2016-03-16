@@ -1,5 +1,6 @@
 **[Overview](#overview)**  
 **[Main Concepts and Components](#concepts)**  
+**[Location of Directions for Building from Source](#building)**  
 **[Geode in 5 minutes](#started)**  
 **[Application Development](#development)**  
 **[Documentation](http://geode.docs.pivotal.io/)**  
@@ -36,19 +37,18 @@ Apache Geode includes the following features:
 * Cluster-wide configurations that can be persisted and exported to other clusters.
 * Remote cluster management through HTTP.
 * REST APIs for REST-enabled application development.
-* Rolling upgrade between major version releases.
+* Rolling upgrades may be possible, but they will be subject to any limitations imposed by new features.
+
+## <a name="building"></a>Building this Release from Source
+
+Directions to build Apache Geode (incubating) from source are in the source distribution, file `BUILDING.md`.
 
 ## <a name="started"></a>Geode in 5 minutes
 
-With both a recent version of Gradle and JDK 1.8 or a more recent version installed, obtain the source archive.
-Extract the source archive and build from the expanded directory:
+With a JDK version 1.8 or a more recent version installed,
+start a locator and server:
 
-    $ gradle build installDist -Dskip.tests=true
-
-Start a locator and server:
-
-    $ cd geode-assembly/build/install/apache-geode
-    $ ./bin/gfsh
+    $ gfsh
     gfsh> start locator --name=locator
     gfsh> start server --name=server
 
@@ -90,7 +90,7 @@ Compile and run `HelloWorld.java`.  The classpath should include `geode-dependen
 
 ## <a name="development"></a>Application Development
 
-Apache Geode applications can be written in a number of client technologies:
+Apache Geode applications can be written in these client technologies:
 
 * Java using the Geode client API or embedded using the Geode peer API
 * [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/) or [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
