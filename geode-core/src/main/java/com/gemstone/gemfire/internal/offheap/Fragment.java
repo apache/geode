@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
  * at the end. The freeIdx keeps track of the first byte of free memory in
  * the fragment.
  * The base memory address and the total size of a fragment never change.
- * During compaction fragments go away and are recreated.
+ * During defragmentation fragments go away and are recreated.
  * 
  * @author darrel
  *

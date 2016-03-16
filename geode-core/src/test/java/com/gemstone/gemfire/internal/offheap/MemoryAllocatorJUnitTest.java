@@ -219,7 +219,7 @@ public class MemoryAllocatorJUnitTest {
       }
       hugemc.release();
       assertEquals(round(TINY_MULTIPLE, minHuge+perObjectOverhead)*BATCH_SIZE, ma.freeList.getFreeHugeMemory());
-      // now that we do compaction the following allocate works.
+      // now that we do defragmentation the following allocate works.
       hugemc = ma.allocate(minHuge + HUGE_MULTIPLE + HUGE_MULTIPLE-1);
     } finally {
       MemoryAllocatorImpl.freeOffHeapMemory();
@@ -389,7 +389,7 @@ public class MemoryAllocatorJUnitTest {
   }
   
   @Test
-  public void testCompaction() {
+  public void testDefragmentation() {
     final int perObjectOverhead = OffHeapStoredObject.HEADER_SIZE;
     final int BIG_ALLOC_SIZE = 150000;
     final int SMALL_ALLOC_SIZE = BIG_ALLOC_SIZE/2;

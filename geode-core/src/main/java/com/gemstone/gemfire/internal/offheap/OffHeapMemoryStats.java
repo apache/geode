@@ -33,8 +33,8 @@ public interface OffHeapMemoryStats {
   public void incReads();
   public void setFragments(long value);
   public void setLargestFragment(int value);
-  public long startCompaction();
-  public void endCompaction(long start);
+  public long startDefragmentation();
+  public void endDefragmentation(long start);
   public void setFragmentation(int value);
   
   public long getFreeMemory();
@@ -42,11 +42,11 @@ public interface OffHeapMemoryStats {
   public long getUsedMemory();
   public long getReads();
   public int getObjects();
-  public int getCompactions();
+  public int getDefragmentations();
   public long getFragments();
   public int getLargestFragment();
   public int getFragmentation();
-  public long getCompactionTime();
+  public long getDefragmentationTime();
   
   public Statistics getStats();
   public void close();

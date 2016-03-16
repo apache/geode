@@ -47,7 +47,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * We also keep lists of any chunk that have been allocated and freed.
  * An allocation will always try to find a chunk in a free list that is a close fit to the requested size.
  * If no close fits exist then it allocates the next slice from the front of one the original large chunks.
- * If we can not find enough free memory then all the existing free memory is compacted.
+ * If we can not find enough free memory then all the existing free memory is defragmented.
  * If we still do not have enough to make the allocation an exception is thrown.
  * 
  * @author darrel

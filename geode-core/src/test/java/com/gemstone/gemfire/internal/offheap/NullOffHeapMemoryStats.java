@@ -60,7 +60,7 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
     return 0;
   }
   @Override
-  public int getCompactions() {
+  public int getDefragmentations() {
     return 0;
   }
   @Override
@@ -78,11 +78,11 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
     return 0;
   }
   @Override
-  public long startCompaction() {
+  public long startDefragmentation() {
     return 0;
   }
   @Override
-  public void endCompaction(long start) {
+  public void endDefragmentation(long start) {
   }
   @Override
   public void setFragmentation(int value) {
@@ -96,7 +96,7 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
     return null;
   }
   @Override
-  public long getCompactionTime() {
+  public long getDefragmentationTime() {
     return 0;
   }
   @Override

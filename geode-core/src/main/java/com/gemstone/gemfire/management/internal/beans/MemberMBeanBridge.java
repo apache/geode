@@ -1919,7 +1919,7 @@ public class MemberMBeanBridge {
     OffHeapMemoryStats stats = getOffHeapStats();
     
     if(null != stats) {
-      compactionTime = stats.getCompactionTime();
+      compactionTime = stats.getDefragmentationTime();
     }
     
     return compactionTime;            
