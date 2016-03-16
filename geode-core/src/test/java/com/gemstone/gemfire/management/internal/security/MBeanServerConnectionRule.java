@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}
  * it allows for the creation of per-test connections with different user/password combinations.
@@ -73,10 +75,8 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     }
 
     Set<ObjectInstance> beans = con.queryMBeans(name, query);
-    if (beans.size() != 1) {
-      throw new RuntimeException(
-          "failed to find only one instance of " + proxyClass.getName() + " with name " + beanQueryName);
-    }
+    assertEquals("failed to find only one instance of type " + proxyClass.getName() + " with name " + beanQueryName, 1, beans.size());
+
     return JMX.newMXBeanProxy(con, ((ObjectInstance) beans.toArray()[0]).getObjectName(), proxyClass);
   }
 

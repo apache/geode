@@ -18,7 +18,8 @@
         "REGION:IMPORT",
         "REGION:PUT",
         "REGION:GET",
-        "REGION:DELETE"
+        "REGION:DELETE",
+        "LOCK_SERVICE:BECOME_LOCK_GRANTOR"
       ]
     },
     {
