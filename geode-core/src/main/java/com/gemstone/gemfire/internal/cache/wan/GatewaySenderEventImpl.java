@@ -213,6 +213,10 @@ public class GatewaySenderEventImpl implements
   
   private static final int OP_DETAIL_REMOVEALL = 14;
 
+  private static final int DEFAULT_SERIALIZED_VALUE_SIZE = -1;
+
+  private volatile int serializedValueSize = DEFAULT_SERIALIZED_VALUE_SIZE;
+
 //  /**
 //   * Is this thread in the process of deserializing this event?
 //   */
@@ -1223,17 +1227,23 @@ public class GatewaySenderEventImpl implements
   }
 
   public int getSerializedValueSize() {
+    int localSerializedValueSize = this.serializedValueSize;
+    if (localSerializedValueSize != DEFAULT_SERIALIZED_VALUE_SIZE) {
+      return localSerializedValueSize;
+    }
     @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
     Object vo = this.valueObj;
     if (vo instanceof StoredObject) {
-      return ((StoredObject) vo).getSizeInBytes();
+      localSerializedValueSize = ((StoredObject) vo).getSizeInBytes();
     } else {
       if (this.substituteValue != null) {
-        return sizeOf(this.substituteValue);
+        localSerializedValueSize = sizeOf(this.substituteValue);
       } else {
-      return CachedDeserializableFactory.calcMemSize(getSerializedValue());
+        localSerializedValueSize = CachedDeserializableFactory.calcMemSize(getSerializedValue());
       }
     }
+    this.serializedValueSize = localSerializedValueSize;
+    return localSerializedValueSize;
   }
   
   @Override
