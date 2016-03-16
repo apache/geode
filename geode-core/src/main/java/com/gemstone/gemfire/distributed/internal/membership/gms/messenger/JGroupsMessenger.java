@@ -236,6 +236,7 @@ public class JGroupsMessenger implements Messenger {
     int port = Integer.getInteger("gemfire.jg-bind-port", 0);
     if (port != 0) {
       properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE_START", ""+port);
+      properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE_END", ""+0);
     } else {
       int[] ports = dc.getMembershipPortRange();
       properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE_START", ""+ports[0]);

@@ -144,7 +144,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     MembershipManager mgr = MembershipManagerHelper.getMembershipManager(sys);
     InternalDistributedMember idm = mgr.getLocalMember();
     // TODO GMS needs to have a system property allowing the bind-port to be set
-//    System.setProperty("gemfire.jg-bind-port", ""+idm.getPort());
+    System.setProperty("gemfire.jg-bind-port", ""+idm.getPort());
     try {
       sys.disconnect();
       sys = getSystem();
