@@ -131,6 +131,8 @@ public class GatewaySenderEventImpl implements
   protected transient Object valueObj;
   protected transient boolean valueObjReleased;
 
+  private transient boolean serializedValueNotAvailable;
+
   /**
    * Whether the value is a serialized object or just a byte[]
    */
@@ -662,6 +664,10 @@ public class GatewaySenderEventImpl implements
     }
   }
 
+  public boolean isSerializedValueNotAvailable() {
+    return this.serializedValueNotAvailable;
+  }
+
   /**
    * If the value owned of this event is just bytes return that byte array;
    * otherwise serialize the value object and return the serialized bytes.
@@ -698,6 +704,7 @@ public class GatewaySenderEventImpl implements
             this.value = result;
           } else if (result == null) {
             if (this.valueObjReleased) {
+              this.serializedValueNotAvailable = true;
               throw new IllegalStateException("Value is no longer available. getSerializedValue must be called before processEvents returns.");
             }
           }

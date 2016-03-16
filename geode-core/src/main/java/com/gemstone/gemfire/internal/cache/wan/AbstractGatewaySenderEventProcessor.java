@@ -520,6 +520,21 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
           filteredList = new ArrayList<GatewaySenderEventImpl>();
           
           filteredList.addAll(events);
+
+          // If the exception has been set and its cause is an IllegalStateExcetption,
+          // remove all events whose serialized value is no longer available
+          if (this.exception != null && this.exception.getCause() != null
+              && this.exception.getCause() instanceof IllegalStateException) {
+            for (Iterator<GatewaySenderEventImpl> i = filteredList.iterator(); i.hasNext();) {
+              GatewaySenderEventImpl event = i.next();
+              if (event.isSerializedValueNotAvailable()) {
+                i.remove();
+              }
+            }
+            this.exception = null;
+          }
+
+          // Filter the events
           for (GatewayEventFilter filter : sender.getGatewayEventFilters()) {
             Iterator<GatewaySenderEventImpl> itr = filteredList.iterator();
             while (itr.hasNext()) {

@@ -163,7 +163,8 @@ public class GatewaySenderEventRemoteDispatcher implements
       } else if (t instanceof IOException
           || t instanceof ServerConnectivityException
           || t instanceof ConnectionDestroyedException
-          || t instanceof MessageTooLargeException) {
+          || t instanceof MessageTooLargeException
+          || t instanceof IllegalStateException) {
         this.processor.handleException();
         // If the cause is an IOException or a ServerException, sleep and retry.
         // Sleep for a bit and recheck.
@@ -268,6 +269,12 @@ public class GatewaySenderEventRemoteDispatcher implements
           LocalizedStrings.GatewayEventRemoteDispatcher_0_EXCEPTION_DURING_PROCESSING_BATCH_1_ON_CONNECTION_2.toLocalizedString(
               new Object[] {this, Integer.valueOf(currentBatchId), connection}), ex);
     }
+    catch (IllegalStateException e) {
+      this.processor.setException(new GatewaySenderException(e));
+      throw new GatewaySenderException(
+          LocalizedStrings.GatewayEventRemoteDispatcher_0_EXCEPTION_DURING_PROCESSING_BATCH_1_ON_CONNECTION_2.toLocalizedString(
+              new Object[] {this, Integer.valueOf(currentBatchId), connection}), e);
+    }
     catch (Exception e) {
       // An Exception has occurred. Get its cause.
       Throwable t = e.getCause();
@@ -321,7 +328,7 @@ public class GatewaySenderEventRemoteDispatcher implements
     if (cache != null && !cache.isClosed()) {
       if (this.sender.isPrimary() && (this.connection != null)) {
         if (this.ackReaderThread == null || !this.ackReaderThread.isRunning()) {
-          this.ackReaderThread = new AckReaderThread(this.sender);
+          this.ackReaderThread = new AckReaderThread(this.sender, this.processor);
           this.ackReaderThread.start();
           this.ackReaderThread.waitForRunningAckReaderThreadRunningState();
         }
@@ -541,8 +548,8 @@ public class GatewaySenderEventRemoteDispatcher implements
 
     private volatile boolean ackReaderThreadRunning = false;
 
-    public AckReaderThread(GatewaySender sender) {
-      super("AckReaderThread for : " + sender.getId());
+    public AckReaderThread(GatewaySender sender, AbstractGatewaySenderEventProcessor processor) {
+      super("AckReaderThread for : " + processor.getName());
       this.setDaemon(true);
       this.cache = (GemFireCacheImpl)((AbstractGatewaySender)sender).getCache();
     }
