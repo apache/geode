@@ -25,7 +25,9 @@
         "GATEWAY_SENDER:REBALANCE",
         "GATEWAY_SENDER:RESUME",
         "GATEWAY_SENDER:START",
-        "GATEWAY_SENDER:STOP"
+        "GATEWAY_SENDER:STOP",
+        "GATEWAY_RECEIVER:START",
+        "GATEWAY_RECEIVER:STOP"
       ]
     },
     {
