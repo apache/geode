@@ -35,3 +35,8 @@ notifications:
       - dev@geode.incubator.apache.org
     on_success: change
     on_failure: change
+
+branches:
+  except:
+    - /^feature.*$/
+    - asf-site
