@@ -176,7 +176,7 @@ public class SocketCreator {
   static {
     InetAddress lh = null;
     try {
-      lh = InetAddress.getLocalHost();
+      lh = InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
       if (lh.isLoopbackAddress()) {
         InetAddress ipv4Fallback = null;
         InetAddress ipv6Fallback = null;
