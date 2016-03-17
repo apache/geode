@@ -16,28 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.lang.reflect.Array;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
-
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -54,7 +32,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
@@ -83,6 +60,25 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.util.RegionPath;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 /**
  * 
@@ -1001,118 +997,75 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           mandatory = true,
           help = CliStrings.DESTROY_REGION__REGION__HELP)
       String regionPath) {
+
+    if (regionPath == null) {
+      return ResultBuilder.createInfoResult(CliStrings.DESTROY_REGION__MSG__SPECIFY_REGIONPATH_TO_DESTROY);
+    }
+
+    if (regionPath.trim().isEmpty() || regionPath.equals(Region.SEPARATOR)) {
+      return ResultBuilder.createInfoResult(
+          CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGIONPATH_0_NOT_VALID, new Object[]{regionPath}));
+    }
+
     Result result = null;
     XmlEntity xmlEntity = null;
     try {
-      if (regionPath != null) {
-        if (regionPath.trim().isEmpty()) { // unlikely through gfsh
-          result = ResultBuilder.createInfoResult(CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGIONPATH_0_NOT_VALID,
-              new Object[] { regionPath }));
-        } else if (regionPath.equals(Region.SEPARATOR)) {
-          result = ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGIONPATH_0_NOT_VALID,
-              new Object[] { regionPath }));
+      String message = "";
+      Cache cache = CacheFactory.getAnyInstance();
+      ManagementService managementService = ManagementService.getExistingManagementService(cache);
+      String regionPathToUse = regionPath;
+
+      if (!regionPathToUse.startsWith(Region.SEPARATOR)) {
+        regionPathToUse = Region.SEPARATOR + regionPathToUse;
+      }
+
+      Set<DistributedMember> regionMembersList = findMembersForRegion(cache, managementService, regionPathToUse);
+
+      if (regionMembersList.size() == 0) {
+        return ResultBuilder.createUserErrorResult(
+            CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEMFIRE,
+                new Object[]{regionPath, "jmx-manager-update-rate milliseconds"}));
+      }
+
+      CliFunctionResult destroyRegionResult = null;
+
+      ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(RegionDestroyFunction.INSTANCE, regionPath,
+          regionMembersList);
+      List<CliFunctionResult> resultsList = (List<CliFunctionResult>) resultCollector.getResult();
+      message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED,
+          new Object[]{regionPath, /*subRegionMessage*/""});
+
+      // Only if there is an error is this set to false
+      boolean isRegionDestroyed = true;
+      for (int i = 0; i < resultsList.size(); i++) {
+        destroyRegionResult = resultsList.get(i);
+        if (destroyRegionResult.isSuccessful()) {
+          xmlEntity = destroyRegionResult.getXmlEntity();
+        } else if (destroyRegionResult.getThrowable() != null) {
+          Throwable t = destroyRegionResult.getThrowable();
+          LogWrapper.getInstance().info(t.getMessage(), t);
+          message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__ERROR_OCCURRED_WHILE_DESTROYING_0_REASON_1,
+              new Object[]{regionPath, t.getMessage()});
+          isRegionDestroyed = false;
         } else {
-          boolean isRegionDestroyed = false;
-          String message = "";
-          Cache cache = CacheFactory.getAnyInstance();
-          ManagementService managementService = ManagementService.getExistingManagementService(cache);
-          String regionPathToUse = regionPath;
-          String regionName = regionPath.startsWith(Region.SEPARATOR) ? regionPath.substring(1) : regionPath;
-          
-          if (!regionPathToUse.startsWith(Region.SEPARATOR)) {
-            regionPathToUse = Region.SEPARATOR + regionPathToUse;
-          }
-          Set<DistributedMember>[] regionMembersList = findMembersForRegion(cache, managementService, regionPathToUse);
-          if (regionMembersList != null) {
-            Set<DistributedMember> regionMembers      = regionMembersList[0];
-            Set<DistributedMember> localRegionMembers = regionMembersList[1];
-            
-            if (regionMembers != null && !regionMembers.isEmpty()) { // Distributed Region with this region path exists
-              Region<?, ?> regionInThisCache = cache.getRegion(regionPath);
-              if (regionInThisCache != null) {// exists in local cache?
-                regionInThisCache.destroyRegion(); // this is for a Distributed Region & destroy event will be propagated
-                message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED, new Object[] { regionPath, /*subRegionMessage*/"" });
-                xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionName);
-                isRegionDestroyed = true;
-              } else {
-                CliFunctionResult destroyRegionResult = null;
-                Iterator<DistributedMember> it = regionMembers.iterator();
-                DistributedMember firstMember = it.next(); // regionMembers is not empty
-
-                ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(RegionDestroyFunction.INSTANCE, regionPath, firstMember);
-                List<CliFunctionResult> destroyRegionResults = (List<CliFunctionResult>) resultCollector.getResult();
-
-                destroyRegionResult = destroyRegionResults.get(0);
-
-                if (destroyRegionResult.isSuccessful()) {
-                  message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED, new Object[] { regionPath, /*subRegionMessage*/"" });
-                  xmlEntity = destroyRegionResult.getXmlEntity();
-                  isRegionDestroyed = true;
-                } else if (destroyRegionResult.getThrowable() != null) {
-                  Throwable t = destroyRegionResult.getThrowable();
-                  LogWrapper.getInstance().info(t.getMessage(), t);
-                  message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__ERROR_OCCURRED_WHILE_DESTROYING_0_REASON_1,
-                      new Object[] { regionPath, t.getMessage() });
-                  isRegionDestroyed = false;
-                } else {
-                  message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1,
-                      new Object[] { regionPath, destroyRegionResult.getMessage() });
-                  isRegionDestroyed = false;
-                }
-              }
-            }
-
-            if (localRegionMembers != null && !localRegionMembers.isEmpty()) { // Local Regions with this region path also exist
-              Region<?, ?> regionInThisCache = cache.getRegion(regionPath);
-              if (regionInThisCache != null) {// exists in local cache?
-                regionInThisCache.destroyRegion();
-                message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED, new Object[] { regionPath, /*subRegionMessage*/"" });
-                xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionName);
-                isRegionDestroyed = true;
-              }
-              DistributedMember distributedMember = cache.getDistributedSystem().getDistributedMember();
-              localRegionMembers.remove(distributedMember); //remove this member from the found members
-              
-              CliFunctionResult destroyRegionResult = null;
-
-              ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(RegionDestroyFunction.INSTANCE, regionPath, localRegionMembers);
-              List<CliFunctionResult> resultsList = (List<CliFunctionResult>) resultCollector.getResult();
-              for (int i = 0; i < resultsList.size(); i++) {
-                destroyRegionResult = resultsList.get(i) ;
-                if (destroyRegionResult.isSuccessful()) {
-                  message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED, new Object[] { regionPath, /*subRegionMessage*/"" });
-                  xmlEntity = destroyRegionResult.getXmlEntity();
-                  isRegionDestroyed = true;
-                } else if (destroyRegionResult.getThrowable() != null) {
-                  Throwable t = destroyRegionResult.getThrowable();
-                  LogWrapper.getInstance().info(t.getMessage(), t);
-                  message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__ERROR_OCCURRED_WHILE_DESTROYING_0_REASON_1,
-                      new Object[] { regionPath, t.getMessage() });
-                  isRegionDestroyed = false;
-                } else {
-                  message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1,
-                      new Object[] { regionPath, destroyRegionResult.getMessage() });
-                  isRegionDestroyed = false;
-                }
-              }
-            }
-          } else {
-            message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEMFIRE, new Object[] { regionPath, "jmx-manager-update-rate milliseconds" });
-            isRegionDestroyed = false;
-          }
-          if (isRegionDestroyed) {
-            result = ResultBuilder.createInfoResult(message);
-          } else {
-            result = ResultBuilder.createUserErrorResult(message);
-          }
+          message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1,
+              new Object[]{regionPath, destroyRegionResult.getMessage()});
+          isRegionDestroyed = false;
         }
+      }
+      if (isRegionDestroyed) {
+        result = ResultBuilder.createInfoResult(message);
       } else {
-        result = ResultBuilder.createInfoResult(CliStrings.DESTROY_REGION__MSG__SPECIFY_REGIONPATH_TO_DESTROY);
+        result = ResultBuilder.createUserErrorResult(message);
       }
     } catch (IllegalStateException e) {
-      result = ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1, new Object[] {regionPath, e.getMessage()}));
+      result = ResultBuilder.createUserErrorResult(
+          CliStrings.format(CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
+              new Object[]{regionPath, e.getMessage()}));
     } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1, new Object[] {regionPath, e.getMessage()}));
+      result = ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
+              new Object[]{regionPath, e.getMessage()}));
     }
 
     if (xmlEntity != null) {
@@ -1121,32 +1074,36 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     return result;
   }
 
-  private Set<DistributedMember>[] findMembersForRegion(Cache cache, ManagementService managementService, String regionPath) {
-    Set<DistributedMember>[] membersList = null;
+  private Set<DistributedMember> findMembersForRegion(Cache cache, ManagementService managementService, String regionPath) {
+    Set<DistributedMember> membersList = new HashSet<>();
     Set<String> regionMemberIds = Collections.emptySet();
-    Set<String> localRegionMemberIds = Collections.emptySet();
     MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
     String queryExp = MessageFormat.format(MBeanJMXAdapter.OBJECTNAME__REGION_MXBEAN, new Object[] {regionPath, "*"});
-//    String queryExp = MessageFormat.format(MBeanJMXAdapter.OBJECTNAME__REGION_MXBEAN, new Object[] {MBeanJMXAdapter.makeCompliantRegionNameAppender(regionPath), "*"});
+
     try {
       ObjectName queryExpON = new ObjectName(queryExp);
       Set<ObjectName> queryNames = mbeanServer.queryNames(null, queryExpON);
       if (queryNames != null && queryNames.size() != 0) {
-        regionMemberIds      = new HashSet<String>();
-        localRegionMemberIds = new HashSet<String>();
-
-        membersList = (Set<DistributedMember>[])Array.newInstance(HashSet.class, 2);
+        regionMemberIds      = new HashSet<>();
       }
+
+      boolean addedOneRemote = false;
       for (ObjectName regionMBeanObjectName : queryNames) {
         try {
           RegionMXBean regionMXBean = managementService.getMBeanInstance(regionMBeanObjectName, RegionMXBean.class);
           if (regionMXBean != null) {
             RegionAttributesData regionAttributes = regionMXBean.listRegionAttributes();
             String scope = regionAttributes.getScope();
+            // For Scope.LOCAL regions we need to identify each hosting member, but for
+            // other scopes we just need a single member as the region destroy will be
+            // propagated.
             if (Scope.LOCAL.equals(Scope.fromString(scope))) {
-              localRegionMemberIds.add(regionMXBean.getMember());
-            } else {
               regionMemberIds.add(regionMXBean.getMember());
+            } else {
+              if (!addedOneRemote) {
+                regionMemberIds.add(regionMXBean.getMember());
+                addedOneRemote = true;
+              }
             }
           }
         } catch (ClassCastException e) {
@@ -1156,13 +1113,10 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           }
         }
       }
+
       if (!regionMemberIds.isEmpty()) {
-        membersList[0] = getMembersByIds(cache, regionMemberIds);
+        membersList = getMembersByIds(cache, regionMemberIds);
       }
-      if (!localRegionMemberIds.isEmpty()) {
-        membersList[1] = getMembersByIds(cache, localRegionMemberIds);
-      }
-      
     } catch (MalformedObjectNameException e) {
       LogWrapper.getInstance().info(e.getMessage(), e);
     } catch (NullPointerException e) {

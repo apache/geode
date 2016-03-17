@@ -22,6 +22,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
@@ -45,8 +46,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.jayway.awaitility.Awaitility;
 
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -59,7 +59,9 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
   private static final long serialVersionUID = 1L;
@@ -181,7 +183,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
   }
 
-  public void testDestroyRegion() {
+  public void testDestroyDistributedRegion() {
     createDefaultSetup(null);
 
     for (int i = 1; i <= 2; i++) {
@@ -198,32 +200,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       });
     }
 
-    // Make sure that the region has been registered with the Manager MXBean
-    Host.getHost(0).getVM(0).invoke(() -> {
-      WaitCriterion wc = new WaitCriterion() {
-        @Override
-        public boolean done() {
-          try {
-            MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-            String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN,
-                new Object[]{"/Customer", "*"});
-            ObjectName queryExpON = new ObjectName(queryExp);
-            return !(mbeanServer.queryNames(null, queryExpON).isEmpty());
-          } catch (MalformedObjectNameException mone) {
-            LogWriterUtils.getLogWriter().error(mone);
-            fail(mone.getMessage());
-            return false;
-          }
-        }
-
-        @Override
-        public String description() {
-          return "Waiting for the region to be registed with the MXBean";
-        }
-      };
-
-      Wait.waitForCriterion(wc, 5000, 500, true);
-    });
+    waitForRegionMBeanCreation("/Customer", 2);
+    waitForRegionMBeanCreation("/Order", 2);
 
     // Test failure when region not found
     String command = "destroy region --name=DOESNOTEXIST";
@@ -260,6 +238,111 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
   }
 
+  public void testDestroyLocalRegions() {
+    createDefaultSetup(null);
+
+    for (int i = 1; i <= 3; i++) {
+      Host.getHost(0).getVM(i).invoke(() -> {
+        final Cache cache = getCache();
+
+        RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+        factory.setScope(Scope.LOCAL);
+        factory.create("Customer");
+      });
+    }
+
+    waitForRegionMBeanCreation("/Customer", 3);
+
+    // Test failure when region not found
+    String command = "destroy region --name=DOESNOTEXIST";
+    LogWriterUtils.getLogWriter().info("testDestroyRegion command=" + command);
+    CommandResult cmdResult = executeCommand(command);
+    String strr = commandResultToString(cmdResult);
+    LogWriterUtils.getLogWriter().info("testDestroyRegion strr=" + strr);
+    assertTrue(stringContainsLine(strr, "Could not find.*\"DOESNOTEXIST\".*"));
+    assertEquals(Result.Status.ERROR, cmdResult.getStatus());
+
+    command = "destroy region --name=/Customer";
+    LogWriterUtils.getLogWriter().info("testDestroyRegion command=" + command);
+    cmdResult = executeCommand(command);
+    strr = commandResultToString(cmdResult);
+    assertTrue(stringContainsLine(strr, ".*Customer.*destroyed successfully.*"));
+    LogWriterUtils.getLogWriter().info("testDestroyRegion strr=" + strr);
+    assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+    for (int i = 1; i <= 3; i++) {
+      final int x = i;
+      Host.getHost(0).getVM(i).invoke(() -> {
+        assertNull("Region still exists in VM " + x, getCache().getRegion("Customer"));
+      });
+    }
+  }
+
+  public void testDestroyLocalAndDistributedRegions() {
+    createDefaultSetup(null);
+
+    for (int i = 1; i <= 2; i++) {
+      Host.getHost(0).getVM(i).invoke(() -> {
+        final Cache cache = getCache();
+        RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        factory.create("Customer");
+      });
+    }
+
+    Host.getHost(0).getVM(3).invoke(() -> {
+      final Cache cache = getCache();
+      RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      factory.setScope(Scope.LOCAL);
+      factory.create("Customer");
+    });
+
+    waitForRegionMBeanCreation("/Customer", 3);
+
+    // Test failure when region not found
+    String command = "destroy region --name=DOESNOTEXIST";
+    LogWriterUtils.getLogWriter().info("testDestroyRegion command=" + command);
+    CommandResult cmdResult = executeCommand(command);
+    String strr = commandResultToString(cmdResult);
+    LogWriterUtils.getLogWriter().info("testDestroyRegion strr=" + strr);
+    assertTrue(stringContainsLine(strr, "Could not find.*\"DOESNOTEXIST\".*"));
+    assertEquals(Result.Status.ERROR, cmdResult.getStatus());
+
+    command = "destroy region --name=/Customer";
+    LogWriterUtils.getLogWriter().info("testDestroyRegion command=" + command);
+    cmdResult = executeCommand(command);
+    strr = commandResultToString(cmdResult);
+    assertTrue(stringContainsLine(strr, ".*Customer.*destroyed successfully.*"));
+    LogWriterUtils.getLogWriter().info("testDestroyRegion strr=" + strr);
+    assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+    for (int i = 1; i <= 3; i++) {
+      final int x = i;
+      Host.getHost(0).getVM(i).invoke(() -> {
+        assertNull("Region still exists in VM " + x, getCache().getRegion("Customer"));
+      });
+    }
+  }
+
+  private void waitForRegionMBeanCreation(final String regionPath, final int mbeanCount) {
+    Host.getHost(0).getVM(0).invoke(() -> {
+      Awaitility.waitAtMost(5, TimeUnit.SECONDS).until(newRegionMBeanIsCreated(regionPath, mbeanCount));
+    });
+  }
+
+  private Callable<Boolean> newRegionMBeanIsCreated(final String regionPath, final int mbeanCount) {
+    return () -> {
+      try {
+        MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+        String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN, new Object[]{regionPath, "*"});
+        ObjectName queryExpON = new ObjectName(queryExp);
+        return mbeanServer.queryNames(null, queryExpON).size() == mbeanCount;
+      } catch (MalformedObjectNameException mone) {
+        LogWriterUtils.getLogWriter().error(mone);
+        fail(mone.getMessage());
+        return false;
+      }
+    };
+  }
 
   public void testCreateRegion46391() throws IOException {
     createDefaultSetup(null);
@@ -669,6 +752,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     disconnectAllFromDS();
 
     final String regionName = "testRegionSharedConfigRegion";
+    final String regionPath = "/" + regionName;
     final String groupName = "testRegionSharedConfigGroup";
 
     // Start the Locator and wait for shared configuration to be available
@@ -684,18 +768,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
             locatorProps);
 
-        WaitCriterion wc = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            return locator.isSharedConfigurationRunning();
-          }
-
-          @Override
-          public String description() {
-            return "Waiting for shared configuration to be started";
-          }
-        };
-        Wait.waitForCriterion(wc, 5000, 500, true);
+        Awaitility.waitAtMost(5, TimeUnit.SECONDS).until(() -> locator.isSharedConfigurationRunning());
       } catch (IOException ioex) {
         fail("Unable to create a locator with a shared configuration");
       }
@@ -728,31 +801,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure that the region has been registered with the Manager MXBean
-    Host.getHost(0).getVM(0).invoke(() -> {
-      WaitCriterion wc = new WaitCriterion() {
-        @Override
-        public boolean done() {
-          try {
-            MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-            String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN,
-                new Object[]{"/" + regionName, "*"});
-            ObjectName queryExpON = new ObjectName(queryExp);
-            return !(mbeanServer.queryNames(null, queryExpON).isEmpty());
-          } catch (MalformedObjectNameException mone) {
-            LogWriterUtils.getLogWriter().error(mone);
-            fail(mone.getMessage());
-            return false;
-          }
-        }
-
-        @Override
-        public String description() {
-          return "Waiting for the region to be registed with the MXBean";
-        }
-      };
-
-      Wait.waitForCriterion(wc, 5000, 500, true);
-    });
+    waitForRegionMBeanCreation(regionPath, 1);
 
     // Make sure the region exists in the shared config
     Host.getHost(0).getVM(3).invoke(() -> {
@@ -836,6 +885,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     disconnectAllFromDS();
 
     final String regionName = "testRegionSharedConfigRegion";
+    final String regionPath = "/" + regionName;
     final String groupName = "testRegionSharedConfigGroup";
 
     // Start the Locator and wait for shared configuration to be available
@@ -851,18 +901,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
             locatorProps);
 
-        WaitCriterion wc = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            return locator.isSharedConfigurationRunning();
-          }
-
-          @Override
-          public String description() {
-            return "Waiting for shared configuration to be started";
-          }
-        };
-        Wait.waitForCriterion(wc, 5000, 500, true);
+        Awaitility.waitAtMost(5, TimeUnit.SECONDS).until(() -> locator.isSharedConfigurationRunning());
       } catch (IOException ioex) {
         fail("Unable to create a locator with a shared configuration");
       }
@@ -895,31 +934,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure that the region has been registered with the Manager MXBean
-    Host.getHost(0).getVM(0).invoke(() -> {
-      WaitCriterion wc = new WaitCriterion() {
-        @Override
-        public boolean done() {
-          try {
-            MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-            String queryExp = MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN,
-                new Object[]{"/" + regionName, "*"});
-            ObjectName queryExpON = new ObjectName(queryExp);
-            return !(mbeanServer.queryNames(null, queryExpON).isEmpty());
-          } catch (MalformedObjectNameException mone) {
-            LogWriterUtils.getLogWriter().error(mone);
-            fail(mone.getMessage());
-            return false;
-          }
-        }
-
-        @Override
-        public String description() {
-          return "Waiting for the region to be registed with the MXBean";
-        }
-      };
-
-      Wait.waitForCriterion(wc, 5000, 500, true);
-    });
+    waitForRegionMBeanCreation(regionPath, 1);
 
     // Make sure the region exists in the shared config
     Host.getHost(0).getVM(3).invoke(() -> {
