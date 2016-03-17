@@ -96,6 +96,8 @@ public class WANSSLDUnitTest extends WANTestBase{
   public void testSenderSSLReceiverNoSSL(){
     IgnoredException.addIgnoredException("Acceptor received unknown");
     IgnoredException.addIgnoredException("failed accepting client");
+    IgnoredException.addIgnoredException("Error in connecting to peer");
+    IgnoredException.addIgnoredException("Remote host closed connection during handshake");
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
