@@ -22,17 +22,17 @@
  */
 package com.gemstone.gemfire.cache.query;
 
+import static com.gemstone.gemfire.cache.query.data.TestData.createAndPopulateSet;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.*;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
@@ -44,6 +44,7 @@ import com.gemstone.gemfire.cache.query.internal.QueryUtils;
 import com.gemstone.gemfire.internal.cache.LocalDataSet;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.cache.query.data.TestData.MyValue;
 
 /**
  * Tests reported bugs
@@ -175,10 +176,7 @@ public class BugJUnitTest {
     CacheUtils.getLogger().fine(queryStr);
     r = q.execute();
     CacheUtils.getLogger().fine(Utils.printResult(r));
-    Set expectedSet = new HashSet(4);
-    for (int i = 0; i < 4; i++) {
-      expectedSet.add(new Integer(i));
-    }
+    Set expectedSet = createAndPopulateSet(4);
     assertEquals(expectedSet, ((SelectResults)r).asSet());
     
     // the following queries still fail because there is more than one
@@ -218,7 +216,6 @@ public class BugJUnitTest {
     catch (TypeMismatchException e) {
       // expected due to bug 32251
     }
-    
 
     
     // the following queries, however, should work:
@@ -409,16 +406,8 @@ public class BugJUnitTest {
     final PartitionedRegion pr2 = (PartitionedRegion)CacheUtils.getCache()
         .createRegion("pr2", factory.create());
 
-    for (int i = 1; i <= 80; i++) {
-      pr1.put(i, new MyValue(i));
-      if ((i % 2) == 0) {
-        pr2.put(i, new MyValue(i));
-      }
-    }
-    Set<Integer> set = new HashSet<Integer>();
-    for (int i = 0; i < 15; ++i) {
-      set.add(i);
-    }
+    createAllNumPRAndEvenNumPR(pr1, pr2, 80);
+    Set<Integer> set = createAndPopulateSet(15);
     LocalDataSet lds = new LocalDataSet(pr1, set);
 
     QueryObserverImpl observer = new QueryObserverImpl();
@@ -491,16 +480,8 @@ public class BugJUnitTest {
     final PartitionedRegion pr2 = (PartitionedRegion)CacheUtils.getCache()
         .createRegion("pr2", factory.create());
 
-    for (int i = 1; i <= 80; i++) {
-      pr1.put(i, new MyValue(i));
-      if ((i % 2) == 0) {
-        pr2.put(i, new MyValue(i));
-      }
-    }
-    Set<Integer> set = new HashSet<Integer>();
-    for (int i = 0; i < 15; ++i) {
-      set.add(i);
-    }
+    createAllNumPRAndEvenNumPR(pr1, pr2, 80);
+    Set<Integer> set = createAndPopulateSet(15);
     LocalDataSet lds = new LocalDataSet(pr1, set);
 
     QueryObserverImpl observer = new QueryObserverImpl();
@@ -521,27 +502,15 @@ public class BugJUnitTest {
 
   }
 
-  
-  static class MyValue implements Serializable, Comparable<MyValue>
-  {
-    public int value = 0;
-
-    public MyValue(int value) {
-      this.value = value;
-    }
-
-   
-    public int compareTo(MyValue o)
-    {
-      if(this.value > o.value) {
-        return 1;
-      }else if(this.value < o.value) {
-        return -1;
-      }else {
-        return 0;
+  private void createAllNumPRAndEvenNumPR(final PartitionedRegion pr1, final PartitionedRegion pr2, final int range) {
+    IntStream.rangeClosed(1,range).forEach(i -> {
+      pr1.put(i,new MyValue(i));
+      if(i % 2 == 0){
+        pr2.put(i, new MyValue(i));
       }
-    }
+    });
   }
+
 
   class QueryObserverImpl extends QueryObserverAdapter
   {
