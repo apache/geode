@@ -112,6 +112,8 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewa
 import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import com.gemstone.gemfire.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
+import com.gemstone.gemfire.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import com.gemstone.gemfire.pdx.SimpleClass;
 import com.gemstone.gemfire.pdx.SimpleClass1;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
@@ -2221,7 +2223,7 @@ public class WANTestBase extends DistributedTestCase{
       exln.remove();
     }
   }
-
+  
   public static void stopSender(String senderId) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     IgnoredException exp = IgnoredException.addIgnoredException(ForceReattemptException.class
@@ -2235,7 +2237,21 @@ public class WANTestBase extends DistributedTestCase{
           break;
         }
       }
+      AbstractGatewaySenderEventProcessor eventProcessor = null;
+      if (sender instanceof AbstractGatewaySender) {
+        eventProcessor = ((AbstractGatewaySender) sender).getEventProcessor();
+      }
       sender.stop();
+      
+      Set<RegionQueue> queues = null;
+      if (eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor) {
+        queues = ((ConcurrentSerialGatewaySenderEventProcessor)eventProcessor).getQueues();
+        for (RegionQueue queue: queues) {
+          if (queue instanceof SerialGatewaySenderQueue) {
+            assertFalse(((SerialGatewaySenderQueue) queue).isRemovalThreadAlive());
+          }
+        }
+      }
     }
     finally {
       exp.remove();
@@ -2261,6 +2277,35 @@ public class WANTestBase extends DistributedTestCase{
     }
   }
   
+  public static GatewaySenderFactory configureGateway(DiskStoreFactory dsf, File[] dirs1, String dsName, int remoteDsId,
+      boolean isParallel, Integer maxMemory,
+      Integer batchSize, boolean isConflation, boolean isPersistent,
+      GatewayEventFilter filter, boolean isManualStart, int numDispatchers, OrderPolicy policy) {
+    
+    InternalGatewaySenderFactory gateway = (InternalGatewaySenderFactory)cache.createGatewaySenderFactory();
+    gateway.setParallel(isParallel);
+    gateway.setMaximumQueueMemory(maxMemory);
+    gateway.setBatchSize(batchSize);
+    gateway.setBatchConflationEnabled(isConflation);
+    gateway.setManualStart(isManualStart);
+    gateway.setDispatcherThreads(numDispatchers);
+    gateway.setOrderPolicy(policy);
+    ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
+    if (filter != null) {
+      eventFilter = filter;
+      gateway.addGatewayEventFilter(filter);
+    }
+    if (isPersistent) {
+      gateway.setPersistenceEnabled(true);
+      gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
+          .getName());
+    } else {
+      DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
+      gateway.setDiskStoreName(store.getName());
+    }
+    return gateway;
+  }
+  
   public static void createSender(String dsName, int remoteDsId,
       boolean isParallel, Integer maxMemory,
       Integer batchSize, boolean isConflation, boolean isPersistent,
@@ -2272,55 +2317,9 @@ public class WANTestBase extends DistributedTestCase{
       persistentDirectory.mkdir();
       DiskStoreFactory dsf = cache.createDiskStoreFactory();
       File[] dirs1 = new File[] { persistentDirectory };
-      if (isParallel) {
-        InternalGatewaySenderFactory gateway = (InternalGatewaySenderFactory)cache.createGatewaySenderFactory();
-        gateway.setParallel(true);
-        gateway.setMaximumQueueMemory(maxMemory);
-        gateway.setBatchSize(batchSize);
-        gateway.setManualStart(isManualStart);
-        //set dispatcher threads
-        gateway.setDispatcherThreads(numDispatcherThreadsForTheRun);
-        ((InternalGatewaySenderFactory) gateway)
-            .setLocatorDiscoveryCallback(new MyLocatorCallback());
-        if (filter != null) {
-          eventFilter = filter;
-          gateway.addGatewayEventFilter(filter);
-        }
-        if (isPersistent) {
-          gateway.setPersistenceEnabled(true);
-          gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-              .getName());
-        } else {
-          DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-          gateway.setDiskStoreName(store.getName());
-        }
-        gateway.setBatchConflationEnabled(isConflation);
-        gateway.create(dsName, remoteDsId);
+      GatewaySenderFactory gateway = configureGateway(dsf, dirs1, dsName, remoteDsId, isParallel, maxMemory, batchSize, isConflation, isPersistent, filter, isManualStart, numDispatcherThreadsForTheRun, GatewaySender.DEFAULT_ORDER_POLICY);
+      gateway.create(dsName, remoteDsId);
 
-      } else {
-        GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-        gateway.setMaximumQueueMemory(maxMemory);
-        gateway.setBatchSize(batchSize);
-        gateway.setManualStart(isManualStart);
-        //set dispatcher threads
-        gateway.setDispatcherThreads(numDispatcherThreadsForTheRun);
-        ((InternalGatewaySenderFactory) gateway)
-            .setLocatorDiscoveryCallback(new MyLocatorCallback());
-        if (filter != null) {
-          eventFilter = filter;
-          gateway.addGatewayEventFilter(filter);
-        }
-        gateway.setBatchConflationEnabled(isConflation);
-        if (isPersistent) {
-          gateway.setPersistenceEnabled(true);
-          gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-              .getName());
-        } else {
-          DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-          gateway.setDiskStoreName(store.getName());
-        }
-        gateway.create(dsName, remoteDsId);
-      }
     } finally {
       exln.remove();
     }
@@ -2329,66 +2328,20 @@ public class WANTestBase extends DistributedTestCase{
   public static void createSenderWithMultipleDispatchers(String dsName, int remoteDsId,
 	boolean isParallel, Integer maxMemory,
 	Integer batchSize, boolean isConflation, boolean isPersistent,
-	GatewayEventFilter filter, boolean isManulaStart, int numDispatchers, OrderPolicy orderPolicy) {
+	GatewayEventFilter filter, boolean isManualStart, int numDispatchers, OrderPolicy orderPolicy) {
 	  final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
-	  try {
-		File persistentDirectory = new File(dsName + "_disk_"
-			+ System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
-		persistentDirectory.mkdir();
-		DiskStoreFactory dsf = cache.createDiskStoreFactory();
-		File[] dirs1 = new File[] { persistentDirectory };
-		if (isParallel) {
-		  GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-	      gateway.setParallel(true);
-	      gateway.setMaximumQueueMemory(maxMemory);
-	      gateway.setBatchSize(batchSize);
-	      gateway.setManualStart(isManulaStart);
-	      ((InternalGatewaySenderFactory) gateway)
-	      .setLocatorDiscoveryCallback(new MyLocatorCallback());
-	      if (filter != null) {
-	    	eventFilter = filter;
-	        gateway.addGatewayEventFilter(filter);
-	      }
-	      if (isPersistent) {
-	    	gateway.setPersistenceEnabled(true);
-	        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-	        	.getName());
-	      } else {
-	    	DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-	    	gateway.setDiskStoreName(store.getName());
-	      }
-	      gateway.setBatchConflationEnabled(isConflation);
-	      gateway.setDispatcherThreads(numDispatchers);
-	      gateway.setOrderPolicy(orderPolicy);
-	      gateway.create(dsName, remoteDsId);
+    try {
+      File persistentDirectory = new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
+      persistentDirectory.mkdir();
+      DiskStoreFactory dsf = cache.createDiskStoreFactory();
+      File[] dirs1 = new File[] { persistentDirectory };
+      GatewaySenderFactory gateway = configureGateway(dsf, dirs1, dsName, remoteDsId, isParallel, maxMemory, batchSize, isConflation, isPersistent, filter,
+          isManualStart, numDispatchers, orderPolicy);
+      gateway.create(dsName, remoteDsId);
 
-		} else {
-		  GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-		  gateway.setMaximumQueueMemory(maxMemory);
-		  gateway.setBatchSize(batchSize);
-		  gateway.setManualStart(isManulaStart);
-		  ((InternalGatewaySenderFactory) gateway)
-		  .setLocatorDiscoveryCallback(new MyLocatorCallback());
-		  if (filter != null) {
-			eventFilter = filter;
-			gateway.addGatewayEventFilter(filter);
-		  }
-		  gateway.setBatchConflationEnabled(isConflation);
-		  if (isPersistent) {
-			gateway.setPersistenceEnabled(true);
-			gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-				.getName());
-		  } else {
-			DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-			gateway.setDiskStoreName(store.getName());
-		  }
-		  gateway.setDispatcherThreads(numDispatchers);
-		  gateway.setOrderPolicy(orderPolicy);
-		  gateway.create(dsName, remoteDsId);
-		}
-	  } finally {
-		exln.remove();
-	  }
+    } finally {
+      exln.remove();
+    }
   }
   
   public static void createSenderWithoutDiskStore(String dsName, int remoteDsId,
@@ -2417,53 +2370,8 @@ public class WANTestBase extends DistributedTestCase{
     persistentDirectory.mkdir();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     File[] dirs1 = new File[] { persistentDirectory };
-
-    if (isParallel) {
-      GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-      gateway.setParallel(true);
-      gateway.setMaximumQueueMemory(maxMemory);
-      gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManualStart);
-      ((InternalGatewaySenderFactory) gateway)
-          .setLocatorDiscoveryCallback(new MyLocatorCallback());
-      if (filter != null) {
-        gateway.addGatewayEventFilter(filter);
-      }
-      if (isPersistent) {
-        gateway.setPersistenceEnabled(true);
-        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-            .getName());
-      } else {
-        DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-        gateway.setDiskStoreName(store.getName());
-      }
-      gateway.setBatchConflationEnabled(isConflation);
-      gateway.setDispatcherThreads(concurrencyLevel);
-      gateway.setOrderPolicy(policy);
-      gateway.create(dsName, remoteDsId);
-    } else {
-      GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-      gateway.setMaximumQueueMemory(maxMemory);
-      gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManualStart);
-      ((InternalGatewaySenderFactory) gateway)
-          .setLocatorDiscoveryCallback(new MyLocatorCallback());
-      if (filter != null) {
-        gateway.addGatewayEventFilter(filter);
-      }
-      gateway.setBatchConflationEnabled(isConflation);
-      if (isPersistent) {
-        gateway.setPersistenceEnabled(true);
-        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-            .getName());
-      } else {
-        DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-        gateway.setDiskStoreName(store.getName());
-      }
-      gateway.setDispatcherThreads(concurrencyLevel);
-      gateway.setOrderPolicy(policy);
-      gateway.create(dsName, remoteDsId);
-    }
+    GatewaySenderFactory gateway = configureGateway(dsf, dirs1, dsName, remoteDsId, isParallel, maxMemory, batchSize, isConflation, isPersistent, filter, isManualStart, concurrencyLevel, policy);
+    gateway.create(dsName, remoteDsId);
   }
   
 //  public static void createSender_PDX(String dsName, int remoteDsId,

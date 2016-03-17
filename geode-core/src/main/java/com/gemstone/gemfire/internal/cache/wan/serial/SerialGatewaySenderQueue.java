@@ -1046,6 +1046,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
   }
   
+  public boolean isRemovalThreadAlive() {
+    if (this.removalThread != null) {
+      return this.removalThread.isAlive();
+    }
+    return false;
+  }
+  
   @Override
   public void close() {
     Region r = getRegion();

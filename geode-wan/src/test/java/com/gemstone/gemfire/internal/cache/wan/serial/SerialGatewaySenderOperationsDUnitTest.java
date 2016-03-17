@@ -29,6 +29,7 @@ import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.ServerLocator;
+import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
@@ -420,7 +421,6 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.doPutsFrom( getTestMethodName() + "_RR", 10, 110 ));
 
     validateQueueContents(vm5, "ln", 100);
-    validateQueueClosedVM4();
     vm5.invoke(() -> WANTestBase.stopSender( "ln" ));
     vm5.invoke(() -> SerialGatewaySenderOperationsDUnitTest.verifySenderStoppedState( "ln" ));
 
@@ -441,11 +441,6 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_RR", 110 ));
     vm4.invoke(() -> WANTestBase.stopSender( "ln" ));
-  }
-  
-  private void validateQueueClosedVM4() {
-    // TODO Auto-generated method stub
-    
   }
 
   private void validateQueueContents(VM vm, String site, int size) {

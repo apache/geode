@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueStats;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ResourceEvent;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
@@ -34,15 +32,11 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.UpdateAttributesProcessor;
 import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
-import com.gemstone.gemfire.internal.cache.wan.AbstractRemoteGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import com.gemstone.gemfire.internal.cache.wan.AbstractRemoteGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderAdvisor;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderAttributes;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderConfigurationException;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderStats;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
@@ -141,8 +135,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
       if (ev != null && !ev.isStopped()) {
         ev.stopProcessing();
       }
-      this.eventProcessor = null;
-
+      
       // Stop the proxy (after the dispatcher, so the socket is still
       // alive until after the dispatcher has stopped)
       stompProxyDead();
@@ -152,11 +145,12 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
         listener.close();
       }
       logger.info(LocalizedMessage.create(LocalizedStrings.GatewayImpl_STOPPED__0, this));
-      
+
       clearTempEventsAfterSenderStopped();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
+   
     if (this.isPrimary()) {
       try {
         DistributedLockService
@@ -165,11 +159,13 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
         // service not found... ignore
       }
     }
-    if (getQueues() != null && !getQueues().isEmpty()) {
-      for (RegionQueue q : getQueues()) {
+    Set<RegionQueue> queues = getQueues();
+    if (queues != null && !queues.isEmpty()) {
+      for (RegionQueue q : queues) {
         ((SerialGatewaySenderQueue)q).cleanUp();
       }
     }
+   
     this.setIsPrimary(false);
     new UpdateAttributesProcessor(this).distribute(false);
     Thread lockObtainingThread = getSenderAdvisor().getLockObtainingThread();
@@ -190,6 +186,8 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     InternalDistributedSystem system = (InternalDistributedSystem) this.cache
         .getDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
+    
+    this.eventProcessor = null;
   }
   
   @Override
