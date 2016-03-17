@@ -1759,7 +1759,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     void sendCurrentView() {
       NetView v = currentView;
       if (v != null) {
-        InstallViewMessage msg = new InstallViewMessage(v, services.getAuthenticator().getCredentials(localAddress));
+        InstallViewMessage msg = new InstallViewMessage(v, services.getAuthenticator().getCredentials(localAddress), false);
         Collection<InternalDistributedMember> recips = new ArrayList<>(v.size() + v.getCrashedMembers().size());
         recips.addAll(v.getMembers());
         recips.remove(localAddress);
