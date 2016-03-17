@@ -18,6 +18,7 @@ package com.gemstone.gemfire.disttx;
 
 import java.util.Properties;
 
+import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -27,6 +28,7 @@ import com.gemstone.gemfire.internal.cache.TXManagerImplJUnitTest;
 import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
+import static junit.framework.TestCase.assertTrue;
 
 /**
  * Same tests as that of {@link TXManagerImplJUnitTest} after setting
@@ -51,4 +53,8 @@ public class DistTXManagerImplJUnitTest extends TXManagerImplJUnitTest {
     assert(txmgr.isDistributed());
   }
 
+  @Override
+  protected void callIsDistributed(TXManagerImpl txMgr) {
+    assertTrue(txMgr.isDistributed());
+  }
 }

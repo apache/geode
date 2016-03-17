@@ -98,6 +98,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.command.Get70;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
@@ -139,7 +140,7 @@ public class CacheClientProxy implements ClientSession {
   /**
    * Concurrency: protected by synchronization of {@link #isMarkedForRemovalLock}
    */
-  protected boolean isMarkedForRemoval = false;
+  protected volatile boolean isMarkedForRemoval = false;
   
   /**
    * @see #isMarkedForRemoval
@@ -1880,6 +1881,11 @@ public class CacheClientProxy implements ClientSession {
       .append("; connected=").append(isConnected())
       .append("; isMarkedForRemoval=").append(isMarkedForRemoval)
       .append("]");
+    
+    if(_messageDispatcher != null && isAlive()) {
+     buffer.append( LogWriterImpl.getStackTrace(_messageDispatcher));
+    }
+      
     return buffer.toString();
   }
 

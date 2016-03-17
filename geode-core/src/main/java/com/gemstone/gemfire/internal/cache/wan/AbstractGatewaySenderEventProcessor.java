@@ -38,12 +38,9 @@ import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.client.internal.Connection;
-import com.gemstone.gemfire.cache.client.internal.pooling.ConnectionDestroyedException;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
@@ -143,6 +140,13 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   private volatile boolean resetLastPeekedEvents;
   
   private long numEventsDispatched;
+
+  /**
+   * The batchSize is the batch size being used by this processor. By default, it is the
+   * configured batch size of the GatewaySender. It may be automatically reduced if a
+   * MessageTooLargeException occurs.
+   */
+  private int batchSize;
   
   /**
    * @param createThreadGroup
@@ -152,6 +156,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
       String string, GatewaySender sender) {
     super(createThreadGroup, string);
     this.sender = (AbstractGatewaySender)sender;
+    this.batchSize = sender.getBatchSize();
   }
 
   abstract protected void initializeMessageQueue(String id);
@@ -212,6 +217,23 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     //}
     //this.batchIdToEventsMap.clear();
     this.resetLastPeekedEvents = true;
+  }
+
+  protected int getBatchSize() {
+    return this.batchSize;
+  }
+
+  protected void setBatchSize(int batchSize) {
+    int currentBatchSize = this.batchSize;
+    if (batchSize <= 0) {
+      this.batchSize = 1;
+      logger.warn(LocalizedMessage.create(
+          LocalizedStrings.AbstractGatewaySenderEventProcessor_ATTEMPT_TO_SET_BATCH_SIZE_FAILED, new Object[] { currentBatchSize, batchSize }));
+    } else {
+      this.batchSize = batchSize;
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.AbstractGatewaySenderEventProcessor_SET_BATCH_SIZE, new Object[] { currentBatchSize, this.batchSize }));
+    }
   }
 
   /**
@@ -387,7 +409,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     final boolean isTraceEnabled = logger.isTraceEnabled();
     
-    final int batchSize = sender.getBatchSize();
     final int batchTimeInterval = sender.getBatchTimeInterval();
     final GatewaySenderStats statistics = this.sender.getStatistics();
     
@@ -417,7 +438,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
         // Peek a batch
         if (isDebugEnabled) {
-          logger.debug("Attempting to peek a batch of {} events", batchSize);
+          logger.debug("Attempting to peek a batch of {} events", this.batchSize);
         }
         for (;;) {
           // check before sleeping
@@ -481,7 +502,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
               }
             }*/
             }
-            events = this.queue.peek(batchSize, batchTimeInterval);
+            events = this.queue.peek(this.batchSize, batchTimeInterval);
           } catch (InterruptedException e) {
             interrupted = true;
             this.sender.getCancelCriterion().checkCancelInProgress(e);

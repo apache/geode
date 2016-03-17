@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.OffHeapValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.Flushable;
 import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.SlabImpl;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -40,18 +40,18 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class OffHeapValueWrapperJUnitTest {
 
   private static OffHeapValueWrapper createChunkValueWrapper(byte[] bytes, boolean isSerialized) {
-    StoredObject c = SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, isSerialized, false);
+    StoredObject c = MemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, isSerialized, false);
     return new OffHeapValueWrapper(c);
   }
 
   @Before
   public void setUp() throws Exception {
-    SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
+    MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
   }
 
   @After
   public void tearDown() throws Exception {
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
   }
 
   @Test

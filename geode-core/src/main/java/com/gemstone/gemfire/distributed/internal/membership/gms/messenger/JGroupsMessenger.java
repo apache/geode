@@ -197,6 +197,11 @@ public class JGroupsMessenger implements Messenger {
       throw new GemFireConfigException(LocalizedStrings.GroupMembershipService_AN_EXCEPTION_WAS_THROWN_WHILE_READING_JGROUPS_CONFIG.toLocalizedString(), ex);
     }
     
+    if (properties.startsWith("<!--")) {
+      int commentEnd = properties.indexOf("-->");
+      properties = properties.substring(commentEnd+3);
+    }
+    
     
     if (transport.isMcastEnabled()) {
       properties = replaceStrings(properties, "MCAST_PORT", String.valueOf(transport.getMcastId().getPort()));

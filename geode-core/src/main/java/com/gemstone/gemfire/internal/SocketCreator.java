@@ -571,7 +571,7 @@ public class SocketCreator {
       return c;
     }
     // lookup known algorithms
-    String[] knownAlgorithms = {"SSL", "SSLv2", "SSLv3", "TLS", "TLSv1", "TLSv1.1"};
+    String[] knownAlgorithms = {"SSL", "SSLv2", "SSLv3", "TLS", "TLSv1", "TLSv1.1", "TLSv1.2"};
     for (String algo : knownAlgorithms) {
       try {
         c = SSLContext.getInstance(algo);

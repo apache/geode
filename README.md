@@ -1,4 +1,12 @@
-# Overview
+**[Overview](#overview)**  
+**[Main Concepts and Components](#concepts)**  
+**[Geode in 5 minutes](#started)**  
+**[Application Development](#development)**  
+**[Documentation](http://geode.docs.pivotal.io/)**  
+**[wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)**  
+**Continuous Integration** [![Build Status](https://travis-ci.org/apache/incubator-geode.svg?branch=develop)](https://travis-ci.org/apache/incubator-geode)  
+
+## <a name="overview"></a>Overview
 
 [Apache Geode] (http://geode.incubator.apache.org/) is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
 
@@ -6,7 +14,7 @@ Apache Geode pools memory, CPU, network resources, and optionally local disk acr
 
 Apache Geode is a mature, robust technology originally developed by GemStone Systems in Beaverton, Oregon. Commercially available as GemFire™, the technology was first deployed in the financial sector as the transactional, low-latency data engine used in Wall Street trading platforms.  Today Apache Geode is used by over 600 enterprise customers for high-scale business applications that must meet low latency and 24x7 availability requirements. An example deployment includes [China National Railways](http://pivotal.io/big-data/case-study/scaling-online-sales-for-the-largest-railway-in-the-world-china-railway-corporation) that uses Geode to run railway ticketing for the entire country of China with a 10 node cluster that manages 2 terabytes of "hot data" in memory, and 10 backup nodes for high availability and elastic scale.
 
-# Main Concepts and Components
+## <a name="concepts"></a>Main Concepts and Components
 
 _Caches_ are an abstraction that describe a node in an Apache Geode distributed system.
 
@@ -30,7 +38,7 @@ Apache Geode includes the following features:
 * REST APIs for REST-enabled application development.
 * Rolling upgrade between major version releases.
 
-# Geode in 5 minutes
+## <a name="started"></a>Geode in 5 minutes
 
 With both a recent version of Gradle and JDK 1.8 or a more recent version installed, obtain the source archive.
 Extract the source archive and build from the expanded directory:
@@ -80,7 +88,7 @@ Compile and run `HelloWorld.java`.  The classpath should include `geode-dependen
     javac -cp /some/path/geode/geode-assembly/build/install/apache-geode/lib/geode-dependencies.jar HelloWorld.java
     java -cp .:/some/path/geode/geode-assembly/build/install/apache-geode/lib/geode-dependencies.jar HelloWorld
 
-#Application Development
+## <a name="development"></a>Application Development
 
 Apache Geode applications can be written in a number of client technologies:
 

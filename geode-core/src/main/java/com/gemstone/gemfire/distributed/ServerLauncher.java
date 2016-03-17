@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -43,7 +44,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
+import com.gemstone.gemfire.distributed.internal.DefaultServerLauncherCacheProvider;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.GemFireVersion;
@@ -72,7 +73,6 @@ import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.internal.process.StartupStatusListener;
 import com.gemstone.gemfire.internal.process.UnableToControlProcessException;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.lang.AttachAPINotFoundException;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
@@ -85,8 +85,6 @@ import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
-import org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer;
-
 /**
  * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying a GemFire Cache
  * Server process).
@@ -98,7 +96,7 @@ import org.springframework.data.gemfire.support.SpringContextBootstrappingInitia
  * @since 7.0
  */
 @SuppressWarnings({ "unused" })
-public final class ServerLauncher extends AbstractLauncher<String> {
+public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * @deprecated This is specific to the internal implementation and may go away in a future release.
@@ -147,6 +145,8 @@ public final class ServerLauncher extends AbstractLauncher<String> {
   private static final String SERVER_SERVICE_NAME = "Server";
 
   private static final AtomicReference<ServerLauncher> INSTANCE = new AtomicReference<>();
+
+  private static final ServerLauncherCacheProvider DEFAULT_CACHE_PROVIDER = new DefaultServerLauncherCacheProvider();
 
   private volatile transient boolean debug;
 
@@ -313,7 +313,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
    * @return a CacheConfig object with additional GemFire Cache configuration meta-data used on startup to configure
    * the Cache.
    */
-  final CacheConfig getCacheConfig() {
+  public final CacheConfig getCacheConfig() {
     final CacheConfig copy = new CacheConfig();
     copy.setDeclarativeConfig(this.cacheConfig);
     return copy;
@@ -716,7 +716,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
 
         try {
           final Properties gemfireProperties = getDistributedSystemProperties(getProperties());
-          this.cache = (isSpringXmlLocationSpecified() ? startWithSpring() : startWithGemFireApi(gemfireProperties));
+          this.cache = createCache(gemfireProperties);
           
           //Set the resource manager options
           if (this.criticalHeapPercentage != null) {
@@ -787,40 +787,16 @@ public final class ServerLauncher extends AbstractLauncher<String> {
     }
   }
 
-  private Cache startWithSpring() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME, getMemberName());
-
-    new SpringContextBootstrappingInitializer().init(CollectionUtils.createProperties(Collections.singletonMap(
-      SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER, getSpringXmlLocation())));
-
-    return SpringContextBootstrappingInitializer.getApplicationContext().getBean(Cache.class);
-  }
-
-  private Cache startWithGemFireApi(final Properties gemfireProperties ) {
-    final CacheConfig cacheConfig = getCacheConfig();
-    final CacheFactory cacheFactory = new CacheFactory(gemfireProperties);
-
-    if (cacheConfig.pdxPersistentUserSet) {
-      cacheFactory.setPdxPersistent(cacheConfig.isPdxPersistent());
+  private Cache createCache(Properties gemfireProperties) {
+    ServiceLoader<ServerLauncherCacheProvider> loader = ServiceLoader.load(ServerLauncherCacheProvider.class);
+    for(ServerLauncherCacheProvider provider : loader) {
+      Cache cache = provider.createCache(gemfireProperties, this);
+      if(cache != null) {
+        return cache;
+      }
     }
-
-    if (cacheConfig.pdxDiskStoreUserSet) {
-      cacheFactory.setPdxDiskStore(cacheConfig.getPdxDiskStore());
-    }
-
-    if (cacheConfig.pdxIgnoreUnreadFieldsUserSet) {
-      cacheFactory.setPdxIgnoreUnreadFields(cacheConfig.getPdxIgnoreUnreadFields());
-    }
-
-    if (cacheConfig.pdxReadSerializedUserSet) {
-      cacheFactory.setPdxReadSerialized(cacheConfig.isPdxReadSerialized());
-    }
-
-    if (cacheConfig.pdxSerializerUserSet) {
-      cacheFactory.setPdxSerializer(cacheConfig.getPdxSerializer());
-    }
-
-    return cacheFactory.create();
+    
+    return DEFAULT_CACHE_PROVIDER.createCache(gemfireProperties, this);
   }
 
   /**

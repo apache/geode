@@ -1015,14 +1015,20 @@ public class GMSJoinLeaveJUnitTest {
 
     Thread.sleep(2000);
     ViewCreator vc = gmsJoinLeave.getViewCreator();
-    
-    ViewAckMessage vack = new ViewAckMessage(gmsJoinLeaveMemberId, gmsJoinLeave.getPreparedView().getViewId(), true);
+    int viewId = 0;
+    if (gmsJoinLeave.getPreparedView() == null) {
+      viewId = gmsJoinLeave.getView().getViewId();
+    }
+    else {
+      viewId = gmsJoinLeave.getPreparedView().getViewId();
+    }
+    ViewAckMessage vack = new ViewAckMessage(gmsJoinLeaveMemberId, viewId, true);
     vack.setSender(mockMembers[0]);
     gmsJoinLeave.processMessage(vack);
-    vack = new ViewAckMessage(gmsJoinLeaveMemberId, gmsJoinLeave.getPreparedView().getViewId(), true);
+    vack = new ViewAckMessage(gmsJoinLeaveMemberId, viewId, true);
     vack.setSender(mockMembers[1]);
     gmsJoinLeave.processMessage(vack);
-    vack = new ViewAckMessage(gmsJoinLeaveMemberId, gmsJoinLeave.getPreparedView().getViewId(), true);
+    vack = new ViewAckMessage(gmsJoinLeaveMemberId, viewId, true);
     vack.setSender(gmsJoinLeaveMemberId);
     gmsJoinLeave.processMessage(vack);
     

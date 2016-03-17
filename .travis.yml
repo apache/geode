@@ -27,7 +27,7 @@ cache:
     - $HOME/.gradle/wrapper/
 
 after_failure:
-  - cat build/reports/rat/rat-report.txt
+  - cat /home/travis/build/apache/incubator-geode/build/reports/rat/rat-report.txt
 
 notifications:
   email:
@@ -35,3 +35,8 @@ notifications:
       - dev@geode.incubator.apache.org
     on_success: change
     on_failure: change
+
+branches:
+  except:
+    - /^feature.*$/
+    - asf-site

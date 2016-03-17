@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -33,8 +34,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -44,7 +43,7 @@ public class FreeListManagerTest {
   }
 
   private final int DEFAULT_SLAB_SIZE = 1024*1024*5;
-  private final SimpleMemoryAllocatorImpl ma = mock(SimpleMemoryAllocatorImpl.class);
+  private final MemoryAllocatorImpl ma = mock(MemoryAllocatorImpl.class);
   private final OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
   private TestableFreeListManager freeListManager;
   
@@ -69,7 +68,7 @@ public class FreeListManagerTest {
     }
   }
   
-  private static TestableFreeListManager createFreeListManager(SimpleMemoryAllocatorImpl ma, Slab[] slabs) {
+  private static TestableFreeListManager createFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
     return new TestableFreeListManager(ma, slabs);
   }
   
@@ -736,7 +735,7 @@ public class FreeListManagerTest {
     OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
     OffHeapStoredObject.release(c2.getAddress(), this.freeListManager);
     
-    LogWriter lw = mock(LogWriter.class);
+    Logger lw = mock(Logger.class);
     this.freeListManager.logOffHeapState(lw, 1024);
   }
   
@@ -872,7 +871,7 @@ public class FreeListManagerTest {
       }
     }
     
-    public TestableFreeListManager(SimpleMemoryAllocatorImpl ma, Slab[] slabs) {
+    public TestableFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
       super(ma, slabs);
     }
     

@@ -1502,7 +1502,8 @@ public final class TXManagerImpl implements CacheTransactionManager,
      Boolean value = isTXDistributed.get();
     // This can be null if not set in setDistributed().
     if (value == null) {
-      return InternalDistributedSystem.getAnyInstance().getOriginalConfig().getDistributedTransactions();
+      InternalDistributedSystem ids = (InternalDistributedSystem) cache.getDistributedSystem();
+      return ids.getOriginalConfig().getDistributedTransactions();
     } else {
       return value.booleanValue();
     }

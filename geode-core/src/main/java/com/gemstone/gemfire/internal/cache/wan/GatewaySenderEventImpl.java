@@ -571,16 +571,6 @@ public class GatewaySenderEventImpl implements
   }
 
   /**
-   * This method is meant for internal use by the SimpleMemoryAllocatorImpl.
-   * Others should use getRawValue instead.
-   * @return if the result is an off-heap reference then callers must use it before this event is released.
-   */
-  @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
-  public Object getValueObject() {
-    return this.valueObj;
-  }
-
-  /**
    * Return this event's deserialized value
    * 
    * @return this event's deserialized value

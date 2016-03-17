@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.shared.StringPrintWriter;
 
 @SuppressWarnings("serial")
 /**
- * Used by SimpleMemoryAllocatorImpl to debug off-heap memory leaks.
+ * Used by MemoryAllocatorImpl to debug off-heap memory leaks.
  */
 public class RefCountChangeInfo extends Throwable {
   private final String threadName;

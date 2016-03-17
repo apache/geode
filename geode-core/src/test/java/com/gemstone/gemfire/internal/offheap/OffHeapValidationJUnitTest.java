@@ -184,7 +184,7 @@ public class OffHeapValidationJUnitTest {
     MemoryBlock firstBlock = inspector.getFirstBlock();
     assertEquals(MemoryBlock.State.UNUSED, firstBlock.getState());
     
-    //System.out.println(((SimpleMemoryAllocatorImpl)inspector).getSnapshot());
+    //System.out.println(((MemoryAllocatorImpl)inspector).getSnapshot());
     
     // sort the ExpectedValues into the same order as the MemberBlocks from inspector
     Collections.sort(expected, 

@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.offheap.OffHeapStoredObject;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
 import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
@@ -34,7 +34,7 @@ public class OffHeapByteBufferByteSourceJUnitTest extends OffHeapByteSourceJUnit
   
   @Override
   protected ByteSource createByteSource(byte[] bytes) {
-    StoredObject so = SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, false, false);
+    StoredObject so = MemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, false, false);
     if (so instanceof OffHeapStoredObject) {
       OffHeapStoredObject c = (OffHeapStoredObject) so;
       ByteBuffer bb = c.createDirectByteBuffer();

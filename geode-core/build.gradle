@@ -74,8 +74,6 @@ dependencies {
   compile 'org.fusesource.jansi:jansi:' + project.'jansi.version'
   compile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   runtime 'org.springframework:spring-aop:' + project.'springframework.version'
-  compile 'org.springframework.data:spring-data-commons:' + project.'spring-data-commons.version'
-  provided 'org.springframework.data:spring-data-gemfire:' + project.'spring-data-gemfire.version'
   compile 'org.springframework:spring-beans:' + project.'springframework.version' //only used in AbstractCommandsController
   compile 'org.springframework:spring-context:' + project.'springframework.version'
   compile 'org.springframework:spring-context-support:' + project.'springframework.version'

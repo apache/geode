@@ -16,8 +16,10 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
@@ -553,6 +555,39 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.verifySenderDestroyed( "ln", true ));
     vm6.invoke(() -> WANTestBase.verifySenderDestroyed( "ln", true ));
     vm7.invoke(() -> WANTestBase.verifySenderDestroyed( "ln", true ));
+  }
+
+  public void testParallelGatewaySenderMessageTooLargeException() {
+    Integer[] locatorPorts = createLNAndNYLocators();
+    Integer lnPort = locatorPorts[0];
+    Integer nyPort = locatorPorts[1];
+
+    // Create and start sender with reduced maximum message size and 1 dispatcher thread
+    String regionName = getTestMethodName() + "_PR";
+    vm4.invoke(() -> setMaximumMessageSize( 1024*1024 ));
+    vm4.invoke(() -> createCache( lnPort ));
+    vm4.invoke(() -> setNumDispatcherThreadsForTheRun( 1 ));
+    vm4.invoke(() -> createSender( "ln", 2, true, 100, 100, false, false, null, false ));
+    vm4.invoke(() -> createPartitionedRegion( regionName, "ln", 0, 100, isOffHeap() ));
+
+    // Do puts
+    int numPuts = 200;
+    vm4.invoke(() -> doPuts( regionName, numPuts, new byte[11000] ));
+    validateRegionSizes(regionName, numPuts, vm4);
+
+    // Start receiver
+    IgnoredException ignoredMTLE = IgnoredException.addIgnoredException(MessageTooLargeException.class.getName(), vm4);
+    IgnoredException ignoredGIOE = IgnoredException.addIgnoredException(GemFireIOException.class.getName(), vm4);
+    vm2.invoke(() -> createReceiver( nyPort ));
+    vm2.invoke(() -> createPartitionedRegion( regionName, null, 0, 100, isOffHeap() ));
+    validateRegionSizes( regionName, numPuts, vm2 );
+    ignoredMTLE.remove();
+    ignoredGIOE.remove();
+  }
+
+  private void setMaximumMessageSize(int maximumMessageSizeBytes) {
+    System.setProperty("gemfire.client.max-message-size", String.valueOf(maximumMessageSizeBytes));
+    LogWriterUtils.getLogWriter().info("Set gemfire.client.max-message-size: " + System.getProperty("gemfire.client.max-message-size"));
   }
 
   private void createSendersReceiversAndPartitionedRegion(Integer lnPort, Integer nyPort, boolean createAccessors,

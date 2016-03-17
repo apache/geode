@@ -16,33 +16,27 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.util.Properties;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-   AbstractLauncherJUnitTest.class,
-   AbstractLauncherServiceStatusJUnitTest.class,
-   
-   LauncherMemberMXBeanJUnitTest.class,
+import com.gemstone.gemfire.cache.Cache;
 
-   LocatorLauncherJUnitTest.class,
-   LocatorLauncherLocalJUnitTest.class,
-   LocatorLauncherLocalFileJUnitTest.class,
-   LocatorLauncherRemoteJUnitTest.class,
-   LocatorLauncherRemoteFileJUnitTest.class,
+public class MockServerLauncherCacheProvider
+    implements ServerLauncherCacheProvider {
+  private static Cache cache;
 
-   ServerLauncherJUnitTest.class,
-   ServerLauncherLocalJUnitTest.class,
-   ServerLauncherLocalFileJUnitTest.class,
-   ServerLauncherRemoteJUnitTest.class,
-   ServerLauncherRemoteFileJUnitTest.class,
-   ServerLauncherWithProviderJUnitTest.class,
-})
-/**
- * Suite of tests for the Launcher classes.
- * 
- * @author Kirk Lund
- */
-public class LauncherTestSuite {
+  
+  public static Cache getCache() {
+    return cache;
+  }
+
+  public static void setCache(Cache cache) {
+    MockServerLauncherCacheProvider.cache = cache;
+  }
+
+  @Override
+  public Cache createCache(Properties gemfireProperties,
+      ServerLauncher serverLauncher) {
+    return cache;
+  }
+
 }

@@ -76,7 +76,7 @@ public class SSLCredentialGenerator extends CredentialGenerator {
     Properties props = new Properties();
     props.setProperty("ssl-enabled", "true");
     props.setProperty("ssl-require-authentication", "true");
-    props.setProperty("ssl-ciphers", "SSL_RSA_WITH_RC4_128_MD5");
+    props.setProperty("ssl-ciphers", "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
     props.setProperty("ssl-protocols", "TLSv1");
     return props;
   }

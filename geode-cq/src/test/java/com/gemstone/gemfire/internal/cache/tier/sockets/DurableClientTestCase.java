@@ -118,7 +118,7 @@ public class DurableClientTestCase extends DistributedTestCase {
   
   protected void preTearDownDurableClientTestCase() throws Exception {
   }
-
+  
   /**
    * Test that starting a durable client is correctly processed by the server.
    */
@@ -264,9 +264,10 @@ public class DurableClientTestCase extends DistributedTestCase {
     server1VM.invoke(s);
   }
   
-  private String printMap(Map m) {
+  private static String printMap(Map m) {
     Iterator<Map.Entry> itr = m.entrySet().iterator();
     StringBuffer sb = new StringBuffer();
+    sb.append("size = ").append(m.size()).append(" ");
     while(itr.hasNext()){
       sb.append("{");
       Map.Entry entry = itr.next();
@@ -278,7 +279,7 @@ public class DurableClientTestCase extends DistributedTestCase {
     return sb.toString();    
   }
   
-  private void printMapValue(Object value, StringBuffer sb) {
+  private static void printMapValue(Object value, StringBuffer sb) {
     if(value.getClass().isArray()) {
       
       sb.append("{");
@@ -1648,7 +1649,7 @@ public class DurableClientTestCase extends DistributedTestCase {
         
         if(ccp != null)
           result += " ccp: " + ccp.toString();*/
-        return getAllClientProxyState();
+        return getAllClientProxyState() + " CHM state: " + printMap(ClientHealthMonitor._instance.getConnectedClients(null));
       }
     };
     Wait.waitForCriterion(ev, 50 * 1000, 200, true);

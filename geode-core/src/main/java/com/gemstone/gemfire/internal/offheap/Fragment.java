@@ -38,7 +38,7 @@ public class Fragment implements MemoryBlock {
   private static AtomicIntegerFieldUpdater<Fragment> freeIdxUpdater = AtomicIntegerFieldUpdater.newUpdater(Fragment.class, "freeIdx");
   
   public Fragment(long addr, int size) {
-    SimpleMemoryAllocatorImpl.validateAddress(addr);
+    MemoryAllocatorImpl.validateAddress(addr);
     this.baseAddr = addr;
     this.size = size;
     freeIdxUpdater.set(this, 0);

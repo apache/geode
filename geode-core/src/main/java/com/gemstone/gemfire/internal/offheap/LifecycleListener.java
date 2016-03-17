@@ -22,23 +22,23 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Used by tests to get notifications about the lifecycle of a 
- * SimpleMemoryAllocatorImpl.
+ * MemoryAllocatorImpl.
  * 
  * @author Kirk Lund
  */
 public interface LifecycleListener {
 
   /**
-   * Callback is invoked after creating a new SimpleMemoryAllocatorImpl. 
+   * Callback is invoked after creating a new MemoryAllocatorImpl. 
    * 
    * Create occurs during the first initialization of an 
    * InternalDistributedSystem within the JVM.
    * 
    * @param allocator the instance that has just been created
    */
-  public void afterCreate(SimpleMemoryAllocatorImpl allocator);
+  public void afterCreate(MemoryAllocatorImpl allocator);
   /**
-   * Callback is invoked after reopening an existing SimpleMemoryAllocatorImpl 
+   * Callback is invoked after reopening an existing MemoryAllocatorImpl 
    * for reuse. 
    * 
    * Reuse occurs during any intialization of an 
@@ -47,30 +47,30 @@ public interface LifecycleListener {
    * 
    * @param allocator the instance that has just been reopened for reuse
    */
-  public void afterReuse(SimpleMemoryAllocatorImpl allocator);
+  public void afterReuse(MemoryAllocatorImpl allocator);
   /**
-   * Callback is invoked before closing the SimpleMemoryAllocatorImpl
+   * Callback is invoked before closing the MemoryAllocatorImpl
    * 
    * Close occurs after the InternalDistributedSystem and DistributionManager 
    * have completely disconnected. 
    * 
    * @param allocator the instance that is about to be closed
    */
-  public void beforeClose(SimpleMemoryAllocatorImpl allocator);
+  public void beforeClose(MemoryAllocatorImpl allocator);
   
-  static  void invokeBeforeClose(SimpleMemoryAllocatorImpl allocator) {
+  static  void invokeBeforeClose(MemoryAllocatorImpl allocator) {
     for (Iterator<LifecycleListener> iter = lifecycleListeners.iterator(); iter.hasNext();) {
       LifecycleListener listener = iter.next();
       listener.beforeClose(allocator);
     }
   }
-  static void invokeAfterReuse(SimpleMemoryAllocatorImpl allocator) {
+  static void invokeAfterReuse(MemoryAllocatorImpl allocator) {
     for (Iterator<LifecycleListener> iter = lifecycleListeners.iterator(); iter.hasNext();) {
       LifecycleListener listener = iter.next();
       listener.afterReuse(allocator);
     }
   }
-  static void invokeAfterCreate(SimpleMemoryAllocatorImpl allocator) {
+  static void invokeAfterCreate(MemoryAllocatorImpl allocator) {
     for (Iterator<LifecycleListener> iter = lifecycleListeners.iterator(); iter.hasNext();) {
       LifecycleListener listener = iter.next();
       listener.afterCreate(allocator);
