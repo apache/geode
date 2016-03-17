@@ -145,7 +145,77 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   }
 
-  private JMXConnector getJMXConnection() {
+  private JmxManagerInfo getManagerInfoFromLocator(Repository repository) {
+
+    try {
+      String locatorHost = repository.getJmxHost();
+      int locatorPort = Integer.parseInt(repository.getJmxPort());
+
+      if (LOGGER.infoEnabled()) {
+        LOGGER.info(resourceBundle.getString("LOG_MSG_HOST") + " : " + locatorHost + " & "
+            + resourceBundle.getString("LOG_MSG_PORT") + " : " + locatorPort);
+      }
+
+      InetAddress inetAddr = InetAddress.getByName(locatorHost);
+
+      if ((inetAddr instanceof Inet4Address) || (inetAddr instanceof Inet6Address)) {
+
+        if (inetAddr instanceof Inet4Address) {
+          if (LOGGER.infoEnabled()) {
+            LOGGER.info(resourceBundle.getString("LOG_MSG_LOCATOR_IPV4_ADDRESS") + " - " + inetAddr.toString());
+          }
+        } else {
+          if (LOGGER.infoEnabled()) {
+            LOGGER.info(resourceBundle.getString("LOG_MSG_LOCATOR_IPV6_ADDRESS") + " - " + inetAddr.toString());
+          }
+        }
+
+        JmxManagerInfo jmxManagerInfo = JmxManagerFinder.askLocatorForJmxManager(inetAddr, locatorPort, 15000,
+            repository.isUseSSLLocator());
+
+        if (jmxManagerInfo.port == 0) {
+          if (LOGGER.infoEnabled()) {
+            LOGGER.info(resourceBundle.getString("LOG_MSG_LOCATOR_COULD_NOT_FIND_MANAGER"));
+          }
+        }
+        return jmxManagerInfo;
+      } else {
+        // Locator has Invalid locator Address
+        if (LOGGER.infoEnabled()) {
+          LOGGER.info(resourceBundle.getString("LOG_MSG_LOCATOR_BAD_ADDRESS"));
+        }
+        cluster.setConnectionErrorMsg(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_BAD_ADDRESS"));
+        // update message to display on UI
+        cluster.setConnectionErrorMsg(resourceBundle
+            .getString("LOG_MSG_JMX_CONNECTION_BAD_ADDRESS"));
+        return null;
+      }
+    } catch (IOException e) {
+      StringWriter swBuffer = new StringWriter();
+      PrintWriter prtWriter = new PrintWriter(swBuffer);
+      e.printStackTrace(prtWriter);
+      LOGGER.severe("Exception Details : " + swBuffer.toString() + "\n");
+    }
+    return null;
+  }
+
+  /**
+   * Default connection is Pulse which uses configured userName and password
+   * @return
+   */
+  public JMXConnector getJMXConnection() {
+    return getJMXConnection(this.userName, this.userPassword, true);
+  }
+
+  /**
+   * Get connection for given userName and password. This is used for DataBrowser
+   * queries which has to be fired using credentials provided at pulse login page
+   *
+   * @param user jmxUser name
+   * @param password password
+   * @return
+   */
+  public JMXConnector getJMXConnection(String user, String password, final boolean registerURL) {
     JMXConnector connection = null;
     // Reference to repository
     Repository repository = Repository.get();
@@ -159,42 +229,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       }
 
       if (repository.getJmxUseLocator()) {
-
-        String locatorHost = repository.getJmxHost();
-        int locatorPort = Integer.parseInt(repository.getJmxPort());
-
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info(resourceBundle.getString("LOG_MSG_HOST") + " : "
-              + locatorHost + " & " + resourceBundle.getString("LOG_MSG_PORT")
-              + " : " + locatorPort);
-        }
-
-        InetAddress inetAddr = InetAddress.getByName(locatorHost);
-
-        if ((inetAddr instanceof Inet4Address)
-            || (inetAddr instanceof Inet6Address)) {
-
-          if (inetAddr instanceof Inet4Address) {
-            // Locator has IPv4 Address
-            if (LOGGER.infoEnabled()) {
-              LOGGER.info(resourceBundle
-                  .getString("LOG_MSG_LOCATOR_IPV4_ADDRESS")
-                  + " - "
-                  + inetAddr.toString());
-            }
-          } else {
-            // Locator has IPv6 Address
-            if (LOGGER.infoEnabled()) {
-              LOGGER.info(resourceBundle
-                  .getString("LOG_MSG_LOCATOR_IPV6_ADDRESS")
-                  + " - "
-                  + inetAddr.toString());
-            }
-          }
-
-          JmxManagerInfo jmxManagerInfo = JmxManagerFinder
-              .askLocatorForJmxManager(inetAddr, locatorPort, 15000,
-                  repository.isUseSSLLocator());
+        JmxManagerInfo jmxManagerInfo = getManagerInfoFromLocator(repository);
 
           if (jmxManagerInfo.port == 0) {
             if (LOGGER.infoEnabled()) {
@@ -221,28 +256,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             jmxSerURL = formJMXServiceURLString(jmxManagerInfo.host,
                 String.valueOf(jmxManagerInfo.port));
           }
-
-        } /*
-           * else if (inetAddr instanceof Inet6Address) { // Locator has IPv6
-           * Address if(LOGGER.infoEnabled()){
-           * LOGGER.info(resourceBundle.getString
-           * ("LOG_MSG_LOCATOR_IPV6_ADDRESS")); } // update message to display
-           * on UI cluster.setConnectionErrorMsg(resourceBundle.getString(
-           * "LOG_MSG_JMX_CONNECTION_IPv6_ADDRESS"));
-           *
-           * }
-           */else {
-          // Locator has Invalid locator Address
-          if (LOGGER.infoEnabled()) {
-            LOGGER
-                .info(resourceBundle.getString("LOG_MSG_LOCATOR_BAD_ADDRESS"));
-          }
-          // update message to display on UI
-          cluster.setConnectionErrorMsg(resourceBundle
-              .getString("LOG_MSG_JMX_CONNECTION_BAD_ADDRESS"));
-
-        }
-
       } else {
         if (LOGGER.infoEnabled()) {
           LOGGER.info(resourceBundle.getString("LOG_MSG_HOST") + " : "
@@ -254,11 +267,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
       if (StringUtils.isNotNullNotEmptyNotWhiteSpace(jmxSerURL)) {
         JMXServiceURL url = new JMXServiceURL(jmxSerURL);
-
-        // String[] creds = {"controlRole", "R&D"};
-        String[] creds = { this.userName, this.userPassword };
+        String[] creds = { user, password };
         Map<String, Object> env = new HashMap<String, Object>();
-
         env.put(JMXConnector.CREDENTIALS, creds);
 
         if (repository.isUseSSLManager()) {
@@ -266,20 +276,19 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           env.put("com.sun.jndi.rmi.factory.socket",
               new SslRMIClientSocketFactory());
         }
-
+        LOGGER.info("Connecting to jmxURL : " + jmxSerURL);
         connection = JMXConnectorFactory.connect(url, env);
 
         // Register Pulse URL if not already present in the JMX Manager
-        registerPulseUrlToManager(connection);
+        if(registerURL)
+          registerPulseUrlToManager(connection);
       }
     } catch (Exception e) {
       if (e instanceof UnknownHostException) {
-        // update message to display on UI
         cluster.setConnectionErrorMsg(resourceBundle
             .getString("LOG_MSG_JMX_CONNECTION_UNKNOWN_HOST"));
       }
 
-      // write errors
       StringWriter swBuffer = new StringWriter();
       PrintWriter prtWriter = new PrintWriter(swBuffer);
       e.printStackTrace(prtWriter);
@@ -294,7 +303,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         this.conn = null;
       }
     }
-
     return connection;
   }
 
@@ -1222,12 +1230,12 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           if (cmd.containsKey(PulseConstants.COMPOSITE_DATA_KEY_CONNECTED)){
             client.setConnected((Boolean) cmd.get(PulseConstants.COMPOSITE_DATA_KEY_CONNECTED));
           }
-          if (cmd.containsKey(PulseConstants.COMPOSITE_DATA_KEY_CLIENTCQCOUNT)){ 
-        	client.setClientCQCount((Integer) cmd.get(PulseConstants.COMPOSITE_DATA_KEY_CLIENTCQCOUNT)); 
-          } 
-          if (cmd.containsKey(PulseConstants.COMPOSITE_DATA_KEY_SUBSCRIPTIONENABLED)){ 
-            client.setSubscriptionEnabled((Boolean) cmd.get(PulseConstants.COMPOSITE_DATA_KEY_SUBSCRIPTIONENABLED)); 
-          } 
+          if (cmd.containsKey(PulseConstants.COMPOSITE_DATA_KEY_CLIENTCQCOUNT)){
+        	client.setClientCQCount((Integer) cmd.get(PulseConstants.COMPOSITE_DATA_KEY_CLIENTCQCOUNT));
+          }
+          if (cmd.containsKey(PulseConstants.COMPOSITE_DATA_KEY_SUBSCRIPTIONENABLED)){
+            client.setSubscriptionEnabled((Boolean) cmd.get(PulseConstants.COMPOSITE_DATA_KEY_SUBSCRIPTIONENABLED));
+          }
           memberClientsHM.put(client.getId(), client);
         }
         existingMember.updateMemberClientsHMap(memberClientsHM);
@@ -1602,7 +1610,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       LOGGER.warning(infe);
     } catch (ReflectionException re) {
       LOGGER.warning(re);
-    } 
+    }
   }
 
   private static boolean isQuoted(String value) {
@@ -2184,6 +2192,11 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
       Cluster.Member member = cluster.getMembersHMap().get(memberName);
 
+      //Following attributes are not present in 9.0
+      //"Members"
+      //"EmptyNodes"
+      //"SystemRegionEntryCount"
+      //"MemberCount"
       AttributeList attributeList = this.mbs.getAttributes(mbeanName,
           PulseConstants.REGION_MBEAN_ATTRIBUTES);
 
@@ -2301,7 +2314,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           region.setDiskSynchronous(false);
           //LOGGER.warning("Some of the Pulse elements are not available currently. There might be a GemFire upgrade going on.");
       }
-     
+
 
       // Remove deleted regions from member's regions list
       for (Iterator<String> it = cluster.getDeletedRegions().iterator(); it
@@ -2316,7 +2329,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       LOGGER.warning(infe);
     } catch (ReflectionException re) {
       LOGGER.warning(re);
-    } 
+    }
   }
 
   /**
@@ -2450,5 +2463,4 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     return gemfireVersion;
   }
-
 }

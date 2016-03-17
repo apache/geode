@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -190,6 +191,10 @@ public class ManagementAgent {
         setStatusMessage(managerBean, message);
         if (logger.isDebugEnabled()) {
           logger.debug(message);
+        }
+
+        if (isCustomAuthorizer()){
+          System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
         }
       }
 
@@ -385,8 +390,9 @@ public class ManagementAgent {
     final HashMap<String, Object> env = new HashMap<String, Object>();
 
     ManagementInterceptor securityInterceptor = null;
+    Cache cache = CacheFactory.getAnyInstance();
     if (isCustomAuthenticator()) {
-      securityInterceptor = new ManagementInterceptor((GemFireCacheImpl)CacheFactory.getAnyInstance());
+      securityInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getSecurityProperties());
       env.put(JMXConnectorServer.AUTHENTICATOR, securityInterceptor);
     }
     else {
@@ -462,7 +468,7 @@ public class ManagementAgent {
 
     if (isCustomAuthorizer()) {
       if(securityInterceptor==null){
-        securityInterceptor = new ManagementInterceptor((GemFireCacheImpl)CacheFactory.getAnyInstance());
+        securityInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getSecurityProperties());
       }
       MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(securityInterceptor);
       cs.setMBeanServerForwarder(mBeanServerWrapper);

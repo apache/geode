@@ -19,14 +19,14 @@
 
 package com.vmware.gemfire.tools.pulse.internal.data;
 
+import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+
 import java.net.ConnectException;
 import java.util.HashMap;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * A Singleton instance of the memory cache for clusters.
@@ -47,6 +47,7 @@ public class Repository {
   private Boolean isEmbeddedMode;
   private boolean useSSLLocator = false;
   private boolean useSSLManager = false;
+  private boolean useGemFireCredentials = false;
   
 
   private String pulseWebAppUrl;
@@ -211,5 +212,15 @@ public class Repository {
   public ResourceBundle getResourceBundle() {
     return this.resourceBundle;
   }
+
+  public boolean isUseGemFireCredentials() {
+    return useGemFireCredentials;
+  }
+
+  public void setUseGemFireCredentials(boolean useGemFireCredentials) {
+    this.useGemFireCredentials = useGemFireCredentials;
+  }
+  
+  
 
 }

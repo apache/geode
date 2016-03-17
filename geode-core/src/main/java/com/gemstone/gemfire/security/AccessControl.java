@@ -17,11 +17,13 @@
 
 package com.gemstone.gemfire.security;
 
-import java.security.Principal;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheCallback;
+import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.distributed.DistributedMember;
+
+import java.security.Principal;
 
 /**
  * Specifies the interface to authorize operations at the cache or region level
@@ -67,6 +69,10 @@ public interface AccessControl extends CacheCallback {
    */
   public void init(Principal principal, DistributedMember remoteMember,
       Cache cache) throws NotAuthorizedException;
+
+  default public void init(Principal principal, DistributedMember remoteMember) throws NotAuthorizedException {
+    init(principal, remoteMember, CacheFactory.getAnyInstance());
+  }
 
   /**
    * Check if the given operation is allowed for the cache/region.

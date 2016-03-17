@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -148,17 +147,25 @@ public class PulseController {
     return null != request.getUserPrincipal();
   }
 
+  /* Not used replaced by SpringSecurity Logout tag with LogoutHandler
   @RequestMapping(value = "/clusterLogout", method = RequestMethod.GET)
   public void clusterLogout(HttpServletRequest request,
       HttpServletResponse response) throws IOException {
+    PulseLogWriter LOGGER = PulseLogWriter.getLogger();   
+    LOGGER.info("Inside #clusterLogout...");    
+    if(Repository.get().isUseGemFireCredentials()) {      
+      GemFireAuthentication authentication = (GemFireAuthentication) SecurityContextHolder.getContext()
+          .getAuthentication();
+      authentication.getJmxc().close();
+      LOGGER.info("Closing GemFireAuthentication JMX Connection...");
+    }
     HttpSession session = request.getSession(false);
     if (session != null) {
-
       // End session and redirect
       session.invalidate();
     }
     response.sendRedirect("../Login.html");
-  }
+  }*/
 
   @RequestMapping(value = "/pulseVersion", method = RequestMethod.GET)
   public void pulseVersion(HttpServletRequest request,

@@ -18,14 +18,12 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
+import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
+import com.gemstone.gemfire.management.internal.security.ManagementInterceptor;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
-
-import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Set;
+import org.json.JSONException;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -37,6 +35,13 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
+import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Properties;
+import java.util.Set;
 
 public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"
@@ -46,8 +51,20 @@ public class Server {
   private final JMXConnectorServer cs;
   private String propFile = null;
 
-  public Server(int port, String properties) throws IOException {
+  public Server(int port, String properties, boolean secure) throws IOException, JSONException {
+    Properties props = new Properties();
+    props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
+    props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+    JSONAuthorization.setUpWithJsonFile("cacheServer.json");
+    ManagementInterceptor interceptor = new ManagementInterceptor(props);
+    MBeanServerWrapper wrapper = new MBeanServerWrapper(interceptor);
+
+    if(secure){
+      //System.setProperty(JMXConnectorServer.AUTHENTICATOR, interceptor);
+    }
+
     try {
+
       java.rmi.registry.LocateRegistry.createRegistry(port);
       System.out.println("RMI registry ready.");
     } catch (Exception e) {
@@ -59,6 +76,10 @@ public class Server {
     mbs = MBeanServerFactory.createMBeanServer();
     url = new JMXServiceURL(formJMXServiceURLString(DEFAULT_HOST, "" + port));
     cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
+
+    if(secure) {
+      cs.setMBeanServerForwarder(wrapper);
+    }
 
     cs.start();
 
@@ -242,7 +263,7 @@ public class Server {
       throws MalformedObjectNameException {
     Server s = null;
     try {
-      s = new Server(port, properties);
+      s = new Server(port, properties, true);
     } catch (Exception e) {
       e.printStackTrace();
       return null;

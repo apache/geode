@@ -17,8 +17,6 @@
 package com.gemstone.gemfire.management.internal.security;
 
 import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -67,17 +65,16 @@ public class ManagementInterceptor implements JMXAuthenticator{
 	public static final String OBJECT_NAME_ACCESSCONTROL = "GemFire:service=AccessControl,type=Distributed";
 
 	private static final Logger logger = LogManager.getLogger(ManagementInterceptor.class);
-  private Cache cache;
+//  private Cache cache;
   private String authzFactoryName;
   private String postAuthzFactoryName;
   private String authenticatorFactoryName;
   private ConcurrentMap<Principal, AccessControl> cachedAuthZCallback;
   private ConcurrentMap<Principal, AccessControl> cachedPostAuthZCallback;
+  private Properties sysProps = null;
 
-  public ManagementInterceptor(Cache gemFireCacheImpl) {
-    this.cache = gemFireCacheImpl;
-    DistributedSystem system = cache.getDistributedSystem();
-    Properties sysProps = system.getProperties();
+  public ManagementInterceptor(Properties sysProps) {
+    this.sysProps = sysProps;
     this.authzFactoryName = sysProps.getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME);
     this.postAuthzFactoryName = sysProps.getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME);
     this.authenticatorFactoryName = sysProps.getProperty(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
@@ -138,8 +135,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
     }
 
     try {
-      Principal principal = getAuthenticator(cache.getDistributedSystem().getSecurityProperties()).authenticate(pr,
-          cache.getDistributedSystem().getDistributedMember());
+      Principal principal = getAuthenticator(sysProps).authenticate(pr);
       return new Subject(true, Collections.singleton(new JMXPrincipal(principal.getName())), Collections.EMPTY_SET,
 			    Collections.EMPTY_SET);
     } catch (AuthenticationFailedException e) {
@@ -187,7 +183,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
 			try {
           Method authzMethod = ClassLoadUtil.methodFromName(authzFactoryName);
           AccessControl authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
-          authzCallback.init(principal, null, cache);
+          authzCallback.init(principal, null);
           cachedAuthZCallback.put(principal, authzCallback);
           return authzCallback;
         } catch (Exception ex) {
@@ -202,7 +198,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
 		try {
           Method authzMethod = ClassLoadUtil.methodFromName(postAuthzFactoryName);
           AccessControl postAuthzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
-          postAuthzCallback.init(principal, null, cache);
+          postAuthzCallback.init(principal, null);
           cachedPostAuthZCallback.put(principal, postAuthzCallback);
           return postAuthzCallback;
         } catch (Exception ex) {
@@ -227,7 +223,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
       throw new AuthenticationFailedException(
           LocalizedStrings.HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED.toLocalizedString());
 		}
-    auth.init(gfSecurityProperties, this.cache.getLogger(), this.cache.getSecurityLogger());
+    auth.init(gfSecurityProperties);
     return auth;
 	}
 

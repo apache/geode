@@ -137,6 +137,8 @@ public class PulseTest {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+    System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     jmxPropertiesFile = classLoader.getResource("test.properties").getPath();
     path = getPulseWarPath();
