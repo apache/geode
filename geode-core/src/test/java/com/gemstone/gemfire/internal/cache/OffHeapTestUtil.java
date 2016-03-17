@@ -25,15 +25,15 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.internal.offheap.MemoryBlock;
 import com.gemstone.gemfire.internal.offheap.RefCountChangeInfo;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 
 @SuppressWarnings("deprecation")
 public class OffHeapTestUtil {
 
   public static void checkOrphans() { // TODO:KIRK: need to do something special to guarantee proper tearDown
-    SimpleMemoryAllocatorImpl allocator = null;
+    MemoryAllocatorImpl allocator = null;
     try {
-      allocator = SimpleMemoryAllocatorImpl.getAllocator();
+      allocator = MemoryAllocatorImpl.getAllocator();
     } catch (CacheClosedException ignore) {
       // no off-heap memory so no orphans
       return;

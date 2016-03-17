@@ -2141,14 +2141,12 @@ implements Bucket
   }
 
   static int calcMemSize(Object value) {
-    if (value != null && (value instanceof GatewaySenderEventImpl)) {
-      return ((GatewaySenderEventImpl)value).getSerializedValueSize();
-    } 
     if (value == null || value instanceof Token) {
       return 0;
     }
     if (!(value instanceof byte[]) && !(value instanceof CachedDeserializable)
-        && !(value instanceof com.gemstone.gemfire.Delta) && !(value instanceof Delta)) {
+        && !(value instanceof com.gemstone.gemfire.Delta) && !(value instanceof Delta)
+        && !(value instanceof GatewaySenderEventImpl)) {
     // ezoerner:20090401 it's possible this value is a Delta
       throw new InternalGemFireError("DEBUG: calcMemSize: weird value (class " 
           + value.getClass() + "): " + value);

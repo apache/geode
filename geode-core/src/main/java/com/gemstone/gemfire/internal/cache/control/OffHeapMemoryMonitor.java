@@ -21,8 +21,6 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 import com.gemstone.gemfire.internal.cache.control.MemoryThresholds.MemoryState;
@@ -30,6 +28,7 @@ import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor.ResourceManag
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
 import com.gemstone.gemfire.internal.offheap.MemoryUsageListener;
 
@@ -67,7 +66,6 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
    * does not have off-heap memory. So we need to handle memoryAllocator being null.
    */
   private final MemoryAllocator memoryAllocator;
-  private final LogWriterI18n log;
 
   OffHeapMemoryMonitor(final InternalResourceManager resourceManager, final GemFireCacheImpl cache, final MemoryAllocator memoryAllocator, final ResourceManagerStats stats) {
     this.resourceManager = resourceManager;
@@ -80,7 +78,6 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
       this.thresholds = new MemoryThresholds(this.memoryAllocator.getTotalMemory());
     }
     
-    this.log = cache.getLoggerI18n();
     this.offHeapMemoryUsageListener = new OffHeapMemoryUsageListener();
   }
 
@@ -439,28 +436,28 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
   void processLocalEvent(MemoryEvent event) {
     assert event.isLocal();
 
-    if (this.log.fineEnabled()) {
-      this.log.fine("Handling new local event " + event);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Handling new local event {}", event);
     }
 
     if (event.getState().isCritical() && !event.getPreviousState().isCritical()) {
-      this.log.error(LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD,
-          new Object[] { event.getMember(), "off-heap" });
+      logger.error(LocalizedMessage.create(LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD,
+          new Object[] { event.getMember(), "off-heap" }));
     } else if (!event.getState().isCritical() && event.getPreviousState().isCritical()) {
-      this.log.error(LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD,
-          new Object[] { event.getMember(), "off-heap" });
+      logger.error(LocalizedMessage.create(LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD,
+          new Object[] { event.getMember(), "off-heap" }));
     }
 
     if (event.getState().isEviction() && !event.getPreviousState().isEviction()) {
-      this.log.info(LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_HIGH_THRESHOLD,
-          new Object[] { event.getMember(), "off-heap" });
+      logger.info(LocalizedMessage.create(LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_HIGH_THRESHOLD,
+          new Object[] { event.getMember(), "off-heap" }));
     } else if (!event.getState().isEviction() && event.getPreviousState().isEviction()) {
-      this.log.info(LocalizedStrings.MemoryMonitor_MEMBER_BELOW_HIGH_THRESHOLD,
-          new Object[] { event.getMember(),  "off-heap" });
+      logger.info(LocalizedMessage.create(LocalizedStrings.MemoryMonitor_MEMBER_BELOW_HIGH_THRESHOLD,
+          new Object[] { event.getMember(),  "off-heap" }));
     }
 
-    if (this.log.fineEnabled()) {
-      this.log.fine("Informing remote members of event " + event);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Informing remote members of event {}", event);
     }
     
     this.resourceAdvisor.updateRemoteProfile();
@@ -475,13 +472,9 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
       } catch (CancelException ignore) {
         // ignore
       } catch (Throwable t) {
-        this.log.error(LocalizedStrings.MemoryMonitor_EXCEPTION_OCCURED_WHEN_NOTIFYING_LISTENERS, t);
+        logger.error(LocalizedMessage.create(LocalizedStrings.MemoryMonitor_EXCEPTION_OCCURED_WHEN_NOTIFYING_LISTENERS), t);
       }
     }
-  }
-  
-  LogWriter getLogWriter() {
-    return this.log.convertToLogWriter();
   }
   
   @Override
@@ -508,7 +501,9 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
     
     @Override
     public void run() {
-      getLogWriter().fine("OffHeapMemoryUsageListener is starting " + this);
+      if (logger.isDebugEnabled()) {
+        logger.debug("OffHeapMemoryUsageListener is starting {}", this);
+      }
       int callsWithNoEvent = 0;
       final int MS_TIMEOUT = 10;
       final int MAX_CALLS_WITH_NO_EVENT = 1000/MS_TIMEOUT;
@@ -541,7 +536,7 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
               this.wait(MS_TIMEOUT);
               this.deliverEvent = false;
             } catch (InterruptedException iex) {
-              getLogWriter().warning("OffHeapMemoryUsageListener was interrupted " + this);
+              logger.warn("OffHeapMemoryUsageListener was interrupted {}", this);
               this.stopRequested = true;
               exitRunLoop = true;
             }
@@ -549,7 +544,9 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
         }
       }
         
-      getLogWriter().fine("OffHeapMemoryUsageListener is stopping " + this);
+      if (logger.isDebugEnabled()) {
+        logger.debug("OffHeapMemoryUsageListener is stopping {}", this);
+      }
     }
 
     @Override

@@ -385,11 +385,7 @@ public void stopMonitoring() {
       this.thresholds = new MemoryThresholds(this.thresholds.getMaxMemoryBytes(), criticalThreshold, this.thresholds
           .getEvictionThreshold());
 
-      if (testBytesUsedForThresholdSet != -1) {
-        updateStateAndSendEvent(testBytesUsedForThresholdSet);
-      } else {
-        updateStateAndSendEvent(getBytesUsed());
-      }
+      updateStateAndSendEvent();
       
       // Start or stop monitoring based upon whether a threshold has been set
       if (this.thresholds.isEvictionThresholdEnabled() || this.thresholds.isCriticalThresholdEnabled()) {
@@ -437,11 +433,7 @@ public void stopMonitoring() {
       this.thresholds = new MemoryThresholds(this.thresholds.getMaxMemoryBytes(), this.thresholds.getCriticalThreshold(),
           evictionThreshold);
 
-      if (testBytesUsedForThresholdSet != -1) {
-        updateStateAndSendEvent(testBytesUsedForThresholdSet);
-      } else {
-        updateStateAndSendEvent(getBytesUsed());
-      }
+      updateStateAndSendEvent();
 
       // Start or stop monitoring based upon whether a threshold has been set
       if (this.thresholds.isEvictionThresholdEnabled() || this.thresholds.isCriticalThresholdEnabled()) {
@@ -463,7 +455,7 @@ public void stopMonitoring() {
    * If necessary, change the state and send an event for the state change.
    */
   public void updateStateAndSendEvent() {
-    updateStateAndSendEvent(getBytesUsed());
+    updateStateAndSendEvent(testBytesUsedForThresholdSet != -1 ? testBytesUsedForThresholdSet : getBytesUsed());
   }
   
   /**

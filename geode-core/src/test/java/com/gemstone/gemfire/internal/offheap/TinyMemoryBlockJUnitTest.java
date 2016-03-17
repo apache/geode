@@ -39,7 +39,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class TinyMemoryBlockJUnitTest {
 
-  private SimpleMemoryAllocatorImpl ma;
+  private MemoryAllocatorImpl ma;
   private OutOfOffHeapMemoryListener ooohml;
   private OffHeapMemoryStats stats;
 
@@ -50,7 +50,7 @@ public class TinyMemoryBlockJUnitTest {
   };
 
   private static class TestableFreeListManager extends FreeListManager {
-    TestableFreeListManager(SimpleMemoryAllocatorImpl ma, final Slab[] slabs) {
+    TestableFreeListManager(MemoryAllocatorImpl ma, final Slab[] slabs) {
       super (ma, slabs);
     }
   }
@@ -73,12 +73,12 @@ public class TinyMemoryBlockJUnitTest {
   public void setUp() throws Exception {
     ooohml = mock(OutOfOffHeapMemoryListener.class);
     stats = mock(OffHeapMemoryStats.class);
-    ma = (SimpleMemoryAllocatorImpl) SimpleMemoryAllocatorImpl.createForUnitTest(ooohml, stats, slabs);
+    ma = (MemoryAllocatorImpl) MemoryAllocatorImpl.createForUnitTest(ooohml, stats, slabs);
   }
 
   @After
   public void tearDown() throws Exception {
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
   }
 
   protected Object getValue() {

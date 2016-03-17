@@ -16,33 +16,19 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.util.Properties;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-   AbstractLauncherJUnitTest.class,
-   AbstractLauncherServiceStatusJUnitTest.class,
-   
-   LauncherMemberMXBeanJUnitTest.class,
+import com.gemstone.gemfire.cache.Cache;
 
-   LocatorLauncherJUnitTest.class,
-   LocatorLauncherLocalJUnitTest.class,
-   LocatorLauncherLocalFileJUnitTest.class,
-   LocatorLauncherRemoteJUnitTest.class,
-   LocatorLauncherRemoteFileJUnitTest.class,
-
-   ServerLauncherJUnitTest.class,
-   ServerLauncherLocalJUnitTest.class,
-   ServerLauncherLocalFileJUnitTest.class,
-   ServerLauncherRemoteJUnitTest.class,
-   ServerLauncherRemoteFileJUnitTest.class,
-   ServerLauncherWithProviderJUnitTest.class,
-})
 /**
- * Suite of tests for the Launcher classes.
+ * ServerLauncherCacheProvider is an extension point for overriding
+ * the behavior of a server started with {@link ServerLauncher} or
+ * the gfsh start server command. 
  * 
- * @author Kirk Lund
+ * 
  */
-public class LauncherTestSuite {
+public interface ServerLauncherCacheProvider {
+
+  Cache createCache(Properties gemfireProperties, ServerLauncher serverLauncher);
+
 }

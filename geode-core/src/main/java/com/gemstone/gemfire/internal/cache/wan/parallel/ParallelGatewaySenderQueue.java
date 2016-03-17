@@ -54,7 +54,6 @@ import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -143,7 +142,17 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private static BatchRemovalThread removalThread = null;
 
   protected BlockingQueue<GatewaySenderEventImpl> peekedEvents = new LinkedBlockingQueue<GatewaySenderEventImpl>();
-  
+
+  /**
+   * The peekedEventsProcessing queue is used when the batch size is reduced due to a MessageTooLargeException
+   */
+  private BlockingQueue<GatewaySenderEventImpl> peekedEventsProcessing = new LinkedBlockingQueue<GatewaySenderEventImpl>();
+
+  /**
+   * The peekedEventsProcessingInProgress boolean denotes that processing existing peeked events is in progress
+   */
+  private boolean peekedEventsProcessingInProgress = false;
+
   public final AbstractGatewaySender sender ;
   
   public static final int WAIT_CYCLE_SHADOW_BUCKET_LOAD = 10;
@@ -1147,6 +1156,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   public void resetLastPeeked() {
     this.resetLastPeeked = true;
+
+    // Reset the in progress boolean and queue for peeked events in progress
+    this.peekedEventsProcessingInProgress = false;
+    this.peekedEventsProcessing.clear();
   }
   
   // Need to improve here.If first peek returns NULL then look in another bucket.
@@ -1283,19 +1296,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     long start = System.currentTimeMillis();
     long end = start + timeToWait;
 
-    if (this.resetLastPeeked) {
-      batch.addAll(peekedEvents);
-      this.resetLastPeeked = false;
-      if (isDebugEnabled) {
-        StringBuffer buffer = new StringBuffer();
-        for (GatewaySenderEventImpl ge : peekedEvents) {
-          buffer.append("event :");
-          buffer.append(ge);
-        }
-        logger.debug("Adding already peeked events to the batch {}", buffer);
-      }
-    }
-    
+    // Add peeked events
+    addPeekedEvents(batch, batchSize);
+
     int bId = -1;
     while (batch.size() < batchSize) {
       if (areLocalBucketQueueRegionsPresent()
@@ -1370,6 +1373,47 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       blockProcesorThreadIfRequired();
     }
     return batch;
+  }
+
+  private void addPeekedEvents(List batch, int batchSize) {
+    if (this.resetLastPeeked) {
+      if (this.peekedEventsProcessingInProgress) {
+        // Peeked event processing is in progress. This means that the original peekedEvents
+        // contained > batch size events due to a reduction in the batch size. Create a batch
+        // from the peekedEventsProcessing queue.
+        addPreviouslyPeekedEvents(batch, batchSize);
+      } else if (peekedEvents.size() <= batchSize) {
+        // This is the normal case. The connection was lost while processing a batch.
+        // This recreates the batch from the current peekedEvents.
+        batch.addAll(peekedEvents);
+        this.resetLastPeeked = false;
+      } else {
+        // The peekedEvents queue is > batch size. This means that the previous batch size was
+        // reduced due to MessageTooLargeException. Create a batch from the peekedEventsProcessing queue.
+        this.peekedEventsProcessing.addAll(this.peekedEvents);
+        this.peekedEventsProcessingInProgress = true;
+        addPreviouslyPeekedEvents(batch, batchSize);
+      }
+      if (logger.isDebugEnabled()) {
+        StringBuffer buffer = new StringBuffer();
+        for (Object ge : batch) {
+          buffer.append("event :");
+          buffer.append(ge);
+        }
+        logger.debug("Adding already peeked events to the batch {}", buffer);
+      }
+    }
+  }
+
+  private void addPreviouslyPeekedEvents(List batch, int batchSize) {
+    for (int i=0; i<batchSize; i++) {
+      batch.add(this.peekedEventsProcessing.remove());
+      if (this.peekedEventsProcessing.isEmpty()) {
+        this.resetLastPeeked = false;
+        this.peekedEventsProcessingInProgress = false;
+        break;
+      }
+    }
   }
 
   protected void blockProcesorThreadIfRequired() throws InterruptedException {

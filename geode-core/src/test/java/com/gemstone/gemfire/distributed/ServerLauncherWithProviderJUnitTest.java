@@ -16,17 +16,13 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer;
+import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
@@ -42,7 +38,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
-public class ServerLauncherWithSpringJUnitTest extends AbstractServerLauncherJUnitTestCase {
+public class ServerLauncherWithProviderJUnitTest extends AbstractServerLauncherJUnitTestCase {
 
   @Before
   public final void setUpServerLauncherWithSpringTest() throws Exception {
@@ -51,14 +47,17 @@ public class ServerLauncherWithSpringJUnitTest extends AbstractServerLauncherJUn
   }
 
   @After
-  public final void tearDownServerLauncherWithSpringTest() throws Exception {    
+  public final void tearDownServerLauncherWithSpringTest() throws Exception {
+    MockServerLauncherCacheProvider.setCache(null);
     disconnectFromDS();
-    SpringContextBootstrappingInitializer.getApplicationContext().close();
+    
   }
 
   // NOTE make sure bugs like Trac #51201 never happen again!!!
   @Test
-  public void testBootstrapGemFireServerWithSpring() throws Throwable {
+  public void testBootstrapGemFireServerWithProvider() throws Throwable {
+    Cache mockCache = Mockito.mock(Cache.class);
+    MockServerLauncherCacheProvider.setCache(mockCache);
     this.launcher = new Builder()
       .setDisableDefaultServer(true)
       .setForce(true)
@@ -76,13 +75,7 @@ public class ServerLauncherWithSpringJUnitTest extends AbstractServerLauncherJUn
 
       Cache cache = this.launcher.getCache();
 
-      assertNotNull(cache);
-      assertTrue(cache.getCopyOnRead());
-      assertEquals(0.95f, cache.getResourceManager().getCriticalHeapPercentage(), 0);
-      assertEquals(0.85f, cache.getResourceManager().getEvictionHeapPercentage(), 0);
-      assertFalse(cache.getPdxIgnoreUnreadFields());
-      assertTrue(cache.getPdxPersistent());
-      assertTrue(cache.getPdxReadSerialized());
+      assertEquals(mockCache, cache);
     }
     catch (Throwable e) {
       this.errorCollector.addError(e);

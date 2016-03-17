@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.offheap.OffHeapStoredObject;
 import com.gemstone.gemfire.internal.offheap.TinyStoredObject;
 import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.SlabImpl;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
@@ -109,8 +109,8 @@ public abstract class OldValueImporterTestBase {
     
     // off-heap DataAsAddress byte array
     {
-      SimpleMemoryAllocatorImpl sma =
-          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
+      MemoryAllocatorImpl sma =
+          MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
       try {
         byte[] baValue = new byte[] {1,2};
         TinyStoredObject baValueSO = (TinyStoredObject) sma.allocateAndInitialize(baValue, false, false);
@@ -121,13 +121,13 @@ public abstract class OldValueImporterTestBase {
         fromData(imsg, bytes);
         assertArrayEquals(baValue, (byte[])getOldValueFromImporter(imsg));
       } finally {
-        SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+        MemoryAllocatorImpl.freeOffHeapMemory();
       }
     }
     // off-heap Chunk byte array
     {
-      SimpleMemoryAllocatorImpl sma =
-          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
+      MemoryAllocatorImpl sma =
+          MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
       try {
         byte[] baValue = new byte[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};
         OffHeapStoredObject baValueSO = (OffHeapStoredObject) sma.allocateAndInitialize(baValue, false, false);
@@ -138,13 +138,13 @@ public abstract class OldValueImporterTestBase {
         fromData(imsg, bytes);
         assertArrayEquals(baValue, (byte[])getOldValueFromImporter(imsg));
       } finally {
-        SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+        MemoryAllocatorImpl.freeOffHeapMemory();
       }
     }
     // off-heap DataAsAddress String
     {
-      SimpleMemoryAllocatorImpl sma =
-          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
+      MemoryAllocatorImpl sma =
+          MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
       try {
         String baValue = "12";
         byte[] baValueBlob = BlobHelper.serializeToBlob(baValue);
@@ -156,13 +156,13 @@ public abstract class OldValueImporterTestBase {
         fromData(imsg, bytes);
         assertArrayEquals(baValueBlob, ((VMCachedDeserializable)getOldValueFromImporter(imsg)).getSerializedValue());
       } finally {
-        SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+        MemoryAllocatorImpl.freeOffHeapMemory();
       }
     }
     // off-heap Chunk String
     {
-      SimpleMemoryAllocatorImpl sma =
-          SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
+      MemoryAllocatorImpl sma =
+          MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
       try {
         String baValue = "12345678";
         byte[] baValueBlob = BlobHelper.serializeToBlob(baValue);
@@ -174,7 +174,7 @@ public abstract class OldValueImporterTestBase {
         fromData(imsg, bytes);
         assertArrayEquals(baValueBlob, ((VMCachedDeserializable)getOldValueFromImporter(imsg)).getSerializedValue());
       } finally {
-        SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+        MemoryAllocatorImpl.freeOffHeapMemory();
       }
     }
   }

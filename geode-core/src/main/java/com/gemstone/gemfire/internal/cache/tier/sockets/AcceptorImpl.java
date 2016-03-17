@@ -1682,11 +1682,12 @@ public class AcceptorImpl extends Acceptor implements Runnable
         }
 
       } // synchronized
-    }
-    catch (Exception e) {/* ignore */
+    } catch (InterruptedException e) {
+      if (!this.shutdown) { // GEODE-1103: expect an interrupt during shutdown
+        logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_UNEXPECTED), e);
+      }
+    } catch (Exception e) {/* ignore */
       logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_UNEXPECTED), e);
-    }
-    finally{
     }
   }
   

@@ -131,6 +131,8 @@ public class GatewaySenderEventImpl implements
   protected transient Object valueObj;
   protected transient boolean valueObjReleased;
 
+  private transient boolean serializedValueNotAvailable;
+
   /**
    * Whether the value is a serialized object or just a byte[]
    */
@@ -210,6 +212,10 @@ public class GatewaySenderEventImpl implements
   private static final int OP_DETAIL_PUTALL = 13;
   
   private static final int OP_DETAIL_REMOVEALL = 14;
+
+  private static final int DEFAULT_SERIALIZED_VALUE_SIZE = -1;
+
+  private volatile int serializedValueSize = DEFAULT_SERIALIZED_VALUE_SIZE;
 
 //  /**
 //   * Is this thread in the process of deserializing this event?
@@ -571,16 +577,6 @@ public class GatewaySenderEventImpl implements
   }
 
   /**
-   * This method is meant for internal use by the SimpleMemoryAllocatorImpl.
-   * Others should use getRawValue instead.
-   * @return if the result is an off-heap reference then callers must use it before this event is released.
-   */
-  @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
-  public Object getValueObject() {
-    return this.valueObj;
-  }
-
-  /**
    * Return this event's deserialized value
    * 
    * @return this event's deserialized value
@@ -672,6 +668,10 @@ public class GatewaySenderEventImpl implements
     }
   }
 
+  public boolean isSerializedValueNotAvailable() {
+    return this.serializedValueNotAvailable;
+  }
+
   /**
    * If the value owned of this event is just bytes return that byte array;
    * otherwise serialize the value object and return the serialized bytes.
@@ -708,6 +708,7 @@ public class GatewaySenderEventImpl implements
             this.value = result;
           } else if (result == null) {
             if (this.valueObjReleased) {
+              this.serializedValueNotAvailable = true;
               throw new IllegalStateException("Value is no longer available. getSerializedValue must be called before processEvents returns.");
             }
           }
@@ -1226,17 +1227,23 @@ public class GatewaySenderEventImpl implements
   }
 
   public int getSerializedValueSize() {
+    int localSerializedValueSize = this.serializedValueSize;
+    if (localSerializedValueSize != DEFAULT_SERIALIZED_VALUE_SIZE) {
+      return localSerializedValueSize;
+    }
     @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
     Object vo = this.valueObj;
     if (vo instanceof StoredObject) {
-      return ((StoredObject) vo).getSizeInBytes();
+      localSerializedValueSize = ((StoredObject) vo).getSizeInBytes();
     } else {
       if (this.substituteValue != null) {
-        return sizeOf(this.substituteValue);
+        localSerializedValueSize = sizeOf(this.substituteValue);
       } else {
-      return CachedDeserializableFactory.calcMemSize(getSerializedValue());
+        localSerializedValueSize = CachedDeserializableFactory.calcMemSize(getSerializedValue());
       }
     }
+    this.serializedValueSize = localSerializedValueSize;
+    return localSerializedValueSize;
   }
   
   @Override

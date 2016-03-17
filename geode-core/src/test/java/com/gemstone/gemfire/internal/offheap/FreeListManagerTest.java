@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -33,8 +34,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -44,7 +43,7 @@ public class FreeListManagerTest {
   }
 
   private final int DEFAULT_SLAB_SIZE = 1024*1024*5;
-  private final SimpleMemoryAllocatorImpl ma = mock(SimpleMemoryAllocatorImpl.class);
+  private final MemoryAllocatorImpl ma = mock(MemoryAllocatorImpl.class);
   private final OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
   private TestableFreeListManager freeListManager;
   
@@ -69,7 +68,7 @@ public class FreeListManagerTest {
     }
   }
   
-  private static TestableFreeListManager createFreeListManager(SimpleMemoryAllocatorImpl ma, Slab[] slabs) {
+  private static TestableFreeListManager createFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
     return new TestableFreeListManager(ma, slabs);
   }
   
@@ -279,7 +278,7 @@ public class FreeListManagerTest {
   }
   
   @Test
-  public void compactWithLargeChunkSizeReturnsFalse() {
+  public void defragmentWithLargeChunkSizeReturnsFalse() {
     int SMALL_SLAB = 16;
     int MEDIUM_SLAB = 128;
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
@@ -296,12 +295,12 @@ public class FreeListManagerTest {
     for (OffHeapStoredObject c: chunks) {
       OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
     }
-    this.freeListManager.firstCompact = false;
-    assertThat(this.freeListManager.compact(DEFAULT_SLAB_SIZE+1)).isFalse();
+    this.freeListManager.firstDefragmentation = false;
+    assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE+1)).isFalse();
   }
   
   @Test
-  public void compactWithChunkSizeOfMaxSlabReturnsTrue() {
+  public void defragmentWithChunkSizeOfMaxSlabReturnsTrue() {
     int SMALL_SLAB = 16;
     int MEDIUM_SLAB = 128;
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
@@ -319,12 +318,12 @@ public class FreeListManagerTest {
       OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
     }
     
-    assertThat(this.freeListManager.compact(DEFAULT_SLAB_SIZE)).isTrue();
+    assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE)).isTrue();
     //assertThat(this.freeListManager.getFragmentList()).hasSize(4); // TODO intermittently fails because Fragments may be merged
   }
   
   @Test
-  public void compactWithLiveChunks() {
+  public void defragmentWithLiveChunks() {
     int SMALL_SLAB = 16;
     int MEDIUM_SLAB = 128;
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
@@ -342,22 +341,22 @@ public class FreeListManagerTest {
       OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
     }
     
-    assertThat(this.freeListManager.compact(DEFAULT_SLAB_SIZE/2)).isTrue();
+    assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE/2)).isTrue();
   }
   
   @Test
-  public void compactAfterAllocatingAll() {
+  public void defragmentAfterAllocatingAll() {
     setUpSingleSlabManager();
     OffHeapStoredObject c = freeListManager.allocate(DEFAULT_SLAB_SIZE-8);
-    this.freeListManager.firstCompact = false;
-    assertThat(this.freeListManager.compact(1)).isFalse();
-    // call compact twice for extra code coverage
-    assertThat(this.freeListManager.compact(1)).isFalse();
+    this.freeListManager.firstDefragmentation = false;
+    assertThat(this.freeListManager.defragment(1)).isFalse();
+    // call defragmen twice for extra code coverage
+    assertThat(this.freeListManager.defragment(1)).isFalse();
     assertThat(this.freeListManager.getFragmentList()).isEmpty();
   }
   
   @Test
-  public void afterAllocatingAllOneSizeCompactToAllocateDifferentSize() {
+  public void afterAllocatingAllOneSizeDefragmentToAllocateDifferentSize() {
     setUpSingleSlabManager();
     ArrayList<OffHeapStoredObject> chunksToFree = new ArrayList<>();
     ArrayList<OffHeapStoredObject> chunksToFreeLater = new ArrayList<>();
@@ -395,42 +394,42 @@ public class FreeListManagerTest {
     OffHeapStoredObject.release(c4.getAddress(), freeListManager);
     OffHeapStoredObject.release(mediumChunk1.getAddress(), freeListManager);
     OffHeapStoredObject.release(mediumChunk2.getAddress(), freeListManager);
-    this.freeListManager.firstCompact = false;
-    assertThat(freeListManager.compact(DEFAULT_SLAB_SIZE-(ALLOCATE_COUNT*32))).isFalse();
+    this.freeListManager.firstDefragmentation = false;
+    assertThat(freeListManager.defragment(DEFAULT_SLAB_SIZE-(ALLOCATE_COUNT*32))).isFalse();
     for (int i=0; i < ((256*2)/96); i++) {
       OffHeapStoredObject.release(chunksToFreeLater.get(i).getAddress(), freeListManager);
     }
-    assertThat(freeListManager.compact(DEFAULT_SLAB_SIZE-(ALLOCATE_COUNT*32))).isTrue();
+    assertThat(freeListManager.defragment(DEFAULT_SLAB_SIZE-(ALLOCATE_COUNT*32))).isTrue();
   }
   
   @Test
-  public void afterAllocatingAndFreeingCompact() {
+  public void afterAllocatingAndFreeingDefragment() {
     int slabSize = 1024*3;
     setUpSingleSlabManager(slabSize);
     OffHeapStoredObject bigChunk1 = freeListManager.allocate(slabSize/3-8);
     OffHeapStoredObject bigChunk2 = freeListManager.allocate(slabSize/3-8);
     OffHeapStoredObject bigChunk3 = freeListManager.allocate(slabSize/3-8);
-    this.freeListManager.firstCompact = false;
-    assertThat(freeListManager.compact(1)).isFalse();
+    this.freeListManager.firstDefragmentation = false;
+    assertThat(freeListManager.defragment(1)).isFalse();
     OffHeapStoredObject.release(bigChunk3.getAddress(), freeListManager);
     OffHeapStoredObject.release(bigChunk2.getAddress(), freeListManager);
     OffHeapStoredObject.release(bigChunk1.getAddress(), freeListManager);
-    assertThat(freeListManager.compact(slabSize)).isTrue();
+    assertThat(freeListManager.defragment(slabSize)).isTrue();
   }
   
   @Test
-  public void compactWithEmptyTinyFreeList() {
+  public void defragmentWithEmptyTinyFreeList() {
     setUpSingleSlabManager();
     Fragment originalFragment = this.freeListManager.getFragmentList().get(0);
     OffHeapStoredObject c = freeListManager.allocate(16);
     OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
     c = freeListManager.allocate(16);
-    this.freeListManager.firstCompact = false;
-    assertThat(this.freeListManager.compact(1)).isTrue();
+    this.freeListManager.firstDefragmentation = false;
+    assertThat(this.freeListManager.defragment(1)).isTrue();
     assertThat(this.freeListManager.getFragmentList()).hasSize(1);
-    Fragment compactedFragment = this.freeListManager.getFragmentList().get(0);
-    assertThat(compactedFragment.getSize()).isEqualTo(originalFragment.getSize()-(16+8));
-    assertThat(compactedFragment.getAddress()).isEqualTo(originalFragment.getAddress()+(16+8));
+    Fragment defragmentedFragment = this.freeListManager.getFragmentList().get(0);
+    assertThat(defragmentedFragment.getSize()).isEqualTo(originalFragment.getSize()-(16+8));
+    assertThat(defragmentedFragment.getAddress()).isEqualTo(originalFragment.getAddress()+(16+8));
   }
   
   @Test
@@ -446,7 +445,7 @@ public class FreeListManagerTest {
     this.freeListManager.allocate(DEFAULT_SLAB_SIZE-8-(OffHeapStoredObject.MIN_CHUNK_SIZE-1));
     this.freeListManager.allocate(MEDIUM_SLAB-8-(OffHeapStoredObject.MIN_CHUNK_SIZE-1));
     
-    assertThat(this.freeListManager.compact(SMALL_SLAB)).isTrue();
+    assertThat(this.freeListManager.defragment(SMALL_SLAB)).isTrue();
   }
  @Test
   public void maxAllocationUsesAllMemory() {
@@ -736,7 +735,7 @@ public class FreeListManagerTest {
     OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
     OffHeapStoredObject.release(c2.getAddress(), this.freeListManager);
     
-    LogWriter lw = mock(LogWriter.class);
+    Logger lw = mock(Logger.class);
     this.freeListManager.logOffHeapState(lw, 1024);
   }
   
@@ -862,17 +861,17 @@ public class FreeListManagerTest {
       return super.createFreeListForEmptySlot(freeLists, idx);
     }
 
-    public boolean firstCompact = true;
+    public boolean firstDefragmentation = true;
     @Override
-    protected void afterCompactCountFetched() {
-      if (this.firstCompact) {
-        this.firstCompact = false;
-        // Force compact into thinking a concurrent compaction happened.
-        this.compactCount.incrementAndGet();
+    protected void afterDefragmentationCountFetched() {
+      if (this.firstDefragmentation) {
+        this.firstDefragmentation = false;
+        // Force defragmentation into thinking a concurrent defragmentation happened.
+        this.defragmentationCount.incrementAndGet();
       }
     }
     
-    public TestableFreeListManager(SimpleMemoryAllocatorImpl ma, Slab[] slabs) {
+    public TestableFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
       super(ma, slabs);
     }
     

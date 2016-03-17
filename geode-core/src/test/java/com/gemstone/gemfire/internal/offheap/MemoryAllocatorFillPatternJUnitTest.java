@@ -29,11 +29,11 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import junit.framework.TestCase;
 
 /**
- * Tests fill pattern validation for the {@link SimpleMemoryAllocatorImpl}.
+ * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
  * @author rholmes
  */
 @Category(UnitTest.class)
-public class SimpleMemoryAllocatorFillPatternJUnitTest {
+public class MemoryAllocatorFillPatternJUnitTest {
   
   /** Size of single test slab.*/
   private static final int SLAB_SIZE = 1024 * 1024 * 50;
@@ -44,17 +44,17 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
   /** Chunk size for basic huge allocation test. */
   private static final int HUGE_CHUNK_SIZE = 1024 * 200;
   
-  /** The number of chunks to allocate in order to force compaction. */
-  private static final int COMPACTION_CHUNKS = 3;
+  /** The number of chunks to allocate in order to force defragmentation. */
+  private static final int DEFRAGMENTATION_CHUNKS = 3;
   
   /** Our slab size divided in three (with some padding for safety). */
-  private static final int COMPACTION_CHUNK_SIZE = (SLAB_SIZE / COMPACTION_CHUNKS) - 1024;
+  private static final int DEFRAGMENTATION_CHUNK_SIZE = (SLAB_SIZE / DEFRAGMENTATION_CHUNKS) - 1024;
   
-  /** This should force compaction when allocated. */
-  private static final int FORCE_COMPACTION_CHUNK_SIZE = COMPACTION_CHUNK_SIZE * 2;
+  /** This should force defragmentation when allocated. */
+  private static final int FORCE_DEFRAGMENTATION_CHUNK_SIZE = DEFRAGMENTATION_CHUNK_SIZE * 2;
 
   /** Our test victim. */
-  private SimpleMemoryAllocatorImpl allocator = null;
+  private MemoryAllocatorImpl allocator = null;
   
   /** Our test victim's memory slab. */
   private SlabImpl slab = null;
@@ -66,7 +66,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
   public void setUp() throws Exception {
     System.setProperty("gemfire.validateOffHeapWithFill", "true");
     this.slab = new SlabImpl(SLAB_SIZE);
-    this.allocator = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{this.slab});
+    this.allocator = MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{this.slab});
   }
 
   /**
@@ -74,7 +74,7 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
    */
   @After
   public void tearDown() throws Exception {
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
     System.clearProperty("gemfire.validateOffHeapWithFill");
   }
 
@@ -141,22 +141,22 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
 
   /**
    * This tests that fill validation is working properly on newly created fragments after
-   * a compaction.
+   * a defragmentation.
    * @throws Exception
    */
   @Test
-  public void testFillPatternAfterCompaction() throws Exception {
+  public void testFillPatternAfterDefragmentation() throws Exception {
     /*
      * Stores our allocated memory.
      */
-    OffHeapStoredObject[] allocatedChunks = new OffHeapStoredObject[COMPACTION_CHUNKS];
+    OffHeapStoredObject[] allocatedChunks = new OffHeapStoredObject[DEFRAGMENTATION_CHUNKS];
     
     /*
      * Use up most of our memory
      * Our memory looks like [      ][      ][      ]
      */
     for(int i =0;i < allocatedChunks.length;++i) {
-      allocatedChunks[i] = (OffHeapStoredObject) this.allocator.allocate(COMPACTION_CHUNK_SIZE);
+      allocatedChunks[i] = (OffHeapStoredObject) this.allocator.allocate(DEFRAGMENTATION_CHUNK_SIZE);
       allocatedChunks[i].validateFill();
     }
 
@@ -170,13 +170,13 @@ public class SimpleMemoryAllocatorFillPatternJUnitTest {
     
     /*
      * Now, allocate another chunk that is slightly larger than one of
-     * our initial chunks.  This should force a compaction causing our
+     * our initial chunks.  This should force a defragmentation causing our
      * memory to look like [            ][      ].
      */
-    OffHeapStoredObject slightlyLargerChunk = (OffHeapStoredObject) this.allocator.allocate(FORCE_COMPACTION_CHUNK_SIZE);
+    OffHeapStoredObject slightlyLargerChunk = (OffHeapStoredObject) this.allocator.allocate(FORCE_DEFRAGMENTATION_CHUNK_SIZE);
     
     /*
-     * Make sure the compacted memory has the fill validation.
+     * Make sure the defragmented memory has the fill validation.
      */
     slightlyLargerChunk.validateFill();
   }

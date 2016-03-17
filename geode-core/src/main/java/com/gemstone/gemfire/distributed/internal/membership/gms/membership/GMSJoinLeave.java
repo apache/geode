@@ -395,15 +395,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return isJoined;
     }
 
-    if (response.getBecomeCoordinator()) {
-      logger.info("I am being told to become the membership coordinator by {}", coord);
-      synchronized (viewInstallationLock) {
-        this.currentView = response.getCurrentView();
-        becomeCoordinator(null);
-      }
-      return true;
-    }
-
     this.birthViewId = response.getMemberID().getVmViewId();
     this.localAddress.setVmViewId(this.birthViewId);
     GMSMember me = (GMSMember) this.localAddress.getNetMember();

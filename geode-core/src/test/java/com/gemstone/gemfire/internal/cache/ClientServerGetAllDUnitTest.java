@@ -39,7 +39,7 @@ import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
@@ -270,7 +270,7 @@ import com.gemstone.gemfire.test.dunit.VM;
     server.invoke(new CacheSerializableRunnable("Dump OffHeap Stats") {
       @Override
       public void run2() throws CacheException {
-        SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.getAllocator();
+        MemoryAllocatorImpl ma = MemoryAllocatorImpl.getAllocator();
         System.out.println("STATS: objects=" + ma.getStats().getObjects() + " usedMemory=" + ma.getStats().getUsedMemory() + " reads=" + ma.getStats().getReads());
       }
     });

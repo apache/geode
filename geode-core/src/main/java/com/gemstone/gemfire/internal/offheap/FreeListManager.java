@@ -29,14 +29,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-import com.gemstone.gemfire.LogWriter;
+import org.apache.logging.log4j.Logger;
+
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * Manages the free lists for a SimpleMemoryAllocatorImpl
+ * Manages the free lists and slabs for a MemoryAllocator
  */
 public class FreeListManager {
+  static final Logger logger = LogService.getLogger();
+
   /** The MemoryChunks that this allocator is managing by allocating smaller chunks of them.
    * The contents of this array never change.
    */
@@ -124,9 +127,9 @@ public class FreeListManager {
    */
   private final AtomicInteger lastFragmentAllocation = new AtomicInteger(0);
   private final CopyOnWriteArrayList<Fragment> fragmentList;
-  private final SimpleMemoryAllocatorImpl ma;
+  private final MemoryAllocatorImpl ma;
 
-  public FreeListManager(SimpleMemoryAllocatorImpl ma, final Slab[] slabs) {
+  public FreeListManager(MemoryAllocatorImpl ma, final Slab[] slabs) {
     this.ma = ma;
     this.slabs = slabs;
     long total = 0;
@@ -220,7 +223,7 @@ public class FreeListManager {
           return result;
         }
       }
-    } while (compact(chunkSize));
+    } while (defragment(chunkSize));
     // We tried all the fragments and didn't find any free memory.
     logOffHeapState(chunkSize);
     final OutOfOffHeapMemoryException failure = new OutOfOffHeapMemoryException("Out of off-heap memory. Could not allocate size of " + chunkSize);
@@ -232,26 +235,23 @@ public class FreeListManager {
   }
 
   private void logOffHeapState(int chunkSize) {
-    if (InternalDistributedSystem.getAnyInstance() != null) {
-      LogWriter lw = InternalDistributedSystem.getAnyInstance().getLogWriter();
-      logOffHeapState(lw, chunkSize);
-    }
+    logOffHeapState(logger, chunkSize);
   }
 
-  void logOffHeapState(LogWriter lw, int chunkSize) {
+  void logOffHeapState(Logger lw, int chunkSize) {
     OffHeapMemoryStats stats = this.ma.getStats();
-    lw.info("OutOfOffHeapMemory allocating size of " + chunkSize + ". allocated=" + this.allocatedSize.get() + " compactions=" + this.compactCount.get() + " objects=" + stats.getObjects() + " free=" + stats.getFreeMemory() + " fragments=" + stats.getFragments() + " largestFragment=" + stats.getLargestFragment() + " fragmentation=" + stats.getFragmentation());
+    lw.info("OutOfOffHeapMemory allocating size of " + chunkSize + ". allocated=" + this.allocatedSize.get() + " defragmentations=" + this.defragmentationCount.get() + " objects=" + stats.getObjects() + " free=" + stats.getFreeMemory() + " fragments=" + stats.getFragments() + " largestFragment=" + stats.getLargestFragment() + " fragmentation=" + stats.getFragmentation());
     logFragmentState(lw);
     logTinyState(lw);
     logHugeState(lw);
   }
 
-  private void logHugeState(LogWriter lw) {
+  private void logHugeState(Logger lw) {
     for (OffHeapStoredObject c: this.hugeChunkSet) {
       lw.info("Free huge of size " + c.getSize());
     }
   }
-  private void logTinyState(LogWriter lw) {
+  private void logTinyState(Logger lw) {
     for (int i=0; i < this.tinyFreeLists.length(); i++) {
       OffHeapStoredObjectAddressStack cl = this.tinyFreeLists.get(i);
       if (cl != null) {
@@ -259,7 +259,7 @@ public class FreeListManager {
       }
     }
   }
-  private void logFragmentState(LogWriter lw) {
+  private void logFragmentState(Logger lw) {
     for (Fragment f: this.fragmentList) {
       int freeSpace = f.freeSpace();
       if (freeSpace > 0) {
@@ -268,7 +268,7 @@ public class FreeListManager {
     }
   }
 
-  protected final AtomicInteger compactCount = new AtomicInteger();
+  protected final AtomicInteger defragmentationCount = new AtomicInteger();
   /*
    * Set this to "true" to perform data integrity checks on allocated and reused Chunks.  This may clobber 
    * performance so turn on only when necessary.
@@ -302,24 +302,24 @@ public class FreeListManager {
   }
   public final static int MAX_TINY = TINY_MULTIPLE*TINY_FREE_LIST_COUNT;
   /**
-   * Compacts memory and returns true if enough memory to allocate chunkSize
+   * Defragments memory and returns true if enough memory to allocate chunkSize
    * is freed. Otherwise returns false;
    * TODO OFFHEAP: what should be done about contiguous chunks that end up being bigger than 2G?
    * Currently if we are given slabs bigger than 2G or that just happen to be contiguous and add
-   * up to 2G then the compactor may unify them together into a single Chunk and our 32-bit chunkSize
+   * up to 2G then the FreeListManager may unify them together into a single Chunk and our 32-bit chunkSize
    * field will overflow. This code needs to detect this and just create a chunk of 2G and then start
    * a new one.
    * Or to prevent it from happening we could just check the incoming slabs and throw away a few bytes
    * to keep them from being contiguous.
    */
-  boolean compact(int chunkSize) {
-    final long startCompactionTime = this.ma.getStats().startCompaction();
-    final int countPreSync = this.compactCount.get();
-    afterCompactCountFetched();
+  boolean defragment(int chunkSize) {
+    final long startDefragmentationTime = this.ma.getStats().startDefragmentation();
+    final int countPreSync = this.defragmentationCount.get();
+    afterDefragmentationCountFetched();
     try {
       synchronized (this) {
-        if (this.compactCount.get() != countPreSync) {
-          // someone else did a compaction while we waited on the sync.
+        if (this.defragmentationCount.get() != countPreSync) {
+          // someone else did a defragmentation while we waited on the sync.
           // So just return true causing the caller to retry the allocation.
           return true;
         }
@@ -432,8 +432,8 @@ public class FreeListManager {
 
         fillFragments();
 
-        // Signal any waiters that a compaction happened.
-        this.compactCount.incrementAndGet();
+        // Signal any waiters that a defragmentation happened.
+        this.defragmentationCount.incrementAndGet();
 
         this.ma.getStats().setLargestFragment(largestFragment);
         this.ma.getStats().setFragments(tmp.size());        
@@ -442,14 +442,14 @@ public class FreeListManager {
         return result;
       } // sync
     } finally {
-      this.ma.getStats().endCompaction(startCompactionTime);
+      this.ma.getStats().endDefragmentation(startDefragmentationTime);
     }
   }
 
   /**
    * Unit tests override this method to get better test coverage
    */
-  protected void afterCompactCountFetched() {
+  protected void afterDefragmentationCountFetched() {
   }
   
   static void verifyOffHeapAlignment(int tinyMultiple) {
@@ -519,7 +519,7 @@ public class FreeListManager {
         diff = f.getSize() - offset;
       } while (diff >= OffHeapStoredObject.MIN_CHUNK_SIZE && !f.allocate(offset, offset+diff));
       if (diff < OffHeapStoredObject.MIN_CHUNK_SIZE) {
-        // If diff > 0 then that memory will be lost during compaction.
+        // If diff > 0 then that memory will be lost during defragmentation.
         // This should never happen since we keep the sizes rounded
         // based on MIN_CHUNK_SIZE.
         assert diff == 0;
@@ -531,7 +531,7 @@ public class FreeListManager {
       result.offer(chunkAddr);
     }
     // All the fragments have been turned in to chunks so now clear them
-    // The compaction will create new fragments.
+    // The defragmentation will create new fragments.
     this.fragmentList.clear();
     if (!result.isEmpty()) {
       l.add(result);
@@ -567,7 +567,7 @@ public class FreeListManager {
     try {
       fragment = this.fragmentList.get(fragIdx);
     } catch (IndexOutOfBoundsException ignore) {
-      // A concurrent compaction can cause this.
+      // A concurrent defragmentation can cause this.
       return null;
     }
     boolean retryFragment;
@@ -762,7 +762,7 @@ public class FreeListManager {
   
   private List<MemoryBlock> getTinyFreeBlocks() {
     final List<MemoryBlock> value = new ArrayList<MemoryBlock>();
-    final SimpleMemoryAllocatorImpl sma = this.ma;
+    final MemoryAllocatorImpl sma = this.ma;
     for (int i = 0; i < this.tinyFreeLists.length(); i++) {
       if (this.tinyFreeLists.get(i) == null) continue;
       long addr = this.tinyFreeLists.get(i).getTopAddress();
