@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.jayway.awaitility.Awaitility;
 
 @Category(UnitTest.class)
 public class SystemFailureJUnitTest {
@@ -48,8 +49,8 @@ public class SystemFailureJUnitTest {
     long start = System.nanoTime();
     Thread watchDog = SystemFailure.getWatchDogForTest();
     Thread proctor= SystemFailure.getProctorForTest();
-    assertTrue(watchDog.isAlive());
-    assertTrue(proctor.isAlive());
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> watchDog.isAlive());
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> proctor.isAlive());
     SystemFailure.stopThreads();
     long elapsed = System.nanoTime() - start;
     assertTrue("Waited too long to shutdown: " + elapsed, elapsed < TimeUnit.MILLISECONDS.toNanos(LONG_WAIT));
