@@ -23,15 +23,14 @@ package com.gemstone.gemfire.security;
 
 import java.util.Properties;
 
-import security.AuthzCredentialGenerator;
-import security.CredentialGenerator;
-
 import com.gemstone.gemfire.DeltaTestImpl;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.NoAvailableServersException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
+import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
+import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;

@@ -14,28 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
 
-public class NamedRunnable implements SerializableRunnableIF {
+package com.gemstone.gemfire.security.templates;
 
-  private static final long serialVersionUID = -2786841298145567914L;
+import java.io.Serializable;
+import java.security.Principal;
 
-  String name;
-  SerializableRunnableIF delegate;
-  
-  public NamedRunnable(String name, SerializableRunnableIF delegate) {
-    this.name = name;
-    this.delegate = delegate;
+public class PKCSPrincipal implements Principal, Serializable {
+
+  private final String alias;
+
+  public PKCSPrincipal(final String alias) {
+    this.alias = alias;
   }
-  
+
   @Override
-  public void run() throws Exception {
-    delegate.run();
+  public String getName() {
+    return this.alias;
   }
-  
+
   @Override
   public String toString() {
-    return ("runnable("+name+")");
+    return this.alias;
   }
-
 }

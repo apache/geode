@@ -1,6 +1,3 @@
-
-package com.gemstone.gemfire.security;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,9 +6,9 @@ package com.gemstone.gemfire.security;
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,7 +16,7 @@ package com.gemstone.gemfire.security;
  * specific language governing permissions and limitations
  * under the License.
  */
-
+package com.gemstone.gemfire.security;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,17 +52,16 @@ import com.gemstone.gemfire.internal.AvailablePort.Keeper;
 import com.gemstone.gemfire.internal.cache.AbstractRegionEntry;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.util.Callable;
+import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
+import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator.ClassCode;
+import com.gemstone.gemfire.security.generator.CredentialGenerator;
+import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
+import com.gemstone.gemfire.security.generator.XmlAuthzCredentialGenerator;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-
-import security.AuthzCredentialGenerator;
-import security.AuthzCredentialGenerator.ClassCode;
-import security.CredentialGenerator;
-import security.DummyCredentialGenerator;
-import security.XmlAuthzCredentialGenerator;
 
 /**
  * Base class for tests for authorization from client to server. It contains

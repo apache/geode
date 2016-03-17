@@ -14,28 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package com.gemstone.gemfire.security.templates;
 
-public class NamedRunnable implements SerializableRunnableIF {
+import java.io.Serializable;
+import java.security.Principal;
 
-  private static final long serialVersionUID = -2786841298145567914L;
+/**
+ * An implementation of {@link Principal} class for a simple user name.
+ * 
+ * @since 5.5
+ */
+public class UsernamePrincipal implements Principal, Serializable {
 
-  String name;
-  SerializableRunnableIF delegate;
-  
-  public NamedRunnable(String name, SerializableRunnableIF delegate) {
-    this.name = name;
-    this.delegate = delegate;
+  private final String userName;
+
+  public UsernamePrincipal(final String userName) {
+    this.userName = userName;
   }
-  
+
   @Override
-  public void run() throws Exception {
-    delegate.run();
+  public String getName() {
+    return this.userName;
   }
-  
+
   @Override
   public String toString() {
-    return ("runnable("+name+")");
+    return this.userName;
   }
-
 }

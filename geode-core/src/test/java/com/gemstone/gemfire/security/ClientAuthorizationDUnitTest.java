@@ -26,19 +26,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import security.AuthzCredentialGenerator;
-import security.CredentialGenerator;
-import security.DummyCredentialGenerator;
-import security.XmlAuthzCredentialGenerator;
-
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
+import com.gemstone.gemfire.security.generator.CredentialGenerator;
+import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
+import com.gemstone.gemfire.security.generator.XmlAuthzCredentialGenerator;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
-import templates.security.UserPasswordAuthInit;
+import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 
 /**
  * Tests for authorization from client to server. This tests for authorization

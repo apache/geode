@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.security;
 
+import com.gemstone.gemfire.security.generator.CredentialGenerator;
+import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
 import hydra.Log;
 
 import java.io.IOException;
@@ -23,8 +25,6 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
-
-import security.CredentialGenerator;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.Pool;
@@ -40,8 +40,6 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
-
-import security.DummyCredentialGenerator;
 
 public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
 

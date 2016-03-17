@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
-
 public class NamedCallable<T> implements SerializableCallableIF<T> {
 
   private static final long serialVersionUID = -4417299628656632541L;
