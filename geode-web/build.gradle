@@ -22,7 +22,6 @@ dependencies {
     exclude module: 'aspectjweaver'
     exclude module: 'aopalliance'
     exclude module: 'spring-core'
-    exclude module: 'spring-expression'
   }
   runtime ('org.springframework:spring-oxm:' + project.'springframework.version') {
     exclude module: 'commons-logging'
@@ -33,7 +32,6 @@ dependencies {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
     exclude module: 'spring-core'
-    exclude module: 'spring-expression'
   }
   runtime ('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
