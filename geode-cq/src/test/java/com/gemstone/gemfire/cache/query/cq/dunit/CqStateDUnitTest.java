@@ -19,8 +19,11 @@ package com.gemstone.gemfire.cache.query.cq.dunit;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.query.CqQuery;
+import com.gemstone.gemfire.cache.query.dunit.CloseCacheAuthorization;
 import com.gemstone.gemfire.cache.query.dunit.HelperTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.security.templates.DummyAuthenticator;
+import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
@@ -109,12 +112,9 @@ public class CqStateDUnitTest extends HelperTestCase {
   public Properties getAuthenticatedServerProperties() {
     Properties props = new Properties();
     props.put("mcast-port", "0");
-    props.put("security-client-accessor",
-        "com.gemstone.gemfire.cache.query.dunit.CloseCacheAuthorization.create");
-    props.put("security-client-accessor-pp",
-        "com.gemstone.gemfire.cache.query.dunit.CloseCacheAuthorization.create");
-    props.put("security-client-authenticator",
-        "templates.security.DummyAuthenticator.create");
+    props.put("security-client-accessor", CloseCacheAuthorization.class.getName() + ".create");
+    props.put("security-client-accessor-pp", CloseCacheAuthorization.class.getName() + ".create");
+    props.put("security-client-authenticator", DummyAuthenticator.class.getName() + ".create");
     return props;
   }
   
@@ -126,9 +126,7 @@ public class CqStateDUnitTest extends HelperTestCase {
   
   public Properties getClientProperties() {
     Properties props = new Properties();
-    props.put("security-client-auth-init",
-        "templates.security.UserPasswordAuthInit.create");
-    
+    props.put("security-client-auth-init", UserPasswordAuthInit.class.getName() + ".create");
     props.put("security-username", "root");
     props.put("security-password", "root");
     return props;

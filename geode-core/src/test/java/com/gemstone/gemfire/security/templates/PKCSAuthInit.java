@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
  * 
  * To use this class the {@code security-client-auth-init} property should be
  * set to the fully qualified name the static {@code create} function
- * viz. <{@code templates.security.PKCSAuthInit.create}
+ * viz. {@code com.gemstone.gemfire.security.templates.PKCSAuthInit.create}
  * 
  * @since 5.5
  */

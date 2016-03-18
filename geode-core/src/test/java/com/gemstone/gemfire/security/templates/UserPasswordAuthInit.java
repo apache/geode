@@ -28,8 +28,8 @@ import java.util.Properties;
  * password as the credentials from the given set of properties.
  * 
  * To use this class the {@code security-client-auth-init} property should be
- * set to the fully qualified name the static {@code create} function
- * viz. {@code templates.security.UserPasswordAuthInit.create}
+ * set to the fully qualified name the static {@code create} method
+ * viz. {@code com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create}
  * 
  * @since 5.5
  */

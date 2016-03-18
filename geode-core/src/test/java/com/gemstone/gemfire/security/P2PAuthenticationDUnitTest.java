@@ -1,6 +1,3 @@
-
-package com.gemstone.gemfire.security;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,9 +6,9 @@ package com.gemstone.gemfire.security;
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,7 +16,7 @@ package com.gemstone.gemfire.security;
  * specific language governing permissions and limitations
  * under the License.
  */
-
+package com.gemstone.gemfire.security;
 
 import java.io.File;
 import java.util.Properties;
@@ -38,6 +35,8 @@ import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
 import com.gemstone.gemfire.security.generator.LdapUserCredentialGenerator;
 import com.gemstone.gemfire.security.generator.UserPasswordWithExtraPropsAuthInit;
+import com.gemstone.gemfire.security.templates.LdapUserAuthenticator;
+import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
@@ -45,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
-
 
 /**
  * Tests peer to peer authentication in Gemfire
@@ -100,8 +98,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "26753");
     props.setProperty(DistributionConfig.LOCATORS_NAME, 
                       NetworkUtils.getIPLiteral() + "[" + port + "]");
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-        "templates.security.UserPasswordAuthInit.create");
+    props.setProperty(DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create");
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
 
     try {
@@ -117,8 +114,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "26753");
     props.setProperty(DistributionConfig.LOCATORS_NAME, 
                       NetworkUtils.getIPLiteral() +"[" + port + "]");
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-        "templates.security.LdapUserAuthenticator.create");
+    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME, LdapUserAuthenticator.class.getName() + ".create");
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     try {
       Locator.startLocatorAndDS(port, logFile, null, props);
@@ -130,8 +126,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
 
     props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "26753");
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-        "templates.security.UserPasswordAuthInit.create");
+    props.setProperty(DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create");
     try {
       getSystem(props);
       fail("Expected an IllegalArgumentException while connection to DS");
@@ -143,8 +138,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     // Also try setting the authenticator
     props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "26753");
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-        "templates.security.LdapUserAuthenticator.create");
+    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME, LdapUserAuthenticator.class.getName() + ".create");
     try {
       getSystem(props);
       fail("Expected an IllegalArgumentException while connection to DS");
