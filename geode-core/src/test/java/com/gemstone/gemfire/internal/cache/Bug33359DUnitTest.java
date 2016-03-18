@@ -61,8 +61,7 @@ public class Bug33359DUnitTest extends DistributedTestCase {
     static boolean flag = false;
     
     @Override
-    public void setUp() throws Exception {
-      super.setUp();
+    public final void postSetUp() throws Exception {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
@@ -72,7 +71,7 @@ public class Bug33359DUnitTest extends DistributedTestCase {
     }
     
     @Override
-    protected final void preTearDown(){
+    public final void preTearDown(){
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);

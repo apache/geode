@@ -21,11 +21,14 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.Set;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheExistsException;
+import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.MirrorType;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
@@ -34,6 +37,8 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.BucketVisitor;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
@@ -465,20 +470,70 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    * redundancy-zone = "zone"
    */
   public void testEnforceUniqueHostForLonerDistributedSystem() {
-	  Cache cache = createLonerCacheWithEnforceUniqueHost();
-      
-	  AttributesFactory attr = new AttributesFactory();
+	  Cache myCache = createLonerCacheWithEnforceUniqueHost();
+    try {
+      AttributesFactory attr = new AttributesFactory();
       PartitionAttributesFactory paf = new PartitionAttributesFactory();
       PartitionAttributes prAttr = paf.create();
       attr.setPartitionAttributes(prAttr);
       RegionAttributes regionAttribs = attr.create();
-      Region region = cache.createRegion("PR1", regionAttribs);
-      
+      Region region = myCache.createRegion("PR1", regionAttribs);
+
       for (int i = 0; i < 113; i++) {
-    	region.put("Key_" + i, new Integer(i));
+        region.put("Key_" + i, new Integer(i));
       }
       //verify region size
       assertEquals(113, region.size());
+    } finally {
+      myCache.close();
+      myCache.getDistributedSystem().disconnect();
+    }
+  }
+
+  /**
+   * Creates the <code>Cache</code> for this test that is not connected
+   * to other members.
+   *
+   * <p>Used by test {@link #testEnforceUniqueHostForLonerDistributedSystem()}.
+   * Moved from DistributedTestCase to this test is the exclusive caller.
+   *
+   * <p>Added specifically to test scenario of defect #47181.
+   */
+  private final Cache createLonerCacheWithEnforceUniqueHost() {
+    Cache myCache = null;
+    try {
+      System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
+      myCache = CacheFactory.create(getLonerSystemWithEnforceUniqueHost());
+    } catch (CacheExistsException e) {
+      Assert.fail("the cache already exists", e);
+
+    } catch (RuntimeException ex) {
+      throw ex;
+
+    } catch (Exception ex) {
+      Assert.fail("Checked exception while initializing cache??", ex);
+    } finally {
+      System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+    }
+    return myCache;
+  }
+
+  /**
+   * Returns a loner distributed system in combination with enforceUniqueHost
+   * and redundancyZone properties.
+   *
+   * <p>Used by test {@link #testEnforceUniqueHostForLonerDistributedSystem()}.
+   * Moved from DistributedTestCase to this test is the exclusive caller.
+   *
+   * <p>Added specifically to test scenario of defect #47181.
+   */
+  private final InternalDistributedSystem getLonerSystemWithEnforceUniqueHost() {
+    Properties props = getDistributedSystemProperties();
+    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.put(DistributionConfig.LOCATORS_NAME, "");
+    props.put(DistributionConfig.ENFORCE_UNIQUE_HOST_NAME, "true");
+    props.put(DistributionConfig.REDUNDANCY_ZONE_NAME, "zone1");
+    return getSystem(props);
   }
 
   /**

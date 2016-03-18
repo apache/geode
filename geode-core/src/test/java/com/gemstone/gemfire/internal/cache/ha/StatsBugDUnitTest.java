@@ -111,10 +111,9 @@ public class StatsBugDUnitTest extends DistributedTestCase
    * @throws Exception -
    *           thrown if any problem occurs in initializing the test
    */
-  public void setUp() throws Exception
-  {
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
     final Host host = Host.getHost(0);
     primary = host.getVM(0);
     secondary = host.getVM(1);
@@ -152,7 +151,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
    *           thrown if any problem occurs in closing cache
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close client
     client1.invoke(() -> StatsBugDUnitTest.closeCache());
 

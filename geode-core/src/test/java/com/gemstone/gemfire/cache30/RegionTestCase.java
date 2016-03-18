@@ -111,7 +111,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     cleanup();
     Invoke.invokeInEveryVM(getClass(), "cleanup");
     postTearDownRegionTestCase();

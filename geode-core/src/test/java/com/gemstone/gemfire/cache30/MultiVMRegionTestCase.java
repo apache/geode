@@ -171,7 +171,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   
   @Override
   protected final void postTearDownRegionTestCase() throws Exception {
-    DistributedTestCase.cleanupAllVms();
     CCRegion = null;
   }
 
@@ -5713,7 +5712,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    */
   private static void unregisterAllSerializers() {
     DistributedTestUtils.unregisterAllDataSerializersFromAllVms();
-    cleanupAllVms();
   }
 
   /**
@@ -9128,6 +9126,17 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     return CCRegion.getDistributionManager().getDistributionManagerId();
   }
 
+  public void sendSerialMessageToAll() {
+    if (getCache() instanceof GemFireCacheImpl) {
+      try {
+        com.gemstone.gemfire.distributed.internal.SerialAckedMessage msg = new com.gemstone.gemfire.distributed.internal.SerialAckedMessage();
+        msg.send(InternalDistributedSystem.getConnectedInstance().getDM().getNormalDistributionManagerIds(), false);
+      }
+      catch (Exception e) {
+        throw new RuntimeException("Unable to send serial message due to exception", e);
+      }
+    }
+  }
 
   /** a class for testing handling of concurrent delta operations */
   static class DeltaValue implements com.gemstone.gemfire.Delta, Serializable {

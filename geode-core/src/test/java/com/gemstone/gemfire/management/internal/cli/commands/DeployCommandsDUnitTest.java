@@ -62,9 +62,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
   @SuppressWarnings("serial")
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
-
+  public final void postSetUp() throws Exception {
     this.commandProcessor = new CommandProcessor();
     assertFalse(this.commandProcessor.isStopped());
 

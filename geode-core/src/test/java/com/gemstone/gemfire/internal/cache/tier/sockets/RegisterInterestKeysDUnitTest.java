@@ -66,8 +66,8 @@ public class RegisterInterestKeysDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Wait.pause(5000);
 
@@ -98,7 +98,6 @@ public class RegisterInterestKeysDUnitTest extends DistributedTestCase
       NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)));
     client2.invoke(() -> impl.createClientCache(
       NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)));
-
   }
 
   /** subclass support */
@@ -237,7 +236,7 @@ public class RegisterInterestKeysDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     //close client
     client1.invoke(() -> impl.closeCache());
     client2.invoke(() -> impl.closeCache());

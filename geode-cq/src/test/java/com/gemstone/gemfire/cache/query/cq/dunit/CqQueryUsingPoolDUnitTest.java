@@ -159,10 +159,9 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
   public CqQueryUsingPoolDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
-    
+
+  @Override
+  public final void postSetUp() throws Exception {
     //We're seeing this on the server when the client
     //disconnects.
     IgnoredException.addIgnoredException("Connection reset");
@@ -178,7 +177,10 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         getSystem();
       }
     });
-    
+    postSetUpCqQueryUsingPoolDUnitTest();
+  }
+
+  protected void postSetUpCqQueryUsingPoolDUnitTest() throws Exception {
   }
   
   /* Returns Cache Server Port */

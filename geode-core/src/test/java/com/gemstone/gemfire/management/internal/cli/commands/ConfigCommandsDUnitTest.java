@@ -459,7 +459,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
         getSystem(localProps);
 
         assertNotNull(getCache());
-        assertEquals("error", system.getConfig().getAttribute(DistributionConfig.LOG_LEVEL_NAME));
+        assertEquals("error", basicGetSystem().getConfig().getAttribute(DistributionConfig.LOG_LEVEL_NAME));
         return null;
       }
     });

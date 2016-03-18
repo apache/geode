@@ -46,8 +46,8 @@ public class Bug36829DUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     this.serverVM = host.getVM(0);
     this.ClientVM = host.getVM(1);
@@ -164,7 +164,7 @@ public class Bug36829DUnitTest extends DistributedTestCase {
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 }

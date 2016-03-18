@@ -66,17 +66,14 @@ public class SlowRecDUnitTest extends CacheTestCase {
   // the setUp and tearDown methods need to make sure we don't
   // use the ds from previous test and that we don't leave ours around
   // for the next test to use.
-  
-  public void setUp() throws Exception {
-    try {
-      disconnectAllFromDS();
-    } finally {
-      super.setUp();
-    }
+
+  @Override
+  public final void preSetUp() throws Exception {
+    disconnectAllFromDS();
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
   

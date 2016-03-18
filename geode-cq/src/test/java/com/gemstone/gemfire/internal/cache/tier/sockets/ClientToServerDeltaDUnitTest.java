@@ -124,7 +124,8 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     final Host host = Host.getHost(0);
     server = host.getVM(0);
@@ -134,7 +135,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // reset all flags
     DeltaTestImpl.resetDeltaInvokationCounters();
     server.invoke(() -> DeltaTestImpl.resetDeltaInvokationCounters());

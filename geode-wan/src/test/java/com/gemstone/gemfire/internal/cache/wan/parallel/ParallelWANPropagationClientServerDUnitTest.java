@@ -30,10 +30,6 @@ public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   /**
    * Normal happy scenario test case.
    * 

@@ -41,10 +41,6 @@ public class WanValidationsDUnitTest extends WANTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   /**
    * Test to make sure that serial sender Ids configured in Distributed Region
    * is same across all DR nodes TODO : Should this validation hold tru now.

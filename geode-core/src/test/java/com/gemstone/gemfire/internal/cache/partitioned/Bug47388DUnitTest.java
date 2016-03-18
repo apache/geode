@@ -80,8 +80,8 @@ public class Bug47388DUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectFromDS();
     Host host = Host.getHost(0);
     vm0 = host.getVM(0); // datastore and server
@@ -102,7 +102,7 @@ public class Bug47388DUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
 
     vm2.invoke(() -> Bug47388DUnitTest.closeCache());

@@ -37,11 +37,6 @@ public class TestLocatorsDUnitTest extends ManagementTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-
-  }
-
   public static int getNumOfLocatorFromMBean() {
 
     final WaitCriterion waitCriteria = new WaitCriterion() {

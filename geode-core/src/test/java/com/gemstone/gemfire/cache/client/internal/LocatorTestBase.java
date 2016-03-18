@@ -72,7 +72,7 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     
     SerializableRunnable tearDown = new SerializableRunnable("tearDown") {
       public void run() {

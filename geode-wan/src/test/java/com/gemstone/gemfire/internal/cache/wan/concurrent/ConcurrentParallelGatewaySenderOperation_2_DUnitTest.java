@@ -40,9 +40,9 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   public ConcurrentParallelGatewaySenderOperation_2_DUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  protected final void postSetUpWANTestBase() throws Exception {
     IgnoredException.addIgnoredException("RegionDestroyedException");
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");

@@ -36,15 +36,14 @@ import com.gemstone.gemfire.test.dunit.VM;
 public class ClientServerTransactionCCEDUnitTest extends
     ClientServerTransactionDUnitTest {
 
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  protected final void postSetUpClientServerTransactionDUnitTest() throws Exception {
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("SocketTimeoutException");
     IgnoredException.addIgnoredException("ServerConnectivityException");
     IgnoredException.addIgnoredException("Socket Closed");
-
   }
+
   /**
    * 
    */

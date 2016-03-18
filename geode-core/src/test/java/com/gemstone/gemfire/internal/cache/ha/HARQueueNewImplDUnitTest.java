@@ -110,9 +110,8 @@ public class HARQueueNewImplDUnitTest extends DistributedTestCase {
   /**
    * Sets up the test.
    */
-  public void setUp() throws Exception {
-    super.setUp();
-
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     serverVM0 = host.getVM(0);
     serverVM1 = host.getVM(1);
@@ -130,7 +129,7 @@ public class HARQueueNewImplDUnitTest extends DistributedTestCase {
    * Tears down the test.
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
     clientVM1.invoke(() -> HARQueueNewImplDUnitTest.closeCache());
     clientVM2.invoke(() -> HARQueueNewImplDUnitTest.closeCache());

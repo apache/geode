@@ -118,8 +118,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpPRClientServerTestBase() throws Exception {
     //Make sure stats to linger from a previous test
     disconnectAllFromDS();
   }

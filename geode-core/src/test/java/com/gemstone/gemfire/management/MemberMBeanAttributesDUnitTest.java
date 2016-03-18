@@ -58,11 +58,6 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();  
-
-  }
-
   protected void sample(VM vm1) {
     vm1.invoke(new SerializableRunnable("Create Cache") {
       public void run() {

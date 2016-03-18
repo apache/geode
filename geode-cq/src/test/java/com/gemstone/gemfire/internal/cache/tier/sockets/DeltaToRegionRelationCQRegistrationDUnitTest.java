@@ -114,9 +114,9 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public DeltaToRegionRelationCQRegistrationDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception
-  {
+
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Wait.pause(5000);
     final Host host = Host.getHost(0);

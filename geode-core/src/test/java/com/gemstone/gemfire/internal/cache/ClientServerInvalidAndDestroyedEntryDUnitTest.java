@@ -60,9 +60,9 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
   public ClientServerInvalidAndDestroyedEntryDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
   }
   

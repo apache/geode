@@ -94,8 +94,8 @@ public class Bug39079DUnitTest extends CacheTestCase {
     dirs[1] = file2;
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -103,7 +103,6 @@ public class Bug39079DUnitTest extends CacheTestCase {
     vm0.invoke(() -> Bug39079DUnitTest.ignorePreAllocate( Boolean.TRUE ));
     vm1.invoke(() -> Bug39079DUnitTest.ignorePreAllocate( Boolean.TRUE ));
   }
- 
 
   /**
    * This method is used to create Cache in VM0
@@ -179,7 +178,7 @@ public class Bug39079DUnitTest extends CacheTestCase {
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
 
     vm0.invoke(() -> Bug39079DUnitTest.ignorePreAllocate( Boolean.FALSE ));
@@ -311,9 +310,9 @@ public class Bug39079DUnitTest extends CacheTestCase {
    vm0.invoke(() -> Bug39079DUnitTest.validateRuningBridgeServerList());
    
    // close server cache
-   vm0.invoke(() -> Bug39079DUnitTest.closeCache());
+   vm0.invoke(() -> Bug39079DUnitTest.closeCacheAndDisconnect());
    // close client cache
-   vm1.invoke(() -> Bug39079DUnitTest.closeCache());
+   vm1.invoke(() -> Bug39079DUnitTest.closeCacheAndDisconnect());
   }
   
   public static Integer createServerCache() throws Exception
@@ -335,7 +334,7 @@ public class Bug39079DUnitTest extends CacheTestCase {
     return new Integer(bs1.getPort());
   }
 
-  public static void closeCache()
+  public static void closeCacheAndDisconnect()
   {
     if (gemfirecache != null && !gemfirecache.isClosed()) {
       gemfirecache.close();

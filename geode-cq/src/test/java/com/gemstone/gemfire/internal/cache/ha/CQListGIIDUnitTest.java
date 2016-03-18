@@ -158,9 +158,8 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
   /**
    * Sets up the test.
    */
-  public void setUp() throws Exception {
-    super.setUp();
-
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     serverVM0 = host.getVM(0);
     serverVM1 = host.getVM(1);
@@ -175,7 +174,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
    * Tears down the test.
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
     serverVM1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
     closeCache();

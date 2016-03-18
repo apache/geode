@@ -32,10 +32,6 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     super(name);
   }
   
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
   /**
    * Normal propagation scenario test case for a PR with only one bucket.
    * This has been added for bug# 44284.

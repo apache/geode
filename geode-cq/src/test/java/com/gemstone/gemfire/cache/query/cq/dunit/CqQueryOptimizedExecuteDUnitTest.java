@@ -36,14 +36,14 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * Test class for testing {@link CqServiceImpl#EXECUTE_QUERY_DURING_INIT} flag
  *
  */
-public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest{
+public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
   public CqQueryOptimizedExecuteDUnitTest(String name) {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpCqQueryDUnitTest() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
@@ -52,7 +52,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest{
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;

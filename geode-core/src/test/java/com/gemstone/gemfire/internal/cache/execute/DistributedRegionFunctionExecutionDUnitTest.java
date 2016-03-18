@@ -91,8 +91,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     replicate1 = host.getVM(0);
     replicate2 = host.getVM(1);
@@ -101,7 +100,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // this test creates a cache that is incompatible with CacheTestCase,
     // so we need to close it and null out the cache variable
     disconnectAllFromDS();

@@ -60,8 +60,8 @@ public class MultiuserDurableCQAuthzDUnitTest extends
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {

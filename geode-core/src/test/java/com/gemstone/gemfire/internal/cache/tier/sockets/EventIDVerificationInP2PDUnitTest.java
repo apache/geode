@@ -71,9 +71,8 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     receiver = false;
@@ -310,7 +309,7 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
     vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.closeCache());
   }

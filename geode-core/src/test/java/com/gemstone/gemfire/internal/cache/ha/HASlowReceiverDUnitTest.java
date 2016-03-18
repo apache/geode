@@ -74,9 +74,7 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
-
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     serverVM1 = host.getVM(1);
     serverVM2 = host.getVM(2);
@@ -85,11 +83,10 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
     PORT0 = createServerCache().intValue();
     PORT1 = ((Integer)serverVM1.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
     PORT2 = ((Integer)serverVM2.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
-
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     clientVM.invoke(() -> HASlowReceiverDUnitTest.closeCache());
 
     // then close the servers

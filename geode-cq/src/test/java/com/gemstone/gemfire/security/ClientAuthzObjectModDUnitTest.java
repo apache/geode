@@ -110,9 +110,8 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestBase {
     }
   }
 
-  public void setUp() throws Exception {
-
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -137,11 +136,6 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestBase {
     server2.invoke(registerInstantiator);
   }
   
-  @Override
-  protected final void preTearDown() throws Exception {
-    DistributedTestCase.cleanupAllVms();
-  }
-
   // Region: Utility and static functions invoked by the tests
 
   private static Properties buildProperties(String authenticator,

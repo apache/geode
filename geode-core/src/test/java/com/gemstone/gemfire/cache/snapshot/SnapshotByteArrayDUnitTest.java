@@ -105,13 +105,13 @@ public class SnapshotByteArrayDUnitTest extends CacheTestCase {
     }
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     loadCache();
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     if (snap.exists()) {
       snap.delete();
     }

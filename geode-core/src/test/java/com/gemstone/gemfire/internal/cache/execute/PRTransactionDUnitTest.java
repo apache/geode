@@ -665,7 +665,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(verifyNoTxState);
   }
 

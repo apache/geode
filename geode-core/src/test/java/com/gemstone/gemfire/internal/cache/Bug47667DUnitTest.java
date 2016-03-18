@@ -38,8 +38,7 @@ public class Bug47667DUnitTest extends LocatorTestBase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
   }
 

@@ -71,7 +71,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     FileUtil.delete(getBackupDir());
   }
   
@@ -623,7 +623,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends
     //replying to the admin member.
     vm1.invoke(new SerializableRunnable() {
       public void run() {
-        system.disconnect();
+        basicGetSystem().disconnect();
       }
     });
 
@@ -853,7 +853,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends
     //replying to the admin member.
     vm1.invoke(new SerializableRunnable() {
       public void run() {
-        system.disconnect();
+        basicGetSystem().disconnect();
       }
     });
 
@@ -1000,7 +1000,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends
       public Object call() throws Exception {
         Wait.waitForCriterion(new WaitCriterion() {
           public boolean done() {
-            InternalDistributedSystem ds = system;
+            InternalDistributedSystem ds = basicGetSystem();
             return ds == null || !ds.isConnected();
           }
           

@@ -159,8 +159,8 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
    * @throws Exception -
    *           thrown in any problem occurs in setUp
    */
-  public void setUp() throws Exception  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception  {
     disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
@@ -174,7 +174,6 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
 
     client1.invoke(() -> EventIdOptimizationDUnitTest.createClientCache1( NetworkUtils.getServerHostName(host), new Integer(PORT1) ));
     client2.invoke(() -> EventIdOptimizationDUnitTest.createClientCache2( NetworkUtils.getServerHostName(host), new Integer(PORT2) ));
-
   }
 
   /**
@@ -499,7 +498,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
    * Closes the caches on clients and servers
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close client
     client1.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
     client2.invoke(() -> EventIdOptimizationDUnitTest.closeCache());

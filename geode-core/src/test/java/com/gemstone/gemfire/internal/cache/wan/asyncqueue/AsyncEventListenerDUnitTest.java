@@ -48,10 +48,6 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   /**
    * Test to verify that AsyncEventQueue can not be created when null listener
    * is passed.

@@ -38,8 +38,8 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpWANTestBase() throws Exception {
     this.testName = getTestMethodName();
   }
   

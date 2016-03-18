@@ -66,8 +66,7 @@ public class PutAllDAckDUnitTest extends DistributedTestCase {
     static boolean flag = false;
     
     @Override
-    public void setUp() throws Exception {
-      super.setUp();
+    public final void postSetUp() throws Exception {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
@@ -77,7 +76,7 @@ public class PutAllDAckDUnitTest extends DistributedTestCase {
     }
     
     @Override
-    protected final void preTearDown() throws Exception {
+    public final void preTearDown() throws Exception {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);

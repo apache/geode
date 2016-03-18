@@ -40,11 +40,6 @@ public class TestServerDUnitTest extends ManagementTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-
-  }
-
   public static int getNumOfServersFromMBean() {
    
    final WaitCriterion waitCriteria = new WaitCriterion() {

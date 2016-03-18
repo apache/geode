@@ -95,8 +95,8 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -105,7 +105,7 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     server1.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
     server2.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
     client1.invoke(() -> DeltaPropagationWithCQDUnitTest.close());

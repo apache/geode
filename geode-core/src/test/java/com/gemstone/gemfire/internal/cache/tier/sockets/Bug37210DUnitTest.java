@@ -82,10 +82,8 @@ public class Bug37210DUnitTest extends DistributedTestCase
    * @throws Exception -
    *                 thrown if any problem occurs in initializing the test
    */
-  public void setUp() throws Exception
-  {
-    super.setUp();
-    
+  @Override
+  public final void postSetUp() throws Exception {
     IgnoredException.addIgnoredException("java.io.IOException");
     
     final Host host = Host.getHost(0);
@@ -124,7 +122,7 @@ public class Bug37210DUnitTest extends DistributedTestCase
    *                 thrown if any problem occurs in closing cache
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close client
     client.invoke(() -> Bug37210DUnitTest.closeCache());
 

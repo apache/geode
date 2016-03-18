@@ -55,10 +55,9 @@ public class CqStatsDUnitTest extends CacheTestCase {
   public CqStatsDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
-    
+
+  @Override
+  public final void postSetUp() throws Exception {
     // avoid IllegalStateException from HandShake by connecting all vms to
     // system before creating pool
     getSystem();
@@ -67,7 +66,10 @@ public class CqStatsDUnitTest extends CacheTestCase {
         getSystem();
       }
     });
-    
+    postSetUpCqStatsDUnitTest();
+  }
+
+  protected void postSetUpCqStatsDUnitTest() throws Exception {
   }
   
   public void validateCQStats(VM vm, final String cqName,

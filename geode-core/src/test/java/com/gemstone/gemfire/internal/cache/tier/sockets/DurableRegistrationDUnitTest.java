@@ -100,8 +100,8 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     this.server1VM = host.getVM(0);
     this.server2VM = host.getVM(1);
@@ -771,7 +771,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 }

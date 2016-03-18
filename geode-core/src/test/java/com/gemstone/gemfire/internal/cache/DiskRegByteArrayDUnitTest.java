@@ -75,13 +75,10 @@ public class DiskRegByteArrayDUnitTest extends CacheTestCase {
         dirs[1] = file2;
         dirs[2] = file3;
         dirs[3] = file4;
-        
     }
-    
-    
+
     @Override
-    public void setUp() throws Exception {
-      super.setUp();
+    public final void postSetUp() throws Exception {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
@@ -90,7 +87,7 @@ public class DiskRegByteArrayDUnitTest extends CacheTestCase {
      }
     
     @Override
-    protected final void postTearDownCacheTestCase() throws Exception {
+    public final void postTearDownCacheTestCase() throws Exception {
       cache = null;
       Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
     }

@@ -655,8 +655,8 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
    * 1. Add partitioned persistent region to all members.
    * 2. Fills region with data.
    */
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     createDataRegions();
     createRegions.run();
     loadMoreData();    
@@ -668,7 +668,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
    * Removes backup directories (and all backup data).
    */
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     FileUtil.delete(getIncremental2Dir());
     FileUtil.delete(getIncrementalDir());
     FileUtil.delete(getBaselineDir());

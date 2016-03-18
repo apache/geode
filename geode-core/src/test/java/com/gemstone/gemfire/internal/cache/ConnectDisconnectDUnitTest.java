@@ -112,7 +112,7 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     if (locatorPorts != null) {
       DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
     }

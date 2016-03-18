@@ -73,8 +73,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     member1 = host.getVM(0);
     member2 = host.getVM(1);
@@ -658,7 +657,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     List<VM> members = new ArrayList<VM>(4);
     members.add(member1); members.add(member2); members.add(member3); members.add(member4);
     for (VM member: members) {
@@ -667,7 +666,7 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 }

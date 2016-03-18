@@ -28,10 +28,6 @@ public class WANSSLDUnitTest extends WANTestBase{
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
- 
   public void testSenderSSLReceiverSSL(){
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

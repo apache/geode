@@ -100,8 +100,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -116,7 +115,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
 

@@ -32,11 +32,6 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
-  
   public void testPartitionedSerialPropagation() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

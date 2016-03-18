@@ -46,7 +46,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS(); // cleans up bridge server and client and lonerDS
   }
   

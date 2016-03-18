@@ -63,10 +63,9 @@ public class CqDataDUnitTest extends CacheTestCase {
   public CqDataDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
-    
+
+  @Override
+  public final void postSetUp() throws Exception {
     // avoid IllegalStateException from HandShake by connecting all vms tor
     // system before creating ConnectionPools
     getSystem();
@@ -75,7 +74,10 @@ public class CqDataDUnitTest extends CacheTestCase {
         getSystem();
       }
     });
-    
+    postSetUpCqDataDUnitTest();
+  }
+
+  protected void postSetUpCqDataDUnitTest() throws Exception {
   }
     
   /**

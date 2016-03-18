@@ -50,10 +50,6 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   public void testVersionTagTimestampForDestroy() {
     
     

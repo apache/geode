@@ -72,9 +72,8 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     locatorVM = host.getVM(0);
   }

@@ -37,30 +37,30 @@ public class GetDefaultDiskStoreNameDUnitTest extends DistributedTestCase {
     String expected = createDefaultDiskStoreName(0, -1, "testGetTestMethodName");
     assertGetDefaultDiskStoreName(expected);
   }
-  
+
   public void testGetTestMethodNameChanges() {
     String expected = createDefaultDiskStoreName(0, -1, "testGetTestMethodNameChanges");
     assertGetDefaultDiskStoreName(expected);
   }
-  
+
   public void testGetTestMethodNameInAllVMs() {
     String expected = createDefaultDiskStoreName(0, -1, "testGetTestMethodNameInAllVMs");
     assertGetDefaultDiskStoreName(expected);
-    
+
     for (int vmIndex = 0; vmIndex < Host.getHost(0).getVMCount(); vmIndex++) {
       String expectedInVM = createDefaultDiskStoreName(0, vmIndex, "testGetTestMethodNameInAllVMs");
       Host.getHost(0).getVM(vmIndex).invoke(()->assertGetDefaultDiskStoreName(expectedInVM));
     }
   }
-  
+
   private void assertGetDefaultDiskStoreName(final String expected) {
     assertThat(getDefaultDiskStoreName()).isEqualTo(expected);
   }
-  
+
   private String createDefaultDiskStoreName(final int hostIndex, final int vmIndex, final String methodName) {
     return "DiskStore-" + hostIndex + "-" + vmIndex + "-" + getClass().getCanonicalName() + "." + methodName;
   }
-  
+
   private String getDefaultDiskStoreName() {
     return GemFireCacheImpl.DEFAULT_DS_NAME; // TODO: not thread safe
   }

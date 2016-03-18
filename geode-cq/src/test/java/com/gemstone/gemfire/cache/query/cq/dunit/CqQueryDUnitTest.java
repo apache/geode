@@ -171,10 +171,9 @@ public class CqQueryDUnitTest extends CacheTestCase {
   public CqQueryDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
-    
+
+  @Override
+  public final void postSetUp() throws Exception {
     // avoid IllegalStateException from HandShake by connecting all vms tor
     // system before creating connection pools
     getSystem();
@@ -183,7 +182,10 @@ public class CqQueryDUnitTest extends CacheTestCase {
         getSystem();
       }
     });
-    
+    postSetUpCqQueryDUnitTest();
+  }
+
+  protected void postSetUpCqQueryDUnitTest() throws Exception {
   }
   
   /* Returns Cache Server Port */

@@ -43,10 +43,6 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   /**
    * Test validates whether the listener attached receives all the events.
    * this test hangs after the Darrel's checkin 36685. Need to work with Darrel.Commenting it out so that test suit will not hang 

@@ -38,11 +38,6 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     super(name);
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   private class OnMembersFunction extends RestFunctionTemplate {
     public static final String Id = "OnMembersFunction";
 

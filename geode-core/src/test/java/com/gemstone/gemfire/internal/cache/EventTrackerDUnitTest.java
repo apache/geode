@@ -79,7 +79,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 

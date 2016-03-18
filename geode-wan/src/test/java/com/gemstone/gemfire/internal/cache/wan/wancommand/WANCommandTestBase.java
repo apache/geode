@@ -71,8 +71,8 @@ public class WANCommandTestBase extends CliCommandTestBase{
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -88,7 +88,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   public static Integer createFirstLocatorWithDSId(int dsId) {
     WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -101,7 +101,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
     WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -113,7 +113,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
 
   public static void createCache(Integer locPort){
     WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
@@ -122,7 +122,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
 
   public static void createCacheWithGroups(Integer locPort, String groups){
     WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
     props.setProperty(DistributionConfig.GROUPS_NAME, groups);
@@ -215,7 +215,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
 
   public static int createAndStartReceiver(int locPort) {
     WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -239,7 +239,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
 
   public static int createReceiver(int locPort) {
     WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -257,7 +257,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
 
   public static int createReceiverWithGroup(int locPort, String groups) {
     WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props =  test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -297,7 +297,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
 
   public static int createAndStartReceiverWithGroup(int locPort, String groups) {
     WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -492,19 +492,19 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
-    closeCache();
-    vm0.invoke(() -> WANCommandTestBase.closeCache());
-    vm1.invoke(() -> WANCommandTestBase.closeCache());
-    vm2.invoke(() -> WANCommandTestBase.closeCache());
-    vm3.invoke(() -> WANCommandTestBase.closeCache());
-    vm4.invoke(() -> WANCommandTestBase.closeCache());
-    vm5.invoke(() -> WANCommandTestBase.closeCache());
-    vm6.invoke(() -> WANCommandTestBase.closeCache());
-    vm7.invoke(() -> WANCommandTestBase.closeCache());
+  public final void postTearDownCacheTestCase() throws Exception {
+    closeCacheAndDisconnect();
+    vm0.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
+    vm1.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
+    vm2.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
+    vm3.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
+    vm4.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
+    vm5.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
+    vm6.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
+    vm7.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
   }
 
-  public static void closeCache() {
+  public static void closeCacheAndDisconnect() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();

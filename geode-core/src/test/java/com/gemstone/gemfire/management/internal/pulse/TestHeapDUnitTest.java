@@ -38,12 +38,7 @@ public class TestHeapDUnitTest extends ManagementTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-
-  }
-
-  public static long getHeapSizeOfClient() {    
+  public static long getHeapSizeOfClient() {
     return (Runtime.getRuntime().totalMemory() -   Runtime.getRuntime().freeMemory());
   }
 

@@ -85,7 +85,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   }
 
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     DistributedCacheOperation.setBeforePutOutgoing(null);
   }
 

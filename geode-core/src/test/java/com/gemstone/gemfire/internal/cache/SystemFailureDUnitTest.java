@@ -396,7 +396,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     return ((Boolean)o).booleanValue();
   }
   
-  protected static Boolean verifyConnected() {
+  protected Boolean verifyConnected() {
     if (SystemFailure.getFailure() != null) {
       com.gemstone.gemfire.test.dunit.Assert.fail("System failure present!", SystemFailure.getFailure());
       return Boolean.FALSE;
@@ -409,11 +409,11 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     
     // Let's inspect the distributed system.  It should also
     // be connected.
-    if (system.getCancelCriterion().cancelInProgress() != null) {
+    if (basicGetSystem().getCancelCriterion().cancelInProgress() != null) {
       fail("distributed system cancel in progress");
       return Boolean.FALSE;
     }
-    if (!system.isConnected()) {
+    if (!basicGetSystem().isConnected()) {
       fail("distributed system not connected");
       return Boolean.FALSE;
     }

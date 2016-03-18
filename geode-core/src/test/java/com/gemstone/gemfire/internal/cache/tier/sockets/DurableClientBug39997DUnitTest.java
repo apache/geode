@@ -50,7 +50,7 @@ public class DurableClientBug39997DUnitTest extends CacheTestCase {
   public final void postTearDownCacheTestCase() {
     Host.getHost(0) .getVM(0).invoke(() -> disconnectFromDS());
   }
-  
+
   public void testNoServerAvailableOnStartup() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -62,10 +62,10 @@ public class DurableClientBug39997DUnitTest extends CacheTestCase {
       public void run() {
         getSystem(getClientProperties());
         PoolImpl p = (PoolImpl)PoolManager.createFactory()
-        .addServer(hostName, port)
-        .setSubscriptionEnabled(true)
-        .setSubscriptionRedundancy(0)
-        .create("DurableClientReconnectDUnitTestPool");
+                .addServer(hostName, port)
+                .setSubscriptionEnabled(true)
+                .setSubscriptionRedundancy(0)
+                .create("DurableClientReconnectDUnitTestPool");
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
         factory.setPoolName(p.getName());
@@ -81,7 +81,7 @@ public class DurableClientBug39997DUnitTest extends CacheTestCase {
         }
       }
     });
-  
+
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         Cache cache = getCache();
@@ -109,14 +109,14 @@ public class DurableClientBug39997DUnitTest extends CacheTestCase {
           }
 
           public boolean done() {
-            try { 
+            try {
               region.registerInterest("ALL_KEYS");
             } catch (NoSubscriptionServersAvailableException e) {
               return false;
             }
             return true;
           }
-          
+
         }, 30000, 1000, true);
       }
     });

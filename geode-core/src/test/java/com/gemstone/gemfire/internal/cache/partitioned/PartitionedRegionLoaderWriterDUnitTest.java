@@ -57,11 +57,6 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   public void testLoader_OnAccessor_NotOnDataStore(){
     host = Host.getHost(0);
     accessor = host.getVM(0);

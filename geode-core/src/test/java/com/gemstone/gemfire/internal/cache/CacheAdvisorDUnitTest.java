@@ -66,9 +66,9 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
     DistributedSystem ds = cache.getDistributedSystem();
     return ((InternalDistributedSystem)ds).getDistributionManager().getId();
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     List vmList = new ArrayList();
     List idList = new ArrayList();
     for (int h = 0; h < Host.getHostCount(); h++) {

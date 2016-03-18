@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.distributed;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -26,7 +28,6 @@ import java.util.concurrent.TimeoutException;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -44,11 +45,14 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershi
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests the functionality of the {@link DistributedSystem} class.
@@ -57,23 +61,18 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  * @author David Whitlock
  */
-public class DistributedSystemDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
-  public DistributedSystemDUnitTest(String name) {
-    super(name);
-  }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+  public void postSetUp() throws Exception {
     disconnectAllFromDS();
   }
   
-  ////////  Test methods
-
   /**
    * ensure that waitForMemberDeparture correctly flushes the serial message queue for
    * the given member
    */
+  @Test
   public void testWaitForDeparture() throws Exception {
     disconnectAllFromDS();
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -109,7 +108,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     }
   }
 
-  static class FakeMessage extends SerialDistributionMessage {
+  private static class FakeMessage extends SerialDistributionMessage {
     volatile boolean[] blocked;
     volatile boolean processed;
     
@@ -143,12 +142,9 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
    * Tests that we can get a DistributedSystem with the same
    * configuration twice.
    */
+  @Test
   public void testGetSameSystemTwice() {
     Properties config = new Properties();
-
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     config.setProperty("mcast-port", String.valueOf(unusedPort));
-    // a loner is all this test needs
     config.setProperty("mcast-port", "0");
     config.setProperty("locators", "");
     // set a flow-control property for the test (bug 37562)
@@ -165,12 +161,9 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
    * different configuration after one has already been obtained
    * throws an exception.
    */
+  @Test
   public void testGetDifferentSystem() {
     Properties config = new Properties();
-
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     config.setProperty("mcast-port", String.valueOf(unusedPort));
-    // a loner is all this test needs
     config.setProperty("mcast-port", "0");
     config.setProperty("locators", "");
     config.setProperty("mcast-flow-control", "3000000,0.20,3000");
@@ -196,12 +189,9 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
    * Tests getting a system with a different configuration after
    * another system has been closed.
    */
+  @Test
   public void testGetDifferentSystemAfterClose() {
     Properties config = new Properties();
-
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     config.setProperty("mcast-port", String.valueOf(unusedPort));
-    // a loner is all this test needs
     config.setProperty("mcast-port", "0");
     config.setProperty("locators", "");
 
@@ -213,13 +203,11 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     DistributedSystem system2 = DistributedSystem.connect(config);
     system2.disconnect();
   }
-  
-  
+
+
+  @Test
   public void testGetProperties() {
     Properties config = new Properties();
-
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     config.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     int unusedPort = 0;
     config.setProperty("mcast-port", "0");
@@ -235,13 +223,14 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     assertTrue(config != system1.getProperties());
     assertEquals(unusedPort, Integer.parseInt(system1.getProperties().getProperty("mcast-port")));
   }
-  
-  
+
+
+  @Test
   public void testIsolatedDistributedSystem() throws Exception {
     Properties config = new Properties();
     config.setProperty("mcast-port", "0");
     config.setProperty("locators", "");
-    system = (InternalDistributedSystem)DistributedSystem.connect(config);
+    getSystem(config);
     try {
       // make sure isolated distributed system can still create a cache and region
       Cache cache = CacheFactory.create(getSystem());
@@ -255,12 +244,13 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
 
 
   /** test the ability to set the port used to listen for tcp/ip connections */
+  @Test
   public void testSpecificTcpPort() throws Exception {
     Properties config = new Properties();
     int tcpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     config.put("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
     config.setProperty("tcp-port", String.valueOf(tcpPort));
-    system = (InternalDistributedSystem)DistributedSystem.connect(config);
+    InternalDistributedSystem system = getSystem(config);
     DistributionManager dm = (DistributionManager)system.getDistributionManager();
     GMSMembershipManager mgr = (GMSMembershipManager)dm.getMembershipManager();
     int actualPort = mgr.getDirectChannelPort();
@@ -269,6 +259,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
   }
 
   /** test that loopback cannot be used as a bind address when a locator w/o a bind address is being used */
+  @Test
   public void testLoopbackNotAllowed() throws Exception {
 	  // DISABLED for bug #49926
     InetAddress loopback = null;
@@ -291,7 +282,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
       config.setProperty(DistributionConfig.BIND_ADDRESS_NAME, loopback.getHostAddress());
       LogWriterUtils.getLogWriter().info("attempting to connect with " + loopback +" and locators=" + locators);
       try {
-        system = (InternalDistributedSystem)DistributedSystem.connect(config);
+        InternalDistributedSystem system = getSystem(config);
         system.disconnect();
         fail("expected a configuration exception disallowing use of loopback address");
       } catch (GemFireConfigException e) {
@@ -302,14 +293,15 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testUDPPortRange() throws Exception {
     Properties config = new Properties();
     int unicastPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     config.put("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
     // Minimum 3 ports required in range for UDP, FD_SOCK and TcpConduit.
     config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, 
-        ""+unicastPort+"-"+(unicastPort+2)); 
-    system = (InternalDistributedSystem)DistributedSystem.connect(config);
+        ""+unicastPort+"-"+(unicastPort+2));
+    InternalDistributedSystem system = getSystem(config);
     DistributionManager dm = (DistributionManager)system.getDistributionManager();
     InternalDistributedMember idm = dm.getDistributionManagerId();
     system.disconnect();
@@ -345,6 +337,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     return startPort;
   }
 
+  @Test
   public void testMembershipPortRangeWithExactThreeValues() throws Exception {
     Properties config = new Properties();
     config.setProperty("locators", "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
@@ -352,7 +345,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     int portStartRange = getPortRange(portRange);
     int portEndRange = portStartRange + portRange - 1;
     config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, "" + (portStartRange) + "-" + (portEndRange));
-    system = (InternalDistributedSystem) DistributedSystem.connect(config);
+    InternalDistributedSystem system = getSystem(config);
     Cache cache = CacheFactory.create(system);
     cache.addCacheServer();
     DistributionManager dm = (DistributionManager) system.getDistributionManager();
@@ -364,6 +357,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     assertTrue(idm.getDirectChannelPort() >= portStartRange);
   }
 
+  @Test
   public void testConflictingUDPPort() throws Exception {
     final Properties config = new Properties();
     final int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
@@ -373,7 +367,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     config.setProperty("start-locator", "localhost["+socketPorts[1]+"]");
     config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, 
         ""+unicastPort+"-"+(unicastPort+2));
-    system = (InternalDistributedSystem)DistributedSystem.connect(config);
+    InternalDistributedSystem system = (InternalDistributedSystem)DistributedSystem.connect(config);
     try {
       DistributionManager dm = (DistributionManager)system.getDistributionManager();
       InternalDistributedMember idm = dm.getDistributionManagerId();
@@ -402,13 +396,9 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
    *
    * @since 4.0
    */
+  @Test
   public void testEmptyCacheXmlFile() throws Exception {
     Properties config = new Properties();
-
-//     int unusedPort =
-//       AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     config.setProperty("mcast-port", String.valueOf(unusedPort));
-    // a loner is all this test needs
     config.setProperty("mcast-port", "0");
     config.setProperty("locators", "");
     config.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, "");

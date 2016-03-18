@@ -89,17 +89,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
-  @Override
-  protected void postTearDown() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM((() -> cleanup()));
   }
   
   public static void cleanup() {
     properties = null;
+    InternalClientMembership.unregisterAllListeners();
   }
   
   private void waitForAcceptsInProgressToBe(final int target)
@@ -1082,7 +1078,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         Pool pool = ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(host), ports, true, -1, 2, null);
         createRegion(name, factory.create());
         assertNotNull(getRootRegion().getSubregion(name));
-        assertTrue(s == system); // see geode-1078
+        assertTrue(s == basicGetSystem()); // see geode-1078
         return getMemberId();
       }
     };

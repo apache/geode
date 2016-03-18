@@ -83,8 +83,8 @@ public class ConflationDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
@@ -899,7 +899,7 @@ public class ConflationDUnitTest extends DistributedTestCase
    * close the cache in tearDown
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close client
     closeCache();
     vm2.invoke(() -> ConflationDUnitTest.closeCache());

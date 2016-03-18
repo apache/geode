@@ -73,15 +73,14 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     // This test does not require an actual Gfsh connection to work, however when run as part of a suite, prior tests
     // may mess up the environment causing this test to fail. Setting this prevents false failures.
     CliUtil.isGfshVM = false;
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectFromDS();
     CliUtil.isGfshVM = true;
   }

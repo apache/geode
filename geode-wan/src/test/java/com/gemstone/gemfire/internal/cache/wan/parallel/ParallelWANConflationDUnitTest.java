@@ -35,8 +35,8 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpWANTestBase() throws Exception {
     IgnoredException.addIgnoredException("java.net.ConnectException");
   }
 

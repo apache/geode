@@ -88,9 +88,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
-
+  public final void postSetUp() throws Exception {
     Properties managerDistributedSystemProperties = createDistributedSystemProperties(GEMFIRE_MANAGER_NAME);
     HeadlessGfsh gfsh = createDefaultSetup(managerDistributedSystemProperties);
 

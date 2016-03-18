@@ -43,10 +43,8 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     super(name);
   }
 
-  @Before
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     getDefaultShell();
   }
 

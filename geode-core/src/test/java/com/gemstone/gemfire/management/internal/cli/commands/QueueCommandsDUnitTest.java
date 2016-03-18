@@ -60,9 +60,9 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     super(testName);
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void preSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
   }
 
   public void testAsyncEventQueue() throws IOException {

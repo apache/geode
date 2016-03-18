@@ -98,8 +98,8 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Invoke.invokeInEveryVM(GIIDeltaDUnitTest.class,"setRegionName", new Object[]{getUniqueName()});
     setRegionName(getUniqueName());
   }
@@ -109,7 +109,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     P.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
     R.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
     P.invoke(() -> InitialImageOperation.resetAllGIITestHooks());
@@ -122,7 +122,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     // clean up the test hook, which can be moved to CacheTestCase
     DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 0;
     if (expectedEx != null) {

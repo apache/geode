@@ -97,15 +97,14 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   ////////  Test Methods
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Socket input is shutdown");
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 
@@ -171,7 +170,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-        system = (InternalDistributedSystem) DistributedSystem.connect(config);
+        InternalDistributedSystem system = getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
         createRegion(name, rootRegionName, factory.create());
@@ -308,7 +307,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-        system = (InternalDistributedSystem) DistributedSystem.connect(config);
+        getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
         createRegion(name, factory.create());
@@ -440,7 +439,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-        system = (InternalDistributedSystem) DistributedSystem.connect(config);
+        getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
         createRegion(name, factory.create());
@@ -577,7 +576,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty("mcast-port", "0");
-        system = (InternalDistributedSystem) DistributedSystem.connect(config);
+        getSystem(config);
         getCache();
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
@@ -636,7 +635,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-        system = (InternalDistributedSystem) DistributedSystem.connect(config);
+        getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
         createRegion(name, factory.create());
@@ -1666,7 +1665,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-        system = (InternalDistributedSystem) DistributedSystem.connect(config);
+        getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
         createRegion(name+"1", factory.create());
@@ -1769,7 +1768,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-        system = (InternalDistributedSystem) DistributedSystem.connect(config);
+        getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
         createRegion(name, factory.create());
@@ -1907,7 +1906,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-        system = (InternalDistributedSystem) DistributedSystem.connect(config);
+        getSystem(config);
 
         Wait.pause(1000);
         try {
@@ -2003,7 +2002,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-        system = (InternalDistributedSystem) DistributedSystem.connect(config);
+        getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
         createRegion(name, factory.create());
@@ -2161,7 +2160,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-        system = (InternalDistributedSystem) DistributedSystem.connect(config);
+        getSystem(config);
 
         Wait.pause(1000);
         try {
@@ -2377,7 +2376,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   protected void configAndStartBridgeServer() {
     Properties config = new Properties();
     config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    system = (InternalDistributedSystem) DistributedSystem.connect(config);
+    getSystem(config);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     createRegion(this.regionName, this.rootRegionName, factory.create());

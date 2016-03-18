@@ -232,9 +232,9 @@ public class ClientSnapshotDUnitTest extends CacheTestCase {
     assertFalse(region.containsValueForKey(1));
     assertNull(region.get(1));
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     loadCache();
   }
   

@@ -34,10 +34,6 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
   public void testConcurrentSerialAsyncEventQueueAttributes() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 

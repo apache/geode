@@ -145,12 +145,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
-  @Override
-  protected final void postTearDown() throws Exception {
+  public final void postTearDown() throws Exception {
     LauncherLifecycleCommands launcherLifecycleCommands = new LauncherLifecycleCommands();
     Integer pid;
 

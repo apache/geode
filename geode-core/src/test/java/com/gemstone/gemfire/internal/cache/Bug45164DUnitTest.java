@@ -70,9 +70,9 @@ public class Bug45164DUnitTest extends CacheTestCase {
     async1.getResult();
     async2.getResult();
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     SerializableRunnable create = new SerializableRunnable() {
       @Override
       public void run() {

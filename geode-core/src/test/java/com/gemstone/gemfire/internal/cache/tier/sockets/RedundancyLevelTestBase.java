@@ -102,9 +102,8 @@ public class RedundancyLevelTestBase extends DistributedTestCase
     DistributedTestCase.disconnectAllFromDS();
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
 
     server0 = host.getVM(0);
@@ -127,7 +126,6 @@ public class RedundancyLevelTestBase extends DistributedTestCase
     SERVER4 = hostName + PORT4;
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
-
   }
 
   protected static volatile boolean registerInterestCalled = false;
@@ -621,7 +619,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     try {
       if(!FailOverDetectionByCCU)
         ClientServerObserverHolder.setInstance(oldBo);   

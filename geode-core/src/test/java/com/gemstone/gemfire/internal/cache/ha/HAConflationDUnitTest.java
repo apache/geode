@@ -97,9 +97,8 @@ public class HAConflationDUnitTest extends CacheTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     // Server1 VM
     server1 = host.getVM(0);
@@ -111,21 +110,20 @@ public class HAConflationDUnitTest extends CacheTestCase
     server1.invoke(() -> ConflationDUnitTest.setIsSlowStart());
     server1.invoke(() -> HAConflationDUnitTest.makeDispatcherSlow());
     client1.invoke(() -> HAConflationDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT1), new Boolean(true) ));
-
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
-    client1.invoke(() -> HAConflationDUnitTest.closeCache());
+  public final void postTearDownCacheTestCase() throws Exception {
+    client1.invoke(() -> HAConflationDUnitTest.closeCacheAndDisconnect());
     // close server
-    server1.invoke(() -> HAConflationDUnitTest.closeCache());
+    server1.invoke(() -> HAConflationDUnitTest.closeCacheAndDisconnect());
   }
   
-  public static void closeCache()
+  public static void closeCacheAndDisconnect()
   {
-    if (cache != null && !cache.isClosed()) {
-      cache.close();
-      cache.getDistributedSystem().disconnect();
+    if (basicGetCache() != null && !basicGetCache().isClosed()) {
+      basicGetCache().close();
+      basicGetCache().getDistributedSystem().disconnect();
     }
   }
 
@@ -212,11 +210,11 @@ public class HAConflationDUnitTest extends CacheTestCase
         "putFromServer") {
       public void run2() throws CacheException
       {
-        Region region = cache.getRegion(Region.SEPARATOR + regionName);
+        Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
         assertNotNull(region);
-        cache.getLogger().info("starting put()");
+        basicGetCache().getLogger().info("starting put()");
         region.put(key, value);
-        cache.getLogger().info("finished put()");
+        basicGetCache().getLogger().info("finished put()");
       }
     };
 
@@ -229,10 +227,10 @@ public class HAConflationDUnitTest extends CacheTestCase
         "invalidateFromServer") {
       public void run2() throws CacheException
       {
-        Region region = cache.getRegion(Region.SEPARATOR + regionName);
+        Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
         assertNotNull(region);
         region.invalidate(key);
-        cache.getLogger().info("done invalidate() successfully");
+        basicGetCache().getLogger().info("done invalidate() successfully");
 
       }
     };
@@ -246,10 +244,10 @@ public class HAConflationDUnitTest extends CacheTestCase
         "performDestroy") {
       public void run2() throws CacheException
       {
-        Region region = cache.getRegion(Region.SEPARATOR + regionName);
+        Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
         assertNotNull(region);
         region.destroy(key);
-        cache.getLogger().info("done destroy successfully");
+        basicGetCache().getLogger().info("done destroy successfully");
 
       }
     };
@@ -302,8 +300,8 @@ public class HAConflationDUnitTest extends CacheTestCase
     assertNotNull(ds);
     ds.disconnect();
     ds = getSystem(props);
-    cache = CacheFactory.create(ds);
-    assertNotNull(cache);
+    getCache();
+    assertNotNull(basicGetCache());
   }
 
   public static void createClientCache(String host, Integer port1, Boolean isListenerPresent)
@@ -323,8 +321,8 @@ public class HAConflationDUnitTest extends CacheTestCase
       factory.setCacheListener(clientListener);
     }
     RegionAttributes attrs = factory.create();
-    cache.createRegion(regionName, attrs);
-    Region region = cache.getRegion(Region.SEPARATOR + regionName);
+    basicGetCache().createRegion(regionName, attrs);
+    Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
     assertNotNull(region);
 
     region.registerInterest(KEY1);
@@ -349,8 +347,8 @@ public class HAConflationDUnitTest extends CacheTestCase
       factory.setCacheListener(serverListener);
     }
     RegionAttributes attrs = factory.create();
-    cache.createRegion(regionName, attrs);
-    CacheServerImpl server = (CacheServerImpl)cache.addCacheServer();
+    basicGetCache().createRegion(regionName, attrs);
+    CacheServerImpl server = (CacheServerImpl)basicGetCache().addCacheServer();
     assertNotNull(server);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);

@@ -79,8 +79,7 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
    * Creates the server cache and populates it with some entries
    */
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Wait.pause(5000);
     final Host host = Host.getHost(0);
@@ -94,7 +93,7 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
    * Closes the cache on server and client
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // might get ServerConnectivityExceptions during shutdown
     this.expectedEx = IgnoredException.addIgnoredException(ServerConnectivityException.class
         .getName());
@@ -105,7 +104,7 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected void postTearDown() throws Exception {
+  public final void postTearDown() throws Exception {
     if (this.expectedEx != null) {
       this.expectedEx.remove();
     }

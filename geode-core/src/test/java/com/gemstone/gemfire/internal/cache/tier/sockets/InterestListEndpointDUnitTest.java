@@ -90,8 +90,8 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Wait.pause(5000);
     final Host host = Host.getHost(0);
@@ -112,7 +112,6 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
     Wait.pause(5000);  // [bruce] avoid ConnectException
     client1.invoke(() -> impl.createClientCache(
       NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1),new Integer(PORT2)));
-
   }
 
   /** subclass support */
@@ -491,7 +490,7 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // Close client cache first, then server caches
     client1.invoke(() -> impl.closeCache());
     server2.invoke(() -> impl.closeCache());

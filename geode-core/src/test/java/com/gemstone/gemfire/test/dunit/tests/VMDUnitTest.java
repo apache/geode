@@ -31,6 +31,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  */
 public class VMDUnitTest extends DistributedTestCase {
 
+  private static final AtomicInteger COUNTER = new AtomicInteger();
   private static final boolean BOOLEAN_VALUE = true;
   private static final byte BYTE_VALUE = (byte) 40;
   private static final long LONG_VALUE = 42L;
@@ -40,139 +41,41 @@ public class VMDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  /**
-   * Accessed via reflection.  DO NOT REMOVE
-   * @return
-   */
-  protected static byte remoteByteMethod() {
-    return BYTE_VALUE;
-  }
-
-  public void notestInvokeStaticBoolean() {
+  public void testInvokeStaticBoolean() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    assertEquals(BOOLEAN_VALUE,
-                 (boolean) vm.invoke(() -> VMDUnitTest.remoteBooleanMethod())); 
+    assertEquals(BOOLEAN_VALUE, (boolean) vm.invoke(() -> remoteBooleanMethod()));
   }
 
-  /**
-   * Accessed via reflection.  DO NOT REMOVE
-   * @return
-   */
-  protected static boolean remoteBooleanMethod() {
-    return BOOLEAN_VALUE;
-  }
-
-  public void notestInvokeStaticBooleanNotBoolean() {
+  public void testInvokeStaticByte() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    try {
-      vm.invoke(() -> VMDUnitTest.remoteByteMethod());
-      fail("Should have thrown an IllegalArgumentException");
-
-    } catch (IllegalArgumentException ex) {
-      
-    }
+    assertEquals(BYTE_VALUE, (byte) vm.invoke(() -> remoteByteMethod()));
   }
 
-  public void notestInvokeStaticLong() {
+  public void testInvokeStaticLong() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    assertEquals(LONG_VALUE,
-                 (long) vm.invoke(() -> VMDUnitTest.remoteLongMethod())); 
+    assertEquals(LONG_VALUE, (long) vm.invoke(() -> remoteLongMethod()));
   }
 
-  /**
-   * Accessed via reflection.  DO NOT REMOVE
-   * @return
-   */
-  protected static long remoteLongMethod() {
-    return LONG_VALUE;
-  }
-
-  public void notestInvokeStaticLongNotLong() {
+  public void testInvokeInstance() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    try {
-      vm.invoke(() -> VMDUnitTest.remoteByteMethod());
-      fail("Should have thrown an IllegalArgumentException");
-
-    } catch (IllegalArgumentException ex) {
-      
-    }
+    assertEquals(STRING_VALUE, vm.invoke(new ClassWithString(), "getString"));
   }
 
-  protected static class ClassWithLong implements Serializable {
-    public long getLong() {
-      return LONG_VALUE;
-    }
-  }
-
-  protected static class ClassWithByte implements Serializable {
-    public byte getByte() {
-      return BYTE_VALUE;
-    }
-  }
-
-  protected static class InvokeRunnable
-    implements SerializableRunnableIF {
-
-    public void run() {
-      throw new BasicDUnitTest.BasicTestException();
-    }
-  }
-
-  protected static class ClassWithString implements Serializable {
-    public String getString() {
-      return STRING_VALUE;
-    }
-  }
-
-  public void notestInvokeInstance() {
-    Host host = Host.getHost(0);
-    VM vm = host.getVM(0);
-    assertEquals(STRING_VALUE,
-                 vm.invoke(new ClassWithString(), "getString"));
-  }
-
-  public void notestInvokeRunnable() {
+  public void testInvokeRunnableWithException() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     try {
       vm.invoke(new InvokeRunnable());
       fail("Should have thrown a BasicTestException");
-
     } catch (RMIException ex) {
-      assertTrue(ex.getCause() instanceof BasicDUnitTest.BasicTestException);
+      assertTrue(ex.getCause() instanceof BasicTestException);
     }
   }
-  
-  private static final AtomicInteger COUNTER = new AtomicInteger();
-  public static Integer getAndIncStaticCount() {
-    return new Integer(COUNTER.getAndIncrement());
-  }
-  public static Integer incrementStaticCount(Integer inc) {
-    return new Integer(COUNTER.addAndGet(inc.intValue()));
-  }
-  public static void incStaticCount() {
-    COUNTER.incrementAndGet();
-  }
-  public static class VMTestObject implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private final AtomicInteger val;
-    public VMTestObject(int init) {
-      this.val = new AtomicInteger(init);
-    }
-    public Integer get() {
-      return new Integer(this.val.get());
-    }
-    public Integer incrementAndGet() {
-      return new Integer(this.val.incrementAndGet());
-    }
-    public void set(Integer newVal) {
-      this.val.set(newVal.intValue());
-    }
-  }
+
   public void testReturnValue() throws Exception {
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(0);
@@ -188,7 +91,7 @@ public class VMDUnitTest extends DistributedTestCase {
     a1 = vm.invokeAsync(() -> incStaticCount());
     a1.join();
     assertNull(a1.getReturnValue());
-    // Assert that previous null returns are over-written 
+    // Assert that previous null returns are over-written
     a1 = vm.invokeAsync(() -> getAndIncStaticCount());
     a1.join();
     assertEquals(new Integer(4), a1.getReturnValue());
@@ -202,5 +105,88 @@ public class VMDUnitTest extends DistributedTestCase {
     a1 = vm.invokeAsync(o, "set", new Object[] {new Integer(3)});
     a1.join();
     assertNull(a1.getReturnValue());
+  }
+
+  private static Integer getAndIncStaticCount() {
+    return new Integer(COUNTER.getAndIncrement());
+  }
+
+  private static Integer incrementStaticCount(Integer inc) {
+    return new Integer(COUNTER.addAndGet(inc.intValue()));
+  }
+
+  private static void incStaticCount() {
+    COUNTER.incrementAndGet();
+  }
+
+  /**
+   * Accessed via reflection.  DO NOT REMOVE
+   */
+  private static byte remoteByteMethod() {
+    return BYTE_VALUE;
+  }
+
+  /**
+   * Accessed via reflection.  DO NOT REMOVE
+   */
+  private static boolean remoteBooleanMethod() {
+    return BOOLEAN_VALUE;
+  }
+
+  /**
+   * Accessed via reflection.  DO NOT REMOVE
+   */
+  private static long remoteLongMethod() {
+    return LONG_VALUE;
+  }
+
+  private static class ClassWithLong implements Serializable {
+    public long getLong() {
+      return LONG_VALUE;
+    }
+  }
+
+  private static class ClassWithByte implements Serializable {
+    public byte getByte() {
+      return BYTE_VALUE;
+    }
+  }
+
+  private static class InvokeRunnable implements SerializableRunnableIF {
+    public void run() {
+      throw new BasicTestException();
+    }
+  }
+
+  private static class ClassWithString implements Serializable {
+    public String getString() {
+      return STRING_VALUE;
+    }
+  }
+
+  private static class BasicTestException extends RuntimeException {
+    BasicTestException() {
+      this("Test exception.  Please ignore.");
+    }
+    BasicTestException(String s) {
+      super(s);
+    }
+  }
+
+  private static class VMTestObject implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final AtomicInteger val;
+    public VMTestObject(int init) {
+      this.val = new AtomicInteger(init);
+    }
+    public Integer get() {
+      return new Integer(this.val.get());
+    }
+    public Integer incrementAndGet() {
+      return new Integer(this.val.incrementAndGet());
+    }
+    public void set(Integer newVal) {
+      this.val.set(newVal.intValue());
+    }
   }
 }

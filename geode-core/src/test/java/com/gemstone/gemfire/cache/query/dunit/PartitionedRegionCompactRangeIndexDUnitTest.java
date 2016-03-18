@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.dunit;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,12 +55,12 @@ public class PartitionedRegionCompactRangeIndexDUnitTest extends DistributedTest
     return props;
   }
   
-  public void setUp() throws Exception {
-    this.disconnectAllFromDS();
+  public void postSetUp() throws Exception {
+    disconnectAllFromDS();
   }
   
   @Override
-  protected void preTearDown() throws Exception {
+  public void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);

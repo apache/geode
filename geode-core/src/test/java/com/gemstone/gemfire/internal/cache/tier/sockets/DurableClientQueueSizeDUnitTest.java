@@ -76,8 +76,7 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     vm0 = Host.getHost(0).getVM(0);
     vm1 = Host.getHost(0).getVM(1);
     vm2 = Host.getHost(0).getVM(2);
@@ -90,7 +89,7 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
 
     vm2.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache());

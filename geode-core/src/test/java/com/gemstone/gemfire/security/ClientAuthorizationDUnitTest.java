@@ -56,9 +56,7 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
   }
 
   @Override
-  public void setUp() throws Exception {
-
-    super.setUp();
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -801,7 +799,7 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
   // End Region: Tests
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close the clients first
     client1.invoke(() -> SecurityTestUtil.closeCache());
     client2.invoke(() -> SecurityTestUtil.closeCache());

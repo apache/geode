@@ -80,7 +80,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     StringBuilder failures = new StringBuilder();
     FileUtil.delete(getBackupDir(), failures);
     if (failures.length() > 0) {

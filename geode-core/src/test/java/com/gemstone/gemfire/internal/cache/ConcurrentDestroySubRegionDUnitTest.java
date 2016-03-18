@@ -36,8 +36,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 public class ConcurrentDestroySubRegionDUnitTest extends CacheTestCase {
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     // this test expects to be able to create a region named "region"
     // but other tests seem to leave regions around, so we need
     // to create a new cache

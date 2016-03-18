@@ -102,7 +102,7 @@ public class ProductUseLogDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     disconnectAllFromDS();
   }
 }

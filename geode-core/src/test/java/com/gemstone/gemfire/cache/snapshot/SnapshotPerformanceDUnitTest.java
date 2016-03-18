@@ -100,9 +100,9 @@ public class SnapshotPerformanceDUnitTest extends CacheTestCase {
     LogWriterUtils.getLogWriter().info("SNP: Import entry rate: " + eps + " entries / sec");
     LogWriterUtils.getLogWriter().info("SNP: Import data rate: " + mbps + " MB / sec");
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     createCache();
   }
   

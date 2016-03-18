@@ -70,10 +70,9 @@ public class HABugInPutDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
-	final Host host = Host.getHost(0);
+  @Override
+  public final void postSetUp() throws Exception {
+	  final Host host = Host.getHost(0);
     // Server1 VM
     server1 = host.getVM(0);
 
@@ -96,12 +95,10 @@ public class HABugInPutDUnitTest extends DistributedTestCase
         NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2) ));
     client2.invoke(() -> HABugInPutDUnitTest.createClientCache(
         NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2) ));
-    //Boolean.getBoolean("")
-
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     client1.invoke(() -> HABugInPutDUnitTest.closeCache());
     client2.invoke(() -> HABugInPutDUnitTest.closeCache());
     // close server

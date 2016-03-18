@@ -85,11 +85,10 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
     diskDir.deleteOnExit();
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpManagementTestBase() throws Exception {
     failureCause = "";
     testFailed = false;
-
   }
 
   @Override

@@ -134,8 +134,8 @@ public class InterestListDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Wait.pause(10000);
     final Host host = Host.getHost(0);
@@ -144,8 +144,8 @@ public class InterestListDUnitTest extends DistributedTestCase
     vm2 = host.getVM(2);
     // start servers first
     PORT1 =  ((Integer) vm0.invoke(() -> InterestListDUnitTest.createServerCache())).intValue();
-
   }
+
 /**
    * one server two clients
    * create Entries in all the vms
@@ -1028,7 +1028,7 @@ public class InterestListDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close the clients first
     vm1.invoke(() -> InterestListDUnitTest.closeCache());
     vm2.invoke(() -> InterestListDUnitTest.closeCache());

@@ -71,8 +71,8 @@ public class Bug43684DUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -82,7 +82,7 @@ public class Bug43684DUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
     client1.invoke(() -> Bug43684DUnitTest.closeCache());
     server1.invoke(() -> Bug43684DUnitTest.closeCache());

@@ -35,12 +35,6 @@ public class PdxSerializableDUnitTest extends CacheTestCase {
     super(name);
   }
   
-
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   public void testSimplePut() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);

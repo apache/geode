@@ -103,11 +103,6 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
 
   public RegionManagementDUnitTest(String name) {
     super(name);
-    
-  }
-
-  public void setUp() throws Exception {
-    super.setUp();
 
   }
 

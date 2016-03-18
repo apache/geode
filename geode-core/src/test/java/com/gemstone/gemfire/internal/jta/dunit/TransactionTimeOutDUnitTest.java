@@ -119,15 +119,15 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
     }
   }
 
-  public  void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TransactionTimeOutDUnitTest.init());
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TransactionTimeOutDUnitTest.closeCache());

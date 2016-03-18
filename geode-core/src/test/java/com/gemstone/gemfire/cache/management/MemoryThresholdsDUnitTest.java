@@ -135,8 +135,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  protected final void postSetUpClientServerTestCase() throws Exception {
     Invoke.invokeInEveryVM(this.setHeapMemoryMonitorTestMode);
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException(expectedBelow);

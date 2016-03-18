@@ -61,8 +61,8 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     client1 = host.getVM(1);
@@ -187,7 +187,7 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     client1.invoke(() -> CacheRegionClearStatsDUnitTest.closeCache());
     // then close the servers
     server1.invoke(() -> CacheRegionClearStatsDUnitTest.closeCache());

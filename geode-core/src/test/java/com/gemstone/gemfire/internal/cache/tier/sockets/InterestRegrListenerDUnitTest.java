@@ -72,10 +72,10 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
   }
   
   private static final long serialVersionUID = 1L;
-  
-  public void setUp() throws Exception {
+
+  @Override
+  public final void preSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
   }
   
   public Cache createCache(Properties props) throws Exception

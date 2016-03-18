@@ -55,9 +55,9 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   
   protected static final Object BRIDGE_LISTENER = "BRIDGE_LISTENER";
   private static final long MAX_WAIT = 60000;
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     IgnoredException.addIgnoredException("NoAvailableLocatorsException");
   }
 

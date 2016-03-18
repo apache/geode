@@ -67,9 +67,8 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
    * time this method is called in this VM) distributed system
    * which is somewhat configurable via hydra test parameters.
    */
-  public void setUp() throws Exception {
-    super.setUp();
-    
+  @Override
+  public final void postSetUp() throws Exception {
     // Create a DistributedSystem in every VM
     connectDistributedSystem();
 
@@ -89,7 +88,7 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
 //    invokeInEveryVM(TXLockServiceDUnitTest.class,
 //                    "remoteDumpAllDLockServices");
                     

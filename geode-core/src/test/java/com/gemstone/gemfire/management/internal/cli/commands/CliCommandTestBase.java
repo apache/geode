@@ -76,12 +76,8 @@ public class CliCommandTestBase extends CacheTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     preTearDownCliCommandTestBase();
     destroyDefaultSetup();
   }

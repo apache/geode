@@ -44,8 +44,7 @@ public class LocalProcessLauncherDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     new File(getClass().getSimpleName()).mkdir();
   }
   

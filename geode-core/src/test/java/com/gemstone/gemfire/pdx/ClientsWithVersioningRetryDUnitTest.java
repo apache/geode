@@ -79,8 +79,7 @@ public class ClientsWithVersioningRetryDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override
       public void run() {
@@ -93,7 +92,7 @@ public class ClientsWithVersioningRetryDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override      
       public void run() {

@@ -56,7 +56,7 @@ import com.gemstone.gemfire.test.dunit.VM;
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 

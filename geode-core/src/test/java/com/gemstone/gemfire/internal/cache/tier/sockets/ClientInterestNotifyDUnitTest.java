@@ -139,17 +139,13 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
-    /*
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-    */
   }
 
   private Cache createCache(Properties props) throws Exception
@@ -626,7 +622,7 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
    * close the caches in tearDown
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     vm0.invoke(() -> ClientInterestNotifyDUnitTest.closeCache());
     vm1.invoke(() -> ClientInterestNotifyDUnitTest.closeCache());
     /*

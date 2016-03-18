@@ -118,9 +118,7 @@ public class HADispatcherDUnitTest extends DistributedTestCase
   }
 
   @Override
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     
     // Server1 VM
@@ -151,12 +149,10 @@ public class HADispatcherDUnitTest extends DistributedTestCase
             NetworkUtils.getServerHostName(host),
             new Integer(PORT1), new Integer(PORT2),
             new Boolean(true) ));
-    //createClientCache(new Integer(PORT1), new Integer(PORT2), new Boolean(true) );
-
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     client1.invoke(() -> HADispatcherDUnitTest.closeCache());
     client2.invoke(() -> HADispatcherDUnitTest.closeCache());
     // close server

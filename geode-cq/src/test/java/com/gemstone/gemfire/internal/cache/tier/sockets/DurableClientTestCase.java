@@ -92,7 +92,8 @@ public class DurableClientTestCase extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     this.server1VM = host.getVM(0);
     this.server2VM = host.getVM(1);
@@ -101,13 +102,15 @@ public class DurableClientTestCase extends DistributedTestCase {
     this.regionName = getName() + "_region";
     //Clients see this when the servers disconnect
     IgnoredException.addIgnoredException("Could not find any server");
-    setTestMethodName(getName());
-    assertEquals(getName(), getTestMethodName());
     System.out.println("\n\n[setup] START TEST " + getClass().getSimpleName()+"."+ getTestMethodName()+"\n\n");
+    postSetUpDurableClientTestCase();
+  }
+
+  protected void postSetUpDurableClientTestCase() throws Exception {
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     preTearDownDurableClientTestCase();
     
     this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());

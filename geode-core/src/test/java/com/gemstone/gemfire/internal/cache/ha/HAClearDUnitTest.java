@@ -85,9 +85,8 @@ public class HAClearDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
 
     server1 = host.getVM(0);
@@ -101,11 +100,10 @@ public class HAClearDUnitTest extends DistributedTestCase
     client2 = host.getVM(3);
 
     CacheObserverHolder.setInstance(new CacheObserverAdapter());
-
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     client1.invoke(() -> HAClearDUnitTest.closeCache());
     client2.invoke(() -> HAClearDUnitTest.closeCache());
     server1.invoke(() -> HAClearDUnitTest.closeCache());

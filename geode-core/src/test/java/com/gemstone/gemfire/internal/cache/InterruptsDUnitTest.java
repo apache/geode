@@ -51,7 +51,7 @@ public class InterruptsDUnitTest extends CacheTestCase {
   
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableCallable() {
       
       @Override
@@ -179,7 +179,7 @@ public class InterruptsDUnitTest extends CacheTestCase {
     return vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        assertFalse(cache.isClosed());
+        assertFalse(basicGetCache().isClosed());
         Region<Object, Object> region = getCache().getRegion("region");
         return region.get(0);
       }

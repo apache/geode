@@ -81,11 +81,6 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     super(name);
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   public void test_Bug_43126_Function_Not_Registered()
       throws InterruptedException {
     createScenario();

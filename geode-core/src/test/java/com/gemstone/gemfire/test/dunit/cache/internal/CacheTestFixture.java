@@ -14,29 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.disttx;
+package com.gemstone.gemfire.test.dunit.cache.internal;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-  CacheMapDistTXDUnitTest.class,
-  DistributedTransactionDUnitTest.class,
-  DistTXDebugDUnitTest.class,
-  DistTXOrderDUnitTest.class,
-  DistTXPersistentDebugDUnitTest.class,
-  DistTXRestrictionsDUnitTest.class,
-  DistTXWithDeltaDUnitTest.class,
-  PersistentPartitionedRegionWithDistTXDUnitTest.class,
-  PRDistTXDUnitTest.class,
-  PRDistTXWithVersionsDUnitTest.class
-})
+import com.gemstone.gemfire.test.dunit.internal.DistributedTestFixture;
 
 /**
- * Suite of tests for distributed transactions dunit tests
- * @author shirishd
+ * Defines the {@code CacheTestCase} methods that can be overridden by its subclasses.
  */
-public class DistTXDistributedTestSuite {
+public interface CacheTestFixture extends DistributedTestFixture {
+
+  /**
+   * {@code preTearDownCacheTestCase()} is invoked before {@code CacheTestCase#tearDownCacheTestCase()}.
+   *
+   * <p>Override this as needed. Default implementation is empty.
+   */
+  public void preTearDownCacheTestCase() throws Exception;
+
+  /**
+   * {@code postTearDownCacheTestCase()} is invoked after {@code CacheTestCase#tearDownCacheTestCase()}.
+   *
+   * <p>Override this as needed. Default implementation is empty.
+   */
+  public void postTearDownCacheTestCase() throws Exception;
 
 }

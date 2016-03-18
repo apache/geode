@@ -88,9 +88,8 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
   /**
    * get the VM's
    */
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -102,7 +101,7 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * close the cache in tearDown
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     vm0.invoke(() -> HARegionQueueDUnitTest.closeCache());
     vm1.invoke(() -> HARegionQueueDUnitTest.closeCache());
     vm2.invoke(() -> HARegionQueueDUnitTest.closeCache());

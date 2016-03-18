@@ -45,14 +45,13 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     member1 = host.getVM(0);
     member2 = host.getVM(1);
     member3 = host.getVM(2);
     member4 = host.getVM(3);
-
   }
 
   /**

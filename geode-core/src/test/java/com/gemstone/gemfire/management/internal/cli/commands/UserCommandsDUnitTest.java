@@ -52,13 +52,12 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     createUserCommandJarFile();
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     if (this.deleteJarDirectory) {
       FileUtil.delete(this.jarDirectory);
     } else {

@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
@@ -32,22 +33,24 @@ public class ReconnectedCacheServerDUnitTest extends CacheTestCase {
   private static final long serialVersionUID = 1L;
   
   private boolean addedCacheServer = false;
-  
+
+  private Cache cache;
+
   @Override
-  public void setUp() {
-    getCache();
-    if (cache.getCacheServers().isEmpty()) {
-      cache.addCacheServer();
+  public final void postSetUp() {
+    this.cache = getCache();
+    if (this.cache.getCacheServers().isEmpty()) {
+      this.cache.addCacheServer();
       addedCacheServer = true;
     }
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
-    if (addedCacheServer && cache != null && !cache.isClosed()) {
+  public final void preTearDownCacheTestCase() throws Exception {
+    if (addedCacheServer && this.cache != null && !this.cache.isClosed()) {
       // since I polluted the cache I should shut it down in order
       // to avoid affecting other tests
-      cache.close();
+      this.cache.close();
     }
   }
 
@@ -55,7 +58,7 @@ public class ReconnectedCacheServerDUnitTest extends CacheTestCase {
     // make sure the environment isn't polluted
     assertFalse(Boolean.getBoolean("gemfire.autoReconnect-useCacheXMLFile"));
 
-    GemFireCacheImpl gc = (GemFireCacheImpl)cache;
+    GemFireCacheImpl gc = (GemFireCacheImpl)this.cache;
     
     // fool the system into thinking cluster-config is being used
     GMSMembershipManager mgr = (GMSMembershipManager)MembershipManagerHelper
@@ -71,7 +74,7 @@ public class ReconnectedCacheServerDUnitTest extends CacheTestCase {
     
     assertFalse(Boolean.getBoolean("gemfire.autoReconnect-useCacheXMLFile"));
     
-    GemFireCacheImpl gc = (GemFireCacheImpl)cache;
+    GemFireCacheImpl gc = (GemFireCacheImpl)this.cache;
 
     // fool the system into thinking cluster-config is being used
     GMSMembershipManager mgr = (GMSMembershipManager)MembershipManagerHelper

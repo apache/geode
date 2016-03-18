@@ -170,27 +170,34 @@ public class WANTestBase extends DistributedTestCase{
   public WANTestBase(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
+
+  @Override
+  public final void preSetUp() throws Exception {
     final Host host = Host.getHost(0);
-    vm0 = host.getVM(0); 
+    vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     vm2 = host.getVM(2);
-    vm3 = host.getVM(3); 
+    vm3 = host.getVM(3);
     vm4 = host.getVM(4);
     vm5 = host.getVM(5);
-    vm6 = host.getVM(6); 
+    vm6 = host.getVM(6);
     vm7 = host.getVM(7);
     //Need to set the test name after the VMs are created
-    super.setUp();
-    //this is done to vary the number of dispatchers for sender 
+  }
+
+  @Override
+  public final void postSetUp() throws Exception {
+    //this is done to vary the number of dispatchers for sender
     //during every test method run
     shuffleNumDispatcherThreads();
-    Invoke.invokeInEveryVM(WANTestBase.class,"setNumDispatcherThreadsForTheRun",
-    	new Object[]{dispatcherThreads.get(0)});
+    Invoke.invokeInEveryVM(() -> setNumDispatcherThreadsForTheRun(dispatcherThreads.get(0)));
     IgnoredException.addIgnoredException("Connection refused");
     IgnoredException.addIgnoredException("Software caused connection abort");
     IgnoredException.addIgnoredException("Connection reset");
+    postSetUpWANTestBase();
+  }
+
+  protected void postSetUpWANTestBase() throws Exception {
   }
   
   public static void shuffleNumDispatcherThreads() {
@@ -209,7 +216,7 @@ public class WANTestBase extends DistributedTestCase{
 
   public static void createLocator(int dsId, int port, Set<String> localLocatorsList, Set<String> remoteLocatorsList){
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     StringBuffer localLocatorBuffer = new StringBuffer(localLocatorsList.toString());
@@ -233,7 +240,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -246,7 +253,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -259,7 +266,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locatorPort + "]");
@@ -272,7 +279,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locatorPort + "]");
@@ -285,7 +292,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -297,7 +304,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void bringBackLocatorOnOldPort(int dsId, int remoteLocPort, int oldPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
@@ -313,7 +320,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -328,7 +335,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + localPort + "]");
@@ -343,7 +350,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + localPort + "]");
@@ -1333,7 +1340,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createCacheConserveSockets(Boolean conserveSockets,Integer locPort){
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
     props.setProperty(DistributionConfig.CONSERVE_SOCKETS_NAME, conserveSockets.toString());   
@@ -1343,7 +1350,7 @@ public class WANTestBase extends DistributedTestCase{
   
   protected static void createCache(boolean management, Integer locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     if (management) {
       props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
       props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");
@@ -1364,7 +1371,7 @@ public class WANTestBase extends DistributedTestCase{
     String  gatewaySslciphers = "any";
     boolean gatewaySslRequireAuth = true;
     
-    Properties gemFireProps = new Properties();
+    Properties gemFireProps = test.getDistributedSystemProperties();
     gemFireProps.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_ENABLED_NAME, String.valueOf(gatewaySslenabled));
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_PROTOCOLS_NAME, gatewaySslprotocols);
@@ -1390,7 +1397,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createCache_PDX(Integer locPort){
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
@@ -1407,7 +1414,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createCache(Integer locPort1, Integer locPort2){
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort1
         + "],localhost[" + locPort2 + "]");
@@ -1417,7 +1424,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createCacheWithoutLocator(Integer mCastPort){
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, ""+mCastPort);
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
@@ -2742,7 +2749,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static int createReceiver(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -2768,7 +2775,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createReceiverWithBindAddress(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
@@ -2804,7 +2811,7 @@ public class WANTestBase extends DistributedTestCase{
     String  gatewaySslciphers = "any";
     boolean gatewaySslRequireAuth = true;
     
-    Properties gemFireProps = new Properties();
+    Properties gemFireProps = test.getDistributedSystemProperties();
 
     gemFireProps.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_ENABLED_NAME, String.valueOf(gatewaySslenabled));
@@ -2874,7 +2881,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createReceiverAndServer(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -2926,7 +2933,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static int createServer(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -2949,8 +2956,7 @@ public class WANTestBase extends DistributedTestCase{
   public static void createClientWithLocator(int port0,String host, 
       String regionName) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
-    props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
 
@@ -2984,7 +2990,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static int createReceiver_PDX(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
@@ -4277,7 +4283,7 @@ public class WANTestBase extends DistributedTestCase{
   public static void checkAllSiteMetaData(     
       Map<Integer, ArrayList<Integer>> dsVsPorts) {
     waitForSitesToUpdate();
-    assertNotNull(system);
+    assertNotNull(getSystemStatic());
 //    Map<Integer,Set<DistributionLocatorId>> allSiteMetaData = ((DistributionConfigImpl)system
 //        .getConfig()).getAllServerLocatorsInfo();
     
@@ -4310,7 +4316,7 @@ public class WANTestBase extends DistributedTestCase{
     
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        if (system != null) {
+        if (getSystemStatic() != null) {
           return true;
         }
         else {
@@ -4323,7 +4329,7 @@ public class WANTestBase extends DistributedTestCase{
       }
     };
     Wait.waitForCriterion(wc, 50000, 1000, true); 
-    assertNotNull(system);
+    assertNotNull(getSystemStatic());
     
 //    final Map<Integer,Set<DistributionLocatorId>> allSiteMetaData = ((DistributionConfigImpl)system
 //        .getConfig()).getAllServerLocatorsInfo();
@@ -5137,7 +5143,7 @@ public class WANTestBase extends DistributedTestCase{
   }*/
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     cleanupVM();
     List<AsyncInvocation> invocations = new ArrayList<AsyncInvocation>();
     final Host host = Host.getHost(0);
@@ -5186,14 +5192,15 @@ public class WANTestBase extends DistributedTestCase{
   }
   
   @Override
-  public InternalDistributedSystem getSystem(Properties props) {
+  public final Properties getDistributedSystemProperties() {
     // For now all WANTestBase tests allocate off-heap memory even though
     // many of them never use it.
     // The problem is that WANTestBase has static methods that create instances
     // of WANTestBase (instead of instances of the subclass). So we can't override
     // this method so that only the off-heap subclasses allocate off heap memory.
+    Properties props = new Properties();
     props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "300m");
-    return super.getSystem(props);
+    return props;
   }
   
   /**

@@ -110,12 +110,6 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-    
-
-  }
-
   /**
    * Tests each and every operations that is defined on the MemberMXBean
    * 

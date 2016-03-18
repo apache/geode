@@ -33,8 +33,8 @@ public class DurableClientCrashDUnitTest extends DurableClientTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpDurableClientTestCase() throws Exception {
     configureClientStop1();
   }
   

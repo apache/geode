@@ -73,8 +73,8 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Wait.pause(5000);
     final Host host = Host.getHost(0);
@@ -82,13 +82,10 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
     vm1 = host.getVM(1);
     vm2 = host.getVM(2);
 
-
     PORT1 =  ((Integer)vm0.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache())).intValue();
     PORT2 =  ((Integer)vm1.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache())).intValue();
 
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createClientCache( NetworkUtils.getServerHostName(vm0.getHost()), new Integer(PORT1),new Integer(PORT2)));
-
-
   }
 
   private Cache createCache(Properties props) throws Exception
@@ -246,7 +243,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     //close client
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.closeCache());
     //close server

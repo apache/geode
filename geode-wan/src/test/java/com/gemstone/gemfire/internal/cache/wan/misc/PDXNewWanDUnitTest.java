@@ -31,10 +31,6 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   /**
    * Test
    *   1> Site 1 : 1 locator, 1 member

@@ -71,8 +71,8 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
    * @throws Exception
    *           thrown if any problem occurs in set-up
    */
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Wait.pause(5000);
     final Host host = Host.getHost(0);
@@ -100,7 +100,7 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
    *           thrown if any problem occurs while closing the cache
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     vm0.invoke(() -> NewRegionAttributesDUnitTest.closeCache());
     vm1.invoke(() -> NewRegionAttributesDUnitTest.closeCache());
   }

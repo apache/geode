@@ -71,7 +71,8 @@ public class ConsoleDistributionManagerDUnitTest
 //    this.lastAlert = alert;
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void postSetUp() throws Exception {
     boolean finishedSetup = false;
     IgnoredException.addIgnoredException("Error occurred while reading system log");
     try {
@@ -83,7 +84,6 @@ public class ConsoleDistributionManagerDUnitTest
 
       DistributionManager.isDedicatedAdminVM = true;
 
-      super.setUp();
       populateCache();
 
       RemoteTransportConfig transport = null;
@@ -145,12 +145,12 @@ public class ConsoleDistributionManagerDUnitTest
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     this.agent.disconnect();
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     try {
       disconnectFromDS(); //make sure there's no ldm lying around
     } finally {

@@ -108,8 +108,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     IgnoredException.addIgnoredException("Connection refused");
     Host host = Host.getHost(0);
     member0 = host.getVM(0);
@@ -119,9 +119,9 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     try {
-      closeCache();
+      closeCacheAndDisconnect();
       
       member0 = null;
       member1 = null;
@@ -134,7 +134,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     }
   }
 
-  public static void closeCache() {
+  public static void closeCacheAndDisconnect() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
@@ -913,8 +913,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
     
 //    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerOnPort(3,4,port0 ));
 //    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerOnPort(3,4,port1 ));
@@ -1114,10 +1114,10 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     
     createClient(port0, port1, port2, port3);
     fetchAndValidateMetadata();
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCache());
+    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
+    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
+    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
+    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
     Wait.pause(1000); //let client detect that servers are dead through ping
     AsyncInvocation m3 = member3.invokeAsync(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort( 3, 4,port3 ));
     AsyncInvocation m2 = member2.invokeAsync(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort( 3, 4,port2 ));

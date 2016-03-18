@@ -78,9 +78,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-	super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -94,8 +93,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     PORT2 =  ((Integer) server2.invoke(() -> HAStartupAndFailoverDUnitTest.createServerCache()));
     PORT3 =  ((Integer) server3.invoke(() -> HAStartupAndFailoverDUnitTest.createServerCache()));
     CacheServerTestUtil.disableShufflingOfEndpoints();
-
   }
+
     /**
      * Stops primary server one by one to ensure new primary is selected
      *
@@ -718,7 +717,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
 
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
 

@@ -35,10 +35,6 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   /**
    * Just enable the persistence for GatewaySender and see if it remote site
    * receives all the events.

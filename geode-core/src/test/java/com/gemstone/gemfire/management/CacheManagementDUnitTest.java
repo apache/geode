@@ -96,11 +96,6 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();  
-
-  }
-
   public void testGemFireConfigData() throws Exception {
      initManagement(false);
    

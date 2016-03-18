@@ -64,8 +64,7 @@ public class RedisDistDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     host = Host.getHost(0);
     server1 = host.getVM(0);
@@ -102,7 +101,7 @@ public class RedisDistDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     disconnectAllFromDS();
   }
 

@@ -187,16 +187,16 @@ public class SecurityTestUtil extends DistributedTestCase {
 
     DistributedSystem dsys = getSystem(sysProps);
     assertNotNull(dsys);
-    addExpectedExceptions(SecurityTestUtil.expectedExceptions, system
+    addExpectedExceptions(SecurityTestUtil.expectedExceptions, dsys
         .getLogWriter());
     return dsys;
   }
 
   void openCache() {
 
-    assertNotNull(system);
-    assertTrue(system.isConnected());
-    cache = CacheFactory.create(system);
+    assertNotNull(basicGetSystem());
+    assertTrue(basicGetSystem().isConnected());
+    cache = CacheFactory.create(basicGetSystem());
     assertNotNull(cache);
   }
 
@@ -1875,7 +1875,7 @@ public class SecurityTestUtil extends DistributedTestCase {
   private static LogWriter getLogger() {
 
     LogWriter logger = null;
-    DistributedSystem dsys = system;
+    DistributedSystem dsys = getSystemStatic();
     if (dsys == null || !dsys.isConnected()) {
       while ((dsys = InternalDistributedSystem.getAnyInstance()) != null
           && !dsys.isConnected()) {

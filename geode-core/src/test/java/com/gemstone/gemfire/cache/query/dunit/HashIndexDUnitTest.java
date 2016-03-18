@@ -39,8 +39,8 @@ public class HashIndexDUnitTest extends DistributedTestCase{
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
@@ -134,7 +134,7 @@ public class HashIndexDUnitTest extends DistributedTestCase{
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     Thread.sleep(5000);
     utils.closeServer(vm0);
   }

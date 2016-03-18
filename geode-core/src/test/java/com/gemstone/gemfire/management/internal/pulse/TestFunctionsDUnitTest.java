@@ -44,11 +44,6 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-
-  }
-
   public static Integer getNumOfRunningFunction() {
 
     final WaitCriterion waitCriteria = new WaitCriterion() {

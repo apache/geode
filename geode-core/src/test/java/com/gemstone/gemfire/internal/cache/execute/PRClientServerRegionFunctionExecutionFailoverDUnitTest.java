@@ -67,8 +67,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  protected void postSetUpPRClientServerTestBase() throws Exception {
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("SocketTimeoutException");
     IgnoredException.addIgnoredException("ServerConnectivityException");

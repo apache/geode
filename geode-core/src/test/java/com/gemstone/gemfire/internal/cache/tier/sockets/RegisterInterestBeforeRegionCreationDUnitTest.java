@@ -86,13 +86,8 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
     super(name);
   }
 
-  /**
-   * get the hosts
-   * @throws Exception
-   */
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -106,7 +101,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
    * @throws Exception
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     client1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
     client2.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
     server1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());

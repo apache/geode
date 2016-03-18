@@ -1077,8 +1077,8 @@ public class TXDistributedDUnitTest extends CacheTestCase {
    */
   public static Serializable getSystemId() {
     Serializable ret = null;
-    if (DistributedTestCase.system != null) {
-      ret = DistributedTestCase.system.getDistributionManager().getId();
+    if (getSystemStatic() != null) {
+      ret = getSystemStatic().getDistributionManager().getId();
     }
     return ret;
   }

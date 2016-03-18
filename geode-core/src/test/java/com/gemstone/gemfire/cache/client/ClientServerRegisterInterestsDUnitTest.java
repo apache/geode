@@ -65,15 +65,14 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     setupGemFireCacheServer();
     IgnoredException.addIgnoredException("java.net.ConnectException");
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     serverPort.set(0);
     entryEvents.clear();
     gemfireServerVm.invoke(new SerializableRunnable() {

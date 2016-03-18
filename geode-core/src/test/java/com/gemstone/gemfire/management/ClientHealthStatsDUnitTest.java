@@ -96,10 +96,11 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
-    final Host host = Host.getHost(0);    
+
+    final Host host = Host.getHost(0);
     managingNode = host.getVM(0);
     server = host.getVM(1);
     client = host.getVM(2);
@@ -108,7 +109,7 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     reset();
     helper.closeCache(managingNode);
     helper.closeCache(client);

@@ -74,8 +74,8 @@ public class TestSubscriptionsDUnitTest extends DistributedTestCase {
     this.helper = new ManagementTestBase(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     managingNode = host.getVM(0);
     server = host.getVM(1);
@@ -84,7 +84,7 @@ public class TestSubscriptionsDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     helper.closeCache(managingNode);
     helper.closeCache(server);
     helper.closeCache(client);

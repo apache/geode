@@ -85,8 +85,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     createDefaultSetup(null);
     setupGemFire();
   }

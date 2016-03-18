@@ -42,7 +42,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest extends Persist
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS = false;
@@ -52,8 +52,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest extends Persist
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  protected final void postSetUpPersistentPartitionedRegionTestBase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       
       public void run() {
@@ -63,7 +62,6 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest extends Persist
     });
   }
 
-  
   public void testRollback() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

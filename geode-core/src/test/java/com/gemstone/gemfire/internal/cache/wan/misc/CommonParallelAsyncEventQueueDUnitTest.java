@@ -32,10 +32,6 @@ public class CommonParallelAsyncEventQueueDUnitTest extends AsyncEventQueueTestB
     super(name);
   }
 
-  public void setUp() throws Exception  {
-    super.setUp();
-  }
-    
   public void testSameSenderWithNonColocatedRegions() throws Exception {
     IgnoredException.addIgnoredException("cannot have the same parallel async");
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));

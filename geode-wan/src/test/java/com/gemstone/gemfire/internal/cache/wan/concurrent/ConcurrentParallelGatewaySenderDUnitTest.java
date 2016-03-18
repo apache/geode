@@ -43,10 +43,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
     super(name);
   }
   
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   /**
    * Normal happy scenario test case.
    * checks that all the dispatchers have successfully 

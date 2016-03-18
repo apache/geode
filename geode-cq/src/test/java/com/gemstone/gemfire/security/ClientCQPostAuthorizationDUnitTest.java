@@ -69,9 +69,8 @@ public class ClientCQPostAuthorizationDUnitTest extends
     super(name);
   }
 
-  public void setUp() throws Exception {
-
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
@@ -92,7 +91,7 @@ public class ClientCQPostAuthorizationDUnitTest extends
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     client1.invoke(() -> SecurityTestUtil.closeCache());
     client2.invoke(() -> SecurityTestUtil.closeCache());
     server1.invoke(() -> SecurityTestUtil.closeCache());

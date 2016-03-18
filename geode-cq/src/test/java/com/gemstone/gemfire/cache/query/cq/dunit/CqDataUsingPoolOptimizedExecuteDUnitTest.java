@@ -26,16 +26,20 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
  * Test class for testing {@link CqServiceImpl#EXECUTE_QUERY_DURING_INIT} flag
  *
  */
-public class CqDataUsingPoolOptimizedExecuteDUnitTest extends CqDataUsingPoolDUnitTest{
+public class CqDataUsingPoolOptimizedExecuteDUnitTest extends CqDataUsingPoolDUnitTest {
 
   public CqDataUsingPoolOptimizedExecuteDUnitTest(String name) {
     super(name);
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void preSetUp() throws Exception {
     IgnoredException.addIgnoredException("Read timed out");
     IgnoredException.addIgnoredException("java.net.SocketException");
-    super.setUp();
+  }
+
+  @Override
+  protected final void postSetUpCqDataUsingPoolDUnitTest() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("set test hook") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
@@ -44,7 +48,7 @@ public class CqDataUsingPoolOptimizedExecuteDUnitTest extends CqDataUsingPoolDUn
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;

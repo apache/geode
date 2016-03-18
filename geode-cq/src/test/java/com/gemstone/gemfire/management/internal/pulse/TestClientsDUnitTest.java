@@ -43,11 +43,6 @@ public class TestClientsDUnitTest extends ManagementTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-
-  }
-
   public static Integer getNumOfClients() {
     final WaitCriterion waitCriteria = new WaitCriterion() {
       @Override
