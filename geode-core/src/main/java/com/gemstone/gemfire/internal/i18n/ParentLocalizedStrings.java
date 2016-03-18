@@ -694,7 +694,7 @@ class ParentLocalizedStrings {
   public static final StringId InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CREATE_THE_CACHE_DURING_RECONNECT = new StringId(1687, "Exception occurred while trying to create the cache during reconnect");
   public static final StringId InternalDistributedSystem_INTERRUPTED_WHILE_PROCESSING_DISCONNECT_LISTENER = new StringId(1688, "Interrupted while processing disconnect listener");
   public static final StringId InternalDistributedSystem_LICENSE_EXPIRES_IN_0_DAYS_1_HOURS_2_MINUTES_AND_3_SECONDS = new StringId(1689, "License expires in: {0} days, {1} hours, {2} minutes, and {3} seconds.");
-  public static final StringId InternalDistributedSystem_RUNNING_IN_LOCAL_MODE_SINCE_MCASTPORT_WAS_0_AND_LOCATORS_WAS_EMPTY = new StringId(1690, "Running in local mode since mcast-port was 0 and locators was empty.");
+  public static final StringId GemFireCacheImpl_RUNNING_IN_LOCAL_MODE = new StringId(1690, "Running in local mode since no locators were specified.");
   public static final StringId InternalDistributedSystem_SHUTDOWNLISTENER__0__THREW = new StringId(1691, "ShutdownListener < {0} > threw...");
   public static final StringId InternalDistributedSystem_STARTUP_CONFIGURATIONN_0 = new StringId(1692, "Startup Configuration:\n {0}");
   public static final StringId InternalDistributedSystem_THE_MONITOR_SERVICE_IS_ENABLED_ON_PORT__0 = new StringId(1693, "The monitor service is enabled on port  {0}");

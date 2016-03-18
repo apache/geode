@@ -95,10 +95,7 @@ public class LogWriterFactory {
 
     // log the config
     if (logConfig) {
-      if (isLoner) {
-        // LOG:CONFIG:
-        logger.info(LogMarker.CONFIG, LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_RUNNING_IN_LOCAL_MODE_SINCE_MCASTPORT_WAS_0_AND_LOCATORS_WAS_EMPTY));
-      } else {
+      if (!isLoner) {
         // LOG:CONFIG: changed from config to info
         logger.info(LogMarker.CONFIG, LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0, config.toLoggerString()));
       }

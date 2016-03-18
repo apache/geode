@@ -230,9 +230,7 @@ public class LogWriterAppenders {
     
     // log the config
     if (logConfig) {
-      if (isLoner) {
-        logWriter.info(LocalizedStrings.InternalDistributedSystem_RUNNING_IN_LOCAL_MODE_SINCE_MCASTPORT_WAS_0_AND_LOCATORS_WAS_EMPTY);
-      } else {
+      if (!isLoner) {
         // LOG:CONFIG: changed from config to info
         logWriter.info(LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0, config.toLoggerString());
       }
