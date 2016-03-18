@@ -23,8 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Java Annotation used to annotate a test suite class test case method in order to
- * retry it in case of failure up to the specified maximum attempts.
+ * Java Annotation used to annotate a test method in order to retry failures
+ * up to the specified maximum attempts. Default maximum attempts is one retry.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

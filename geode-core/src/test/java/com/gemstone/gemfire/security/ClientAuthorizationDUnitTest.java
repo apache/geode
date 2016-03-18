@@ -26,19 +26,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import security.AuthzCredentialGenerator;
-import security.CredentialGenerator;
-import security.DummyCredentialGenerator;
-import security.XmlAuthzCredentialGenerator;
-
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
+import com.gemstone.gemfire.security.generator.CredentialGenerator;
+import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
+import com.gemstone.gemfire.security.generator.XmlAuthzCredentialGenerator;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
-import templates.security.UserPasswordAuthInit;
+import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 
 /**
  * Tests for authorization from client to server. This tests for authorization
@@ -253,6 +252,35 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestBase {
           new Integer(2), new Integer(SecurityTestUtil.NO_EXCEPTION) ));
   }
 
+  public void testPutAllWithSecurity() {
+    AuthzCredentialGenerator gen = getXmlAuthzGenerator();
+    CredentialGenerator cGen = gen.getCredentialGenerator();
+    Properties extraAuthProps = cGen.getSystemProperties();
+    Properties javaProps = cGen.getJavaProperties();
+    Properties extraAuthzProps = gen.getSystemProperties();
+    String authenticator = cGen.getAuthenticator();
+    String authInit = cGen.getAuthInit();
+    String accessor = gen.getAuthorizationCallback();
+
+    LogWriterUtils.getLogWriter().info("testPutAllWithSecurity: Using authinit: " + authInit);
+    LogWriterUtils.getLogWriter().info("testPutAllWithSecurity: Using authenticator: " + authenticator);
+    LogWriterUtils.getLogWriter().info("testPutAllWithSecurity: Using accessor: " + accessor);
+
+    // Start servers with all required properties
+    Properties serverProps = buildProperties(authenticator, accessor, false, extraAuthProps, extraAuthzProps);
+    Integer port1 = createServer1(javaProps, serverProps);
+    Integer port2 = createServer2(javaProps, serverProps);
+
+    // Start client1 with valid CREATE credentials
+    Properties createCredentials = gen.getAllowedCredentials(new OperationCode[] { OperationCode.PUTALL }, new String[] { regionName }, 1);
+    javaProps = cGen.getJavaProperties();
+    LogWriterUtils.getLogWriter().info("testPutAllWithSecurity: For first client credentials: " + createCredentials);
+    createClient1NoException(javaProps, authInit, port1, port2, createCredentials);
+
+    // Perform some put all operations from client1
+    client1.invoke(() -> SecurityTestUtil.doPutAllP());
+  }
+  
   protected void createClient2NoException(Properties javaProps, String authInit,
       Integer port1, Integer port2, Properties getCredentials) {
     client2.invoke(() -> ClientAuthenticationDUnitTest.createCacheClient( authInit, getCredentials, javaProps, port1, port2,

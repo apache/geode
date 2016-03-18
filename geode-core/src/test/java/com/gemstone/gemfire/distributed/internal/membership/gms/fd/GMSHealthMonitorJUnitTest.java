@@ -175,7 +175,7 @@ public class GMSHealthMonitorJUnitTest {
 
     // allow the monitor to give up on the initial "next neighbor" and
     // move on to the one after it
-    long giveup = System.currentTimeMillis() + memberTimeout + 500;
+    long giveup = System.currentTimeMillis() + memberTimeout + 1500;
     InternalDistributedMember expected = mockMembers.get(5);
     InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
     while (System.currentTimeMillis() < giveup && neighbor != expected) {
@@ -230,7 +230,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   private NetView installAView() {
-    System.out.println("testSuspectMembersCalledThroughMemberCheckThread starting");
+    System.out.println("installAView starting");
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
 
     // 3rd is current member
@@ -445,6 +445,7 @@ public class GMSHealthMonitorJUnitTest {
   
   @Test
   public void testCheckIfAvailableWithSimulatedHeartBeatWithTcpCheck() {
+    System.out.println("testCheckIfAvailableWithSimulatedHeartBeatWithTcpCheck");
     useGMSHealthMonitorTestClass = true;
     
     try {
@@ -453,15 +454,6 @@ public class GMSHealthMonitorJUnitTest {
       setFailureDetectionPorts(v);
       
       InternalDistributedMember memberToCheck = mockMembers.get(1);
-      HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
-      fakeHeartbeat.setSender(memberToCheck);
-      when(messenger.send(any(HeartbeatRequestMessage.class))).then(new Answer() {
-        @Override
-        public Object answer(InvocationOnMock invocation) throws Throwable {
-          gmsHealthMonitor.processMessage(fakeHeartbeat);
-          return null;
-        }
-      });
       
       boolean retVal = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
       assertTrue("CheckIfAvailable should have return true", retVal);
@@ -677,8 +669,12 @@ public class GMSHealthMonitorJUnitTest {
   public class GMSHealthMonitorTest extends GMSHealthMonitor {
     @Override
     boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
-      if(useGMSHealthMonitorTestClass)
+      if(useGMSHealthMonitorTestClass) {       
+        HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
+        fakeHeartbeat.setSender(suspectMember);
+        gmsHealthMonitor.processMessage(fakeHeartbeat);                
         return false;
+      }
       return super.doTCPCheckMember(suspectMember, port);
     }
   }

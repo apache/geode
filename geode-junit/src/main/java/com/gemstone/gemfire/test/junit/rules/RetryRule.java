@@ -57,7 +57,6 @@ import com.gemstone.gemfire.test.junit.Retry;
  * This version of RetryRule will retry a test that fails because of any kind 
  * of Throwable.
  */
-@SuppressWarnings("serial")
 public class RetryRule implements TestRule, Serializable {
   
   /**

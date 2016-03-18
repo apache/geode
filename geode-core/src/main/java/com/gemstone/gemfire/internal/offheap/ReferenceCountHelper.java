@@ -214,7 +214,7 @@ public class ReferenceCountHelper {
       }
     }
     if (list == LOCKED) {
-      SimpleMemoryAllocatorImpl.debugLog("refCount " + (decRefCount ? "deced" : "inced") + " after orphan detected for @" + Long.toHexString(address), true);
+      MemoryAllocatorImpl.debugLog("refCount " + (decRefCount ? "deced" : "inced") + " after orphan detected for @" + Long.toHexString(address), true);
       return;
     }
     RefCountChangeInfo info = new RefCountChangeInfo(decRefCount, rc, owner);
@@ -242,7 +242,7 @@ public class ReferenceCountHelper {
     if (!trackReferenceCounts()) return;
     List<RefCountChangeInfo> freedInfo = stacktraces.remove(address);
     if (freedInfo == LOCKED) {
-      SimpleMemoryAllocatorImpl.debugLog("freed after orphan detected for @" + Long.toHexString(address), true);
+      MemoryAllocatorImpl.debugLog("freed after orphan detected for @" + Long.toHexString(address), true);
     } else if (trackFreedReferenceCounts()) {
       if (freedInfo != null) {
         freedStacktraces.put(address, freedInfo);

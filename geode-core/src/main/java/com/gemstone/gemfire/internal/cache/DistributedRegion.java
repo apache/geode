@@ -121,9 +121,6 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewa
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
-import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.sequencelog.RegionLogger;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
@@ -2057,7 +2054,7 @@ public class DistributedRegion extends LocalRegion implements
     }
   }
 
-  private void distributeUpdateEntryVersion(EntryEventImpl event) {
+  protected void distributeUpdateEntryVersion(EntryEventImpl event) {
     if (!this.regionInvalid && event.isDistributed() && !event.isOriginRemote()
         && !isTX() /* only distribute if non-tx */) {
       if (event.isDistributed() && !event.isOriginRemote()) {
@@ -2449,7 +2446,6 @@ public class DistributedRegion extends LocalRegion implements
     boolean fromServer = false;
     EntryEventImpl event = null;
     @Retained Object result = null;
-    boolean incrementUseCountForSqlf = false;
     try {
     {
       if (this.srp != null) {
@@ -2515,7 +2511,6 @@ public class DistributedRegion extends LocalRegion implements
           	((BucketRegion)this).handleWANEvent(event);
           }
           re = basicPutEntry(event, lastModified);
-          incrementUseCountForSqlf = GemFireCacheImpl.sqlfSystem() ;
         } catch (ConcurrentCacheModificationException e) {
           // the cache was modified while we were searching for this entry and
           // the netsearch result was elided.  Return the current value from the cache
@@ -2546,11 +2541,6 @@ public class DistributedRegion extends LocalRegion implements
       }    
     } else {
       result = event.getNewValue();     
-    }
-    //For SQLFire , we need to increment the use count so that returned
-    //object has use count 2
-    if( incrementUseCountForSqlf && result instanceof ObjectChunk) {
-      ((ObjectChunk)result).retain();
     }
     return result;
     } finally {

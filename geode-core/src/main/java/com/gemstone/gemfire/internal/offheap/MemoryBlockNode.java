@@ -26,9 +26,9 @@ import com.gemstone.gemfire.cache.CacheClosedException;
  * Basic implementation of MemoryBlock for test validation only.
  */
 public class MemoryBlockNode implements MemoryBlock {
-  private final SimpleMemoryAllocatorImpl ma;
+  private final MemoryAllocatorImpl ma;
   private final MemoryBlock block;
-  MemoryBlockNode(SimpleMemoryAllocatorImpl ma, MemoryBlock block) {
+  MemoryBlockNode(MemoryAllocatorImpl ma, MemoryBlock block) {
     this.ma = ma;
     this.block = block;
   }
@@ -37,8 +37,8 @@ public class MemoryBlockNode implements MemoryBlock {
     return this.block.getState();
   }
   @Override
-  public long getMemoryAddress() {
-    return this.block.getMemoryAddress();
+  public long getAddress() {
+    return this.block.getAddress();
   }
   @Override
   public int getBlockSize() {
@@ -49,7 +49,7 @@ public class MemoryBlockNode implements MemoryBlock {
     return this.ma.getMemoryInspector().getBlockAfter(this);
   }
   public int getSlabId() {
-    return this.ma.findSlab(getMemoryAddress());
+    return this.ma.findSlab(getAddress());
   }
   @Override
   public int getFreeListId() {
@@ -65,15 +65,15 @@ public class MemoryBlockNode implements MemoryBlock {
     if (!isSerialized()) {
       // byte array
       if (isCompressed()) {
-        return "compressed byte[" + ((ObjectChunk)this.block).getDataSize() + "]";
+        return "compressed byte[" + ((OffHeapStoredObject)this.block).getDataSize() + "]";
       } else {
-        return "byte[" + ((ObjectChunk)this.block).getDataSize() + "]";
+        return "byte[" + ((OffHeapStoredObject)this.block).getDataSize() + "]";
       }
     } else if (isCompressed()) {
-      return "compressed object of size " + ((ObjectChunk)this.block).getDataSize();
+      return "compressed object of size " + ((OffHeapStoredObject)this.block).getDataSize();
     }
     //Object obj = EntryEventImpl.deserialize(((Chunk)this.block).getRawBytes());
-    byte[] bytes = ((ObjectChunk)this.block).getRawBytes();
+    byte[] bytes = ((OffHeapStoredObject)this.block).getRawBytes();
     return DataType.getDataType(bytes);
   }
   public boolean isSerialized() {
@@ -88,14 +88,14 @@ public class MemoryBlockNode implements MemoryBlock {
     if (dataType == null || dataType.equals("N/A")) {
       return null;
     } else if (isCompressed()) {
-      return ((ObjectChunk)this.block).getCompressedBytes();
+      return ((OffHeapStoredObject)this.block).getCompressedBytes();
     } else if (!isSerialized()) {
       // byte array
       //return "byte[" + ((Chunk)this.block).getDataSize() + "]";
-      return ((ObjectChunk)this.block).getRawBytes();
+      return ((OffHeapStoredObject)this.block).getRawBytes();
     } else {
       try {
-        byte[] bytes = ((ObjectChunk)this.block).getRawBytes();
+        byte[] bytes = ((OffHeapStoredObject)this.block).getRawBytes();
         return DataSerializer.readObject(DataType.getDataInput(bytes));
       } catch (IOException e) {
         e.printStackTrace();
@@ -113,7 +113,7 @@ public class MemoryBlockNode implements MemoryBlock {
   public String toString() {
     final StringBuilder sb = new StringBuilder(MemoryBlock.class.getSimpleName());
     sb.append("{");
-    sb.append("MemoryAddress=").append(getMemoryAddress());
+    sb.append("MemoryAddress=").append(getAddress());
     sb.append(", State=").append(getState());
     sb.append(", BlockSize=").append(getBlockSize());
     sb.append(", SlabId=").append(getSlabId());

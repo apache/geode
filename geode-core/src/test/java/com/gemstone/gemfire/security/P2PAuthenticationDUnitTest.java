@@ -26,10 +26,6 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLHandshakeException;
 
-import security.CredentialGenerator;
-import security.DummyCredentialGenerator;
-import security.LdapUserCredentialGenerator;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
@@ -38,6 +34,10 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.security.generator.CredentialGenerator;
+import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
+import com.gemstone.gemfire.security.generator.LdapUserCredentialGenerator;
+import com.gemstone.gemfire.security.generator.UserPasswordWithExtraPropsAuthInit;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
@@ -45,6 +45,7 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+
 
 /**
  * Tests peer to peer authentication in Gemfire
@@ -497,7 +498,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     gen.init();
     Properties extraProps = gen.getSystemProperties();
     String authenticator = gen.getAuthenticator();
-    String authInit = "security.UserPasswordWithExtraPropsAuthInit.create";
+    String authInit = UserPasswordWithExtraPropsAuthInit.class.getName() + ".create";
     if (extraProps == null) {
       extraProps = new Properties();
     }

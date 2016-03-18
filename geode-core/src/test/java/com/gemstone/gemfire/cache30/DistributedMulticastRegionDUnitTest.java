@@ -34,6 +34,7 @@ import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.ReplyException;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.pdx.PdxReader;
@@ -96,7 +97,8 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
     //1. start locator with mcast port
     vm0.invoke(create);
     vm1.invoke(create);
-    
+    //There is possibility that you may get this packet from other tests
+    /*
     SerializableRunnable validateMulticastBeforeRegionOps =
         new CacheSerializableRunnable("validateMulticast before region ops") {
             public void run2() throws CacheException {
@@ -106,6 +108,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
       
     vm0.invoke(validateMulticastBeforeRegionOps);
     vm1.invoke(validateMulticastBeforeRegionOps);
+    */
     
     SerializableRunnable doPuts =
       new CacheSerializableRunnable("do put") {
@@ -159,7 +162,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
       
       SerializableRunnable setSysProp = new CacheSerializableRunnable("Create Region") {
         public void run2() throws CacheException {
-          System.setProperty("gemfire.STORE_ALL_VALUE_FORMS", "true");
+          CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = true;
         }
       };
       
@@ -180,6 +183,8 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
       vm0.invoke(create);
       vm1.invoke(create);
       
+    //There is possibility that you may get this packet from other tests
+      /*
       SerializableRunnable validateMulticastBeforeRegionOps =
           new CacheSerializableRunnable("validateMulticast before region ops") {
               public void run2() throws CacheException {
@@ -189,6 +194,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
         
       vm0.invoke(validateMulticastBeforeRegionOps);
       vm1.invoke(validateMulticastBeforeRegionOps);
+      */
       
       SerializableRunnable doPuts =
         new CacheSerializableRunnable("do put") {
@@ -225,7 +231,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
     }finally {
       SerializableRunnable unsetSysProp = new CacheSerializableRunnable("Create Region") {
         public void run2() throws CacheException {
-          System.setProperty("gemfire.STORE_ALL_VALUE_FORMS", "false");          
+          CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = false;
         }
       };
       vm0.invoke(unsetSysProp);

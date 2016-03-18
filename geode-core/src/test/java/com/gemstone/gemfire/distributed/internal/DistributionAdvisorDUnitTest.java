@@ -27,6 +27,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  *
@@ -66,7 +67,7 @@ public class DistributionAdvisorDUnitTest extends DistributedTestCase {
         }
       });
     Set ids = getSystem().getDistributionManager().getOtherNormalDistributionManagerIds();
-    assertEquals(4, ids.size());
+    assertEquals(VM.getVMCount(), ids.size());
     List profileList = new ArrayList();
     
     int i = 0;

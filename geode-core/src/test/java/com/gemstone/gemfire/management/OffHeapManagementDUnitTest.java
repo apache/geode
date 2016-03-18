@@ -36,6 +36,7 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.offheap.OffHeapStoredObject;
 import com.gemstone.gemfire.internal.offheap.OffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.OffHeapStorage;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
@@ -237,21 +238,51 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
       // Make sure our starting off heap stats are correct
       assertOffHeapMetricsOnVm(vm, TOTAL_MEMORY, 0, 0, 0);
       
-      // After allocating large chunck we should still have no fragmentation
-      doPutOnVm(vm, KEY, new byte[HALF_TOTAL_MEMORY], OFF_HEAP_REGION_NAME, false);
+      // After allocating large chunk (equal to total memory) 
+      // we should still have no fragmentation
+      int largeChunk = (int) TOTAL_MEMORY - OffHeapStoredObject.HEADER_SIZE;
+      doPutOnVm(vm, KEY, new byte[largeChunk], OFF_HEAP_REGION_NAME, false);
+      // No compaction has run, so fragmentation should be zero
+      assertFragmentationStatOnVm(vm,0,ASSERT_OP.EQUAL);
+      
+      // Allocate more memory to trigger compaction
+      doPutOnVm(vm, KEY, new byte[ALLOCATION_SIZE], OFF_HEAP_REGION_NAME, true);
+      // When total memory is used no fragmentation
       assertFragmentationStatOnVm(vm,0,ASSERT_OP.EQUAL);
       
       // After freeing all memory we should have no fragmentation
       doDestroyOnVm(vm, KEY, OFF_HEAP_REGION_NAME);
       assertFragmentationStatOnVm(vm,0,ASSERT_OP.EQUAL);
       
-      // Consume all off-heap memory using an allocation size
-      int numAllocations = doConsumeOffHeapMemoryOnVm(vm,ALLOCATION_SIZE);
-      assertTrue(numAllocations > 0);
+      // Allocate HALF_TOTAL_MEMORY twice and release one to create one fragment
+      int halfChunk = HALF_TOTAL_MEMORY - OffHeapStoredObject.HEADER_SIZE;
+      doPutOnVm(vm, KEY + "0", new byte[halfChunk], OFF_HEAP_REGION_NAME, false);
+      doPutOnVm(vm, KEY + "1", new byte[halfChunk], OFF_HEAP_REGION_NAME, false);
+      doDestroyOnVm(vm, KEY + "0", OFF_HEAP_REGION_NAME);
       
-      // Randomly free 3 allocations to produce off-heap gaps
-      doFreeOffHeapMemoryOnVm(vm, numAllocations, 3);
+      // Allocate largeChunk to trigger compaction and fragmentation should be zero 
+      // as all free memory is available as one fragment
+      doPutOnVm(vm, KEY + "1", new byte[largeChunk], OFF_HEAP_REGION_NAME, true);
+      assertFragmentationStatOnVm(vm,0,ASSERT_OP.EQUAL);
+      
+      // Consume the available fragment as below
+      // [16][262120][16][262120][16] = [524288] (HALF_TOTAL_MEMORY)
+      int smallChunk = OffHeapStoredObject.MIN_CHUNK_SIZE - OffHeapStoredObject.HEADER_SIZE;
+      int mediumChunk = 262112; //(262120 - ObjectChunk.OFF_HEAP_HEADER_SIZE)
+      doPutOnVm(vm, KEY + "S1", new byte[smallChunk], OFF_HEAP_REGION_NAME, false);
+      doPutOnVm(vm, KEY + "M1", new byte[mediumChunk], OFF_HEAP_REGION_NAME, false);
+      doPutOnVm(vm, KEY + "S2", new byte[smallChunk], OFF_HEAP_REGION_NAME, false);
+      doPutOnVm(vm, KEY + "M2", new byte[mediumChunk], OFF_HEAP_REGION_NAME, false);
+      doPutOnVm(vm, KEY + "S3", new byte[smallChunk], OFF_HEAP_REGION_NAME, false);
+      
+      // free small chunks to create gaps
+      doDestroyOnVm(vm, KEY + "S1", OFF_HEAP_REGION_NAME);
+      doDestroyOnVm(vm, KEY + "S2", OFF_HEAP_REGION_NAME);
+      doDestroyOnVm(vm, KEY + "S3", OFF_HEAP_REGION_NAME);
 
+      // Now free memory should be 48 so allocate a 40 byte object
+      doPutOnVm(vm, KEY + "newKey", new byte[40], OFF_HEAP_REGION_NAME, true);
+     
       /*
        * Setup a fragmentation attribute monitor
        */
@@ -259,12 +290,9 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
         setupOffHeapMonitorOnVm(vm,"OffHeapFragmentation",0,0);      
         clearNotificationListenerOnVm(vm);
       }
-      
-      // Allocate enough memory to force compaction which will update fragmenation stat
-      doPutOnVm(vm,KEY, new byte[NEW_ALLOCATION_SIZE], OFF_HEAP_REGION_NAME, true);
-      
+
       // Make sure we have some fragmentation
-      assertFragmentationStatOnVm(vm, 0, ASSERT_OP.GREATER_THAN);
+      assertFragmentationStatOnVm(vm, 100, ASSERT_OP.EQUAL);
       
       // Make sure our fragmentation monitor was triggered
       waitForNotificationListenerOnVm(vm, 5000, 500, true);

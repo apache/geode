@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 import org.junit.Assert;
 
 import com.gemstone.gemfire.CancelCriterion;
+import com.gemstone.gemfire.distributed.internal.DSClock;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -59,6 +60,7 @@ public class Fakes {
     DistributionConfig config = mock(DistributionConfig.class);
     DistributionManager distributionManager = mock(DistributionManager.class);
     CancelCriterion systemCancelCriterion = mock(CancelCriterion.class);
+    DSClock clock = mock(DSClock.class);
     
     InternalDistributedMember member;
     try {
@@ -77,7 +79,8 @@ public class Fakes {
     when(system.getConfig()).thenReturn(config);
     when(system.getDistributionManager()).thenReturn(distributionManager);
     when(system.getCancelCriterion()).thenReturn(systemCancelCriterion);
-    
+    when(system.getClock()).thenReturn(clock);
+
     when(distributionManager.getId()).thenReturn(member);
     when(distributionManager.getConfig()).thenReturn(config);
     when(distributionManager.getSystem()).thenReturn(system);

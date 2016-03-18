@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.wan;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -34,6 +36,8 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -72,6 +76,7 @@ import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
+import com.gemstone.gemfire.internal.cache.lru.Sizeable;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
@@ -1375,25 +1380,36 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     }
   }
 
-  public static void verifySubstitutionFilterInvocations(String asyncEventQueueId, int numInvocations) {
+  public static void verifySubstitutionFilterInvocations(String asyncEventQueueId, int expectedNumInvocations) {
     AsyncEventQueue queue = cache.getAsyncEventQueue(asyncEventQueueId);
     assertNotNull(queue);
 
     // Verify the GatewayEventSubstitutionFilter has been invoked the appropriate number of times
     MyGatewayEventSubstitutionFilter filter = (MyGatewayEventSubstitutionFilter) queue.getGatewayEventSubstitutionFilter();
     assertNotNull(filter);
-    assertEquals(numInvocations, filter.getNumInvocations());
+    assertEquals(expectedNumInvocations, filter.getNumInvocations());
 
     // Verify the AsyncEventListener has received the substituted values
     MyAsyncEventListener listener = (MyAsyncEventListener) queue.getAsyncEventListener();
     final Map eventsMap = listener.getEventsMap();
     assertNotNull(eventsMap);
-    assertEquals(numInvocations, eventsMap.size());
+    assertEquals(expectedNumInvocations, eventsMap.size());
 
     for (Iterator i = eventsMap.entrySet().iterator(); i.hasNext();) {
       Map.Entry<Integer,String> entry = (Map.Entry<Integer,String>) i.next();
       assertEquals(MyGatewayEventSubstitutionFilter.SUBSTITUTION_PREFIX + entry.getKey(), entry.getValue());
     }
+  }
+
+
+  public static void verifySubstitutionFilterToDataInvocations(String asyncEventQueueId, int expectedToDataInvoations) {
+    AsyncEventQueue queue = cache.getAsyncEventQueue(asyncEventQueueId);
+    assertNotNull(queue);
+
+    // Verify the GatewayEventSubstitutionFilter has been invoked the appropriate number of times
+    SizeableGatewayEventSubstitutionFilter filter = (SizeableGatewayEventSubstitutionFilter) queue.getGatewayEventSubstitutionFilter();
+    assertNotNull(filter);
+    assertEquals(expectedToDataInvoations, filter.getNumToDataInvocations());
   }
 
   public static int getAsyncEventListenerMapSize(String asyncEventQueueId) {
@@ -1647,6 +1663,70 @@ class MyCacheLoader implements CacheLoader, Declarable {
   public void init(Properties props) {
   }
 
+}
+
+class SizeableGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter, Declarable {
+
+  private AtomicInteger numToDataInvocations = new AtomicInteger();
+
+  protected static final String SUBSTITUTION_PREFIX = "substituted_";
+
+  public Object getSubstituteValue(EntryEvent event) {
+    return new GatewayEventSubstituteObject(this, SUBSTITUTION_PREFIX + event.getKey());
+  }
+
+  public void close() {
+  }
+
+  public void init(Properties properties) {
+  }
+
+  protected void incNumToDataInvocations() {
+    this.numToDataInvocations.incrementAndGet();
+  }
+
+  protected int getNumToDataInvocations() {
+    return this.numToDataInvocations.get();
+  }
+}
+
+class GatewayEventSubstituteObject implements DataSerializable, Sizeable {
+
+  private String id;
+
+  private SizeableGatewayEventSubstitutionFilter filter;
+
+  public GatewayEventSubstituteObject(SizeableGatewayEventSubstitutionFilter filter, String id) {
+    this.filter = filter;
+    this.id = id;
+  }
+
+  public String getId() {
+    return this.id;
+  }
+
+  public void toData(DataOutput out) throws IOException {
+    this.filter.incNumToDataInvocations();
+    DataSerializer.writeString(this.id, out);
+  }
+
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    this.id = DataSerializer.readString(in);
+  }
+
+  public int getSizeInBytes() {
+    return 0;
+  }
+
+  public String toString() {
+    return new StringBuilder()
+        .append(getClass().getSimpleName())
+        .append("[")
+        .append("id=")
+        .append(this.id)
+        .append("]")
+        .toString();
+  }
 }
 
 class MyGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter, Declarable {

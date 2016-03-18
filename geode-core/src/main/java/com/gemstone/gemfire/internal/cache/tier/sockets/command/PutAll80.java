@@ -29,6 +29,7 @@ import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.ResourceException;
 import com.gemstone.gemfire.cache.client.internal.PutAllOp;
 import com.gemstone.gemfire.cache.operations.PutAllOperationContext;
+import com.gemstone.gemfire.cache.operations.internal.UpdateOnlyMap;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.internal.cache.EventID;
@@ -275,6 +276,9 @@ public class PutAll80 extends BaseCommand {
           PutAllOperationContext putAllContext = authzRequest.putAllAuthorize(
               regionName, map, callbackArg);
           map = putAllContext.getMap();
+          if (map instanceof UpdateOnlyMap) {
+            map = ((UpdateOnlyMap) map).getInternalMap();
+          }
           callbackArg = putAllContext.getCallbackArg();
         }
       } else {

@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.offheap.MemoryChunkWithRefCount;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
@@ -237,10 +237,9 @@ public interface RegionEntry {
    */
   public void setValue(RegionEntryContext context, Object value, EntryEventImpl event) throws RegionClearedException;
   /**
-   * Obtain and return the value of this entry using {@link #_getValue()}.
-   * If the value is a MemoryChunkWithRefCount then increment its refcount.
-   * WARNING: if a MemoryChunkWithRefCount is returned then the caller MUST
-   * call {@link MemoryChunkWithRefCount#release()}.
+   * Obtain, retain and return the value of this entry.
+   * WARNING: if a StoredObject is returned and it has a refCount then the caller MUST
+   * make sure that {@link StoredObject#release()} before the returned object is garbage collected.
    * 
    * This is only retained in off-heap subclasses.  However, it's marked as
    * Retained here so that callers are aware that the value may be retained.

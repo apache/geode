@@ -21,10 +21,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @Suite.SuiteClasses({
-	DataAsAddressJUnitTest.class,
-	ObjectChunkJUnitTest.class,
-	ObjectChunkWithHeapFormJUnitTest.class,
-	ObjectChunkSliceJUnitTest.class,
+	TinyStoredObjectJUnitTest.class,
+	OffHeapStoredObjectJUnitTest.class,
+	OffHeapStoredObjectWithHeapFormJUnitTest.class,
+	OffHeapStoredObjectSliceJUnitTest.class,
 })
 @RunWith(Suite.class)
 public class StoredObjectTestSuite {

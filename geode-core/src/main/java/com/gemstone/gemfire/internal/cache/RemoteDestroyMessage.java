@@ -210,10 +210,10 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
       this.hasOldValue = true;
       CachedDeserializable cd = (CachedDeserializable) event.getSerializedOldValue();
       if (cd != null) {
-        if (cd instanceof StoredObject && !((StoredObject) cd).isSerialized()) {
+        if (!cd.isSerialized()) {
           // it is a byte[]
           this.oldValueIsSerialized = false;
-          setOldValBytes((byte[]) ((StoredObject) cd).getDeserializedForReading());
+          setOldValBytes((byte[]) cd.getDeserializedForReading());
         } else {
           this.oldValueIsSerialized = true;
           Object o = cd.getValue();

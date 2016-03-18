@@ -135,6 +135,7 @@ public class DistributedTestUtils {
       Object value = entry.getValue();
       dsProperties.put(key, value);
     }
+    System.out.println("distributed system properties: " + dsProperties);
     return dsProperties;
   }
   

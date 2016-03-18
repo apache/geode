@@ -115,19 +115,19 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
         LOGGER.finest("calling getSelectedRegionsMembersJson :: rom.getLocalMaxMemory() = " + rom.getLocalMaxMemory());
 
         memberJSON.put("memoryReadsTrend",
-            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_GETS_PER_SEC_TREND)));
+            mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_GETS_PER_SEC_TREND)));
         LOGGER.finest("memoryReadsTrend = " + rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_GETS_PER_SEC_TREND).length);
 
         memberJSON.put("memoryWritesTrend",
-            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_PUTS_PER_SEC_TREND)));
+            mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_PUTS_PER_SEC_TREND)));
         LOGGER.finest("memoryWritesTrend = " + rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_PUTS_PER_SEC_TREND).length);
 
         memberJSON.put("diskReadsTrend",
-            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_READS_PER_SEC_TREND)));
+            mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_READS_PER_SEC_TREND)));
         LOGGER.finest("diskReadsTrend = " + rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_READS_PER_SEC_TREND).length);
 
         memberJSON.put("diskWritesTrend",
-            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_WRITES_PER_SEC_TREND)));
+            mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_WRITES_PER_SEC_TREND)));
         LOGGER.finest("diskWritesTrend = " + rom.getRegionOnMemberStatisticTrend(RegionOnMember.REGION_ON_MEMBER_STAT_DISK_WRITES_PER_SEC_TREND).length);
 
         regionMemberJSON.put(rom.getMemberName(), memberJSON);

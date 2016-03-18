@@ -18,6 +18,7 @@
 apply plugin: 'war'
 
 dependencies {
+
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile 'commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version'
   compile 'com.fasterxml:classmate:' + project.'classmate.version'
@@ -38,8 +39,14 @@ dependencies {
   compile 'org.scala-lang:scala-library:' + project.'scala.version'
   compile 'org.scala-lang:scala-reflect:' + project.'scala.version'
   compile 'org.springframework.hateoas:spring-hateoas:' + project.'spring-hateos.version'
+  runtime 'org.springframework:spring-aop:' + project.'springframework.version'
   compile 'org.springframework:spring-aspects:' + project.'springframework.version'
+  runtime 'org.springframework:spring-beans:' + project.'springframework.version'
+  runtime 'org.springframework:spring-context:' + project.'springframework.version'
+  runtime 'org.springframework:spring-expression:' + project.'springframework.version'
   compile 'org.springframework:spring-oxm:' + project.'springframework.version'
+  runtime 'org.springframework:spring-web:' + project.'springframework.version'
+  runtime 'org.springframework:spring-webmvc:' + project.'springframework.version'
 
   provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   provided project(':geode-core')

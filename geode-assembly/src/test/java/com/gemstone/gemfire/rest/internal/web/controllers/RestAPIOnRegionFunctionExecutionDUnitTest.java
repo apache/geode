@@ -16,28 +16,8 @@
  */
 package com.gemstone.gemfire.rest.internal.web.controllers;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-
 import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
@@ -47,44 +27,24 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionTestHelper;
-import com.gemstone.gemfire.internal.cache.functions.DistributedRegionFunction;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
 import com.gemstone.gemfire.test.dunit.VM;
+import org.apache.http.client.methods.CloseableHttpResponse;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Dunit Test to validate OnRegion function execution with REST APIs
- * 
- * @author Nilkanth Patel
+ *
  * @since 8.0
  */
 
 public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
-  private static final long serialVersionUID = 1L;
+  private final String REPLICATE_REGION_NAME = "sampleRRegion";
 
-  public static final String REGION_NAME = "DistributedRegionFunctionExecutionDUnitTest";
-
-  public static final String PR_REGION_NAME = "samplePRRegion";
-
-  public static Region region = null;
-
-  public static List<String> restURLs = new ArrayList<String>();
-
-  public static String restEndPoint = null;
-
-  public static String getRestEndPoint() {
-    return restEndPoint;
-  }
-
-  public static void setRestEndPoint(String restEndPoint) {
-    RestAPIOnRegionFunctionExecutionDUnitTest.restEndPoint = restEndPoint;
-  }
-
-  public static final Function function = new DistributedRegionFunction();
-
-  public static final Function functionWithNoResultThrowsException = new MyFunctionException();
+  private final String PR_REGION_NAME = "samplePRRegion";
 
   public RestAPIOnRegionFunctionExecutionDUnitTest(String name) {
     super(name);
@@ -92,52 +52,10 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
   public void setUp() throws Exception {
     super.setUp();
-    final Host host = Host.getHost(0);
   }
 
-  static class FunctionWithNoLastResult implements Function {
-    private static final long serialVersionUID = -1032915440862585532L;
-    public static final String Id = "FunctionWithNoLastResult";
-    public static int invocationCount;
-
-    @Override
-    public void execute(FunctionContext context) {
-      invocationCount++;
-      InternalDistributedSystem
-          .getConnectedInstance()
-          .getLogWriter()
-          .info(
-              "<ExpectedException action=add>did not send last result"
-                  + "</ExpectedException>");
-      context.getResultSender().sendResult(
-          (Serializable) context.getArguments());
-    }
-
-    @Override
-    public String getId() {
-      return Id;
-    }
-
-    @Override
-    public boolean hasResult() {
-      return true;
-    }
-
-    @Override
-    public boolean optimizeForWrite() {
-      return false;
-    }
-
-    @Override
-    public boolean isHA() {
-      return false;
-    }
-  }
-
-  static class SampleFunction implements Function {
-    private static final long serialVersionUID = -1032915440862585534L;
+  private class SampleFunction extends RestFunctionTemplate {
     public static final String Id = "SampleFunction";
-    public static int invocationCount;
 
     @Override
     public void execute(FunctionContext context) {
@@ -145,7 +63,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
       if (context instanceof RegionFunctionContext) {
         RegionFunctionContext rfContext = (RegionFunctionContext) context;
         rfContext.getDataSet().getCache().getLogger()
-            .info("Executing function :  TestFunction2.execute " + rfContext);
+            .info("Executing function :  SampleFunction.execute(hasResult=true) with filter: " + rfContext.getFilter() + "  " + rfContext);
         if (rfContext.getArguments() instanceof Boolean) {
           /* return rfContext.getArguments(); */
           if (hasResult()) {
@@ -157,7 +75,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
                 .getCache()
                 .getLogger()
                 .info(
-                    "Executing function :  TestFunction2.execute " + rfContext);
+                    "Executing function :  SampleFunction.execute(hasResult=false) " + rfContext);
             while (true && !rfContext.getDataSet().isDestroyed()) {
               rfContext.getDataSet().getCache().getLogger()
                   .info("For Bug43513 ");
@@ -172,7 +90,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
         } else if (rfContext.getArguments() instanceof String) {
           String key = (String) rfContext.getArguments();
           if (key.equals("TestingTimeOut")) { // for test
-                                              // PRFunctionExecutionDUnitTest#testRemoteMultiKeyExecution_timeout
+            // PRFunctionExecutionDUnitTest#testRemoteMultiKeyExecution_timeout
             try {
               Thread.sleep(2000);
             } catch (InterruptedException e) {
@@ -208,7 +126,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
           /* return vals; */
         } else if (rfContext.getArguments() instanceof HashMap) {
           HashMap putData = (HashMap) rfContext.getArguments();
-          for (Iterator i = putData.entrySet().iterator(); i.hasNext();) {
+          for (Iterator i = putData.entrySet().iterator(); i.hasNext(); ) {
             Map.Entry me = (Map.Entry) i.next();
             rfContext.getDataSet().put(me.getKey(), me.getValue());
           }
@@ -222,7 +140,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
         } else {
           DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
           LogWriter logger = ds.getLogWriter();
-          logger.info("Executing in TestFunction on Server : "
+          logger.info("Executing in SampleFunction on Server : "
               + ds.getDistributedMember() + "with Context : " + context);
           while (ds.isConnected()) {
             logger
@@ -249,7 +167,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
     @Override
     public boolean optimizeForWrite() {
-      return false;
+      return true;
     }
 
     @Override
@@ -258,54 +176,16 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     }
   }
 
-  private int getInvocationCount(VM vm) {
-    return (Integer) vm.invoke(new SerializableCallable() {
-      /**
-       * 
-       */
-      private static final long serialVersionUID = 1L;
-
-      @Override
-      public Object call() throws Exception {
-        SampleFunction f = (SampleFunction) FunctionService
-            .getFunction(SampleFunction.Id);
-        int count = f.invocationCount;
-        f.invocationCount = 0;
-        return count;
-      }
-    });
-  }
-
-  private void verifyAndResetInvocationCount(VM vm, final int count) {
-    vm.invoke(new SerializableCallable() {
-      /**
-       * 
-       */
-      private static final long serialVersionUID = 1L;
-
-      @Override
-      public Object call() throws Exception {
-        SampleFunction f = (SampleFunction) FunctionService
-            .getFunction(SampleFunction.Id);
-        assertEquals(count, f.invocationCount);
-        // assert succeeded, reset count
-        f.invocationCount = 0;
-        return null;
-      }
-    });
-  }
-
-  public static void createPeer(DataPolicy policy) {
+  private void createPeer(DataPolicy policy) {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(policy);
-    assertNotNull(cache);
-    region = cache.createRegion(REGION_NAME, factory.create());
+    Region region = CacheFactory.getAnyInstance().createRegion(REPLICATE_REGION_NAME, factory.create());
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Region Created :" + region);
     assertNotNull(region);
   }
 
-  public static boolean createPeerWithPR() {
+  private boolean createPeerWithPR() {
     RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0,
         10);
     AttributesFactory raf = new AttributesFactory(ra);
@@ -314,41 +194,19 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     pa.setTotalNumBuckets(17);
     raf.setPartitionAttributes(pa);
 
-    if (cache == null || cache.isClosed()) {
-      // Cache not available
-    }
-    assertNotNull(cache);
-
-    region = cache.createRegion(PR_REGION_NAME, raf.create());
+    Region region = CacheFactory.getAnyInstance().createRegion(PR_REGION_NAME, raf.create());
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Region Created :" + region);
     assertNotNull(region);
     return Boolean.TRUE;
   }
 
-  public static void populateRegion() {
-    assertNotNull(cache);
-    region = cache.getRegion(REGION_NAME);
-    assertNotNull(region);
-    for (int i = 1; i <= 200; i++) {
-      region.put("execKey-" + i, new Integer(i));
-    }
-  }
-
-  public static void populatePRRegion() {
-    assertNotNull(cache);
-    region = cache.getRegion(REGION_NAME);
-
-    PartitionedRegion pr = (PartitionedRegion) cache.getRegion(PR_REGION_NAME);
+  private void populatePRRegion() {
+    PartitionedRegion pr = (PartitionedRegion) CacheFactory.getAnyInstance().getRegion(PR_REGION_NAME);
     DistributedSystem.setThreadsSocketPolicy(false);
-    final HashSet testKeys = new HashSet();
 
     for (int i = (pr.getTotalNumberOfBuckets() * 3); i > 0; i--) {
-      testKeys.add("execKey-" + i);
-    }
-    int j = 0;
-    for (Iterator i = testKeys.iterator(); i.hasNext();) {
-      Integer val = new Integer(j++);
-      pr.put(i.next(), val);
+      Integer val = new Integer(i + 1);
+      pr.put("execKey-" + i, val);
     }
     // Assert there is data in each bucket
     for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
@@ -356,9 +214,8 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     }
   }
 
-  public static void populateRRRegion() {
-    assertNotNull(cache);
-    region = cache.getRegion(REGION_NAME);
+  private void populateRRRegion() {
+    Region region = CacheFactory.getAnyInstance().getRegion(REPLICATE_REGION_NAME);
     assertNotNull(region);
 
     final HashSet testKeys = new HashSet();
@@ -366,252 +223,130 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
       testKeys.add("execKey-" + i);
     }
     int j = 0;
-    for (Iterator i = testKeys.iterator(); i.hasNext();) {
+    for (Iterator i = testKeys.iterator(); i.hasNext(); ) {
       Integer val = new Integer(j++);
       region.put(i.next(), val);
     }
 
   }
 
-  public static void executeFunction_NoLastResult(String regionName) {
-
-    try {
-      CloseableHttpClient httpclient = HttpClients.createDefault();
-      CloseableHttpResponse response = null;
-      Random randomGenerator = new Random();
-      int index = randomGenerator.nextInt(restURLs.size());
-      HttpPost post = new HttpPost(restURLs.get(index) + "/functions/"
-          + "FunctionWithNoLastResult" + "?onRegion=" + regionName);
-      post.addHeader("Content-Type", "application/json");
-      post.addHeader("Accept", "application/json");
-      response = httpclient.execute(post);
-    } catch (Exception e) {
-      throw new RuntimeException("unexpected exception", e);
-    }
-
+  @Override
+  protected String getFunctionID() {
+    return SampleFunction.Id;
   }
 
-  public static void executeFunctionThroughRestCall(String regionName) {
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Entering executeFunctionThroughRestCall");
-    try {
-      CloseableHttpClient httpclient = HttpClients.createDefault();
-      CloseableHttpResponse response = null;
-      Random randomGenerator = new Random();
-      int index = randomGenerator.nextInt(restURLs.size());
-      
-      HttpPost post = new HttpPost(restURLs.get(index) + "/functions/"
-          + "SampleFunction" + "?onRegion=" + regionName);
-      post.addHeader("Content-Type", "application/json");
-      post.addHeader("Accept", "application/json");
-      
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Request: POST " + post.toString());
-      response = httpclient.execute(post);
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Response: POST " + response.toString());
-      
-      assertEquals(response.getStatusLine().getStatusCode(), 200);
-      assertNotNull(response.getEntity());
-    } catch (Exception e) {
-      throw new RuntimeException("unexpected exception", e);
-    }
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Exiting executeFunctionThroughRestCall");
+  private void createCacheAndRegisterFunction() {
+    restURLs.add(vm0.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm0, null)));
+    restURLs.add(vm1.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm1, null)));
+    restURLs.add(vm2.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm2, null)));
+    restURLs.add(vm3.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm3, null)));
 
+    vm0.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
+    vm1.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
+    vm2.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
+    vm3.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
   }
 
-  private void registerFunction(VM vm) {
-    vm.invoke(new SerializableCallable() {
-      private static final long serialVersionUID = 1L;
-      @Override
-      public Object call() throws Exception {
-        FunctionService.registerFunction(new FunctionWithNoLastResult());
-        return null;
-      }
-    });
-  }
+  public void testOnRegionExecutionWithReplicateRegion() {
+    createCacheAndRegisterFunction();
 
-  private void registerSampleFunction(VM vm) {
-    vm.invoke(new SerializableCallable() {
-      private static final long serialVersionUID = 1L;
+    vm3.invoke("createPeer", () -> createPeer(DataPolicy.EMPTY));
+    vm0.invoke("createPeer", () -> createPeer(DataPolicy.REPLICATE));
+    vm1.invoke("createPeer", () -> createPeer(DataPolicy.REPLICATE));
+    vm2.invoke("createPeer", () -> createPeer(DataPolicy.REPLICATE));
 
-      @Override
-      public Object call() throws Exception {
-        FunctionService.registerFunction(new SampleFunction());
-        return null;
-      }
-    });
-  }
+    vm3.invoke("populateRRRegion", () -> populateRRRegion());
 
-  public void __testOnRegionExecutionOnDataPolicyEmpty_NoLastResult() {
-    // Step-1 : create cache on each VM, this will start HTTP service in
-    // embedded mode and deploy REST APIs web app on it.
+    CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", REPLICATE_REGION_NAME, null, null, null, null);
+    assertEquals(200, response.getStatusLine().getStatusCode());
+    assertNotNull(response.getEntity());
 
-    fail("This test is trying to invoke non existent methods");
-//    String url1 = (String) vm3.invoke(() -> createCacheInVm( vm3 ));
-//    restURLs.add(url1);
-//
-//    String url2 = (String) vm0.invoke(() -> createCacheInVm( vm0 ));
-//    restURLs.add(url2);
-//
-//    String url3 = (String) vm1.invoke(() -> createCacheInVm( vm1 ));
-//    restURLs.add(url3);
-//
-//    String url4 = (String) vm2.invoke(() -> createCacheInVm( vm2 ));
-//    restURLs.add(url4);
-
-    // Step-2: Register function in all VMs
-    registerFunction(vm3);
-    registerFunction(vm0);
-    registerFunction(vm1);
-    registerFunction(vm2);
-
-    // Step-3: Create and configure Region on all VMs
-    vm3.invoke(() -> createPeer( DataPolicy.EMPTY ));
-    vm0.invoke(() -> createPeer( DataPolicy.REPLICATE ));
-    vm1.invoke(() -> createPeer( DataPolicy.REPLICATE ));
-    vm2.invoke(() -> createPeer( DataPolicy.REPLICATE ));
-
-    // Step-4 : Do some puts on region created earlier
-    vm3.invoke(() -> populateRegion());
-
-    // add expected exception to avoid suspect strings
-    final IgnoredException ex = IgnoredException.addIgnoredException("did not send last result");
-
-    // Step-5 : Execute function randomly (in iteration) on all available (per
-    // VM) REST end-points and verify its result
-    for (int i = 0; i < 10; i++) {
-      executeFunction_NoLastResult(REGION_NAME);
-    }
-    ex.remove();
-
-    restURLs.clear();
-  }
-
-  public void testOnRegionExecutionWithRR() {
-    // Step-1 : create cache on each VM, this will start HTTP service in
-    // embedded mode and deploy REST APIs web app on it.
-    //
-    String url1 = (String) vm3.invoke(() -> RestAPITestBase.createCache( vm3 ));
-    restURLs.add(url1);
-
-    String url2 = (String) vm0.invoke(() -> RestAPITestBase.createCache( vm0 ));
-    restURLs.add(url2);
-
-    String url3 = (String) vm1.invoke(() -> RestAPITestBase.createCache( vm1 ));
-    restURLs.add(url3);
-
-    String url4 = (String) vm2.invoke(() -> RestAPITestBase.createCache( vm2 ));
-    restURLs.add(url4);
-
-    // Step-2: Register function in all VMs
-    registerSampleFunction(vm3);
-    registerSampleFunction(vm0);
-    registerSampleFunction(vm1);
-    registerSampleFunction(vm2);
-
-    // Step-3: Create and configure PR on all VMs
-    vm3.invoke(() -> createPeer( DataPolicy.EMPTY ));
-    vm0.invoke(() -> createPeer( DataPolicy.REPLICATE ));
-    vm1.invoke(() -> createPeer( DataPolicy.REPLICATE ));
-    vm2.invoke(() -> createPeer( DataPolicy.REPLICATE ));
-
-    // Step-4 : Do some puts in Replicated region on vm3
-    vm3.invoke(() -> populateRRRegion());
-
-    // Step-5 : Execute function randomly (in iteration) on all available (per
-    // VM) REST end-points and verify its result
-    executeFunctionThroughRestCall(REGION_NAME);
-    int c0 = getInvocationCount(vm0);
-    int c1 = getInvocationCount(vm1);
-    int c2 = getInvocationCount(vm2);
-    int c3 = getInvocationCount(vm3);
-
-    assertEquals(1, c0 + c1 + c2 + c3);
+    assertCorrectInvocationCount(1, vm0, vm1, vm2, vm3);
 
     // remove the expected exception
     restURLs.clear();
   }
 
-  public void testOnRegionExecutionWithPR() throws Exception {
-    final String rName = getUniqueName();
+  public void testOnRegionExecutionWithPartitionRegion() throws Exception {
+    createCacheAndRegisterFunction();
 
-    // Step-1 : create cache on each VM, this will start HTTP service in
-    // embedded mode and deploy REST APIs web app on it.
-    String url1 = (String) vm3.invoke(() -> RestAPITestBase.createCache( vm3 ));
-    restURLs.add(url1);
+    createPeersWithPR(vm0, vm1, vm2, vm3);
 
-    String url2 = (String) vm0.invoke(() -> RestAPITestBase.createCache( vm0 ));
-    restURLs.add(url2);
+    vm3.invoke("populatePRRegion", () -> populatePRRegion());
 
-    String url3 = (String) vm1.invoke(() -> RestAPITestBase.createCache( vm1 ));
-    restURLs.add(url3);
+    CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, null, null, null, null);
+    assertEquals(200, response.getStatusLine().getStatusCode());
+    assertNotNull(response.getEntity());
 
-    String url4 = (String) vm2.invoke(() -> RestAPITestBase.createCache( vm2 ));
-    restURLs.add(url4);
-
-    // Step-2: Register function in all VMs
-    registerSampleFunction(vm3);
-    registerSampleFunction(vm0);
-    registerSampleFunction(vm1);
-    registerSampleFunction(vm2);
-
-    // Step-3: Create and configure PR on all VMs
-    vm3.invoke(() -> createPeerWithPR());
-    vm0.invoke(() -> createPeerWithPR());
-    vm1.invoke(() -> createPeerWithPR());
-    vm2.invoke(() -> createPeerWithPR());
-
-    // Step-4: Do some puts such that data exist in each bucket
-    vm3.invoke(() -> populatePRRegion());
-
-    // Step-5 : Execute function randomly (in iteration) on all available (per
-    // VM) REST end-points and verify its result
-    executeFunctionThroughRestCall(PR_REGION_NAME);
-
-    // Assert that each node has executed the function once.
-    verifyAndResetInvocationCount(vm0, 1);
-    verifyAndResetInvocationCount(vm1, 1);
-    verifyAndResetInvocationCount(vm2, 1);
-    verifyAndResetInvocationCount(vm3, 1);
-
-    int c0 = getInvocationCount(vm0);
-    int c1 = getInvocationCount(vm1);
-    int c2 = getInvocationCount(vm2);
-    int c3 = getInvocationCount(vm3);
+    assertCorrectInvocationCount(4, vm0, vm1, vm2, vm3);
 
     restURLs.clear();
   }
 
-}
+  public void testOnRegionWithFilterExecutionWithPartitionRegion() throws Exception {
+    createCacheAndRegisterFunction();
 
-class MyFunctionException implements Function {
+    createPeersWithPR(vm0, vm1, vm2, vm3);
 
-  /**
-   * 
-   */
-  private static final long serialVersionUID = 1L;
+    vm3.invoke("populatePRRegion",() -> populatePRRegion());
 
-  @Override
-  public void execute(FunctionContext context) {
-    throw new RuntimeException("failure");
+    CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, "key2", null, null, null);
+    assertEquals(200, response.getStatusLine().getStatusCode());
+    assertNotNull(response.getEntity());
+
+    assertCorrectInvocationCount(1, vm0, vm1, vm2, vm3);
+
+    restURLs.clear();
   }
 
-  @Override
-  public String getId() {
-    return this.getClass().getName();
+  private void createPeersWithPR(VM... vms) {
+    for (int i = 0; i < vms.length; i++) {
+      vms[i].invoke("createPeerWithPR", () -> createPeerWithPR());
+    }
   }
 
-  @Override
-  public boolean hasResult() {
-    return true;
-  }
+  public void testOnRegionWithFilterExecutionWithPartitionRegionJsonArgs() throws Exception {
+    createCacheAndRegisterFunction();
 
-  @Override
-  public boolean isHA() {
-    return false;
-  }
+    createPeersWithPR(vm0, vm1, vm2, vm3);
 
-  @Override
-  public boolean optimizeForWrite() {
-    return false;
+    vm3.invoke("populatePRRegion",() -> populatePRRegion());
+
+    String jsonBody = "["
+        + "{\"@type\": \"double\",\"@value\": 210}"
+        + ",{\"@type\":\"com.gemstone.gemfire.rest.internal.web.controllers.Item\","
+        + "\"itemNo\":\"599\",\"description\":\"Part X Free on Bumper Offer\","
+        + "\"quantity\":\"2\","
+        + "\"unitprice\":\"5\","
+        + "\"totalprice\":\"10.00\"}"
+        + "]";
+
+    CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, null, jsonBody, null, null);
+    assertEquals(200, response.getStatusLine().getStatusCode());
+    assertNotNull(response.getEntity());
+
+    // Assert that only 1 node has executed the function.
+    assertCorrectInvocationCount(4, vm0, vm1, vm2, vm3);
+
+    jsonBody = "["
+        + "{\"@type\": \"double\",\"@value\": 220}"
+        + ",{\"@type\":\"com.gemstone.gemfire.rest.internal.web.controllers.Item\","
+        + "\"itemNo\":\"609\",\"description\":\"Part X Free on Bumper Offer\","
+        + "\"quantity\":\"3\","
+        + "\"unitprice\":\"9\","
+        + "\"totalprice\":\"12.00\"}"
+        + "]";
+
+    resetInvocationCounts(vm0,vm1,vm2,vm3);
+
+    response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, "key2", jsonBody, null, null);
+    assertEquals(200, response.getStatusLine().getStatusCode());
+    assertNotNull(response.getEntity());
+
+    // Assert that only 1 node has executed the function.
+    assertCorrectInvocationCount(1, vm0, vm1, vm2, vm3);
+
+    restURLs.clear();
   }
 
 }

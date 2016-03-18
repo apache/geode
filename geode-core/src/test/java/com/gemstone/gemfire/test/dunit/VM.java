@@ -246,6 +246,37 @@ public class VM implements Serializable {
   }
   
   /**
+   * Invokes the <code>run</code> method of a {@link Runnable} in this
+   * VM.  Recall that <code>run</code> takes no arguments and has no
+   * return value.  The Runnable is wrapped in a NamedRunnable having
+   * the given name so it shows up in dunit logs.
+   *
+   * @param r
+   *        The <code>Runnable</code> to be run
+   * @param name the name of the runnable, which will be logged in dunit output
+   *
+   * @see SerializableRunnable
+   */
+  public AsyncInvocation invokeAsync(String name, SerializableRunnableIF r) {
+    NamedRunnable nr = new NamedRunnable(name, r);
+    return invokeAsync(nr, "run", new Object[0]);
+  }
+  
+  /**
+   * Invokes the <code>call</code> method of a {@link Runnable} in this
+   * VM.  
+   *
+   * @param c
+   *        The <code>Callable</code> to be run
+   * @param name the name of the callable, which will be logged in dunit output
+   *
+   * @see SerializableCallable
+   */
+  public <T> AsyncInvocation<T> invokeAsync(String name, SerializableCallableIF<T> c) {
+    return invokeAsync(new NamedCallable(name, c), "call", new Object[0]);
+  }
+
+  /**
    * Invokes the <code>call</code> method of a {@link Runnable} in this
    * VM.  
    *
@@ -265,11 +296,41 @@ public class VM implements Serializable {
    *
    * @param r
    *        The <code>Runnable</code> to be run
+   * @param name the name of the runnable, which will be logged in dunit output
+   *
+   * @see SerializableRunnable
+   */
+  public void invoke(String name, SerializableRunnableIF r) {
+    invoke(new NamedRunnable(name, r), "run");
+  }
+
+  /**
+   * Invokes the <code>run</code> method of a {@link Runnable} in this
+   * VM.  Recall that <code>run</code> takes no arguments and has no
+   * return value.
+   *
+   * @param r
+   *        The <code>Runnable</code> to be run
    *
    * @see SerializableRunnable
    */
   public void invoke(SerializableRunnableIF r) {
     invoke(r, "run");
+  }
+  
+  /**
+   * Invokes the <code>run</code> method of a {@link Runnable} in this
+   * VM.  Recall that <code>run</code> takes no arguments and has no
+   * return value.
+   *
+   * @param c
+   *        The <code>Callable</code> to be run
+   * @param name the name of the callable, which will be logged in dunit output
+   *
+   * @see SerializableCallable
+   */
+  public <T>  T invoke(String name, SerializableCallableIF<T> c) {
+    return (T) invoke(new NamedCallable(name, c), "call");
   }
   
   /**

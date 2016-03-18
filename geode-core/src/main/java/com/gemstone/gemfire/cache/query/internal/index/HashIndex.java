@@ -79,7 +79,7 @@ import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.pdx.internal.PdxString;
@@ -876,8 +876,8 @@ public class HashIndex extends AbstractIndex {
     if (this.indexOnValues) {
       Object o = entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
       try {
-        if (o instanceof ObjectChunk) {
-          ObjectChunk ohval = (ObjectChunk) o;
+        if (o instanceof StoredObject) {
+          StoredObject ohval = (StoredObject) o;
           try {
             o = ohval.getDeserializedForReading();
           } finally {

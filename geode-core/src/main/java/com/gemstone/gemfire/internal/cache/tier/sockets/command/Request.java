@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.security.NotAuthorizedException;
@@ -253,12 +252,13 @@ public class Request extends BaseCommand {
     // disk. If it is already a byte[], set isObject to false.
     // TODO OFFHEAP: optimize
     if (data instanceof CachedDeserializable) {
-      if (data instanceof StoredObject && !((StoredObject) data).isSerialized()) {
+      CachedDeserializable cd = (CachedDeserializable) data;
+      if (!cd.isSerialized()) {
         // it is a byte[]
         isObject = false;
-        data = ((StoredObject) data).getDeserializedForReading();
+        data = cd.getDeserializedForReading();
       } else {
-        data = ((CachedDeserializable)data).getValue();
+        data = cd.getValue();
       }
     }
     else if (data == Token.REMOVED_PHASE1 || data == Token.REMOVED_PHASE2 || data == Token.TOMBSTONE || data == Token.DESTROYED) {

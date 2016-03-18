@@ -506,7 +506,7 @@ public class Gfsh extends JLineShell {
   }
 
   public String getWelcomeMessage() {
-    return ansiHandler.decorateString("Monitor and Manage GemFire", ANSIStyle.CYAN);
+    return ansiHandler.decorateString("Monitor and Manage " + GemFireVersion.getProductName(), ANSIStyle.CYAN);
   }
 
   //Over-ridden to avoid default behavior which is:

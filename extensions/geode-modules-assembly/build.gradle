@@ -165,7 +165,7 @@ def configureTcServer30Assembly = {
   }
 }
 
-task distTomcat(type: Zip, dependsOn: ':extensions/geode-modules:build') {
+task distTomcat(type: Zip, dependsOn: ':extensions/geode-modules:assemble') {
   archiveName = "Apache_Geode_Modules-${version}-Tomcat.zip"
 
   // All client-server files
@@ -187,7 +187,7 @@ task distTomcat(type: Zip, dependsOn: ':extensions/geode-modules:build') {
   }
 }
 
-task distHibernate(type: Zip, dependsOn: ':extensions/geode-modules-hibernate:build') {
+task distHibernate(type: Zip, dependsOn: ':extensions/geode-modules-hibernate:assemble') {
   archiveName = "Apache_Geode_Modules-${version}-Hibernate.zip"
 
   into('lib') {
@@ -196,7 +196,7 @@ task distHibernate(type: Zip, dependsOn: ':extensions/geode-modules-hibernate:bu
   }
 }
 
-task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:build') {
+task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:assemble') {
   archiveName = "Apache_Geode_Modules-${version}-AppServer.zip"
 
   into('lib') {
@@ -225,11 +225,11 @@ task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:buil
   }
 }
 
-task distTcServer(type: Zip, dependsOn: [':extensions/geode-modules:build', ':extensions/geode-modules-tomcat7:build']) {
+task distTcServer(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble']) {
   configure(configureTcServerAssembly)
 }
 
-task distTcServer30(type: Zip, dependsOn: [':extensions/geode-modules:build', ':extensions/geode-modules-tomcat7:build']) {
+task distTcServer30(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble']) {
   configure(configureTcServerAssembly)
   configure(configureTcServer30Assembly)
 }

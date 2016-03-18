@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.offheap;
 
 import java.lang.reflect.Method;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsFactory;
@@ -57,10 +56,10 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   private static final int usedMemoryId;
   private static final int objectsId;
   private static final int readsId;
-  private static final int compactionsId;
+  private static final int defragmentationId;
   private static final int fragmentsId;
   private static final int largestFragmentId;
-  private static final int compactionTimeId;
+  private static final int defragmentationTimeId;
   private static final int fragmentationId;
   // NOTE!!!! When adding new stats make sure and update the initialize method on this class
   
@@ -69,19 +68,19 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     final StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     
     final String usedMemoryDesc = "The amount of off-heap memory, in bytes, that is being used to store data.";
-    final String compactionsDesc = "The total number of times off-heap memory has been compacted.";
-    final String compactionTimeDesc = "The total time spent compacting off-heap memory.";
-    final String fragmentationDesc = "The percentage of off-heap memory fragmentation.  Updated every time a compaction is performed.";
-    final String fragmentsDesc = "The number of fragments of free off-heap memory. Updated every time a compaction is done.";
+    final String defragmentationDesc = "The total number of times off-heap memory has been defragmented.";
+    final String defragmentationTimeDesc = "The total time spent defragmenting off-heap memory.";
+    final String fragmentationDesc = "The percentage of off-heap free memory that is fragmented.  Updated every time a defragmentation is performed.";
+    final String fragmentsDesc = "The number of fragments of free off-heap memory. Updated every time a defragmentation is done.";
     final String freeMemoryDesc = "The amount of off-heap memory, in bytes, that is not being used.";
-    final String largestFragmentDesc = "The largest fragment of memory found by the last compaction of off heap memory. Updated every time a compaction is done.";
+    final String largestFragmentDesc = "The largest fragment of memory found by the last defragmentation of off heap memory. Updated every time a defragmentation is done.";
     final String objectsDesc = "The number of objects stored in off-heap memory.";
     final String readsDesc = "The total number of reads of off-heap memory. Only reads of a full object increment this statistic. If only a part of the object is read this statistic is not incremented.";
     final String maxMemoryDesc = "The maximum amount of off-heap memory, in bytes. This is the amount of memory allocated at startup and does not change.";
 
     final String usedMemory = "usedMemory";
-    final String compactions = "compactions";
-    final String compactionTime = "compactionTime";
+    final String defragmentations = "defragmentations";
+    final String defragmentationTime = "defragmentationTime";
     final String fragmentation = "fragmentation";
     final String fragments = "fragments";
     final String freeMemory = "freeMemory";
@@ -95,8 +94,8 @@ public class OffHeapStorage implements OffHeapMemoryStats {
         statsTypeDescription,
         new StatisticDescriptor[] {
             f.createLongGauge(usedMemory, usedMemoryDesc, "bytes"),
-            f.createIntCounter(compactions, compactionsDesc, "compactions"),
-            f.createLongCounter(compactionTime, compactionTimeDesc, "nanoseconds", false),
+            f.createIntCounter(defragmentations, defragmentationDesc, "defragmentations"),
+            f.createLongCounter(defragmentationTime, defragmentationTimeDesc, "nanoseconds", false),
             f.createIntGauge(fragmentation, fragmentationDesc, "percentage"),
             f.createLongGauge(fragments, fragmentsDesc, "fragments"),
             f.createLongGauge(freeMemory, freeMemoryDesc, "bytes"),
@@ -108,8 +107,8 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     );
     
     usedMemoryId = statsType.nameToId(usedMemory);
-    compactionsId = statsType.nameToId(compactions);
-    compactionTimeId = statsType.nameToId(compactionTime);
+    defragmentationId = statsType.nameToId(defragmentations);
+    defragmentationTimeId = statsType.nameToId(defragmentationTime);
     fragmentationId = statsType.nameToId(fragmentation);
     fragmentsId = statsType.nameToId(fragments);
     freeMemoryId = statsType.nameToId(freeMemory);
@@ -171,7 +170,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
    * Constructs a MemoryAllocator for off-heap storage.
    * @return MemoryAllocator for off-heap storage
    */
-  public static MemoryAllocator createOffHeapStorage(LogWriter lw, StatisticsFactory sf, long offHeapMemorySize, DistributedSystem system) {
+  public static MemoryAllocator createOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize, DistributedSystem system) {
     if (offHeapMemorySize == 0 || Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
       // Checking the FORCE_LOCATOR_DM_TYPE is a quick hack to keep our locator from allocating off heap memory.
       return null;
@@ -189,10 +188,10 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     }
     // ooohml provides the hook for disconnecting and closing cache on OutOfOffHeapMemoryException
     OutOfOffHeapMemoryListener ooohml = new DisconnectingOutOfOffHeapMemoryListener((InternalDistributedSystem) system);
-    return basicCreateOffHeapStorage(lw, sf, offHeapMemorySize, ooohml);
+    return basicCreateOffHeapStorage(sf, offHeapMemorySize, ooohml);
   }
   
-  static MemoryAllocator basicCreateOffHeapStorage(LogWriter lw, StatisticsFactory sf, long offHeapMemorySize, OutOfOffHeapMemoryListener ooohml) {
+  static MemoryAllocator basicCreateOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize, OutOfOffHeapMemoryListener ooohml) {
     final OffHeapMemoryStats stats = new OffHeapStorage(sf);
 
    // determine off-heap and slab sizes
@@ -200,7 +199,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
 
     final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
 
-    return SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, slabCount, offHeapMemorySize, maxSlabSize);
+    return MemoryAllocatorImpl.create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize);
   }
   
   private static final long MAX_SLAB_SIZE = Integer.MAX_VALUE;
@@ -282,13 +281,13 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     return this.stats.getLong(readsId);
   }
 
-  private void incCompactions() {
-    this.stats.incInt(compactionsId, 1);
+  private void incDefragmentations() {
+    this.stats.incInt(defragmentationId, 1);
   }
 
   @Override
-  public int getCompactions() {
-    return this.stats.getInt(compactionsId);
+  public int getDefragmentations() {
+    return this.stats.getInt(defragmentationId);
   }
 
   @Override
@@ -312,21 +311,21 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
   
   @Override
-  public long startCompaction() {
+  public long startDefragmentation() {
     return DistributionStats.getStatTime();
   }
   
   @Override
-  public void endCompaction(long start) {
-    incCompactions();
+  public void endDefragmentation(long start) {
+    incDefragmentations();
     if (DistributionStats.enableClockStats) {
-      stats.incLong(compactionTimeId, DistributionStats.getStatTime()-start);
+      stats.incLong(defragmentationTimeId, DistributionStats.getStatTime()-start);
     }
   }  
   
   @Override
-  public long getCompactionTime() {
-    return stats.getLong(compactionTimeId);
+  public long getDefragmentationTime() {
+    return stats.getLong(defragmentationTimeId);
   }
 
   @Override
@@ -355,21 +354,21 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     setUsedMemory(oldStats.getUsedMemory());
     setObjects(oldStats.getObjects());
     setReads(oldStats.getReads());
-    setCompactions(oldStats.getCompactions());
+    setDefragmentations(oldStats.getDefragmentations());
     setFragments(oldStats.getFragments());
     setLargestFragment(oldStats.getLargestFragment());
-    setCompactionTime(oldStats.getCompactionTime());
+    setDefragmentationTime(oldStats.getDefragmentationTime());
     setFragmentation(oldStats.getFragmentation());
     
     oldStats.close();
   }
 
-  private void setCompactionTime(long value) {
-    stats.setLong(compactionTimeId, value);
+  private void setDefragmentationTime(long value) {
+    stats.setLong(defragmentationTimeId, value);
   }
 
-  private void setCompactions(int value) {
-    this.stats.setInt(compactionsId, value);
+  private void setDefragmentations(int value) {
+    this.stats.setInt(defragmentationId, value);
   }
 
   private void setReads(long value) {

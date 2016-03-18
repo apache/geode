@@ -1278,7 +1278,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   
       if (!pinged && !isStopping) {
         TimeStamp ts = memberTimeStamps.get(mbr);
-        if (ts == null || ts.getTime() <= startTime) {
+        if (ts == null || ts.getTime() < startTime) {
           logger.info("Final check failed - requesting removal of suspect member " + mbr);
           if (initiateRemoval) {
             services.getJoinLeave().remove(mbr, reason);

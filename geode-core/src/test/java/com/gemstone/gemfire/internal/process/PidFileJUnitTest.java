@@ -42,7 +42,7 @@ import org.junit.rules.TemporaryFolder;
 
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.gemstone.gemfire.test.junit.rules.ExpectedTimeout;
+import com.gemstone.gemfire.test.junit.rules.ExpectedTimeoutRule;
 
 /**
  * Unit tests the PidFile class.
@@ -60,7 +60,7 @@ public class PidFileJUnitTest {
   public ExpectedException thrown = ExpectedException.none();
   
   @Rule
-  public ExpectedTimeout timeout = ExpectedTimeout.none();
+  public ExpectedTimeoutRule timeout = ExpectedTimeoutRule.none();
   
   protected Mockery mockContext;
   private ExecutorService futures;

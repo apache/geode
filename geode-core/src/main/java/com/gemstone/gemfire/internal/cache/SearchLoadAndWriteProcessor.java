@@ -74,7 +74,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
 
 
 /**
@@ -1938,13 +1937,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                       long lastModified = entry.getLastModified();
                       lastModifiedCacheTime = lastModified;
                       if (eov instanceof CachedDeserializable) {
-                        if (eov instanceof StoredObject && !((StoredObject) eov).isSerialized()) {
+                        CachedDeserializable cd = (CachedDeserializable) eov;
+                        if (!cd.isSerialized()) {
                           isSer = false;
-                          ebv = (byte[]) ((StoredObject)eov).getDeserializedForReading();
+                          ebv = (byte[]) cd.getDeserializedForReading();
                           ebvLen = ebv.length;
                         } else {
                           // don't serialize here if it is not already serialized
-                          Object tmp = ((CachedDeserializable)eov).getValue();
+                          Object tmp = cd.getValue();
                           if (tmp instanceof byte[]) {
                             byte[] bb = (byte[])tmp;
                             ebv = bb;

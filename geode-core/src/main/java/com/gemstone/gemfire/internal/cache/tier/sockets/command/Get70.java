@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
@@ -321,12 +320,13 @@ public class Get70 extends BaseCommand {
     // disk. If it is already a byte[], set isObject to false.
     boolean wasInvalid = false;
     if (data instanceof CachedDeserializable) {
-      if (data instanceof StoredObject && !((StoredObject) data).isSerialized()) {
+      CachedDeserializable cd = (CachedDeserializable) data;
+      if (!cd.isSerialized()) {
         // it is a byte[]
         isObject = false;
-        data = ((StoredObject) data).getDeserializedForReading();
+        data = cd.getDeserializedForReading();
       } else {
-        data = ((CachedDeserializable)data).getValue();
+        data = cd.getValue();
       }
     }
     else if (data == Token.REMOVED_PHASE1 || data == Token.REMOVED_PHASE2 || data == Token.DESTROYED) {
@@ -391,13 +391,10 @@ public class Get70 extends BaseCommand {
     else if (data instanceof byte[]) {
       isObject = false;
     } else if (data instanceof CachedDeserializable) {
-      if (data instanceof StoredObject) {
-        // it is off-heap so do not unwrap it.
-        if (!((StoredObject) data).isSerialized()) {
-          isObject = false;
-        }
-      } else {
-        data = ((CachedDeserializable)data).getValue();
+      CachedDeserializable cd = (CachedDeserializable) data;
+      isObject = cd.isSerialized();
+      if (cd.usesHeapForStorage()) {
+        data = cd.getValue();
       }
     }
     Entry result = new Entry();

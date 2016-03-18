@@ -32,6 +32,7 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -44,6 +45,10 @@ public class DurableClientBug39997DUnitTest extends CacheTestCase {
 
   public DurableClientBug39997DUnitTest(String name) {
     super(name);
+  }
+
+  public final void postTearDownCacheTestCase() {
+    Host.getHost(0) .getVM(0).invoke(() -> disconnectFromDS());
   }
   
   public void testNoServerAvailableOnStartup() {
@@ -120,6 +125,7 @@ public class DurableClientBug39997DUnitTest extends CacheTestCase {
   public Properties getClientProperties() {
     Properties props = new Properties();
     props.setProperty("mcast-port", "0");
+    props.setProperty("locators", "");
     props.setProperty("durable-client-id", "my_id");
     return props;
   }

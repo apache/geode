@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.VMCachedDeserializable;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -38,7 +37,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
 
-  private MemoryChunkWithRefCount storedObject                 = null;
+  private StoredObject storedObject                 = null;
   private Object                  deserializedRegionEntryValue = null;
   private byte[]                  serializedRegionEntryValue   = null;
   private MemoryAllocator         ma;
@@ -47,10 +46,8 @@ public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
   public void setUp() {
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
-    LogWriter lw = mock(LogWriter.class);
 
-    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 3, OffHeapStorage.MIN_SLAB_SIZE * 3,
-        OffHeapStorage.MIN_SLAB_SIZE);
+    ma = MemoryAllocatorImpl.create(ooohml, stats, 3, OffHeapStorage.MIN_SLAB_SIZE * 3, OffHeapStorage.MIN_SLAB_SIZE);
 
   }
 
@@ -74,7 +71,7 @@ public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
 
   @After
   public void tearDown() {
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
   }
 
   @Override
@@ -102,7 +99,7 @@ public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   @Override
-  protected MemoryChunkWithRefCount createValueAsUnserializedStoredObject(Object value) {
+  protected StoredObject createValueAsUnserializedStoredObject(Object value) {
     byte[] valueInByteArray;
     if (value instanceof Long) {
       valueInByteArray = convertValueToByteArray(value);
@@ -113,23 +110,23 @@ public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    MemoryChunkWithRefCount createdObject = createChunk(valueInByteArray, isSerialized, isCompressed);
+    StoredObject createdObject = createChunk(valueInByteArray, isSerialized, isCompressed);
     return createdObject;
   }
 
   @Override
-  protected MemoryChunkWithRefCount createValueAsSerializedStoredObject(Object value) {
+  protected StoredObject createValueAsSerializedStoredObject(Object value) {
     byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
 
     boolean isSerialized = true;
     boolean isCompressed = false;
 
-    MemoryChunkWithRefCount createdObject = createChunk(valueInSerializedByteArray, isSerialized, isCompressed);
+    StoredObject createdObject = createChunk(valueInSerializedByteArray, isSerialized, isCompressed);
     return createdObject;
   }
 
-  private ObjectChunk createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
-    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed);
+  private OffHeapStoredObject createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(v, isSerialized, isCompressed);
     return chunk;
   }
 

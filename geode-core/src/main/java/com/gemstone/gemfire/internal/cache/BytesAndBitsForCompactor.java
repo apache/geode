@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.internal.offheap.ObjectChunk;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
@@ -32,11 +32,11 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  */
 public class BytesAndBitsForCompactor {
   /**
-   * If dataChunk is set then ignore the "data" and "validLength" fields.
-   * The dataChunk field is unretained so it can only be used while the RegionEntry is still synced.
-   * When done with the dataChunk, null it out if you want to reuse the byte[] later.
+   * If offHeapData is set then ignore the "data" and "validLength" fields.
+   * The offHeapData field is unretained so it can only be used while the RegionEntry is still synced.
+   * When done with the offHeapData, null it out if you want to reuse the byte[] later.
    */
-  private @Unretained ObjectChunk dataChunk;
+  private @Unretained StoredObject offHeapData;
   private  byte[] data;
   private  byte userBits=0;
   // length of the data present in the byte array 
@@ -56,8 +56,8 @@ public class BytesAndBitsForCompactor {
   }
 
   
-  public final ObjectChunk getDataChunk() {
-    return this.dataChunk;
+  public final StoredObject getOffHeapData() {
+    return this.offHeapData;
   }
   public final byte[] getBytes() {
     return this.data;
@@ -87,8 +87,8 @@ public class BytesAndBitsForCompactor {
     this.validLength = validLength;    
     this.isReusable = isReusable;
   }
-  public void setChunkData(ObjectChunk c, byte userBits) {
-    this.dataChunk = c;
+  public void setOffHeapData(StoredObject so, byte userBits) {
+    this.offHeapData = so;
     this.userBits = userBits;
   }
 }

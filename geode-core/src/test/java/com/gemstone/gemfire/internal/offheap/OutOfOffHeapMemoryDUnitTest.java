@@ -91,7 +91,7 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
   @SuppressWarnings("unused") // invoked by reflection from tearDown2()
   private static void cleanup() {
     disconnectFromDS();
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    MemoryAllocatorImpl.freeOffHeapMemory();
     cache.set(null);
     system.set(null);
     isSmallerVM.set(false);

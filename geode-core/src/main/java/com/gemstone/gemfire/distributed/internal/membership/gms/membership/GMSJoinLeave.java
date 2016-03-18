@@ -395,15 +395,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return isJoined;
     }
 
-    if (response.getBecomeCoordinator()) {
-      logger.info("I am being told to become the membership coordinator by {}", coord);
-      synchronized (viewInstallationLock) {
-        this.currentView = response.getCurrentView();
-        becomeCoordinator(null);
-      }
-      return true;
-    }
-
     this.birthViewId = response.getMemberID().getVmViewId();
     this.localAddress.setVmViewId(this.birthViewId);
     GMSMember me = (GMSMember) this.localAddress.getNetMember();
@@ -933,7 +924,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
 
     FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress, state.alreadyTried, state.viewId);
-    Set<InternalDistributedMember> coordinators = new HashSet<InternalDistributedMember>();
+    Set<InternalDistributedMember> possibleCoordinators = new HashSet<InternalDistributedMember>();
+    Set<InternalDistributedMember> coordinatorsWithView = new HashSet<InternalDistributedMember>();
 
     long giveUpTime = System.currentTimeMillis() + ((long) services.getConfig().getLocatorWaitTime() * 1000L);
 
@@ -971,7 +963,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                   state.registrants.addAll(response.getRegistrants());
                 }
               }
-              coordinators.add(response.getCoordinator());
+              if (viewId > -1) {
+                coordinatorsWithView.add(response.getCoordinator());
+              }
+              
+              possibleCoordinators.add(response.getCoordinator());
               if (!flagsSet) {
                 flagsSet = true;
                 inheritSettingsFromLocator(addr, response);
@@ -982,13 +978,16 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         }
       }
     } while (!anyResponses && System.currentTimeMillis() < giveUpTime);
-
-    if (coordinators.isEmpty()) {
+    if (possibleCoordinators.isEmpty()) {
       return false;
     }
 
-    Iterator<InternalDistributedMember> it = coordinators.iterator();
-    if (coordinators.size() == 1) {
+    if (coordinatorsWithView.size() > 0) {
+      possibleCoordinators = coordinatorsWithView;// lets check current coordinators in view only
+    }
+    
+    Iterator<InternalDistributedMember> it = possibleCoordinators.iterator();
+    if (possibleCoordinators.size() == 1) {
       state.possibleCoordinator = it.next();
     } else {
       InternalDistributedMember oldest = it.next();

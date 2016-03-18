@@ -153,7 +153,16 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
 
   @Override
   public Version[] getSerializationVersions() {
-    // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public boolean isSerialized() {
+    return true;
+  }
+
+  @Override
+  public boolean usesHeapForStorage() {
+    return true;
   }
 }

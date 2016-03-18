@@ -29,6 +29,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -78,6 +79,9 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.PureLogWriter;
 import com.gemstone.gemfire.internal.util.Callable;
+import com.gemstone.gemfire.pdx.PdxReader;
+import com.gemstone.gemfire.pdx.PdxSerializable;
+import com.gemstone.gemfire.pdx.PdxWriter;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
@@ -831,6 +835,46 @@ public class SecurityTestUtil extends DistributedTestCase {
     }
   }
 
+  public static class Employee implements PdxSerializable
+  {
+    private Long Id;
+    private String fname;
+    private String lname;
+    
+    public Employee() {}
+    
+    public Employee(Long id, String fn, String ln){
+      this.Id = id;
+      this.fname = fn;
+      this.lname = ln;
+    }
+        
+    /**
+     * For test purpose, to make sure
+     * the object is not deserialized
+     */
+    @Override
+    public void fromData(PdxReader in) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void toData(PdxWriter out) {
+      out.writeLong("Id", Id);
+      out.writeString("fname", fname);
+      out.writeString("lname", lname);
+    }
+    
+  }
+  
+  public static void doPutAllP() throws Exception {    
+    Region region = getCache().getRegion(regionName);
+    assertNotNull(region);
+    Map map = new LinkedHashMap();
+    map.put("1010L", new Employee(1010L, "John", "Doe"));
+    region.putAll(map);
+  }
+  
   private static void doGetAllP(Integer multiUserIndex,
       Integer expectedResult, boolean useTX) {
     Region region = null;

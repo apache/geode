@@ -41,27 +41,25 @@ import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for details
- * @author tushark
- *
  */
 public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
   
   private static final long serialVersionUID = 1L;
-  private Cache cache;
-  private CacheServer cacheServer;
-  private ClientCache clientCache;
-  private int cacheServerPort;
-  private String hostName;
-  
+
   private static final String TRUSTED_STORE = "trusted.keystore";
   private static final String CLIENT_KEY_STORE = "client.keystore";
   private static final String CLIENT_TRUST_STORE = "client.truststore";
   private static final String SERVER_KEY_STORE = "cacheserver.keystore";
   private static final String SERVER_TRUST_STORE = "cacheserver.truststore";
-  
+
   private static CacheServerSSLConnectionDUnitTest instance = new CacheServerSSLConnectionDUnitTest("CacheServerSSLConnectionDUnit");
-  
-  
+
+  private Cache cache;
+  private CacheServer cacheServer;
+  private ClientCache clientCache;
+  private int cacheServerPort;
+  private String hostName;
+
   public void setUp() throws Exception {
     disconnectAllFromDS();
     super.setUp();
@@ -224,7 +222,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     instance.doServerRegionTest();
   }
   
-  public static Object[] getCacheServerEndPointTask() {
+  public static Object[] getCacheServerEndPointTask() { // TODO: avoid Object[]
     Object[] array = new Object[2];
     array[0] = instance.getCacheServerHost();
     array[1] = instance.getCacheServerPort();
@@ -252,23 +250,16 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     boolean cacheClientSslenabled = true;
     boolean cacheClientSslRequireAuth = true;
     
-    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.setUpServerVMTask(cacheServerSslenabled));
-    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.createServerTask());
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
+    serverVM.invoke(() -> createServerTask());
     
-    Object array[] = (Object[])serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.getCacheServerEndPointTask()); 
+    Object array[] = (Object[])serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String)array[0];
     int port = (Integer) array[1];
-    Object params[] = new Object[6];
-    params[0] = hostName;
-    params[1] = port;
-    params[2] = cacheClientSslenabled;
-    params[3] = cacheClientSslRequireAuth;
-    params[4] = CLIENT_KEY_STORE;
-    params[5] = CLIENT_TRUST_STORE;
-    //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);
-    clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpClientVMTask", params);
-    clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
-    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
+
+    clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
+    clientVM.invoke(() -> doClientRegionTestTask());
+    serverVM.invoke(() -> doServerRegionTestTask());
     
   }
   
@@ -282,27 +273,21 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     boolean cacheClientSslenabled = false;
     boolean cacheClientSslRequireAuth = true;
     
-    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.setUpServerVMTask(cacheServerSslenabled));
-    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.createServerTask());
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
+    serverVM.invoke(() -> createServerTask());
     
-    Object array[] = (Object[])serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.getCacheServerEndPointTask()); 
+    Object array[] = (Object[])serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String)array[0];
     int port = (Integer) array[1];
-    Object params[] = new Object[6];
-    params[0] = hostName;
-    params[1] = port;
-    params[2] = cacheClientSslenabled;
-    params[3] = cacheClientSslRequireAuth;
-    params[4] = TRUSTED_STORE;
-    params[5] = TRUSTED_STORE;
+
     IgnoredException expect = IgnoredException.addIgnoredException("javax.net.ssl.SSLException", serverVM);
     IgnoredException expect2 = IgnoredException.addIgnoredException("IOException", serverVM);
     try{
-      //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);    
-      clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpClientVMTaskNoSubscription", params);
-      clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
-      serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
+      clientVM.invoke(() -> setUpClientVMTaskNoSubscription(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE));
+      clientVM.invoke(() -> doClientRegionTestTask());
+      serverVM.invoke(() -> doServerRegionTestTask());
       fail("Test should fail as non-ssl client is trying to connect to ssl configured server");
+
     } catch (Exception rmiException) {
       Throwable e = rmiException.getCause();
       //getLogWriter().info("ExceptionCause at clientVM " + e);
@@ -330,24 +315,18 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     boolean cacheClientSslenabled = true;
     boolean cacheClientSslRequireAuth = false;
 
-    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.setUpServerVMTask(cacheServerSslenabled));
-    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.createServerTask());
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
+    serverVM.invoke(() -> createServerTask());
 
-    Object array[] = (Object[])serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.getCacheServerEndPointTask()); 
+    Object array[] = (Object[])serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String)array[0];
     int port = (Integer) array[1];
-    Object params[] = new Object[6];
-    params[0] = hostName;
-    params[1] = port;
-    params[2] = cacheClientSslenabled;
-    params[3] = cacheClientSslRequireAuth;
-    params[4] = CLIENT_KEY_STORE;
-    params[5] = CLIENT_TRUST_STORE;
-    //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);
+
     try {
-      clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpClientVMTask", params);
+      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
       clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
       serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
+
     } catch (Exception rmiException) {
       Throwable e = rmiException.getCause();
       //getLogWriter().info("ExceptionCause at clientVM " + e);
@@ -372,41 +351,22 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     boolean cacheClientSslenabled = true;
     boolean cacheClientSslRequireAuth = true;
     
-    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.setUpServerVMTask(cacheServerSslenabled));
-    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.createServerTask());
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
+    serverVM.invoke(() -> createServerTask());
     
-    Object array[] = (Object[])serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.getCacheServerEndPointTask()); 
+    Object array[] = (Object[])serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String)array[0];
     int port = (Integer) array[1];
-    Object params[] = new Object[6];
-    params[0] = hostName;
-    params[1] = port;
-    params[2] = cacheClientSslenabled;
-    params[3] = cacheClientSslRequireAuth;
-    params[4] = TRUSTED_STORE;
-    params[5] = TRUSTED_STORE;
+
     IgnoredException expect = IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException", serverVM);
     try{
-      //getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);    
-      clientVM.invoke(CacheServerSSLConnectionDUnitTest.class, "setUpClientVMTask", params);
-      clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
-      serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
+      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE));
+      clientVM.invoke(() -> doClientRegionTestTask());
+      serverVM.invoke(() -> doServerRegionTestTask());
       fail("Test should fail as ssl client with ssl enabled is trying to connect to server with ssl disabled");
-    }catch (Exception rmiException) {
-      
+
+    } catch (Exception rmiException) {
       //ignore
-      
-      /*Throwable e = rmiException.getCause();
-      getLogWriter().info("ExceptionCause at clientVM " + e);
-      if (e instanceof com.gemstone.gemfire.cache.client.ServerOperationException) {
-        Throwable t = e.getCause();
-        getLogWriter().info("Cause is " + t);
-        assertTrue(t instanceof com.gemstone.gemfire.security.AuthenticationRequiredException);
-      } else {
-        getLogWriter().error("Unexpected exception ", e);
-        fail("Unexpected Exception...expected "
-            + AuthenticationRequiredException.class);
-      }*/
     } finally {
       expect.remove();
     }
@@ -417,8 +377,8 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
     VM clientVM = host.getVM(2);
-    clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.closeClientCacheTask());
-    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.closeCacheTask());
+    clientVM.invoke(() -> closeClientCacheTask());
+    serverVM.invoke(() -> closeCacheTask());
   }
 }
 

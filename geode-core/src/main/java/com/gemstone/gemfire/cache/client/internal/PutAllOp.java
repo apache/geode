@@ -45,7 +45,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
 
 /**
  * Does a region putAll on a server
@@ -307,11 +306,12 @@ public class PutAllOp {
         getMessage().addStringOrObjPart(key);
         Object value = mapEntry.getValue();
         if (value instanceof CachedDeserializable) {
-          if (value instanceof StoredObject && !((StoredObject) value).isSerialized()) {
+          CachedDeserializable cd = (CachedDeserializable) value;
+          if (!cd.isSerialized()) {
             // it is a byte[]
-            getMessage().addObjPart(((StoredObject) value).getDeserializedForReading());
+            getMessage().addObjPart(cd.getDeserializedForReading());
           } else {
-            Object cdValue = ((CachedDeserializable)value).getValue();
+            Object cdValue = cd.getValue();
             if (cdValue instanceof byte[]) {
               getMessage().addRawPart((byte[])cdValue, true);
             } else {

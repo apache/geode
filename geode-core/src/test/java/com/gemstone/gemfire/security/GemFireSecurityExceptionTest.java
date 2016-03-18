@@ -1,0 +1,167 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.gemstone.gemfire.security;
+
+import static com.googlecode.catchexception.CatchException.*;
+import static org.assertj.core.api.Assertions.*;
+
+import java.io.NotSerializableException;
+import java.io.Serializable;
+import javax.naming.NamingException;
+
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.commons.lang.SerializationUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
+/**
+ * Unit tests for {@link GemFireSecurityException}.
+ */
+@Category(UnitTest.class)
+public class GemFireSecurityExceptionTest {
+
+  private String message;
+  private String causeMessage;
+  private Object nonSerializableResolvedObj;
+  private NamingException nonSerializableNamingException;
+  private SerializableObject serializableResolvedObj;
+  private NamingException serializableNamingException;
+
+  @Rule
+  public TestName testName = new TestName();
+
+  @Before
+  public void setUp() throws Exception {
+    this.message = testName.getMethodName() + " message";
+    this.causeMessage = testName.getMethodName() + " cause message";
+
+    this.nonSerializableResolvedObj = new Object();
+    this.nonSerializableNamingException = new NamingException(this.causeMessage);
+    this.nonSerializableNamingException.setResolvedObj(this.nonSerializableResolvedObj);
+
+    this.serializableResolvedObj = new SerializableObject(this.testName.getMethodName());
+    this.serializableNamingException = new NamingException(this.causeMessage);
+    this.serializableNamingException.setResolvedObj(this.serializableResolvedObj);
+
+    assertPreConditions();
+  }
+
+  private void assertPreConditions() {
+    catchException(this).clone(this.nonSerializableNamingException);
+    assertThat((Throwable)caughtException()).isNotNull();
+    assertThat((Throwable)caughtException().getCause()).isInstanceOf(NotSerializableException.class);
+
+    catchException(this).clone(this.serializableNamingException);
+    assertThat((Throwable)caughtException()).isNull();
+
+    assertThat(this.nonSerializableResolvedObj).isNotInstanceOf(Serializable.class);
+
+    catchException(this).clone(this.serializableResolvedObj);
+    assertThat((Throwable)caughtException()).isNull();
+  }
+
+  @Test
+  public void isSerializable() throws Exception {
+    assertThat(GemFireSecurityException.class).isInstanceOf(Serializable.class);
+  }
+
+  @Test
+  public void serializes() throws Exception {
+    GemFireSecurityException instance = new GemFireSecurityException(this.message);
+
+    GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
+
+    assertThat(cloned).hasMessage(this.message);
+  }
+
+  @Test
+  public void serializesWithThrowable() throws Exception {
+    Throwable cause = new Exception(this.causeMessage);
+    GemFireSecurityException instance = new GemFireSecurityException(this.message, cause);
+
+    GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
+
+    assertThat(cloned).hasMessage(this.message).hasCause(cause);
+    assertThat(cloned.getCause()).hasMessage(this.causeMessage);
+  }
+
+  @Test
+  public void serializesWithNonSerializableNamingException() throws Exception {
+    GemFireSecurityException instance = new GemFireSecurityException(this.message, this.nonSerializableNamingException);
+
+    GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
+
+    assertThat(cloned).hasMessage(this.message).hasCause(this.nonSerializableNamingException);
+    NamingException cause = (NamingException) cloned.getCause();
+    assertThat(cause).hasMessage(this.causeMessage);
+    assertThat(cause.getResolvedObj()).isNull();
+  }
+
+  @Test
+  public void serializesWithSerializableNamingException() throws Exception {
+    GemFireSecurityException instance = new GemFireSecurityException(this.message, this.serializableNamingException);
+
+    GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
+
+    assertThat(cloned).hasMessage(this.message).hasCause(this.serializableNamingException);
+    NamingException cause = (NamingException) cloned.getCause();
+    assertThat(cause).hasMessage(this.causeMessage);
+    assertThat(cause.getResolvedObj()).isNotNull().isEqualTo(this.serializableResolvedObj);
+  }
+
+  @Test
+  public void isSerializableReturnsTrueForSerializableClass() throws Exception {
+    assertThat(new GemFireSecurityException("").isSerializable(this.serializableResolvedObj)).isTrue();
+  }
+
+  @Test
+  public void isSerializableReturnsFalseForNonSerializableClass() throws Exception {
+    assertThat(new GemFireSecurityException("").isSerializable(this.nonSerializableResolvedObj)).isFalse();
+  }
+
+  public Object clone(final Serializable object) {
+    return SerializationUtils.clone(object);
+  }
+
+  public static class SerializableObject implements Serializable {
+
+    private String name;
+
+    SerializableObject(String name) {
+      this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      SerializableObject that = (SerializableObject) o;
+
+      return name != null ? name.equals(that.name) : that.name == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+      return name != null ? name.hashCode() : 0;
+    }
+  }
+}

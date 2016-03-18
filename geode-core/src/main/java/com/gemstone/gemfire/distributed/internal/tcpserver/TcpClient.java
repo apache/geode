@@ -105,8 +105,6 @@ public class TcpClient {
       ipAddr = new InetSocketAddress(addr, port); // fix for bug 30810
     }
     
-    logger.debug("TcpClient sending {} to {}", request, ipAddr);
-
     long giveupTime = System.currentTimeMillis() + timeout;
     
     // Get the GemFire version of the TcpServer first, before sending any other request.
@@ -128,6 +126,8 @@ public class TcpClient {
       return null;
     }
     
+    logger.debug("TcpClient sending {} to {}", request, ipAddr);
+
     Socket sock=SocketCreator.getDefaultInstance().connect(ipAddr.getAddress(), ipAddr.getPort(), (int)newTimeout, null, false);
     sock.setSoTimeout((int)newTimeout);
     DataOutputStream out = null;
@@ -214,7 +214,7 @@ public class TcpClient {
       out.flush();
 
       DataInputStream in = new DataInputStream(sock.getInputStream());
-      in = new VersionedDataInputStream(in, Version.GFE_57); 
+      in = new VersionedDataInputStream(in, Version.GFE_90); 
       try {
         VersionResponse response = DataSerializer.readObject(in);
         if (response != null) {
@@ -239,13 +239,19 @@ public class TcpClient {
       logger.debug("Locator " + ipAddr + " did not respond to a request for its version.  I will assume it is using v5.7 for safety.");
     }
     synchronized(serverVersions) {
-      serverVersions.put(ipAddr, Version.GFE_57.ordinal());
+      serverVersions.put(ipAddr, Version.GFE_90.ordinal());
     }
-    return Short.valueOf(Version.GFE_57.ordinal());
+    return Short.valueOf(Version.GFE_90.ordinal());
   }
 
   private TcpClient() {
     //static class
+  }
+  
+  public static void clearStaticData() {
+    synchronized(serverVersions) {
+      serverVersions.clear();
+    }
   }
 
 }
