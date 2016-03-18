@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.statistics.StatisticId;
@@ -55,6 +56,12 @@ public class MBeanStatsMonitor implements StatisticsListener {
 
   public void addStatisticsToMonitor(Statistics stats) {
     monitor.addListener(this);// if already listener is added this will be a no-op
+    // Initialize the stats with the current values.
+    StatisticsType type = stats.getType();
+    StatisticDescriptor[] descriptors = type.getStatistics();
+    for (StatisticDescriptor d : descriptors) {
+      statsMap.put(d.getName(), stats.get(d));
+    }
     monitor.addStatistics(stats);
   }
 
