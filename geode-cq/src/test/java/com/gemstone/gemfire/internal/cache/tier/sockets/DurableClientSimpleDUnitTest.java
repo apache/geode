@@ -2857,14 +2857,19 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
     
       // Publish some entries
       publishEntries(publisherClientVM, regionName, 10);
+      
+      this.server1VM.invoke(new CacheSerializableRunnable(
+          "Set test hook") {
+        public void run2() throws CacheException {
+          //Set the Test Hook!
+          //This test hook will pause during the drain process
+          CacheClientProxy.testHook = new RejectClientReconnectTestHook();
+        }
+      });
               
       this.server1VM.invokeAsync(new CacheSerializableRunnable(
           "Close cq for durable client") {
         public void run2() throws CacheException {
-  
-          //Set the Test Hook!
-          //This test hook will pause during the drain process
-          CacheClientProxy.testHook = new RejectClientReconnectTestHook();
   
           final CacheClientNotifier ccnInstance = CacheClientNotifier
               .getInstance();
