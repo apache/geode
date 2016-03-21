@@ -46,7 +46,9 @@ gradle.taskGraph.whenReady({ graph ->
 
 subprojects {
   dependencies {
-    testCompile 'com.github.stefanbirkner:system-rules:' + project.'system-rules.version'
+    testCompile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+      exclude module: 'junit-dep'
+    }
     testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
     testCompile 'com.jayway.awaitility:awaitility:' + project.'awaitility.version'
     testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
