@@ -421,7 +421,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
 
 
   public static void regionSingleKeyExecutionNonHA(Boolean isByName,
-      Function function, Boolean toRegister) {
+      Function function, Boolean toRegister) throws Exception {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final String testKey = "execKey";
@@ -450,15 +450,13 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     } catch (Exception ex) {
       if (!(ex.getCause() instanceof ServerConnectivityException)
           && !(ex.getCause() instanceof FunctionInvocationTargetException)) {
-        ex.printStackTrace();
-        LogWriterUtils.getLogWriter().info("Exception : ", ex);
-        fail("Test failed after the execute operation");
+        throw ex;
       }
     }
   }
   
   public static void regionExecutionHAOneServerDown (Boolean isByName,
-      Function function, Boolean toRegister) {
+      Function function, Boolean toRegister) throws Exception {
 
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
@@ -477,23 +475,18 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     Execution dataSet = FunctionService.onRegion(region);
 
     region.put(testKey, new Integer(1));
-    try {
-      ArrayList<String> args = new ArrayList<String>();
-      args.add(retryRegionName);
-      args.add("regionExecutionHAOneServerDown");
+    
+    ArrayList<String> args = new ArrayList<String>();
+    args.add(retryRegionName);
+    args.add("regionExecutionHAOneServerDown");
 
-      ResultCollector rs = execute(dataSet, testKeysSet, args,
-          function, isByName);
-      assertEquals(1, ((List)rs.getResult()).size());
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        LogWriterUtils.getLogWriter().info("Exception : ", ex);
-        Assert.fail("Test failed after the execute operation", ex);
-    }
+    ResultCollector rs = execute(dataSet, testKeysSet, args,
+        function, isByName);
+    assertEquals(1, ((List)rs.getResult()).size());
   }
   
   public static void regionExecutionHATwoServerDown (Boolean isByName,
-      Function function, Boolean toRegister) {
+      Function function, Boolean toRegister) throws Exception {
 
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
@@ -512,19 +505,14 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     Execution dataSet = FunctionService.onRegion(region);
 
     region.put(testKey, new Integer(1));
-    try {
-      ArrayList<String> args = new ArrayList<String>();
-      args.add(retryRegionName);
-      args.add("regionExecutionHATwoServerDown");
 
-      ResultCollector rs = execute(dataSet, testKeysSet, args,
-          function, isByName);
-      assertEquals(1, ((List)rs.getResult()).size());
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        LogWriterUtils.getLogWriter().info("Exception : ", ex);
-        fail("Test failed after the execute operation");
-    }
+    ArrayList<String> args = new ArrayList<String>();
+    args.add(retryRegionName);
+    args.add("regionExecutionHATwoServerDown");
+
+    ResultCollector rs = execute(dataSet, testKeysSet, args,
+        function, isByName);
+    assertEquals(1, ((List)rs.getResult()).size());
   }
   
   public static void createReplicatedRegion(){
@@ -544,21 +532,16 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
   
   public static void verifyMetaData(Integer arg1, Integer arg2) {
     
-    try {
-      if (arg1 == 0) {
-        assertNull(metaDataRegion.get("stopped"));
-      } else {
-        assertEquals(metaDataRegion.get("stopped"), arg1);
-      }
+    if (arg1 == 0) {
+      assertNull(metaDataRegion.get("stopped"));
+    } else {
+      assertEquals(metaDataRegion.get("stopped"), arg1);
+    }
 
-      if (arg2 == 0) {
-        assertNull(metaDataRegion.get("sentresult"));
-      } else {
-        assertEquals(metaDataRegion.get("sentresult"), arg2);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("The metadata doesn't match with the expected value.");
+    if (arg2 == 0) {
+      assertNull(metaDataRegion.get("sentresult"));
+    } else {
+      assertEquals(metaDataRegion.get("sentresult"), arg2);
     }
   }
   
@@ -674,12 +657,8 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
         assertEquals(Boolean.TRUE, i.next());
       }
     }
-    catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Got an exception : " + e.getMessage());
-      assertTrue(e instanceof EOFException || e instanceof SocketException
-          || e instanceof SocketTimeoutException
-          || e instanceof ServerException || e instanceof IOException
-          || e instanceof CacheClosedException);
+    catch (CacheClosedException e) {
+      // okay - ignore
     }
   }
   
@@ -751,7 +730,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     assertNotNull(entrySet);
   }
 
-  public static void serverMultiKeyExecutionOnASingleBucket(Boolean isByName) {
+  public static void serverMultiKeyExecutionOnASingleBucket(Boolean isByName) throws Exception {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final HashSet testKeysSet = new HashSet();
@@ -765,32 +744,25 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
     DistributedSystem.setThreadsSocketPolicy(false);
     for (Iterator kiter = testKeysSet.iterator(); kiter.hasNext();) {
-      try {
-        Set singleKeySet = Collections.singleton(kiter.next());
-        Function function = new TestFunction(true,TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(region);
-        ResultCollector rc1 = execute(dataSet, singleKeySet, Boolean.TRUE,  function, isByName);
-        List l = null;
-        l = ((List)rc1.getResult());
-        assertEquals(1, l.size());
+      Set singleKeySet = Collections.singleton(kiter.next());
+      Function function = new TestFunction(true,TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+      Execution dataSet = FunctionService.onRegion(region);
+      ResultCollector rc1 = execute(dataSet, singleKeySet, Boolean.TRUE,  function, isByName);
+      List l = null;
+      l = ((List)rc1.getResult());
+      assertEquals(1, l.size());
 
-        ResultCollector rc2 =  execute(dataSet, singleKeySet, new HashSet(singleKeySet), 
-            function, isByName);
-        List l2 = null;
-        l2 = ((List)rc2.getResult());
-        
-        assertEquals(1, l2.size());
-        List subList = (List)l2.iterator().next();
-        assertEquals(1, subList.size());
-        assertEquals(region.get(singleKeySet.iterator().next()), subList
-            .iterator().next());
-      }
-      catch (Exception expected) {
-        LogWriterUtils.getLogWriter().info("Exception : " + expected.getMessage());
-        expected.printStackTrace();
-        fail("Test failed after the put operation");
-      }
+      ResultCollector rc2 =  execute(dataSet, singleKeySet, new HashSet(singleKeySet), 
+          function, isByName);
+      List l2 = null;
+      l2 = ((List)rc2.getResult());
+
+      assertEquals(1, l2.size());
+      List subList = (List)l2.iterator().next();
+      assertEquals(1, subList.size());
+      assertEquals(region.get(singleKeySet.iterator().next()), subList
+          .iterator().next());
     }
   }
   
@@ -965,7 +937,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
   }
   
-  public static void serverSingleKeyExecutionSocketTimeOut(Boolean isByName) {
+  public static void serverSingleKeyExecutionSocketTimeOut(Boolean isByName) throws Exception {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final String testKey = "execKey";
@@ -978,20 +950,15 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     Execution dataSet = FunctionService.onRegion(region);
     
     region.put(testKey, new Integer(1));
-    try {
-      ResultCollector rs = execute(dataSet, testKeysSet, Boolean.TRUE,
-          function, isByName);
-      assertEquals(Boolean.TRUE, ((List)rs.getResult()).get(0));
 
-      ResultCollector rs2 = execute(dataSet, testKeysSet, testKey, function,
-          isByName);
-      assertEquals(testKey, ((List)rs2.getResult()).get(0));
+    ResultCollector rs = execute(dataSet, testKeysSet, Boolean.TRUE,
+        function, isByName);
+    assertEquals(Boolean.TRUE, ((List)rs.getResult()).get(0));
 
-    }catch (Exception ex) {
-      ex.printStackTrace();
-      LogWriterUtils.getLogWriter().info("Exception : " , ex);
-      Assert.fail("Test failed after the put operation",ex);
-    }
+    ResultCollector rs2 = execute(dataSet, testKeysSet, testKey, function,
+        isByName);
+    assertEquals(testKey, ((List)rs2.getResult()).get(0));
+
   }
   
   public static void serverMultiKeyExecution_Inline() {
@@ -1098,7 +1065,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
 
   }
   
-  public static void serverMultiKeyExecutionNoResult(Boolean isByName) {
+  public static void serverMultiKeyExecutionNoResult(Boolean isByName) throws Exception {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final HashSet testKeysSet = new HashSet();
@@ -1127,9 +1094,6 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     } catch(FunctionException expected) {
       assertTrue(expected.getMessage().startsWith((LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
           .toLocalizedString("return any"))));
-    }
-    catch (Exception notexpected) {
-      Assert.fail("Test failed during execute or sleeping", notexpected);
     } finally {
       cache.getLogger().info("<ExpectedException action=remove>" +
           "FunctionException" +
@@ -1160,7 +1124,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     assertEquals("KB_1", region.get(new Integer(1)));    
   }
   
-  public static void serverSingleKeyExecution(Boolean isByName, Boolean toRegister) {
+  public static void serverSingleKeyExecution(Boolean isByName, Boolean toRegister) throws Exception {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final String testKey = "execKey";
@@ -1181,39 +1145,33 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     try {
       execute(dataSet, testKeysSet, Boolean.TRUE,  function, isByName);
     }
-    catch (Exception expected) {
-      assertTrue(expected.getMessage().contains(
-          "No target node found for KEY = " + testKey)
-          || expected.getMessage()
-              .startsWith("Server could not send the reply")
-          || expected.getMessage().startsWith("Unexpected exception during"));
+    catch (Exception ex) {
+      if ( ! (ex.getMessage().contains("No target node found for KEY = " + testKey)
+          || ex.getMessage().startsWith("Server could not send the reply")
+          || ex.getMessage().startsWith("Unexpected exception during")) ) {
+        throw ex;
+      }
     }
     region.put(testKey, new Integer(1));
-    try {
-      ResultCollector rs = execute(dataSet, testKeysSet, Boolean.TRUE,
-          function, isByName);
-      assertEquals(Boolean.TRUE, ((List)rs.getResult()).get(0));
+    
+    ResultCollector rs = execute(dataSet, testKeysSet, Boolean.TRUE,
+        function, isByName);
+    assertEquals(Boolean.TRUE, ((List)rs.getResult()).get(0));
 
-      ResultCollector rs2 = execute(dataSet, testKeysSet, testKey, function,
-          isByName);
-      assertEquals(new Integer(1), ((List)rs2.getResult()).get(0));
+    ResultCollector rs2 = execute(dataSet, testKeysSet, testKey, function,
+        isByName);
+    assertEquals(new Integer(1), ((List)rs2.getResult()).get(0));
 
-      HashMap putData = new HashMap();
-      putData.put(testKey + "1", new Integer(2));
-      putData.put(testKey + "2", new Integer(3));
+    HashMap putData = new HashMap();
+    putData.put(testKey + "1", new Integer(2));
+    putData.put(testKey + "2", new Integer(3));
 
-      ResultCollector rs1 = execute(dataSet, testKeysSet, putData, function,
-          isByName);
-      assertEquals(Boolean.TRUE, ((List)rs1.getResult()).get(0));
+    ResultCollector rs1 = execute(dataSet, testKeysSet, putData, function,
+        isByName);
+    assertEquals(Boolean.TRUE, ((List)rs1.getResult()).get(0));
 
-      assertEquals(new Integer(2), region.get(testKey + "1"));
-      assertEquals(new Integer(3), region.get(testKey + "2"));
-
-    }catch (Exception ex) {
-      ex.printStackTrace();
-      LogWriterUtils.getLogWriter().info("Exception : " , ex);
-      Assert.fail("Test failed after the put operation",ex);
-    }
+    assertEquals(new Integer(2), region.get(testKey + "1"));
+    assertEquals(new Integer(3), region.get(testKey + "2"));
   }
   
   public static void executeRegisteredFunction() {
@@ -1238,7 +1196,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
   }
   
   public static void serverSingleKeyExecution_SendException(Boolean isByName,
-      Boolean toRegister) {
+      Boolean toRegister) throws Exception {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final String testKey = "execKey";
@@ -1260,35 +1218,22 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     Execution dataSet = FunctionService.onRegion(region);
     region.put(testKey, new Integer(1));
     ResultCollector rs = null;
-    try {
-      rs = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
-      assertTrue(((List)rs.getResult()).get(0) instanceof MyFunctionExecutionException);
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      LogWriterUtils.getLogWriter().info("Exception : ", ex);
-      Assert.fail("Test failed after the put operation", ex);
-    }
+
+    rs = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
+    assertTrue(((List)rs.getResult()).get(0) instanceof MyFunctionExecutionException);
     
-    try {
-      rs = execute(dataSet, testKeysSet, (Serializable)testKeysSet, function, isByName);
-      List resultList = (List)rs.getResult();
-      assertEquals((testKeysSet.size()+1), resultList.size());
-      Iterator resultIterator = resultList.iterator();
-      int exceptionCount = 0;
-      while(resultIterator.hasNext()){
-        Object o = resultIterator.next();
-        if(o instanceof MyFunctionExecutionException){
-          exceptionCount++;
-        }
+    rs = execute(dataSet, testKeysSet, (Serializable)testKeysSet, function, isByName);
+    List resultList = (List)rs.getResult();
+    assertEquals((testKeysSet.size()+1), resultList.size());
+    Iterator resultIterator = resultList.iterator();
+    int exceptionCount = 0;
+    while(resultIterator.hasNext()){
+      Object o = resultIterator.next();
+      if(o instanceof MyFunctionExecutionException){
+        exceptionCount++;
       }
-      assertEquals(1, exceptionCount);
     }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      LogWriterUtils.getLogWriter().info("Exception : ", ex);
-      Assert.fail("Test failed after the put operation", ex);
-    }
+    assertEquals(1, exceptionCount);
   }
   
   public static void serverSingleKeyExecution_ThrowException(Boolean isByName,
@@ -1319,8 +1264,6 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       fail("Exception Expected");
     }
     catch (Exception ex) {
-      ex.printStackTrace();
-      assertTrue(ex instanceof Exception);
     }
   }
   
@@ -1342,15 +1285,9 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     
     Execution dataSet1 = FunctionService.onRegion(region1);
     region1.put(testKey, new Integer(1));
-    try {
-      ResultCollector rs = dataSet1.execute(function.getId());
-      assertEquals(Boolean.FALSE, ((List)rs.getResult()).get(0));
 
-    }catch (Exception ex) {
-      ex.printStackTrace();
-      LogWriterUtils.getLogWriter().info("Exception : " , ex);
-      Assert.fail("Test failed after the put operation",ex);
-    }
+    ResultCollector rs = dataSet1.execute(function.getId());
+    assertEquals(Boolean.FALSE, ((List)rs.getResult()).get(0));
     
     Region region2 = cache.getRegion(PartitionedRegionName+"2");
     assertNotNull(region2);
@@ -1358,15 +1295,17 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     Execution dataSet2 = FunctionService.onRegion(region2);
     region2.put(testKey, new Integer(1));
     try {
-      ResultCollector rs = dataSet2.execute(function.getId());
+      rs = dataSet2.execute(function.getId());
       assertEquals(Boolean.TRUE, ((List)rs.getResult()).get(0));
       fail("Expected FunctionException");
-    }catch (Exception ex) {
-      assertTrue(ex.getMessage().startsWith("No Replicated Region found for executing function"));
+    } catch (Exception ex) {
+      if (!ex.getMessage().startsWith("No Replicated Region found for executing function")) {
+        throw ex;
+      }
     }
   }
   
-  public static void serverSingleKeyExecution_NoLastResult(Boolean isByName, Boolean toRegister) {
+  public static void serverSingleKeyExecution_NoLastResult(Boolean isByName, Boolean toRegister) throws Exception {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final String testKey = "execKey";
@@ -1391,14 +1330,15 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
           function, isByName);
       assertEquals(Boolean.TRUE, ((List)rs.getResult()).get(0));
       fail("Expected FunctionException : Function did not send last result");
-    }catch (Exception ex) {
-      assertTrue(ex.getMessage().contains(
-          "did not send last result"));
+    } catch (Exception ex) {
+      if ( !ex.getMessage().contains("did not send last result")) {
+        throw ex;
+      }
       
     }
   }
   
-  public static void serverSingleKeyExecution_FunctionInvocationTargetException() {
+  public static void serverSingleKeyExecution_FunctionInvocationTargetException() throws Exception {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final String testKey = "execKey";
@@ -1412,19 +1352,14 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     Execution dataSet = FunctionService.onRegion(region);
 
     region.put(testKey, new Integer(1));
-    try {
-      ResultCollector rs = execute(dataSet, testKeysSet, Boolean.TRUE,
-          function, false);
-      ArrayList list = (ArrayList)rs.getResult();
-      assertTrue(((Integer)list.get(0)) >= 5);
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      Assert.fail("This is not expected Exception", ex);
-    }
+
+    ResultCollector rs = execute(dataSet, testKeysSet, Boolean.TRUE,
+        function, false);
+    ArrayList list = (ArrayList)rs.getResult();
+    assertTrue(((Integer)list.get(0)) >= 5);
   }
   
-  public static void serverSingleKeyExecution_Inline() {
+  public static void serverSingleKeyExecution_Inline() throws Exception {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final String testKey = "execKey";
@@ -1459,13 +1394,12 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
         }
       });
     }
-    catch (Exception expected) {
-      LogWriterUtils.getLogWriter().fine("Exception occured : " + expected.getMessage());
-      assertTrue(expected.getMessage().contains(
-          "No target node found for KEY = " + testKey)
-          || expected.getMessage()
-              .startsWith("Server could not send the reply")
-          || expected.getMessage().startsWith("Unexpected exception during"));
+    catch (Exception ex) {
+      if ( ! (ex.getMessage().contains("No target node found for KEY = " + testKey)
+           || ex.getMessage().startsWith("Server could not send the reply")
+           || ex.getMessage().startsWith("Unexpected exception during")) ) {
+        throw ex;
+      }
     } finally {
       cache.getLogger().info("<ExpectedException action=remove>" +
           "No target node found for KEY = " + 
@@ -1475,56 +1409,51 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
     
     region.put(testKey, new Integer(1));
-    try {
-      ResultCollector rs = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter(){
-        @Override
-        public void execute(FunctionContext context) {
-          if (context.getArguments() instanceof String) {
-            context.getResultSender().lastResult( "Success");
-          }else{
-            context.getResultSender().lastResult( "Failure");
-          }
-        }
 
-        @Override
-        public String getId() {
-          return getClass().getName();
+    ResultCollector rs = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter(){
+      @Override
+      public void execute(FunctionContext context) {
+        if (context.getArguments() instanceof String) {
+          context.getResultSender().lastResult( "Success");
+        }else{
+          context.getResultSender().lastResult( "Failure");
         }
+      }
 
-        @Override
-        public boolean hasResult() {
-          return true;
+      @Override
+      public String getId() {
+        return getClass().getName();
+      }
+
+      @Override
+      public boolean hasResult() {
+        return true;
+      }
+    });
+    assertEquals("Failure", ((List)rs.getResult()).get(0));
+
+    ResultCollector rs2 = dataSet.withFilter(testKeysSet).withArgs(testKey).execute(new FunctionAdapter(){
+      @Override
+      public void execute(FunctionContext context) {
+        if (context.getArguments() instanceof String) {
+          context.getResultSender().lastResult( "Success");
+        }else{
+          context.getResultSender().lastResult( "Failure");
         }
-      });
-      assertEquals("Failure", ((List)rs.getResult()).get(0));
+      }
 
-      ResultCollector rs2 = dataSet.withFilter(testKeysSet).withArgs(testKey).execute(new FunctionAdapter(){
-        @Override
-        public void execute(FunctionContext context) {
-          if (context.getArguments() instanceof String) {
-            context.getResultSender().lastResult( "Success");
-          }else{
-            context.getResultSender().lastResult( "Failure");
-          }
-        }
+      @Override
+      public String getId() {
+        return getClass().getName();
+      }
 
-        @Override
-        public String getId() {
-          return getClass().getName();
-        }
+      @Override
+      public boolean hasResult() {
+        return true;
+      }
+    });
+    assertEquals("Success", ((List)rs2.getResult()).get(0));
 
-        @Override
-        public boolean hasResult() {
-          return true;
-        }
-      });
-      assertEquals("Success", ((List)rs2.getResult()).get(0));
-
-    }catch (Exception ex) {
-      ex.printStackTrace();
-      LogWriterUtils.getLogWriter().info("Exception : " , ex);
-      Assert.fail("Test failed after the put operation",ex);
-    }
   }
   
   
@@ -1578,9 +1507,10 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       });
     }
     catch (Exception expected) {
-      LogWriterUtils.getLogWriter().fine("Exception occured : " + expected.getMessage());
-      assertTrue(expected.getCause().getMessage().contains(
-          "Could not create an instance of  com.gemstone.gemfire.internal.cache.execute.PRClientServerRegionFunctionExecutionDUnitTest$UnDeserializable"));
+      if (!expected.getCause().getMessage().contains(
+          "Could not create an instance of  com.gemstone.gemfire.internal.cache.execute.PRClientServerRegionFunctionExecutionDUnitTest$UnDeserializable")) {
+        throw expected;
+      };
     } finally {
       cache.getLogger().info("<ExpectedException action=remove>" +
           "Could not create an instance of  com.gemstone.gemfire.internal.cache.execute.PRClientServerRegionFunctionExecutionDUnitTest$UnDeserializable" +

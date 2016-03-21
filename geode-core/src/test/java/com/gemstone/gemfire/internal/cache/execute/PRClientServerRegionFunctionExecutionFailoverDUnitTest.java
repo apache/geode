@@ -152,7 +152,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.registerFunction());
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.FunctionExecution_Inline_Bug40714());
   }
-
+  
   public void testOnRegionFailoverWithTwoServerDownHA()
       throws InterruptedException {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
