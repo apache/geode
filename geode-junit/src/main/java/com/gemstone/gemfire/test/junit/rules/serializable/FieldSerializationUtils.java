@@ -28,9 +28,9 @@ public class FieldSerializationUtils {
 
   public static Object readField(final Class targetClass, final Object targetInstance, final String fieldName) {
     try {
-      Field assureDeletionField = targetClass.getDeclaredField(fieldName);
-      assureDeletionField.setAccessible(true);
-      return assureDeletionField.get(targetInstance);
+      Field field = targetClass.getDeclaredField(fieldName);
+      field.setAccessible(true);
+      return field.get(targetInstance);
     } catch (IllegalAccessException | NoSuchFieldException e) {
       throw new Error(e);
     }
@@ -38,9 +38,9 @@ public class FieldSerializationUtils {
 
   public static void writeField(final Class targetClass, final Object targetInstance, final String fieldName, final Object value) {
     try {
-      Field folderField = targetClass.getDeclaredField(fieldName);
-      folderField.setAccessible(true);
-      folderField.set(targetInstance, value);
+      Field field = targetClass.getDeclaredField(fieldName);
+      field.setAccessible(true);
+      field.set(targetInstance, value);
     } catch (IllegalAccessException | NoSuchFieldException e) {
       throw new Error(e);
     }
