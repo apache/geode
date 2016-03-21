@@ -24,17 +24,24 @@ import java.util.Properties;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
-public class ProductUseLogDUnitTest extends DistributedTestCase {
+public class ProductUseLogDUnitTest extends CacheTestCase {
 
   public ProductUseLogDUnitTest(String name) {
     super(name);
@@ -50,6 +57,7 @@ public class ProductUseLogDUnitTest extends DistributedTestCase {
   public void testMembershipMonitoring() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
 
     // use a locator so we will monitor server load and record member->server mappings
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -67,10 +75,11 @@ public class ProductUseLogDUnitTest extends DistributedTestCase {
     assertTrue(logFile.exists());
     
     assertTrue(logFile.exists());
-    vm0.invoke(new SerializableRunnable("get system") {
-      public void run() {
-        InternalDistributedSystem system = getSystem();
-        Cache cache = CacheFactory.create(system);
+    int serverPort = (Integer)vm0.invoke(new SerializableCallable("get system") {
+      public Object call() {
+        getSystem();
+        getCache();
+        cache.createRegionFactory(RegionShortcut.REPLICATE).create("myregion");
         CacheServer server = cache.addCacheServer();
         server.setPort(0);
         try {
@@ -78,17 +87,40 @@ public class ProductUseLogDUnitTest extends DistributedTestCase {
         } catch (IOException e) {
           Assert.fail("failed to start server", e);
         }
+        return server.getPort();
+      }
+    });
+    
+    vm1.invoke(new SerializableRunnable("create a client") {
+      public void run() {
+        ClientCache clientCache = new ClientCacheFactory()
+            .setPoolSubscriptionEnabled(true)
+            .addPoolServer("localhost", serverPort)
+            .create();
+        Region r = clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("myregion");
+        r.registerInterest(".*");
+        r.put("somekey", "somevalue");
+      }
+    });
+    
+    vm0.invoke(new SerializableRunnable("check region") {
+      public void run() {
+        Region r = cache.getRegion("myregion");
+        Assert.assertNotNull(r.get("somekey"));
       }
     });
 
+    
     // wait for the server info to be received and logged 
-//    pause(2 * BridgeServerImpl.FORCE_LOAD_UPDATE_FREQUENCY * 1000);
+    Thread.sleep(2 * CacheServer.DEFAULT_LOAD_POLL_INTERVAL);
 
     system.disconnect();
 
     String logContents = readFile(logFile);
     assertTrue("expected " + logFile + " to contain a View", logContents.contains("View"));
-    assertTrue("expected " + logFile + " to contain 'server summary'", logContents.contains("server summary"));
+    assertTrue("expected " + logFile + " to have a server count of 1", logContents.contains("server count: 1"));
+    assertTrue("expected " + logFile + " to have a client count of 1" , logContents.contains("client count: 1"));
+    assertTrue("expected " + logFile + " to have a queue count of 1", logContents.contains("queue count: 1"));
   }
   
   private String readFile(File file) throws IOException {
@@ -101,8 +133,4 @@ public class ProductUseLogDUnitTest extends DistributedTestCase {
     return sb.toString();
   }
 
-  @Override
-  public final void preTearDown() throws Exception {
-    disconnectAllFromDS();
-  }
 }

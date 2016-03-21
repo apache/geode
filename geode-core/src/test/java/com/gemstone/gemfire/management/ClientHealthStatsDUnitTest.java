@@ -237,7 +237,7 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, "durable-"+clientNum);
     props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "300000");
 
-    props.setProperty("log-file", getTestMethodName()+"_client_" + clientNum + ".log");
+//    props.setProperty("log-file", getTestMethodName()+"_client_" + clientNum + ".log");
     props.setProperty("log-level", "info");
     props.setProperty("statistic-archive-file", getTestMethodName()+"_client_" + clientNum
         + ".gfs");

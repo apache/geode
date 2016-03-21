@@ -20,7 +20,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
+import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 
 /**
@@ -29,7 +31,7 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
  */
 public class LocatorListResponse extends ServerLocationResponse {
   /** ArrayList of ServerLocations for controllers */
-  private ArrayList controllers;
+  private List<ServerLocation> controllers;
   private boolean isBalanced;
   private boolean locatorsFound = false;
 
@@ -37,7 +39,7 @@ public class LocatorListResponse extends ServerLocationResponse {
   public LocatorListResponse() {
   }
   
-  public LocatorListResponse(ArrayList locators, boolean isBalanced) {
+  public LocatorListResponse(List<ServerLocation> locators, boolean isBalanced) {
     this.controllers = locators;
     if (locators != null && !locators.isEmpty()) {
       this.locatorsFound = true;
@@ -62,7 +64,7 @@ public class LocatorListResponse extends ServerLocationResponse {
    * Returns an array list of type ServerLocation containing controllers.
    * @return list of controllers
    */
-  public ArrayList getLocators() {
+  public List<ServerLocation> getLocators() {
     return this.controllers;
   }
 

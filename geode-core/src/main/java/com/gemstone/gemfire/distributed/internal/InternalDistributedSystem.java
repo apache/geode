@@ -947,6 +947,12 @@ public class InternalDistributedSystem
       this.forcedDisconnect = true;
       resetReconnectAttemptCounter();
       if (sampler.isSamplingEnabled()) {
+        try {
+          // give the stat sampler time to take another sample
+          Thread.sleep(this.config.getStatisticSampleRate() * 2);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
         if (sampler.getStatSamplerStats().getJvmPauses() > 0) {
           try {
             // if running tests then create a heap dump
