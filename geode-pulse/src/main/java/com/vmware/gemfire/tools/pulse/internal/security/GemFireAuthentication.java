@@ -34,6 +34,7 @@ import javax.management.remote.JMXConnector;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Spring security authentication object for GemFire
@@ -121,12 +122,12 @@ public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
 		ObjectName name;
 		try {
 			name = new ObjectName(PulseConstants.OBJECT_NAME_ACCESSCONTROL_MBEAN);
-			MBeanServerConnection mbeanServer = jmxc.getMBeanServerConnection();			
-			ArrayList<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+			MBeanServerConnection mbeanServer = jmxc.getMBeanServerConnection();
+			ArrayList<GrantedAuthority> authorities = new ArrayList<>();
 			authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 			for(String role : PulseConstants.PULSE_ROLES){
-				Object[] params = new Object[] {role};
-				String[] signature = new String[] {String.class.getCanonicalName()};
+				Object[] params = new Object[] {"PULSE", role};
+				String[] signature = new String[] {String.class.getCanonicalName(), String.class.getCanonicalName()};
 				boolean result = (Boolean)mbeanServer.invoke(name, "authorize", params, signature);
 				if(result){
 				  //spring sec require ROLE_ prefix

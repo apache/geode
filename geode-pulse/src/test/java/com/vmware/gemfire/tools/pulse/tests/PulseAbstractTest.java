@@ -47,9 +47,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-@Category(UITest.class)
-@FixMethodOrder(MethodSorters.JVM)
-public class PulseTest {
+//@Category(UITest.class)
+//@FixMethodOrder(MethodSorters.JVM)
+public abstract class PulseAbstractTest extends PulseBaseTest {
   private static String jmxPropertiesFile;
   private static String path;
 
@@ -79,7 +79,7 @@ public class PulseTest {
   private static final String CLUSTER_UNIQUECQS_ID = "clusterUniqueCQs";
   private static final String CLUSTER_SUBSCRIPTION_ID = "clusterSubscriptionsText";
   private static final String CLUSTER_MEMORY_USAGE_ID = "currentMemoryUsage";
-  private static final String CLUSTER_THROUGHPUT_WRITES_ID = "currentThroughoutWrites";
+  private static final String CLUSTER_THROUGHPUT_WRITES_ID = "currentThroughputWrites";
   private static final String CLUSTER_GCPAUSES_ID = "currentGCPauses";
   private static final String CLUSTER_WRITEPERSEC_ID = "writePerSec";
   private static final String CLUSTER_READPERSEC_ID = "readPerSec";
@@ -135,14 +135,13 @@ public class PulseTest {
   private static final String MEMBER_DROPDOWN_ID = "Members";
   private static final String DATA_DROPDOWN_ID = "Data";
 
-  @BeforeClass
-  public static void setUpBeforeClass() throws Exception {
+  public static void setUpServer(String jsonAuthFile) throws Exception {
     System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
 
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     jmxPropertiesFile = classLoader.getResource("test.properties").getPath();
     path = getPulseWarPath();
-    server = Server.createServer(9999, jmxPropertiesFile);
+    server = Server.createServer(9999, jmxPropertiesFile, jsonAuthFile);
 
     String host = "localhost";// InetAddress.getLocalHost().getHostAddress();
     int port = 8080;
@@ -557,7 +556,8 @@ public class PulseTest {
   }
 
  @Test
-  public void testMemberAverageWrites() throws InterruptedException {  
+  public void testMemberAverageWrites() throws InterruptedException {
+    navigateToTopologyGridView();
     String WritePerSec = driver.findElement(By.id(MEMBER_VIEW_WRITEPERSEC_ID))
         .getText();
     String memberWritePerSec = JMXProperties.getInstance().getProperty(

@@ -415,10 +415,7 @@ public class PulseConstants {
   
   public static final String PULSE_ROLES[] = {
     "PULSE_DASHBOARD", 
-    "PULSE_DATABROWSER", 
-    "PULSE_WEBGFSH", 
-    "PULSE_ADMIN_V1",
-    "PULSE_ADMIN_V2"
+    "PULSE_DATABROWSER"
   };
 
   // SSL Related attributes

@@ -109,8 +109,6 @@ public class ResourceConstants {
 
   public static final String PULSE_DASHBOARD = "PULSE_DASHBOARD";
   public static final String PULSE_DATABROWSER = "PULSE_DATABROWSER";
-  public static final String PULSE_ADMIN_V1 = "PULSE_ADMIN_V1";
-  public static final String PULSE_WEBGFSH = "PULSE_WEBGFSH";
 
   public static final String DATA_READ = "DATA_READ";
   public static final String DATA_WRITE = "DATA_WRITE";

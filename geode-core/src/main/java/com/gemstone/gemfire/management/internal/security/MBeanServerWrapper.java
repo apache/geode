@@ -160,12 +160,17 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   }
 
   @Override
-  public Object getAttribute(ObjectName name, String attribute) throws MBeanException, AttributeNotFoundException,
-      InstanceNotFoundException, ReflectionException {
+  public Object getAttribute(ObjectName name, String attribute) throws MBeanException, InstanceNotFoundException,
+      ReflectionException {
     ResourceOperationContext ctx = getOperationContext(name, attribute, false);
     doAuthorization(ctx);
-    Object result = mbs.getAttribute(name, attribute);
-    if(ctx != null) {
+    Object result;
+    try {
+      result = mbs.getAttribute(name, attribute);
+    } catch (AttributeNotFoundException nex) {
+      return null;
+    }
+    if (ctx != null) {
       ctx.setPostOperationResult(result);
     }
     doAuthorizationPost(ctx);

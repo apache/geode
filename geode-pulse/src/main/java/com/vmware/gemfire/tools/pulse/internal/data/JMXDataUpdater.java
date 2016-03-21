@@ -1928,31 +1928,16 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
     }
   }
 
-  // /**
-  // * function used for creating member key with a combination
-  // * of member id and and member name
-  // * in key we are replacing ":" with "-" for both member id and name
-  // * @param id
-  // * @param name
-  // * @return
-  // */
-  // private String getMemberNameOrId(String id, String name){
-  // String key;
-  // if (id != null) {
-  // id = id.replace(":", "-");
-  // }
-  // if (name != null) {
-  // name = name.replace(":", "-");
-  // }
-  // key = id+name;
-  // return key;
-  // }
   /**
    * function used to handle Float data type if the value for mbean for an
    * attribute is null then return 0.0 as default value else return the
    * attribute value
    */
   private Float getFloatAttribute(Object object, String name) {
+    if (object == null) {
+      return Float.valueOf(0.0f);
+    }
+
     try {
       if (!(object.getClass().equals(Float.class))) {
         if (LOGGER.infoEnabled()) {
@@ -1967,7 +1952,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       }
     } catch (Exception e) {
       if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception Occured: " + e.getMessage());
+        LOGGER.info("Exception occurred: " + e.getMessage());
       }
       return Float.valueOf(0.0f);
     }
@@ -1979,6 +1964,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * value
    */
   private Integer getIntegerAttribute(Object object, String name) {
+    if (object == null) {
+      return Integer.valueOf(0);
+    }
+
     try {
       if (!(object.getClass().equals(Integer.class))) {
         if (LOGGER.infoEnabled()) {
@@ -1993,7 +1982,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       }
     } catch (Exception e) {
       if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception Occured: " + e.getMessage());
+        LOGGER.info("Exception occurred: " + e.getMessage());
       }
       return Integer.valueOf(0);
     }
@@ -2005,6 +1994,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * value
    */
   private Long getLongAttribute(Object object, String name) {
+    if (object == null) {
+      return Long.valueOf(0);
+    }
+
     try {
       if (!(object.getClass().equals(Long.class))) {
         if (LOGGER.infoEnabled()) {
@@ -2019,7 +2012,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       }
     } catch (Exception e) {
       if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception Occured: " + e.getMessage());
+        LOGGER.info("Exception occurred: " + e.getMessage());
       }
       return Long.valueOf(0);
     }
@@ -2032,6 +2025,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * the attribute value
    */
   private String getStringAttribute(Object object, String name) {
+    if (object == null) {
+      return "";
+    }
+
     try {
       if (!(object.getClass().equals(String.class))) {
         if (LOGGER.infoEnabled()) {
@@ -2046,7 +2043,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       }
     } catch (Exception e) {
       if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception Occured: " + e.getMessage());
+        LOGGER.info("Exception occurred: " + e.getMessage());
       }
       return "";
     }
@@ -2058,6 +2055,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * attribute value
    */
   private Boolean getBooleanAttribute(Object object, String name) {
+    if (object == null) {
+      return Boolean.FALSE;
+    }
+
     try {
       if (!(object.getClass().equals(Boolean.class))) {
         if (LOGGER.infoEnabled()) {
@@ -2084,6 +2085,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * attribute value
    */
   private Double getDoubleAttribute(Object object, String name) {
+    if (object == null) {
+      return Double.valueOf(0);
+    }
+
     try {
       if (!(object.getClass().equals(Double.class))) {
         if (LOGGER.infoEnabled()) {
@@ -2098,7 +2103,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       }
     } catch (Exception e) {
       if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception Occured: " + e.getMessage());
+        LOGGER.info("Exception occurred: " + e.getMessage());
       }
       return Double.valueOf(0);
     }

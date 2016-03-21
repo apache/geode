@@ -82,6 +82,8 @@ public abstract class OperationContext {
     NETSTAT,
     PAUSE,
     PROCESS_COMMAND,
+    PULSE_DASHBOARD,
+    PULSE_DATABROWSER,
     PUT,
     PUTALL,
     QUERY,

@@ -2386,7 +2386,7 @@ public class Cluster extends Thread {
         }
       } catch (Exception e) {
         if (LOGGER.infoEnabled()) {
-          LOGGER.info("Exception Occured while updating cluster data : " + e.getMessage());
+          LOGGER.info("Exception Occurred while updating cluster data : " + e.getMessage());
         }
       }
 
@@ -2394,7 +2394,7 @@ public class Cluster extends Thread {
         Thread.sleep(POLL_INTERVAL);
       } catch (InterruptedException e) {
         if (LOGGER.infoEnabled()) {
-          LOGGER.info("InterruptedException Occured : " + e.getMessage());
+          LOGGER.info("InterruptedException Occurred : " + e.getMessage());
         }
       }
     }

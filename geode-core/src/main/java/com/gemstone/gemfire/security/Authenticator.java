@@ -18,9 +18,7 @@
 package com.gemstone.gemfire.security;
 
 import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheCallback;
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 
@@ -62,12 +60,11 @@ public interface Authenticator extends CacheCallback {
    * @throws AuthenticationFailedException
    *                 if some exception occurs during the initialization
    */
-  public void init(Properties securityProps, LogWriter systemLogger,
+  void init(Properties securityProps, LogWriter systemLogger,
       LogWriter securityLogger) throws AuthenticationFailedException;
 
-  default public void init(Properties securityProps)  throws AuthenticationFailedException{
-    Cache cache = CacheFactory.getAnyInstance();
-    init(securityProps, cache.getLogger(), cache.getSecurityLogger());
+  default void init(Properties securityProps)  throws AuthenticationFailedException{
+    init(securityProps, null, null);
   }
 
   /**
@@ -88,13 +85,11 @@ public interface Authenticator extends CacheCallback {
    * @throws AuthenticationFailedException
    *                 If the authentication of the client/peer fails.
    */
-  public Principal authenticate(Properties props, DistributedMember member)
+  Principal authenticate(Properties props, DistributedMember member)
       throws AuthenticationFailedException;
 
-  default public Principal authenticate(Properties props)
-      throws AuthenticationFailedException{
-    DistributedMember member = CacheFactory.getAnyInstance().getDistributedSystem().getDistributedMember();
-    return authenticate(props, member);
+  default Principal authenticate(Properties props) throws AuthenticationFailedException{
+    return authenticate(props, null);
   }
 
 }

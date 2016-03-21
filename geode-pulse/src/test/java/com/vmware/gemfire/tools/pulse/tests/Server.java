@@ -28,7 +28,6 @@ import org.json.JSONException;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
@@ -36,35 +35,48 @@ import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"
   private static final int DEFAULT_PORT = 9999;
-  private final MBeanServer mbs;
   private final JMXServiceURL url;
-  private final JMXConnectorServer cs;
+  private MBeanServer mbs;
+  private JMXConnectorServer cs;
   private String propFile = null;
 
-  public Server(int port, String properties, boolean secure) throws IOException, JSONException {
-    Properties props = new Properties();
-    props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
-    props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
-    JSONAuthorization.setUpWithJsonFile("cacheServer.json");
-    ManagementInterceptor interceptor = new ManagementInterceptor(props);
-    MBeanServerWrapper wrapper = new MBeanServerWrapper(interceptor);
+  public Server(int port, String properties, String jsonAuthFile) throws IOException, JSONException {
+    this.propFile = properties;
+    mbs = ManagementFactory.getPlatformMBeanServer();
+    url = new JMXServiceURL(formJMXServiceURLString(DEFAULT_HOST, port));
 
-    if(secure){
-      //System.setProperty(JMXConnectorServer.AUTHENTICATOR, interceptor);
+    // Load the beans first, otherwise we get access denied
+    loadMBeans();
+
+    if (jsonAuthFile != null) {
+      Properties props = new Properties();
+      props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
+      props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+      JSONAuthorization.setUpWithJsonFile(jsonAuthFile);
+      Map<String, Object> env = new HashMap<>();
+
+      ManagementInterceptor interceptor = new ManagementInterceptor(props);
+      env.put(JMXConnectorServer.AUTHENTICATOR, interceptor);
+      cs = JMXConnectorServerFactory.newJMXConnectorServer(url, env, mbs);
+      cs.setMBeanServerForwarder(new MBeanServerWrapper(interceptor));
+    } else {
+      cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
     }
 
     try {
-
       java.rmi.registry.LocateRegistry.createRegistry(port);
       System.out.println("RMI registry ready.");
     } catch (Exception e) {
@@ -72,37 +84,19 @@ public class Server {
       e.printStackTrace();
     }
 
-    this.propFile = properties;
-    mbs = MBeanServerFactory.createMBeanServer();
-    url = new JMXServiceURL(formJMXServiceURLString(DEFAULT_HOST, "" + port));
-    cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
-
-    if(secure) {
-      cs.setMBeanServerForwarder(wrapper);
-    }
-
     cs.start();
-
-    loadMBeans();
   }
 
-  private String formJMXServiceURLString(String host, String port)
-      throws UnknownHostException {
-    /*
-     * String jmxSerURL = "service:jmx:rmi://" + serverName + "/jndi/rmi://" +
-     * serverName + ":" + port + "/jmxrmi";
-     */
+  private String formJMXServiceURLString(String host, int port) throws UnknownHostException {
     String jmxSerURL = "";
 
     InetAddress inetAddr = InetAddress.getByName(host);
     if (inetAddr instanceof Inet4Address) {
       // Create jmx service url for IPv4 address
-      jmxSerURL = "service:jmx:rmi://" + host + "/jndi/rmi://" + host + ":"
-          + port + "/jmxrmi";
+      jmxSerURL = "service:jmx:rmi://" + host + "/jndi/rmi://" + host + ":" + port + "/jmxrmi";
     } else if (inetAddr instanceof Inet6Address) {
       // Create jmx service url for IPv6 address
-      jmxSerURL = "service:jmx:rmi://[" + host + "]/jndi/rmi://[" + host + "]:"
-          + port + "/jmxrmi";
+      jmxSerURL = "service:jmx:rmi://[" + host + "]/jndi/rmi://[" + host + "]:" + port + "/jmxrmi";
     }
 
     return jmxSerURL;
@@ -117,8 +111,6 @@ public class Server {
   }
 
   private synchronized void loadMBeans() {
-    unregisterAll();
-
     JMXProperties props = JMXProperties.getInstance();
     try {
       props.load(propFile);
@@ -181,41 +173,33 @@ public class Server {
     }
   }
 
-  private void addMemberMBean(String m) throws InstanceAlreadyExistsException,
-      MBeanRegistrationException, NotCompliantMBeanException,
-      MalformedObjectNameException, NullPointerException {
+  private void addMemberMBean(
+      String m) throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException, MalformedObjectNameException, NullPointerException {
     Member m1 = new Member(m);
     mbs.registerMBean(m1, new ObjectName(Member.OBJECT_NAME + ",member=" + m));
   }
 
   // For GemFire XD
-  private void addGemFireXDMemberMBean(String xdm)
-      throws InstanceAlreadyExistsException, MBeanRegistrationException,
-      NotCompliantMBeanException, MalformedObjectNameException,
-      NullPointerException {
+  private void addGemFireXDMemberMBean(
+      String xdm) throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException, MalformedObjectNameException, NullPointerException {
     GemFireXDMember xdmo = new GemFireXDMember(xdm);
-    mbs.registerMBean(xdmo, new ObjectName(GemFireXDMember.OBJECT_NAME
-        + ",member=" + xdm));
+    mbs.registerMBean(xdmo, new ObjectName(GemFireXDMember.OBJECT_NAME + ",member=" + xdm));
   }
 
-  private void addRegionMBean(String reg)
-      throws InstanceAlreadyExistsException, MBeanRegistrationException,
-      NotCompliantMBeanException, MalformedObjectNameException,
-      NullPointerException {
+  private void addRegionMBean(
+      String reg) throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException, MalformedObjectNameException, NullPointerException {
     Region regionObject = new Region(reg);
     mbs.registerMBean(regionObject, new ObjectName(Region.OBJECT_NAME + ",name=/" + reg));
 
     for (String member : regionObject.getMembers()) {
       RegionOnMember regionOnMemberObject = new RegionOnMember(regionObject.getFullPath(), member);
       mbs.registerMBean(regionOnMemberObject, new ObjectName(
-              PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_REGION + regionObject.getFullPath() + PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_MEMBER + member));
+          PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_REGION + regionObject.getFullPath() + PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_MEMBER + member));
     }
   }
 
-  private void addServerMBean(String server)
-      throws InstanceAlreadyExistsException, MBeanRegistrationException,
-      NotCompliantMBeanException, MalformedObjectNameException,
-      NullPointerException {
+  private void addServerMBean(
+      String server) throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException, MalformedObjectNameException, NullPointerException {
     ServerObject so = new ServerObject(server);
     mbs.registerMBean(so, new ObjectName(ServerObject.OBJECT_NAME));
   }
@@ -225,45 +209,11 @@ public class Server {
     return propVal.split(" ");
   }
 
-  private void unregisterAll() {
-    Set<ObjectName> thisSet = mbs.queryNames(null, null);
-    for (ObjectName objectName : thisSet) {
-//      System.out.println("Removing ..." + objectName.getCanonicalName());
-
-      /*try {
-        mbs.unregisterMBean(objectName);
-      } catch (MBeanRegistrationException e) {
-        e.printStackTrace();
-      } catch (InstanceNotFoundException e) {
-        e.printStackTrace();
-      }*/
-    }
-  }
-
-  public static void main(String[] args) throws MalformedObjectNameException,
-      NullPointerException {
-    int port = DEFAULT_PORT;
-    String props = null;
-    if (args.length >= 2) {
-      try {
-        port = Integer.parseInt(args[0]);
-        props = args[1];
-
-      } catch (NumberFormatException nfe) {
-        port = DEFAULT_PORT;
-        props = null;
-        nfe.printStackTrace();
-      }
-    }
-
-    createServer(port, props);
-  }
-
-  public static Server createServer(int port, String properties)
+  public static Server createServer(int port, String properties, String jsonAuthFile)
       throws MalformedObjectNameException {
     Server s = null;
     try {
-      s = new Server(port, properties, true);
+      s = new Server(port, properties, jsonAuthFile);
     } catch (Exception e) {
       e.printStackTrace();
       return null;

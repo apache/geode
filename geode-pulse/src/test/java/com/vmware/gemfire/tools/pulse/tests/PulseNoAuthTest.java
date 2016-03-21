@@ -14,28 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.security;
+package com.vmware.gemfire.tools.pulse.tests;
 
-public enum Resource {
-  ASYNC_EVENT_QUEUE,
-  CLIENT,
-  CLIENT_SERVER,
-  CLUSTER_CONFIGURTION,
-  CONTINUOUS_QUERY,
-  DISKSTORE,
-  DISKSTORE_OFFLINE,
-  DISTRIBUTED_SYSTEM,
-  FUNCTION,
-  GATEWAY_RECEIVER,
-  GATEWAY_SENDER,
-  INDEX,
-  JMX,
-  LOCATOR,
-  LOCK_SERVICE,
-  MANAGER,
-  MEMBER,
-  PDX,
-  PULSE,
-  QUERY,
-  REGION
+import com.gemstone.gemfire.test.junit.categories.UITest;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
+
+@Category(UITest.class)
+@FixMethodOrder(MethodSorters.JVM)
+public class PulseNoAuthTest extends PulseAbstractTest {
+
+  @BeforeClass
+  public static void beforeClassSetup() throws Exception {
+    setUpServer(null);
+  }
 }

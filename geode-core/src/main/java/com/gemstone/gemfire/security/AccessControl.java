@@ -67,11 +67,15 @@ public interface AccessControl extends CacheCallback {
    *                 operations on that connection will throw
    *                 <code>NotAuthorizedException</code>
    */
-  public void init(Principal principal, DistributedMember remoteMember,
+  void init(Principal principal, DistributedMember remoteMember,
       Cache cache) throws NotAuthorizedException;
 
-  default public void init(Principal principal, DistributedMember remoteMember) throws NotAuthorizedException {
-    init(principal, remoteMember, CacheFactory.getAnyInstance());
+  default void init(Principal principal, DistributedMember remoteMember) throws NotAuthorizedException {
+    init(principal, remoteMember, null);
+  }
+
+  default void init(Principal principal) throws NotAuthorizedException {
+    init(principal, null, null);
   }
 
   /**
@@ -96,6 +100,6 @@ public interface AccessControl extends CacheCallback {
    * @return true if the operation is authorized and false otherwise
    * 
    */
-  public boolean authorizeOperation(String regionName, OperationContext context);
+  boolean authorizeOperation(String regionName, OperationContext context);
 
 }

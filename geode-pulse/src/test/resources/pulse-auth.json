@@ -1,0 +1,21 @@
+{
+  "roles": [
+    {
+      "name": "pulse",
+      "operationsAllowed": [
+        "PULSE:PULSE_DASHBOARD",
+        "PULSE:PULSE_DATABROWSER",
+        "JMX:GET"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "name": "admin",
+      "password": "admin",
+      "roles": [
+        "pulse"
+      ]
+    }
+  ]
+}

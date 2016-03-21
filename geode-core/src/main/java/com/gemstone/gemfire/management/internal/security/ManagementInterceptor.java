@@ -57,7 +57,7 @@ import static com.gemstone.gemfire.management.internal.security.ResourceConstant
  * @since 9.0
  *
  */
-public class ManagementInterceptor implements JMXAuthenticator{
+public class ManagementInterceptor implements JMXAuthenticator {
 
   // FIXME: Merged from GEODE-17. Are they necessary?
 	public static final String USER_NAME = "security-username";
@@ -163,7 +163,7 @@ public class ManagementInterceptor implements JMXAuthenticator{
     Set<JMXPrincipal> principals = subject.getPrincipals(JMXPrincipal.class);
 
     if (principals == null || principals.isEmpty()) {
-      throw new SecurityException(ACCESS_DENIED_MESSAGE + ": No princial found.");
+      throw new SecurityException(ACCESS_DENIED_MESSAGE + ": No principal found.");
 		}
 
 		Principal principal = principals.iterator().next();
