@@ -8,8 +8,7 @@ To build against Apache Geode, you need to build Geode first and publish the jar
 to local repository. In the root of Geode directory, run:
 
 ```
-./gradlew clean build -Dskip.tests=true
-./gradlew publishToMavenLocal
+./gradlew clean build install -Dskip.tests=true
 ```
 
 In the root directory of connector project, run:

@@ -38,6 +38,9 @@ rat {
     'wrapper/**',
     '**/build/**',
 
+    // SBT
+    'geode-spark-connector/**/target/**',
+
     // IDE
     'etc/eclipseFormatterProfile.xml',
     'etc/intellijIdeaCodeStyle.xml',
