@@ -54,6 +54,10 @@ dependencies {
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
+  runtime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'aspectjweaver'
+  }
   compile 'org.springframework:spring-tx:' + project.'spring-tx.version'
   compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
   compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
