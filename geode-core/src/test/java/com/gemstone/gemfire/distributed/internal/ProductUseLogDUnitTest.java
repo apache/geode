@@ -78,7 +78,7 @@ public class ProductUseLogDUnitTest extends CacheTestCase {
     int serverPort = (Integer)vm0.invoke(new SerializableCallable("get system") {
       public Object call() {
         getSystem();
-        getCache();
+        Cache cache = getCache();
         cache.createRegionFactory(RegionShortcut.REPLICATE).create("myregion");
         CacheServer server = cache.addCacheServer();
         server.setPort(0);
@@ -105,7 +105,7 @@ public class ProductUseLogDUnitTest extends CacheTestCase {
     
     vm0.invoke(new SerializableRunnable("check region") {
       public void run() {
-        Region r = cache.getRegion("myregion");
+        Region r = getCache().getRegion("myregion");
         Assert.assertNotNull(r.get("somekey"));
       }
     });
