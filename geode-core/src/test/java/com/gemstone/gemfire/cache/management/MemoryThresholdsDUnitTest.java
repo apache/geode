@@ -176,7 +176,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         irm.setCriticalHeapPercentage(90f);
         
         getCache().getLoggerI18n().fine(addExpectedExString);
-        irm.getHeapMonitor().updateStateAndSendEvent(950);
+        HeapMemoryMonitor.setTestBytesUsedForThresholdSet(950);
+        irm.getHeapMonitor().updateStateAndSendEvent();
         getCache().getLoggerI18n().fine(removeExpectedExString);
         return null;
       }
