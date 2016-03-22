@@ -43,6 +43,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJo
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.tcp.Connection;
@@ -105,6 +106,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
   public final void preTearDown() throws Exception {
     if (Locator.hasLocator()) {
       Locator.getLocator().stop();
+    }
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    if (cache != null && !cache.isClosed()) {
+      cache.close();
     }
     // delete locator state files so they don't accidentally
     // get used by other tests
