@@ -39,7 +39,7 @@ Apache Geode includes the following features:
 * REST APIs for REST-enabled application development.
 * Rolling upgrades may be possible, but they will be subject to any limitations imposed by new features.
 
-## <a name="building"></a>Building from Source
+## <a name="building"></a>Building this Release from Source
 
 Directions to build Apache Geode (incubating) from source are in the source distribution, file `BUILDING.md`.
 

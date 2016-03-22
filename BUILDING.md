@@ -1,4 +1,4 @@
-# Building from Source
+# Building this Release from Source
 
 Build instructions differ slightly for Unix and Windows platforms.
 All platforms require a Java installation, with JDK 1.8 or more recent version.
@@ -15,12 +15,12 @@ All platforms require a Java installation, with JDK 1.8 or more recent version.
 3. Within the directory containing the unpacked source code, build without the tests:
     
     ```
-    $ ./gradlew build installDist -Dskip.tests=true
+    $ ./gradlew build -Dskip.tests=true
     ```
 Or, build with the tests:
    
     ```
-    $ ./gradlew build installDist
+    $ ./gradlew build
     ```
 The built binaries will be in `geode-assembly/build/distributions/`,
 or the `gfsh` script can be found in 
@@ -44,12 +44,12 @@ or the `gfsh` script can be found in
 4. Within the folder containing the unpacked source code, build without the tests:
 
     ```
-    $ gradle build installDist -Dskip.test=true
+    $ gradle build -Dskip.test=true
     ```
 Or, build with the tests:
 
     ```
-    $ gradle build installDist
+    $ gradle build
     ```
 The built binaries will be in `geode-assembly\build\distributions\`,
 or the `gfsh.bat` script can be found in 
