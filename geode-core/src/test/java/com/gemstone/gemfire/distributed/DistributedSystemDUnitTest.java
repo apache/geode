@@ -41,6 +41,8 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystemJUnitT
 import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
 import com.gemstone.gemfire.distributed.internal.SizeableRunnable;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -350,7 +352,11 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     cache.addCacheServer();
     DistributionManager dm = (DistributionManager) system.getDistributionManager();
     InternalDistributedMember idm = dm.getDistributionManagerId();
+    GMSMembershipManager manager = (GMSMembershipManager)MembershipManagerHelper.getMembershipManager(system);
+    JGroupsMessenger messenger = (JGroupsMessenger)manager.getServices().getMessenger();
+    String jgConfig = messenger.getJGroupsStackConfig();
     system.disconnect();
+    assertTrue("expected to find port_range=\"2\" in " + jgConfig, jgConfig.contains("port_range=\"2\""));
     assertTrue(idm.getPort() <= portEndRange);
     assertTrue(idm.getPort() >= portStartRange);
     assertTrue(idm.getDirectChannelPort() <= portEndRange);
