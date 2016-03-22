@@ -22,6 +22,8 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.Thread.State;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.gemstone.gemfire.test.junit.Retry;
+import com.gemstone.gemfire.test.junit.rules.RetryRule;
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
 
@@ -31,6 +33,7 @@ import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -65,6 +68,9 @@ public class ThreadUtilsJUnitTest {
   public void tearDown() {
     mockContext.assertIsSatisfied();
   }
+
+  @Rule
+  public RetryRule retryRule = new RetryRule();
 
   @Test
   public void testGetThreadNameWithNull() {
@@ -168,6 +174,7 @@ public class ThreadUtilsJUnitTest {
   }
 
   @Test
+  @Retry(3)
   public void testSleepWithInterrupt() throws Throwable {
     TestFramework.runOnce(new SleepInterruptedMultithreadedTestCase(10 * 1000));
   }
