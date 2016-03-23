@@ -50,6 +50,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
@@ -564,6 +565,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
     RegionTestCase.preSnapshotRegion = null;
     SocketCreator.resetHostNameCache();
     SocketCreator.resolve_dns = true;
+    Message.MAX_MESSAGE_SIZE = Message.DEFAULT_MAX_MESSAGE_SIZE;
 
     // clear system properties -- keep alphabetized
     System.clearProperty("gemfire.log-level");

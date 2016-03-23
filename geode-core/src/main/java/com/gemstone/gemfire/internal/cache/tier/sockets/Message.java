@@ -82,10 +82,11 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  */
 public class Message  {
 
+  public static final int DEFAULT_MAX_MESSAGE_SIZE = 1073741824;
   /**
    * maximum size of an outgoing message.  See GEODE-478
    */
-  static final int MAX_MESSAGE_SIZE = Integer.getInteger("gemfire.client.max-message-size", 1073741824).intValue();
+  public static int MAX_MESSAGE_SIZE = Integer.getInteger("gemfire.client.max-message-size", DEFAULT_MAX_MESSAGE_SIZE).intValue();
 
   private static final Logger logger = LogService.getLogger();
   
