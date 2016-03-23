@@ -344,7 +344,7 @@ public final class SystemFailure {
    */
   private static Thread watchDog;
   
-  private static boolean isCacheClosing = false;
+  private static volatile boolean isCacheClosing = false;
 
   /**
    * Should be invoked when GemFire cache is being created. 
