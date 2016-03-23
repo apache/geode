@@ -48,6 +48,11 @@ public class ProductUseLogDUnitTest extends CacheTestCase {
   }
   
   @Override
+  public void preSetUp() {
+    disconnectAllFromDS();
+  }
+  
+  @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
     p.put(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
