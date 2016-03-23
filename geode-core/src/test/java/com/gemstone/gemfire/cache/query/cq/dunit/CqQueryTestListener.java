@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Operation;
@@ -32,6 +33,7 @@ import com.gemstone.gemfire.cache.query.CqStatusListener;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.jayway.awaitility.Awaitility;
 
 /**
  * @author rmadduri
@@ -386,6 +388,35 @@ public class CqQueryTestListener implements CqStatusListener {
     return true;
   }
   
+  public void waitForEvents(
+      final int creates,
+      final int updates,
+      final int deletes,
+      final int queryInserts,
+      final int queryUpdates,
+      final int queryDeletes,
+      final int totalEvents) {
+    // Wait for expected events to arrive
+    try {
+      Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+        if ((creates > 0 && creates != this.getCreateEventCount()) ||
+            (updates > 0 && updates != this.getUpdateEventCount()) ||
+            (deletes > 0 && deletes != this.getDeleteEventCount()) ||
+            (queryInserts > 0 && queryInserts != this.getQueryInsertEventCount()) ||
+            (queryUpdates > 0 && queryUpdates != this.getQueryUpdateEventCount()) ||
+            (queryDeletes > 0 && queryDeletes != this.getQueryDeleteEventCount()) ||
+            (totalEvents > 0 && totalEvents != this.getTotalEventCount())
+            ) {
+          return false;
+        }
+        return true;
+      });
+    } catch (Exception ex) {
+      // We just wait for expected events to arrive.
+      // Caller will do validation and throw exception.
+    }
+  }
+
 
   public void getEventHistory() {
     destroys.clear();
