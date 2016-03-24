@@ -941,37 +941,14 @@ public class InternalDistributedSystem
    */
   public void disconnect(String reason, Throwable cause, boolean shunned) {
     boolean isForcedDisconnect = dm.getRootCause() instanceof ForcedDisconnectException;
-    boolean reconnected = false;
+    boolean rejoined = false;
     this.reconnected = false;
     if (isForcedDisconnect) {
       this.forcedDisconnect = true;
       resetReconnectAttemptCounter();
-      if (sampler.isSamplingEnabled()) {
-        try {
-          // give the stat sampler time to take another sample
-          Thread.sleep(this.config.getStatisticSampleRate() * 2);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-        if (sampler.getStatSamplerStats().getJvmPauses() > 0) {
-          try {
-            // if running tests then create a heap dump
-            Class.forName("com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher");
-            Class<?> jmapClass = Class.forName("sun.tools.jmap.JMap");
-            logger.info("This member of the distributed system has been forced to disconnect.  JVM pauses have been detected - dumping heap");
-            String pid = String.valueOf(OSProcess.getId());
-            String fileName = "java"+pid+".hprof";
-            Object parameters = new String[]{"-dump:format=b,file="+fileName, pid};
-            Method main = jmapClass.getDeclaredMethod("main", String[].class);
-            main.invoke(null, parameters);
-          } catch (Exception e) {
-          }
-        }
-      }
-    
-     reconnected = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
+      rejoined = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
     }
-    if (!reconnected) {
+    if (!rejoined) {
       disconnect(false, reason, shunned);
     }
   }
