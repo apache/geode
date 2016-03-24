@@ -31,7 +31,8 @@ object Settings extends Build {
   lazy val gfcResolvers = Seq(
    //"GemStone Official Release" at "http://dist.gemstone.com/maven/release",
   "Repo for JLine" at "http://repo.springsource.org/libs-release",
-  "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
+  "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository",
+  "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/"
   //"Apache Repository" at "https://repository.apache.org/content/repositories/releases/",
   // "Akka Repository" at "http://repo.akka.io/releases/",
   // "Spray Repository" at "http://repo.spray.cc/"
