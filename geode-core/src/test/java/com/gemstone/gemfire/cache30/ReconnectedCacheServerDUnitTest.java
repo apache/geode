@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
@@ -40,7 +41,8 @@ public class ReconnectedCacheServerDUnitTest extends CacheTestCase {
   public final void postSetUp() {
     this.cache = getCache();
     if (this.cache.getCacheServers().isEmpty()) {
-      this.cache.addCacheServer();
+      CacheServer server = this.cache.addCacheServer();
+      server.setPort(0);
       addedCacheServer = true;
     }
   }

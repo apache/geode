@@ -140,7 +140,7 @@ public class ManagementStrings {
   
   public static final StringId MANAGEMENT_TASK_THREAD_GROUP = new StringId(100053, "Management Task Thread Group");
   
-  public static final StringId MANAGEMENT_TASK_CANCELLED = new StringId(100054, "Management Task Cacelled");
+  public static final StringId MANAGEMENT_TASK_CANCELLED = new StringId(100054, "Management Task Cancelled");
   
   public static final StringId TARGET_DIR_CANT_BE_NULL_OR_EMPTY = new StringId(100055, "Target directory path can not be null or empty");
   
