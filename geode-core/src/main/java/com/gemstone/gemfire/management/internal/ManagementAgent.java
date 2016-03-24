@@ -392,7 +392,7 @@ public class ManagementAgent {
     ManagementInterceptor securityInterceptor = null;
     Cache cache = CacheFactory.getAnyInstance();
     if (isCustomAuthenticator()) {
-      securityInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getSecurityProperties());
+      securityInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getProperties());
       env.put(JMXConnectorServer.AUTHENTICATOR, securityInterceptor);
     }
     else {
@@ -468,7 +468,7 @@ public class ManagementAgent {
 
     if (isCustomAuthorizer()) {
       if(securityInterceptor==null){
-        securityInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getSecurityProperties());
+        securityInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getProperties());
       }
       MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(securityInterceptor);
       cs.setMBeanServerForwarder(mBeanServerWrapper);
