@@ -19,15 +19,11 @@
 package com.vmware.gemfire.tools.pulse.tests;
 
 import com.gemstone.gemfire.management.internal.JettyHelper;
-import com.gemstone.gemfire.test.junit.categories.UITest;
 import junit.framework.Assert;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -47,8 +43,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-//@Category(UITest.class)
-//@FixMethodOrder(MethodSorters.JVM)
 public abstract class PulseAbstractTest extends PulseBaseTest {
   private static String jmxPropertiesFile;
   private static String path;
@@ -157,7 +151,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
 
     driver = new FirefoxDriver();
     driver.manage().window().maximize();
-    driver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS);
+    driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
     driver.get(pulseURL);
     WebElement userNameElement = driver.findElement(By.id("user_name"));
     WebElement passwordElement = driver.findElement(By.id("user_password"));
@@ -182,6 +176,12 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   public static void tearDownAfterClass() throws Exception {
     driver.close();
     jetty.stop();
+  }
+
+  @Before
+  public void setup() throws Exception {
+    // Make sure we go to the home page first
+    searchByXPathAndClick(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
   }
 
   public static String getPulseWarPath() throws Exception {
@@ -277,7 +277,6 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   
   @Test
   public void testClusterLocatorCount() throws IOException {
-	searchByXPathAndClick(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
     String clusterLocators = driver
         .findElement(By.id(CLUSTER_VIEW_LOCATORS_ID)).getText();
    
@@ -296,12 +295,10 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
 
  @Test
   public void testClusterMemberCount() {
-    String clusterMembers = driver.findElement(By.id(CLUSTER_VIEW_MEMBERS_ID))
-        .getText();
-    String totalMembers = JMXProperties.getInstance().getProperty(
-        "server.S1.memberCount");
-    Assert.assertEquals(totalMembers, clusterMembers);
-  }
+   String clusterMembers = driver.findElement(By.id(CLUSTER_VIEW_MEMBERS_ID)).getText();
+   String totalMembers = JMXProperties.getInstance().getProperty("server.S1.memberCount");
+   Assert.assertEquals(totalMembers, clusterMembers);
+ }
 
  @Test
   public void testClusterNumClient() {
@@ -321,7 +318,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
     Assert.assertEquals(totalfunctions, clusterFunctions);
   }
 
-@Test
+  @Test
   public void testClusterRegisteredCQCount() {
     String clusterUniqueCQs = driver.findElement(By.id(CLUSTER_UNIQUECQS_ID))
         .getText();
@@ -377,8 +374,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   
   @Test
   public void testClusterGridViewMemberID() throws InterruptedException {
-	  
-	 searchByIdAndClick("default_grid_button");	
+	 searchByIdAndClick("default_grid_button");
 	 List<WebElement> elements = driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr")); //gives me 11 rows
 	 
 	 for(int memberCount = 1; memberCount<elements.size(); memberCount++){		  
@@ -423,12 +419,13 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
      Assert.assertEquals(gridHeapUsagestring, HeapUsage);
     }
   }
-   
+
   @Test
-  public void testClusterGridViewCPUUsage() {
-	searchByIdAndClick("default_grid_button"); 
+  public void testClusterGridViewCPUUsage() throws Exception {
+    searchByIdAndClick("default_grid_button");
     for (int i = 1; i <= 3; i++) {
-      String CPUUsage = driver.findElement(By.xpath("//table[@id='memberList']/tbody/tr[" + (i + 1) + "]/td[6]")).getText();
+      String CPUUsage = driver.findElement(By.xpath("//table[@id='memberList']/tbody/tr[" + (i + 1) + "]/td[6]"))
+          .getText();
       String gridCPUUsage = JMXProperties.getInstance().getProperty("member.M" + i + ".cpuUsage");
       gridCPUUsage = gridCPUUsage.trim();
       Assert.assertEquals(gridCPUUsage, CPUUsage);
@@ -438,11 +435,8 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
 
   public void testRgraphWidget() throws InterruptedException {
     searchByIdAndClick("default_rgraph_button");
-    Thread.sleep(7000);
     searchByIdAndClick("h1");
-    Thread.sleep(500);
     searchByIdAndClick("M1");
-    Thread.sleep(7000);
   }
 
   @Test  // region count in properties file is 2 and UI is 1
@@ -455,13 +449,17 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
 
   @Test
   public void testMemberNumThread()throws InterruptedException {
-    String ThreadCount = driver.findElement(By.id(MEMBER_VIEW_THREAD_ID)).getText();    
+    searchByIdAndClick("default_grid_button");
+    searchByIdAndClick("M1&M1");
+    String ThreadCount = driver.findElement(By.id(MEMBER_VIEW_THREAD_ID)).getText();
     String memberThreadCount = JMXProperties.getInstance().getProperty("member.M1.numThreads");   
     Assert.assertEquals(memberThreadCount, ThreadCount);
   }
 
   @Test
   public void testMemberTotalFileDescriptorOpen() throws InterruptedException {
+    searchByIdAndClick("default_grid_button");
+    searchByIdAndClick("M1&M1");
     String SocketCount = driver.findElement(By.id(MEMBER_VIEW_SOCKETS_ID))
         .getText();
     String memberSocketCount = JMXProperties.getInstance().getProperty(
@@ -470,7 +468,9 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   }
 
  @Test
-  public void testMemberLoadAverage() throws InterruptedException {	
+  public void testMemberLoadAverage() throws InterruptedException {
+    searchByIdAndClick("default_grid_button");
+    searchByIdAndClick("M1&M1");
     String LoadAvg = driver.findElement(By.id(MEMBER_VIEW_LOADAVG_ID))
         .getText();
     String memberLoadAvg = JMXProperties.getInstance().getProperty(
@@ -528,8 +528,9 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   }
 
   @Test
-  public void testMemberJVMPauses(){
-   
+  public void testMemberJVMPauses() throws Exception {
+    searchByIdAndClick("default_grid_button");
+    searchByIdAndClick("M1&M1");
     String JVMPauses = driver.findElement(By.id(MEMBER_VIEW_JVMPAUSES_ID))
         .getText();
     String memberGcPausesAvg = JMXProperties.getInstance().getProperty(
@@ -538,7 +539,9 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   }
 
   @Test
-  public void testMemberCPUUsage() {  
+  public void testMemberCPUUsage() {
+    searchByIdAndClick("default_grid_button");
+    searchByIdAndClick("M1&M1");
     String CPUUsagevalue = driver.findElement(By.id(MEMBER_VIEW_CPUUSAGE_ID))
         .getText();
     String memberCPUUsage = JMXProperties.getInstance().getProperty(
@@ -547,8 +550,10 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   }
 
   @Test  // difference between UI and properties file
-  public void testMemberAverageReads() {	  
-    float ReadPerSec = Float.parseFloat(driver.findElement(By.id(MEMBER_VIEW_READPERSEC_ID)).getText());    
+  public void testMemberAverageReads() {
+    searchByIdAndClick("default_grid_button");
+    searchByIdAndClick("M1&M1");
+    float ReadPerSec = Float.parseFloat(driver.findElement(By.id(MEMBER_VIEW_READPERSEC_ID)).getText());
     float memberReadPerSec = Float.parseFloat(JMXProperties.getInstance().getProperty("member.M1.averageReads"));
     memberReadPerSec = Float.parseFloat(new DecimalFormat("##.##")
     .format(memberReadPerSec));
@@ -557,7 +562,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
 
  @Test
   public void testMemberAverageWrites() throws InterruptedException {
-    navigateToTopologyGridView();
+    testRgraphWidget();
     String WritePerSec = driver.findElement(By.id(MEMBER_VIEW_WRITEPERSEC_ID))
         .getText();
     String memberWritePerSec = JMXProperties.getInstance().getProperty(
@@ -566,12 +571,11 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   }
  
 
- @Test
+  @Test
   public void testMemberGridViewData() throws InterruptedException {
-   searchByXPathAndClick(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
-   testRgraphWidget();
-   searchByXPathAndClick(PulseTestLocators.MemberDetailsView.gridButtonXpath);
-   // get the number of rows on the grid
+    testRgraphWidget();
+    searchByXPathAndClick(PulseTestLocators.MemberDetailsView.gridButtonXpath);
+    // get the number of rows on the grid
     List<WebElement> noOfRows = driver.findElements(By.xpath("//table[@id='memberRegionsList']/tbody/tr"));    
     String MemberRegionName = driver.findElement(By.xpath("//table[@id='memberRegionsList']/tbody/tr[2]/td[1]")).getText();
     String memberRegionName = JMXProperties.getInstance().getProperty("region.R1.name");
@@ -586,9 +590,11 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
     Assert.assertEquals(memberRegionEntryCount, MemberRegionEntryCount);
   }
 
-@Test
+  @Test
   public void testDropDownList() throws InterruptedException {
-	searchByIdAndClick("memberName");
+    searchByIdAndClick("default_grid_button");
+    searchByIdAndClick("M1&M1");
+  	searchByIdAndClick("memberName");
     searchByLinkAndClick("M3");
     searchByIdAndClick("memberName");
     searchByLinkAndClick("M2");
