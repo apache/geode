@@ -349,11 +349,11 @@ public class DUnitLauncher {
 
       if (suspectStringBuilder.length() != 0) {
         System.err.println("Suspicious strings were written to the log during this run.\n"
-            + "Fix the strings or use DistributedTestCase.addExpectedException to ignore.\n"
+            + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
             + suspectStringBuilder);
         
         Assert.fail("Suspicious strings were written to the log during this run.\n"
-            + "Fix the strings or use DistributedTestCase.addExpectedException to ignore.\n"
+            + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
             + suspectStringBuilder);
       }
     }
