@@ -1192,15 +1192,15 @@ public class TCPConduit implements Runnable {
    * simulate being sick
    */
   public void beSick() {
-    this.inhibitNewConnections = true;
-    this.conTable.closeReceivers(true);
+//    this.inhibitNewConnections = true;
+//    this.conTable.closeReceivers(true);
   }
   
   /**
    * simulate being healthy
    */
   public void beHealthy() {
-    this.inhibitNewConnections = false;
+//    this.inhibitNewConnections = false;
   }
 
 }

@@ -256,9 +256,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
    * region that sleeps when notified, forcing the operation to take longer
    * than ack-wait-threshold + ack-severe-alert-threshold
    */
-  // DISABLED due to a high rate of failure in CI test runs.  See internal
-  // ticket #52319
-  public void disabledtestAckSevereAlertThreshold() throws Exception {
+  public void testAckSevereAlertThreshold() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
 //    VM vm0 = host.getVM(0);
