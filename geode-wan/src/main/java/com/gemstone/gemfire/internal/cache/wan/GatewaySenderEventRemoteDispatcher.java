@@ -203,6 +203,7 @@ public class GatewaySenderEventRemoteDispatcher implements
     int currentBatchId = this.processor.getBatchId();
     connection = getConnection(true);
     int batchIdForThisConnection = this.processor.getBatchId();
+    GatewaySenderStats statistics = this.sender.getStatistics();
     // This means we are writing to a new connection than the previous batch.
     // i.e The connection has been reset. It also resets the batchId.
     if (currentBatchId != batchIdForThisConnection
@@ -259,6 +260,7 @@ public class GatewaySenderEventRemoteDispatcher implements
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.GatewaySenderEventRemoteDispatcher_MESSAGE_TOO_LARGE_EXCEPTION, new Object[] { events.size(), newBatchSize }), e);
         this.processor.setBatchSize(newBatchSize);
+        statistics.incBatchesResized();
       }
       else {
         ex = e;

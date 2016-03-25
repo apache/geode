@@ -585,6 +585,11 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> createReceiver( nyPort ));
     vm2.invoke(() -> createPartitionedRegion( regionName, null, 0, 100, isOffHeap() ));
     validateRegionSizes( regionName, numPuts, vm2 );
+
+    vm4.invoke(() -> {
+      final AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertTrue(sender.getStatistics().getBatchesResized() > 0);
+    });
     ignoredMTLE.remove();
     ignoredGIOE.remove();
   }
