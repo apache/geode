@@ -55,6 +55,11 @@ public class HAContainerRegion implements HAContainerWrapper {
     }
   }
 
+  public Region getMapForTest() {
+    Region region = (Region)map;
+    return region;
+  }
+
   public Object putProxy(String haName, CacheClientProxy proxy) {
     return haRegionNameToProxy.put(haName, proxy);
   }
