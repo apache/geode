@@ -406,7 +406,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       @Override
       public void run() {
         // TODO GemFire used the tcp/ip connection but this is using heartbeats
-        boolean pinged = GMSHealthMonitor.this.doCheckMember(mbr, true);
+
+        boolean pinged = false;
+        try {
+          pinged = GMSHealthMonitor.this.doCheckMember(mbr, true);
+        } catch (CancelException e) {
+          return;
+        }
+          
         if (!pinged) {
           suspectedMemberInView.put(mbr, currentView);
           String reason = "Member isn't responding to heartbeat requests";
@@ -1221,6 +1228,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
                 reason);
           } catch (DistributedSystemDisconnectedException e) {
             return;
+          } catch (CancelException e) {
+            // shutting down
           } catch (Exception e) {
             logger.info("Unexpected exception while verifying member", e);
           } finally {
