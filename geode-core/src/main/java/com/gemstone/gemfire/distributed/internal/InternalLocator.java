@@ -691,7 +691,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       try {
         if (locator.sharedConfig == null) {
           // locator.sharedConfig will already be created in case of auto-reconnect
-          locator.sharedConfig = new SharedConfiguration((GemFireCacheImpl) locator.myCache);
+          locator.sharedConfig = new SharedConfiguration(locator.myCache);
         }
         locator.sharedConfig.initSharedConfiguration(locator.loadFromSharedConfigDir());
         locator.installSharedConfigDistribution();
@@ -704,7 +704,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         if (logger.isDebugEnabled()) {
           logger.debug("Cluster configuration start up was cancelled", e);
         }
-      } catch (Exception e) {
+      } catch (Throwable e) {
         logger.error(e.getMessage(), e);
       }
     }
