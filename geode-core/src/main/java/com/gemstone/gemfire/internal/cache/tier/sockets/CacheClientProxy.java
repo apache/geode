@@ -795,7 +795,7 @@ public class CacheClientProxy implements ClientSession {
    *
    * @since 5.5
    */
-  protected boolean isPaused() {
+  public boolean isPaused() {
     return this._isPaused;
   }
 

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -188,6 +190,8 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     server.invoke(() -> ClientHealthStatsDUnitTest.doPuts());
     // close durable client
     client.invoke(() -> ClientHealthStatsDUnitTest.closeClientCache());
+    
+    server.invoke("verifyProxyHasBeenPaused", () -> verifyProxyHasBeenPaused() );
     // resume puts on server, add another 100.
     server.invokeAsync(() -> ClientHealthStatsDUnitTest.resumePuts());
     // start durable client
@@ -196,6 +200,36 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     client.invoke(() -> ClientHealthStatsDUnitTest.waitForLastKey());
     // verify the stats
     server.invoke(() -> ClientHealthStatsDUnitTest.verifyStats(port));
+  }
+  
+  private static void verifyProxyHasBeenPaused() {	  
+	  
+	  WaitCriterion criterion = new WaitCriterion() {
+      
+      @Override
+      public boolean done() {
+        CacheClientNotifier ccn = CacheClientNotifier.getInstance();
+        Collection<CacheClientProxy> ccProxies = ccn.getClientProxies();
+        
+        Iterator<CacheClientProxy> itr =  ccProxies.iterator();
+        
+        while(itr.hasNext()) {
+          CacheClientProxy ccp = itr.next(); 
+          System.out.println("proxy status " + ccp.getState());
+          if(ccp.isPaused())
+            return true;
+        }
+        return false;
+      }
+      
+      @Override
+      public String description() {
+        // TODO Auto-generated method stub
+        return "Proxy has not paused yet";
+      }
+    };
+    
+    Wait.waitForCriterion(criterion, 15 * 1000, 200, true);	  
   }
   
   public static int createServerCache() throws Exception {
