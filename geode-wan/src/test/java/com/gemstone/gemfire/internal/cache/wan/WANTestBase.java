@@ -5069,7 +5069,7 @@ public class WANTestBase extends DistributedTestCase{
       Locator.getLocator().stop();
     }
     closeCache();
-    deletePDXDir();
+    CacheTestCase.cleanDiskDirs();
   }
 
   public static void closeCache() throws IOException {
