@@ -228,8 +228,11 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer tkPort = (Integer)vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
     Integer pnPort = (Integer)vm3.invoke(() -> createFirstRemoteLocator(4, lnPort));
 
+    createCacheInVMs(nyPort, vm4);
     vm4.invoke(() -> createReceiver(nyPort));
+    createCacheInVMs(tkPort, vm5);
     vm5.invoke(() -> createReceiver(tkPort));
+    createCacheInVMs(pnPort, vm6);
     vm6.invoke(() -> createReceiver(pnPort));
 
     try {
@@ -279,6 +282,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
 
+    createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> createReceiver(nyPort));
 
     try {
@@ -319,7 +323,9 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer nyPort = locatorPorts[1];
     Integer tkPort = (Integer)vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
 
+    createCacheInVMs(nyPort, vm6);
     vm6.invoke(() -> createReceiver(nyPort));
+    createCacheInVMs(tkPort, vm7);
     vm7.invoke(() -> createReceiver(tkPort));
 
     try {
@@ -364,6 +370,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
 
+    createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> createReceiver(nyPort));
 
     try {
@@ -401,6 +408,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
 
+    createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
     try {
@@ -478,6 +486,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   protected void createReceiverAndDoPutsInPausedSender(int port) {
     // Note: This is a test-specific method used by several tests to do puts from vm4 to vm2.
     String regionName = getTestMethodName() + "_PR";
+    createCacheInVMs(port, vm2);
     vm2.invoke(() -> createReceiver(port));
     vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
     vm4.invoke(() -> doPuts(regionName, 10));

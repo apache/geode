@@ -801,34 +801,6 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
             .getUnprocessedTokensAddedByPrimary()));
   }
 
-  public static void setRemoveFromQueueOnException(String senderId,
-      boolean removeFromQueue) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-    assertNotNull(sender);
-    ((AbstractGatewaySender)sender)
-        .setRemoveFromQueueOnException(removeFromQueue);
-  }
-
-  public static void unsetRemoveFromQueueOnException(String senderId) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-    assertNotNull(sender);
-    ((AbstractGatewaySender)sender).setRemoveFromQueueOnException(false);
-  }
-
   public static void waitForSenderToBecomePrimary(String senderId) {
     Set<GatewaySender> senders = ((GemFireCacheImpl)cache)
         .getAllGatewaySenders();

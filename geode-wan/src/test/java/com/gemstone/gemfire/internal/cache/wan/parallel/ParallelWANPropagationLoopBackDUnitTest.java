@@ -42,14 +42,10 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //create receiver on site1 and site2
+    createCacheInVMs(lnPort, vm2, vm4, vm5);
     vm2.invoke(() -> WANTestBase.createReceiver( lnPort ));
+    createCacheInVMs(nyPort, vm3, vm6, vm7);
     vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
-
-    //create cache on site1 and site2
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( nyPort ));
-    vm7.invoke(() -> WANTestBase.createCache( nyPort ));
 
     //create senders on site1
     vm2.invoke(() -> WANTestBase.createSender( "ln", 2,
@@ -84,15 +80,13 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
       getTestMethodName() + "_PR", "ny", 0, 100, isOffHeap()  ));
     
     //start sender on site1
-    vm2.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
-    
+    startSenderInVMs("ln", vm2, vm4, vm5);
+
+
     //start sender on site2
-    vm3.invoke(() -> WANTestBase.startSender( "ny" ));
-    vm6.invoke(() -> WANTestBase.startSender( "ny" ));
-    vm7.invoke(() -> WANTestBase.startSender( "ny" ));
-    
+    startSenderInVMs("ny", vm3, vm6, vm7);
+
+
     //pause senders on site1
     vm2.invoke(() -> WANTestBase.pauseSender( "ln" ));
     vm4.invoke(() -> WANTestBase.pauseSender( "ln" ));
@@ -162,13 +156,14 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     Integer tkPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, lnPort ));
     
     //create cache and receivers on all the 3 sites
-    vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
-    
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( nyPort ));
-    
+    createCacheInVMs(lnPort, vm3, vm6);
+    createReceiverInVMs(lnPort, vm3, vm6);
+    createCacheInVMs(nyPort, vm4, vm7);
+    createReceiverInVMs(nyPort, vm4, vm7);
+    createCacheInVMs(tkPort, vm5);
+    createReceiverInVMs(tkPort, vm5);
+
+
     //create senders on all the 3 sites
     vm3.invoke(() -> WANTestBase.createSender( "ln", 2,
       true, 100, 10, false, false, null, true ));
@@ -198,12 +193,10 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
       getTestMethodName() + "_PR", "tk", 0, 100, isOffHeap() ));
     
     //start senders on all the sites 
-    vm3.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm6.invoke(() -> WANTestBase.startSender( "ln" ));
-    
-    vm4.invoke(() -> WANTestBase.startSender( "ny" ));
-    vm7.invoke(() -> WANTestBase.startSender( "ny" ));
-    
+    startSenderInVMs("ln", vm3, vm6);
+
+    startSenderInVMs("ny", vm4, vm7);
+
     vm5.invoke(() -> WANTestBase.startSender( "tk" ));
     
     //pause senders on site1 and site3. Site2 has the sender running to pass along events
@@ -265,14 +258,14 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     Integer tkPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, lnPort ));
-    
+
+    createCacheInVMs(lnPort, vm3, vm6);
+    createCacheInVMs(nyPort, vm4, vm7);
+    createCacheInVMs(tkPort, vm5);
     vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
     vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
     vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
-    
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( nyPort ));
-    
+
     //site1
     vm3.invoke(() -> WANTestBase.createSender( "ln1", 2,
       true, 100, 10, false, false, null, true ));

@@ -80,8 +80,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     vm5.invoke(() -> WANTestBase.createSenderWithMultipleDispatchers( "ln", 2,
         false, 100, 10, false, false, null, true, 1, OrderPolicy.KEY ));
 
-    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
+    startSenderInVMs("ln", vm4, vm5);
 
     vm4.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", "ln", isOffHeap() ));
@@ -148,8 +147,9 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(nyPort, vm2, vm3);
+
 
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
@@ -158,11 +158,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
   
     vm2.invoke(() -> WANTestBase.addListenerOnRegion(getTestMethodName() + "_PR"));
     vm3.invoke(() -> WANTestBase.addListenerOnRegion(getTestMethodName() + "_PR"));
-  
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     vm4.invoke(() -> WANTestBase.createSenderWithMultipleDispatchers( "ln", 2,
         false, 100, 10, false, false, null, true, 1, OrderPolicy.KEY ));
@@ -178,8 +175,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     vm7.invoke(() -> WANTestBase.createPartitionedRegion(
         getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
 
-    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
+    startSenderInVMs("ln", vm4, vm5);
 
     vm4.invoke(() -> WANTestBase.addQueueListener( "ln", false));
     vm5.invoke(() -> WANTestBase.addQueueListener( "ln", false));
