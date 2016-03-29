@@ -179,6 +179,7 @@ public class ProcessManager {
       "-Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10",
       "-Dgemfire.disallowMcastDefaults=true",
       "-ea",
+        "-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps",
       agent,
       ChildVM.class.getName()
     };
