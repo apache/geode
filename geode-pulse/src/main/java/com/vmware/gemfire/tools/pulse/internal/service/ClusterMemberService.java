@@ -99,12 +99,13 @@ public class ClusterMemberService implements PulseService {
         memberJSON.put(this.HEAP_USAGE, 0);
       }
       double currentCPUUsage = clusterMember.getCpuUsage();
+      double loadAvg = clusterMember.getLoadAverage();
 
       memberJSON.put("cpuUsage", truncate(currentCPUUsage, 2));
       memberJSON.put("currentHeapUsage", clusterMember.getCurrentHeapSize());
       memberJSON.put("isManager", clusterMember.isManager());
       memberJSON.put("uptime", TimeUtils.convertTimeSecondsToHMS(clusterMember.getUptime()));
-      memberJSON.put("loadAvg", clusterMember.getLoadAverage());
+      memberJSON.put("loadAvg", truncate(loadAvg, 2));
       memberJSON.put("sockets", clusterMember.getTotalFileDescriptorOpen());
       memberJSON.put("threads", clusterMember.getNumThreads());
 

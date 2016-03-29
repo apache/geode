@@ -234,7 +234,7 @@ public class ClusterMembersRGraphService implements PulseService {
       }
       ObjectNode data = mapper.createObjectNode();
 
-      data.put(this.LOAD_AVG, hostLoadAvg);
+      data.put(this.LOAD_AVG, Double.valueOf(df2.format(hostLoadAvg)));
       data.put(this.SOCKETS, hostSockets);
       data.put(this.THREADS, hostNumThreads);
       data.put(this.CPU_USAGE, Double.valueOf(df2.format(hostCpuUsage)));

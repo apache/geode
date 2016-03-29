@@ -160,13 +160,14 @@ public class ClusterSelectedRegionService implements PulseService {
             regionMember.put("heapUsage", 0);
           }
           double currentCPUUsage = member.getCpuUsage();
+          double loadAvg = member.getLoadAverage();
 
           regionMember.put("cpuUsage", Double.valueOf(df2.format(currentCPUUsage)));
           regionMember.put("currentHeapUsage", member.getCurrentHeapSize());
           regionMember.put("isManager", member.isManager());
           regionMember.put("uptime", TimeUtils.convertTimeSecondsToHMS(member.getUptime()));
 
-          regionMember.put("loadAvg", member.getLoadAverage());
+          regionMember.put("loadAvg", Double.valueOf(df2.format(loadAvg)));
           regionMember.put("sockets", member.getTotalFileDescriptorOpen());
           regionMember.put("threads", member.getNumThreads());
 
