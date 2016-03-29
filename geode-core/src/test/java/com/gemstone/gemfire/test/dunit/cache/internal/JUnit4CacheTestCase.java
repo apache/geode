@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
@@ -537,15 +538,17 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
 
   public static final void cleanDiskDirs() throws IOException {
     FileUtil.delete(getDiskDir());
-    File[] defaultStoreFiles = new File(".").listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
-        return name.startsWith("BACKUPDiskStore-" + System.getProperty("vmid"));
-      }
-    });
+    Arrays.stream(new File(".").listFiles()).forEach(file -> deleteBACKUPDiskStoreFile(file));
+  }
 
-    for(File file: defaultStoreFiles) {
-      FileUtil.delete(file);
+  private static void deleteBACKUPDiskStoreFile(final File file) {
+    if(file.getName().startsWith("BACKUPDiskStore-")){
+      try {
+        FileUtil.delete(file);
+      }
+      catch (IOException e) {
+        throw new RuntimeException("Unable to delete BACKUPDiskStore file", e);
+      }
     }
   }
 
