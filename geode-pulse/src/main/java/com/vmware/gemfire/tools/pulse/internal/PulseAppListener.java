@@ -198,7 +198,7 @@ public class PulseAppListener implements ServletContextListener {
        
       useGemFireCredentials = areWeUsingGemFireSecurityProfile(event); 
     }
-    
+
     // Set user details in repository    
     repository.setJmxUserName(jmxUserName);
     repository.setJmxUserPassword(jmxUserPassword);

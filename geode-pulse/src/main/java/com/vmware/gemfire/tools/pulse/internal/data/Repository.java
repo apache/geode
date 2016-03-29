@@ -20,6 +20,8 @@
 package com.vmware.gemfire.tools.pulse.internal.data;
 
 import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.net.ConnectException;
 import java.util.HashMap;
@@ -149,16 +151,35 @@ public class Repository {
   }
 
   /**
-   * Convenience method for now, seeing that we're maintaining a 1:1 mapping
-   * between webapp and cluster
+   * we're maintaining a 1:1 mapping between webapp and cluster, there is no need for a map of clusters based on the host and port
+   * We are using this clusterMap to maintain cluster for different users now.
+   * For a single-user connection to gemfire JMX, we will use the default username/password in the pulse.properties
+   * (# JMX User Properties )
+   * pulse.jmxUserName=admin
+   * pulse.jmxUserPassword=admin
+   *
+   * But for multi-user connections to gemfireJMX, i.e pulse that uses gemfire integrated security, we will need to get the username form the context
    */
   public Cluster getCluster() {
-    return this.getCluster(getJmxHost(), getJmxPort());
+    String username = null;
+    String password = null;
+    if(useGemFireCredentials) {
+      Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+      if(auth!=null) {
+        username = auth.getName();
+        password = (String) auth.getCredentials();
+      }
+    }
+    else{
+      username = this.jmxUserName;
+      password = this.jmxUserPassword;
+    }
+    return this.getCluster(username, password);
   }
 
-  public Cluster getCluster(String host, String port) {
+  public Cluster getCluster(String username, String password) {
     synchronized (this.clusterMap) {
-      String key = this.getClusterKey(host, port);
+      String key = username;
       Cluster data = this.clusterMap.get(key);
 
       LOGGER = PulseLogWriter.getLogger();
@@ -169,9 +190,9 @@ public class Repository {
             LOGGER.info(resourceBundle.getString("LOG_MSG_CREATE_NEW_THREAD")
                 + " : " + key);
           }
-          data = new Cluster(host, port, this.getJmxUserName(), this.getJmxUserPassword());
+          data = new Cluster(this.jmxHost, this.jmxPort, username, password);
           // Assign name to thread created
-          data.setName(PulseConstants.APP_NAME + "-" + host + ":" + port);
+          data.setName(PulseConstants.APP_NAME + "-" + this.jmxHost + ":" + this.jmxPort + ":" + username);
           // Start Thread
           data.start();
           this.clusterMap.put(key, data);

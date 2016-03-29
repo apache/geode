@@ -204,18 +204,16 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * @return
    */
   public JMXConnector getJMXConnection() {
-    return getJMXConnection(this.userName, this.userPassword, true);
+    return getJMXConnection(true);
   }
 
   /**
    * Get connection for given userName and password. This is used for DataBrowser
    * queries which has to be fired using credentials provided at pulse login page
    *
-   * @param user jmxUser name
-   * @param password password
    * @return
    */
-  public JMXConnector getJMXConnection(String user, String password, final boolean registerURL) {
+  public JMXConnector getJMXConnection(final boolean registerURL) {
     JMXConnector connection = null;
     // Reference to repository
     Repository repository = Repository.get();
@@ -267,7 +265,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
       if (StringUtils.isNotNullNotEmptyNotWhiteSpace(jmxSerURL)) {
         JMXServiceURL url = new JMXServiceURL(jmxSerURL);
-        String[] creds = { user, password };
+        String[] creds = { this.userName, this.userPassword };
         Map<String, Object> env = new HashMap<String, Object>();
         env.put(JMXConnector.CREDENTIALS, creds);
 

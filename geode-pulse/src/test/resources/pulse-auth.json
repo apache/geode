@@ -11,11 +11,12 @@
   ],
   "users": [
     {
-      "name": "admin",
-      "password": "admin",
+      "name": "pulseUser",
+      "password": "12345",
       "roles": [
         "pulse"
       ]
     }
   ]
+
 }

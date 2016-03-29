@@ -58,7 +58,7 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
 
     try {
       LOGGER.fine("Connecting to GemFire with user=" + name);
-      JMXConnector jmxc = Repository.get().getCluster().connectToGemFire(name, password);
+      JMXConnector jmxc = Repository.get().getCluster(name, password).connectToGemFire();
       if (jmxc != null) {
         Collection<GrantedAuthority> list = GemFireAuthentication.populateAuthorities(jmxc);
         GemFireAuthentication auth = new GemFireAuthentication(authentication.getPrincipal(),

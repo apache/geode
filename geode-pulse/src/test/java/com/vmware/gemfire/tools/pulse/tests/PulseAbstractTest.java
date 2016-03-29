@@ -51,8 +51,6 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   private static Server server = null;
   private static String pulseURL = null;
   public static WebDriver driver;
-  private static final String userName = "admin";
-  private static final String pasword = "admin";
 
   /* Constants for executing Data Browser queries */
   public static final String QUERY_TYPE_ONE = "query1";
@@ -129,9 +127,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   private static final String MEMBER_DROPDOWN_ID = "Members";
   private static final String DATA_DROPDOWN_ID = "Data";
 
-  public static void setUpServer(String jsonAuthFile) throws Exception {
-    System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
-
+  public static void setUpServer(String username, String password, String jsonAuthFile) throws Exception {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     jmxPropertiesFile = classLoader.getResource("test.properties").getPath();
     path = getPulseWarPath();
@@ -155,8 +151,8 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
     driver.get(pulseURL);
     WebElement userNameElement = driver.findElement(By.id("user_name"));
     WebElement passwordElement = driver.findElement(By.id("user_password"));
-    userNameElement.sendKeys(userName);
-    passwordElement.sendKeys(pasword);
+    userNameElement.sendKeys(username);
+    passwordElement.sendKeys(password);
     passwordElement.submit();
 
     Thread.sleep(3000);

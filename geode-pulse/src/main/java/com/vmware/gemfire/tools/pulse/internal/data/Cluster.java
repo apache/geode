@@ -27,6 +27,7 @@ import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
 import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
+import javax.management.remote.JMXConnector;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,8 +54,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.management.remote.JMXConnector;
 /**
  * Class Cluster This class is the Data Model for the data used for the Pulse
  * Web UI.
@@ -2901,9 +2900,9 @@ public class Cluster extends Thread {
     return this.getDataBrowser().deleteQueryById(userId, queryId);
   }
   
-  public JMXConnector connectToGemFire(String user, String password) {
+  public JMXConnector connectToGemFire() {
     if(this.updater instanceof JMXDataUpdater) {
-      return ((JMXDataUpdater) this.updater).getJMXConnection(user, password, false);
+      return ((JMXDataUpdater) this.updater).getJMXConnection(false);
     } else {
       return null;
     }

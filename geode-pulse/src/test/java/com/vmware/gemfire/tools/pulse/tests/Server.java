@@ -43,7 +43,6 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"
@@ -62,6 +61,7 @@ public class Server {
     loadMBeans();
 
     if (jsonAuthFile != null) {
+      System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
       Properties props = new Properties();
       props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
       props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
@@ -73,6 +73,7 @@ public class Server {
       cs = JMXConnectorServerFactory.newJMXConnectorServer(url, env, mbs);
       cs.setMBeanServerForwarder(new MBeanServerWrapper(interceptor));
     } else {
+      System.setProperty("spring.profiles.active", "pulse.authentication.default");
       cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
     }
 

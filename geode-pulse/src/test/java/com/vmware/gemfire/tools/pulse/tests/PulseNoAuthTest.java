@@ -28,6 +28,6 @@ public class PulseNoAuthTest extends PulseAbstractTest {
 
   @BeforeClass
   public static void beforeClassSetup() throws Exception {
-    setUpServer(null);
+    setUpServer("admin", "admin", null);
   }
 }
