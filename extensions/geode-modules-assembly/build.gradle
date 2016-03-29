@@ -19,15 +19,12 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 configurations {
   slf4jDeps
-  servletApiDeps
   moduleDistOutputs
 }
 
 dependencies {
   slf4jDeps 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
-
-  servletApiDeps 'javax.servlet:servlet-api:2.5'
 }
 
 jar.enabled = false
@@ -42,7 +39,7 @@ disableSigning()
 
 def getJarArtifact(module) {
   project(module).configurations.archives.artifacts.findAll {
-    it instanceof PublishArtifact && it.classifier == '' && it.type == 'jar'
+    it instanceof PublishArtifact && it.type == 'jar' && it.classifier == ''
   }.collect { it.file }
 }
 
@@ -59,10 +56,6 @@ def configureTcServerAssembly = {
     from('release/scripts') {
       include '*'
     }
-    from('release/tcserver/geode-cs') {
-      include 'modules.env'
-    }
-    filter(ReplaceTokens, tokens:['GEMFIRE_MODULES_VERSION': version])
   }
   into('geode-cs/conf') {
     from('release/conf') {
@@ -76,8 +69,6 @@ def configureTcServerAssembly = {
   into('geode-cs') {
     from('release/tcserver/geode-cs') {
       include 'configuration-prompts.properties'
-      include 'README.txt'
-      filter(ReplaceTokens, tokens:['VERSION': version])
     }
   }
 
@@ -85,11 +76,6 @@ def configureTcServerAssembly = {
   into('geode-cs-tomcat-7/conf') {
     from('release/tcserver/geode-cs-tomcat-7') {
       include 'context-fragment.xml'
-    }
-  }
-  into('geode-cs-tomcat-7/bin') {
-    from('release/tcserver/geode-cs-tomcat-7') {
-      include 'modules.env'
     }
   }
   // All peer-to-peer files
@@ -106,9 +92,6 @@ def configureTcServerAssembly = {
       include 'gemfire.*'
       include 'setenv.properties'
     }
-    from('release/tcserver/geode-p2p') {
-      include 'modules.env'
-    }
   }
   into('geode-p2p/conf') {
     from('release/conf') {
@@ -122,8 +105,6 @@ def configureTcServerAssembly = {
   into('geode-p2p') {
     from('release/tcserver/geode-p2p') {
       include 'configuration-prompts.properties'
-      include 'README.txt'
-      filter(ReplaceTokens, tokens:['VERSION': version])
     }
   }
 
@@ -133,32 +114,17 @@ def configureTcServerAssembly = {
       include 'context-fragment.xml'
     }
   }
-  into('geode-p2p-tomcat-7/bin') {
-    from('release/tcserver/geode-p2p-tomcat-7') {
-      include 'modules.env'
-    }
-  }
 }
 
 def configureTcServer30Assembly = {
   archiveName = "Apache_Geode_Modules-${version}-tcServer30.zip"
 
-  into('geode-cs-tomcat-8/bin') {
-    from('release/tcserver/geode-cs-tomcat-8') {
-      include 'modules.env'
-    }
-  }
   into('geode-cs-tomcat-8/conf') {
     from('release/tcserver/geode-cs-tomcat-8') {
       include 'context-fragment.xml'
     }
   }
 
-  into('geode-p2p-tomcat-8/bin') {
-    from('release/tcserver/geode-p2p-tomcat-8') {
-      include 'modules.env'
-    }
-  }
   into('geode-p2p-tomcat-8/conf') {
     from('release/tcserver/geode-p2p-tomcat-8') {
       include 'context-fragment.xml'
@@ -201,23 +167,24 @@ task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:asse
   archiveName = "Apache_Geode_Modules-${version}-AppServer.zip"
 
   into('lib') {
+    // Use a closure here so that the evaluation is deferred. Without this the 'internal'
+    // jar won't be picked up.
+    from { getJarArtifact(':extensions/geode-modules-session') }
     from getJarArtifact(':extensions/geode-modules')
-    from getJarArtifact(':extensions/geode-modules-session')
     from configurations.slf4jDeps
-    from configurations.servletApiDeps
   }
 
   into('bin') {
     from('release/session/bin/') {
-      include 'setenv.properties'
       include 'modify_war'
-      include 'cacheserver.*'
-      include 'gemfire.*'
 
-      filter(ReplaceTokens, tokens:['GEMFIRE_MODULES_VERSION': version])
+      filter(ReplaceTokens, tokens:['GEODE_VERSION': version])
       filter(ReplaceTokens, tokens:['SLF4J_VERSION': project.'slf4j-api.version'])
-      filter(ReplaceTokens, tokens:['SERVLET_API_VERSION': project.'javax.servlet-api.version'])
-      filter(ReplaceTokens, tokens:['GEMFIRE_VERSION': version])
+      filter(ReplaceTokens, tokens:['LOG4J_VERSION': project.'log4j.version'])
+      filter(ReplaceTokens, tokens:['FASTUTIL_VERSION': project.'fastutil.version'])
+      filter(ReplaceTokens, tokens:['ANTLR_VERSION': project.'antlr.version'])
+      filter(ReplaceTokens, tokens:['TX_VERSION': project.'javax.transaction-api.version'])
+      filter(ReplaceTokens, tokens:['JGROUPS_VERSION': project.'jgroups.version'])
     }
   }
 

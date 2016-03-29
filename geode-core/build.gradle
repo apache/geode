@@ -32,7 +32,7 @@ dependencies {
   // External 
   provided files("${System.getProperty('java.home')}/../lib/tools.jar")
   compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
-  compile 'org.jgroups:jgroups:3.6.8.Final'
+  compile 'org.jgroups:jgroups:' + project.'jgroups.version'
   compile 'antlr:antlr:' + project.'antlr.version'
   compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
   compile 'commons-io:commons-io:' + project.'commons-io.version'

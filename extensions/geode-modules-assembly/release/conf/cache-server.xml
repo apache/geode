@@ -31,10 +31,8 @@
   </gateway-hub>
   -->
 
-  <!-- Uncomment the following cache-server element to modify the listen port -->
-  <!--
-  <cache-server port="44444"/>
-  -->
+  <!-- Change the following cache-server element to modify the listening port -->
+  <cache-server port="0"/>
 
   <!-- Uncomment the following disk-store element to modify the default disk store directory -->
   <!--

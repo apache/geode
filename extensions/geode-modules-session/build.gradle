@@ -45,8 +45,7 @@ task internalJar(type: Jar) {
   from sourceSets.main.output
   include '**/internal/**/*'
   includeEmptyDirs = false
-  baseName = 'geode-modules-session'
-  classifier = 'internal'
+  baseName = 'geode-modules-session-internal'
 }
 
 artifacts {

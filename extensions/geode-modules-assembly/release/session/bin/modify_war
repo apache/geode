@@ -15,41 +15,6 @@
 # limitations under the License.
 #
 
-X=`dirname $0`
-EXE_DIR=`cd $X; pwd`
-LIB_DIR=`cd ${X}/../lib; pwd`
-
-SESSION_JAR="${LIB_DIR}/geode-modules-session-external-@GEMFIRE_MODULES_VERSION@.jar"
-
-declare -a OTHER_JARS
-OTHER_JARS=(${LIB_DIR}/gemfire.jar \
-    ${LIB_DIR}/antlr.jar
-    ${LIB_DIR}/geode-modules-@GEMFIRE_MODULES_VERSION@.jar \
-    ${LIB_DIR}/geode-modules-session-@GEMFIRE_MODULES_VERSION@.jar \
-    ${LIB_DIR}/slf4j-api-@SLF4J_VERSION@.jar)
-
-# This is required for GemFire 8.1
-LOG4J_API=$(ls ${LIB_DIR}/log4j-api*jar)
-LOG4J_CORE=$(ls ${LIB_DIR}/log4j-core*jar)
-if [ -f ${LOG4J_API} -a -f ${LOG4J_CORE} ]; then
-    OTHER_JARS[${#OTHER_JARS[*]}]=$LOG4J_API
-    OTHER_JARS[${#OTHER_JARS[*]}]=$LOG4J_CORE
-fi
-
-TMP_DIR="/tmp/modify_war.$$"
-
-ARG_INPUT_FILE=""
-ARG_WAR_LIB_DIR="WEB-INF/lib"
-ARG_EAR_LIB_DIR="lib"
-ARG_OUTPUT_FILE=""
-ARG_TEST_RUN=0
-ARG_CACHE_TYPE="peer-to-peer"
-ARG_PROCESS_LIBS=1
-declare -a ARG_GEMFIRE_PARAMETERS=""
-declare -a ARG_WAR_LIBS="$SESSION_JAR"
-declare -a ARG_EAR_LIBS=""
-declare -a ARG_JVM_OPTS=""
-
 function usage() {
     cat <<EOF
 USAGE: modify_war <args>
@@ -119,13 +84,21 @@ WHERE <args>:
                     necessary jars into the file. When this option is used,
                     additional jars will need to be made available to the
                     container:
-                        gemfire.jar
                         geode-modules.jar
-                        geode-modules-session.jar
+                        geode-modules-session-internal.jar
+                        geode-core.jar
+                        geode-json.jar
+                        antlr.jar
+                        log4j-core.jar
+                        log4j-api.jar
+                        log4j-jul.jar
+                        fastutil.jar
+                        javax.transactions-api.jar
+                        jgroups.jar
                         slf4j-api.jar
                         slf4j-jdk14.jar (not for WebLogic)
                         geode-modules-slf4j-weblogic.jar (WebLogic only)
-                    This option still modifes any web.xml files.
+                    This option still modifies any web.xml files.
                         
 EOF
 }
@@ -271,6 +244,48 @@ function process_input_file() {
         rm -rf $TMP_WAR_DIR
     done
 }
+
+########  Mainline  #########
+
+X=`dirname $0`
+EXE_DIR=`cd $X; pwd`
+LIB_DIR=`cd ${X}/../lib; pwd`
+VERSION="@GEODE_VERSION@"
+
+if [ -z "$GEODE" ]; then
+    exiting "Please set the GEODE environment variable to the root of the Geode install location" 1
+fi
+
+SESSION_JAR="${LIB_DIR}/geode-modules-session-${VERSION}.jar"
+
+declare -a OTHER_JARS
+OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
+    ${GEODE}/lib/geode-json-${VERSION}.jar \
+    ${GEODE}/lib/antlr-@ANTLR_VERSION@.jar \
+    ${GEODE}/lib/log4j-core-@LOG4J_VERSION@.jar \
+    ${GEODE}/lib/log4j-api-@LOG4J_VERSION@.jar \
+    ${GEODE}/lib/log4j-jul-@LOG4J_VERSION@.jar \
+    ${GEODE}/lib/fastutil-@FASTUTIL_VERSION@.jar \
+    ${GEODE}/lib/javax.transaction-api-@TX_VERSION@.jar \
+    ${GEODE}/lib/jgroups-@JGROUPS_VERSION@.jar
+    ${LIB_DIR}/geode-modules-${VERSION}.jar \
+    ${LIB_DIR}/geode-modules-session-internal-${VERSION}.jar \
+    ${LIB_DIR}/slf4j-api-@SLF4J_VERSION@.jar \
+    ${LIB_DIR}/slf4j-jdk14-@SLF4J_VERSION@.jar)
+
+TMP_DIR="/tmp/modify_war.$$"
+
+ARG_INPUT_FILE=""
+ARG_WAR_LIB_DIR="WEB-INF/lib"
+ARG_EAR_LIB_DIR="lib"
+ARG_OUTPUT_FILE=""
+ARG_TEST_RUN=0
+ARG_CACHE_TYPE=""
+ARG_PROCESS_LIBS=1
+declare -a ARG_GEMFIRE_PARAMETERS=""
+declare -a ARG_WAR_LIBS="$SESSION_JAR"
+declare -a ARG_EAR_LIBS=""
+declare -a ARG_JVM_OPTS=""
 
 trap exiting INT QUIT TERM
 
