@@ -54,6 +54,7 @@ import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -1148,6 +1149,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       } catch (PrimaryBucketException e) {
         if (logger.isDebugEnabled()) {
           logger.debug("Primary bucket :{} moved to other member", bucketId);
+        }
+      } catch (RegionDestroyedException e) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Caught RegionDestroyedException attempting to remove key {} from bucket {} in {}", key, bucketId, prQ.getFullPath());
         }
       }
       addRemovedEvent(prQ, bucketId, key);
