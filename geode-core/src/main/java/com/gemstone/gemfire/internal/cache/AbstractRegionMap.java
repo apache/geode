@@ -1624,7 +1624,7 @@ public abstract class AbstractRegionMap implements RegionMap {
               // Create an entry event only if the calling context is
               // a receipt of a TXCommitMessage AND there are callbacks installed
               // for this region
-              boolean invokeCallbacks = shouldCreateCBEvent(owner, false/*isInvalidate*/, isRegionReady || inRI);
+              boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady || inRI);
               EntryEventImpl cbEvent = createCBEvent(owner, op,
                   key, null, txId, txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
               try {
@@ -1736,7 +1736,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 }
                 else {
                   try {
-                    boolean invokeCallbacks = shouldCreateCBEvent(owner, false, isRegionReady || inRI);
+                    boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady || inRI);
                     cbEvent = createCBEvent(owner, op,
                         key, null, txId, txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
                     try {
@@ -1798,7 +1798,7 @@ public abstract class AbstractRegionMap implements RegionMap {
             if (!opCompleted) {
               // already has value set to Token.DESTROYED
               opCompleted = true;
-              boolean invokeCallbacks = shouldCreateCBEvent(owner, false, isRegionReady || inRI);
+              boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady || inRI);
               cbEvent = createCBEvent(owner, op,
                   key, null, txId, txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
               try {
@@ -1888,6 +1888,14 @@ public abstract class AbstractRegionMap implements RegionMap {
    * If true then invalidates that throw EntryNotFoundException
    * or that are already invalid will first call afterInvalidate on CacheListeners. 
    * The old value on the event passed to afterInvalidate will be null.
+   * If the region is not initialized then callbacks will not be done.
+   * This property only applies to non-transactional invalidates.
+   * Transactional invalidates ignore this property.
+   * Note that empty "proxy" regions on a client will not be sent invalidates
+   * from the server unless they also set the proxy InterestPolicy to ALL.
+   * If the invalidate is not sent then this property will not cause a listener 
+   * on that client to be notified of the invalidate.
+   * A non-empty "caching-proxy" will receive invalidates from the server.
    */
   public static boolean FORCE_INVALIDATE_EVENT = Boolean.getBoolean("gemfire.FORCE_INVALIDATE_EVENT");
 
@@ -1895,9 +1903,9 @@ public abstract class AbstractRegionMap implements RegionMap {
    * If the FORCE_INVALIDATE_EVENT flag is true
    * then invoke callbacks on the given event.
    */
-  void forceInvalidateEvent(EntryEventImpl event) {
+  static void forceInvalidateEvent(EntryEventImpl event, LocalRegion owner) {
     if (FORCE_INVALIDATE_EVENT) {
-      event.invokeCallbacks(_getOwner(), false, false);
+      event.invokeCallbacks(owner, false, false);
     }
   }
   
@@ -1917,8 +1925,9 @@ public abstract class AbstractRegionMap implements RegionMap {
     boolean didInvalidate = false;
     RegionEntry invalidatedRe = null;
     boolean clearOccured = false;
-
     DiskRegion dr = owner.getDiskRegion();
+    boolean ownerIsInitialized = owner.isInitialized();
+    try {
     // Fix for Bug #44431. We do NOT want to update the region and wait
     // later for index INIT as region.clear() can cause inconsistency if
     // happened in parallel as it also does index INIT.
@@ -1967,9 +1976,8 @@ public abstract class AbstractRegionMap implements RegionMap {
                         // that's okay - when writing an invalid into a disk, the
                         // region has been cleared (including this token)
                       }
-                      forceInvalidateEvent(event);
                     } else {
-                      owner.cacheWriteBeforeInvalidate(event, invokeCallbacks, forceNewEntry);
+                      owner.serverInvalidate(event);
                       if (owner.concurrencyChecksEnabled && event.noVersionReceivedFromServer()) {
                         // server did not perform the invalidation, so don't leave an invalid
                         // entry here
@@ -2041,17 +2049,20 @@ public abstract class AbstractRegionMap implements RegionMap {
                 if (forceNewEntry && event.isFromServer()) {
                   // don't invoke listeners - we didn't force new entries for
                   // CCU invalidations before 7.0, and listeners don't care
-                  event.inhibitCacheListenerNotification(true);
+                  if (!FORCE_INVALIDATE_EVENT) {
+                    event.inhibitCacheListenerNotification(true);
+                  }
                 }
                 event.setRegionEntry(newRe);
-                owner.cacheWriteBeforeInvalidate(event, invokeCallbacks, forceNewEntry);
+                owner.serverInvalidate(event);
                 if (!forceNewEntry && event.noVersionReceivedFromServer()) {
                   // server did not perform the invalidation, so don't leave an invalid
                   // entry here
                   return false;
                 }
                 try {
-                  if (!owner.isInitialized() && owner.getDataPolicy().withReplication()) {
+                  ownerIsInitialized = owner.isInitialized();
+                  if (!ownerIsInitialized && owner.getDataPolicy().withReplication()) {
                     final int oldSize = owner.calculateRegionEntryValueSize(newRe);
                     invalidateEntry(event, newRe, oldSize);
                   }
@@ -2111,7 +2122,8 @@ public abstract class AbstractRegionMap implements RegionMap {
             re = null;
           }
           if (re == null) {
-            if (!owner.isInitialized()) {
+            ownerIsInitialized = owner.isInitialized();
+            if (!ownerIsInitialized) {
               // when GII message arrived or processed later than invalidate
               // message, the entry should be created as placeholder
               RegionEntry newRe = haveTombstone? tombstone : getEntryFactory().createEntry(owner, event.getKey(),
@@ -2139,7 +2151,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 }
        
                 // bug #43287 - send event to server even if it's not in the client (LRU may have evicted it)
-                owner.cacheWriteBeforeInvalidate(event, true, false);
+                owner.serverInvalidate(event);
                 if (owner.concurrencyChecksEnabled) {
                   if (event.getVersionTag() == null) {
                     // server did not perform the invalidation, so don't leave an invalid
@@ -2196,11 +2208,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                   if (event.getVersionTag() != null && owner.getVersionVector() != null) {
                     owner.getVersionVector().recordVersion((InternalDistributedMember) event.getDistributedMember(), event.getVersionTag());
                   }
-                  forceInvalidateEvent(event);
                 }
                 else { // previous value not invalid
                   event.setRegionEntry(re);
-                  owner.cacheWriteBeforeInvalidate(event, invokeCallbacks, forceNewEntry);
+                  owner.serverInvalidate(event);
                   if (owner.concurrencyChecksEnabled && event.noVersionReceivedFromServer()) {
                     // server did not perform the invalidation, so don't leave an invalid
                     // entry here
@@ -2263,7 +2274,6 @@ public abstract class AbstractRegionMap implements RegionMap {
             // is in region, do nothing
           }
           if (!entryExisted) {
-            forceInvalidateEvent(event);
             owner.checkEntryNotFound(event.getKey());
           }
         } // while(retry)
@@ -2294,6 +2304,11 @@ public abstract class AbstractRegionMap implements RegionMap {
       }
     }
     return didInvalidate;
+    } finally {
+      if (ownerIsInitialized) {
+        forceInvalidateEvent(event, owner);
+      }
+    }
   }
 
   protected void invalidateNewEntry(EntryEventImpl event,
@@ -2420,7 +2435,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                     // a receipt of a TXCommitMessage AND there are callbacks
                     // installed
                     // for this region
-                    boolean invokeCallbacks = shouldCreateCBEvent(owner, true, owner.isInitialized());
+                    boolean invokeCallbacks = shouldCreateCBEvent(owner, owner.isInitialized());
                     boolean cbEventInPending = false;
                     cbEvent = createCBEvent(owner, 
                         localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE,
@@ -2484,7 +2499,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 }
               }
               if (!opCompleted) {
-                boolean invokeCallbacks = shouldCreateCBEvent( owner, true /* isInvalidate */, owner.isInitialized());
+                boolean invokeCallbacks = shouldCreateCBEvent( owner, owner.isInitialized());
                 boolean cbEventInPending = false;
                 cbEvent = createCBEvent(owner, 
                     localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE,
@@ -2549,7 +2564,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 // a receipt of a TXCommitMessage AND there are callbacks
                 // installed
                 // for this region
-                boolean invokeCallbacks = shouldCreateCBEvent(owner, true, owner.isInitialized());
+                boolean invokeCallbacks = shouldCreateCBEvent(owner, owner.isInitialized());
                 boolean cbEventInPending = false;
                 cbEvent = createCBEvent(owner, 
                     localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, 
@@ -3326,7 +3341,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     final boolean isRegionReady = owner.isInitialized();
     EntryEventImpl cbEvent = null;
     EntryEventImpl sqlfEvent = null;
-    boolean invokeCallbacks = shouldCreateCBEvent(owner, false /*isInvalidate*/, isRegionReady);
+    boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady);
     boolean cbEventInPending = false;
     cbEvent = createCBEvent(owner, putOp, key, newValue, txId, 
         txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
@@ -3749,7 +3764,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
   
   static boolean shouldCreateCBEvent( final LocalRegion owner, 
-      final boolean isInvalidate, final boolean isInitialized)
+      final boolean isInitialized)
   {
     LocalRegion lr = owner;
     boolean isPartitioned = lr.isUsedForPartitionedRegionBucket();
@@ -3762,17 +3777,10 @@ public abstract class AbstractRegionMap implements RegionMap {
       }*/
       lr = owner.getPartitionedRegion();
     }
-    if (isInvalidate) { // ignore shouldNotifyGatewayHub check for invalidates
-      return (isPartitioned || isInitialized)
+    return (isPartitioned || isInitialized)
           && (lr.shouldDispatchListenerEvent()
             || lr.shouldNotifyBridgeClients()
             || lr.getConcurrencyChecksEnabled());
-    } else {
-      return (isPartitioned || isInitialized)
-          && (lr.shouldDispatchListenerEvent()
-            || lr.shouldNotifyBridgeClients()
-            || lr.getConcurrencyChecksEnabled());
-    }
   }
 
   /** create a callback event for applying a transactional change to the local cache */
