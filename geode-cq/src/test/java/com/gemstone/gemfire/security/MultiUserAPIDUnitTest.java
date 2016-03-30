@@ -16,13 +16,13 @@
  */
 package com.gemstone.gemfire.security;
 
-import com.gemstone.gemfire.security.generator.CredentialGenerator;
-import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
-import hydra.Log;
+import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
+import static com.gemstone.gemfire.security.SecurityTestUtils.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 
 import java.io.IOException;
 import java.util.Properties;
-
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
@@ -33,173 +33,72 @@ import com.gemstone.gemfire.cache.query.CqAttributesFactory;
 import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.security.generator.CredentialGenerator;
+import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
+@Category(DistributedTest.class)
+public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
 
-  /** constructor */
-  public MultiuserAPIDUnitTest(String name) {
-    super(name);
-  }
-
-  private VM server1 = null;
-
-  private VM server2 = null;
-
-  private VM client1 = null;
-
-  private VM client2 = null;
-
-  private static final String[] serverExpectedExceptions = {
+  private static final String[] serverIgnoredExceptions = {
       AuthenticationRequiredException.class.getName(),
       AuthenticationFailedException.class.getName(),
       GemFireSecurityException.class.getName(),
-      ClassNotFoundException.class.getName(), IOException.class.getName(),
-      SSLException.class.getName(), SSLHandshakeException.class.getName()};
+      ClassNotFoundException.class.getName(),
+      IOException.class.getName(),
+      SSLException.class.getName(),
+      SSLHandshakeException.class.getName()};
 
-  private static final String[] clientExpectedExceptions = {
+  private static final String[] clientIgnoredExceptions = {
       AuthenticationRequiredException.class.getName(),
       AuthenticationFailedException.class.getName(),
       SSLHandshakeException.class.getName()};
 
-  @Override
-  public final void postSetUp() throws Exception {
-    final Host host = Host.getHost(0);
-    server1 = host.getVM(0);
-    server2 = host.getVM(1);
-    client1 = host.getVM(2);
-    client2 = host.getVM(3);
-
-    server1.invoke(() -> SecurityTestUtil.registerExpectedExceptions(serverExpectedExceptions));
-    server2.invoke(() -> SecurityTestUtil.registerExpectedExceptions(serverExpectedExceptions));
-    client1.invoke(() -> SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions));
-    client2.invoke(() -> SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions));
-  }
-
-  public static Integer createCacheServer(Object dsPort, Object locatorString,
-      Object authenticator, Object extraProps, Object javaProps) {
-
-    Properties authProps;
-    if (extraProps == null) {
-      authProps = new Properties();
-    } else {
-      authProps = (Properties)extraProps;
-    }
-    if (authenticator != null) {
-      authProps.setProperty(
-          DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, authenticator
-              .toString());
-    }
-    return SecurityTestUtil.createCacheServer(authProps, javaProps,
-        (Integer)dsPort, (String)locatorString, null, new Integer(
-            SecurityTestUtil.NO_EXCEPTION));
-  }
-
-  private static void createCacheClient(Object authInit, Properties authProps,
-      Properties javaProps, Integer[] ports, Object numConnections,
-      Boolean multiUserMode, Integer expectedResult) {
-
-    String authInitStr = (authInit == null ? null : authInit.toString());
-    SecurityTestUtil.createCacheClient(authInitStr, authProps, javaProps,
-        ports, numConnections, multiUserMode.toString(), expectedResult);
-  }
-
-  public static void createCacheClient(Object authInit, Object authProps,
-      Object javaProps, Integer port1, Integer port2, Object numConnections,
-      Boolean multiUserMode, Integer expectedResult) {
-
-    createCacheClient(authInit, (Properties)authProps, (Properties)javaProps,
-        new Integer[] {port1, port2}, numConnections, multiUserMode,
-        expectedResult);
-  }
-
-  public static void registerAllInterest() {
-    Region region = SecurityTestUtil.getCache().getRegion(
-        SecurityTestUtil.regionName);
-    assertNotNull(region);
-    region.registerInterestRegex(".*");
-  }
-
-  private void setUpVMs(CredentialGenerator gen, Boolean multiUser) {
-    Properties extraProps = gen.getSystemProperties();
-    Properties javaProps = gen.getJavaProperties();
-    String authenticator = gen.getAuthenticator();
-    String authInit = gen.getAuthInit();
-
-    LogWriterUtils.getLogWriter().info(
-        "testValidCredentials: Using scheme: " + gen.classCode());
-    LogWriterUtils.getLogWriter().info(
-        "testValidCredentials: Using authenticator: " + authenticator);
-    LogWriterUtils.getLogWriter().info("testValidCredentials: Using authinit: " + authInit);
-
-    // Start the servers
-    Integer locPort1 = SecurityTestUtil.getLocatorPort();
-    Integer locPort2 = SecurityTestUtil.getLocatorPort();
-    String locString = SecurityTestUtil.getLocatorString();
-    Integer port1 = (Integer)server1.invoke(() -> MultiuserAPIDUnitTest.createCacheServer(locPort1, locString, authenticator,
-            extraProps, javaProps));
-    Integer port2 = (Integer)server2.invoke(() -> MultiuserAPIDUnitTest.createCacheServer(locPort2, locString, authenticator,
-            extraProps, javaProps));
-
-    // Start the clients with valid credentials
-    Properties credentials1 = gen.getValidCredentials(1);
-    Properties javaProps1 = gen.getJavaProperties();
-    LogWriterUtils.getLogWriter().info(
-        "testValidCredentials: For first client credentials: " + credentials1
-            + " : " + javaProps1);
-    Properties credentials2 = gen.getValidCredentials(2);
-    Properties javaProps2 = gen.getJavaProperties();
-    LogWriterUtils.getLogWriter().info(
-        "testValidCredentials: For second client credentials: " + credentials2
-            + " : " + javaProps2);
-    client1.invoke(() -> MultiuserAPIDUnitTest.createCacheClient(authInit, credentials1, javaProps1, port1, port2, null,
-            multiUser, new Integer(SecurityTestUtil.NO_EXCEPTION)));
-  }
-
+  @Test
   public void testSingleUserUnsupportedAPIs() {
-      // Start servers
-      // Start clients with multiuser-authentication set to false
-      setUpVMs(new DummyCredentialGenerator(), Boolean.FALSE);
-      client1.invoke(() -> MultiuserAPIDUnitTest.verifyDisallowedOps(Boolean.FALSE));
+    // Start servers
+    // Start clients with multiuser-authentication set to false
+    setUpVMs(new DummyCredentialGenerator(), false);
+    client1.invoke(() -> verifyDisallowedOps(false));
   }
 
+  @Test
   public void testMultiUserUnsupportedAPIs() {
-      // Start servers.
-      // Start clients with multiuser-authentication set to true.
-      setUpVMs(new DummyCredentialGenerator(), Boolean.TRUE);
-      client1.invoke(() -> MultiuserAPIDUnitTest.verifyDisallowedOps(Boolean.TRUE));
+    // Start servers.
+    // Start clients with multiuser-authentication set to true.
+    setUpVMs(new DummyCredentialGenerator(), true);
+    client1.invoke(() -> verifyDisallowedOps(true));
   }
 
-  public static void verifyDisallowedOps(Boolean multiuserMode) {
+  private void verifyDisallowedOps(final boolean multiUserMode) throws Exception {
     String op = "unknown";
     boolean success = false;
-    if (!multiuserMode) {
+
+    if (!multiUserMode) {
       success = false;
+
       try {
         // Attempt cache.createAuthenticatedCacheView() and expect an exception, fail otherwise
         op = "Pool.createSecureUserCache()";
         GemFireCacheImpl.getInstance().createAuthenticatedView(new Properties(), "testPool");
       } catch (IllegalStateException uoe) {
-        Log.getLogWriter().info(op + ": Got expected exception: " + uoe);
+        getLogWriter().info(op + ": Got expected exception: " + uoe);
         success = true;
-      } catch (Exception e) {
-        Assert.fail("Got unexpected exception while doing " + op, e);
       }
+
       if (!success) {
         fail("Did not get exception while doing " + op);
       }
+
     } else { // multiuser mode
-      Region realRegion = GemFireCacheImpl.getInstance().getRegion(
-          SecurityTestUtil.regionName);
-      Region proxyRegion = SecurityTestUtil.proxyCaches[0]
-          .getRegion(SecurityTestUtil.regionName);
+      Region realRegion = GemFireCacheImpl.getInstance().getRegion(SecurityTestUtils.REGION_NAME);
+      Region proxyRegion = SecurityTestUtils.getProxyCaches(0).getRegion(SecurityTestUtils.REGION_NAME);
       Pool pool = PoolManagerImpl.getPMI().find("testPool");
+
       for (int i = 0; i <= 27; i++) {
         success = false;
         try {
@@ -253,8 +152,7 @@ public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
             // and expect an exception, fail otherwise.
             case 9:
               op = "ProxyRegion.createSubregion()";
-              proxyRegion.createSubregion("subregion",
-                  null);
+              proxyRegion.createSubregion("subregion", null);
               break;
             case 10:
               op = "ProxyRegion.forceRolling()";
@@ -302,15 +200,12 @@ public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
             // QueryService.newQuery().execute()/newCq().execute/executeWithInitialResults()
             case 20:
               op = "QueryService.newQuery.execute()";
-              Query query = pool.getQueryService().newQuery(
-                  "SELECT * FROM /" + SecurityTestUtil.regionName);
+              Query query = pool.getQueryService().newQuery("SELECT * FROM /" + SecurityTestUtils.REGION_NAME);
               query.execute();
               break;
             case 21:
               op = "QueryService.newCq.execute()";
-              CqQuery cqQuery = pool.getQueryService().newCq(
-                  "SELECT * FROM /" + SecurityTestUtil.regionName,
-                  new CqAttributesFactory().create());
+              CqQuery cqQuery = pool.getQueryService().newCq("SELECT * FROM /" + SecurityTestUtils.REGION_NAME, new CqAttributesFactory().create());
               try {
                 cqQuery.execute();
               } catch (CqException ce) {
@@ -319,9 +214,7 @@ public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
               break;
             case 22:
               op = "QueryService.newCq.executeWithInitialResults()";
-              cqQuery = pool.getQueryService().newCq(
-                  "SELECT * FROM /" + SecurityTestUtil.regionName,
-                  new CqAttributesFactory().create());
+              cqQuery = pool.getQueryService().newCq("SELECT * FROM /" + SecurityTestUtils.REGION_NAME, new CqAttributesFactory().create());
               try {
                 cqQuery.executeWithInitialResults();
               } catch (CqException ce) {
@@ -332,17 +225,15 @@ public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
             // expect an exception, fail otherwise.
             case 23:
               op = "ProxyQueryService().getIndexes()";
-              SecurityTestUtil.proxyCaches[0].getQueryService()
-                  .getIndexes(null);
+              SecurityTestUtils.getProxyCaches(0).getQueryService().getIndexes(null);
               break;
             case 24:
               op = "ProxyQueryService().createIndex()";
-              SecurityTestUtil.proxyCaches[0].getQueryService().createIndex(
-                  null, null, null );
+              SecurityTestUtils.getProxyCaches(0).getQueryService().createIndex(null, null, null );
               break;
             case 25:
               op = "ProxyQueryService().removeIndexes()";
-              SecurityTestUtil.proxyCaches[0].getQueryService().removeIndexes();
+              SecurityTestUtils.getProxyCaches(0).getQueryService().removeIndexes();
               break;
             case 26:
               op = "ProxyRegion.localDestroy()";
@@ -356,11 +247,10 @@ public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
               fail("Unknown op code: " + i);
               break;
           }
+
         } catch (UnsupportedOperationException uoe) {
-          Log.getLogWriter().info(op + ": Got expected exception: " + uoe);
+          getLogWriter().info(op + ": Got expected exception: " + uoe);
           success = true;
-        } catch (Exception e) {
-          Assert.fail("Got unexpected exception while doing " + op, e);
         }
         if (!success) {
           fail("Did not get exception while doing " + op);
@@ -369,13 +259,56 @@ public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {
     }
   }
 
-  @Override
-  public final void preTearDown() throws Exception {
-    // close the clients first
-    client1.invoke(() -> SecurityTestUtil.closeCache());
-    client2.invoke(() -> SecurityTestUtil.closeCache());
-    // then close the servers
-    server1.invoke(() -> SecurityTestUtil.closeCache());
-    server2.invoke(() -> SecurityTestUtil.closeCache());
+  private void setUpVMs(final CredentialGenerator gen, final boolean multiUser) {
+    Properties extraProps = gen.getSystemProperties();
+    Properties javaProps = gen.getJavaProperties();
+    String authenticator = gen.getAuthenticator();
+    String authInit = gen.getAuthInit();
+
+    getLogWriter().info("testValidCredentials: Using scheme: " + gen.classCode());
+    getLogWriter().info("testValidCredentials: Using authenticator: " + authenticator);
+    getLogWriter().info("testValidCredentials: Using authinit: " + authInit);
+
+    // Start the servers
+    int locPort1 = SecurityTestUtils.getLocatorPort();
+    int locPort2 = SecurityTestUtils.getLocatorPort();
+    String locString = SecurityTestUtils.getAndClearLocatorString();
+
+    int port1 = server1.invoke(() -> createCacheServer(locPort1, locString, authenticator, extraProps, javaProps));
+    int port2 = server2.invoke(() -> createCacheServer(locPort2, locString, authenticator, extraProps, javaProps));
+
+    // Start the clients with valid credentials
+    Properties credentials1 = gen.getValidCredentials(1);
+    Properties javaProps1 = gen.getJavaProperties();
+    getLogWriter().info("testValidCredentials: For first client credentials: " + credentials1 + " : " + javaProps1);
+
+    Properties credentials2 = gen.getValidCredentials(2);
+    Properties javaProps2 = gen.getJavaProperties();
+    getLogWriter().info("testValidCredentials: For second client credentials: " + credentials2 + " : " + javaProps2);
+
+    client1.invoke(() -> createCacheClient(authInit, credentials1, javaProps1, port1, port2, 0, multiUser, NO_EXCEPTION));
+  }
+
+  private int createCacheServer(final int dsPort, final String locatorString, final String authenticator, final Properties extraProps, final Properties javaProps) {
+    Properties authProps = new Properties();
+    if (extraProps != null) {
+      authProps.putAll(extraProps);
+    }
+
+    if (authenticator != null) {
+      authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR_NAME, authenticator);
+    }
+
+    return SecurityTestUtils.createCacheServer(authProps, javaProps, dsPort, locatorString, 0, NO_EXCEPTION);
+  }
+
+  // a
+  protected static void createCacheClient(final String authInit, final Properties authProps, final Properties javaProps, final int[] ports, final int numConnections, final boolean multiUserMode, final int expectedResult) {
+    SecurityTestUtils.createCacheClient(authInit, authProps, javaProps, ports, numConnections, multiUserMode, expectedResult); // invokes SecurityTestUtils 2
+  }
+
+  // b
+  private void createCacheClient(final String authInit, final Properties authProps, final Properties javaProps, final int port1, final int port2, final int numConnections, final boolean multiUserMode, final int expectedResult) {
+    createCacheClient(authInit, authProps, javaProps, new int[] {port1, port2}, numConnections, multiUserMode, expectedResult); // invokes a
   }
 }

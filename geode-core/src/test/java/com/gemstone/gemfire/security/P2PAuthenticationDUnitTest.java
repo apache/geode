@@ -18,69 +18,62 @@
  */
 package com.gemstone.gemfire.security;
 
-import java.io.File;
-import java.util.Properties;
+import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
+import static com.gemstone.gemfire.internal.AvailablePort.*;
+import static com.gemstone.gemfire.security.SecurityTestUtils.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
+import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
 
+import java.util.Properties;
 import javax.net.ssl.SSLHandshakeException;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
 import com.gemstone.gemfire.security.generator.LdapUserCredentialGenerator;
 import com.gemstone.gemfire.security.generator.UserPasswordWithExtraPropsAuthInit;
 import com.gemstone.gemfire.security.templates.LdapUserAuthenticator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests peer to peer authentication in Gemfire
  * 
  * @since 5.5
  */
-public class P2PAuthenticationDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
   private static VM locatorVM = null;
 
-  public static final String USER_NAME = "security-username";
-
-  public static final String PASSWORD = "security-password";
-
-  private static final String[] expectedExceptions = {
+  private static final String[] ignoredExceptions = {
       AuthenticationRequiredException.class.getName(),
       AuthenticationFailedException.class.getName(),
       GemFireSecurityException.class.getName(),
       SSLHandshakeException.class.getName(),
       ClassNotFoundException.class.getName(),
       "Authentication failed for",
-      "Failed to obtain credentials"};
-
-  public P2PAuthenticationDUnitTest(String name) {
-    super(name);
-  }
+      "Failed to obtain credentials"
+  };
 
   @Override
   public final void postSetUp() throws Exception {
-    final Host host = Host.getHost(0);
-    locatorVM = host.getVM(0);
-  }
-
-  private void setProperty(Properties props, String key, String value) {
-
-    if (key != null && value != null) {
-      props.setProperty(key, value);
+    disconnectAllFromDS();
+    locatorVM = Host.getHost(0).getVM(0);
+    for (String exceptionString : ignoredExceptions) {
+      addIgnoredException(exceptionString);
     }
   }
 
@@ -88,271 +81,231 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
    * Check that mcast-port setting for discovery or with locator are
    * incompatible with security
    */
+  @Test
   public void testIllegalPropertyCombos() throws Exception {
+    int port = getRandomAvailablePort(SOCKET);
 
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    File logFile = new File(getUniqueName() + "-locator" + port + ".log");
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "26753");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, 
-                      NetworkUtils.getIPLiteral() + "[" + port + "]");
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(MCAST_PORT_NAME, "26753");
+    props.setProperty(LOCATORS_NAME, getIPLiteral() + "[" + port + "]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
 
     try {
-      Locator.startLocatorAndDS(port, logFile, null, props);
+      Locator.startLocatorAndDS(port, null, null, props);
       fail("Expected an IllegalArgumentException while starting locator");
-    }
-    catch (IllegalArgumentException ex) {
+
+    } catch (IllegalArgumentException ex) {
       // success
     }
 
     // Also try setting the authenticator
     props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "26753");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, 
-                      NetworkUtils.getIPLiteral() +"[" + port + "]");
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME, LdapUserAuthenticator.class.getName() + ".create");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(MCAST_PORT_NAME, "26753");
+    props.setProperty(LOCATORS_NAME, getIPLiteral() +"[" + port + "]");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, LdapUserAuthenticator.class.getName() + ".create");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+
     try {
-      Locator.startLocatorAndDS(port, logFile, null, props);
+      Locator.startLocatorAndDS(port, null, null, props);
       fail("Expected an IllegalArgumentException while starting locator");
-    }
-    catch (IllegalArgumentException ex) {
+
+    } catch (IllegalArgumentException expected) {
       // success
     }
 
     props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "26753");
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create");
+    props.setProperty(MCAST_PORT_NAME, "26753");
+    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create");
+
     try {
       getSystem(props);
       fail("Expected an IllegalArgumentException while connection to DS");
-    }
-    catch (IllegalArgumentException ex) {
+
+    } catch (IllegalArgumentException expected) {
       // success
     }
 
     // Also try setting the authenticator
     props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "26753");
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME, LdapUserAuthenticator.class.getName() + ".create");
+    props.setProperty(MCAST_PORT_NAME, "26753");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, LdapUserAuthenticator.class.getName() + ".create");
+
     try {
       getSystem(props);
       fail("Expected an IllegalArgumentException while connection to DS");
-    }
-    catch (IllegalArgumentException ex) {
+
+    } catch (IllegalArgumentException expected) {
       // success
     }
   }
 
-  // AuthInitialize is incorrect
+  /**
+   * AuthInitialize is incorrect
+   */
+  @Test
   public void testP2PAuthenticationWithInvalidAuthInitialize() throws Exception {
+    int locatorPort = getRandomAvailablePort(SOCKET);
 
-    disconnectAllFromDS();
     CredentialGenerator gen = new DummyCredentialGenerator();
-    Properties props = gen.getSystemProperties();
-    Properties javaProps = gen.getJavaProperties();
-    String authenticator = gen.getAuthenticator();
-    if (props == null) {
-      props = new Properties();
-    }
-    String authInit = " Incorrect_AuthInitialize";
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = NetworkUtils.getIPLiteral() + "[" + port + "]";
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-            authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-            authenticator);
-    startLocator(props, javaProps, port);
+    assertNotNull(gen.getAuthenticator());
+    assertNull(gen.getJavaProperties());
 
-    LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
-    SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT_NAME, "0");
+    props.setProperty(LOCATORS_NAME, getIPLiteral() + "[" + locatorPort + "]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, "Incorrect_AuthInitialize");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+
+    startTheLocator(props, gen.getJavaProperties(), locatorPort);
+
     try {
-      new SecurityTestUtil("tmp").createSystem(props, null);
+      new SecurityTestUtils("tmp").createSystem(props, null);
       fail("AuthenticationFailedException was expected as the AuthInitialize object passed is incorrect");
+
     } catch (AuthenticationFailedException expected) {
       // success
+
     } finally {
-      SecurityTestUtil.removeExpectedExceptions(expectedExceptions, dsLogger);
-      locatorVM.invoke(() -> SecurityTestUtil.stopLocator(
-              new Integer(port), expectedExceptions));
+      locatorVM.invoke(() -> stopLocator(locatorPort, ignoredExceptions));
     }
-
   }
 
-  protected void startLocator(Properties props, Properties javaProps,
-      int port) {
-    locatorVM.invoke(() -> SecurityTestUtil.startLocator(
-            getUniqueName(), new Integer(port), props, javaProps,
-            expectedExceptions));
-  }
-
-  // Authenticator is incorrect
+  /**
+   * Authenticator is incorrect
+   */
+  @Test
   public void testP2PAuthenticationWithInvalidAuthenticator() throws Exception {
-    disconnectAllFromDS();
-    CredentialGenerator gen = new DummyCredentialGenerator();
-    Properties props = gen.getSystemProperties();
-    Properties javaProps = gen.getJavaProperties();
-    String authenticator = "xyz";
-    String authInit = gen.getAuthInit();
-    if (props == null) {
-      props = new Properties();
-    }
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-            authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-            authenticator);
-    startLocator(props, javaProps, port);
+    int locatorPort = getRandomAvailablePort(SOCKET);
 
-    LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
-    SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
+    CredentialGenerator gen = new DummyCredentialGenerator();
+    assertNotNull(gen.getAuthInit());
+    assertNull(gen.getJavaProperties());
+
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT_NAME, "0");
+    props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, gen.getAuthInit());
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, "xyz");
+
+    startTheLocator(props, null, locatorPort);
+
     try {
-      new SecurityTestUtil("tmp").createSystem(props, javaProps);
+      new SecurityTestUtils("tmp").createSystem(props, null);
       fail("AuthenticationFailedException was expected as the Authenticator object passed is incorrect");
-    }
-    catch (AuthenticationFailedException expected) {
+
+    } catch (AuthenticationFailedException expected) {
       // success
-    }
-    finally {
-      SecurityTestUtil.removeExpectedExceptions(expectedExceptions, dsLogger);
-      locatorVM.invoke(() -> SecurityTestUtil.stopLocator(
-              new Integer(port), expectedExceptions ));
+
+    } finally {
+      locatorVM.invoke(() -> stopLocator(locatorPort, ignoredExceptions));
     }
   }
 
+  @Test
   public void testP2PAuthenticationWithNoCredentials() throws Exception {
-
-    disconnectAllFromDS();
+    int locatorPort = getRandomAvailablePort(SOCKET);
 
     CredentialGenerator gen = new DummyCredentialGenerator();
-    Properties props = gen.getSystemProperties();
-    Properties javaProps = gen.getJavaProperties();
-    String authenticator = gen.getAuthenticator();
-    String authInit = gen.getAuthInit();
-    if (props == null) {
-      props = new Properties();
-    }
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-            authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-            authenticator);
-    startLocator(props, javaProps, port);
+    assertNotNull(gen.getAuthenticator());
+    assertNotNull(gen.getAuthInit());
+    assertNull(gen.getJavaProperties());
+    assertNull(gen.getSystemProperties());
 
-    LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
-    SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT_NAME, "0");
+    props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, gen.getAuthInit());
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+
+    startTheLocator(props, null, locatorPort);
+
     try {
-      new SecurityTestUtil("tmp").createSystem(props, null);
+      new SecurityTestUtils("tmp").createSystem(props, null);
       fail("AuthenticationFailedException was expected as no credentials are set");
-    }
-    catch (AuthenticationFailedException expected) {
+
+    } catch (AuthenticationFailedException expected) {
       // success
-    }
-    finally {
-      SecurityTestUtil.removeExpectedExceptions(expectedExceptions, dsLogger);
-      locatorVM.invoke(() -> SecurityTestUtil.stopLocator(
-              new Integer(port), expectedExceptions ));
+
+    } finally {
+      locatorVM.invoke(() -> stopLocator(locatorPort, ignoredExceptions));
     }
   }
 
+  @Test
   public void testP2PAuthenticationWithValidCredentials() throws Exception {
+    int locatorPort = getRandomAvailablePort(SOCKET);
 
-    disconnectAllFromDS();
     CredentialGenerator gen = new DummyCredentialGenerator();
-    Properties props = gen.getSystemProperties();
-    String authenticator = gen.getAuthenticator();
-    String authInit = gen.getAuthInit();
-    if (props == null) {
-      props = new Properties();
-    }
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-            authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-            authenticator);
-    Properties credentials = gen.getValidCredentials(1);
-    Properties javaProps = gen.getJavaProperties();
-    props.putAll(credentials);
-    startLocator(props, javaProps, port);
+    assertNotNull(gen.getAuthenticator());
+    assertNotNull(gen.getAuthInit());
+    assertNull(gen.getJavaProperties());
+    assertNull(gen.getSystemProperties());
+    assertNotNull(gen.getValidCredentials(1));
+
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT_NAME, "0");
+    props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, gen.getAuthInit());
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+    props.putAll(gen.getValidCredentials(1));
+
+    startTheLocator(props, gen.getJavaProperties(), locatorPort);
+
     try {
-      createDS(props, javaProps);
-      verifyMembers(new Integer(2));
+      createDS(props, gen.getJavaProperties());
+      verifyMembers(2);
       disconnectFromDS();
 
     } finally {
-      locatorVM.invoke(() -> SecurityTestUtil.stopLocator(
-              new Integer(port), expectedExceptions ));
+      locatorVM.invoke(() -> stopLocator(locatorPort, ignoredExceptions));
     }
   }
 
-  public void testP2PAuthenticationWithBothValidAndInValidCredentials()
-      throws Exception {
+  @Test
+  public void testP2PAuthenticationWithBothValidAndInValidCredentials() throws Exception {
+    addIgnoredException("Authentication failed");
 
-    disconnectAllFromDS();
-    IgnoredException.addIgnoredException("Authentication failed");
+    int locatorPort = getRandomAvailablePort(SOCKET);
 
     CredentialGenerator gen = new DummyCredentialGenerator();
-    Properties props = gen.getSystemProperties();
-    String authenticator = gen.getAuthenticator();
-    String authInit = gen.getAuthInit();
-    if (props == null) {
-      props = new Properties();
-    }
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-            authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-            authenticator);
-    // valid credentials for locator
-    Properties credentials = gen.getValidCredentials(1);
-    Properties javaProps = gen.getJavaProperties();
-    props.putAll(credentials);
-    startLocator(props, javaProps, port);
+    assertNotNull(gen.getAuthenticator());
+    assertNotNull(gen.getAuthInit());
+    assertNotNull(gen.getInvalidCredentials(1));
+    assertNull(gen.getJavaProperties());
+    assertNull(gen.getSystemProperties());
+    assertNotNull(gen.getValidCredentials(1));
+    assertNotNull(gen.getValidCredentials(3));
+
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT_NAME, "0");
+    props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, gen.getAuthInit());
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+    props.putAll(gen.getValidCredentials(1));
+
+    startTheLocator(props, null, locatorPort);
+
     try {
       // invalid credentials for the peer
-      credentials = gen.getInvalidCredentials(1);
-      javaProps = gen.getJavaProperties();
-      props.putAll(credentials);
+      props.putAll(gen.getInvalidCredentials(1));
 
-      LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
-      SecurityTestUtil.addExpectedExceptions(expectedExceptions, dsLogger);
       try {
-        new SecurityTestUtil("tmp").createSystem(props, javaProps);
+        new SecurityTestUtils("tmp").createSystem(props, null);
         fail("AuthenticationFailedException was expected as wrong credentials were passed");
-      }
-      catch (AuthenticationFailedException expected) {
+
+      } catch (AuthenticationFailedException expected) {
         // success
       }
-      finally {
-        SecurityTestUtil.removeExpectedExceptions(expectedExceptions, dsLogger);
-      }
 
-      credentials = gen.getValidCredentials(3);
-      javaProps = gen.getJavaProperties();
-      props.putAll(credentials);
-      createDS(props, javaProps);
-      verifyMembers(new Integer(2));
+      props.putAll(gen.getValidCredentials(3));
+
+      createDS(props, null);
+      verifyMembers(2);
       disconnectFromDS();
 
     } finally {
-      locatorVM.invoke(() -> SecurityTestUtil.stopLocator(
-              new Integer(port), expectedExceptions ));
+      locatorVM.invoke(() -> stopLocator(locatorPort, ignoredExceptions));
     }
   }
 
@@ -365,9 +318,11 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
    * reported by the first peer should be only two while others will report as
    * three.
    */
-  public void disabled_testP2PViewChangeReject() throws Exception {
+  @Ignore("disabled for some reason?")
+  @Test
+  public void testP2PViewChangeReject() throws Exception {
+    int locatorPort = getRandomAvailablePort(SOCKET);
 
-    disconnectAllFromDS();
     final Host host = Host.getHost(0);
     final VM peer2 = host.getVM(1);
     final VM peer3 = host.getVM(2);
@@ -377,6 +332,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     Properties extraProps = gen.getSystemProperties();
     String authenticator = gen.getAuthenticator();
     String authInit = gen.getAuthInit();
+
     if (extraProps == null) {
       extraProps = new Properties();
     }
@@ -385,91 +341,90 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     gen2.init();
     Properties extraProps2 = gen2.getSystemProperties();
     String authenticator2 = gen2.getAuthenticator();
+
     if (extraProps2 == null) {
       extraProps2 = new Properties();
     }
 
     // Start the locator with the LDAP authenticator
     Properties props = new Properties();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-        authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-        authenticator);
+    int port = getRandomAvailablePort(SOCKET);
+    final String locators = getIPLiteral() +"["+port+"]";
+
+    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, authenticator);
     Properties credentials = gen.getValidCredentials(1);
     Properties javaProps = gen.getJavaProperties();
     props.putAll(credentials);
     props.putAll(extraProps);
-    startLocator(props, javaProps, port);
+
+    startTheLocator(props, javaProps, port);
+
     try {
 
-    // Start the first peer with different authenticator
-    props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-        authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-        authenticator2);
-    credentials = gen.getValidCredentials(3);
-    Properties javaProps2 = gen2.getJavaProperties();
-    props.putAll(credentials);
-    props.putAll(extraProps2);
-    createDS(props, javaProps2);
+      // Start the first peer with different authenticator
+      props = new Properties();
+      props.setProperty(MCAST_PORT_NAME, "0");
+      props.setProperty(LOCATORS_NAME, locators);
+      props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
+      props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, authenticator2);
 
-    // Start the second peer with the same authenticator as locator
-    props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-        authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-        authenticator);
-    credentials = gen.getValidCredentials(7);
-    javaProps = gen.getJavaProperties();
-    props.putAll(credentials);
-    props.putAll(extraProps);
-    createDS(peer2, props, javaProps);
+      credentials = gen.getValidCredentials(3);
+      Properties javaProps2 = gen2.getJavaProperties();
+      props.putAll(credentials);
+      props.putAll(extraProps2);
 
-    createDS(peer3, props, javaProps);
+      createDS(props, javaProps2);
 
-    // wait for view propagation
-    Wait.pause(2000);
-    // Verify the number of members on all peers and locator
-    locatorVM.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(4) ));
-    verifyMembers(new Integer(2));
-    peer2.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(4) ));
-    peer3.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(4) ));
+      // Start the second peer with the same authenticator as locator
+      props = new Properties();
+      props.setProperty(MCAST_PORT_NAME, "0");
+      props.setProperty(LOCATORS_NAME, locators);
+      props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
+      props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, authenticator);
 
-    // Disconnect the first peer and check again
-    disconnectFromDS();
-    Wait.pause(2000);
-    locatorVM.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(3) ));
-    peer2.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(3) ));
-    peer3.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(3) ));
+      credentials = gen.getValidCredentials(7);
+      javaProps = gen.getJavaProperties();
+      props.putAll(credentials);
+      props.putAll(extraProps);
 
-    // Disconnect the second peer and check again
-    peer2.invoke(() -> DistributedTestCase.disconnectFromDS());
-    Wait.pause(2000);
-    locatorVM.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(2) ));
-    peer3.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(2) ));
+      createDS(peer2, props, javaProps);
 
-    // Same for last peer
-    peer3.invoke(() -> DistributedTestCase.disconnectFromDS());
-    Wait.pause(2000);
-    locatorVM.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(1) ));
+      createDS(peer3, props, javaProps);
+
+      // wait for view propagation
+      pause(2000);
+
+      // Verify the number of members on all peers and locator
+      locatorVM.invoke(() -> verifyMembers(4));
+      verifyMembers(2);
+      peer2.invoke(() -> verifyMembers(4));
+      peer3.invoke(() -> verifyMembers(4));
+
+      // Disconnect the first peer and check again
+      disconnectFromDS();
+      pause(2000);
+
+      locatorVM.invoke(() -> verifyMembers(3));
+      peer2.invoke(() -> verifyMembers(3));
+      peer3.invoke(() -> verifyMembers(3));
+
+      // Disconnect the second peer and check again
+      peer2.invoke(() -> disconnectFromDS());
+      pause(2000);
+
+      locatorVM.invoke(() -> verifyMembers(2));
+      peer3.invoke(() -> verifyMembers(2));
+
+      // Same for last peer
+      peer3.invoke(() -> disconnectFromDS());
+      pause(2000);
+
+      locatorVM.invoke(() -> verifyMembers(1));
 
     } finally {
-    locatorVM.invoke(() -> SecurityTestUtil.stopLocator(
-        new Integer(port), expectedExceptions ));
+      locatorVM.invoke(() -> stopLocator(port, ignoredExceptions));
     }
-  }
-
-  protected void createDS(final VM peer2, Properties props,
-      Properties javaProps) {
-    peer2.invoke(() -> P2PAuthenticationDUnitTest.createDS(
-        props, javaProps ));
   }
 
   /**
@@ -479,119 +434,103 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
    * from the first peer. Number of members in the DS
    * should be four
    */
+  @Test
   public void testP2PLargeCredentialSucceeds() throws Exception {
+    int locatorPort = getRandomAvailablePort(SOCKET);
 
-    disconnectAllFromDS();
     final Host host = Host.getHost(0);
     final VM peer2 = host.getVM(1);
     final VM peer3 = host.getVM(2);
 
     CredentialGenerator gen = new DummyCredentialGenerator();
     gen.init();
-    Properties extraProps = gen.getSystemProperties();
-    String authenticator = gen.getAuthenticator();
+
+    assertNotNull(gen.getAuthenticator());
+    assertNull(gen.getJavaProperties());
+    assertNull(gen.getSystemProperties());
+    assertNotNull(gen.getValidCredentials(1));
+
     String authInit = UserPasswordWithExtraPropsAuthInit.class.getName() + ".create";
-    if (extraProps == null) {
-      extraProps = new Properties();
-    }
-
-    // Start the locator with the Dummy authenticator
-    Properties props = new Properties();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = NetworkUtils.getIPLiteral() +"["+port+"]";
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-        authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-        authenticator);
     Properties credentials = gen.getValidCredentials(1);
-    Properties javaProps = gen.getJavaProperties();
+
+    Properties props = new Properties();
+    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
     props.putAll(credentials);
-    props.putAll(extraProps);
-    startLocator(props, javaProps, port);
+
+    startTheLocator(props, null, locatorPort);
+
     try {
+      // Start the first peer with huge credentials
+      props = new Properties();
+      props.setProperty(MCAST_PORT_NAME, "0");
+      props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
+      props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
+      props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
 
-    // Start the first peer with huge credentials
-    props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-        authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-        authenticator);
-    credentials = gen.getValidCredentials(3);
-    javaProps = gen.getJavaProperties();
-    String hugeStr = "20KString";
-    for (int i = 0; i <= 20000; i++) {
-      hugeStr += "A";
-    }
-    credentials.setProperty("security-keep-extra-props", "-");
-    credentials.setProperty("security-hugeentryone", hugeStr);
-    credentials.setProperty("security-hugeentrytwo", hugeStr);
-    credentials.setProperty("security-hugeentrythree", hugeStr);
+      String hugeStr = "20KString";
+      for (int i = 0; i <= 20000; i++) {
+        hugeStr += "A";
+      }
 
-    props.putAll(credentials);
-    props.putAll(extraProps);
+      credentials = gen.getValidCredentials(3);
+      credentials.setProperty("security-keep-extra-props", "-");
+      credentials.setProperty("security-hugeentryone", hugeStr);
+      credentials.setProperty("security-hugeentrytwo", hugeStr);
+      credentials.setProperty("security-hugeentrythree", hugeStr);
 
-    LogWriter dsLogger = LogWriterUtils.createLogWriter(props);
-    SecurityTestUtil.addExpectedExceptions(
-        new String[] { IllegalArgumentException.class.getName() }, dsLogger);
-    try {
-      createDS(props, javaProps);
-//      fail("AuthenticationFailedException was expected as credentials were passed beyond 50k");
-    }
-    finally {
-      SecurityTestUtil.removeExpectedExceptions(
-          new String[] { IllegalArgumentException.class.getName() }, dsLogger);
-    }
+      props.putAll(credentials);
 
-    // Start the second peer with the same authenticator as locator
-    props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME,
-        authInit);
-    setProperty(props, DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME,
-        authenticator);
-    credentials = gen.getValidCredentials(7);
-    javaProps = gen.getJavaProperties();
-    props.putAll(credentials);
-    props.putAll(extraProps);
-    createDS(peer2, props, javaProps);
+      createDS(props, null);
+      // fail("AuthenticationFailedException was expected as credentials were passed beyond 50k"); --?
 
-    createDS(peer3, props, javaProps);
+      // Start the second peer with the same authenticator as locator
+      props = new Properties();
+      props.setProperty(MCAST_PORT_NAME, "0");
+      props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
+      props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
+      props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
 
-    // wait for view propagation
-    Wait.pause(2000);
-    // Verify the number of members on all peers and locator
-    locatorVM.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(4) ));
-    peer2.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(4) ));
-    peer3.invoke(() -> P2PAuthenticationDUnitTest.verifyMembers( new Integer(4) ));
+      credentials = gen.getValidCredentials(7);
+      props.putAll(credentials);
 
+      createDS(peer2, props, null);
+      createDS(peer3, props, null);
 
-    // Disconnect the peers
-    disconnectFromDS();
-    peer2.invoke(() -> DistributedTestCase.disconnectFromDS());
-    peer3.invoke(() -> DistributedTestCase.disconnectFromDS());
+      // wait for view propagation
+      pause(2000);
+
+      // Verify the number of members on all peers and locator
+      locatorVM.invoke(() -> verifyMembers(4));
+      peer2.invoke(() -> verifyMembers(4));
+      peer3.invoke(() -> verifyMembers(4));
+
+      // Disconnect the peers
+      disconnectFromDS();
+      peer2.invoke(() -> disconnectFromDS());
+      peer3.invoke(() -> disconnectFromDS());
 
     } finally {
-    // Stopping the locator
-    locatorVM.invoke(() -> SecurityTestUtil.stopLocator(
-        new Integer(port), expectedExceptions ));
+      locatorVM.invoke(() -> stopLocator(locatorPort, ignoredExceptions));
     }
   }
 
-  public static void createDS(Properties props, Object javaProps) {
-
-    SecurityTestUtil tmpUtil = new SecurityTestUtil("tmp");
-    tmpUtil.createSystem(props, (Properties)javaProps);
+  private void createDS(final VM peer2, final Properties props, final Properties javaProps) {
+    peer2.invoke(() -> createDS(props, javaProps));
   }
 
-  public static void verifyMembers(Integer numExpectedMembers) {
+  private void startTheLocator(final Properties props, final Properties javaProps, final int port) {
+    locatorVM.invoke(() -> startLocator(getUniqueName(), port, props, javaProps, ignoredExceptions));
+  }
 
+  private static void createDS(final Properties props, final Properties javaProps) {
+    SecurityTestUtils tmpUtil = new SecurityTestUtils("tmp");
+    tmpUtil.createSystem(props, javaProps);
+  }
+
+  private static void verifyMembers(final int numExpectedMembers) {
     DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-    MembershipManager mgr = MembershipManagerHelper
-        .getMembershipManager(ds);
-    assertEquals(numExpectedMembers.intValue(), mgr.getView().size());
+    MembershipManager mgr = MembershipManagerHelper.getMembershipManager(ds);
+    assertEquals(numExpectedMembers, mgr.getView().size());
   }
-
 }

@@ -20,10 +20,9 @@ package com.gemstone.gemfire.internal.cache;
 import java.util.*;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
-import com.gemstone.gemfire.internal.util.Callable;
-//import com.gemstone.gemfire.util.concurrent.ConcurrentMap;
+
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
-//import com.gemstone.gemfire.util.concurrent.locks.*;
 import com.gemstone.gemfire.distributed.internal.DM;
 
 /**
