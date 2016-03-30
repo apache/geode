@@ -799,8 +799,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
   }
 
-  @Ignore("Disabled until GEODE-1025, SGF-476 are resolved")
-  public void IGNORE_test013StartServerWithSpring() {
+  public void test013StartServerWithSpring() {
     String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
     File workingDirectory = new File(pathname);
 

@@ -47,8 +47,6 @@ allprojects {
     maven { url "http://repo.spring.io/release" }
     maven { url "http://repo.spring.io/milestone" }
     maven { url "http://repo.spring.io/snapshot" }
-    maven { url "http://repo.spring.io/libs-release" }
-    maven { url "http://repo.spring.io/ext-release-local" }
   }
 
   group = "org.apache.geode"

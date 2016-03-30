@@ -1172,9 +1172,8 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       }
     })) {
       String jarFileName = jarFile.getName();
-      String jarFileNamePrefix = jarFileName.substring(0, jarFileName.lastIndexOf("-"));
 
-      if (SPRING_JAR_NAME_PREFIXES.contains(jarFileNamePrefix.toLowerCase().trim())) {
+      if (SPRING_JAR_NAME_PREFIXES.stream().anyMatch(prefix -> jarFileName.startsWith(prefix))) {
         springJarFilePathnames.add(jarFile.getAbsolutePath());
       }
     }
