@@ -23,7 +23,7 @@ Install Pygments (Python-based syntax coloring library):
 Install Nanoc and other Ruby Gems needed:
 
     $ sudo gem install nanoc -v 3.8.0
-    $ sudo gem install pygments.rb htmlentities pandoc-ruby nokogiri rack mime-types
+    $ sudo gem install pygments.rb htmlentities pandoc-ruby nokogiri rack mime-types adsf
 
 ## How to change/update the website
 
@@ -35,19 +35,23 @@ If you are changing the actual content of the site, then find Markdown file that
 
 If you need to change the layout or styling of the site, then you will probably need to change an HTML, JS or CSS file under the ``content`` directory.
 
-## 2. Test your changes locally
-
-To test locally, you can use the autocompiler (will build changes on every request) and check the website at [http://0.0.0.0:3000](http://0.0.0.0:3000)
-
-    $ nanoc autocompile
-
-## 3. Publish your changes to the site    
+### 2. Generate the site
 
 Run the nanoc compiler to generate the site. It is configured via the ``nanoc.yaml`` to place website files into the ``content`` directory at the top
 
     $ nanoc compile
 
 Run ``git status`` and you should see your changes plus some update files under the ``${geode-project-dir}/content`` directory.
+
+### 3. Test your changes locally
+
+To test locally, use the view command to start a local web server. Check the website at [http://0.0.0.0:3000](http://0.0.0.0:3000)
+
+    $ nanoc view
+
+To make changes, stop the web server, edit files, recompile, and view again.
+
+### 4. Publish your changes to the site    
 
 Once you are happy with your changes, commit them, merge to the __asf-site__ branch and push.
 
