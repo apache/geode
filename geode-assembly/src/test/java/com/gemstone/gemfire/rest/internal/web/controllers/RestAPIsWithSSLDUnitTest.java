@@ -33,10 +33,13 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
+import com.gemstone.gemfire.test.dunit.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONObject;
@@ -63,12 +66,6 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.management.ManagementTestBase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
@@ -81,7 +78,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   private ManagementTestBase helper;
 
-  public static final String PEOPLE_REGION_NAME = "People";
+  private final String PEOPLE_REGION_NAME = "People";
   
   private File jks;
 
@@ -103,25 +100,20 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     disconnectAllFromDS();
   }
 
-  private static File findTrustedJKS() {
-    return new File(TestUtil.getResourcePath(RestAPIsWithSSLDUnitTest.class, "/ssl/trusted.keystore"));
+  private File findTrustedJKS() {
+    if(jks == null){
+      jks = new File(TestUtil.getResourcePath(RestAPIsWithSSLDUnitTest.class, "/ssl/trusted.keystore"));
+    }
+    return jks;
   }
 
   public String startBridgeServerWithRestServiceOnInVM(final VM vm, final String locators, final String[] regions,
       final Properties sslProperties, final boolean clusterLevel) {
 
-    SerializableCallable startBridge = new SerializableCallable("Start Bridge ") {
-      public Object call() throws IOException {
-        final String hostName = vm.getHost().getHostName();
-        final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-        startBridgeServer(hostName, serverPort, locators, regions, sslProperties, clusterLevel);
-        String restEndPoint = "https://" + hostName + ":" + serverPort + "/gemfire-api/v1";
-        return restEndPoint;
-
-      }
-    };
-    String endpoint = (String) vm.invoke(startBridge);
-    return endpoint;
+    final String hostName = vm.getHost().getHostName();
+    final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    vm.invoke("startBridge", () -> startBridgeServer(hostName,serverPort,locators,regions,sslProperties,clusterLevel));
+    return "https://" + hostName + ":" + serverPort + "/gemfire-api/v1";
 
   }
 
@@ -136,7 +128,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, hostName);
     props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(restServicerPort));
 
-    System.setProperty("javax.net.debug", "ssl");
+    System.setProperty("javax.net.debug", "ssl,handshake");
     configureSSL(props, sslProperties, clusterLevel);
 
     DistributedSystem ds = getSystem(props);
@@ -163,7 +155,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     return new Integer(serverPort);
   }
 
-  public static void doPutsInClientCache() {
+  public void doPutsInClientCache() {
     ClientCache cache = GemFireCacheImpl.getInstance();
     assertNotNull(cache);
     Region<String, Object> region = cache.getRegion(PEOPLE_REGION_NAME);
@@ -247,7 +239,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     String locators = NetworkUtils.getServerHostName(locator.getHost()) + "[" + locatorPort + "]";
 
     // start manager (peer cache)
-    int managerPort = startManagerInVM(manager, locators, new String[] { REGION_NAME }, sslProperties);
+    startManagerInVM(manager, locators, new String[] { REGION_NAME }, sslProperties);
 
     // start startBridgeServer With RestService enabled
     String restEndpoint = startBridgeServerWithRestServiceOnInVM(server, locators, new String[] { REGION_NAME },
@@ -257,12 +249,12 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     createClientCacheInVM(client, NetworkUtils.getServerHostName(locator.getHost()), locatorPort);
 
     // create region in Manager, peer cache and Client cache nodes
-    manager.invoke(() -> RestAPIsWithSSLDUnitTest.createRegionInManager());
-    server.invoke(() -> RestAPIsWithSSLDUnitTest.createRegionInPeerServer());
-    client.invoke(() -> RestAPIsWithSSLDUnitTest.createRegionInClientCache());
+    manager.invoke("createRegionInManager",() -> createRegionInManager());
+    server.invoke("createRegionInPeerServer", () -> createRegionInPeerServer());
+    client.invoke("createRegionInClientCache", () -> createRegionInClientCache());
 
     // do some person puts from clientcache
-    client.invoke(() -> RestAPIsWithSSLDUnitTest.doPutsInClientCache());
+    client.invoke("doPutsInClientCache", () -> doPutsInClientCache());
 
     return restEndpoint;
 
@@ -288,9 +280,8 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     SerializableRunnable connect = new SerializableRunnable("Start Cache client") {
       public void run() {
         // Connect using the GemFire locator and create a Caching_Proxy cache
-        ClientCache c = new ClientCacheFactory().setPdxReadSerialized(true).addPoolLocator(host, port).create();
-
-        Region r = c.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+        ClientCache clientCache = new ClientCacheFactory().setPdxReadSerialized(true).addPoolLocator(host, port).create();
+        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
       }
     };
 
@@ -447,51 +438,43 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     return port.intValue();
   }
 
-  public static void createRegionInClientCache() {
+  private void createRegionInClientCache() {
     ClientCache cache = GemFireCacheImpl.getInstance();
     assertNotNull(cache);
     ClientRegionFactory<String, Object> crf = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-    Region<String, Object> region = crf.create(PEOPLE_REGION_NAME);
-
+    crf.create(PEOPLE_REGION_NAME);
   }
 
-  public static void createRegionInManager() {
+  private void createRegionInManager() {
     Cache cache = GemFireCacheImpl.getInstance();
     assertNotNull(cache);
     RegionFactory<String, Object> rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
-    Region<String, Object> region = rf.create(PEOPLE_REGION_NAME);
+    rf.create(PEOPLE_REGION_NAME);
   }
 
-  public static void createRegionInPeerServer() {
+  private void createRegionInPeerServer() {
     Cache cache = GemFireCacheImpl.getInstance();
     assertNotNull(cache);
     RegionFactory<String, Object> rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
-    Region<String, Object> region = rf.create(PEOPLE_REGION_NAME);
+    rf.create(PEOPLE_REGION_NAME);
   }
   
-  private static CloseableHttpClient getSSLBasedHTTPClient(String algo) throws Exception {
+  private CloseableHttpClient getSSLBasedHTTPClient(String algo) throws Exception {
     
     File jks = findTrustedJKS();
 
     KeyStore clientKeys = KeyStore.getInstance("JKS");
     clientKeys.load(new FileInputStream(jks.getCanonicalPath()), "password".toCharArray());
 
-    KeyManagerFactory clientKeyManagerFactory = KeyManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-    clientKeyManagerFactory.init(clientKeys, "password".toCharArray());
-    // load server public key
-    KeyStore serverPub = KeyStore.getInstance("JKS");
-    serverPub.load(new FileInputStream(jks.getCanonicalPath()), "password".toCharArray());
-    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-    trustManagerFactory.init(serverPub);
-
-    SSLContext context = SSLContext.getInstance(algo);
-
-    context.init(clientKeyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(),
-        new java.security.SecureRandom());
+    // this is needed
+    SSLContext sslcontext = SSLContexts.custom()
+        .loadTrustMaterial(clientKeys, new TrustSelfSignedStrategy())
+        .loadKeyMaterial(clientKeys, "password".toCharArray())
+    .build();
 
     // Host checking is disabled here , as tests might run on multiple hosts and
     // host entries can not be assumed
-    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(context,
+    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext,
         SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
     CloseableHttpClient httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
@@ -499,7 +482,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     return httpclient;
   }
 
-  private static void validateConnection(String restEndpoint, String algo) {
+  private void validateConnection(String restEndpoint, String algo) {
 
     try {
       // 1. Get on key="1" and validate result.
@@ -545,7 +528,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, "JKS");
     String restEndpoint = startInfraWithSSL(props,false);
-    RestAPIsWithSSLDUnitTest.validateConnection(restEndpoint, "SSL");
+    validateConnection(restEndpoint, "SSL");
   }
   
   public void testSSLWithoutKeyStoreType() throws Exception {
@@ -558,7 +541,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
   
     String restEndpoint = startInfraWithSSL(props, false);
-    RestAPIsWithSSLDUnitTest.validateConnection(restEndpoint, "SSL");
+    validateConnection(restEndpoint, "SSL");
 
 
   }
@@ -572,7 +555,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME,"SSL");
     
     String restEndpoint = startInfraWithSSL(props, false);
-    RestAPIsWithSSLDUnitTest.validateConnection(restEndpoint, "SSL");
+    validateConnection(restEndpoint, "SSL");
 
   }
   
@@ -585,7 +568,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME,"TLS");
     
     String restEndpoint = startInfraWithSSL(props, false);
-    RestAPIsWithSSLDUnitTest.validateConnection(restEndpoint, "TLS");
+    validateConnection(restEndpoint, "TLS");
 
   }
   
@@ -598,7 +581,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME,"TLSv1.1");
     
     String restEndpoint = startInfraWithSSL(props, false);
-    RestAPIsWithSSLDUnitTest.validateConnection(restEndpoint, "TLSv1.1");
+    validateConnection(restEndpoint, "TLSv1.1");
 
   }
   
@@ -611,7 +594,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME,"TLSv1.2");
     
     String restEndpoint = startInfraWithSSL(props, false);
-    RestAPIsWithSSLDUnitTest.validateConnection(restEndpoint, "TLSv1.2");
+    validateConnection(restEndpoint, "TLSv1.2");
 
   }
   
@@ -624,7 +607,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME,"SSL,TLSv1.2");
     
     String restEndpoint = startInfraWithSSL(props, false);
-    RestAPIsWithSSLDUnitTest.validateConnection(restEndpoint, "TLSv1.2");
+    validateConnection(restEndpoint, "TLSv1.2");
 
   }
   
@@ -645,7 +628,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_CIPHERS_NAME,cipherSuites[0]);
     
     String restEndpoint = startInfraWithSSL(props, false);
-    RestAPIsWithSSLDUnitTest.validateConnection(restEndpoint, "TLSv1.2");
+    validateConnection(restEndpoint, "TLSv1.2");
 
   }
   
@@ -665,7 +648,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_CIPHERS_NAME,cipherSuites[0]+","+cipherSuites[1]);
     
     String restEndpoint = startInfraWithSSL(props, false);
-    RestAPIsWithSSLDUnitTest.validateConnection(restEndpoint, "TLSv1.2");
+    validateConnection(restEndpoint, "TLSv1.2");
 
   }
   
@@ -684,8 +667,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME,"password");
     
     String restEndpoint = startInfraWithSSL(props, false);
-    RestAPIsWithSSLDUnitTest.validateConnection(restEndpoint, "SSL");
-
+    validateConnection(restEndpoint, "SSL");
   }
 
 
