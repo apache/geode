@@ -37,7 +37,6 @@ public abstract class OperationContext {
     CLUSTER_CONFIGURTION,
     CONTINUOUS_QUERY,
     DISKSTORE,
-    DISKSTORE_OFFLINE,
     DISTRIBUTED_SYSTEM,
     FUNCTION,
     GATEWAY,

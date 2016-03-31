@@ -120,7 +120,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   
   @CliCommand(value=CliStrings.BACKUP_DISK_STORE, help=CliStrings.BACKUP_DISK_STORE__HELP)
   @CliMetaData(relatedTopic={ CliStrings.TOPIC_GEMFIRE_DISKSTORE })
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.BACKUP)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result backupDiskStore(
   
   @CliOption(key=CliStrings.BACKUP_DISK_STORE__DISKDIRS,
@@ -215,7 +215,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.LIST_DISK_STORE, help = CliStrings.LIST_DISK_STORE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_DISKSTORE })
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.LIST)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.LIST)
   public Result listDiskStore() {
     try {
       Set<DistributedMember> dataMembers = getNormalMembers(getCache());
@@ -284,7 +284,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value=CliStrings.CREATE_DISK_STORE, help=CliStrings.CREATE_DISK_STORE__HELP)
   @CliMetaData(shellOnly=false, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE}, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.CREATE)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result createDiskStore(@CliOption(key=CliStrings.CREATE_DISK_STORE__NAME,
                                            mandatory=true,
                                            optionContext = ConverterHint.DISKSTORE_ALL, 
@@ -425,7 +425,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
     
   @CliCommand(value=CliStrings.COMPACT_DISK_STORE, help=CliStrings.COMPACT_DISK_STORE__HELP)
   @CliMetaData(shellOnly=false, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.COMPACT)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result compactDiskStore(@CliOption(key=CliStrings.COMPACT_DISK_STORE__NAME,
                                             mandatory=true,
                                             optionContext = ConverterHint.DISKSTORE_ALL, 
@@ -555,7 +555,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value=CliStrings.COMPACT_OFFLINE_DISK_STORE, help=CliStrings.COMPACT_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DISKSTORE_OFFLINE, operation = OperationCode.COMPACT)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result compactOfflineDiskStore(
                  @CliOption(key=CliStrings.COMPACT_OFFLINE_DISK_STORE__NAME,
                             mandatory=true,
@@ -699,7 +699,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   
   @CliCommand(value=CliStrings.UPGRADE_OFFLINE_DISK_STORE, help=CliStrings.UPGRADE_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DISKSTORE_OFFLINE, operation = OperationCode.ALL)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result upgradeOfflineDiskStore(
       @CliOption(key=CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME, 
       mandatory=true,
@@ -869,7 +869,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.DESCRIBE_DISK_STORE, help = CliStrings.DESCRIBE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_DISKSTORE })
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.LIST)
+  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.LIST)
   public Result describeDiskStore(@CliOption(key = CliStrings.DESCRIBE_DISK_STORE__MEMBER, mandatory = true, optionContext = ConverterHint.MEMBERIDNAME, help = CliStrings.DESCRIBE_DISK_STORE__MEMBER__HELP)
                                   final String memberName,
                                   @CliOption(key = CliStrings.DESCRIBE_DISK_STORE__NAME, mandatory = true, optionContext = ConverterHint.DISKSTORE_ALL, help = CliStrings.DESCRIBE_DISK_STORE__NAME__HELP)
@@ -996,7 +996,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.REVOKE_MISSING_DISK_STORE, help = CliStrings.REVOKE_MISSING_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DISKSTORE })
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.REVOKE_MISSING)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result revokeMissingDiskStore(
       @CliOption(key = CliStrings.REVOKE_MISSING_DISK_STORE__ID, mandatory = true, help = CliStrings.REVOKE_MISSING_DISK_STORE__ID__HELP)
       String id) {
@@ -1023,7 +1023,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.SHOW_MISSING_DISK_STORE, help = CliStrings.SHOW_MISSING_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DISKSTORE })
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.SHOW_MISSING)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result showMissingDiskStore() {
 
     try {
@@ -1062,7 +1062,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   
   @CliCommand(value=CliStrings.DESCRIBE_OFFLINE_DISK_STORE, help=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DISKSTORE_OFFLINE, operation = OperationCode.LIST)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.LIST)
   public Result describeOfflineDiskStore(
       @CliOption (key=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME, 
           mandatory=true,
@@ -1111,7 +1111,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   
   @CliCommand(value=CliStrings.EXPORT_OFFLINE_DISK_STORE, help=CliStrings.EXPORT_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DISKSTORE_OFFLINE, operation = OperationCode.EXPORT)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result exportOfflineDiskStore(
       @CliOption (key=CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME, 
           mandatory=true,
@@ -1160,7 +1160,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value=CliStrings.VALIDATE_DISK_STORE, help=CliStrings.VALIDATE_DISK_STORE__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_DISKSTORE}) //offline command
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.VALIDATE)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result validateDiskStore(
       @CliOption(key=CliStrings.VALIDATE_DISK_STORE__NAME, mandatory=true,
                   help=CliStrings.VALIDATE_DISK_STORE__NAME__HELP)
@@ -1242,7 +1242,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   
   @CliCommand(value=CliStrings.ALTER_DISK_STORE, help=CliStrings.ALTER_DISK_STORE__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DISKSTORE_OFFLINE, operation = OperationCode.ALTER)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result alterOfflineDiskStore(
       @CliOption  (key=CliStrings.ALTER_DISK_STORE__DISKSTORENAME, 
       mandatory=true,
@@ -1374,7 +1374,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value=CliStrings.DESTROY_DISK_STORE, help=CliStrings.DESTROY_DISK_STORE__HELP)
   @CliMetaData(shellOnly=false, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE}, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.DESTROY)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.MANAGE)
   public Result destroyDiskStore(
       @CliOption  (key=CliStrings.DESTROY_DISK_STORE__NAME, 
           mandatory=true,
