@@ -175,31 +175,31 @@ public interface GatewaySenderMXBean {
    * configuration cannot be changed.
    * 
    */
-  @ResourceOperation(resource = Resource.GATEWAY_SENDER, operation = OperationCode.START)
+  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
   public void start();
 
   /**
    * Stops this GatewaySender.
    */
-  @ResourceOperation(resource=Resource.GATEWAY_SENDER, operation=OperationCode.STOP)
+  @ResourceOperation(resource=Resource.GATEWAY, operation=OperationCode.MANAGE)
   public void stop();
 
   /**
    * Pauses this GatewaySender.
    */
-  @ResourceOperation(resource = Resource.GATEWAY_SENDER, operation = OperationCode.PAUSE)
+  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
   public void pause();
 
   /**
    * Resumes this paused GatewaySender.
    */
-  @ResourceOperation(resource = Resource.GATEWAY_SENDER, operation = OperationCode.RESUME)
+  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
   public void resume();
 
   /**
    * Rebalances this GatewaySender.
    */
-  @ResourceOperation(resource = Resource.GATEWAY_SENDER, operation = OperationCode.REBALANCE)
+  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
   public void rebalance();
   
   /**

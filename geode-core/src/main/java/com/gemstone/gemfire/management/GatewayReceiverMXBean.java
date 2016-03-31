@@ -92,13 +92,13 @@ public interface GatewayReceiverMXBean {
   /**
    * Starts the gateway receiver.
    */
-  @ResourceOperation(resource = Resource.GATEWAY_RECEIVER, operation = OperationCode.START)
+  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
   public void start() throws Exception;
 
   /**
    * Stops the gateway receiver.
    */
-  @ResourceOperation(resource = Resource.GATEWAY_RECEIVER, operation = OperationCode.STOP)
+  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
   public void stop() throws Exception;
 
   /**

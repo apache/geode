@@ -95,11 +95,11 @@ public class GatewaySenderMBeanSecurityTest {
     assertThatThrownBy(() -> bean.getOrderPolicy()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
     assertThatThrownBy(() -> bean.isBatchConflationEnabled()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
     assertThatThrownBy(() -> bean.isManualStart()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
-    assertThatThrownBy(() -> bean.pause()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_SENDER:PAUSE");
-    assertThatThrownBy(() -> bean.rebalance()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_SENDER:REBALANCE");
-    assertThatThrownBy(() -> bean.resume()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_SENDER:RESUME");
-    assertThatThrownBy(() -> bean.start()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_SENDER:START");
-    assertThatThrownBy(() -> bean.stop()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_SENDER:STOP");
+    assertThatThrownBy(() -> bean.pause()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
+    assertThatThrownBy(() -> bean.rebalance()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
+    assertThatThrownBy(() -> bean.resume()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
+    assertThatThrownBy(() -> bean.start()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
+    assertThatThrownBy(() -> bean.stop()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
   }
 
 }

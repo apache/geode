@@ -3,16 +3,8 @@
     {
       "name": "admin",
       "operationsAllowed": [
-        "DISTRIBUTED_SYSTEM:LIST",
-        "GATEWAY_RECEIVER:CREATE",
-        "GATEWAY_RECEIVER:START",
-        "GATEWAY_RECEIVER:STOP",
-        "GATEWAY_RECEIVER:STATUS",
-        "GATEWAY_SENDER:CREATE",
-        "GATEWAY_SENDER:START",
-        "GATEWAY_SENDER:PAUSE",
-        "GATEWAY_SENDER:RESUME",
-        "GATEWAY_SENDER:STOP"
+        "GATEWAY:LIST",
+        "GATEWAY:MANAGE"
       ]
     },
     {
@@ -47,13 +39,7 @@
         "REGION:DELETE",
         "LOCK_SERVICE:BECOME_LOCK_GRANTOR",
         "JMX:GET",
-        "GATEWAY_SENDER:PAUSE",
-        "GATEWAY_SENDER:REBALANCE",
-        "GATEWAY_SENDER:RESUME",
-        "GATEWAY_SENDER:START",
-        "GATEWAY_SENDER:STOP",
-        "GATEWAY_RECEIVER:START",
-        "GATEWAY_RECEIVER:STOP",
+        "GATEWAY:MANAGE",
         "MANAGER:SET_PULSE_URL",
         "MANAGER:START",
         "MANAGER:STOP",

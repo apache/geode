@@ -53,6 +53,7 @@ public class WanCommandsSecurityTest {
     bean.processCommand("pause gateway-sender --id=sender1");
     bean.processCommand("resume gateway-sender --id=sender1");
     bean.processCommand("stop gateway-sender --id=sender1");
+    bean.processCommand("load-balance gateway-sender --id=sender1");
     bean.processCommand("list gateways");
     bean.processCommand("create gateway-receiver");
     bean.processCommand("start gateway-receiver");
@@ -66,41 +67,47 @@ public class WanCommandsSecurityTest {
   public void testNoAccess(){
     assertThatThrownBy(() -> bean.processCommand("create gateway-sender --id=sender1 --remote-distributed-system-id=2"))
         .isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_SENDER:CREATE");
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
 
     assertThatThrownBy(() -> bean.processCommand("start gateway-sender --id=sender1"))
         .isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_SENDER:START");
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
 
     assertThatThrownBy(() -> bean.processCommand("pause gateway-sender --id=sender1"))
         .isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_SENDER:PAUSE");
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
 
     assertThatThrownBy(() -> bean.processCommand("resume gateway-sender --id=sender1"))
         .isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_SENDER:RESUME");
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
 
     assertThatThrownBy(() -> bean.processCommand("stop gateway-sender --id=sender1"))
         .isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_SENDER:STOP");
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
 
-    bean.processCommand("list gateways");
+    assertThatThrownBy(() -> bean.processCommand("load-balance gateway-sender --id=sender1"))
+        .isInstanceOf(SecurityException.class)
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
+
+    assertThatThrownBy(() -> bean.processCommand("list gateways"))
+        .isInstanceOf(SecurityException.class)
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:LIST");
 
     assertThatThrownBy(() -> bean.processCommand("create gateway-receiver"))
         .isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_RECEIVER:CREATE");
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
 
     assertThatThrownBy(() -> bean.processCommand("start gateway-receiver"))
         .isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_RECEIVER:START");
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
 
     assertThatThrownBy(() -> bean.processCommand("stop gateway-receiver"))
         .isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_RECEIVER:STOP");
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
 
     assertThatThrownBy(() -> bean.processCommand("status gateway-receiver"))
         .isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY_RECEIVER:STATUS");
+        .hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:LIST");
   }
 
 }
