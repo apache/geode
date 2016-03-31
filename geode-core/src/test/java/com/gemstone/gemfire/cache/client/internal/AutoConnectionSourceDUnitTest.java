@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.cache.client.internal;
 
 import java.io.Serializable;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -142,42 +143,47 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   }
   
   public void testDynamicallyFindLocators() throws Exception {
-    final Host host = Host.getHost(0);
-    final String hostName = NetworkUtils.getServerHostName(host);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
-    
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    
-    final int locatorPort0 = ports[0];
-    final int locatorPort1 = ports[1];
-    final int locatorPort3 = ports[2];
-    String locators = getLocatorString(host, new int[] { locatorPort0, locatorPort1, locatorPort3});
-    startLocatorInVM(vm0, locatorPort0, locators);
-    
-    startLocatorInVM(vm1, locatorPort1, locators);
-    startBridgeClientInVM(vm2, null, NetworkUtils.getServerHostName(vm0.getHost()), locatorPort0);
-    
-    InetSocketAddress locatorToWaitFor= new InetSocketAddress(hostName, locatorPort1);
-    waitForLocatorDiscovery(vm2, locatorToWaitFor);
-    
-    stopLocatorInVM(vm0);
-    startBridgeServerInVM(vm0, null, locators);
-    
-    putAndWaitForSuccess(vm2, REGION_NAME, "key", "value");
-    Assert.assertEquals("value", getInVM(vm0, "key"));
-    
-    startLocatorInVM(vm3, locatorPort3, locators);
-    stopBridgeMemberVM(vm0);
-    locatorToWaitFor= new InetSocketAddress(hostName, locatorPort3);
-    waitForLocatorDiscovery(vm2, locatorToWaitFor);
-    stopLocatorInVM(vm1);
-    startBridgeServerInVM(vm1, null, locators);
-    putAndWaitForSuccess(vm2, REGION_NAME, "key2", "value2");
-    Assert.assertEquals("value2", getInVM(vm1, "key2"));
-    
+    try {
+      final Host host = Host.getHost(0);
+      final String hostName = NetworkUtils.getServerHostName(host);
+      VM vm0 = host.getVM(0);
+      VM vm1 = host.getVM(1);
+      VM vm2 = host.getVM(2);
+      VM vm3 = host.getVM(3);
+      
+      int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+      
+      final int locatorPort0 = ports[0];
+      final int locatorPort1 = ports[1];
+      final int locatorPort3 = ports[2];
+      String locators = getLocatorString(host, new int[] { locatorPort0, locatorPort1, locatorPort3});
+      startLocatorInVM(vm0, locatorPort0, locators);
+      
+      startLocatorInVM(vm1, locatorPort1, locators);
+      startBridgeClientInVM(vm2, null, NetworkUtils.getServerHostName(vm0.getHost()), locatorPort0);
+      
+      InetSocketAddress locatorToWaitFor= new InetSocketAddress(hostName, locatorPort1);
+      waitForLocatorDiscovery(vm2, locatorToWaitFor);
+      
+      stopLocatorInVM(vm0);
+      startBridgeServerInVM(vm0, null, locators);
+      
+      putAndWaitForSuccess(vm2, REGION_NAME, "key", "value");
+      Assert.assertEquals("value", getInVM(vm0, "key"));
+      
+      startLocatorInVM(vm3, locatorPort3, locators);
+      stopBridgeMemberVM(vm0);
+      locatorToWaitFor= new InetSocketAddress(hostName, locatorPort3);
+      waitForLocatorDiscovery(vm2, locatorToWaitFor);
+      stopLocatorInVM(vm1);
+      startBridgeServerInVM(vm1, null, locators);
+      putAndWaitForSuccess(vm2, REGION_NAME, "key2", "value2");
+      Assert.assertEquals("value2", getInVM(vm1, "key2"));
+    }catch(Exception ec) {
+      if(ec.getCause() != null && !(ec.getCause().getCause() instanceof BindException))
+        throw ec;
+      //else BindException let it pass
+    }
   }
   
   public void testEmbeddedLocator() throws Exception  {
