@@ -21,7 +21,6 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Thrown if the query language syntax is not valid.
  *
- * @author      Eric Zoerner
  * @since 4.0
  */
 

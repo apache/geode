@@ -23,7 +23,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.GfshExecutionStrategy;
  * Interceptor interface which {@link GfshExecutionStrategy} can use to
  * intercept before & after actual command execution.
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

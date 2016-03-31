@@ -47,7 +47,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests usage of LocatorLauncher as a local API in existing JVM.
  *
- * @author Kirk Lund
  * @since 8.0
  */
 @Category(IntegrationTest.class)

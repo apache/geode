@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.datasource;
  * This class represents the config property for vendor specific data. This has
  * a name, value and type.
  * 
- * @author rreja
  */
 public class ConfigProperty  {
 

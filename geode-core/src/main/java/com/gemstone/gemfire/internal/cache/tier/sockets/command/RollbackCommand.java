@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 
 /**
  * Command for performing Rollback on the server
- * @author sbawaska
  */
 public class RollbackCommand extends BaseCommand {
 

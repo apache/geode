@@ -129,7 +129,6 @@ import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
  * Cache} instance.  This class was developed for testing purposes,
  * but it is conceivable that it could be used in the product as well.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */
@@ -1203,7 +1202,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   
   /** Compare regions by name 
    * 
-   * @author lynn
    *
    */
   class RegionComparator implements Comparator {

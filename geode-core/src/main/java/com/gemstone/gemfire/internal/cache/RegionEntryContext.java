@@ -21,7 +21,6 @@ import com.gemstone.gemfire.compression.Compressor;
 
 /**
  * Provides important contextual information that allows a {@link RegionEntry} to manage its state.
- * @author rholmes
  * @since 8.0
  */
 public interface RegionEntryContext extends HasCachePerfStats {

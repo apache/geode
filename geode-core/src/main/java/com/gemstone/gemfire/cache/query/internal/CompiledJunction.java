@@ -122,8 +122,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  * 
  * @version $Revision: 1.2 $                                  
- * @author ericz
- * @author Asif
  */
 public class CompiledJunction extends AbstractCompiledValue implements
     Negatable {

@@ -47,7 +47,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * Then destroys and puts back entries in separated thread in the same region and runs
  * query parallely and checks for UNDEFINED values in result set of the query.
  *
- * @author shobhit
  *
  */
 public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {

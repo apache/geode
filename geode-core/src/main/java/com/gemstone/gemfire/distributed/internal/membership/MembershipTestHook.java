@@ -22,7 +22,6 @@ package com.gemstone.gemfire.distributed.internal.membership;
 /**
  * Test hook for hydra test development
  * 
- * @author bruce
  *
  */
 public interface MembershipTestHook

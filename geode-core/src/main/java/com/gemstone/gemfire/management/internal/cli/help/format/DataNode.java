@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.cli.help.format;
 import java.util.List;
 
 /**
- * @author Nikhil Jadhav
  *
  */
 public class DataNode {

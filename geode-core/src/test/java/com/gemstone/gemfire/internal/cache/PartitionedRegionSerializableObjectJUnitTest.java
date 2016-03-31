@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.cache;
  * operations simutaneously on that single region. Object used while putting in
  * region is serializable.
  * 
- * @author gthombar
  */
 
 import java.util.*;

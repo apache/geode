@@ -61,7 +61,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Tests for QueryMonitoring service.
- * @author agingade
  * @since 6.0
  */
 public class QueryMonitorDUnitTest extends CacheTestCase {
@@ -172,7 +171,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Host host = Host.getHost(0);
     disconnectFromDS();
     // shut down clients before servers

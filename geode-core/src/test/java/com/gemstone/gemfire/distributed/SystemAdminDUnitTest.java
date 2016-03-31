@@ -40,19 +40,18 @@ public class SystemAdminDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnect();
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     disconnect();
   }
   
   public void disconnect() {
     // get rid of the command-line distributed system created by SystemAdmin
-    system = null;
+    nullSystem();
     InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
     if (sys != null && sys.isConnected()) {
       LogWriterUtils.getLogWriter().info("disconnecting(3)");

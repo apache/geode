@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * A director to remove copies of buckets when the bucket exceeds the redundancy
  * level. This is most commonly used as an element of the composite director.
- * @author dsmith
  *
  */
 public class RemoveOverRedundancy extends RebalanceDirectorAdapter {

@@ -78,8 +78,6 @@ import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifie
  * a bucket's primary owner.  In addition to updating an entry it is also used to
  * send Partitioned Region event information.
  *
- * @author Mitch Thomas
- * @author bruce
  * @since 5.0
  */
 public final class PutMessage extends PartitionMessageWithDirectReply implements NewValueImporter {
@@ -1212,7 +1210,6 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
 
   /**
    * A processor to capture the value returned by {@link PutMessage}
-   * @author bruce
    * @since 5.1
    */
   public static class PutResponse extends PartitionResponse  {

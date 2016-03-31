@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 
 /**
  * A message sent to determine the most recent PartitionedRegion identity
- * @author mthomas
  * @since 5.0
  */
 public final class IdentityRequestMessage extends DistributionMessage implements MessageWithReply
@@ -178,7 +177,6 @@ public final class IdentityRequestMessage extends DistributionMessage implements
   /**
    * The message that contains the <code>Integer</code> identity response to the {@link IdentityRequestMessage}
    *  
-   * @author mthomas
    * @since 5.0
    */
   public static final class IdentityReplyMessage extends HighPriorityDistributionMessage {
@@ -278,7 +276,6 @@ public final class IdentityRequestMessage extends DistributionMessage implements
   /**
    * The response to a {@link IdentityRequestMessage} use {@link #waitForId()} to 
    * capture the identity
-   * @author mthomas
    * @since 5.0
    */
   public static class IdentityResponse extends ReplyProcessor21  {

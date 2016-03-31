@@ -59,7 +59,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * A connection source which uses locators to find
  * the least loaded server.
- * @author dsmith
  * @since 5.7
  *
  */
@@ -174,16 +173,10 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     QueueConnectionRequest request  = new QueueConnectionRequest(proxyId,numServers,excludedServers, serverGroup,findDurableQueue);
     QueueConnectionResponse response = (QueueConnectionResponse) queryLocators(request);
     if (response==null) {
-      // why log a warning if we are going to throw the caller and exception?
-      //getLogger().warning("Unable to connect to any locators in the list " + locators);
       throw new NoAvailableLocatorsException("Unable to connect to any locators in the list " + locators);
     }
     //TODO - do this logic on the server side, return one list in the message.
     List result = response.getServers();
-//    if(getLogger().fineEnabled()) {
-//      getLogger().fine("Received queue connection response with server " + result+" excludeList:"+excludedServers);
-//    }
-    
     return result;
   }
   
@@ -242,9 +235,9 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   protected void updateLocatorList(LocatorListResponse response) {
     if (response == null) return;
     isBalanced = response.isBalanced();
-    ArrayList<ServerLocation> locatorResponse = response.getLocators();
+    List<ServerLocation> locatorResponse = response.getLocators();
 
-    ArrayList<InetSocketAddress> newLocators  = new ArrayList<InetSocketAddress>(locatorResponse.size());
+    List<InetSocketAddress> newLocators  = new ArrayList<InetSocketAddress>(locatorResponse.size());
 
     Set<InetSocketAddress> badLocators  = new HashSet<InetSocketAddress>(initialLocators);
     for(Iterator<ServerLocation> itr = locatorResponse.iterator(); itr.hasNext(); ) {

@@ -38,8 +38,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author unknown
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class UserTransactionImplJUnitTest {

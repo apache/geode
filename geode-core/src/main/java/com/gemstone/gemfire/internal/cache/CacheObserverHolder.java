@@ -47,7 +47,6 @@ package com.gemstone.gemfire.internal.cache;
  * observer.startMethod(arguments); doSomething(); } finally {
  * observer.stopMethod(arguments); }
  * 
- * @author ashahid
  */
 public class CacheObserverHolder  {
 

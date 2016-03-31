@@ -20,7 +20,6 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 /**
- * @author skumar
  * 
  */
 public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
@@ -28,10 +27,6 @@ public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
 
   public ParallelWANPropagationClientServerDUnitTest(String name) {
     super(name);
-  }
-
-  public void setUp() throws Exception {
-    super.setUp();
   }
 
   /**

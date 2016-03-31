@@ -66,8 +66,6 @@ import com.jayway.awaitility.Awaitility;
 /**
  * Testing Oplog API's
  *
- * @author Asif
- * @author Mitul
  */
 @Category(IntegrationTest.class)
 public class OplogJUnitTest extends DiskRegionTestingBase
@@ -536,7 +534,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * This tests the final ByteBuffer object that gets created for synch/Asynch
    * operation for a create / modify & Delete operation
    *
-   * @author Asif
    */
 //   @Test
 //  public void testByteBufferCreationForCreateModifyAndDeleteOperation()
@@ -624,7 +621,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
   /**
    * Tests whether the data is written in the right format on the disk
    *
-   * @author Asif
    */
   @Test
   public void testFaultInOfValuesFromDisk()
@@ -681,7 +677,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * Tests the termination of asynch writer for an Oplog after the switch has
    * been made
    *
-   * @author Asif
    */
 //   @Test
 //  public void testAsynchWriterTerminationOnSwitch()
@@ -736,7 +731,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * Tests the original ByteBufferPool gets transferred to the new Oplog for
    * synch mode
    *
-   * @author Asif
    */
   @Test
   public void testByteBufferPoolTransferForSynchMode()
@@ -786,7 +780,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * bytebuffers which will always be free. Thus if the asynch writer had
    * initially 8 byte buffers only 4 will be released
    *
-   * @author Asif
    */
 //   @Test
 //  public void testByteBufferPoolUsageForAsynchMode()
@@ -979,7 +972,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
   // give the new oplog record format it is too hard for the test to calculate
   // the expected size
 //   /**
-//    * @author Asif
 //    */
 //   @Test
 //  public void testSynchModeConcurrentOperations()
@@ -1350,7 +1342,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
 //    * Tests whether the switching of Oplog happens correctly without size
 //    * violation in case of concurrent region operations for asynch mode.
 //    *
-//    * @author Asif
 //    */
 //   @Test
 //  public void testSwitchingForConcurrentASynchedOperations()
@@ -1460,7 +1451,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
 //   }
 
 //   /**
-//    * @author Asif
 //    */
 //   @Test
 //  public void testAsyncWriterTerminationAfterSwitch()
@@ -1535,7 +1525,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
 //   }
 
 //   /**
-//    * @author Asif
 //    */
 //   @Test
 //  public void testMultipleByteBuffersASynchOperations()
@@ -1648,7 +1637,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * operation is followed by destroy but before destroy proceeds some other
    * operation causes oplog switching
    *
-   * @author Asif
    */
   @Test
   public void testBug34615()
@@ -1693,7 +1681,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
   }
 
   /**
-   * @author Asif
    */
   @Test
   public void testConflation() throws Exception {
@@ -1781,7 +1768,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
   /**
    * This tests the retrieval of empty byte array when present in asynch buffers
    *
-   * @author Asif
    */
   @Test
   public void testGetEmptyByteArrayInAsynchBuffer()
@@ -1813,7 +1799,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
   /**
    * This tests the retrieval of empty byte array in synch mode
    *
-   * @author Asif
    */
   @Test
   public void testGetEmptyByteArrayInSynchMode()
@@ -1848,7 +1833,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * roller thread obtains the iterator of the concurrent region map before the
    * remove
    *
-   * @author Asif
    */
   @Test
   public void testBug34702()
@@ -1944,7 +1928,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * not be able to acquire the lock on the entry as the switching thread has
    * already taken a lock on it.
    *
-   * @author Asif
    */
   @Test
   public void testRollingDeadlockSituation()
@@ -1978,7 +1961,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * should also get added. Similary during recover from HTree as well as Oplog ,
    * the empty byte array should be read correctly
    *
-   * @author Asif
    */
   @Test
   public void testEmptyByteArrayPutAndRecovery()
@@ -2055,7 +2037,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * readlock in DiskRegion to record the same. If the Oplog has switched during
    * that duration , the bug would appear
    *
-   * @author Asif
    */
 
   @Test
@@ -2115,7 +2096,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * asynch) . Pls refer to the class documentation ( Oplog.ByteBufferPool) for
    * the exact behaviour of the class
    *
-   * @author Asif
    */
 //   @Test
 //  public void testByteBufferPoolParameters()
@@ -2226,7 +2206,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * objects being put vary in size & hence use ByteBuffer Pools present at
    * different indexes
    *
-   * @author Asif
    */
 //   @Test
 //  public void testByteBufferPoolReleaseBugTest()
@@ -2250,7 +2229,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * Tests if buffer size & time are not set , the asynch writer gets awakened
    * on time basis of default 1 second
    *
-   * @author Asif
    */
   @Test
   public void testAsynchWriterAttribBehaviour1()
@@ -2321,7 +2299,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * Tests if buffer size is set but time is not set , the asynch writer gets
    * awakened on buffer size basis
    *
-   * @author Asif
    */
   public void DARREL_DISABLE_testAsynchWriterAttribBehaviour2()
   {
@@ -2393,7 +2370,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * Tests if buffer size & time interval are explicitly set to zero then the
    * flush will occur due to asynchForceFlush or due to switching of Oplog
    *
-   * @author Asif
    */
   @Test
   public void testAsynchWriterAttribBehaviour3()
@@ -2471,7 +2447,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * available so that preblowing results in IOException , is able to recover
    * without problem
    *
-   * @author Asif
    */
   //Now we preallocate spaces for if files and also crfs and drfs. So the below test is not valid
   // any more. See revision: r42359 and r42320. So disabling this test.
@@ -2526,7 +2501,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
   /**
    * Tests if the byte buffer pool in asynch mode tries to contain the pool size
    *
-   * @author Asif
    */
   @Test
   public void testByteBufferPoolContainment()
@@ -2727,7 +2701,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
   /**
    * Tests delayed creation of DiskID in overflow only mode
    *
-   * @author Asif
    */
   @Test
   public void testDelayedDiskIdCreationInOverflowOnlyMode()
@@ -2757,7 +2730,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
   /**
    * Tests immediate creation of DiskID in overflow With Persistence mode
    *
-   * @author Asif
    */
   @Test
   public void testImmediateDiskIdCreationInOverflowWithPersistMode()
@@ -2788,7 +2760,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * An entry which is evicted to disk will have the flag already written to
    * disk, appropriately set
    *
-   * @author Asif
    */
   @Test
   public void testEntryAlreadyWrittenIsCorrectlyUnmarkedForOverflowOnly()
@@ -2858,7 +2829,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * An persistent or overflow with persistence entry which is evicted to disk,
    * will have the flag already written to disk, appropriately set
    *
-   * @author Asif
    */
   @Test
   public void testEntryAlreadyWrittenIsCorrectlyUnmarkedForOverflowWithPersistence()

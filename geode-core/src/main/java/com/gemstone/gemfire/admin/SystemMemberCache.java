@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.RegionAttributes;
  * Administrative interface that represent's the {@link SystemMember}'s view
  * of its {@link com.gemstone.gemfire.cache.Cache}.
  *
- * @author    Darrel Schneider
  * @since     3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */

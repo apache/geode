@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.redis;
  * a data structure of one {@link RedisDataType} with a command that is 
  * of another type
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public class RedisDataTypeMismatchException extends RuntimeException {

@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Test to verify that each bridge sever creates its own client_messages_region
  * at its start and destroys it when it stops.
  * 
- * @author aingle
  * @since 5.7
  */
 @Category(IntegrationTest.class)

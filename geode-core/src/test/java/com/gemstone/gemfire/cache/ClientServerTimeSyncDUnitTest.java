@@ -74,7 +74,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
           }
   
           // now set an artificial time offset for the test
-          system.getClock().setCacheTimeOffset(null, TEST_OFFSET, true);
+          basicGetSystem().getClock().setCacheTimeOffset(null, TEST_OFFSET, true);
           
           LogWriterUtils.getLogWriter().info("Done creating and starting CacheServer on port " + server.getPort());
           return server.getPort();
@@ -151,7 +151,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
           }
   
           // now set an artificial time offset for the test
-          system.getClock().setCacheTimeOffset(null, -TEST_OFFSET, true);
+          basicGetSystem().getClock().setCacheTimeOffset(null, -TEST_OFFSET, true);
           
           LogWriterUtils.getLogWriter().info("Done creating and starting CacheServer on port " + server.getPort());
           return server.getPort();

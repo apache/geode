@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache;
  * Region regions} that have been configured with required roles using 
  * {@link MembershipAttributes}.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public abstract class RoleException extends CacheRuntimeException {

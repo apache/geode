@@ -30,7 +30,6 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
  * 
  * For all the latency related attributes e.g. PutRemoteLatency ,DiskWritesAverageLatency etc..
  * "enable-time-statistics" should be set to true. 
- * @author rishim
  * @since 7.0
  *
  */

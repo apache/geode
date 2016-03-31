@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * @author rishim
  *
  */
 public class Order implements Serializable {

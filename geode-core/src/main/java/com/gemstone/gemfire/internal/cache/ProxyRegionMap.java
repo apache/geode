@@ -51,7 +51,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  * @since 5.0
  * 
- * @author Darrel Schneider
  *  
  */
 final class ProxyRegionMap implements RegionMap {

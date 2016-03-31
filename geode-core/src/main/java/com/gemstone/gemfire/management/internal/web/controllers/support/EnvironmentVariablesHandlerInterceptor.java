@@ -39,7 +39,6 @@ import java.util.Properties;
  * The GetEnvironmentHandlerInterceptor class handles extracting Gfsh environment variables encoded in the HTTP request
  * message as request parameters.
  * <p/>
- * @author John Blum
  * @see javax.servlet.http.HttpServletRequest
  * @see javax.servlet.http.HttpServletResponse
  * @see org.springframework.web.servlet.handler.HandlerInterceptorAdapter

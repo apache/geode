@@ -38,7 +38,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Performance of Get operation for Entry faulting in from previous Op Log 3)
  * Performance of Get operation for Entry faulting in from H Tree
  * 
- * @author Vikram Jadhav
  *  
  */
 @Category(IntegrationTest.class)

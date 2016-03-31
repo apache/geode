@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Test for the new variable length format
- * @author dsmith
  * 
  * TODO these tests need some work. I don't think they really represent
  * edge cases for this variable length value.

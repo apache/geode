@@ -49,8 +49,18 @@ configurations {
 
 dependencies {
   provided project(':geode-core')
-  bundled 'org.springframework.data:spring-data-commons:' + project.'spring-data-commons.version'
-  bundled 'org.springframework.data:spring-data-gemfire:' + project.'spring-data-gemfire.version'
+  bundled ('org.springframework.data:spring-data-commons:' + project.'spring-data-commons.version') {
+    transitive=false
+  }
+  bundled ('org.springframework.data:spring-data-gemfire:' + project.'spring-data-gemfire.version') {
+    transitive=false
+  }
+  bundled ('org.springframework:spring-expression:' + project.'springframework.version') {
+    transitive=false
+  }
+  bundled ('org.springframework:spring-tx:' + project.'springframework.version') {
+    transitive=false
+  }
   
   archives project(':geode-common')  
   archives project(':geode-json')  
@@ -246,6 +256,8 @@ distributions {
         exclude 'gradle/wrapper/gradle-wrapper.jar'
         exclude '.gradle'
         exclude '**/build/**'
+        exclude 'geode-spark-connector/**/target/**'
+        exclude 'geode-spark-connector/project/project'
         exclude '**/.project'
         exclude '**/.classpath'
         exclude '**/.settings/**'
@@ -306,9 +318,11 @@ distributions {
         from configurations.bundled
 
         from project(":geode-core").configurations.archives.allArtifacts.files
-        from project(":geode-core").webJar
-        from project(":geode-core").raJar
-        from project(":geode-core").jcaJar
+        //These tasks are included as closures (wrapped in {}) because gradle may evaluate
+        //this CopySpec before it evaluates the geode-core build file.
+        from { project(":geode-core").webJar }
+        from { project(":geode-core").raJar }
+        from { project(":geode-core").jcaJar }
         
         from project(":geode-lucene").configurations.runtime
         from project(":geode-lucene").configurations.archives.allArtifacts.files
@@ -363,3 +377,32 @@ integrationTest dependOnInstalledProduct
 build.dependsOn installDist
 
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
+
+/**Print the names of all jar files in a fileTree */
+def printJars(tree) {
+  tree.matching {include("**/*.jar")}.visit{ file -> 
+    if(!file.isDirectory()) {
+      println file.name
+    }
+  };
+}
+
+task dumpInstalledJars(dependsOn: installDist) << {
+  description "Dump a list of all of the jars shipped with the binary distribution, for validation purposes"
+
+  FileTree installDir = fileTree(dir: installDist.destinationDir)
+
+  println("Jars in the binary install")
+  println("==========================")
+  printJars(installDir)
+
+  installDir.include("**/*.war").visit{ file -> 
+    if(!file.isDirectory()) {
+        FileTree warContents = zipTree(file.file)
+        println ""
+        println file.name
+        println("==========================")
+        printJars(warContents);
+    } 
+  };
+}

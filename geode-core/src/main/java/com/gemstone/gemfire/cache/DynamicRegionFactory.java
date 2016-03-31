@@ -126,9 +126,6 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * not directly access this Region; instead use the methods on this factory.
  * </ul>
  * @since 4.3
- * @author Gideon Low
- * @author Darrel Schneider
- * @author Bruce Schuchardt
  *
  */
 @SuppressWarnings("deprecation")

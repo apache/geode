@@ -25,7 +25,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing locators from MBean
- * @author ajayp
  * 
  */
 
@@ -35,11 +34,6 @@ public class TestLocatorsDUnitTest extends ManagementTestBase {
 
   public TestLocatorsDUnitTest(String name) {
     super(name);
-  }
-
-  public void setUp() throws Exception {
-    super.setUp();
-
   }
 
   public static int getNumOfLocatorFromMBean() {

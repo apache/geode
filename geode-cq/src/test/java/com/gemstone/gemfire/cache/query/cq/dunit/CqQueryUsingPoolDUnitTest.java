@@ -83,7 +83,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * a data loader. The client creates the same region and attaches the connection pool.
  * 
  *
- * @author anil
  */
 public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
   
@@ -159,10 +158,9 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
   public CqQueryUsingPoolDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
-    
+
+  @Override
+  public final void postSetUp() throws Exception {
     //We're seeing this on the server when the client
     //disconnects.
     IgnoredException.addIgnoredException("Connection reset");
@@ -178,7 +176,10 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         getSystem();
       }
     });
-    
+    postSetUpCqQueryUsingPoolDUnitTest();
+  }
+
+  protected void postSetUpCqQueryUsingPoolDUnitTest() throws Exception {
   }
   
   /* Returns Cache Server Port */
@@ -1009,10 +1010,13 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         CqQueryTestListener listener = (CqQueryTestListener) cqListeners[0];
         listener.printInfo(false);
         
+        // Wait for expected events to arrive at Listener.
+        listener.waitForEvents(creates, updates, deletes, queryInserts, queryUpdates, queryDeletes, totalEvents);
+        
         // Check for totalEvents count.
         if (totalEvents != noTest) {
           // Result size validation.
-          listener.printInfo(true);
+          //listener.printInfo(true);
           assertEquals("Total Event Count mismatch", totalEvents, listener.getTotalEventCount());
         }
         
@@ -1029,42 +1033,42 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         // Check for create count.
         if (creates != noTest) {
           // Result size validation.
-          listener.printInfo(true);
+          //listener.printInfo(true);
           assertEquals("Create Event mismatch", creates, listener.getCreateEventCount());
         }
         
         // Check for update count.
         if (updates != noTest) {
           // Result size validation.
-          listener.printInfo(true);
+          //listener.printInfo(true);
           assertEquals("Update Event mismatch", updates, listener.getUpdateEventCount());
         }
         
         // Check for delete count.
         if (deletes != noTest) {
           // Result size validation.
-          listener.printInfo(true);
+          //listener.printInfo(true);
           assertEquals("Delete Event mismatch", deletes, listener.getDeleteEventCount());
         }
         
         // Check for queryInsert count.
         if (queryInserts != noTest) {
           // Result size validation.
-          listener.printInfo(true);
+          //listener.printInfo(true);
           assertEquals("Query Insert Event mismatch", queryInserts, listener.getQueryInsertEventCount());
         }
         
         // Check for queryUpdate count.
         if (queryUpdates != noTest) {
           // Result size validation.
-          listener.printInfo(true);
+          //listener.printInfo(true);
           assertEquals("Query Update Event mismatch", queryUpdates, listener.getQueryUpdateEventCount());
         }
         
         // Check for queryDelete count.
         if (queryDeletes != noTest) {
           // Result size validation.
-          listener.printInfo(true);
+          //listener.printInfo(true);
           assertEquals("Query Delete Event mismatch", queryDeletes, listener.getQueryDeleteEventCount());
         }        
       }

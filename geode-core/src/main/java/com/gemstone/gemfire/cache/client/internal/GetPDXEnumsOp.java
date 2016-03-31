@@ -28,7 +28,6 @@ import com.gemstone.gemfire.pdx.internal.EnumInfo;
 /**
  * Retrieve all known PDX types.
  * 
- * @author bakera
  * @since 7.0
  */
 public class GetPDXEnumsOp {

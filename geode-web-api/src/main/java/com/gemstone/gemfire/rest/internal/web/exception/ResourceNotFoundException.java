@@ -21,7 +21,6 @@ package com.gemstone.gemfire.rest.internal.web.exception;
 /**
  * Indicates that resource (key, value etc) does not found while trying to do REST operation.
  * <p/>
- * @author Nilkanth Patel
  * @since 8.0
  */
 

@@ -51,7 +51,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  *
- * @author Ketan
  */
 @Category(IntegrationTest.class)
 public class IndexMaintenanceAsynchJUnitTest {

@@ -54,11 +54,6 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
-  
   public void testPrimarySecondaryQueueDrainInOrder_RR() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -222,7 +217,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     Integer remoteLocPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, localLocPort ));
 
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["
         + localLocPort + "]");
@@ -286,7 +281,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     Integer remoteLocPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, localLocPort ));
     
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + localLocPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);

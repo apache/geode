@@ -40,7 +40,6 @@ import org.springframework.web.multipart.MultipartFile;
  * The ConfigCommandsController class implements GemFire Management REST API web service endpoints for the Gfsh
  * Config Commands.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.ConfigCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractMultiPartCommandsController
  * @see org.springframework.stereotype.Controller

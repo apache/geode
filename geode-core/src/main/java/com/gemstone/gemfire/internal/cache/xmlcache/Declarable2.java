@@ -25,7 +25,6 @@ import java.util.Properties;
  * Properties}).  This allows us to convert a <code>Declarable</code>
  * into XML.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

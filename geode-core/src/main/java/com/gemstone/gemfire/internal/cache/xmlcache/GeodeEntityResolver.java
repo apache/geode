@@ -32,7 +32,6 @@ import org.xml.sax.ext.EntityResolver2;
  * Loaded by {@link ServiceLoader} on {@link EntityResolver2} class. See file
  * <code>META-INF/services/org.xml.sax.ext.EntityResolver2</code>
  * 
- * @author jbarrett@pivotal.io
  * 
  * @since 8.1
  */

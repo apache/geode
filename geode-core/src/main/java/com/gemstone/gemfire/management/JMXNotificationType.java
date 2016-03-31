@@ -23,7 +23,6 @@ package com.gemstone.gemfire.management;
  * 
  * For detail usage see GemFire quick start.
  * 
- * @author rishim
  * @since 8.0
  */
 public interface JMXNotificationType {

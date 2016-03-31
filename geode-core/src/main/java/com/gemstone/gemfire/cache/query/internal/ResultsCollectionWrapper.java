@@ -36,8 +36,6 @@ import com.gemstone.gemfire.internal.Version;
  * collection is a List; duplicates allowed unless base collection is a Set.
  * Defaults to modifiable unless set otherwise.
  * 
- * @author ericz
- * @author asif
  * @since 4.0
  */
 public final class ResultsCollectionWrapper
@@ -594,7 +592,6 @@ public final class ResultsCollectionWrapper
     
   /**
    * 
-   * @author Asif
    *
    */
   class LimitIterator implements Iterator {

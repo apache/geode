@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
 /**
  * Represents a connection from a client to a server.
  * Instances are created, kept, and used by {@link PoolImpl}.
- * @author darrel
  * @since 5.7
  */
 public interface Connection {

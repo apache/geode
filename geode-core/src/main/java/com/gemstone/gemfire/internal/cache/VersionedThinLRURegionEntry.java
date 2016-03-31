@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 
 /**
- * @author bruce
  *
  */
 public abstract class VersionedThinLRURegionEntry extends VMThinLRURegionEntry

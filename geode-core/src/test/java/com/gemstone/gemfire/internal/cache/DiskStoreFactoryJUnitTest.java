@@ -36,7 +36,6 @@ import junit.framework.TestCase;
 /**
  * Tests DiskStoreFactory
  * 
- * @author darrel
  *  
  */
 @Category(IntegrationTest.class)

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.datasource;
 /**
  * This interface outlines the behavior of a Connection provider.
  * 
- * @author tnegi
  */
 public interface ConnectionProvider {
 

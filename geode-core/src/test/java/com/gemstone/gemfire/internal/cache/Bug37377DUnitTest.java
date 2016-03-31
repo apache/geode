@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * after the entry gets written to the disk, The Test verifies the existence of
  * the scenario.
  * 
- * @author pbatra
  */
 
 public class Bug37377DUnitTest extends CacheTestCase
@@ -86,19 +85,15 @@ public class Bug37377DUnitTest extends CacheTestCase
     dirs[1] = file2;
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
-
   }
 
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception
-  {
-
+  public final void preTearDownCacheTestCase() throws Exception {
     vm1.invoke(destroyRegion());
     vm0.invoke(destroyRegion());
   }

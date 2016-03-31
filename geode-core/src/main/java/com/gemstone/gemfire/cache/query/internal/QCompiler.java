@@ -57,8 +57,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Class Description
  *
  * @version     $Revision: 1.1 $s
- * @author      ericz
- * @author asif
  */
 public class QCompiler implements OQLLexerTokenTypes {
   private static final Logger logger = LogService.getLogger();

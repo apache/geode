@@ -38,7 +38,6 @@ import javax.servlet.http.HttpServletRequest;
  * This class contains implementations of getting Asynchronous Event Queues
  * details of Cluster Member.
  * 
- * @author Sachin K
  * @since version 7.5
  */
 @Component

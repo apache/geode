@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.tx.TransactionalOperation.ServerRegio
  * This interface extends {@link TXStateInterface} providing for a proxy for the
  * real transaction on a remote data store node.
  * 
- * @author mthomas
  */
 public interface TXStateProxy extends TXStateInterface {
 

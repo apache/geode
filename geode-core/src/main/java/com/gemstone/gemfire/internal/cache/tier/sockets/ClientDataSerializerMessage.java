@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 /**
  * 
- * @author Amardeep
  *
  */
 public class ClientDataSerializerMessage  extends ClientUpdateMessageImpl{

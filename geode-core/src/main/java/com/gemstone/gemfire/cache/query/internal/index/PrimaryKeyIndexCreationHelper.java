@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
- * @author vaibhav
  */
 public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper  {
 

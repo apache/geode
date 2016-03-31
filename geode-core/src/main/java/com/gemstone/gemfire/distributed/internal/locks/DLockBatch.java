@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
 /**
  * Collection of distributed locks to be processed as a batch. 
  *
- * @author Kirk Lund
  */
 public interface DLockBatch {
   

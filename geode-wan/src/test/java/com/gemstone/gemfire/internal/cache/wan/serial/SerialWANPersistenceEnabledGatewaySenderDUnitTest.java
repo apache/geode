@@ -23,7 +23,6 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
- * @author skumar
  * 
  */
 public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
@@ -33,10 +32,6 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
 
   public SerialWANPersistenceEnabledGatewaySenderDUnitTest(String name) {
     super(name);
-  }
-
-  public void setUp() throws Exception {
-    super.setUp();
   }
 
   /**

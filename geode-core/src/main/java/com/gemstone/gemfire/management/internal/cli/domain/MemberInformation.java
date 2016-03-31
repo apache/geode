@@ -26,7 +26,6 @@ import java.util.Set;
 /***
  * Data class to hold the information of the member
  * Used in describe member command
- * @author bansods
  *
  */
 public class MemberInformation implements Serializable{

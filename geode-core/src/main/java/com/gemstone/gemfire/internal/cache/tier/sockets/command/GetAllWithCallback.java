@@ -52,7 +52,6 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
 /**
  * Initial version copied from GetAll70.java r48777.
  * 
- * @author dschneider
  *
  */
 public class GetAllWithCallback extends BaseCommand {

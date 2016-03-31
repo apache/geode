@@ -55,7 +55,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 
 /***
  *
- * @author Sourabh Bansod
  *
  * @since 7.0
  */

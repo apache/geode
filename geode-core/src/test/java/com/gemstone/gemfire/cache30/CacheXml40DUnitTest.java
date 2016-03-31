@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
  * Tests the declarative caching functionality introduced in GemFire
  * 4.0. 
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class CacheXml40DUnitTest extends CacheXml30DUnitTest {

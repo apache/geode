@@ -26,7 +26,6 @@ import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
 
 /**
- * @author dsmith
  *
  */
 public interface OfflineMemberDetails extends DataSerializable {

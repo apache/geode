@@ -39,7 +39,6 @@ import junit.framework.Assert;
  * This class tests the response of GemFire to various
  * occurrences of {@link VirtualMachineError}
  * 
- * @author jpenney
  * @since 5.1
  */
 public class SystemFailureDUnitTest extends DistributedCacheTestCase {
@@ -254,7 +253,6 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   /**
    * This class can never be successfully loaded.
    * 
-   * @author jpenney
    */
   static class SickoClass {
     static private boolean threeCardMonte() {
@@ -396,7 +394,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     return ((Boolean)o).booleanValue();
   }
   
-  protected static Boolean verifyConnected() {
+  protected Boolean verifyConnected() {
     if (SystemFailure.getFailure() != null) {
       com.gemstone.gemfire.test.dunit.Assert.fail("System failure present!", SystemFailure.getFailure());
       return Boolean.FALSE;
@@ -409,11 +407,11 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     
     // Let's inspect the distributed system.  It should also
     // be connected.
-    if (system.getCancelCriterion().cancelInProgress() != null) {
+    if (basicGetSystem().getCancelCriterion().cancelInProgress() != null) {
       fail("distributed system cancel in progress");
       return Boolean.FALSE;
     }
-    if (!system.isConnected()) {
+    if (!basicGetSystem().isConnected()) {
       fail("distributed system not connected");
       return Boolean.FALSE;
     }

@@ -34,7 +34,6 @@ import org.springframework.web.multipart.MultipartFile;
  * The DeployCommandsController class implements the GemFire Management REST API web service endpoints for the
  * Gfsh Deploy Commands.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.ConfigCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractMultiPartCommandsController
  * @see org.springframework.stereotype.Controller

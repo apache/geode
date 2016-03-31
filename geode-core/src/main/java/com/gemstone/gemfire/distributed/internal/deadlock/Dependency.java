@@ -25,7 +25,6 @@ import java.io.Serializable;
  * An example of a dependency is a Thread that is blocking on a lock, or a lock
  * that is held by a thread.
  * 
- * @author dsmith
  * 
  */
 public class Dependency<A,B> implements Serializable {

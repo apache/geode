@@ -25,7 +25,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

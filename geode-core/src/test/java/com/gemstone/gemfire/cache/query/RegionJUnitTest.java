@@ -43,7 +43,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  *
  * Created on January 31, 2005, 3:54 PM
  * 
- * @author vaibhav
  */
 @Category(IntegrationTest.class)
 public class RegionJUnitTest{

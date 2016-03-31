@@ -123,7 +123,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
  * The LauncherLifecycleCommands class encapsulates all GemFire launcher commands for GemFire tools (like starting
  * GemFire Monitor (GFMon) and Visual Statistics Display (VSD)) as well external tools (like jconsole).
  * <p>
- * @author John Blum
  * @see com.gemstone.gemfire.distributed.LocatorLauncher
  * @see com.gemstone.gemfire.distributed.ServerLauncher
  * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport

@@ -62,7 +62,6 @@ import com.gemstone.gemfire.cache.query.types.*;
  *
  * @see com.gemstone.gemfire.cache.query.Query#execute()
  *
- * @author Eric Zoerner
  * @since 4.0
  */
 public interface SelectResults<E> extends Collection<E> {  

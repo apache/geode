@@ -31,10 +31,6 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     super(name);
   }
   
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
   /**
    * Normal replication scenario
    */

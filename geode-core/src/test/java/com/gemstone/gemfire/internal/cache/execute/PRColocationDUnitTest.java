@@ -74,7 +74,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * This is the test for the custom and colocated partitioning of
  * PartitionedRegion
  * 
- * @author Kishor
  */
 @SuppressWarnings("synthetic-access")
 public class PRColocationDUnitTest extends CacheTestCase {
@@ -118,8 +117,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();  // isolate this test from others to avoid periodic CacheExistsExceptions
     Host host = Host.getHost(0);
     dataStore1 = host.getVM(0);
@@ -2556,7 +2554,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         InternalResourceManager.setResourceObserver(null);

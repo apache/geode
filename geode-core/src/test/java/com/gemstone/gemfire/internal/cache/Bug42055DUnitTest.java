@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Test that the bucket size does not go negative when
  * we fault out and in a delta object.
- * @author dsmith
  *
  */
 public class Bug42055DUnitTest extends CacheTestCase {

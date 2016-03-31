@@ -56,7 +56,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * <code>-XX:+UseConcMarkSweepGC</code> and <code>-XX:+UseParNewGC</code>
  * options improve the behavior of the <code>HeapLRUCapacityController</code>.
  * 
- * @author David Whitlock
  * 
  * @since 3.2
  */

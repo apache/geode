@@ -73,7 +73,6 @@ import com.gemstone.gemfire.management.membership.ClientMembershipListener;
  * Represents the GemFire CacheServer . Provides data and notifications about
  * server, subscriptions,durable queues and indices
  * 
- * @author rishim
  * 
  */
 public class CacheServerBridge extends ServerBridge{  

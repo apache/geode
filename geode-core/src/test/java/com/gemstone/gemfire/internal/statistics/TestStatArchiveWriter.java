@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.StatArchiveWriter;
 
 /**
- * @author Kirk Lund
  * @since 7.0
  */
 public class TestStatArchiveWriter extends StatArchiveWriter {

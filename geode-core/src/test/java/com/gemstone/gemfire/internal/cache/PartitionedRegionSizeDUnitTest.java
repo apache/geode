@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Redundancy (Scope DIST_ACK, Redundancy 1 AND Scope DIST_NO_ACK, Redundancy
  * 0).
  * 
- * @author tapshank, Created on March 03, 2006
  *  
  */
 public class PartitionedRegionSizeDUnitTest extends

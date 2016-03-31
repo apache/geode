@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * Composite data type used to distribute attributes for a {@link Region}.
  * 
- * @author rishim
  * @since 7.0
  */
 public class RegionAttributesData {

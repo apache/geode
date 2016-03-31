@@ -24,7 +24,6 @@ import com.gemstone.gemfire.i18n.StringId;
 /**
  * Extracted from LogWriterImpl and changed to static.
  * 
- * @author Kirk Lund
  */
 public class StartupStatus {
   private static final Logger logger = LogService.getLogger();

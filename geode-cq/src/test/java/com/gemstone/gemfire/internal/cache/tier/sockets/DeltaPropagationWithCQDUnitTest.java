@@ -16,7 +16,11 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import com.gemstone.gemfire.DeltaTestImpl;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -60,7 +64,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author ashetkar
  *
  */
 public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
@@ -87,6 +90,8 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
   private static long cqEvents = 0;
 
   private static long cqErrors = 0;
+  
+  private static long deltasFound = 0;
 
   /**
    * @param name
@@ -95,8 +100,8 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -105,7 +110,7 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     server1.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
     server2.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
     client1.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
@@ -181,8 +186,10 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
     client1.invoke(() -> DeltaPropagationWithCQDUnitTest.doPuts(numOfKeys, true));
     // verify client2's CQ listeners see above puts
     verifyCqListeners(numOfListeners * numOfKeys * numOfCQs * 2);
+    // verify number of deltas encountered in this client
+    assertEquals(numOfKeys, deltasFound);
     // verify full value requests at server 
-    server1.invoke(() -> DeltaPropagationWithCQDUnitTest.verifyFullValueRequestsFromClients(10L));
+    server1.invoke(() -> DeltaPropagationWithCQDUnitTest.verifyFullValueRequestsFromClients(numOfKeys*1l));
   }
 
   public static void verifyCqListeners(final Integer events) throws Exception {
@@ -193,6 +200,7 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
       }
 
       public boolean done() {
+        System.out.println("verifyCqListeners: expected total="+events+"; cqEvents="+cqEvents+"; cqErrors="+cqErrors);
         return (cqEvents + cqErrors) == events;
       }
     };
@@ -201,19 +209,23 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
 
   public static void verifyFullValueRequestsFromClients(Long expected)
       throws Exception {
-    Object[] proxies = ((CacheServerImpl)((GemFireCacheImpl)cache)
-        .getCacheServers().get(0)).getAcceptor().getCacheClientNotifier()
-        .getClientProxies().toArray();
-    long fullValueRequests = ((CacheClientProxy)proxies[0]).getStatistics()
-        .getDeltaFullMessagesSent();
-    if (fullValueRequests == 0) {
-      assertEquals("Full value requests, ", expected.longValue(),
-          ((CacheClientProxy)proxies[1]).getStatistics()
-          .getDeltaFullMessagesSent());
-    } else {
-      assertEquals("Full value requests, ", expected.longValue(),
-          fullValueRequests);
+    List<CacheServerImpl> servers = ((GemFireCacheImpl)cache).getCacheServers();
+    assertEquals("expected one server but found these: " + servers, 1, servers.size());
+
+    CacheClientProxy[] proxies = servers.get(0).getAcceptor().getCacheClientNotifier()
+        .getClientProxies().toArray(new CacheClientProxy[0]);
+    
+    // find the proxy for the client that processed the CQs - it will have
+    // incremented its deltaFullMessagesSent statistic when the listener invoked
+    // getValue() on the event and caused a RequestEventValue command to be
+    // invoked on the server
+    long fullValueRequests = 0;
+    for (int i=0; (i < proxies.length) && (fullValueRequests <= 0l); i++) {
+      CacheClientProxy proxy = proxies[i];
+      fullValueRequests = proxy.getStatistics().getDeltaFullMessagesSent();
     }
+    
+    assertEquals("Full value requests, ", expected.longValue(), fullValueRequests);
   }
 
   public static void doPut(Object key, Object value) throws Exception {
@@ -314,13 +326,37 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
     for (int i = 0; i < numOfListeners; i++) {
       cqListeners[i] = new CqListenerAdapter() {
         public void onEvent(CqEvent event) {
+          System.out.println("CqListener.onEvent invoked.  Event="+event);
+          if (event.getDeltaValue() != null) {
+            deltasFound++;
+          }
+          // The first CQ event dispatched with a delta will not have a newValue.
+          // Attempting to access the newValue will cause an exception to be
+          // thrown, exiting this listener and causing the full value to be
+          // read from the server.  The listener is then invoked a second time
+          // and getNewValue will succeed
           event.getNewValue();
+          if (event.getDeltaValue() != null) {
+            // if there's a newValue we should ignore the delta bytes
+            deltasFound--;
+          }
+          System.out.println("deltasFound="+deltasFound);
           cqEvents++;
+          System.out.println("cqEvents is now " + cqEvents);
         }
 
         public void onError(CqEvent event) {
+          System.out.println("CqListener.onError invoked.  Event="+event);
+          if (event.getDeltaValue() != null) {
+            deltasFound++;
+          }
           event.getNewValue();
+          if (event.getDeltaValue() != null) {
+            deltasFound--;
+          }
+          System.out.println("deltasFound="+deltasFound);
           cqErrors++;
+          System.out.println("cqErrors is now " + cqErrors);
         }
       };
       caf.addCqListener(cqListeners[i]);

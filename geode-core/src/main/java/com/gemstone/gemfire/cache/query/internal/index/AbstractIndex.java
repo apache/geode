@@ -92,8 +92,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
  * entries that map to null at the end of the index path, and entries that
  * cannot be traversed to the end of the index path (traversal is undefined).
  * 
- * @author asif
- * @author vaibhav
  */
 public abstract class AbstractIndex implements IndexProtocol
 {
@@ -984,8 +982,6 @@ public abstract class AbstractIndex implements IndexProtocol
 
   /**
    * 
-   * @author vaibhav
-   * @author Asif
    */
   class IMQEvaluator implements IndexedExpressionEvaluator
   {
@@ -1745,7 +1741,6 @@ public abstract class AbstractIndex implements IndexProtocol
    * This map does NOT provide an iterator. To iterate over its element caller
    * has to get inside the map itself through addValuesToCollection() calls.
    * 
-   * @author shobhit
    *
    */
   class RegionEntryToValuesMap

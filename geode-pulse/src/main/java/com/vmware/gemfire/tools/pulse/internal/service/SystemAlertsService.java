@@ -38,7 +38,6 @@ import javax.servlet.http.HttpServletRequest;
  * This class contains implementations of getting system's alerts details (like
  * errors, warnings and severe errors).
  * 
- * @author Anchal G
  * @since version 7.5
  */
 

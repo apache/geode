@@ -43,7 +43,6 @@ import java.util.concurrent.Callable;
  *  }
  * </PRE>
  * 
- * @author Mitch Thomas
  */
 public abstract class SerializableCallable<T> implements SerializableCallableIF<T> {
   

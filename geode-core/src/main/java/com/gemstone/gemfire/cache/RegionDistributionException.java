@@ -31,7 +31,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
  * may be caused by one or more required roles not acknowledging receipt of
  * the message.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public class RegionDistributionException extends RegionRoleException {

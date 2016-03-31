@@ -19,6 +19,7 @@ package com.gemstone.gemfire.cache.query.dunit;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
@@ -44,8 +45,8 @@ public class CompactRangeIndexDUnitTest extends DistributedTestCase{
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
@@ -59,8 +60,7 @@ public class CompactRangeIndexDUnitTest extends DistributedTestCase{
     utils.createReplicateRegion("exampleRegion", vm0);
     utils.createIndex(vm0,"type", "\"type\"", "/exampleRegion");
   }
-  
-  
+
   /*
    * Tests that the message component of the exception is not null
    */
@@ -70,7 +70,7 @@ public class CompactRangeIndexDUnitTest extends DistributedTestCase{
 
     vm0.invoke(new CacheSerializableRunnable("Putting values") {
       public void run2() {
-        utils.createValuesStringKeys("examplePartitionedRegion", 100);
+        putPortfolios("examplePartitionedRegion", 100);
       }
     });
     try {
@@ -112,7 +112,7 @@ public class CompactRangeIndexDUnitTest extends DistributedTestCase{
   public void doPut(final int entries) {
      vm0.invokeAsync(new CacheSerializableRunnable("Putting values") {
       public void run2() {
-        utils.createValuesStringKeys("exampleRegion", entries);
+        putPortfolios("exampleRegion", entries);
       }
     });
   }
@@ -120,7 +120,7 @@ public class CompactRangeIndexDUnitTest extends DistributedTestCase{
   public void doPutSync(final int entries) {
     vm0.invoke(new CacheSerializableRunnable("Putting values") {
      public void run2() {
-       utils.createValuesStringKeys("exampleRegion", entries);
+       putPortfolios("exampleRegion", entries);
      }
    });
  }
@@ -128,7 +128,7 @@ public class CompactRangeIndexDUnitTest extends DistributedTestCase{
   public void doUpdate(final int entries) {
     vm0.invokeAsync(new CacheSerializableRunnable("Updating values") {
      public void run2() {
-       utils.createDiffValuesStringKeys("exampleRegion", entries);
+       putOffsetPortfolios("exampleRegion", entries);
      }
    });
  }
@@ -159,7 +159,15 @@ public class CompactRangeIndexDUnitTest extends DistributedTestCase{
       public void run2() {
         try {
           Thread.sleep(500);
-          utils.destroyRegion("exampleRegion", entries);
+          //destroy entries
+          Region region = utils.getRegion("exampleRegion");
+          for (int i = 1; i <= entries; i++) {
+            try {
+              region.destroy("KEY-"+ i);
+            } catch (Exception e) {
+              throw new Exception(e);
+            }
+          }
         } catch (Exception e) {
           fail("Destroy failed.");
         }
@@ -169,7 +177,7 @@ public class CompactRangeIndexDUnitTest extends DistributedTestCase{
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     Thread.sleep(5000);
     removeHook();
     utils.closeServer(vm0);
@@ -189,6 +197,20 @@ public class CompactRangeIndexDUnitTest extends DistributedTestCase{
         IndexManager.testHook = null;
       }
     });
+  }
+  
+  private void putPortfolios(String regionName, int size) {
+    Region region = utils.getRegion(regionName);
+    for (int i = 1; i <= size; i++) {
+      region.put("KEY-"+ i, new Portfolio(i));
+    }
+  }
+  
+  private void putOffsetPortfolios(String regionName, int size) {
+    Region region = utils.getRegion(regionName);
+    for (int i = 1; i <= size; i++) {
+      region.put("KEY-"+ i, new Portfolio(i + 1));
+    }
   }
   
   

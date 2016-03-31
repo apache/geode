@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 
 /**
  * Does a region query on a server
- * @author darrel
  * @since 5.7
  */
 public class StopCQOp {

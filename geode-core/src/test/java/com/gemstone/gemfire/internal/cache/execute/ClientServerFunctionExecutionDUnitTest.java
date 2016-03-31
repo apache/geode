@@ -62,12 +62,11 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpPRClientServerTestBase() throws Exception {
     IgnoredException.addIgnoredException("java.net.ConnectException");
   }
 
-  
   public void test_Bug_43126_Function_Not_Registered()
       throws InterruptedException {
     createScenario();

@@ -43,7 +43,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * Queries the grantor for current leasing information of a lock.
  * 
- * @author Kirk Lund
  */
 public class DLockQueryProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();

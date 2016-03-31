@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentMap;
  * Note that the entryKey and keySet of this map are unmodifable.
  * Should be easy to make them modifiable at a future time.
  * 
- * @author dsmith
  *
  */
 public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> , Serializable {

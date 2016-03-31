@@ -39,7 +39,6 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * @author sbawaska
  *
  */
 public class InvalidatePartitionedRegionMessage extends PartitionMessage {

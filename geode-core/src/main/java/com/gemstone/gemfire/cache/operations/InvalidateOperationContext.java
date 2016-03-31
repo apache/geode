@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.operations;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#INVALIDATE} region operation having the key
  * object for both the pre-operation case and for post-operation updates.
  * 
- * @author Kumar Neeraj
  * @since 5.5
  */
 public class InvalidateOperationContext extends KeyOperationContext {

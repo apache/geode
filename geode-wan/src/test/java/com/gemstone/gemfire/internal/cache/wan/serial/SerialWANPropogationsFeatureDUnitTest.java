@@ -28,10 +28,6 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
   public void testSerialReplicatedWanWithOverflow() {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

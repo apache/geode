@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * For distributed testing for the same , please refer
  * {@link EventIdOptimizationDUnitTest}.
  * 
- * @author Dinesh Patel
  * 
  */
 @Category(UnitTest.class)

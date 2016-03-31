@@ -58,6 +58,7 @@ import com.gemstone.gemfire.cache30.CertifiableTestCacheListener;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -132,27 +133,18 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     //Workaround for #52008
     IgnoredException.addIgnoredException("Failed to create index");
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
-    // Get the disk store name.
-    GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
-    String diskStoreName = cache.getDefaultDiskStoreName();
-    
-    //reset TestHook
+  public final void postTearDownCacheTestCase() throws Exception {
+    // avoid creating a new cache just to get the diskstore name
     Invoke.invokeInEveryVM(resetTestHook());
-    // close the cache.
-    closeCache();
     disconnectFromDS();
-    
-    // remove the disk store.
-    File diskDir = new File(diskStoreName).getAbsoluteFile();
-    com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
+    FileUtil.delete(new File(GemFireCacheImpl.DEFAULT_DS_NAME).getAbsoluteFile());
   }
   
   /**
@@ -945,12 +937,12 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
   
   public final InternalDistributedSystem getSystem(String diskStoreId) {
     new Exception("TEST DEBUG###" + diskStoreId).printStackTrace();
-    if (system == null || !system.isConnected()) {
+    if (basicGetSystem() == null || !basicGetSystem().isConnected()) {
       // Figure out our distributed system properties
       Properties p = DistributedTestUtils.getAllDistributedSystemProperties(getDistributedSystemProperties());
-      system = (InternalDistributedSystem)DistributedSystem.connect(p);
+      getSystem(p);
     } 
-    return system;
+    return basicGetSystem();
   }
   
   

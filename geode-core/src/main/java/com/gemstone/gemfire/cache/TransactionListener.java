@@ -33,7 +33,6 @@ package com.gemstone.gemfire.cache;
  *
  * <p>Rollback and failed commit operations are local.
  *
- * @author Darrel Schneider
  *
  * @see CacheTransactionManager#setListener
  * @see CacheTransactionManager#getListener

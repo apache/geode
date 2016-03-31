@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.Assert;
 
 /**
  * This class is a "stoppable" cover for {@link CountDownLatch}.
- * @author jpenney
  */
 public class StoppableCountDownLatch {
 

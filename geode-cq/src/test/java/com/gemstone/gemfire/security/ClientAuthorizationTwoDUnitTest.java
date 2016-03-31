@@ -16,9 +16,13 @@
  */
 package com.gemstone.gemfire.security;
 
+import static com.gemstone.gemfire.security.SecurityTestUtils.*;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
+
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests for authorization from client to server. This tests for authorization
@@ -29,211 +33,135 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
  * This is the second part of the test which had become long enough to
  * occasionally go beyond the 10min limit.
  * 
- * @author sumedh
  * @since 5.5
  */
-public class ClientAuthorizationTwoDUnitTest extends
-    ClientAuthorizationTestBase {
+@Category(DistributedTest.class)
+public class ClientAuthorizationTwoDUnitTest extends ClientAuthorizationTestCase {
 
-  
-  /** constructor */
-  public ClientAuthorizationTwoDUnitTest(String name) {
-    super(name);
+  @Override
+  public final void postSetUpClientAuthorizationTestBase() throws Exception {
+    addIgnoredException("Read timed out");
+    addIgnoredException("Connection reset");
+    addIgnoredException("SocketTimeoutException");
+    addIgnoredException("ServerConnectivityException");
+    addIgnoredException("Socket Closed");
   }
 
   @Override
-  public void setUp() throws Exception {
-
-    super.setUp();
-    final Host host = Host.getHost(0);
-    server1 = host.getVM(0);
-    server2 = host.getVM(1);
-    client1 = host.getVM(2);
-    client2 = host.getVM(3);
-
-    server1.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
-    server2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( serverExpectedExceptions ));
-    client1.invoke(() -> SecurityTestUtil.registerExpectedExceptions( clientExpectedExceptions ));
-    client2.invoke(() -> SecurityTestUtil.registerExpectedExceptions( clientExpectedExceptions ));
-    SecurityTestUtil.registerExpectedExceptions(clientExpectedExceptions);
+  public final void preTearDownClientAuthorizationTestBase() throws Exception {
+    closeCache();
   }
 
-  // Region: Tests
+  @Test
+  public void testAllOpsWithFailover2() throws Exception {
+    runOpsWithFailOver(allOps(), "testAllOpsWithFailover2");
+  }
 
-  public void testAllOpsWithFailover2() {
-    IgnoredException.addIgnoredException("Read timed out");
-    IgnoredException.addIgnoredException("Connection reset");
-    IgnoredException.addIgnoredException("SocketTimeoutException");
-    IgnoredException.addIgnoredException("ServerConnectivityException");
-    IgnoredException.addIgnoredException("Socket Closed");
-
-    OperationWithAction[] allOps = {
-        // Register interest in all keys using list
-        new OperationWithAction(OperationCode.REGISTER_INTEREST, 3,
-            OpFlags.USE_LIST | OpFlags.CHECK_NOTAUTHZ, 4),
-        new OperationWithAction(OperationCode.REGISTER_INTEREST, 1,
-            OpFlags.USE_LIST, 4),
+  private OperationWithAction[] allOps() {
+    return new OperationWithAction[] {
+        // Register interest in all KEYS using list
+        new OperationWithAction(OperationCode.REGISTER_INTEREST, 3, OpFlags.USE_LIST | OpFlags.CHECK_NOTAUTHZ, 4),
+        new OperationWithAction(OperationCode.REGISTER_INTEREST, 1, OpFlags.USE_LIST, 4),
         // UPDATE and test with GET
         new OperationWithAction(OperationCode.PUT, 2),
-        new OperationWithAction(OperationCode.GET, 1, OpFlags.USE_OLDCONN
-            | OpFlags.LOCAL_OP, 4),
+        new OperationWithAction(OperationCode.GET, 1, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
 
-        // Unregister interest in all keys using list
-        new OperationWithAction(OperationCode.UNREGISTER_INTEREST, 1,
-            OpFlags.USE_OLDCONN | OpFlags.USE_LIST, 4),
+        // Unregister interest in all KEYS using list
+        new OperationWithAction(OperationCode.UNREGISTER_INTEREST, 1, OpFlags.USE_OLDCONN | OpFlags.USE_LIST, 4),
         // UPDATE and test with GET for no updates
-        new OperationWithAction(OperationCode.PUT, 2, OpFlags.USE_OLDCONN
-            | OpFlags.USE_NEWVAL, 4),
-        new OperationWithAction(OperationCode.GET, 1, OpFlags.USE_OLDCONN
-            | OpFlags.LOCAL_OP, 4),
+        new OperationWithAction(OperationCode.PUT, 2, OpFlags.USE_OLDCONN | OpFlags.USE_NEWVAL, 4),
+        new OperationWithAction(OperationCode.GET, 1, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
 
         OperationWithAction.OPBLOCK_END,
 
-        // Register interest in all keys using regular expression
-        new OperationWithAction(OperationCode.REGISTER_INTEREST, 3,
-            OpFlags.USE_REGEX | OpFlags.CHECK_NOTAUTHZ, 4),
-        new OperationWithAction(OperationCode.REGISTER_INTEREST, 2,
-            OpFlags.USE_REGEX, 4),
+        // Register interest in all KEYS using regular expression
+        new OperationWithAction(OperationCode.REGISTER_INTEREST, 3, OpFlags.USE_REGEX | OpFlags.CHECK_NOTAUTHZ, 4),
+        new OperationWithAction(OperationCode.REGISTER_INTEREST, 2, OpFlags.USE_REGEX, 4),
         // UPDATE and test with GET
         new OperationWithAction(OperationCode.PUT),
-        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN
-            | OpFlags.LOCAL_OP, 4),
+        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
 
-        // Unregister interest in all keys using regular expression
-        new OperationWithAction(OperationCode.UNREGISTER_INTEREST, 2,
-            OpFlags.USE_OLDCONN | OpFlags.USE_REGEX, 4),
+        // Unregister interest in all KEYS using regular expression
+        new OperationWithAction(OperationCode.UNREGISTER_INTEREST, 2, OpFlags.USE_OLDCONN | OpFlags.USE_REGEX, 4),
         // UPDATE and test with GET for no updates
-        new OperationWithAction(OperationCode.PUT, 1, OpFlags.USE_OLDCONN
-            | OpFlags.USE_NEWVAL, 4),
-        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN
-            | OpFlags.LOCAL_OP, 4),
+        new OperationWithAction(OperationCode.PUT, 1, OpFlags.USE_OLDCONN | OpFlags.USE_NEWVAL, 4),
+        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
 
         OperationWithAction.OPBLOCK_END,
 
-        // Register interest in all keys using ALL_KEYS
-        new OperationWithAction(OperationCode.REGISTER_INTEREST, 3,
-            OpFlags.USE_ALL_KEYS | OpFlags.CHECK_NOTAUTHZ, 4),
-        new OperationWithAction(OperationCode.REGISTER_INTEREST, 2,
-            OpFlags.USE_ALL_KEYS, 4),
+        // Register interest in all KEYS using ALL_KEYS
+        new OperationWithAction(OperationCode.REGISTER_INTEREST, 3, OpFlags.USE_ALL_KEYS | OpFlags.CHECK_NOTAUTHZ, 4),
+        new OperationWithAction(OperationCode.REGISTER_INTEREST, 2, OpFlags.USE_ALL_KEYS, 4),
         // UPDATE and test with GET
         new OperationWithAction(OperationCode.PUT),
-        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN
-            | OpFlags.LOCAL_OP, 4),
+        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
 
-        // Unregister interest in all keys using ALL_KEYS
-        new OperationWithAction(OperationCode.UNREGISTER_INTEREST, 2,
-            OpFlags.USE_OLDCONN | OpFlags.USE_ALL_KEYS, 4),
+        // Unregister interest in all KEYS using ALL_KEYS
+        new OperationWithAction(OperationCode.UNREGISTER_INTEREST, 2, OpFlags.USE_OLDCONN | OpFlags.USE_ALL_KEYS, 4),
         // UPDATE and test with GET for no updates
-        new OperationWithAction(OperationCode.PUT, 1, OpFlags.USE_OLDCONN
-            | OpFlags.USE_NEWVAL, 4),
-        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN
-            | OpFlags.LOCAL_OP, 4),
+        new OperationWithAction(OperationCode.PUT, 1, OpFlags.USE_OLDCONN | OpFlags.USE_NEWVAL, 4),
+        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
 
         OperationWithAction.OPBLOCK_END,
 
         // Register CQ
         new OperationWithAction(OperationCode.PUT, 2, OpFlags.USE_NEWVAL, 4),
-        new OperationWithAction(OperationCode.EXECUTE_CQ, 3,
-            OpFlags.CHECK_NOTAUTHZ, 4),
-        new OperationWithAction(OperationCode.EXECUTE_CQ, 1,
-            OpFlags.USE_NEWVAL, 4),
+        new OperationWithAction(OperationCode.EXECUTE_CQ, 3, OpFlags.CHECK_NOTAUTHZ, 4),
+        new OperationWithAction(OperationCode.EXECUTE_CQ, 1, OpFlags.USE_NEWVAL, 4),
         // UPDATE and test with GET
         new OperationWithAction(OperationCode.PUT, 2, OpFlags.USE_OLDCONN, 4),
-        new OperationWithAction(OperationCode.EXECUTE_CQ, 1,
-            OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
+        new OperationWithAction(OperationCode.EXECUTE_CQ, 1, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
 
         // Stop CQ
-        new OperationWithAction(OperationCode.STOP_CQ, 3, OpFlags.USE_OLDCONN
-            | OpFlags.CHECK_EXCEPTION, 4),
-        new OperationWithAction(OperationCode.STOP_CQ, 1, OpFlags.USE_OLDCONN,
-            4),
+        new OperationWithAction(OperationCode.STOP_CQ, 3, OpFlags.USE_OLDCONN | OpFlags.CHECK_EXCEPTION, 4),
+        new OperationWithAction(OperationCode.STOP_CQ, 1, OpFlags.USE_OLDCONN, 4),
         // UPDATE and test with GET for no updates
-        new OperationWithAction(OperationCode.PUT, 2, OpFlags.USE_OLDCONN
-            | OpFlags.USE_NEWVAL, 4),
-        new OperationWithAction(OperationCode.EXECUTE_CQ, 1,
-            OpFlags.USE_OLDCONN | OpFlags.CHECK_FAIL | OpFlags.LOCAL_OP, 4),
+        new OperationWithAction(OperationCode.PUT, 2, OpFlags.USE_OLDCONN | OpFlags.USE_NEWVAL, 4),
+        new OperationWithAction(OperationCode.EXECUTE_CQ, 1, OpFlags.USE_OLDCONN | OpFlags.CHECK_FAIL | OpFlags.LOCAL_OP, 4),
 
         // Restart the CQ
-        new OperationWithAction(OperationCode.EXECUTE_CQ, 3, OpFlags.USE_NEWVAL
-            | OpFlags.CHECK_NOTAUTHZ, 4),
-        new OperationWithAction(OperationCode.EXECUTE_CQ, 1,
-            OpFlags.USE_OLDCONN | OpFlags.USE_NEWVAL, 4),
+        new OperationWithAction(OperationCode.EXECUTE_CQ, 3, OpFlags.USE_NEWVAL | OpFlags.CHECK_NOTAUTHZ, 4),
+        new OperationWithAction(OperationCode.EXECUTE_CQ, 1, OpFlags.USE_OLDCONN | OpFlags.USE_NEWVAL, 4),
         // UPDATE and test with GET
         new OperationWithAction(OperationCode.PUT, 2, OpFlags.USE_OLDCONN, 4),
-        new OperationWithAction(OperationCode.EXECUTE_CQ, 1,
-            OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
+        new OperationWithAction(OperationCode.EXECUTE_CQ, 1, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
 
         // Close CQ
-        new OperationWithAction(OperationCode.CLOSE_CQ, 3, OpFlags.USE_OLDCONN,
-            4),
-        new OperationWithAction(OperationCode.CLOSE_CQ, 1, OpFlags.USE_OLDCONN,
-            4),
+        new OperationWithAction(OperationCode.CLOSE_CQ, 3, OpFlags.USE_OLDCONN, 4),
+        new OperationWithAction(OperationCode.CLOSE_CQ, 1, OpFlags.USE_OLDCONN, 4),
         // UPDATE and test with GET for no updates
-        new OperationWithAction(OperationCode.PUT, 2, OpFlags.USE_OLDCONN
-            | OpFlags.USE_NEWVAL, 4),
-        new OperationWithAction(OperationCode.EXECUTE_CQ, 1,
-            OpFlags.USE_OLDCONN | OpFlags.CHECK_FAIL | OpFlags.LOCAL_OP, 4),
+        new OperationWithAction(OperationCode.PUT, 2, OpFlags.USE_OLDCONN | OpFlags.USE_NEWVAL, 4),
+        new OperationWithAction(OperationCode.EXECUTE_CQ, 1, OpFlags.USE_OLDCONN | OpFlags.CHECK_FAIL | OpFlags.LOCAL_OP, 4),
 
         OperationWithAction.OPBLOCK_END,
 
         // Do REGION_CLEAR and check with GET
-        new OperationWithAction(OperationCode.REGION_CLEAR, 3,
-            OpFlags.CHECK_NOTAUTHZ, 1),
+        new OperationWithAction(OperationCode.REGION_CLEAR, 3, OpFlags.CHECK_NOTAUTHZ, 1),
         new OperationWithAction(OperationCode.REGION_CLEAR, 1, OpFlags.NONE, 1),
-        new OperationWithAction(OperationCode.GET, 2, OpFlags.CHECK_NOKEY
-            | OpFlags.CHECK_FAIL, 8),
+        new OperationWithAction(OperationCode.GET, 2, OpFlags.CHECK_NOKEY | OpFlags.CHECK_FAIL, 8),
         // Repopulate the region
         new OperationWithAction(OperationCode.PUT),
 
         OperationWithAction.OPBLOCK_END,
 
         // Do REGION_CREATE and check with CREATE/GET
-        new OperationWithAction(OperationCode.REGION_CREATE, 3,
-            OpFlags.ENABLE_DRF | OpFlags.CHECK_NOTAUTHZ, 1),
-        new OperationWithAction(OperationCode.REGION_CREATE, 1,
-            OpFlags.ENABLE_DRF, 1),
-        new OperationWithAction(OperationCode.PUT, 3, OpFlags.USE_OLDCONN
-            | OpFlags.USE_SUBREGION | OpFlags.CHECK_NOTAUTHZ, 4),
-        new OperationWithAction(OperationCode.PUT, 1, OpFlags.USE_OLDCONN
-            | OpFlags.USE_SUBREGION, 4),
-        new OperationWithAction(OperationCode.GET, 2, OpFlags.CHECK_NOKEY
-            | OpFlags.USE_SUBREGION, 4),
+        new OperationWithAction(OperationCode.REGION_CREATE, 3, OpFlags.ENABLE_DRF | OpFlags.CHECK_NOTAUTHZ, 1),
+        new OperationWithAction(OperationCode.REGION_CREATE, 1, OpFlags.ENABLE_DRF, 1),
+        new OperationWithAction(OperationCode.PUT, 3, OpFlags.USE_OLDCONN | OpFlags.USE_SUBREGION | OpFlags.CHECK_NOTAUTHZ, 4),
+        new OperationWithAction(OperationCode.PUT, 1, OpFlags.USE_OLDCONN | OpFlags.USE_SUBREGION, 4),
+        new OperationWithAction(OperationCode.GET, 2, OpFlags.CHECK_NOKEY | OpFlags.USE_SUBREGION, 4),
 
         // Do REGION_DESTROY of the sub-region and check with GET
-        new OperationWithAction(OperationCode.REGION_DESTROY, 3,
-            OpFlags.USE_OLDCONN | OpFlags.USE_SUBREGION
-                | OpFlags.NO_CREATE_SUBREGION | OpFlags.CHECK_NOTAUTHZ, 1),
-        new OperationWithAction(OperationCode.REGION_DESTROY, 1,
-            OpFlags.USE_OLDCONN | OpFlags.USE_SUBREGION
-                | OpFlags.NO_CREATE_SUBREGION, 1),
-        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN
-            | OpFlags.USE_SUBREGION | OpFlags.CHECK_EXCEPTION, 4),
+        new OperationWithAction(OperationCode.REGION_DESTROY, 3, OpFlags.USE_OLDCONN | OpFlags.USE_SUBREGION | OpFlags.NO_CREATE_SUBREGION | OpFlags.CHECK_NOTAUTHZ, 1),
+        new OperationWithAction(OperationCode.REGION_DESTROY, 1, OpFlags.USE_OLDCONN | OpFlags.USE_SUBREGION | OpFlags.NO_CREATE_SUBREGION, 1),
+        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN | OpFlags.USE_SUBREGION | OpFlags.CHECK_EXCEPTION, 4),
 
         // Do REGION_DESTROY of the region and check with GET
-        new OperationWithAction(OperationCode.REGION_DESTROY, 3,
-            OpFlags.CHECK_NOTAUTHZ, 1),
-        new OperationWithAction(OperationCode.REGION_DESTROY, 1, OpFlags.NONE,
-            1),
-        new OperationWithAction(OperationCode.GET, 2, OpFlags.CHECK_NOKEY
-            | OpFlags.CHECK_EXCEPTION, 4),
+        new OperationWithAction(OperationCode.REGION_DESTROY, 3, OpFlags.CHECK_NOTAUTHZ, 1),
+        new OperationWithAction(OperationCode.REGION_DESTROY, 1, OpFlags.NONE, 1),
+        new OperationWithAction(OperationCode.GET, 2, OpFlags.CHECK_NOKEY | OpFlags.CHECK_EXCEPTION, 4),
 
-        // Skip failover for region destroy since it shall fail
-        // without restarting the server
+        // Skip failover for region destroy since it shall fail without restarting the server
         OperationWithAction.OPBLOCK_NO_FAILOVER };
-
-    runOpsWithFailover(allOps, "testAllOpsWithFailover2");
-  }
-
-  // End Region: Tests
-
-  @Override
-  protected final void preTearDown() throws Exception {
-    // close the clients first
-    client1.invoke(() -> SecurityTestUtil.closeCache());
-    client2.invoke(() -> SecurityTestUtil.closeCache());
-    SecurityTestUtil.closeCache();
-    // then close the servers
-    server1.invoke(() -> SecurityTestUtil.closeCache());
-    server2.invoke(() -> SecurityTestUtil.closeCache());
   }
 }

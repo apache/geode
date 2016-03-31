@@ -16,50 +16,39 @@
  */
 package com.gemstone.gemfire.management;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.ha.Bug48571DUnitTest;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.RMIException;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
+import junit.framework.AssertionFailedError;
+
 /**
  * Client health stats check
  * 
- * @author rishim
  * 
  */
 public class ClientHealthStatsDUnitTest extends DistributedTestCase {
@@ -96,10 +85,11 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
-    final Host host = Host.getHost(0);    
+
+    final Host host = Host.getHost(0);
     managingNode = host.getVM(0);
     server = host.getVM(1);
     client = host.getVM(2);
@@ -108,7 +98,7 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     reset();
     helper.closeCache(managingNode);
     helper.closeCache(client);
@@ -200,6 +190,8 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     server.invoke(() -> ClientHealthStatsDUnitTest.doPuts());
     // close durable client
     client.invoke(() -> ClientHealthStatsDUnitTest.closeClientCache());
+    
+    server.invoke("verifyProxyHasBeenPaused", () -> verifyProxyHasBeenPaused() );
     // resume puts on server, add another 100.
     server.invokeAsync(() -> ClientHealthStatsDUnitTest.resumePuts());
     // start durable client
@@ -210,6 +202,36 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     server.invoke(() -> ClientHealthStatsDUnitTest.verifyStats(port));
   }
   
+  private static void verifyProxyHasBeenPaused() {	  
+	  
+	  WaitCriterion criterion = new WaitCriterion() {
+      
+      @Override
+      public boolean done() {
+        CacheClientNotifier ccn = CacheClientNotifier.getInstance();
+        Collection<CacheClientProxy> ccProxies = ccn.getClientProxies();
+        
+        Iterator<CacheClientProxy> itr =  ccProxies.iterator();
+        
+        while(itr.hasNext()) {
+          CacheClientProxy ccp = itr.next(); 
+          System.out.println("proxy status " + ccp.getState());
+          if(ccp.isPaused())
+            return true;
+        }
+        return false;
+      }
+      
+      @Override
+      public String description() {
+        // TODO Auto-generated method stub
+        return "Proxy has not paused yet";
+      }
+    };
+    
+    Wait.waitForCriterion(criterion, 15 * 1000, 200, true);	  
+  }
+  
   public static int createServerCache() throws Exception {
     Cache cache = helper.createCache(false);
 
@@ -217,9 +239,8 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     rf.setConcurrencyChecksEnabled(false);
     rf.create(REGION_NAME);
 
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     CacheServer server1 = cache.addCacheServer();
-    server1.setPort(port);
+    server1.setPort(0);
     server1.start();
     return server1.getPort();
   }
@@ -236,7 +257,7 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, "durable-"+clientNum);
     props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "300000");
 
-    props.setProperty("log-file", getTestMethodName()+"_client_" + clientNum + ".log");
+//    props.setProperty("log-file", getTestMethodName()+"_client_" + clientNum + ".log");
     props.setProperty("log-level", "info");
     props.setProperty("statistic-archive-file", getTestMethodName()+"_client_" + clientNum
         + ".gfs");
@@ -361,8 +382,8 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
 
       String[] clientIds = bean.getClientIds();
       assertTrue(clientIds.length == 2);
-      LogWriterUtils.getLogWriter().info("<ExpectedString> ClientId-1 of the Server is  " + clientIds[0] + "</ExpectedString> ");
-      LogWriterUtils.getLogWriter().info("<ExpectedString> ClientId-2 of the Server is  " + clientIds[1] + "</ExpectedString> ");
+      System.out.println("<ExpectedString> ClientId-1 of the Server is  " + clientIds[0] + "</ExpectedString> ");
+      System.out.println("<ExpectedString> ClientId-2 of the Server is  " + clientIds[1] + "</ExpectedString> ");
       
       ClientHealthStatus[] clientStatuses = bean.showAllClientStats();
 
@@ -372,15 +393,15 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
       ClientHealthStatus clientStatus2 = bean.showClientStats(clientIds[1]);
       assertNotNull(clientStatus1);
       assertNotNull(clientStatus2);
-      LogWriterUtils.getLogWriter().info("<ExpectedString> ClientStats-1 of the Server is  " + clientStatus1 + "</ExpectedString> ");
-      LogWriterUtils.getLogWriter().info("<ExpectedString> ClientStats-2 of the Server is  " + clientStatus2 + "</ExpectedString> ");
+      System.out.println("<ExpectedString> ClientStats-1 of the Server is  " + clientStatus1 + "</ExpectedString> ");
+      System.out.println("<ExpectedString> ClientStats-2 of the Server is  " + clientStatus2 + "</ExpectedString> ");
 
-      LogWriterUtils.getLogWriter().info("<ExpectedString> clientStatuses " + clientStatuses + "</ExpectedString> ");
+      System.out.println("<ExpectedString> clientStatuses " + clientStatuses + "</ExpectedString> ");
       assertNotNull(clientStatuses);
       
       assertTrue(clientStatuses.length == 2);
       for (ClientHealthStatus status : clientStatuses) {
-        LogWriterUtils.getLogWriter().info("<ExpectedString> ClientStats of the Server is  " + status + "</ExpectedString> ");
+        System.out.println("<ExpectedString> ClientStats of the Server is  " + status + "</ExpectedString> ");
 
       }
 

@@ -61,8 +61,6 @@ import java.util.Properties;
 /**
  * Dunit class for testing GemFire config commands : export config
  *
- * @author David Hoots
- * @author Sourabh Bansod
  * @since 7.0
  */
 public class ConfigCommandsDUnitTest extends CliCommandTestBase {
@@ -459,7 +457,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
         getSystem(localProps);
 
         assertNotNull(getCache());
-        assertEquals("error", system.getConfig().getAttribute(DistributionConfig.LOG_LEVEL_NAME));
+        assertEquals("error", basicGetSystem().getConfig().getAttribute(DistributionConfig.LOG_LEVEL_NAME));
         return null;
       }
     });

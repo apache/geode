@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  *
  * @see MultiVMRegionTestCase#testRemoteCacheWriter
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

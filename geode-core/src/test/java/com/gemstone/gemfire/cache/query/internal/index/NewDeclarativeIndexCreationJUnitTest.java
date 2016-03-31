@@ -40,7 +40,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author shobhit
  *
  * @since 6.6.1
  */

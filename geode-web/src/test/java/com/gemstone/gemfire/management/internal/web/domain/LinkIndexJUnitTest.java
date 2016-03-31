@@ -37,7 +37,6 @@ import org.junit.experimental.categories.Category;
 /**
  * The LinkIndexJUnitTest class is a test suite of test cases testing the contract and functionality of the LinkIndex class.
  * <p/>
- * @author John Blum
  * @see java.net.URI
  * @see com.gemstone.gemfire.management.internal.web.AbstractWebTestCase
  * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex

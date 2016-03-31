@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests the functionality of the {@link AttributesFactory} class.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

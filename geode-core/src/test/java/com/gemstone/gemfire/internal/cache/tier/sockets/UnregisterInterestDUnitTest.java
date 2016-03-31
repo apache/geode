@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author ashetkar
  */
 public class UnregisterInterestDUnitTest extends DistributedTestCase {
 
@@ -70,8 +69,8 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     server0 = host.getVM(0);
     client1 = host.getVM(1);
@@ -83,7 +82,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
     server0.invoke(() -> UnregisterInterestDUnitTest.closeCache());
     client1.invoke(() -> UnregisterInterestDUnitTest.closeCache());

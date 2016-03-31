@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.CachePerfStats;
  * constructor used is the one which creates LinkedHashMap
  * This class is used to store ordered data of Structs too, obtained from index lookup
  * 
- * @author ashahid
  *
  * @param <E>
  */

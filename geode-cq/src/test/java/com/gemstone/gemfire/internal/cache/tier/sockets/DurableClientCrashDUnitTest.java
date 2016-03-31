@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
  * Class <code>DurableClientCrashDUnitTest</code> tests durable client
  * functionality when clients crash.
  * 
- * @author Abhijit Bhaware
  * 
  * @since 5.2
  */
@@ -33,8 +32,8 @@ public class DurableClientCrashDUnitTest extends DurableClientTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpDurableClientTestCase() throws Exception {
     configureClientStop1();
   }
   

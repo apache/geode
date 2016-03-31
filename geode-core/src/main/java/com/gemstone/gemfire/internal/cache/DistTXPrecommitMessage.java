@@ -56,7 +56,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 
 /**
- * @author vivekb
  * 
  */
 public final class DistTXPrecommitMessage extends TXMessage {

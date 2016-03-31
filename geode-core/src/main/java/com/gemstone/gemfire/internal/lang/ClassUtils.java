@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.lang;
 /**
  * The ClassUtils class is an abstract utility class for working with and invoking methods on Class objects.
  * <p/>
- * @author John Blum
  * @see java.lang.Class
  * @see java.lang.Object
  * @since 7.0

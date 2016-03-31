@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.RegionEvent;
 /**
  * This listener will be attached to each notification region
  * corresponding to a member 
- * @author rishim
  *
  */
 public class NotificationCacheListener implements

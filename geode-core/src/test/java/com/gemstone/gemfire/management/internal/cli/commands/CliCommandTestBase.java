@@ -50,10 +50,6 @@ import java.util.regex.Pattern;
 /**
  * Base class for all the CLI/gfsh command dunit tests.
  *
- * @author Tushar Khairnar
- * @author Abhishek Chaudhari
- * @author David Hoots
- * @author John Blum
  */
 public abstract class CliCommandTestBase extends CacheTestCase {
 
@@ -74,12 +70,8 @@ public abstract class CliCommandTestBase extends CacheTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     preTearDownCliCommandTestBase();
     destroyDefaultSetup();
   }

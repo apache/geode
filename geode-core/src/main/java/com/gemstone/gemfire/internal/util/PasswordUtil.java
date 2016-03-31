@@ -42,7 +42,6 @@ import javax.crypto.spec.SecretKeySpec;
  * password attribute of the jndi-binding tag, like this: password="password"
  * <br>
  * 
- * @author Yogesh Mahajan
  */
 public class PasswordUtil {
 

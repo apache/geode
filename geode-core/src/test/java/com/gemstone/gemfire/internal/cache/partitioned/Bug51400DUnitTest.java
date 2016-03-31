@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * 
- * @author ashetkar
  * 
  */
 public class Bug51400DUnitTest extends DistributedTestCase {
@@ -65,18 +64,17 @@ public class Bug51400DUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     server0 = host.getVM(0);
     server1 = host.getVM(1);
     client0 = host.getVM(2);
     client1 = host.getVM(3);
-
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
 
     client0.invoke(() -> Bug51400DUnitTest.closeCache());

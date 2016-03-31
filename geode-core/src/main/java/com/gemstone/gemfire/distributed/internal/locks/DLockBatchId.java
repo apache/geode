@@ -22,7 +22,6 @@ import com.gemstone.gemfire.distributed.internal.locks.LockGrantorId;
 
 /** 
  * Identifies a {@link DLockBatch}.
- * @author Kirk Lund
  */
 public interface DLockBatchId extends DataSerializable {
   /** Gets the lock grantor id that granted this lock */

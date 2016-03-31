@@ -64,8 +64,6 @@ import com.gemstone.gemfire.cache.client.internal.RegisterInterestTracker;
  * s2 ----> unavaliable // fail over should to s1 with intrest list s4,s5
  * see only k4 and k5 are registerd on s1
  *
- * @author Yogesh Mahajan
- * @author Suyog Bhokare
  */
 public class InterestListRecoveryDUnitTest extends DistributedTestCase
 {
@@ -89,10 +87,9 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
   }
 
   @Override
-  public void setUp() throws Exception {
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Wait.pause(2000);
-    super.setUp();
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -129,7 +126,7 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
     VM serverFirstRegistered = null;
     VM serverSecondRegistered = null;
 
-    LogWriter logger = system.getLogWriter();
+    LogWriter logger = basicGetSystem().getLogWriter();
     createEntries();
     server2.invoke(() -> InterestListRecoveryDUnitTest.createEntries());
     server1.invoke(() -> InterestListRecoveryDUnitTest.createEntries());
@@ -484,7 +481,7 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
  }
 
  @Override
- protected final void preTearDown() throws Exception {
+ public final void preTearDown() throws Exception {
     // close the clients first
     server2.invoke(() -> InterestListRecoveryDUnitTest.closeCache());
     closeCache();

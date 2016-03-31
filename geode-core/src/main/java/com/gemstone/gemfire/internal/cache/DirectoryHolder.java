@@ -25,7 +25,6 @@ import com.gemstone.gemfire.StatisticsFactory;
  * A holder for a disk Directory. Used for maintaining the available space and
  * updating disk statistics
  * 
- * @author Mitul
  * @since 5.1
  * 
  */

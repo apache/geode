@@ -36,7 +36,6 @@ import perffmwk.Formatter;
  *
  * @see com.sun.javadoc.Doclet
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

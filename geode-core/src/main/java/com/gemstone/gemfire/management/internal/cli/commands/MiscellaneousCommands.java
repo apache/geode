@@ -123,9 +123,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 
 /**
  *
- * @author Sourabh Bansod
- * @author Abhishek Chaudhari
- * @author Ajay Pande
  * @since 7.0
  */
 public class MiscellaneousCommands implements CommandMarker {

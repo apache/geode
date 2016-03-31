@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * MessageWithReply} because it is sent in <b>reply</b> to another
  * message. 
  *
- * @author ericz
  *
  */
 public class ReplyMessage extends HighPriorityDistributionMessage  {

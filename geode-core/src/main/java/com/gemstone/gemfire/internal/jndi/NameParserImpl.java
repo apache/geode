@@ -25,7 +25,6 @@ import java.util.Properties;
 /**
  * ContextImpl name parser.
  * 
- * @author Nand Kishor Jha
  */
 class NameParserImpl implements NameParser {
 

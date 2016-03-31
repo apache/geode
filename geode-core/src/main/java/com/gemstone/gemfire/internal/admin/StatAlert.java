@@ -25,7 +25,6 @@ import java.util.Date;
  * <code>AlertDefinition<code> for which this alert being raised 
  * & the value of the statistic. 
  * 
- * @author Hrishi
  */
 
 public class StatAlert implements Serializable {

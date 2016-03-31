@@ -68,7 +68,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Tests the basic use cases for PR persistence.
- * @author xzhou
  *
  */
 public class ShutdownAllDUnitTest extends CacheTestCase {
@@ -85,10 +84,8 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
    */
   private static final int MAX_WAIT = 600 * 1000;
   
-  
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     //Get rid of any existing distributed systems. We want
     //to make assertions about the number of distributed systems
     //we shut down, so we need to start with a clean slate.

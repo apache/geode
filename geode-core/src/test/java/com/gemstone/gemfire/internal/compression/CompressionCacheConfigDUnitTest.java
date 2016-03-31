@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Tests configured and badly configured cache.xml files with regards to compression.
  * 
- * @author rholmes
  */
 public class CompressionCacheConfigDUnitTest extends CacheTestCase {
   /**
@@ -62,11 +61,6 @@ public class CompressionCacheConfigDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
   /**
    * Asserts that a member is successfully initialized with a compressed region when
    * a compressor is included in the region attributes.

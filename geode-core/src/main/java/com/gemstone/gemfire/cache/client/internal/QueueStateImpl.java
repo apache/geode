@@ -226,9 +226,6 @@ public class QueueStateImpl implements QueueState {
    * send an ack. 2)It will expire the entries which have exceeded the specified
    * expiry time and for which ack has been alerady sent.
    * 
-   * @author darrel
-   * @author Mitul Bid
-   * @author Suyog Bhokare
    * @since 5.1
    * 
    */
@@ -375,7 +372,6 @@ public class QueueStateImpl implements QueueState {
    * A class to store sequenceId and the creation time of the object to be used
    * for expiring the entry
    * 
-   * @author Mitul Bid
    * @since 5.1
    * 
    */

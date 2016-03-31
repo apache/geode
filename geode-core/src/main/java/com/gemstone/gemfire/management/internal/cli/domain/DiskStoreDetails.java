@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * The DiskStoreDetails class captures information about a particular disk store for a GemFire distributed system
  * member.  Each disk store for a member should be captured in separate instance of this class.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.cache.DiskStore
  * @see com.gemstone.gemfire.cache.DiskStoreFactory
  * @see com.gemstone.gemfire.lang.Identifiable

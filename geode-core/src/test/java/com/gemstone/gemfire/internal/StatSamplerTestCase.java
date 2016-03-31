@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.util.StopWatch;
 /**
  * Integration TestCase for StatSampler.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public abstract class StatSamplerTestCase {

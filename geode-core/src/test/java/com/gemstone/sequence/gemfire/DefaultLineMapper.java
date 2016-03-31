@@ -24,7 +24,6 @@ import com.gemstone.sequence.LineMapper;
 /**
  * A lifeline mapper that just returns a shortened version of 
  * a member id.
- * @author dsmith
  *
  */
 public class DefaultLineMapper implements LineMapper {

@@ -185,7 +185,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
           ...
         }
  * </pre>
- * @author jpenney
  * @since 5.1
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="DM_GC", justification="This class performs System.gc as last ditch effort during out-of-memory condition.") 
@@ -344,7 +343,7 @@ public final class SystemFailure {
    */
   private static Thread watchDog;
   
-  private static boolean isCacheClosing = false;
+  private static volatile boolean isCacheClosing = false;
 
   /**
    * Should be invoked when GemFire cache is being created. 

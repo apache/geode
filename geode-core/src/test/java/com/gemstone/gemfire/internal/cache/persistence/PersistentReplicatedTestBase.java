@@ -55,8 +55,7 @@ public abstract class PersistentReplicatedTestBase extends CacheTestCase {
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     Invoke.invokeInEveryVM(PersistentReplicatedTestBase.class,"setRegionName", new Object[]{getUniqueName()});
     setRegionName(getUniqueName());
     diskDir = new File("diskDir-" + getName()).getAbsoluteFile();
@@ -70,7 +69,7 @@ public abstract class PersistentReplicatedTestBase extends CacheTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
     postTearDownPersistentReplicatedTestBase();
   }

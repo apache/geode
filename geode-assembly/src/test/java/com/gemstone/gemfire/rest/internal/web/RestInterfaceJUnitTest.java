@@ -74,7 +74,6 @@ import org.springframework.web.client.RestTemplate;
  * a REST-based client, also this test using Spring's RestTemplate, testing the proper interaction, especially
  * in the case of an application domain object type having a java.util.Date property.
  *
- * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.springframework.test.context.ContextConfiguration

@@ -71,8 +71,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * to register with the server is the same across servers
  *
  *
- * @author Yogesh Mahajan
- * @author Asif
  *
  */
 
@@ -100,8 +98,8 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
@@ -127,7 +125,6 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     
     IgnoredException.addIgnoredException("java.net.SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");
-
   }
 
   private void createCache(Properties props) throws Exception
@@ -572,7 +569,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     //close client
     client1.invoke(() -> closeCache());
     client2.invoke(() -> closeCache());

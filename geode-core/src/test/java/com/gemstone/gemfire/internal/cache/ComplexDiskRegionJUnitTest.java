@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Unit testing for ComplexDiskRegion API's
  * 
- * @author Mitul Bid
  * 
  *  
  */

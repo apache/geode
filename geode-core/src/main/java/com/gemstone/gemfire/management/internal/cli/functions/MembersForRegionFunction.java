@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @author ajayp
  * @since 8.0
  */
 

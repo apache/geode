@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author skumar
  * @since 6.5
  */
 public class ExecuteRegionFunctionSingleHopOp {

@@ -46,8 +46,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  protected final void postSetUpWANTestBase() throws Exception {
     IgnoredException.addIgnoredException("Cache is being closed by ShutdownAll");
   }
 

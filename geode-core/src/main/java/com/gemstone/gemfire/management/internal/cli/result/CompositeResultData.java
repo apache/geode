@@ -24,7 +24,6 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 
 /**
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */
@@ -133,7 +132,6 @@ public class CompositeResultData extends AbstractResultData {
   
   /**
    * 
-   * @author Abhishek Chaudhari
    * @since 7.0
    */
   public static class SectionResultData /*extends AbstractResultData*/ {

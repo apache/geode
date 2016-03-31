@@ -18,7 +18,6 @@ package com.gemstone.gemfire.distributed.internal;
 
 /**
  * GemFire Resource Events
- * @author rishim
  *
  */
 public enum ResourceEvent {

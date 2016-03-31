@@ -44,7 +44,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
- * @author ashahid
  *
  */
 public class CompiledGroupBySelect extends CompiledSelect {

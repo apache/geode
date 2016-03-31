@@ -21,7 +21,6 @@ package com.gemstone.gemfire.distributed.internal;
  * This class is a test hook to intercept DistributionMessages in the
  * VM receiving the message.
  * 
- * @author dsmith
  *
  */
 public abstract class DistributionMessageObserver {

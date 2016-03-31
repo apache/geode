@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 /**
  * Statistics for modules.
  *
- * @author sbawaska
  */
 public class ModuleStatistics {
 

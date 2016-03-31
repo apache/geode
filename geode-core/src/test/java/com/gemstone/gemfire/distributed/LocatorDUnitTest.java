@@ -43,6 +43,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJo
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.tcp.Connection;
@@ -75,6 +76,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  */
 public class LocatorDUnitTest extends DistributedTestCase {
 
+  private static volatile InternalDistributedSystem system = null;
+
   static TestHook hook;
 
   /**
@@ -93,17 +96,20 @@ public class LocatorDUnitTest extends DistributedTestCase {
   private int port2;
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     port1 = -1;
     port2 = -1;
     IgnoredException.addIgnoredException("Removing shunned member");
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     if (Locator.hasLocator()) {
       Locator.getLocator().stop();
+    }
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    if (cache != null && !cache.isClosed()) {
+      cache.close();
     }
     // delete locator state files so they don't accidentally
     // get used by other tests
@@ -112,6 +118,14 @@ public class LocatorDUnitTest extends DistributedTestCase {
     }
     if (port2 > 0) {
       DistributedTestUtils.deleteLocatorStateFile(port2);
+    }
+  }
+
+  @Override
+  public final void postTearDown() throws Exception {
+    if (system != null) {
+      system.disconnect();
+      system = null;
     }
   }
 

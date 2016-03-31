@@ -33,10 +33,6 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   @Override
   protected String getFunctionID() {
     return OnGroupsFunction.Id;

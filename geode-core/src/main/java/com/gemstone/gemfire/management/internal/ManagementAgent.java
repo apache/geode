@@ -66,7 +66,6 @@ import java.util.HashMap;
  * control JMX server end points for the Platform MBeanServer and the GemFire
  * MBeans hosted within it.
  *
- * @author VMware, Inc.
  * @since 7.0
  */
 public class ManagementAgent {

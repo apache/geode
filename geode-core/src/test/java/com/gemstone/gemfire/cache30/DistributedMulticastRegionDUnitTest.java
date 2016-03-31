@@ -61,13 +61,12 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void setUp() throws Exception {
+  public final void preSetUp() throws Exception {
     clean();
-    super.setUp();    
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     clean();
   }
   

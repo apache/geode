@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author dsmith
  *
  */
 public class ProcessManager {
@@ -180,6 +179,7 @@ public class ProcessManager {
       "-Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10",
       "-Dgemfire.disallowMcastDefaults=true",
       "-ea",
+        "-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps",
       agent,
       ChildVM.class.getName()
     };

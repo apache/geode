@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletRequest;
  * details (like version details, build details, source details, etc) from
  * properties file
  * 
- * @author Sachin K
  * @since version 7.0.Beta
  */
 

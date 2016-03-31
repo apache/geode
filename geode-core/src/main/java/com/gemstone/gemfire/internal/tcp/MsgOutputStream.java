@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /** MsgOutputStream should no longer be used except in Connection
  * to do the handshake. Otherwise MsgStreamer should always be used.
 
- @author Darrel
  @since 3.0
    
 */

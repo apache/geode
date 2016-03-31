@@ -39,10 +39,9 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected void postSetUpWANTestBase() throws Exception {
     final Host host = Host.getHost(0);
-
   }
   
   /**

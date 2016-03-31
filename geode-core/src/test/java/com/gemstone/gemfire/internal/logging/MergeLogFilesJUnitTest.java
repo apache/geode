@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * This class tests the functionality of the (new multi-threaded)
  * {@link MergeLogFiles} utility.
  *
- * @author David Whitlock
  *
  */
 @Category(IntegrationTest.class)

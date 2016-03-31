@@ -22,7 +22,6 @@ import com.gemstone.gemfire.Statistics;
  * Abstracts the process statistics that are common on all platforms.
  * This is necessary for monitoring the health of GemFire components.
  *
- * @author David Whitlock
  *
  * @since 3.5
  * */

@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.CacheRuntimeException;
  * The Max query execution time is set using the system  variable 
  * gemfire.Cache.MAX_QUERY_EXECUTION_TIME. 
  *
- * @author agingade
  * @since 6.0
  */
 public class QueryExecutionTimeoutException extends CacheRuntimeException {

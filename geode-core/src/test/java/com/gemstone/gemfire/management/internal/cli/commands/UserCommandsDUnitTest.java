@@ -36,7 +36,6 @@ import java.util.Properties;
 /**
  * Unit tests for configuring user commands.
  *
- * @author David Hoots
  * @since 8.0
  */
 public class UserCommandsDUnitTest extends CliCommandTestBase {
@@ -52,13 +51,12 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     createUserCommandJarFile();
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     if (this.deleteJarDirectory) {
       FileUtil.delete(this.jarDirectory);
     } else {

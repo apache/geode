@@ -51,7 +51,6 @@ import com.gemstone.gemfire.cache.query.types.ObjectType;
 
 /**
  * 
- * @author ashahid
  * 
  */
 public abstract class NonDistinctOrderByTestImplementation {

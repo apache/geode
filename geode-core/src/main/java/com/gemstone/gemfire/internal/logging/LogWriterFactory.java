@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
 /**
  * Creates LogWriterLogger instances.
  * 
- * @author Kirk Lund
  */
 public class LogWriterFactory {
 
@@ -95,10 +94,7 @@ public class LogWriterFactory {
 
     // log the config
     if (logConfig) {
-      if (isLoner) {
-        // LOG:CONFIG:
-        logger.info(LogMarker.CONFIG, LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_RUNNING_IN_LOCAL_MODE_SINCE_MCASTPORT_WAS_0_AND_LOCATORS_WAS_EMPTY));
-      } else {
+      if (!isLoner) {
         // LOG:CONFIG: changed from config to info
         logger.info(LogMarker.CONFIG, LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0, config.toLoggerString()));
       }

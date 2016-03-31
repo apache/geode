@@ -34,7 +34,6 @@ import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
 
 /**
  * 
- * @author rishim
  *
  */
 public class GatewayReceiverMBeanBridge extends ServerBridge{

@@ -27,7 +27,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 /**
  * Holds the result of a backup operation.
  * 
- * @author dsmith
  *
  */
 public class BackupStatusImpl implements BackupStatus, Serializable {

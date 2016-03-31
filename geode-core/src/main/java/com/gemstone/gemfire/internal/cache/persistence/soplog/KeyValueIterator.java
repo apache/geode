@@ -23,7 +23,6 @@ import java.util.Iterator;
  * implementor must provide access to the current key/value as well as a means
  * to move to the next pair.
  * 
- * @author bakera
  *
  * @param <K> the key type
  * @param <V> the value type

@@ -94,7 +94,6 @@ import util.TestException;
 /**
  * This is a helper class for the various Partitioned Query DUnit Test Cases
  * 
- * @author pbatra
  */
 
 public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase

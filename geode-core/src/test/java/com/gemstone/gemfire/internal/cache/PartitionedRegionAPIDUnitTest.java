@@ -16,12 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-/**
- * This is a dunit test for PartitionedRegion creation and Region API's
- * functionality. This test is performed for different region scopes - D_ACK and
- * D_NO_ACK for PartitionedRegion.
- */
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -51,8 +45,12 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
-public class PartitionedRegionAPIDUnitTest extends
-		PartitionedRegionDUnitTestCase {
+/**
+ * This is a dunit test for PartitionedRegion creation and Region API's
+ * functionality. This test is performed for different region scopes - D_ACK and
+ * D_NO_ACK for PartitionedRegion.
+ */
+public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCase {
 
 	public PartitionedRegionAPIDUnitTest(String name) {
 		super(name);
@@ -1431,34 +1429,7 @@ public class PartitionedRegionAPIDUnitTest extends
 		});
 	}
 
-	protected CacheSerializableRunnable addExceptionTag1(final String expectedException) {
-	  CacheSerializableRunnable addExceptionTag = new CacheSerializableRunnable(
-	  "addExceptionTag") {
-	    public void run2()
-	    {
-	      getCache().getLogger().info(
-	          "<ExpectedException action=add>" + expectedException
-	          + "</ExpectedException>");
-	    }
-	  };
-	  
-	  return addExceptionTag;
-	}
-
-	protected CacheSerializableRunnable removeExceptionTag1(final String expectedException) {
-	  CacheSerializableRunnable removeExceptionTag = new CacheSerializableRunnable(
-	  "removeExceptionTag") {
-	    public void run2() throws CacheException {
-	      getCache().getLogger().info(
-	          "<ExpectedException action=remove>" + expectedException
-	          + "</ExpectedException>");
-	    }
-	  };
-	  return removeExceptionTag;
-	}
-
-        
-	public void testCacherLoaderHelper() throws Exception 
+	public void testCacherLoaderHelper() throws Exception
 	{
 	  final String rName = getUniqueName();
 	  Host host = Host.getHost(0);

@@ -24,8 +24,6 @@ import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 /**
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * @since 7.0
  *
  */

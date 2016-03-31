@@ -55,7 +55,6 @@ import java.util.Set;
 /***
  * DUnit test to test export and import of shared configuration.
  *
- * @author bansods
  */
 public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
 
@@ -333,7 +332,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     for (int i = 0; i < 4; i++) {
       Host.getHost(0).getVM(i).invoke(SharedConfigurationDUnitTest.locatorCleanup);
     }

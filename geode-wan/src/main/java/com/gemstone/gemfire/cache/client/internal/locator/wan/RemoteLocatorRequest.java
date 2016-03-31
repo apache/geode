@@ -24,9 +24,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
 /**
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
- * @author Kishor Bachhav
  *
  */
 public class RemoteLocatorRequest implements DataSerializableFixedID{

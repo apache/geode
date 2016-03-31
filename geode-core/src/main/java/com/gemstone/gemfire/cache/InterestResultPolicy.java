@@ -27,7 +27,6 @@ import java.io.Serializable;
  * register interest result. The result of a call to Region.registerInterest
  * can be the keys and current values, just the keys or nothing.
  *
- * @author Barry Oglesby
  *
  * @see com.gemstone.gemfire.cache.Region#registerInterest(Object)
  * @see com.gemstone.gemfire.cache.Region#registerInterestRegex(String)

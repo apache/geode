@@ -57,7 +57,6 @@ import com.gemstone.gemfire.internal.util.Breadcrumbs;
  * To customize the sequentialness/thread requirements of a message, extend
  * DistributionMessage and implement getExecutor().</P>
  *
- * @author David Whitlock
  *
  */
 public abstract class DistributionMessage

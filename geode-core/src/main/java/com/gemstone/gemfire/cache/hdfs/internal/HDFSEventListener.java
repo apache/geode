@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Listener that persists events to HDFS
  *
- * @author Hemant Bhanawat
  */
 public class HDFSEventListener implements AsyncEventListener {
   private final LogWriterI18n logger;

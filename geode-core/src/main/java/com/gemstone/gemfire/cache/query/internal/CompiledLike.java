@@ -36,7 +36,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
 
 /**
  * 
- * @author Asif
  *
  */
 public class CompiledLike extends CompiledComparison

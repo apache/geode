@@ -30,7 +30,6 @@ import com.gemstone.gemfire.cache.Region;
  * Note : Please request help on the Geode developer mailing list
  * (dev@geode.incubator.apache.org) before using these APIs.
  *
- * @author Barry Oglesby
  * 
  * @since 6.6.2
  */

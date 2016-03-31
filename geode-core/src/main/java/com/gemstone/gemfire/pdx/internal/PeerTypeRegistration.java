@@ -66,7 +66,6 @@ import com.gemstone.gemfire.pdx.PdxInitializationException;
 import com.gemstone.gemfire.pdx.PdxRegistryMismatchException;
 
 /**
- * @author dsmith
  *
  */
 public class PeerTypeRegistration implements TypeRegistration {

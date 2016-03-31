@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.admin.remote.ShutdownAllRequest;
  * 
  * Class for Unregister function
  * 
- * @author apande
  *  
  * 
  */

@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.management;
 /**
  * Interface for A simple MBean to test various aspects of federation
- * @author rishim
  *
  */
 public interface CustomMXBean {

@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
  * while the recipient should respond with {@link #sendAck(DM, DistributedMember, int, String)}
  * or {@link #sendAbort(DM, int, DistributedMember)}.
  * 
- * @author bakera
  */
 public class FlowController {
   // watch out for rollover problems with MAX_VALUE

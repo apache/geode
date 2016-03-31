@@ -24,7 +24,6 @@ import java.util.Set;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#STOP_CQ} operation for the pre-operation
  * case.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class StopCQOperationContext extends ExecuteCQOperationContext {

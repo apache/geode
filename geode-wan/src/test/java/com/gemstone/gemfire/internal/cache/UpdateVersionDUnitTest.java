@@ -65,7 +65,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author Shobhit Agarwal
  * @since 7.0.1
  */
 public class UpdateVersionDUnitTest extends DistributedTestCase {
@@ -81,7 +80,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
     Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() {
       closeCache();
@@ -652,7 +651,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
 
   private static void createCache(Integer locPort) {
     UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
@@ -792,7 +791,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
     UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -859,7 +858,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
 
   public static int createReceiver(int locPort) {
     UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -952,7 +951,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
   public static Integer createFirstLocatorWithDSId(int dsId) {
     UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");

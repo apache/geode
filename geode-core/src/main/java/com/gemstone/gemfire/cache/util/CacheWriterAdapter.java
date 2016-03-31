@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.RegionEvent;
  * with empty implementations. Applications can subclass this class and
  * only override the methods for the events of interest.
  *
- * @author Eric Zoerner
  *
  * @since 3.0
  */

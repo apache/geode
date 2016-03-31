@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Extracted from LocatorLauncherLocalJUnitTest.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 public class HostedLocatorsDUnitTest extends DistributedTestCase {
@@ -50,13 +49,14 @@ public class HostedLocatorsDUnitTest extends DistributedTestCase {
 
   protected transient volatile int locatorPort;
   protected transient volatile LocatorLauncher launcher;
-  
-  public void setUp() throws Exception {
+
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     disconnectAllFromDS();
   }
   

@@ -21,7 +21,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 
 /**
  * Tell a server that a connection is being closed
- * @author darrel
  * @since 5.7
  */
 public class CloseConnectionOp {

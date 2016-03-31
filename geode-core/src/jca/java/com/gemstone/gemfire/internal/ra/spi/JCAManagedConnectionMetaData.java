@@ -20,7 +20,6 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionMetaData;
 /**
  * 
- * @author asif
  *
  */
 public class JCAManagedConnectionMetaData implements ManagedConnectionMetaData

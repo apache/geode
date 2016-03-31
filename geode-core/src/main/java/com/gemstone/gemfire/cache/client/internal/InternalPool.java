@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.PoolStats;
  * The contract between a connection source and a connection pool.
  * Provides methods for the connection source to access the cache
  * and update the list of endpoints on the connection pool.
- * @author dsmith
  * @since 5.7
  *
  */

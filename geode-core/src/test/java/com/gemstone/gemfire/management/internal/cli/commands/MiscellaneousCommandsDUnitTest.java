@@ -54,7 +54,6 @@ import java.util.Properties;
 /**
  * Dunit class for testing gemfire function commands : GC, Shutdown
  *
- * @author apande
  */
 public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 

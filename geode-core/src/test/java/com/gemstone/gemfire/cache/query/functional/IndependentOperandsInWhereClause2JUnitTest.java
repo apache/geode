@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  *
- * @author kdeshpan
  */
 @Category(IntegrationTest.class)
 public class IndependentOperandsInWhereClause2JUnitTest {

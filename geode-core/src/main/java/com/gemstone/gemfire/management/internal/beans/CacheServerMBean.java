@@ -27,7 +27,6 @@ import com.gemstone.gemfire.management.ServerLoadData;
  * Represents the GemFire CacheServer . Provides data and notifications about
  * server, subscriptions,durable queues and indices
  * 
- * @author rishim
  * 
  */
 public class CacheServerMBean extends NotificationBroadcasterSupport implements CacheServerMXBean {

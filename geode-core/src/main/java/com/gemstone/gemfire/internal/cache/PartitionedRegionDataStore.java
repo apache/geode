@@ -115,9 +115,6 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQue
  * will handle remote calls to this DataStore from other nodes participating in
  * this PartitionedRegion.
  * 
- * @author rreja
- * @author tapshank
- * @author Mitch Thomas
  */
 public class PartitionedRegionDataStore implements HasCachePerfStats
 {
@@ -183,6 +180,17 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
   private static final boolean UPDATE_ACCESS_TIME_ON_INTEREST = Boolean
       .getBoolean("gemfire.updateAccessTimeOnClientInterest");
 
+  
+  //Only for testing
+  PartitionedRegionDataStore() {
+    this.bucketCreationLock = null;
+    bucketStats = null;
+    partitionedRegion = null;
+    maximumLocalBytes = -1;
+    this.localBucket2RegionMap = new ConcurrentHashMap<Integer, BucketRegion>();
+    keysOfInterest = null;
+  }
+  
   /**
    * Creates PartitionedRegionDataStore for dataStorage of PR and starts a
    * PartitionService to handle remote operations on this DataStore from other
@@ -261,7 +269,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    *          the id of the bucket
    * @return true if the provided bucket is being managed
    */
-  public final boolean isManagingBucket(int bucketId)
+  public boolean isManagingBucket(int bucketId)
   {
     BucketRegion buk = this.localBucket2RegionMap.get(Integer.valueOf(bucketId));    
     if (buk != null && !buk.isDestroyed()) {
@@ -2586,7 +2594,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     
   /**
    * Interface for visiting buckets 
-   * @author Mitch Thomas
    */
   // public visibility for tests
   public static abstract class BucketVisitor {
@@ -2625,7 +2632,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * Test class and method for visiting Entries
    * NOTE: This class will only give a partial view if a visited bucket is moved
    * by a rebalance while a visit is in progress on that bucket.
-   * @author mthomas
    */
   protected static abstract class EntryVisitor  {
     abstract public void visit(Integer bucketId, Region.Entry re);

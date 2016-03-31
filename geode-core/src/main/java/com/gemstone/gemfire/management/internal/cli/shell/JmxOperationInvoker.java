@@ -64,7 +64,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 /**
  * OperationInvoker JMX Implementation
  *
- * @author Abhishek Chaudhari
  *
  * @since 7.0
  */
@@ -448,7 +447,6 @@ public class JmxOperationInvoker implements OperationInvoker {
  * A Connection Notification Listener. Notifies Gfsh when a connection gets
  * terminated abruptly.
  *
- * @author Abhishek Chaudhari
  * @since 7.0
  */
 class JMXConnectionListener implements NotificationListener {

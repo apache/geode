@@ -42,7 +42,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * boolean flags in AbstractRegionEntry.
  * Currently a byte array is used to maintain two flags.
  * 
- * @author shobhit
  *
  */
 @Category(IntegrationTest.class)

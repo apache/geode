@@ -25,7 +25,6 @@ import java.io.IOException;
 
 /**
  * Get GemFire version of the member running TcpServer.
- * @author shobhit
  * @since 7.1
  */
 public class VersionResponse implements DataSerializable {

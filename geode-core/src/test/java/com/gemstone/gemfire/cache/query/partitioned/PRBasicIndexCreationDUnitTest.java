@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author rdubey
  * 
  */
 public class PRBasicIndexCreationDUnitTest extends

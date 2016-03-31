@@ -26,7 +26,6 @@ import java.security.PrivilegedAction;
  * A {@link PrintWriter} that collects its output in a string builder, which can
  * then be used to construct a string. This completely avoids any locking etc.
  * 
- * @author swale
  */
 public class StringPrintWriter extends PrintWriter {
 

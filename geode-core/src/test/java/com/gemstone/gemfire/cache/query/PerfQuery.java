@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.NanoTimer;
 
 /**
  *
- * @author Eric Zoerner
  */
 public class PerfQuery {
   private static int NUM_ITERATIONS = 20000;

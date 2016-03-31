@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.offheap.annotations;
 
 /**
  * Used for uniquely identifying off-heap annotations.
- * @author rholmes
  */
 public enum OffHeapIdentifier {
   /**

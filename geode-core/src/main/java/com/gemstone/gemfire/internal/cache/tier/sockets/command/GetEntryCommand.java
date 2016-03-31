@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
  * getEntry(key) operation performed on server.
  * Extends Request, and overrides getValueAndIsObject() in Request
  * so as to not invoke loader.
- * @author sbawaska
  * @since 6.6
  */
 public class GetEntryCommand extends Request {

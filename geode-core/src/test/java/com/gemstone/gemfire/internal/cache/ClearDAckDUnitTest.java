@@ -45,7 +45,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  *
- * @author vjadhav
  */
 public class ClearDAckDUnitTest extends DistributedTestCase {
     
@@ -66,8 +65,7 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
     DistributedMember vm0ID, vm1ID;
     
     @Override
-    public void setUp() throws Exception {
-      super.setUp();
+    public final void postSetUp() throws Exception {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
@@ -77,7 +75,7 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
     }
     
     @Override
-    protected final void preTearDown() throws Exception {
+    public final void preTearDown() throws Exception {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);

@@ -32,10 +32,6 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     super(name);
   }
   
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
   /**
    * Test loop back issue between 2 WAN sites (LN & NY). LN -> NY -> LN.
    * Site1 (LN): vm2, vm4, vm5

@@ -47,7 +47,6 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
  * Function used by the 'alter region' gfsh command to alter a region on each
  * member.
  * 
- * @author David Hoots
  * @since 8.0
  */
 public class RegionAlterFunction extends FunctionAdapter implements InternalEntity {

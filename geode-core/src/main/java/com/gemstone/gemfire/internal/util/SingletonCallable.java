@@ -26,7 +26,6 @@ import java.util.concurrent.Callable;
  * fail with the same exception without having to perform the
  * expensive operation.
  * 
- * @author sbawaskar
  *
  * @param <T> the type of return value
  */

@@ -28,7 +28,6 @@ import java.util.*;
 /**
  * View of a region in a GemFire system member's cache.
  *
- * @author    Darrel Schneider
  * @since     3.5
  */
 public class SystemMemberRegionImpl implements SystemMemberRegion {

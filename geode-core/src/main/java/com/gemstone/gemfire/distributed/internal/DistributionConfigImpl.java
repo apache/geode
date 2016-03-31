@@ -46,9 +46,6 @@ import java.util.*;
  *
  * @see InternalDistributedSystem
  *
- * @author David Whitlock
- * @author Darrel Schneider
- * @author Bruce Schuchardt
  *
  * @since 2.1
  */

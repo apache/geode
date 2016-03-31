@@ -67,7 +67,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * and name fields respectively. Test # 15 & 16 has the dependency to run on
  * CloudScape database only due to variations in DDL.
  * 
- * @author prabir
  */
 @Category(IntegrationTest.class)
 public class CacheJUnitTest {

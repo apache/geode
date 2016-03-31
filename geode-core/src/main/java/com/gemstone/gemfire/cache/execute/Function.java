@@ -32,8 +32,6 @@ import com.gemstone.gemfire.lang.Identifiable;
  * @see FunctionAdapter
  * @see FunctionService
  *
- * @author Yogesh Mahajan
- * @author Mitch Thomas
  *
  * @since 6.0
  */

@@ -53,8 +53,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  *
  *
- * @author Mitul Bid
- * @author Asif
  *
  *
  */
@@ -88,9 +86,8 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
   /**
    * get the VM's
    */
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -102,7 +99,7 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * close the cache in tearDown
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     vm0.invoke(() -> HARegionQueueDUnitTest.closeCache());
     vm1.invoke(() -> HARegionQueueDUnitTest.closeCache());
     vm2.invoke(() -> HARegionQueueDUnitTest.closeCache());
@@ -655,7 +652,6 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * take/remove occuring in all the VMs. This test is targetted to test for
    * hang or exceptions in non blocking queue.
    *
-   * @author Asif
    *
    */
   public void testConcurrentOperationsDunitTestOnNonBlockingQueue()
@@ -669,7 +665,6 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * take/remove occuring in all the VMs. This test is targetted to test for
    * hang or exceptions in non blocking queue.
    *
-   * @author Asif
    *
    */
   public void testConcurrentOperationsDunitTestOnNonBlockingQueueWithDNoAckRegion()
@@ -683,7 +678,6 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * take/remove occuring in all the VMs. This test is targetted to test for
    * hang or exceptions in blocking queue.
    *
-   * @author Asif
    *
    */
   public void testConcurrentOperationsDunitTestOnBlockingQueue()
@@ -870,7 +864,6 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * been fully constructed but as the HARegion has got constructed , it gets
    * visible to QRM Message Thread.
    *
-   * @author Asif
    *
    */
   public void testNPEDueToHARegionQueueEscapeInConstructor()

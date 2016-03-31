@@ -46,7 +46,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * primary owner of the bucket.  It is sent by client threads which need
  * to use the bucket, however do not know of its primary location.
  * 
- * @author Mitch Thomas
  *
  */
 public final class PrimaryRequestMessage extends PartitionMessage
@@ -142,7 +141,6 @@ public final class PrimaryRequestMessage extends PartitionMessage
 
   /**
    * The reply to a PrimarRequestMessage, indicating if the sender is the primary
-   * @author Mitch Thomas
    */
   static public final class PrimaryRequestReplyMessage extends ReplyMessage {
     private static final long serialVersionUID = 1L;
@@ -182,7 +180,6 @@ public final class PrimaryRequestMessage extends PartitionMessage
 
   /**
    * A processor to capture the member who was selected as primary for the bucket requested
-   * @author Mitch Thomas
    * @since 5.1
    */
   static public class PrimaryResponse extends ReplyProcessor21 {

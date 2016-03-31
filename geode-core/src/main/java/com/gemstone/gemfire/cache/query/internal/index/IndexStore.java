@@ -23,8 +23,6 @@ import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 
 /**
  * 
- * @author Tejas Nomulwar
- * @author Jason Huynh
  * @since 8.0
  */
 public interface IndexStore {

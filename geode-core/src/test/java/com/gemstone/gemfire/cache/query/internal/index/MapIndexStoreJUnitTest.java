@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Test class that will be extended to provide the IndexStorage structure to test
  * Tests apis of the IndexStorage
- * @author jhuynh
  *
  */
 @Category(IntegrationTest.class)

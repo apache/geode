@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * To decrement the count call {@link #release()}.
  * At some point in the future it may also be used for values stored in heap regions. 
  * 
- * @author darrel
  * @since 9.0
  */
 public interface StoredObject extends Sendable, CachedDeserializable, Releasable {

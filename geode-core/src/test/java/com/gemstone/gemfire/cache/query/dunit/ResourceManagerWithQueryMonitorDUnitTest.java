@@ -86,8 +86,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUpClientServerTestCase() throws Exception {
     Invoke.invokeInEveryVM(this.setHeapMemoryMonitorTestMode);
     IgnoredException.addIgnoredException("above heap critical threshold");
     IgnoredException.addIgnoredException("below heap critical threshold");

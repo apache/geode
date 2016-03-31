@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 /**
  * A request from a client to the locator asking for a
  * server to connect to for client to server traffic.
- * @author dsmith
  *
  */
 public class ClientReplacementRequest extends ClientConnectionRequest {

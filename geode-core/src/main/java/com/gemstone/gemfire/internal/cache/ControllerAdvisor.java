@@ -32,7 +32,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 /**
  * Used to give advise to a connection controller.
  * Bridge server currently need to know about controller's
- * @author darrel
  *
  */
 public class ControllerAdvisor extends GridAdvisor {

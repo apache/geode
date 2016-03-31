@@ -30,7 +30,6 @@ import com.gemstone.gemfire.pdx.internal.DataSize;
  * Some field types are always serialized with a certain number of bytes; these are called "fixed-width".
  * Others are serialized with a variable number of bytes; these are called "variable-width".
  * 
- * @author darrel
  * @since 6.6.2
  */
 public enum FieldType {

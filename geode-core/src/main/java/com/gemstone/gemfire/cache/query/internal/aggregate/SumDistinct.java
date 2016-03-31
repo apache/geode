@@ -18,7 +18,6 @@ package com.gemstone.gemfire.cache.query.internal.aggregate;
 
 /**
  * Computes the sum of distinct values for replicated region based queries.
- * @author ashahid
  *
  */
 public class SumDistinct extends DistinctAggregator {

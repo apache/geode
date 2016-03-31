@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Test {@link RegionMembershipListener}
  *
- * @author darrel
  * @since 5.0
  */
 public class RegionMembershipListenerDUnitTest extends CacheTestCase {
@@ -62,13 +61,12 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     DistributedRegion.TEST_HOOK_ADD_PROFILE = true;
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     DistributedRegion.TEST_HOOK_ADD_PROFILE = false;
   }
 
@@ -295,7 +293,7 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
       
       crashCacheOtherVm();
       int to = getOpTimeout();
-      MembershipManagerHelper.waitForMemberDeparture(system, this.otherId, to);
+      MembershipManagerHelper.waitForMemberDeparture(basicGetSystem(), this.otherId, to);
       this.myListener.waitForCrashOp();
       {
         RegionEvent e = this.myListener.getLastEvent();

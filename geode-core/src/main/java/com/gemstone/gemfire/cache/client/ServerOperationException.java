@@ -21,7 +21,6 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 /**
  * An exception indicating that a failure has happened on the server
  * while processing an operation that was sent to it by a client.
- * @author darrel
  * @since 5.7
  */
 public class ServerOperationException extends ServerConnectivityException {

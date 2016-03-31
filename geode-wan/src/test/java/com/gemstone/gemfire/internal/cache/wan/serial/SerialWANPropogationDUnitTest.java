@@ -39,8 +39,8 @@ public class SerialWANPropogationDUnitTest extends WANTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUpWANTestBase() throws Exception {
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection refused");

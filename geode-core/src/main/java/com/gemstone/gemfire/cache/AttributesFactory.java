@@ -361,7 +361,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @see AttributesMutator
  * @see Region#createSubregion(String, RegionAttributes)
  *
- * @author Eric Zoerner
  * @since 3.0
  * @deprecated as of 6.5 use {@link Cache#createRegionFactory(RegionShortcut)} or {@link ClientCache#createClientRegionFactory(ClientRegionShortcut)} instead.
  */

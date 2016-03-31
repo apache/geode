@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests the Snappy {@link Compressor}.
- * @author rholmes
  */
 @Category(UnitTest.class)
 public class SnappyCompressorJUnitTest extends TestCase {

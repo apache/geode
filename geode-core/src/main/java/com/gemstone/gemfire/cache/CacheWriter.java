@@ -38,7 +38,6 @@ package com.gemstone.gemfire.cache;
  * exception will be propagated to the initiator of the operation, regardless
  * of whether the initiator is in the same VM as the <code>CacheWriter</code>.
  *
- * @author Eric Zoerner
  *
  * @see AttributesFactory#setCacheWriter
  * @see RegionAttributes#getCacheWriter

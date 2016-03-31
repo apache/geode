@@ -38,7 +38,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 /**
  * Implementation of a region event
  * 
- * @author Sudhir Menon
  *  
  */
 // must be public for DataSerializable to work

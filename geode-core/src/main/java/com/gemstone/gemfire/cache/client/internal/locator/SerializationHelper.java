@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.BucketServerLocation66;
 
 /**
- * @author dsmith
  *
  */
 public class SerializationHelper {

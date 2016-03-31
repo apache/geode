@@ -112,6 +112,8 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewa
 import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import com.gemstone.gemfire.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
+import com.gemstone.gemfire.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import com.gemstone.gemfire.pdx.SimpleClass;
 import com.gemstone.gemfire.pdx.SimpleClass1;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
@@ -170,27 +172,34 @@ public class WANTestBase extends DistributedTestCase{
   public WANTestBase(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
+
+  @Override
+  public final void preSetUp() throws Exception {
     final Host host = Host.getHost(0);
-    vm0 = host.getVM(0); 
+    vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     vm2 = host.getVM(2);
-    vm3 = host.getVM(3); 
+    vm3 = host.getVM(3);
     vm4 = host.getVM(4);
     vm5 = host.getVM(5);
-    vm6 = host.getVM(6); 
+    vm6 = host.getVM(6);
     vm7 = host.getVM(7);
     //Need to set the test name after the VMs are created
-    super.setUp();
-    //this is done to vary the number of dispatchers for sender 
+  }
+
+  @Override
+  public final void postSetUp() throws Exception {
+    //this is done to vary the number of dispatchers for sender
     //during every test method run
     shuffleNumDispatcherThreads();
-    Invoke.invokeInEveryVM(WANTestBase.class,"setNumDispatcherThreadsForTheRun",
-    	new Object[]{dispatcherThreads.get(0)});
+    Invoke.invokeInEveryVM(() -> setNumDispatcherThreadsForTheRun(dispatcherThreads.get(0)));
     IgnoredException.addIgnoredException("Connection refused");
     IgnoredException.addIgnoredException("Software caused connection abort");
     IgnoredException.addIgnoredException("Connection reset");
+    postSetUpWANTestBase();
+  }
+
+  protected void postSetUpWANTestBase() throws Exception {
   }
   
   public static void shuffleNumDispatcherThreads() {
@@ -209,7 +218,7 @@ public class WANTestBase extends DistributedTestCase{
 
   public static void createLocator(int dsId, int port, Set<String> localLocatorsList, Set<String> remoteLocatorsList){
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     StringBuffer localLocatorBuffer = new StringBuffer(localLocatorsList.toString());
@@ -233,7 +242,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -246,7 +255,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -259,7 +268,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locatorPort + "]");
@@ -272,7 +281,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locatorPort + "]");
@@ -285,7 +294,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -297,7 +306,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void bringBackLocatorOnOldPort(int dsId, int remoteLocPort, int oldPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
@@ -313,7 +322,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
@@ -328,7 +337,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + localPort + "]");
@@ -343,7 +352,7 @@ public class WANTestBase extends DistributedTestCase{
     stopOldLocator();
     WANTestBase test = new WANTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + localPort + "]");
@@ -1333,7 +1342,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createCacheConserveSockets(Boolean conserveSockets,Integer locPort){
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
     props.setProperty(DistributionConfig.CONSERVE_SOCKETS_NAME, conserveSockets.toString());   
@@ -1343,7 +1352,7 @@ public class WANTestBase extends DistributedTestCase{
   
   protected static void createCache(boolean management, Integer locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     if (management) {
       props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
       props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");
@@ -1364,7 +1373,7 @@ public class WANTestBase extends DistributedTestCase{
     String  gatewaySslciphers = "any";
     boolean gatewaySslRequireAuth = true;
     
-    Properties gemFireProps = new Properties();
+    Properties gemFireProps = test.getDistributedSystemProperties();
     gemFireProps.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_ENABLED_NAME, String.valueOf(gatewaySslenabled));
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_PROTOCOLS_NAME, gatewaySslprotocols);
@@ -1390,7 +1399,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createCache_PDX(Integer locPort){
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
@@ -1407,7 +1416,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createCache(Integer locPort1, Integer locPort2){
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort1
         + "],localhost[" + locPort2 + "]");
@@ -1417,7 +1426,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createCacheWithoutLocator(Integer mCastPort){
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, ""+mCastPort);
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
@@ -2214,7 +2223,7 @@ public class WANTestBase extends DistributedTestCase{
       exln.remove();
     }
   }
-
+  
   public static void stopSender(String senderId) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     IgnoredException exp = IgnoredException.addIgnoredException(ForceReattemptException.class
@@ -2228,7 +2237,21 @@ public class WANTestBase extends DistributedTestCase{
           break;
         }
       }
+      AbstractGatewaySenderEventProcessor eventProcessor = null;
+      if (sender instanceof AbstractGatewaySender) {
+        eventProcessor = ((AbstractGatewaySender) sender).getEventProcessor();
+      }
       sender.stop();
+      
+      Set<RegionQueue> queues = null;
+      if (eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor) {
+        queues = ((ConcurrentSerialGatewaySenderEventProcessor)eventProcessor).getQueues();
+        for (RegionQueue queue: queues) {
+          if (queue instanceof SerialGatewaySenderQueue) {
+            assertFalse(((SerialGatewaySenderQueue) queue).isRemovalThreadAlive());
+          }
+        }
+      }
     }
     finally {
       exp.remove();
@@ -2254,6 +2277,35 @@ public class WANTestBase extends DistributedTestCase{
     }
   }
   
+  public static GatewaySenderFactory configureGateway(DiskStoreFactory dsf, File[] dirs1, String dsName, int remoteDsId,
+      boolean isParallel, Integer maxMemory,
+      Integer batchSize, boolean isConflation, boolean isPersistent,
+      GatewayEventFilter filter, boolean isManualStart, int numDispatchers, OrderPolicy policy) {
+    
+    InternalGatewaySenderFactory gateway = (InternalGatewaySenderFactory)cache.createGatewaySenderFactory();
+    gateway.setParallel(isParallel);
+    gateway.setMaximumQueueMemory(maxMemory);
+    gateway.setBatchSize(batchSize);
+    gateway.setBatchConflationEnabled(isConflation);
+    gateway.setManualStart(isManualStart);
+    gateway.setDispatcherThreads(numDispatchers);
+    gateway.setOrderPolicy(policy);
+    ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
+    if (filter != null) {
+      eventFilter = filter;
+      gateway.addGatewayEventFilter(filter);
+    }
+    if (isPersistent) {
+      gateway.setPersistenceEnabled(true);
+      gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
+          .getName());
+    } else {
+      DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
+      gateway.setDiskStoreName(store.getName());
+    }
+    return gateway;
+  }
+  
   public static void createSender(String dsName, int remoteDsId,
       boolean isParallel, Integer maxMemory,
       Integer batchSize, boolean isConflation, boolean isPersistent,
@@ -2265,55 +2317,9 @@ public class WANTestBase extends DistributedTestCase{
       persistentDirectory.mkdir();
       DiskStoreFactory dsf = cache.createDiskStoreFactory();
       File[] dirs1 = new File[] { persistentDirectory };
-      if (isParallel) {
-        InternalGatewaySenderFactory gateway = (InternalGatewaySenderFactory)cache.createGatewaySenderFactory();
-        gateway.setParallel(true);
-        gateway.setMaximumQueueMemory(maxMemory);
-        gateway.setBatchSize(batchSize);
-        gateway.setManualStart(isManualStart);
-        //set dispatcher threads
-        gateway.setDispatcherThreads(numDispatcherThreadsForTheRun);
-        ((InternalGatewaySenderFactory) gateway)
-            .setLocatorDiscoveryCallback(new MyLocatorCallback());
-        if (filter != null) {
-          eventFilter = filter;
-          gateway.addGatewayEventFilter(filter);
-        }
-        if (isPersistent) {
-          gateway.setPersistenceEnabled(true);
-          gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-              .getName());
-        } else {
-          DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-          gateway.setDiskStoreName(store.getName());
-        }
-        gateway.setBatchConflationEnabled(isConflation);
-        gateway.create(dsName, remoteDsId);
+      GatewaySenderFactory gateway = configureGateway(dsf, dirs1, dsName, remoteDsId, isParallel, maxMemory, batchSize, isConflation, isPersistent, filter, isManualStart, numDispatcherThreadsForTheRun, GatewaySender.DEFAULT_ORDER_POLICY);
+      gateway.create(dsName, remoteDsId);
 
-      } else {
-        GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-        gateway.setMaximumQueueMemory(maxMemory);
-        gateway.setBatchSize(batchSize);
-        gateway.setManualStart(isManualStart);
-        //set dispatcher threads
-        gateway.setDispatcherThreads(numDispatcherThreadsForTheRun);
-        ((InternalGatewaySenderFactory) gateway)
-            .setLocatorDiscoveryCallback(new MyLocatorCallback());
-        if (filter != null) {
-          eventFilter = filter;
-          gateway.addGatewayEventFilter(filter);
-        }
-        gateway.setBatchConflationEnabled(isConflation);
-        if (isPersistent) {
-          gateway.setPersistenceEnabled(true);
-          gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-              .getName());
-        } else {
-          DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-          gateway.setDiskStoreName(store.getName());
-        }
-        gateway.create(dsName, remoteDsId);
-      }
     } finally {
       exln.remove();
     }
@@ -2322,66 +2328,20 @@ public class WANTestBase extends DistributedTestCase{
   public static void createSenderWithMultipleDispatchers(String dsName, int remoteDsId,
 	boolean isParallel, Integer maxMemory,
 	Integer batchSize, boolean isConflation, boolean isPersistent,
-	GatewayEventFilter filter, boolean isManulaStart, int numDispatchers, OrderPolicy orderPolicy) {
+	GatewayEventFilter filter, boolean isManualStart, int numDispatchers, OrderPolicy orderPolicy) {
 	  final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
-	  try {
-		File persistentDirectory = new File(dsName + "_disk_"
-			+ System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
-		persistentDirectory.mkdir();
-		DiskStoreFactory dsf = cache.createDiskStoreFactory();
-		File[] dirs1 = new File[] { persistentDirectory };
-		if (isParallel) {
-		  GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-	      gateway.setParallel(true);
-	      gateway.setMaximumQueueMemory(maxMemory);
-	      gateway.setBatchSize(batchSize);
-	      gateway.setManualStart(isManulaStart);
-	      ((InternalGatewaySenderFactory) gateway)
-	      .setLocatorDiscoveryCallback(new MyLocatorCallback());
-	      if (filter != null) {
-	    	eventFilter = filter;
-	        gateway.addGatewayEventFilter(filter);
-	      }
-	      if (isPersistent) {
-	    	gateway.setPersistenceEnabled(true);
-	        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-	        	.getName());
-	      } else {
-	    	DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-	    	gateway.setDiskStoreName(store.getName());
-	      }
-	      gateway.setBatchConflationEnabled(isConflation);
-	      gateway.setDispatcherThreads(numDispatchers);
-	      gateway.setOrderPolicy(orderPolicy);
-	      gateway.create(dsName, remoteDsId);
+    try {
+      File persistentDirectory = new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
+      persistentDirectory.mkdir();
+      DiskStoreFactory dsf = cache.createDiskStoreFactory();
+      File[] dirs1 = new File[] { persistentDirectory };
+      GatewaySenderFactory gateway = configureGateway(dsf, dirs1, dsName, remoteDsId, isParallel, maxMemory, batchSize, isConflation, isPersistent, filter,
+          isManualStart, numDispatchers, orderPolicy);
+      gateway.create(dsName, remoteDsId);
 
-		} else {
-		  GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-		  gateway.setMaximumQueueMemory(maxMemory);
-		  gateway.setBatchSize(batchSize);
-		  gateway.setManualStart(isManulaStart);
-		  ((InternalGatewaySenderFactory) gateway)
-		  .setLocatorDiscoveryCallback(new MyLocatorCallback());
-		  if (filter != null) {
-			eventFilter = filter;
-			gateway.addGatewayEventFilter(filter);
-		  }
-		  gateway.setBatchConflationEnabled(isConflation);
-		  if (isPersistent) {
-			gateway.setPersistenceEnabled(true);
-			gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-				.getName());
-		  } else {
-			DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-			gateway.setDiskStoreName(store.getName());
-		  }
-		  gateway.setDispatcherThreads(numDispatchers);
-		  gateway.setOrderPolicy(orderPolicy);
-		  gateway.create(dsName, remoteDsId);
-		}
-	  } finally {
-		exln.remove();
-	  }
+    } finally {
+      exln.remove();
+    }
   }
   
   public static void createSenderWithoutDiskStore(String dsName, int remoteDsId,
@@ -2410,53 +2370,8 @@ public class WANTestBase extends DistributedTestCase{
     persistentDirectory.mkdir();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     File[] dirs1 = new File[] { persistentDirectory };
-
-    if (isParallel) {
-      GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-      gateway.setParallel(true);
-      gateway.setMaximumQueueMemory(maxMemory);
-      gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManualStart);
-      ((InternalGatewaySenderFactory) gateway)
-          .setLocatorDiscoveryCallback(new MyLocatorCallback());
-      if (filter != null) {
-        gateway.addGatewayEventFilter(filter);
-      }
-      if (isPersistent) {
-        gateway.setPersistenceEnabled(true);
-        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-            .getName());
-      } else {
-        DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-        gateway.setDiskStoreName(store.getName());
-      }
-      gateway.setBatchConflationEnabled(isConflation);
-      gateway.setDispatcherThreads(concurrencyLevel);
-      gateway.setOrderPolicy(policy);
-      gateway.create(dsName, remoteDsId);
-    } else {
-      GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-      gateway.setMaximumQueueMemory(maxMemory);
-      gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManualStart);
-      ((InternalGatewaySenderFactory) gateway)
-          .setLocatorDiscoveryCallback(new MyLocatorCallback());
-      if (filter != null) {
-        gateway.addGatewayEventFilter(filter);
-      }
-      gateway.setBatchConflationEnabled(isConflation);
-      if (isPersistent) {
-        gateway.setPersistenceEnabled(true);
-        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-            .getName());
-      } else {
-        DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-        gateway.setDiskStoreName(store.getName());
-      }
-      gateway.setDispatcherThreads(concurrencyLevel);
-      gateway.setOrderPolicy(policy);
-      gateway.create(dsName, remoteDsId);
-    }
+    GatewaySenderFactory gateway = configureGateway(dsf, dirs1, dsName, remoteDsId, isParallel, maxMemory, batchSize, isConflation, isPersistent, filter, isManualStart, concurrencyLevel, policy);
+    gateway.create(dsName, remoteDsId);
   }
   
 //  public static void createSender_PDX(String dsName, int remoteDsId,
@@ -2742,7 +2657,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static int createReceiver(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -2768,7 +2683,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createReceiverWithBindAddress(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
@@ -2804,7 +2719,7 @@ public class WANTestBase extends DistributedTestCase{
     String  gatewaySslciphers = "any";
     boolean gatewaySslRequireAuth = true;
     
-    Properties gemFireProps = new Properties();
+    Properties gemFireProps = test.getDistributedSystemProperties();
 
     gemFireProps.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_ENABLED_NAME, String.valueOf(gatewaySslenabled));
@@ -2874,7 +2789,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static void createReceiverAndServer(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -2926,7 +2841,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static int createServer(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -2949,8 +2864,7 @@ public class WANTestBase extends DistributedTestCase{
   public static void createClientWithLocator(int port0,String host, 
       String regionName) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
-    props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
 
@@ -2984,7 +2898,7 @@ public class WANTestBase extends DistributedTestCase{
   
   public static int createReceiver_PDX(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
@@ -4277,7 +4191,7 @@ public class WANTestBase extends DistributedTestCase{
   public static void checkAllSiteMetaData(     
       Map<Integer, ArrayList<Integer>> dsVsPorts) {
     waitForSitesToUpdate();
-    assertNotNull(system);
+    assertNotNull(getSystemStatic());
 //    Map<Integer,Set<DistributionLocatorId>> allSiteMetaData = ((DistributionConfigImpl)system
 //        .getConfig()).getAllServerLocatorsInfo();
     
@@ -4310,7 +4224,7 @@ public class WANTestBase extends DistributedTestCase{
     
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        if (system != null) {
+        if (getSystemStatic() != null) {
           return true;
         }
         else {
@@ -4323,7 +4237,7 @@ public class WANTestBase extends DistributedTestCase{
       }
     };
     Wait.waitForCriterion(wc, 50000, 1000, true); 
-    assertNotNull(system);
+    assertNotNull(getSystemStatic());
     
 //    final Map<Integer,Set<DistributionLocatorId>> allSiteMetaData = ((DistributionConfigImpl)system
 //        .getConfig()).getAllServerLocatorsInfo();
@@ -5137,7 +5051,7 @@ public class WANTestBase extends DistributedTestCase{
   }*/
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     cleanupVM();
     List<AsyncInvocation> invocations = new ArrayList<AsyncInvocation>();
     final Host host = Host.getHost(0);
@@ -5186,14 +5100,15 @@ public class WANTestBase extends DistributedTestCase{
   }
   
   @Override
-  public InternalDistributedSystem getSystem(Properties props) {
+  public final Properties getDistributedSystemProperties() {
     // For now all WANTestBase tests allocate off-heap memory even though
     // many of them never use it.
     // The problem is that WANTestBase has static methods that create instances
     // of WANTestBase (instead of instances of the subclass). So we can't override
     // this method so that only the off-heap subclasses allocate off heap memory.
+    Properties props = new Properties();
     props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "300m");
-    return super.getSystem(props);
+    return props;
   }
   
   /**

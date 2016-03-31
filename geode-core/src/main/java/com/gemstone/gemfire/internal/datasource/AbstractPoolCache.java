@@ -43,8 +43,7 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
  * connections(not assigned to user) and the active connections(assigned to
  * user) This is a thread safe class.
  * 
- * @author tnegi
- * @author Asif Second Version .Modified the synchronization code & objects on
+ *         Second Version .Modified the synchronization code & objects on
  *         which locks were being taken. Changed the logic of retrieval of
  *         connection & returning of connection. The beahviour of cleaner thread
  *         has been modified such that it waits on activeCache if it is empty.

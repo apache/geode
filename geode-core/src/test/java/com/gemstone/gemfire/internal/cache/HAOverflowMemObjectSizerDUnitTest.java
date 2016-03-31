@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Tests the size of clientUpdateMessageImpl with the size calculated by
  * {@link com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController} for HA overFlow
- * @author aingle
  * @since 5.7
  */
 public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
@@ -86,16 +85,16 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
     Host host = Host.getHost(0);
     client = host.getVM(1);
     serverVM = host.getVM(3);
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     serverVM.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
     client.invoke(() -> HAOverflowMemObjectSizerDUnitTest.closeCache());
     serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.closeCache());

@@ -24,14 +24,14 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Test class for testing {@link CqServiceImpl#EXECUTE_QUERY_DURING_INIT} flag
  */
-public class CqStatsUsingPoolOptimizedExecuteDUnitTest extends CqStatsUsingPoolDUnitTest{
+public class CqStatsUsingPoolOptimizedExecuteDUnitTest extends CqStatsUsingPoolDUnitTest {
 
   public CqStatsUsingPoolOptimizedExecuteDUnitTest(String name) {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUpCqStatsUsingPoolDUnitTest() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
@@ -40,7 +40,7 @@ public class CqStatsUsingPoolOptimizedExecuteDUnitTest extends CqStatsUsingPoolD
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;

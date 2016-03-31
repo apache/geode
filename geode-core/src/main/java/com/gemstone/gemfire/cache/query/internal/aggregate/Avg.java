@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
 /**
  * Computes the non distinct average for replicated region based queries
  * 
- * @author ashahid
  *
  */
 public class Avg extends Sum {

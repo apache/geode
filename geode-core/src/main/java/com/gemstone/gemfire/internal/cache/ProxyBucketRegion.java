@@ -57,7 +57,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Empty shell for {@link BucketRegion} which exists only to maintain metadata
  * in the form of a {@link BucketAdvisor}
  * 
- * @author Kirk Lund
  * @since 5.1
  */
 public final class ProxyBucketRegion implements Bucket {

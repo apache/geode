@@ -46,6 +46,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManage
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.dunit.internal.JUnit3DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
@@ -75,9 +76,8 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
   }
   
   @Override
-  public void setUp() throws Exception {
+  public void preSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
   }
 
   ////////  Test Methods
@@ -144,7 +144,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     MembershipManager mgr = MembershipManagerHelper.getMembershipManager(sys);
     InternalDistributedMember idm = mgr.getLocalMember();
     // TODO GMS needs to have a system property allowing the bind-port to be set
-//    System.setProperty("gemfire.jg-bind-port", ""+idm.getPort());
+    System.setProperty("gemfire.jg-bind-port", ""+idm.getPort());
     try {
       sys.disconnect();
       sys = getSystem();
@@ -256,9 +256,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
    * region that sleeps when notified, forcing the operation to take longer
    * than ack-wait-threshold + ack-severe-alert-threshold
    */
-  // DISABLED due to a high rate of failure in CI test runs.  See internal
-  // ticket #52319
-  public void disabledtestAckSevereAlertThreshold() throws Exception {
+  public void testAckSevereAlertThreshold() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
 //    VM vm0 = host.getVM(0);
@@ -310,18 +308,18 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
       rgn.put("bomb", "pow!"); // this will hang until vm1 responds
 
       rgn.getCache().close();
-      system.disconnect();
+      basicGetSystem().disconnect();
 
       vm1.invoke(new SerializableRunnable("disconnect from ds") {
         public void run() {
           if (!myCache.isClosed()) {
-            if (system.isConnected()) {
-              system.disconnect();
+            if (basicGetSystem().isConnected()) {
+              basicGetSystem().disconnect();
             }
             myCache = null;
           }
-          if (system.isConnected()) {
-             system.disconnect();
+          if (basicGetSystem().isConnected()) {
+            basicGetSystem().disconnect();
           }
           synchronized(alertGuard) {
             assertTrue(alertReceived);
@@ -347,8 +345,8 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
       public void afterCreate(EntryEvent event) {
         try {
           if (playDead) {
-            MembershipManagerHelper.beSickMember(system);
-            MembershipManagerHelper.playDead(system);
+            MembershipManagerHelper.beSickMember(getSystemStatic());
+            MembershipManagerHelper.playDead(getSystemStatic());
           }
           Thread.sleep(15000);
         }
@@ -373,7 +371,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
   
   static void createAlertListener() throws Exception {
     DistributedSystemConfig config = 
-      AdminDistributedSystemFactory.defineDistributedSystem(system, null);
+      AdminDistributedSystemFactory.defineDistributedSystem(getSystemStatic(), null);
     adminSystem =
       AdminDistributedSystemFactory.getDistributedSystem(config);
     adminSystem.setAlertLevel(AlertLevel.SEVERE);
@@ -423,13 +421,13 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
                         .setScope(Scope.DISTRIBUTED_ACK)
                         .setDataPolicy(DataPolicy.REPLICATE)
                         .create("testRegion");
-      system.getLogWriter().info("<ExpectedException action=add>sec have elapsed while waiting for replies</ExpectedException>");
+      basicGetSystem().getLogWriter().info("<ExpectedException action=add>sec have elapsed while waiting for replies</ExpectedException>");
       
       vm1.invoke(new SerializableRunnable("Connect to distributed system") {
         public void run() {
           props.setProperty(DistributionConfig.NAME_NAME, "sleeper");
           getSystem(props);
-          LogWriter log = system.getLogWriter();
+          LogWriter log = basicGetSystem().getLogWriter();
           log.info("<ExpectedException action=add>service failure</ExpectedException>");
           log.info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
           RegionFactory rf = new RegionFactory();
@@ -449,15 +447,15 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
       
       
       rgn.getCache().close();
-      system.getLogWriter().info("<ExpectedException action=remove>sec have elapsed while waiting for replies</ExpectedException>");
-      system.disconnect();
+      basicGetSystem().getLogWriter().info("<ExpectedException action=remove>sec have elapsed while waiting for replies</ExpectedException>");
+      basicGetSystem().disconnect();
       
       vm1.invoke(new SerializableRunnable("wait for forced disconnect") {
         public void run() {
           // wait a while for the DS to finish disconnecting
           WaitCriterion ev = new WaitCriterion() {
             public boolean done() {
-              return !system.isConnected();
+              return !basicGetSystem().isConnected();
             }
             public String description() {
               return null;
@@ -477,14 +475,14 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
           Wait.waitForCriterion(ev, 20 * 1000, 200, false);
           
           if (!myCache.isClosed()) {
-            if (system.isConnected()) {
-              system.disconnect();
+            if (basicGetSystem().isConnected()) {
+              basicGetSystem().disconnect();
             }
             myCache = null;
             throw new RuntimeException("Test Failed - vm1's cache is not closed");
           }
-          if (system.isConnected()) {
-             system.disconnect();
+          if (basicGetSystem().isConnected()) {
+             basicGetSystem().disconnect();
              throw new RuntimeException("Test Failed - vm1's system should have been disconnected");
           }
           
@@ -545,7 +543,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
   public void testWaitForViewInstallation() {
     getSystem(new Properties());
     
-    MembershipManager mgr = system.getDM().getMembershipManager(); 
+    MembershipManager mgr = basicGetSystem().getDM().getMembershipManager();
 
     final NetView v = mgr.getView();
     
@@ -553,7 +551,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     Thread t = new Thread("wait for view installation") {
       public void run() {
         try {
-          ((DistributionManager)system.getDM()).waitForViewInstallation(v.getViewId()+1);
+          ((DistributionManager)basicGetSystem().getDM()).waitForViewInstallation(v.getViewId()+1);
           synchronized(passed) {
             passed[0] = true;
           }

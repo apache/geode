@@ -27,7 +27,6 @@ import java.io.Serializable;
 /**
 * The Person class is an abstraction modeling a person.
 * <p/>
-* @author Nilkanth Patel, John Blum
 * @since 8.0
 */
 @SuppressWarnings("unused")

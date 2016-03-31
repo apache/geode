@@ -26,7 +26,6 @@ import com.gemstone.gemfire.distributed.DurableClientAttributes;
  * The attributes of a distributed member.  This is largely deprecated as
  * GMSMember holds all of this information.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public class MemberAttributes {

@@ -106,8 +106,8 @@ public class ConnectionPoolDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     // avoid IllegalStateException from HandShake by connecting all vms to
     // system before creating pool
     getSystem();
@@ -116,10 +116,14 @@ public class ConnectionPoolDUnitTest extends CacheTestCase {
         getSystem();
       }
     });
+    postSetUpConnectionPoolDUnitTest();
+  }
+
+  protected void postSetUpConnectionPoolDUnitTest() throws Exception {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         Map pools = PoolManager.getAll();

@@ -65,7 +65,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * Handles distribution of a Region.putall operation.
  * 
- * @author Darrel Schneider
  * @since 5.0
  */
 public class DistributedPutAllOperation extends AbstractUpdateOperation

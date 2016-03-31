@@ -44,7 +44,6 @@ import com.gemstone.gemfire.management.internal.beans.MemberMBeanBridge;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author rishim
  */
 @Category(IntegrationTest.class)
 public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {

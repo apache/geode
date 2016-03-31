@@ -102,7 +102,6 @@ import java.util.Properties;
  * The client is then run with a different cache description having different
  * disk-dirs to hold the migrated information.
  * 
- * @author bruce
  * @since 6.0.1
  */
 public class MigrationServer {

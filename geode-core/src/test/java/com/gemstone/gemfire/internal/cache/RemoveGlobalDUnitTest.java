@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  *
- * @author vjadhav
  */
 public class RemoveGlobalDUnitTest extends DistributedTestCase {
     
@@ -64,8 +63,7 @@ public class RemoveGlobalDUnitTest extends DistributedTestCase {
     static VM vm1 = null;
     
     @Override
-    public void setUp() throws Exception {
-      super.setUp();
+    public final void postSetUp() throws Exception {
       Host host = Host.getHost(0);
       vm0 = host.getVM(0);
       vm1 = host.getVM(1);
@@ -74,7 +72,7 @@ public class RemoveGlobalDUnitTest extends DistributedTestCase {
     }
     
     @Override
-    protected final void preTearDown() throws Exception {
+    public final void preTearDown() throws Exception {
       vm0.invoke(() -> RemoveGlobalDUnitTest.resetFlag());
       vm1.invoke(() -> RemoveGlobalDUnitTest.resetFlag());
       vm0.invoke(() -> RemoveGlobalDUnitTest.closeCache());

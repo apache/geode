@@ -67,7 +67,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author dsmith
  *
  */
 public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase {
@@ -86,11 +85,14 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
    * @see dunit.DistributedTestCase#setUp()
    */
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Invoke.invokeInEveryVM(PersistentPartitionedRegionTestBase.class,"setRegionName", new Object[]{getUniqueName()});
     setRegionName(getUniqueName());
+    postSetUpPersistentPartitionedRegionTestBase();
+  }
+
+  protected void postSetUpPersistentPartitionedRegionTestBase() throws Exception {
   }
   
   public static void setRegionName(String testName) {

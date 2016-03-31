@@ -36,7 +36,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * TODO : Add more tests for error-catch, different type of results etc
  *
- * @author tushark
  */
 @Category(IntegrationTest.class)
 public class HeadlessGfshJUnitTest {

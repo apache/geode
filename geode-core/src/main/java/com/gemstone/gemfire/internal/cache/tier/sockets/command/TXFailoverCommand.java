@@ -45,7 +45,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Used for bootstrapping txState/PeerTXStateStub on the server.
  * This command is send when in client in a transaction is about
  * to failover to this server
- * @author sbawaska
  */
 public class TXFailoverCommand extends BaseCommand {
 

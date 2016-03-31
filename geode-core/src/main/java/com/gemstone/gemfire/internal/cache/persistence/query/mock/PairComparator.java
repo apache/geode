@@ -21,7 +21,6 @@ import java.util.Comparator;
 /**
  * A comparator for Pair objects that uses two
  * passed in comparators.
- * @author dsmith
  *
  */
 public class PairComparator implements Comparator<Pair> {

@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.cache.tx.DistTxEntryEvent;
  * 
  * An entity that works as stub for DistTX on Coordinator.
  * 
- * @author vivekb
  */
 public interface DistTXCoordinatorInterface extends TXStateInterface {
   /**

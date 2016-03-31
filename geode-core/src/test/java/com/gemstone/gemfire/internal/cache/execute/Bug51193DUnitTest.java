@@ -62,16 +62,14 @@ public class Bug51193DUnitTest extends DistributedTestCase {
   private VM client0;
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     server0 = host.getVM(0);
     client0 = host.getVM(1);
-    
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
     server0.invoke(() -> Bug51193DUnitTest.closeCache());
     client0.invoke(() -> Bug51193DUnitTest.closeCache());

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache;
 import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 
 /**
- * @author bruce
  *
  */
 public abstract class VersionedThinDiskRegionEntry extends VMThinDiskRegionEntry 

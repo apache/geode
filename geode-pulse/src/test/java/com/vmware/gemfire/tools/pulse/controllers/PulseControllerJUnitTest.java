@@ -66,7 +66,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * @author Jens Deppe
  */
 @Category(UnitTest.class)
 @PrepareForTest(Repository.class)

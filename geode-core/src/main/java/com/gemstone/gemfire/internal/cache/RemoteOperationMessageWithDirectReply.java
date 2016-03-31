@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * 
  * Additionally, if the ReplyProcessor used for this message extends PartitionResponse, it should
  * pass false for the register parameter of the PartitionResponse.
- * @author dsmith
  *
  */
 public abstract class RemoteOperationMessageWithDirectReply extends

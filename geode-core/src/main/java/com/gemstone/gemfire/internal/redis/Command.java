@@ -26,7 +26,6 @@ import java.util.List;
  * command resides in an instance of this class. This class is designed to be
  * used strictly by getter and setter methods.
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public class Command {

@@ -107,7 +107,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author sbawaska
  *
  */
 public class RemoteTransactionDUnitTest extends CacheTestCase {
@@ -152,7 +151,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     try {
       Invoke.invokeInEveryVM(verifyNoTxState);
     } finally {
@@ -2421,7 +2420,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
             FunctionService.onRegion(custRegion).execute(TXFunction.id).getResult();
             break;
           case OnMember:
-            FunctionService.onMembers(system).execute(TXFunction.id).getResult();
+            FunctionService.onMembers(basicGetSystem()).execute(TXFunction.id).getResult();
             break;
           }
           fail("Expected exception not thrown");
@@ -2440,7 +2439,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
           break;
         case OnMember:
           DistributedMember owner = custRegion.getOwnerForKey(custRegion.getKeyInfo(expectedCustId));
-          FunctionService.onMember(system, owner).execute(TXFunction.id).getResult();
+          FunctionService.onMember(basicGetSystem(), owner).execute(TXFunction.id).getResult();
           break;
         }
         TXStateProxy tx = mgr.internalSuspend();
@@ -2484,7 +2483,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
           break;
         case OnMember:
           DistributedMember owner = custRegion.getOwnerForKey(custRegion.getKeyInfo(expectedCustId));
-          FunctionService.onMember(system, owner).execute(TXFunction.id).getResult();
+          FunctionService.onMember(basicGetSystem(), owner).execute(TXFunction.id).getResult();
           break;
         }
         TXStateProxy tx = mgr.internalSuspend();
@@ -2738,11 +2737,11 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
         Set<DistributedMember> members = new HashSet<DistributedMember>();
         members.add(ds1);members.add(ds2);
         try {
-          FunctionService.onMembers(system, members).execute(TXFunction.id).getResult();
+          FunctionService.onMembers(basicGetSystem(), members).execute(TXFunction.id).getResult();
           fail("expected exception not thrown");
         } catch (TransactionException expected) {
         }
-        FunctionService.onMember(system, owner).execute(TXFunction.id).getResult();
+        FunctionService.onMember(basicGetSystem(), owner).execute(TXFunction.id).getResult();
         assertEquals(expectedCustomer, pr.get(expectedCustId));
         TXStateProxy tx = mgr.internalSuspend();
         assertNull(pr.get(expectedCustId));
@@ -2831,7 +2830,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
         } catch (TransactionDataRebalancedException expected) {
         }
         try {
-          FunctionService.onMember(system, ds2).execute(TXFunction.id).getResult();
+          FunctionService.onMember(basicGetSystem(), ds2).execute(TXFunction.id).getResult();
           fail("expected exception not thrown");
         } catch (TransactionDataNotColocatedException expected) {
         }

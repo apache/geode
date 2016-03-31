@@ -31,7 +31,6 @@ import javax.naming.Context;
  * Optionally, this also facilitates the backup of original system property
  * which can be restored later.
  * 
- * @author Nand Kishor Jha
  */
 public class InitialContextFactoryImpl implements InitialContextFactory {
 

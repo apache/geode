@@ -55,11 +55,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 
-/**
- * 
- * @author Eric Zoerner
- * @author Asif
- */
 public class QueryUtils {
   private static final Logger logger = LogService.getLogger();
   
@@ -242,7 +237,7 @@ public class QueryUtils {
   /** collections are passed in from smallest to largest */
   // assume we're dealing with bags and/or sets here, number of occurrences in the
   // union should be the sum of the occurrences in the two bags
-  //Asif: Is this Ok? There may be tuples which are actually common to both set so
+  // Is this Ok? There may be tuples which are actually common to both set so
   // union in such cases should not increase count. right.?
   
   private static SelectResults sizeSortedUnion(SelectResults small,
@@ -319,7 +314,7 @@ public class QueryUtils {
   
 
   /**
-   * Asif : This util function does a cartesian of the array of SelectResults
+   * This util function does a cartesian of the array of SelectResults
    * object , expanding the resultant set to the number of iterators passed in
    * expansionList. The position of the iterator fields in the final result is
    * governed by the order of RuntimeIterators present in the finalList. If any
@@ -388,7 +383,7 @@ public class QueryUtils {
     return returnSet;
   }
 
-  //TODO:Asif :Optimize the function further in terms of reducing the
+  //TODO:Optimize the function further in terms of reducing the
   // parameters passed in the function, if possible
   private static void doNestedIterations(int level, SelectResults returnSet,
       SelectResults[] results, RuntimeIterator[][] itrsForResultFields,
@@ -431,7 +426,7 @@ public class QueryUtils {
         QueryMonitor.isQueryExecutionCanceled();
         Object value = itr.next();
         if (len == 1) {
-          // Asif : this means we have a ResultSet
+          // this means we have a ResultSet
           itrsForFields[0].setCurrent(value);
         }
         else {
@@ -1775,8 +1770,8 @@ public class QueryUtils {
 }
 /**
  * 
- * @author asif This is a helper class which provides information on how an
- *         index data be used so as to make it compatible with the query.
+ * This is a helper class which provides information on how an
+ * index data be used so as to make it compatible with the query.
  *  
  */
 
@@ -1791,7 +1786,7 @@ class IndexConditioningHelper {
    * in the index result StructBag 3) Iter operand is not null. *
    *  
    */
-  //Asif :If shuffling is not needed , then it can be bcoz of two reasons
+  //If shuffling is not needed , then it can be bcoz of two reasons
   //1) The Index results is a ResultSet & match level is zero ( in that case we
   // don't have to do anything)
   //2) The Index results is a StructBag with match level as zero & inddex
@@ -2018,9 +2013,9 @@ class IndexConditioningHelper {
 }
 /**
  * 
- * @author asif This is a helper class which contains informaion on how to
- *         expand / cutdown index results for making it compatible with the
- *         query.
+ * This is a helper class which contains informaion on how to
+ * expand / cutdown index results for making it compatible with the
+ * query.
  *  
  */
 

@@ -49,7 +49,6 @@ import java.util.logging.Level;
  * systems. TODO : Merge HeadlessGfsh and HeadlessGfshShell TODO : Provide constructor for optionally specifying
  * GfshConfig to provide logDirectory and logLevel
  *
- * @author tushark
  */
 @SuppressWarnings("rawtypes")
 public class HeadlessGfsh implements ResultHandler {

@@ -20,7 +20,6 @@ package com.gemstone.gemfire.rest.internal.web.controllers.support;
 /**
  * The QueryResultTypes type describes possible query result types 
  * <p/>
- * @author Nilkanth Patel
  * @since 8.0
  */
 

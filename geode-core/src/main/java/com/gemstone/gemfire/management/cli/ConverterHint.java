@@ -22,7 +22,6 @@ import org.springframework.shell.core.annotation.CliOption;
  * Used in {@link CliOption} annotations to indicate which converter(s) should
  * or should not be used.
  *
- * @author David Hoots
  * @since 8.0
  */
 public interface ConverterHint {

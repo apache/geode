@@ -20,7 +20,6 @@ import java.io.*;
 import java.nio.*;
 
 /** An OutputStream that wraps to a ByteBuffer
- * @author Darrel
  * @since 3.5
  */
 

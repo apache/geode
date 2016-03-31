@@ -40,7 +40,6 @@ import static org.junit.Assert.*;
  * The EnvironmentVariablesHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract
  * and functionality of the Spring HandlerInterceptor, EnvironmentVariablesHandlerInterceptor class.
  * 
- * @author John Blum
  * @see org.jmock.Mockery
  * @see org.junit.Assert
  * @see org.junit.Test

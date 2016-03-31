@@ -53,11 +53,6 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
 
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-
-  }
-
   /**
    * Distributed Lock Service test
    * 

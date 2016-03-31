@@ -23,7 +23,6 @@ import com.gemstone.gemfire.GemFireException;
  * Wraps specific compression errors for {@link Compressor
  * compressors}.
  * 
- * @author rholmes
  */
 public class CompressionException extends GemFireException {
 

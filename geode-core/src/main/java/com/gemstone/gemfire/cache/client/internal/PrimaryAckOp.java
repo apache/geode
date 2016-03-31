@@ -25,7 +25,6 @@ import java.util.List;
 /**
  * Send the primary server acknowledgement on the events this client
  * has received and processed from it.
- * @author darrel
  * @since 5.7
  */
 public class PrimaryAckOp {

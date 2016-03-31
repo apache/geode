@@ -62,7 +62,6 @@ import com.gemstone.gemfire.management.membership.MembershipListener;
  * which is the gateway to various JMX operations over a GemFire
  * System
  * 
- * @author VMware, Inc.
  * @since 7.0
  */
 public final class SystemManagementService extends BaseManagementService {

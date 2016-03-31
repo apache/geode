@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 3. Stop the server1 so that fail over happens
  * 4. Validate the duplicates received by the client1
  *
- * @author Girish Thombare
  *
  */
 
@@ -89,9 +88,8 @@ public class HADuplicateDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
 
     server1 = host.getVM(0);
@@ -104,7 +102,7 @@ public class HADuplicateDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     client1.invoke(() -> HADuplicateDUnitTest.closeCache());
     // close server
     server1.invoke(() -> HADuplicateDUnitTest.reSetQRMslow());

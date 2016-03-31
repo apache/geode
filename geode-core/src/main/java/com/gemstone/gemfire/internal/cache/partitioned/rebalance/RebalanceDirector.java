@@ -25,7 +25,6 @@ package com.gemstone.gemfire.internal.cache.partitioned.rebalance;
  * to the system such as creating buckets, moving buckets, 
  * or moving primaries.
  * 
- * @author dsmith
  *
  */
 public interface RebalanceDirector {

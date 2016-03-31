@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.offheap;
  * Basic contract for a heap that manages off heap memory. Any MemoryChunks allocated from a heap
  * are returned to that heap when freed.
  * 
- * @author darrel
  * @since 9.0
  */
 public interface MemoryAllocator {

@@ -67,7 +67,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Port of GemFireXD's corresponding test for distributed transactions
  * 
- * @author sjigyasu
  *
  */
 @SuppressWarnings("deprecation")
@@ -80,8 +79,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
   final protected String CUSTOMER_RR = "customerRRRegion";
   
   @Override
-  public void setUp() throws Exception{
-    super.setUp();
+  public final void postSetUp() throws Exception{
     Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
@@ -90,14 +88,6 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
       }
     });
     
-//    this.invokeInEveryVM(new SerializableCallable() {
-//      @Override
-//      public Object call() throws Exception {
-//        System.setProperty("gemfire.log-level", "fine");
-//        return null;
-//      }
-//    });
-
     Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
@@ -109,7 +99,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {

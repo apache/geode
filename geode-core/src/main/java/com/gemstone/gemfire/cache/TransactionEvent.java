@@ -45,7 +45,6 @@ import java.util.*;
  * <p>The {@link EntryEvent} instances always return <code>null</code>
  * as their {@link CacheEvent#getCallbackArgument callback argument}.
  *
- * @author Mitch Thomas
  *
  * @see TransactionListener
  * @see EntryEvent

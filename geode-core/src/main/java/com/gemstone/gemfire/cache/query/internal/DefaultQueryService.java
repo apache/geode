@@ -76,8 +76,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
- * @author Eric Zoerner
- * @author Asif
  * @version $Revision: 1.2 $
  */
 public class DefaultQueryService implements QueryService {

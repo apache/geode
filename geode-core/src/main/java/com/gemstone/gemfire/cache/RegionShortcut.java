@@ -25,7 +25,6 @@ package com.gemstone.gemfire.cache;
  * the refid attribute on a region element or region-attributes element to the
  * string of each value.
  * @since 6.5
- * @author darrel
  */
 public enum RegionShortcut {
   /**

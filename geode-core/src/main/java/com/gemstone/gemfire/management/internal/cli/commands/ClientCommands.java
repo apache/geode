@@ -59,7 +59,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 
 /**
  * 
- * @author ajayp
  * @since 8.0
  */
 

@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Wraps spawned {@link java.lang.Process} to capture output and provide interaction with the process.
  *
- * @author Kirk Lund
  * @since 4.1.1
  */
 public class ProcessWrapper {

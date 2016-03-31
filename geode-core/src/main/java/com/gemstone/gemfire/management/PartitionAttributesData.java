@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 /**
  * Composite date type used to distribute attributes for a {@link PartitionedRegion}.
  * 
- * @author rishim
  * @since 7.0
  */
 public class PartitionAttributesData {

@@ -28,7 +28,6 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
 /** 
  * Identifies a group of transaction locks.
  *
- * @author Kirk Lund 
  */
 public final class TXLockIdImpl
   implements TXLockId, DataSerializableFixedID {

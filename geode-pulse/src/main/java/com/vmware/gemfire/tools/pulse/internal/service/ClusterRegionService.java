@@ -44,7 +44,6 @@ import java.util.Map;
  *
  * This class contains implementations of getting Cluster's regions details
  *
- * @author Anchal G
  * @since version 7.5
  */
 

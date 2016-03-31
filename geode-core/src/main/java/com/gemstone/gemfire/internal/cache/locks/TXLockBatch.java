@@ -34,7 +34,6 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
 /** 
  * Adapts multiple TXRegionLockRequests to one DLockBatch for DLock to use.
  *
- * @author Kirk Lund 
  */
 public final class TXLockBatch implements DLockBatch, DataSerializableFixedID {
   

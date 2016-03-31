@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author dsmith
  *
  */
 public class GIIFlowControlDUnitTest extends CacheTestCase {
@@ -59,7 +58,7 @@ public class GIIFlowControlDUnitTest extends CacheTestCase {
   }
 
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("reset chunk size") {
       public void run() {
         InitialImageOperation.CHUNK_SIZE_IN_BYTES = origChunkSize;

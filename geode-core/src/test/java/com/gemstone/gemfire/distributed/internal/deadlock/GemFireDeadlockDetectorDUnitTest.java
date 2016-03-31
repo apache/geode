@@ -31,6 +31,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedLockService;
+import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.test.dunit.Assert;
@@ -43,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author dsmith
  *
  */
 public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
@@ -53,7 +53,7 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
   
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 
@@ -166,7 +166,6 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
     assertTrue(deadlock != null);
     LogWriterUtils.getLogWriter().info("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
     assertEquals(4, deadlock.size());
-    stopStuckThreads();
     disconnectAllFromDS();
     async1.getResult(30000);
     async2.getResult(30000);
@@ -188,6 +187,8 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
         try {
           dls.lock(second, 10 * 1000, -1);
         } catch(LockServiceDestroyedException expected) {
+          //this is ok, the test is terminating
+        } catch (DistributedSystemDisconnectedException expected) {
           //this is ok, the test is terminating
         }
         

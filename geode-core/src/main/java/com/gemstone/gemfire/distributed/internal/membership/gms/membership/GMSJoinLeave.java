@@ -831,6 +831,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private void processViewMessage(final InstallViewMessage m) {
 
     NetView view = m.getView();
+    
+    if(currentView != null && !currentView.contains(m.getSender())) {
+      logger.info("Ignoring the view {} from member {}, which is not in my current view {} ", view, m.getSender(), currentView);
+      return;
+    }
 
     if (currentView != null && view.getViewId() < currentView.getViewId()) {
       // ignore old views
@@ -1113,7 +1118,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     services.getConfig().getDistributionConfig().setEnableNetworkPartitionDetection(enabled);
 
     if (response.isUsePreferredCoordinators()) {
-      this.quorumRequired = true;
+      this.quorumRequired = enabled;
       logger.debug("The locator indicates that all locators should be preferred as coordinators");
       if (services.getLocator() != null
           || Locator.hasLocator()
@@ -1445,9 +1450,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       processRemoveRequest(msg);
       if (!this.isCoordinator) {
         msg.resetRecipients();
-        msg.setRecipients(v.getPreferredCoordinators(Collections.<InternalDistributedMember>emptySet(), localAddress, 10));
+        msg.setRecipients(v.getPreferredCoordinators(Collections.<InternalDistributedMember> emptySet(), localAddress, 10));
         services.getMessenger().send(msg);
       }
+    } else {
+      RemoveMemberMessage msg = new RemoveMemberMessage(m, m, reason);
+      services.getMessenger().send(msg);
     }
   }
 
@@ -1751,7 +1759,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     void sendCurrentView() {
       NetView v = currentView;
       if (v != null) {
-        InstallViewMessage msg = new InstallViewMessage(v, services.getAuthenticator().getCredentials(localAddress));
+        InstallViewMessage msg = new InstallViewMessage(v, services.getAuthenticator().getCredentials(localAddress), false);
         Collection<InternalDistributedMember> recips = new ArrayList<>(v.size() + v.getCrashedMembers().size());
         recips.addAll(v.getMembers());
         recips.remove(localAddress);

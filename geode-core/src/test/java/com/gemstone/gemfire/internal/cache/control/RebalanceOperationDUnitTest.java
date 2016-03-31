@@ -85,7 +85,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author dsmith
  *
  */
 @SuppressWarnings("synthetic-access")
@@ -94,7 +93,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
   private static final long MAX_WAIT = 60;
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         InternalResourceManager.setResourceObserver(null);

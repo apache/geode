@@ -25,7 +25,6 @@ import junit.framework.TestCase;
 import static com.gemstone.gemfire.internal.size.SizeTestUtil.*;
 
 /**
- * @author dsmith
  *
  */
 @Category(UnitTest.class)

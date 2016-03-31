@@ -53,15 +53,15 @@ public abstract class DistributedCacheTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    setUp(true);
+  @Override
+  public final void postSetUp() throws Exception {
+    setUpDistributedCacheTestCase(true);
   }
   /**
    * Creates the {@link Cache} and root region in each remote VM
    * and, if createLocalCache, in this VM.
    */
-  protected void setUp(boolean createLocalCache) throws Exception {
-    super.setUp();
+  private final void setUpDistributedCacheTestCase(boolean createLocalCache) throws Exception {
     if (createLocalCache) {
       try {
         remoteCreateCache();
@@ -105,7 +105,7 @@ public abstract class DistributedCacheTestCase
    * Closes the cache in this VM and each remote VM
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     StringBuffer problems = new StringBuffer();
 
     if (cache != null) {

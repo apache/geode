@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * that is off-heap. Any access to an off-heap value should appear to the customer
  * as a serialized value.
  * 
- * @author dschneider
  *
  */
 public class GetOperationContextImpl extends GetOperationContext implements Releasable {

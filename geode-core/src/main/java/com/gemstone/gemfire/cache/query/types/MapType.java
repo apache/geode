@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache.query.types;
  * of the values is obtained from the getElementType method.
  *
  * @since 4.0
- * @author Eric Zoerner
  */
 public interface MapType extends CollectionType {
   

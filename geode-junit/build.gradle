@@ -17,6 +17,8 @@
 
 dependencies {
   testCompile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile 'junit:junit:' + project.'junit.version'
+  compile ('junit:junit:' + project.'junit.version') {
+    exclude module: 'hamcrest-core'
+  }
   compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
 }

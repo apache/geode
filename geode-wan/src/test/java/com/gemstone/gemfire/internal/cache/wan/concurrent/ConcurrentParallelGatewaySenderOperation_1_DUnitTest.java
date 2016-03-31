@@ -24,7 +24,6 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
- * @author skumar
  *
  */
 public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTestBase {
@@ -33,9 +32,9 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
   public ConcurrentParallelGatewaySenderOperation_1_DUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  protected final void postSetUpWANTestBase() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Unexpected IOException");

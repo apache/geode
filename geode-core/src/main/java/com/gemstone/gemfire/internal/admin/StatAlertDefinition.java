@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.admin.statalerts.StatisticInfo;
 /**
  * Base interface that supports a StatAlertDefinition
  * 
- * @author hgadre
  */
 public interface StatAlertDefinition extends DataSerializable {
   /**

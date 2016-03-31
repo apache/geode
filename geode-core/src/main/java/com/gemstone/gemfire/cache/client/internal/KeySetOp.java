@@ -30,7 +30,6 @@ import java.util.HashSet;
 
 /**
  * Does a region keySet on a server
- * @author darrel
  * @since 5.7
  */
 public class KeySetOp {

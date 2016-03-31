@@ -49,7 +49,6 @@ allprojects {
     maven { url "http://repo.spring.io/snapshot" }
     maven { url "http://repo.spring.io/libs-release" }
     maven { url "http://repo.spring.io/ext-release-local" }
-    maven { url "http://dist.gemstone.com/maven/release" }
   }
 
   group = "org.apache.geode"
@@ -74,6 +73,7 @@ if (name == 'geode') {
 
 apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
+apply from: "${scriptDir}/dependency-resolution.gradle"
 apply from: "${scriptDir}/test.gradle"
 apply from: "${scriptDir}/publish.gradle"
 apply from: "${scriptDir}/code-analysis.gradle"

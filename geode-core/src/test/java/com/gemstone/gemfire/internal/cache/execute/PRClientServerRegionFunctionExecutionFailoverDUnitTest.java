@@ -67,8 +67,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  protected void postSetUpPRClientServerTestBase() throws Exception {
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("SocketTimeoutException");
     IgnoredException.addIgnoredException("ServerConnectivityException");
@@ -153,7 +152,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.registerFunction());
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.FunctionExecution_Inline_Bug40714());
   }
-
+  
   public void testOnRegionFailoverWithTwoServerDownHA()
       throws InterruptedException {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");

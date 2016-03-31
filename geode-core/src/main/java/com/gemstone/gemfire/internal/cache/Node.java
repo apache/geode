@@ -41,7 +41,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
  * the Node's maxMemory is 0, then the Node is advertising that it never should
  * receive a request to rebalance.
  * 
- * @author Russell Okamoto
  */
 public final class Node extends ExternalizableDSFID
 {

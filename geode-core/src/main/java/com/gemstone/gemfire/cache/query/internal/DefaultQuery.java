@@ -65,7 +65,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Thread-safe implementation of com.gemstone.persistence.query.Query
  *
- * @author Eric Zoerner
  */
 
 public class DefaultQuery implements Query {

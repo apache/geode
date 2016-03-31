@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * <code>HARegionQueue</code> mechanics. It also has a property to indicate
  * the number of <code>HARegionQueue</code>s referencing this instance.
  * 
- * @author ashetkar
  * @since 5.7
  * 
  */

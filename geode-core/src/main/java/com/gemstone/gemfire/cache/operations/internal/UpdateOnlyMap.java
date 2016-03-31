@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.cache.Token;
  * It was added to fix bug 51604.
  * It also make sure that customers do not see Token.INVALID and
  * CachedDeserializable to fix bug 51625.
- * @author dschneider
  */
 public class UpdateOnlyMap implements Map, Serializable {
   private static final long serialVersionUID = -1034234728574286014L;

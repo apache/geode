@@ -126,8 +126,8 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void preSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -137,12 +137,14 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     vm5 = host.getVM(5);
     vm6 = host.getVM(6);
     vm7 = host.getVM(7);
+  }
+
+  @Override
+  public final void postSetUp() throws Exception {
     // this is done to vary the number of dispatchers for sender
     // during every test method run
     shuffleNumDispatcherThreads();
-    Invoke.invokeInEveryVM(AsyncEventQueueTestBase.class,
-        "setNumDispatcherThreadsForTheRun",
-        new Object[] { dispatcherThreads.get(0) });
+    Invoke.invokeInEveryVM(() -> setNumDispatcherThreadsForTheRun(dispatcherThreads.get(0)));
   }
 
   public static void shuffleNumDispatcherThreads() {
@@ -159,7 +161,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     }
     AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     //props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port
@@ -173,7 +175,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
     AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port
@@ -692,7 +694,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
 
   protected static void createCache(Integer locPort) {
     AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -702,7 +704,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
 
   public static void createCacheWithoutLocator(Integer mCastPort) {
     AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "" + mCastPort);
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
@@ -941,7 +943,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
 
   public static int createReceiver(int locPort) {
     AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
-    Properties props = new Properties();
+    Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
@@ -1568,7 +1570,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   }
   
   @Override
-  protected final void postTearDown() throws Exception {
+  public final void postTearDown() throws Exception {
     cleanupVM();
     vm0.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
     vm1.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
@@ -1607,16 +1609,16 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     ((MyGatewaySenderEventListener)eventListener1).printMap();
   }
   
-
   @Override
-  public InternalDistributedSystem getSystem(Properties props) {
-    // For now all WANTestBase tests allocate off-heap memory even though
+  public final Properties getDistributedSystemProperties() {
+  // For now all WANTestBase tests allocate off-heap memory even though
     // many of them never use it.
     // The problem is that WANTestBase has static methods that create instances
     // of WANTestBase (instead of instances of the subclass). So we can't override
     // this method so that only the off-heap subclasses allocate off heap memory.
+    Properties props = new Properties();
     props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "300m");
-    return super.getSystem(props);
+    return props;
   }
   
   /**

@@ -78,7 +78,6 @@ import com.gemstone.gemfire.i18n.StringId;
  *
  * @see MessageWithReply
  *
- * @author David Whitlock
  *
  * @since 2.1
  */

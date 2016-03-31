@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  * This class should only be serialized by directly calling toData,
  * which is why it does not implement DataSerializable
  * 
- * @author dsmith
  */
 public class SortedHoplogPersistedEvent extends PersistedEventImpl {
   /** version tag for concurrency checks */

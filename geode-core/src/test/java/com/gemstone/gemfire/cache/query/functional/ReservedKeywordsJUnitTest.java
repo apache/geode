@@ -39,7 +39,6 @@ import com.gemstone.gemfire.cache.query.data.Keywords;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author vaibhav
  */
 @Category(IntegrationTest.class)
 public class ReservedKeywordsJUnitTest {

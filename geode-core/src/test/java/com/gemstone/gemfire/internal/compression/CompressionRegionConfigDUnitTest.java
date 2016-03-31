@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
 /**
  * Sanity checks on a number of basic cluster configurations with compression turned on.
  * 
- * @author rholmes
  */
 public class CompressionRegionConfigDUnitTest extends CacheTestCase {
   /**
@@ -71,11 +70,6 @@ public class CompressionRegionConfigDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
   /**
    * Sanity check using two peers sharing a replicated region.
    * @throws Exception

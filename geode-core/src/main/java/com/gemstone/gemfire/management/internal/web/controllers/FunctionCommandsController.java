@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * The FunctionCommandsController class implements GemFire Management REST API web service endpoints for the
  * Gfsh Function Commands.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.FunctionCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

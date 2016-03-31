@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.cache.EventID;
  * Implementing class for <code>Conflatable</code> interface. Objects of this
  * class will be add to the queue
  * 
- * @author Dinesh Patel
  * 
  */
 public class ConflatableObject implements Conflatable, Serializable

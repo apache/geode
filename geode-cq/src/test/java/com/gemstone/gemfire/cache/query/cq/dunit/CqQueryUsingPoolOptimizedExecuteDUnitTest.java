@@ -30,8 +30,8 @@ public class CqQueryUsingPoolOptimizedExecuteDUnitTest extends CqQueryUsingPoolD
     super(name);
    }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUpCqQueryUsingPoolDUnitTest() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
@@ -40,7 +40,7 @@ public class CqQueryUsingPoolOptimizedExecuteDUnitTest extends CqQueryUsingPoolD
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;

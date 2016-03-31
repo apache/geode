@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.cli.parser;
 /**
  * Argument of a Command
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  *
  */

@@ -55,7 +55,6 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author asif
  *
  */
 @Category(IntegrationTest.class)

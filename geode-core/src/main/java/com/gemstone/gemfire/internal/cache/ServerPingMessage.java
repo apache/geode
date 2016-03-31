@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.Version;
  * Ping to check if a server is alive. It waits for a specified 
  * time before returning false. 
  * 
- * @author hemantb
  */
 public class ServerPingMessage extends PooledDistributionMessage {
   private int processorId = 0;

@@ -52,7 +52,6 @@ import com.gemstone.gemfire.redis.GemFireRedisServer;
  * execution of a command. It abstracts transactions, provides access to the {@link RegionProvider}
  * and anything else an executing {@link Command} may need.
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {

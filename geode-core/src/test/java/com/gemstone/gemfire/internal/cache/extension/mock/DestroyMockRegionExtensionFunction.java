@@ -46,7 +46,6 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
  * </dt>
  * </dl>
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

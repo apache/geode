@@ -37,7 +37,6 @@ import java.util.Map;
  * This class contains implementations of getting Cluster's WAN Informations
  * (connected clusters)
  * 
- * @author Sachin K
  * @since version 7.5
  */
 @Component

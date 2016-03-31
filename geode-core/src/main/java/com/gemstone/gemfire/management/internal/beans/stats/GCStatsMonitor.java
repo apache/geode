@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.statistics.StatisticsNotification;
 
 /**
  * 
- * @author rishim
  *
  */
 public class GCStatsMonitor extends MBeanStatsMonitor {

@@ -44,9 +44,6 @@ import com.gemstone.gemfire.internal.offheap.StoredObject;
  * if the end of the buffer is reached before we read the full amount. That
  * breaks the contract for InputStream and DataInput, but it works for our code.
  * 
- * @author Dan Smith
- * @author Bruce Schuchardt
- * @author Darrel Schneider
  * @since 3.0
  */
 
@@ -56,7 +53,6 @@ public class ByteBufferInputStream extends InputStream implements DataInput, jav
    * This interface is used to wrap either a ByteBuffer or an offheap Chunk
    * as the source of bytes for a ByteBufferInputStream.
    * 
-   * @author dschneider
    *
    */
   public static interface ByteSource {

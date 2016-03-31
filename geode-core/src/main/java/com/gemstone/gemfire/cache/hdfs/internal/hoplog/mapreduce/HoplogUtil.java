@@ -364,7 +364,6 @@ public class HoplogUtil {
    * This class creates MR splits from hoplog files. This class leverages
    * CombineFileInputFormat to create locality, node and rack, aware splits
    * 
-   * @author ashvina
    */
   public static class HoplogOptimizedSplitter extends CombineFileInputFormat<Long, Long> {
     private Collection<FileStatus> hoplogs;

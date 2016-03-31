@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 /**
  * Helper class to access the required functions of this package from
  * outside the package.
- * @author Girish Thombare
  */
 public class HaHelper
 {

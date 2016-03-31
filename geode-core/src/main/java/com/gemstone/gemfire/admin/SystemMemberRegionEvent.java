@@ -21,7 +21,6 @@ package com.gemstone.gemfire.admin;
  * Instances of this are delivered to a {@link SystemMemberCacheListener} when a
  * a region comes or goes.
  *
- * @author Darrel Schneider
  * @since 5.0
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */

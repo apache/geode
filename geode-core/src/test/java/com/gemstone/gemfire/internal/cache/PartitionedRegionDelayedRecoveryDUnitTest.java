@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author dsmith
  *
  */
 @SuppressWarnings("synthetic-access")
@@ -45,7 +44,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         InternalResourceManager.setResourceObserver(null);

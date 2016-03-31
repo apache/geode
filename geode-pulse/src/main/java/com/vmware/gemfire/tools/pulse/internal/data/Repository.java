@@ -33,7 +33,6 @@ import java.util.ResourceBundle;
 /**
  * A Singleton instance of the memory cache for clusters.
  * 
- * @author Anand Hariharan
  * @since version 7.0.Beta 2012-09-23
  */
 public class Repository {

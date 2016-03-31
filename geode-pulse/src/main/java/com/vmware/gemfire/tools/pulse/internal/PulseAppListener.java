@@ -51,7 +51,6 @@ import java.util.logging.Level;
  * This class is used for checking the application running mode i.e. Embedded or
  * not
  * 
- * @author Anand Hariharan
  * @since version 7.0.Beta 2012-09-23
  * 
  */

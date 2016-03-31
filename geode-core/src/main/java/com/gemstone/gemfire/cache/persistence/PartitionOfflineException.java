@@ -36,7 +36,6 @@ import com.gemstone.gemfire.GemFireException;
  * the region (such as a put), it is possible that the change was actually
  * persisted to disk before the member went offline.
  * 
- * @author dsmith
  * @since 6.5
  *
  */

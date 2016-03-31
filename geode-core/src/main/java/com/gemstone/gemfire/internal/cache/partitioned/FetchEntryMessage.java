@@ -60,7 +60,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * reply is sent in a {@link 
  * com.gemstone.gemfire.internal.cache.partitioned.FetchEntryMessage.FetchEntryReplyMessage}.
  * 
- * @author bruce
  * @since 5.1
  */
 public final class FetchEntryMessage extends PartitionMessage
@@ -242,7 +241,6 @@ public final class FetchEntryMessage extends PartitionMessage
   /**
    * This message is used for the reply to a {@link FetchEntryMessage}.
    * 
-   * @author mthomas
    * @since 5.0
    */
   public static final class FetchEntryReplyMessage extends ReplyMessage

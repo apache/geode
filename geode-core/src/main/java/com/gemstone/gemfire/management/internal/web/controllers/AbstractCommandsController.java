@@ -70,7 +70,6 @@ import java.util.Set;
  * Management Controller classes that expose REST API web service endpoints (URLs/URIs) for GemFire shell (Gfsh)
  * commands.
  * 
- * @author John Blum
  * @see com.gemstone.gemfire.management.MemberMXBean
  * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
  * @see org.springframework.stereotype.Controller

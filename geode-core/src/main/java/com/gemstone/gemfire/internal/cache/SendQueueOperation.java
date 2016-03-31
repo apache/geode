@@ -28,7 +28,6 @@ import com.gemstone.gemfire.distributed.internal.*;
 /**
  * Sends a chunk of queued messages to everyone currently playing a role.
  *
- * @author Darrel Schneider
  * @since 5.0
  *
  */

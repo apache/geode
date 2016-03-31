@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests LifecycleListener
  * 
- * @author Kirk Lund
  */
 @Category(UnitTest.class)
 public class LifecycleListenerJUnitTest {

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * WrappedRegionMembershipListener is used during initialization of new
  * cache listeners at runtime, after the region has already been initialized
  * and is active.
- * @author bruce
  */
 class WrappedRegionMembershipListener implements
     RegionMembershipListener {

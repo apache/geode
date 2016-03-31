@@ -32,8 +32,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * The WanCommandsController class implements the GemFire Management REST API web service endpoints for the
  * Gfsh WAN Commands.
  * 
- * @author John Blum
- * @author bolgesby
  * @see com.gemstone.gemfire.management.internal.cli.commands.WanCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

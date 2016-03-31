@@ -24,7 +24,6 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 /**
  * MBean that provides access to an {@link AsyncEventQueue}.
  * 
- * @author rishim
  * @since 7.0
  * 
  */

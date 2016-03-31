@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Tests the basic use cases for PR persistence.
- * @author dsmith
  *
  */
 public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {

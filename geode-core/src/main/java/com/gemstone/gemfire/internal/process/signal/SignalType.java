@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.process.signal;
 /**
  * The SignalType class...
  * </p>
- * @author John Blum
  * @since 7.0
  */
 public enum SignalType {

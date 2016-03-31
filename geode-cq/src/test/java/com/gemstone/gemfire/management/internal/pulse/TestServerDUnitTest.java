@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing server count details from MBean
- * @author ajayp
  * 
  */
 
@@ -38,11 +37,6 @@ public class TestServerDUnitTest extends ManagementTestBase {
 
   public TestServerDUnitTest(String name) {
     super(name);
-  }
-
-  public void setUp() throws Exception {
-    super.setUp();
-
   }
 
   public static int getNumOfServersFromMBean() {

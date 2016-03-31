@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 
 /**
- * @author bruce
  *
  */
 public class CacheXml70DUnitTest extends CacheXml66DUnitTest {

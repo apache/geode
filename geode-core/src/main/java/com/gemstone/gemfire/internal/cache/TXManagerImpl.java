@@ -79,7 +79,6 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
 
  * transaction logging are handled here 
  * 
- * @author Mitch Thomas
  *
  * @since 4.0
  * 
@@ -1300,7 +1299,6 @@ public final class TXManagerImpl implements CacheTransactionManager,
   /**
    * Task scheduled to expire a transaction when it is suspended.
    * This task gets canceled if the transaction is resumed.
-   * @author sbawaska
    */
   public static class TXExpiryTask extends SystemTimerTask {
 

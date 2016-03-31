@@ -21,7 +21,6 @@ package com.gemstone.gemfire.admin.jmx.internal;
  * ({@link #getClassTypeName}) must match the fully qualified class name listed
  * in the type descriptor in mbeans-descriptors.xml.
  *
- * @author    Kirk Lund
  * @since     3.5
  *
  */

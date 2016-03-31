@@ -28,7 +28,6 @@ import java.io.*;
 
 /**
  *
- * @author prafulla
  */
 public class District implements Serializable{
    public String name; 

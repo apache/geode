@@ -55,7 +55,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 4. Start vm1 and create HARegion Queue asynchronously and notify vm0 after its creation
  * 5. Put the data from vm0 asynchronously till HARegion Queue gets created in vm1.
  * 6. Validate the data. Puts happened during GII should be missed.
- * @author Girish Thombare
  *
  */
 
@@ -99,9 +98,8 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
   /**
    * This function creates regionqueue on 4 VMs
    */
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
 
     vm0 = host.getVM(0);
@@ -113,11 +111,10 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
     vm3 = host.getVM(3);
 
     vm0.invoke(() -> HAGIIBugDUnitTest.createRegionQueue());
-
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     vm0.invoke(() -> HAGIIBugDUnitTest.closeCache());
     vm1.invoke(() -> HAGIIBugDUnitTest.closeCache());
     vm2.invoke(() -> HAGIIBugDUnitTest.closeCache());

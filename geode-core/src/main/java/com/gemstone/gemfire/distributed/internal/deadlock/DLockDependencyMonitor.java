@@ -29,7 +29,6 @@ import com.gemstone.gemfire.distributed.internal.locks.DLockToken;
 /**
  * Report dependencies on dlocks that exist in theis VM.
  * 
- * @author dsmith
  *
  */
 public class DLockDependencyMonitor implements DependencyMonitor {

@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationE
 
 /**
  * 
- * @author mthomas
  * @since 6.0tx
  */
 public class LocalRegionDataView implements InternalDataView {

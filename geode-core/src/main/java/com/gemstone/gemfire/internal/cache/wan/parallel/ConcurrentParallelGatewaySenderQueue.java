@@ -51,7 +51,6 @@ import com.gemstone.gemfire.internal.size.SingleObjectSizer;
  * It implements RegionQueue so that AbstractGatewaySenderEventProcessor
  * can work on it.
  *   
- * @author Suranjan Kumar
  *
  */
 public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {

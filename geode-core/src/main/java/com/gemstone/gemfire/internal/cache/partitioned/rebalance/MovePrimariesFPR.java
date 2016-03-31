@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * A director to move primaries to improve the load balance of a
  * fixed partition region. This is most commonly used as an FPRDirector
- * @author dsmith
  *
  */
 public class MovePrimariesFPR extends RebalanceDirectorAdapter {

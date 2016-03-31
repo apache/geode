@@ -20,7 +20,7 @@ limitations under the License.
 <com.gemstone.gemfire.distributed.internal.membership.gms.messenger.Transport
   BIND_ADDR_SETTING
   bind_port="MEMBERSHIP_PORT_RANGE_START"
-  port_range="MEMBERSHIP_PORT_RANGE_END"
+  port_range="MEMBERSHIP_PORT_RANGE"
 
   mcast_addr="MCAST_ADDRESS"
   mcast_port="MCAST_PORT"

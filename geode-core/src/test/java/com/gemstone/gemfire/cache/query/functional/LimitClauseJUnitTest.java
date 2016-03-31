@@ -54,7 +54,6 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author asif
  * 
  */
 @Category(IntegrationTest.class)

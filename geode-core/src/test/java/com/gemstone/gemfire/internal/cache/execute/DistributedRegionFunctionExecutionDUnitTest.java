@@ -52,6 +52,8 @@ import com.gemstone.gemfire.internal.cache.functions.DistribuedRegionFunctionFun
 import com.gemstone.gemfire.internal.cache.functions.DistributedRegionFunction;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
+import com.gemstone.gemfire.security.templates.DummyAuthenticator;
+import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
@@ -89,8 +91,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     replicate1 = host.getVM(0);
     replicate2 = host.getVM(1);
@@ -99,7 +100,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // this test creates a cache that is incompatible with CacheTestCase,
     // so we need to close it and null out the cache variable
     disconnectAllFromDS();
@@ -909,8 +910,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   public static void createCacheInVm_41367() {
     Properties props = new Properties();
     props.put(DistributionConfig.NAME_NAME, "SecurityServer");
-    props.put("security-client-authenticator",
-        "templates.security.DummyAuthenticator.create");
+    props.put("security-client-authenticator", DummyAuthenticator.class.getName() + ".create");
     new DistributedRegionFunctionExecutionDUnitTest("temp").createCache(props);
   }
 
@@ -927,8 +927,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     props.put("mcast-port", "0");
     props.put("locators", "");
     props.put(DistributionConfig.NAME_NAME, "SecurityClient");
-    props.put("security-client-auth-init",
-        "templates.security.UserPasswordAuthInit.create");
+    props.put("security-client-auth-init", UserPasswordAuthInit.class.getName() + ".create");
     props.put("security-username", "reader1");
     props.put("security-password", "reader1");
     new DistributedRegionFunctionExecutionDUnitTest("temp").createCache(props);

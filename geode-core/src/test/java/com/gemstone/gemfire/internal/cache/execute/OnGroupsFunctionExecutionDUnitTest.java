@@ -55,7 +55,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * 
- * @author sbawaska
  */
 public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
 
@@ -64,7 +63,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {

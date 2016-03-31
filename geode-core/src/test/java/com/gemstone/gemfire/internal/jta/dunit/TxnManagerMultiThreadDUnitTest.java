@@ -58,7 +58,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
  * transaction manager is tested.
  * 
  * 
- * @author Prafulla Chaudhari
  *  
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -315,9 +314,8 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     }
   }//end of closeCache
 
-  /////setUp and tearDown methods/////
-  public void setUp() throws java.lang.Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws java.lang.Exception {
     VM vm0 = Host.getHost(0).getVM(0);
     Object o[] = new Object[1];
     o[0] = "TxnManagerMultiThreadDUnitTest";
@@ -356,7 +354,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
   }//end of delRows
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     VM vm0 = Host.getHost(0).getVM(0);
     //get tableName to pass to destroyTable
     String tableName = CacheUtils.getTableName();

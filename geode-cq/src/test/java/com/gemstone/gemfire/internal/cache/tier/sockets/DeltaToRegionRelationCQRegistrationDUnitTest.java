@@ -53,7 +53,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * This tests the flag setting for region ( DataPolicy as Empty ) for
  * Delta propogation for a client while registering CQ
  * 
- * @author aingle
  */
 public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTestCase {
   private static Cache cache = null;
@@ -114,9 +113,9 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public DeltaToRegionRelationCQRegistrationDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception
-  {
+
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Wait.pause(5000);
     final Host host = Host.getHost(0);

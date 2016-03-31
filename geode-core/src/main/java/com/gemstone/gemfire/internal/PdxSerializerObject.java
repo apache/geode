@@ -25,7 +25,6 @@ package com.gemstone.gemfire.internal;
  * package.
  * See {@link InternalDataSerializer#writePdx(java.io.DataOutput, com.gemstone.gemfire.internal.cache.GemFireCacheImpl, Object, com.gemstone.gemfire.pdx.PdxSerializer)} 
  * 
- * @author dsmith
  * 
  */
 public interface PdxSerializerObject {

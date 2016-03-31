@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.admin.remote.AdminResponse;
 /**
  * The response to the {@link FlushToDiskRequest}
  * 
- * @author dsmith
  *
  */
 public class FlushToDiskResponse extends AdminResponse {

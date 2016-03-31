@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown if the domain of a function is not legal.
  *
- * @author      Eric Zoerner
  * @since 4.0
  */
 

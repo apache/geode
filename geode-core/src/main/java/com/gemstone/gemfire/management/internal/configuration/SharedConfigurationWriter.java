@@ -41,7 +41,6 @@ import com.gemstone.gemfire.management.internal.configuration.functions.ModifyPr
  * Class for writing configuration changes to the Shared Configuration at the Locator(s).
  * This class is used in the Gfsh commands, to persist the configuration changes to the shared configuration hosted on locators.
  * 
- * @author bansods
  *
  */
 public class SharedConfigurationWriter {

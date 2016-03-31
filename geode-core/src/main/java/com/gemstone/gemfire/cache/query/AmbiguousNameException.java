@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.query;
  * more than one object in scope or if there is more than one maximally specific
  * overridden method in a class.
  *
- * @author      Eric Zoerner
  * @since 4.0
  */
 

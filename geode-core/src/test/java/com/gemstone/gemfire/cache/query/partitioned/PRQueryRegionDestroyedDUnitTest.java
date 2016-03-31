@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.query.partitioned;
  * Calls region.destroy() on one of the data stores while the query is being
  * executed and recreates the PR on the VM and verifies the results.
  * 
- * @author pbatra
  */
 
 import java.util.LinkedList;

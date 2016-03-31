@@ -110,13 +110,17 @@ public class PRClientServerTestBase extends CacheTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
     server3 = host.getVM(2);
     client = host.getVM(3);
+    postSetUpPRClientServerTestBase();
+  }
+
+  protected void postSetUpPRClientServerTestBase() throws Exception {
   }
 
   public ArrayList createCommonServerAttributes(String regionName,
@@ -161,7 +165,7 @@ public class PRClientServerTestBase extends CacheTestCase {
     return new Integer(server1.getPort());
   }
   
-  public static Integer createSelectorCacheServer(ArrayList commonAttributes, Integer localMaxMemory) {
+  public static Integer createSelectorCacheServer(ArrayList commonAttributes, Integer localMaxMemory) throws Exception {
     AttributesFactory factory = new AttributesFactory();
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     
@@ -182,18 +186,14 @@ public class PRClientServerTestBase extends CacheTestCase {
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server1.setPort(port);
     server1.setMaxThreads(16);
-    try {
-      server1.start();
-    }
-    catch (IOException e) {
-      Assert.fail("Failed to start the Server", e);
-    }
+    server1.start();
     assertTrue(server1.isRunning());
 
     return new Integer(server1.getPort());
   }
 
-  public static Integer createCacheServerWith2Regions(ArrayList commonAttributes, Integer localMaxMemory) {
+  public static Integer createCacheServerWith2Regions(ArrayList commonAttributes, Integer localMaxMemory)
+  throws Exception {
     AttributesFactory factory = new AttributesFactory();
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     
@@ -215,33 +215,23 @@ public class PRClientServerTestBase extends CacheTestCase {
     assertNotNull(server1);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server1.setPort(port);
-    try {
-      server1.start();
-    }
-    catch (IOException e) {
-      Assert.fail("Failed to start the Server", e);
-    }
+    server1.start();
     assertTrue(server1.isRunning());
 
     return new Integer(server1.getPort());
   }
-  public static Integer createCacheServer() {
+  public static Integer createCacheServer() throws Exception {
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server1.setPort(port);
-    try {
-      server1.start();
-    }
-    catch (IOException e) {
-      Assert.fail("Failed to start the Server", e);
-    }
+    server1.start();
     assertTrue(server1.isRunning());
 
     return new Integer(server1.getPort());
   }
   
-  public static Integer createCacheServerWithDR() {
+  public static Integer createCacheServerWithDR() throws Exception {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -253,12 +243,7 @@ public class PRClientServerTestBase extends CacheTestCase {
     assertNotNull(server1);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server1.setPort(port);
-    try {
-      server1.start();
-    }       
-    catch (IOException e) {
-      Assert.fail("Failed to start the Server", e);
-    }
+    server1.start();
     assertTrue(server1.isRunning());
 
     return new Integer(server1.getPort());
@@ -629,7 +614,7 @@ public class PRClientServerTestBase extends CacheTestCase {
     }
   }
 
-  public static void startServerHA() {
+  public static void startServerHA() throws Exception {
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
 
@@ -648,15 +633,10 @@ public class PRClientServerTestBase extends CacheTestCase {
     Iterator bridgeIterator = bridgeServers.iterator();
     CacheServer bridgeServer = (CacheServer)bridgeIterator.next();
     LogWriterUtils.getLogWriter().info("start Server Bridge Server" + bridgeServer);
-    try {
-      bridgeServer.start();
-    }
-    catch (IOException e) {
-      fail("not able to start the server");
-    }
+    bridgeServer.start();
   }  
   
-  public static void stopServerHA() {
+  public static void stopServerHA() throws Exception {
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
 
@@ -669,28 +649,23 @@ public class PRClientServerTestBase extends CacheTestCase {
       }
     };
     Wait.waitForCriterion(wc, 1000, 200, false);
-    try {
-      Iterator iter = cache.getCacheServers().iterator();
-      if (iter.hasNext()) {
-        CacheServer server = (CacheServer)iter.next();
-        server.stop();
-      }
-    }
-    catch (Exception e) {
-      fail("failed while stopServer()" + e);
+    Iterator iter = cache.getCacheServers().iterator();
+    if (iter.hasNext()) {
+      CacheServer server = (CacheServer)iter.next();
+      server.stop();
     }
   }  
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
-    closeCache();
-    client.invoke(() -> PRClientServerTestBase.closeCache());
-    server1.invoke(() -> PRClientServerTestBase.closeCache());
-    server2.invoke(() -> PRClientServerTestBase.closeCache());
-    server3.invoke(() -> PRClientServerTestBase.closeCache());
+  public final void postTearDownCacheTestCase() throws Exception {
+    closeCacheAndDisconnect();
+    client.invoke(() -> PRClientServerTestBase.closeCacheAndDisconnect());
+    server1.invoke(() -> PRClientServerTestBase.closeCacheAndDisconnect());
+    server2.invoke(() -> PRClientServerTestBase.closeCacheAndDisconnect());
+    server3.invoke(() -> PRClientServerTestBase.closeCacheAndDisconnect());
   }
 
-  public static void closeCache() {
+  public static void closeCacheAndDisconnect() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
@@ -715,7 +690,7 @@ public class PRClientServerTestBase extends CacheTestCase {
     }
   }
   
-  public static void serverBucketFilterExecution(Set<Integer> bucketFilterSet) {
+  public static void serverBucketFilterExecution(Set<Integer> bucketFilterSet) throws Exception {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final HashSet testKeysSet = new HashSet();
@@ -726,35 +701,27 @@ public class PRClientServerTestBase extends CacheTestCase {
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_BUCKET_FILTER);
     FunctionService.registerFunction(function);
     InternalExecution dataSet = (InternalExecution) FunctionService.onRegion(region);
-    try {
-      int j = 0;
-      HashSet origVals = new HashSet();
-      for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-        Integer val = new Integer(j++);
-        origVals.add(val);
-        region.put(i.next(), val);
-      }
-      
-      List l = null;
-      ResultCollector<Integer, List<Integer>> rc =  (ResultCollector<Integer, List<Integer>>)dataSet.
-          withBucketFilter(bucketFilterSet).execute(function.getId());
-      List<Integer> results = rc.getResult();
-      assertEquals(bucketFilterSet.size(), results.size());
-      for(Integer bucket: results) {
-        bucketFilterSet.remove(bucket) ; 
-      }
-      assertTrue(bucketFilterSet.isEmpty());
-
-     
-      
-    }catch(Exception e){
-      Assert.fail("Test failed ", e);
-      
+    int j = 0;
+    HashSet origVals = new HashSet();
+    for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
+      Integer val = new Integer(j++);
+      origVals.add(val);
+      region.put(i.next(), val);
     }
+
+    List l = null;
+    ResultCollector<Integer, List<Integer>> rc =  (ResultCollector<Integer, List<Integer>>)dataSet.
+        withBucketFilter(bucketFilterSet).execute(function.getId());
+    List<Integer> results = rc.getResult();
+    assertEquals(bucketFilterSet.size(), results.size());
+    for(Integer bucket: results) {
+      bucketFilterSet.remove(bucket) ; 
+    }
+    assertTrue(bucketFilterSet.isEmpty());
   }
   
   public static void serverBucketFilterOverrideExecution(Set<Integer> bucketFilterSet,
-      Set<Integer> ketFilterSet) {
+      Set<Integer> ketFilterSet) throws Exception {
 
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
@@ -770,29 +737,23 @@ public class PRClientServerTestBase extends CacheTestCase {
     for(Integer key : ketFilterSet) {
       expectedBucketSet.add(BucketFilterPRResolver.getBucketID(key));
     }
-    try {
-      int j = 0;
-      HashSet origVals = new HashSet();
-      for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-        Integer val = new Integer(j++);
-        origVals.add(val);
-        region.put(i.next(), val);
-      }
-      
-      List l = null;
-      ResultCollector<Integer, List<Integer>> rc =  (ResultCollector<Integer, List<Integer>>)dataSet.
-          withBucketFilter(bucketFilterSet).withFilter(ketFilterSet).execute(function.getId());
-      List<Integer> results = rc.getResult();
-      assertEquals(expectedBucketSet.size(), results.size());
-      for(Integer bucket: results) {
-        expectedBucketSet.remove(bucket) ; 
-      }
-      assertTrue(expectedBucketSet.isEmpty());
-    }catch(Exception e){
-      Assert.fail("Test failed ", e);
-      
+    int j = 0;
+    HashSet origVals = new HashSet();
+    for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
+      Integer val = new Integer(j++);
+      origVals.add(val);
+      region.put(i.next(), val);
     }
-  
+
+    List l = null;
+    ResultCollector<Integer, List<Integer>> rc =  (ResultCollector<Integer, List<Integer>>)dataSet.
+        withBucketFilter(bucketFilterSet).withFilter(ketFilterSet).execute(function.getId());
+    List<Integer> results = rc.getResult();
+    assertEquals(expectedBucketSet.size(), results.size());
+    for(Integer bucket: results) {
+      expectedBucketSet.remove(bucket) ; 
+    }
+    assertTrue(expectedBucketSet.isEmpty());
   }
   
   public static class BucketFilterPRResolver implements PartitionResolver, Serializable {    

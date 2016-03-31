@@ -20,7 +20,6 @@ import javax.print.attribute.EnumSyntax;
 
 /** The algorithm used to determine when to perform an {@link com.gemstone.gemfire.cache.EvictionAction}
  * 
- * @author Mitch Thomas
  * @since 5.0
  * @see com.gemstone.gemfire.cache.EvictionAction
  * @see com.gemstone.gemfire.internal.cache.EvictionAttributesImpl

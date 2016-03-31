@@ -38,7 +38,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Test to make sure dynamic regions work
  *
- * @author darrel
  * @since 4.3
  */
 public class DynamicRegionDUnitTest extends CacheTestCase {
@@ -53,15 +52,15 @@ public class DynamicRegionDUnitTest extends CacheTestCase {
   // the setUp and tearDown methods need to make sure we don't
   // use the ds from previous test and that we don't leave ours around
   // for the next test to use.
-  
-  public void setUp() throws Exception {
+
+  @Override
+  public final void preSetUp() throws Exception {
     try {
       disconnectAllFromDS();
     } finally {
       File d = new File("DynamicRegionData" + OSProcess.getId());
       d.mkdirs();
       DynamicRegionFactory.get().open(new DynamicRegionFactory.Config(d, null));
-      super.setUp();
     }
   }
   
@@ -73,7 +72,7 @@ public class DynamicRegionDUnitTest extends CacheTestCase {
    * </p>
    */
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     LogWriterUtils.getLogWriter().info("Running tearDown in " + this);
     try {
       //Asif destroy dynamic regions at the end of the test

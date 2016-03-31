@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.*;
  *
  * @see MultiVMRegionTestCase#testRemoteCacheWriter
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

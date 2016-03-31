@@ -31,7 +31,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * This class extends the {@link ManagerLogWriter} to add the security prefix
  * feature mentioned above.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public final class SecurityManagerLogWriter extends ManagerLogWriter {

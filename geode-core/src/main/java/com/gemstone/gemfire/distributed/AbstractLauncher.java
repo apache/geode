@@ -60,7 +60,6 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
  * The AbstractLauncher class is a base class for implementing various launchers to construct and run different GemFire
  * processes, like Cache Servers, Locators, Managers, HTTP servers and so on.
  * 
- * @author John Blum
  * @see java.lang.Comparable
  * @see java.lang.Runnable
  * @see com.gemstone.gemfire.lang.Identifiable

@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
  * periodically placed in the <code>CacheClientProxy</code>'s queue to verify
  * the client connection is still alive.
  * 
- * @author Barry Oglesby
  * 
  * @since 6.6.2.x
  */

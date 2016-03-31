@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.query.SelectResults;
  * which will ensure that the intersection of the results for evaluation of AND
  * junction is optimum in performance.
  * 
- * @author ketan
  */
 
 class SelectResultsComparator implements Comparator {

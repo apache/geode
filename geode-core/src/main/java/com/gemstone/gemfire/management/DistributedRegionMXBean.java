@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
  * MBean that provides access to information and management functionality for a
  * {@link Region}.
  * 
- * @author rishim
  * @since 7.0
  * 
  */

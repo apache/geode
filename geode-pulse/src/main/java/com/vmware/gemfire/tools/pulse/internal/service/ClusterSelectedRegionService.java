@@ -46,7 +46,6 @@ import java.util.List;
  *
  * This class contains implementations of getting Cluster's selected region details
  *
- * @author Riya Bhandekar
  * @since version 7.5 cedar  2014-03-01
  */
 

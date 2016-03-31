@@ -25,7 +25,6 @@ import com.gemstone.gemfire.DataSerializer;
  * consuming any memory.
  * <p>This class is not thread safe
  *
- *  @author Darrel
  *  @since 5.0.2
  * 
  */

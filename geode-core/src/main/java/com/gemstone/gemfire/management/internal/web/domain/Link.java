@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.internal.web.util.UriUtils;
 /**
  * The Link class models hypermedia controls/link relations.
  * <p/>
- * @author John Blum
  * @see java.lang.Comparable
  * @see java.io.Serializable
  * @see java.net.URI

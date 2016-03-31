@@ -36,7 +36,6 @@ import java.util.Set;
  * Also, this class provides a getSnapshot method, which should
  * be used for any thing that needs an unchanging snapshot of this
  * this (For example, any serialization of this class should use getSnapshot).
- * @author dsmith
  *
  */
 public class CopyOnWriteHashSet<T> implements Set<T>, Serializable  {

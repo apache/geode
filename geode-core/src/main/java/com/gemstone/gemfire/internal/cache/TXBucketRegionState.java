@@ -20,7 +20,6 @@
 package com.gemstone.gemfire.internal.cache;
 
 /**
- * @author mthomas
  *
  */
 public class TXBucketRegionState extends TXRegionState {

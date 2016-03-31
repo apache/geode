@@ -33,7 +33,6 @@ import java.util.Properties;
 /***
  * DUnit test for 'show stack-trace' command
  *
- * @author bansods
  */
 public class ShowStackTraceDUnitTest extends CliCommandTestBase {
 

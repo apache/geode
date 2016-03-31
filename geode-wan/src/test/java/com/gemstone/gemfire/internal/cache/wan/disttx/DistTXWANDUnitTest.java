@@ -33,9 +33,8 @@ public class DistTXWANDUnitTest extends WANTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-    
+  @Override
+  protected final void postSetUpWANTestBase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
@@ -44,7 +43,6 @@ public class DistTXWANDUnitTest extends WANTestBase {
       }
     }); 
   }
-  
 
   /*
    * Disabled because it hangs with current implementation of notifying

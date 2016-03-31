@@ -40,8 +40,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * Processor waits for ack before completing.
  *
  * @since 4.0
- * @author Darrel Schneider
- * @author Kirk Lund (renamed from ExpectTransferProcessor)
+ * (renamed from ExpectTransferProcessor)
  */
 public class DeposeGrantorProcessor extends ReplyProcessor21 {
   

@@ -21,7 +21,6 @@ import java.io.IOException;
 /**
  * Indicates that an <code>IOException</code> during a disk region operation.
  *
- * @author Darrel Schneider
  *
  *
  * @since 3.2

@@ -23,7 +23,6 @@ package com.gemstone.gemfire.internal.cache;
  * A version of ForceReattemptException that should be used when the
  * target bucket can't be found.
  * 
- * @author bruce schuchardt
  *
  */
 public class BucketNotFoundException extends ForceReattemptException {

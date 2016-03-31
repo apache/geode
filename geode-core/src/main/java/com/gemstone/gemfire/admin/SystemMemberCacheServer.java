@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.server.ServerLoadProbe;
  *
  * @see SystemMemberCache#addCacheServer
  *
- * @author darrel
  * @since 5.7
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */

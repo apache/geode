@@ -45,6 +45,7 @@ public class SystemFailureJUnitTest {
   }
   @Test
   public void testStopThreads() {
+    SystemFailure.signalCacheCreate();
     SystemFailure.startThreads();
     long start = System.nanoTime();
     Thread watchDog = SystemFailure.getWatchDogForTest();

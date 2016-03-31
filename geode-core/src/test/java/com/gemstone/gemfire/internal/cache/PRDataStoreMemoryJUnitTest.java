@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests memory allocation operations on a PartitionedRegion on a single node.
  *
- * @author rreja, modified by Girish
  */
 @Category(IntegrationTest.class)
 public class PRDataStoreMemoryJUnitTest {

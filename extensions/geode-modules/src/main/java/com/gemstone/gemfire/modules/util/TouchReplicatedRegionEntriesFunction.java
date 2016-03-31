@@ -30,7 +30,6 @@ import java.util.Set;
  * Touches the keys contained in the set of keys by performing a get on the replicated region. This is a non-data-aware
  * function invoked using onMembers or onServers.
  *
- * @author Barry Oglesby
  */
 public class TouchReplicatedRegionEntriesFunction implements Function, Declarable {
 

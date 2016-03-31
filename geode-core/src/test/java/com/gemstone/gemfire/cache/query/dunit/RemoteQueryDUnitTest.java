@@ -57,8 +57,6 @@ import cacheRunner.Position;
 /**
  * Tests remote (client/server) query execution.
  *
- * @author Barry Oglesby
- * @author Asif
  * @since 5.0.1
  */
 public class RemoteQueryDUnitTest extends CacheTestCase {
@@ -73,13 +71,12 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   ////////  Test Methods
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 
@@ -99,7 +96,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          InternalDistributedSystem system = getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
           createRegion(name, factory.create());
@@ -129,7 +126,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("mcast-port", "0");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -242,7 +239,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
           createRegion(name, factory.create());
@@ -272,7 +269,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("mcast-port", "0");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -370,7 +367,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
           createRegion(name, factory.create());
@@ -400,7 +397,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("mcast-port", "0");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -496,7 +493,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
           createRegion(name, factory.create());
@@ -633,7 +630,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("mcast-port", "0");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -690,7 +687,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
           createRegion(name, factory.create());
@@ -720,7 +717,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("mcast-port", "0");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -855,7 +852,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
           createRegion(name+"1", factory.create());
@@ -890,7 +887,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("mcast-port", "0");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -956,7 +953,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
           createRegion(name, factory.create());
@@ -986,7 +983,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("mcast-port", "0");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
           getCache();
           AttributesFactory factory = new AttributesFactory();
@@ -1001,7 +998,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           Properties config = new Properties();
           config.setProperty("mcast-port", "0");
-          system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          getSystem(config);
           PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
           getCache();
           AttributesFactory factory = new AttributesFactory();
@@ -1115,7 +1112,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
          public void run2() throws CacheException {
            Properties config = new Properties();
            config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-           system = (InternalDistributedSystem) DistributedSystem.connect(config);
+           getSystem(config);
            AttributesFactory factory = new AttributesFactory();
            factory.setScope(Scope.LOCAL);
            createRegion(name, factory.createRegionAttributes());
@@ -1145,7 +1142,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
          public void run2() throws CacheException {
            Properties config = new Properties();
            config.setProperty("mcast-port", "0");
-           system = (InternalDistributedSystem) DistributedSystem.connect(config);
+           getSystem(config);
            PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
            getCache();
            AttributesFactory factory = new AttributesFactory();
@@ -1219,7 +1216,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           public void run2() throws CacheException {
             Properties config = new Properties();
             config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-            system = (InternalDistributedSystem) DistributedSystem.connect(config);
+            getSystem(config);
             AttributesFactory factory = new AttributesFactory();
             factory.setScope(Scope.LOCAL);
             final Region region = createRegion(name, factory.createRegionAttributes());
@@ -1256,7 +1253,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           public void run2() throws CacheException {
             Properties config = new Properties();
             config.setProperty("mcast-port", "0");
-            system = (InternalDistributedSystem) DistributedSystem.connect(config);
+            getSystem(config);
             PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
             getCache();
             AttributesFactory factory = new AttributesFactory();

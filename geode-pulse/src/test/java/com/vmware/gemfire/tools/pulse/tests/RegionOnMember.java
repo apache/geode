@@ -22,7 +22,6 @@ package com.vmware.gemfire.tools.pulse.tests;
  * Region on member mbean
  *
  *
- * @author rbhandekar
  *
  */
 public class RegionOnMember extends JMXBaseBean implements RegionOnMemberMBean {

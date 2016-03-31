@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Tests the functionality of the {@link RegionRoleListener} class.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public class RegionReliabilityListenerDUnitTest extends ReliabilityTestCase {

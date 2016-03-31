@@ -33,8 +33,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
- * @author dsmith
- * @author klund
  */
 @Category(UnitTest.class)
 public class AvailablePortJUnitTest {

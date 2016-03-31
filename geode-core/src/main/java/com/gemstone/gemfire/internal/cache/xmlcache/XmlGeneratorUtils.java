@@ -28,7 +28,6 @@ import org.xml.sax.helpers.AttributesImpl;
  * Utilities for use in {@link XmlGenerator} implementation to provide common
  * helper methods.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

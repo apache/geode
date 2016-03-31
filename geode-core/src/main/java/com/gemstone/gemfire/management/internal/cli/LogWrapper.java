@@ -41,8 +41,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.GfshConfig;
  * 2. on a Manager "if" log is required to be sent back to gfsh too. For
  *    logging only on manager use, cache.getLogger()
  *
- * @author Abhishek Chaudhari
- * @author John Blum
  * @since 7.0
  */
 public class LogWrapper {
@@ -301,7 +299,6 @@ public class LogWrapper {
 
   /**
    *
-   * @author Abhishek Chaudhari
    * @since 7.0
    */
   // Formatter code "copied" from LogWriterImpl
@@ -414,7 +411,6 @@ public class LogWrapper {
   /**
    * Handler to write to CommandResponseWriter
    *
-   * @author Abhishek Chaudhari
    * @since 7.0
    */
   static class CommandResponseWriterHandler extends Handler {

@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberState;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberView;
 
 /**
- * @author dsmith
  *
  */
 public class InMemoryPersistentMemberView implements PersistentMemberView {

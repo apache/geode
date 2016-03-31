@@ -38,7 +38,6 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author asifs
  *
  * 
  */

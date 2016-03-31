@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * The LauncherLifecycleCommandsController class implements REST API calls for the Gfsh Launcher Lifecycle commands.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.LauncherLifecycleCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

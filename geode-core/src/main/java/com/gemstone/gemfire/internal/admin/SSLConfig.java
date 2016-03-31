@@ -24,7 +24,6 @@ import java.util.Properties;
 /**
  * The SSL configuration settings for a GemFire distributed system.
  *
- * @author    Kirk Lund
  *
  */
 public class SSLConfig {

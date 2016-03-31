@@ -28,7 +28,6 @@ import java.util.Set;
 
 /**
  * Inspects a completed backup and parses the operation log file data from the restore script produced by a previous backup.
- * @author rholmes
  */
 public abstract class BackupInspector {
   /**
@@ -184,7 +183,6 @@ public abstract class BackupInspector {
 
 /**
  * A BackupInspector for the Windows platform(s).
- * @author rholmes
  *
  */
 class WindowsBackupInspector extends BackupInspector {
@@ -270,7 +268,6 @@ class WindowsBackupInspector extends BackupInspector {
 
 /**
  * A BackupInspector for Unix platforms.
- * @author rholmes
  */
 class UnixBackupInspector extends BackupInspector {
   /**

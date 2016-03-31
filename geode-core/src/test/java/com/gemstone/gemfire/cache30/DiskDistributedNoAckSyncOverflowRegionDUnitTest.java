@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.OSProcess;
 
 /**
  *
- * @author Eric Zoerner
  *
  */
 public class DiskDistributedNoAckSyncOverflowRegionDUnitTest extends DiskDistributedNoAckRegionTestCase {

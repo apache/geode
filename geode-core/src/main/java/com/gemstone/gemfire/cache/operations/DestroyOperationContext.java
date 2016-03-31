@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.operations;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#DESTROY} region operation having the key
  * object for both the pre-operation case and for post-operation updates.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class DestroyOperationContext extends KeyOperationContext {

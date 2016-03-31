@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
  * 
  * This semaphore is useful for allowing only a limited number of threads to enter a block of code,
  * while allowing a single thread to try to enter that block several times in it's call stack.
- * @author dsmith
  *
  */
 public class ReentrantSemaphore extends Semaphore {

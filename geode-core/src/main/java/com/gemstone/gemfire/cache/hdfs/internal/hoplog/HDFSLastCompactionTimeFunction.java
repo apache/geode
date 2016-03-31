@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * Function that returns the oldest timestamp among all the major
  * compacted buckets on the members
  *
- * @author sbawaska
  */
 @SuppressWarnings("serial")
 public class HDFSLastCompactionTimeFunction extends FunctionAdapter implements InternalEntity{

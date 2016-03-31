@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * A Partitioned Region meta-data update message.  This is used to send 
  * all local bucket's meta-data to other members with the same Partitioned Region.  
  * 
- * @author Yogesh Mahajan
  * @since 6.6
  */
 public final class AllBucketProfilesUpdateMessage extends DistributionMessage

@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Tests Partitioned Region with OffHeap memory.
  * 
- * @author Kirk Lund
  * @since 9.0
  */
 public class PartitionedRegionOffHeapDUnitTest extends PartitionedRegionDUnitTest {
@@ -38,7 +37,7 @@ public class PartitionedRegionOffHeapDUnitTest extends PartitionedRegionDUnitTes
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override

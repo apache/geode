@@ -31,7 +31,6 @@ import com.gemstone.gemfire.admin.Statistic;
  * Implemetation of {@link StatisticInfo}, provides all the information
  * {@link Statistic}
  * 
- * @author hgadre
  * 
  */
 public class StatisticInfoImpl implements StatisticInfo {

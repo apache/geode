@@ -32,7 +32,6 @@ import java.nio.channels.*;
  *
  * @see Message
  *
- * @author Sudhir Menon
  * @since 2.0.2
  */
 public class Part {

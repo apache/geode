@@ -41,7 +41,6 @@ import java.util.*;
  * and {@link com.gemstone.gemfire.cache.RegionDistributionException 
  * RegionDistributionException} for examples on how to do this.</p>
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public class InternalRole implements Role {

@@ -53,7 +53,6 @@ import com.gemstone.gemfire.internal.process.StartupStatus;
 import com.gemstone.gemfire.internal.util.TransformUtils;
 
 /**
- * @author dsmith
  *
  */
 public class PersistenceAdvisorImpl implements PersistenceAdvisor {

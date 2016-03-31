@@ -66,7 +66,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Basic integration tests for validating the off-heap implementation. 
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class OffHeapValidationJUnitTest {

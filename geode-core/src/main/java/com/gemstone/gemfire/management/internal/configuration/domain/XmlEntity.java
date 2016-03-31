@@ -55,8 +55,6 @@ import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.XPa
 /****
  * Domain class for defining a GemFire entity in XML.
  * 
- * @author bansods
- * @author David Hoots
  * 
  */
 public class XmlEntity implements DataSerializable {
@@ -406,7 +404,6 @@ public class XmlEntity implements DataSerializable {
    * Builder for {@link XmlEntity}. Default values are as described in
    * {@link XmlEntity}.
    * 
-   * @author jbarrett@pivotal.io
    *
    * @since 8.1
    */

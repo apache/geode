@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Connects DistributedSystem and tests logging behavior at a high level.
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class DistributedSystemLogFileJUnitTest {

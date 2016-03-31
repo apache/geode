@@ -25,7 +25,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Runs force invalidate eviction tests with off-heap regions.
- * @author rholmes
  * @since 9.0
  */
 public class ForceInvalidateOffHeapEvictionDUnitTest extends
@@ -36,7 +35,7 @@ public class ForceInvalidateOffHeapEvictionDUnitTest extends
   }
 
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override

@@ -45,9 +45,8 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * participate in the transaction. The objects of these class are
  * ConnectionEventListener for connection close and error events.
  * 
- * @author tnegi
- * @author Asif : Modified the exception handling & changed the name of some
- *         functions.
+ * Modified the exception handling & changed the name of some
+ * functions.
  */
 public class GemFireTransactionDataSource extends AbstractDataSource implements 
     ConnectionEventListener {
@@ -215,7 +214,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource implements
       if (txn != null) {
         XAResource xar = xaConn.getXAResource();
         txn.enlistResource(xar);
-        //Asif :Add in the Map after successful registration of XAResource
+        //Add in the Map after successful registration of XAResource
         this.xaResourcesMap.put(xaConn, xar);        
       }
     }

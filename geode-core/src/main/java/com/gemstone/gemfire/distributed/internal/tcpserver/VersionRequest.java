@@ -23,7 +23,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * @author shobhit
  * @since 7.1
  */
 public class VersionRequest implements DataSerializable {

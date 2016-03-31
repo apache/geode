@@ -48,7 +48,6 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
 /**
  * Provides support for reading and writing snapshot files.
  * 
- * @author bakera
  */
 public class GFSnapshot {
   /**

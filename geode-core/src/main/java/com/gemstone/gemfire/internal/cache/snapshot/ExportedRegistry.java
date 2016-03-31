@@ -31,7 +31,6 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
 /**
  * Captures the pdx types and enums to be exported.
  * 
- * @author bakera
  */
 public class ExportedRegistry {
   /** the types */

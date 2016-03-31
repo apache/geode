@@ -40,10 +40,6 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         super(name);
     }
 
-    public void setUp() throws Exception {
-        super.setUp();
-    }
-
     //Uses replicated regions and conserve-sockets=false
     public void testPrimarySendersOnDifferentVMsReplicated() throws Exception {
 

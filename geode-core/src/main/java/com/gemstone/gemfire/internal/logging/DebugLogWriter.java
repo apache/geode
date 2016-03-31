@@ -34,7 +34,6 @@ import com.gemstone.gemfire.i18n.StringId;
  *  }
  *  </pre>
  * 
- * @author Mitch Thomas
  * @since 5.0
  */
 final public class DebugLogWriter extends LogWriterImpl

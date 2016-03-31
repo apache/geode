@@ -26,7 +26,6 @@ import java.io.InvalidClassException;
 /**
  * This class defines general native utils.
  *
- * @author Darrel Schneider
  *
  */
 public class SmHelper {

@@ -18,6 +18,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -47,13 +48,13 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.jayway.awaitility.Awaitility;
 
 /**
  * This test verifies the per-client notify-by-subscription (NBS) override
  * functionality along with register interest new receiveValues flag.
  * Taken from the existing ClientConflationDUnitTest.java and modified.
  *
- * @author Vishal Rao
  * @since 6.0.3
  */
 public class ClientInterestNotifyDUnitTest extends DistributedTestCase
@@ -101,6 +102,16 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
     // validate expected event counts with actual counted
     public void validate(int creates, int updates, int invalidates, int destroys)
     {
+      // Wait for the last destroy event to arrive.
+      try {
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+          return (destroys == m_destroys);
+        });
+      } catch (Exception ex) {
+        // The event is not received in a given wait time.
+        // The check will be done below to report the valid reason.
+      }
+      
       GemFireCacheImpl.getInstance().getLogger().info(m_name +
           ": creates: expected="+creates+", actual="+m_creates);
       GemFireCacheImpl.getInstance().getLogger().info(m_name +
@@ -110,10 +121,10 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
       GemFireCacheImpl.getInstance().getLogger().info(m_name +
           ": destroys: expected="+destroys+", actual="+m_destroys);
       
-      assertEquals(creates, m_creates);
-      assertEquals(updates, m_updates);
-      assertEquals(invalidates, m_invalidates);
-      assertEquals(destroys, m_destroys);
+      assertEquals("Creates :", creates, m_creates);
+      assertEquals("Updates :", updates, m_updates);
+      assertEquals("Invalidates :", invalidates, m_invalidates);
+      assertEquals("Destroys :", destroys, m_destroys);
     }
   }
   
@@ -139,17 +150,13 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
-    /*
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-    */
   }
 
   private Cache createCache(Properties props) throws Exception
@@ -626,7 +633,7 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
    * close the caches in tearDown
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     vm0.invoke(() -> ClientInterestNotifyDUnitTest.closeCache());
     vm1.invoke(() -> ClientInterestNotifyDUnitTest.closeCache());
     /*

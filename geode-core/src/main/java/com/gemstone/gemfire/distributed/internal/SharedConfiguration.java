@@ -49,7 +49,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -86,7 +85,6 @@ import com.gemstone.gemfire.management.internal.configuration.utils.ZipUtils;
 
 /*********
  * 
- * @author bansods
  *
  */
 @SuppressWarnings("deprecation")
@@ -312,16 +310,18 @@ public class SharedConfiguration {
               File zipFile = new File(zipFileName);
               byte[] zipBytes = FileUtils.readFileToByteArray(zipFile);
               Object [] args = new Object[] {zipFileName, zipBytes};
-              CliUtil.executeFunction(fn, args, locatorsWithSC);
+              // Make sure we wait for the result. The fn also does a clear on the config
+              // region so there is a race with the clear below.
+              CliUtil.executeFunction(fn, args, locatorsWithSC).getResult();
             } catch (Exception e) {
               logger.error(e.getMessage(), e);
             }
           }
-          //Clear the configuration region and load the configuration read from the 'shared_config' directory
-          configRegion.clear();
-          configRegion.putAll(sharedConfigMap);
-        } 
-      }finally {
+        }
+        //Clear the configuration region and load the configuration read from the 'shared_config' directory
+        configRegion.clear();
+        configRegion.putAll(sharedConfigMap);
+      } finally {
         unlockSharedConfiguration();
       }
     } else {
@@ -373,9 +373,9 @@ public class SharedConfiguration {
       boolean isLocked = sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, 5000, 5000);
       try {
         if (isLocked) {
-          logger.info("Building up configuration response with following configurations");
           Set<String> groups = configRequest.getGroups();
           groups.add(SharedConfiguration.CLUSTER_CONFIG);
+          logger.info("Building up configuration response with following configurations: {}", groups);
 
           for (String group : groups) {
             Configuration configuration = getConfiguration(group);

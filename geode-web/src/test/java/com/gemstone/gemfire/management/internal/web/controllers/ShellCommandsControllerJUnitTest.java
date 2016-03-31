@@ -52,7 +52,6 @@ import javax.servlet.http.HttpServletRequest;
  * ShellCommandsController class, and specifically ensuring that all GemFire Gfsh commands have a corresponding
  * Management REST API call and web service endpoint in the GemFire Management REST Interface.
  * <p/>
- * @author John Blum
  * @see org.junit.Test
  * @see com.gemstone.gemfire.management.internal.web.controllers.ShellCommandsController
  * @since 8.0

@@ -71,8 +71,8 @@ public class Bug36269DUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
@@ -84,7 +84,6 @@ public class Bug36269DUnitTest extends DistributedTestCase
 
     PORT1 = ((Integer)server1.invoke(() -> Bug36269DUnitTest.createServerCache())).intValue();
     PORT2 = ((Integer)server2.invoke(() -> Bug36269DUnitTest.createServerCache())).intValue();
-
   }
 
   private void createCache(Properties props) throws Exception
@@ -217,7 +216,7 @@ public class Bug36269DUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
     // close server
     server1.invoke(() -> Bug36269DUnitTest.closeCache());

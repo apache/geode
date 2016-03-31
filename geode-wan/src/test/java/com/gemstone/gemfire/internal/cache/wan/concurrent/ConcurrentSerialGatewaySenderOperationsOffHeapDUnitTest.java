@@ -28,5 +28,5 @@ public class ConcurrentSerialGatewaySenderOperationsOffHeapDUnitTest extends
   public boolean isOffHeap() {
     return true;
   }
-
+  
 }

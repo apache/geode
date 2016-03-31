@@ -30,7 +30,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 
 /**
  * 
- * @author Ajay Pande
  * @since 7.0
  */
  

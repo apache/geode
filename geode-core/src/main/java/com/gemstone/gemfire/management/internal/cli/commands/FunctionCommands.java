@@ -70,7 +70,6 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 
 /**
- * @author David Hoots
  * 
  * @since 7.0
  */

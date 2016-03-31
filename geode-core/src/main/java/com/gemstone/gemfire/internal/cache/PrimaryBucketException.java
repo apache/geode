@@ -22,7 +22,6 @@ import com.gemstone.gemfire.GemFireException;
  * An exception thrown if a bucket instance is not primary yet was requested
  * to perform a modification operation. 
  *
- * @author Mitch Thomas
  * @since 5.1
  *
  */

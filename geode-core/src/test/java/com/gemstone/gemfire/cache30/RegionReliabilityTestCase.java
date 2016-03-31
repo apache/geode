@@ -75,7 +75,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Tests region reliability defined by MembershipAttributes.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
@@ -85,7 +84,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   }
 
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     DistributedCacheOperation.setBeforePutOutgoing(null);
   }
 

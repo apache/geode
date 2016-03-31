@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 
 /**
  * A Unique ID for a disk store
- * @author dsmith
  *
  * TODO - RVV - this class is java serializable because apparently it is included in some
  * Exception that is serialized with java serialization back to a client as part

@@ -32,7 +32,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 
 /***
  * Function to get subscription-queue-size
- * @author bansods
  *
  */
 public class GetSubscriptionQueueSizeFunction extends FunctionAdapter implements

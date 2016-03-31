@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests the off-heap additions to the RegionMXBean and MemberMXBean JMX interfaces.
- * @author rholmes
  */
 @SuppressWarnings("serial")
 public class OffHeapManagementDUnitTest extends CacheTestCase {
@@ -143,8 +142,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
@@ -154,7 +152,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
   }
 
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {

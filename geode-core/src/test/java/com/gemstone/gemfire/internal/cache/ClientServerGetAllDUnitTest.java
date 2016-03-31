@@ -51,7 +51,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Class <code>ClientServerGetAllDUnitTest</code> test client/server getAll.
  *
- * @author Barry Oglesby
  * @since 5.7
  */
  public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
@@ -61,7 +60,7 @@ import com.gemstone.gemfire.test.dunit.VM;
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 

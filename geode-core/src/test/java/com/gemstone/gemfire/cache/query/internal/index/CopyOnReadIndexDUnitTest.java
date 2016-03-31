@@ -59,13 +59,12 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   VM vm1;
   VM vm2;
 
-  
   public CopyOnReadIndexDUnitTest(String name) {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       public void run() {
@@ -79,11 +78,10 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
-  
-  
+
   //test different queries against partitioned region
   public void testPRQueryOnLocalNode() throws Exception {
     QueryTestUtils utils = new QueryTestUtils();

@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
  * PRSanityCheckMessage is used to assert correctness of prID assignments
  * across the distributed system.
  * 
- * @author bruce
  *
  */
 public final class PRSanityCheckMessage extends PartitionMessage

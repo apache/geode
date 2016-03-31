@@ -35,8 +35,6 @@ import com.gemstone.gemfire.internal.Config;
 /**
  * Represents one java vm connected to a GemFire distributed system
  * 
- * @author Darrel Schneider
- * @author Kirk Lund
  */
 public interface GemFireVM {
 

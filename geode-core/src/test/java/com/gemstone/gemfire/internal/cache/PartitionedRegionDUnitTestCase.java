@@ -93,7 +93,7 @@ public class PartitionedRegionDUnitTestCase extends CacheTestCase
    * because we want to destroy any existing PartitionedRegions)
    */
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     preTearDownPartitionedRegionDUnitTest();
     closeCache();
     Invoke.invokeInEveryVM(CacheTestCase.class, "closeCache");

@@ -50,7 +50,6 @@ import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author kdeshpan
  *
  */
 @Category(IntegrationTest.class)

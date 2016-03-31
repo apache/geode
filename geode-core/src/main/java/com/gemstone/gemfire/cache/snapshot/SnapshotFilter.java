@@ -28,7 +28,6 @@ import java.util.Map.Entry;
  * @see CacheSnapshotService
  * @see RegionSnapshotService
  * 
- * @author bakera
  * @since 7.0
  */
 public interface SnapshotFilter<K, V> extends Serializable {

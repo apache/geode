@@ -46,11 +46,10 @@ import com.gemstone.gemfire.internal.util.VersionedArrayList;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * This class is junit test for <code>PartitionedRegionQueryEvaluator</code> class.
- * @author rreja 
+ * This class is an integration test for <code>PartitionedRegionQueryEvaluator</code> class.
  */
 @Category(IntegrationTest.class)
-public class PartitionedRegionQueryEvaluatorJUnitTest
+public class PartitionedRegionQueryEvaluatorIntegrationTest
 {
   @Rule public TestName name = new TestName();
   LogWriter logger = null;

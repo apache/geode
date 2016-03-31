@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * only in member VMs.  They are not <code>Serializable</code> and
  * aren't meant to be.
  *
- * @author David Whitlock
  *
  * @since 3.5
  * */

@@ -17,7 +17,6 @@
 
 /*
  * Created on Dec 1, 2005
- * @author tapshank
  */
 package com.gemstone.gemfire.internal.cache;
 

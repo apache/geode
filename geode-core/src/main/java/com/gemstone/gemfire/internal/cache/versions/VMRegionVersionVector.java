@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 /**
  * A region version vector for regions without persistent data. This region
  * version vector uses the InternalDistributedMember as the member id.
- * @author dsmith
  *
  */
 public class VMRegionVersionVector extends RegionVersionVector<InternalDistributedMember> {

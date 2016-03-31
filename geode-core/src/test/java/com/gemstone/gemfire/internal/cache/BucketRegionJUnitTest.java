@@ -31,7 +31,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * @author gzhou
  *
  */
 @Category(UnitTest.class)

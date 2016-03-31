@@ -104,16 +104,15 @@ public class ManagementTestBase extends DistributedTestCase {
 
   private static Cache cache;
 
-  public void setUp() throws Exception {
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
+
     Host host = Host.getHost(0);
     managingNode = host.getVM(0);
     managedNode1 = host.getVM(1);
     managedNode2 = host.getVM(2);
     managedNode3 = host.getVM(3);
-
-
 
     managedNodeList = new ArrayList<VM>();
 
@@ -121,11 +120,14 @@ public class ManagementTestBase extends DistributedTestCase {
     managedNodeList.add(managedNode2);
     managedNodeList.add(managedNode3);
     locatorVM = host.getLocator();
+    postSetUpManagementTestBase();
+  }
 
+  protected void postSetUpManagementTestBase() throws Exception {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     preTearDownManagementTestBase();
     
     closeAllCache();

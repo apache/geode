@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.internal.*;
  * Empty implementation of <code>DistributedLockStats</code> used when there is
  * currently no connection to the distributed system.
  *
- * @author Kirk Lund
  */
 public class DummyDLockStats implements DistributedLockStats {
 

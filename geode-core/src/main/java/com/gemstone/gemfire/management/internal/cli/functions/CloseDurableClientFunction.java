@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 
 /***
  * Function to close a durable client
- * @author bansods
  *
  */
 public class CloseDurableClientFunction extends FunctionAdapter implements

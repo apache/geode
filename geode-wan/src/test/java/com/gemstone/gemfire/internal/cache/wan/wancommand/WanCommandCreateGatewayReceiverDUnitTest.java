@@ -44,10 +44,6 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     super(name);
   }
   
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
   /**
    * GatewayReceiver with all default attributes
    */
@@ -56,7 +52,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     VM puneLocator = Host.getLocator();
     int punePort = (Integer)puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
 
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
         + "]");
@@ -118,7 +114,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     VM puneLocator = Host.getLocator();
     int punePort = (Integer)puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
 
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
         + "]");
@@ -174,7 +170,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     VM puneLocator = Host.getLocator();
     int punePort = (Integer)puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
 
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
         + "]");
@@ -234,7 +230,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     VM puneLocator = Host.getLocator();
     int punePort = (Integer)puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
 
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
         + "]");
@@ -297,7 +293,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     VM puneLocator = Host.getLocator();
     int punePort = (Integer)puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
 
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
         + "]");
@@ -345,7 +341,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     VM puneLocator = Host.getLocator();
     int punePort = (Integer)puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
 
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
         + "]");
@@ -400,7 +396,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     VM puneLocator = Host.getLocator();
     int punePort = (Integer)puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
 
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
         + "]");
@@ -458,7 +454,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     VM puneLocator = Host.getLocator();
     int punePort = (Integer)puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
 
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
         + "]");
@@ -516,7 +512,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     VM puneLocator = Host.getLocator();
     int punePort = (Integer)puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
 
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
         + "]");
@@ -571,7 +567,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     VM puneLocator = Host.getLocator();
     int punePort = (Integer)puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
 
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
         + "]");

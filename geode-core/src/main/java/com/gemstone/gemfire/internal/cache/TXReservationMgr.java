@@ -25,7 +25,6 @@ import java.util.*;
 /** Used to reserve region entries, during a transaction commit,
  * for modification by the transaction.
  *
- * @author Darrel Schneider
  * 
  * @since 4.0
  * 

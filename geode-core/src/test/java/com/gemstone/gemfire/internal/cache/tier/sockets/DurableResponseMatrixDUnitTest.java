@@ -41,7 +41,6 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
  * Tests that the Matris defined in <code>ServerResponseMatrix</code> is
  * applied or not
  * 
- * @author Yogesh Mahajan
  * @since 5.1
  * 
  */
@@ -63,9 +62,8 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     // start servers first
@@ -481,7 +479,7 @@ public class DurableResponseMatrixDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
     // then close the servers

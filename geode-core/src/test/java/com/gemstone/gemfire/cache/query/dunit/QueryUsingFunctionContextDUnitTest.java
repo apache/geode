@@ -69,7 +69,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * (routing keys) to run the query on subset of buckets "locally". If query
  * includes buckets
  *
- * @author shobhit
  *
  */
 public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
@@ -135,20 +134,19 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   }
 
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(CacheTestCase.class, "disconnectFromDS");
+  public final void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(() -> disconnectFromDS());
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(QueryObserverHolder.class, "reset");
+  public final void postTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(() -> QueryObserverHolder.reset());
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -158,7 +156,6 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
     fillValuesInRegions();
     registerFunctionOnServers();
   }
-
 
   /**
    * Test on Replicated Region.

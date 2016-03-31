@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.query.Aggregator;
 /**
  * Abstract Aggregator class providing support for downcasting the result
  * 
- * @author ashahid
  *
  */
 public abstract class AbstractAggregator implements Aggregator {

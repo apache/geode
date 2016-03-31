@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
- * @author rdubey
  * 
  */
 public class PRBasicIndexCreationDeadlockDUnitTest extends

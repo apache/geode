@@ -30,9 +30,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * <li>Userbits of the value
  * </ul>
  * 
- * @author Mitul Bid
- * @author Asif
- * @author Suyog
  * @since 5.1
  */
 
@@ -358,7 +355,6 @@ public abstract class DiskId
    * Inner class implementation of DiskId which stores offset in oplog as 'int'
    * field.
    * 
-   * @author dpatel
    *  
    */
   protected static abstract class IntOplogOffsetDiskId extends DiskId
@@ -393,7 +389,6 @@ public abstract class DiskId
    * Inner class implementation of DiskId which stores offset in oplog as 'long'
    * field.
    * 
-   * @author dpatel
    *  
    */
   protected static abstract class LongOplogOffsetDiskId extends DiskId

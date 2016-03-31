@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Helper class for CacheXmlPropertyResolver. Helps in parsing ${...${}..}..${} strings.
  * 
- * @author Shobhit Agarwal
  * @since 6.6
  */
 public class CacheXmlPropertyResolverHelper {

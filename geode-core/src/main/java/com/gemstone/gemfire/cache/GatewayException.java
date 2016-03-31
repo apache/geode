@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache;
 /**
  * An exception thrown by a <code>Gateway</code>.
  *
- * @author Barry Oglesby
  *
  * @since 4.2
  */

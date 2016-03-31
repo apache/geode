@@ -30,13 +30,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.data.Numbers;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * A sample test class using the QueryTestUtils
  * 
- * @author Tejas Nomulwar
  * 
  */
 @Category(IntegrationTest.class)
@@ -49,14 +50,35 @@ public class QueryTestUtilsJUnitTest {
   @Before
   public void setUp() throws Exception {
 
-    utils = new QueryTestUtils();
+    utils = QueryTestUtils.getInstance();
     utils.createCache(null);
     // create regions
     utils.createReplicateRegion("exampleRegion");
     utils.createReplicateRegion("numericRegion");
     // put entries in the region
-    utils.createValuesStringKeys("exampleRegion", 10);
-    utils.createNumericValuesStringKeys("numericRegion", 10);
+    populatePortfolioValuesInRegion("exampleRegion", 10);
+    populateNumericValuesInRegion("numericRegion", 10);
+  }
+  
+  private void populatePortfolioValuesInRegion(String regionName, int size) {
+    Region region = utils.getRegion(regionName);
+    for (int i = 1; i <= size; i++) {
+      region.put("KEY-"+ i, new Portfolio(i));
+    }
+  }
+  
+  private void populateOffsetPortfolioValuesInRegion(String regionName, int size) {
+    Region region = utils.getRegion(regionName);
+    for (int i = 1; i <= size; i++) {
+      region.put("KEY-"+ i, new Portfolio(i + 1));
+    }
+  }
+  
+  private void populateNumericValuesInRegion(String regionName, int size) {
+    Region region = utils.getRegion(regionName);
+    for (int i = 1; i <= size; i++) {
+      region.put("KEY-"+ i, new Numbers(i));
+    }
   }
 
   @Test
@@ -85,7 +107,7 @@ public class QueryTestUtilsJUnitTest {
   
   @Test
   public void testQueriesWithoutDistinct() throws Exception{
-    utils.createDiffValuesStringKeys("exampleRegion", 2);
+    this.populateOffsetPortfolioValuesInRegion("exampleRegion", 2);
     String[] queries = { "181" };
     int results = 0;
     for (Object result :  utils.executeQueriesWithoutDistinct(queries)) {

@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
 /**
  * A connection managed by the connection manager. Keeps track
  * of the current state of the connection. 
- * @author dsmith
  * @since 5.7
  *
  */

@@ -58,7 +58,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * Tests the UniversalMembershipListenerAdapter.
  *
- * @author Kirk Lund
  * @since 4.2.1
  */
 
@@ -89,7 +88,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     InternalClientMembership.unregisterAllListeners();
   }
   
@@ -1565,7 +1564,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         Region region = createRegion(name, factory.create());
         assertNotNull(region);
         assertNotNull(getRootRegion().getSubregion(name));
-        return system.getDistributedMember();
+        return basicGetSystem().getDistributedMember();
       }
     };
     
@@ -1849,7 +1848,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
           com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().error(e);
           fail(e.getMessage());
         }
-        return system.getDistributedMember();
+        return basicGetSystem().getDistributedMember();
       }
     };
     

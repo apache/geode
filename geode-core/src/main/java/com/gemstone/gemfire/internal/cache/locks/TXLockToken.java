@@ -25,7 +25,6 @@ import java.io.*;
 /** 
  * Represents one transaction lock.
  *
- * @author Kirk Lund 
  */
 public class TXLockToken implements DataSerializable {
   private static final long serialVersionUID = 8172108573123093776L;

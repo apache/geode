@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.InterestResultPolicy;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGISTER_INTEREST} region operation for
  * the pre-operation case.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class RegisterInterestOperationContext extends InterestOperationContext {

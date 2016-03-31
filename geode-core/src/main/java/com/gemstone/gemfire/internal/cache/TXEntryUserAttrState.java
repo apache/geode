@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * TXEntryUserAttrState is the entity that tracks transactional changes
  * to an entry user attribute.
  *
- * @author Darrel Schneider
  * 
  * @since 4.0
  * 

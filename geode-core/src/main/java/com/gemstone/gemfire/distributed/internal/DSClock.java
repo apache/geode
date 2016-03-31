@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * 
  * Clock adjustments can be turned off with gemfire.disable-distributed-clock
  * 
- * @author bschuchardt
  */
 
 public class DSClock {
@@ -235,7 +234,6 @@ public class DSClock {
    * new one is < old one. Because then we need to slow down the cache time
    * aggressively.
    *
-   * @author shobhit
    *
    */
   private class CacheTimeTask extends SystemTimerTask {

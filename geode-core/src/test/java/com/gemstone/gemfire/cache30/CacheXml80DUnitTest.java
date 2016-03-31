@@ -50,7 +50,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.test.dunit.Assert;
 
 /**
- * @author dsmith
  *
  */
 public class CacheXml80DUnitTest extends CacheXml70DUnitTest {

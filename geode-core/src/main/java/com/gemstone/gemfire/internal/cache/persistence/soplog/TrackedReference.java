@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Tracks the usage of a reference.
  * 
- * @author bakera
  *
  * @param <T> the reference type
  */

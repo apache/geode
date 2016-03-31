@@ -21,7 +21,6 @@ import java.io.Serializable;
 /**
  * Test object which does not implement ObjectSizer, used as Key/Value in put operation.
  * 
- * @author arajpal
  * 
  */
 public class TestNonSizerObject implements Serializable {

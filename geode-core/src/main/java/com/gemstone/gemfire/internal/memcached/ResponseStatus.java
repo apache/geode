@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.memcached;
 /**
  * encapsulate ResponseOpCodes for binary reply messages.
  * 
- * @author Swapnil Bawaskar
  */
 public enum ResponseStatus {
 

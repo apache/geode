@@ -38,8 +38,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * This class represents a compiled form of sort criterian present in order by
  * clause
  * 
- * @author Yogesh Mahajan
- * @author Asif
  */
 public class CompiledSortCriterion extends AbstractCompiledValue {
   // Asif: criterion true indicates descending order

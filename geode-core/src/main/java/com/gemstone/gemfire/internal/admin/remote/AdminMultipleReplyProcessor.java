@@ -34,7 +34,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
  * and I don't want to mess with all of the admin code right now. We
  * need this class to handle failures from admin messages that expect
  * replies from multiple members.
- * @author dsmith
  *
  */
 public class AdminMultipleReplyProcessor extends ReplyProcessor21 {

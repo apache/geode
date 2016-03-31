@@ -155,14 +155,14 @@ public class ParallelSnapshotDUnitTest extends CacheTestCase {
     }
     return null;
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     loadCache();
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     File[] snaps = new File(".").listFiles(new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {

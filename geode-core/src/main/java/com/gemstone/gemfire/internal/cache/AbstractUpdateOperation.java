@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.util.DelayedAction;
 /**
  * Common code for both UpdateOperation and DistributedPutAllOperation.
  *
- * @author Darrel Schneider
  */
 public abstract class AbstractUpdateOperation extends DistributedCacheOperation  {
   private static final Logger logger = LogService.getLogger();

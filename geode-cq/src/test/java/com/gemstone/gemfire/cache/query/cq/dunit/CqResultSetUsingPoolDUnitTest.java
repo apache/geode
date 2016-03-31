@@ -22,12 +22,11 @@ import java.util.Set;
 
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
+import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.cache.query.internal.cq.ServerCQImpl;
-import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -42,9 +41,8 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
- * This class tests the ContiunousQuery mechanism in GemFire.
+ * This class tests the ContinuousQuery mechanism in GemFire.
  *
- * @author anil
  */
 public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
 
@@ -130,10 +128,9 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
   public CqResultSetUsingPoolDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
-    
+
+  @Override
+  public final void postSetUp() throws Exception {
     // avoid IllegalStateException from HandShake by connecting all vms tor
     // system before creating ConnectionPools
     getSystem();
@@ -142,10 +139,12 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
         getSystem();
       }
     });
-    
+    postSetUpCqResultSetUsingPoolDUnitTest();
   }
-  
-  
+
+  protected void postSetUpCqResultSetUsingPoolDUnitTest() throws Exception {
+  }
+
   /**
    * Tests CQ Result Set.
    * 

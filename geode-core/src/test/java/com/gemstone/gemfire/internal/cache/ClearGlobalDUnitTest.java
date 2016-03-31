@@ -76,8 +76,8 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
   /** name of the test region */
   private static final String REGION_NAME = "ClearGlobalDUnitTest_Region";
 
-  public void setUp()throws Exception  {
-    super.setUp();
+  @Override
+  public final void postSetUp()throws Exception  {
     Host host = Host.getHost(0);
     server1 = host.getVM(0);    
     server1.invoke(() -> ClearGlobalDUnitTest.createCacheServer1());
@@ -86,7 +86,7 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     server1.invoke(() -> ClearGlobalDUnitTest.closeCache());
     resetClearCallBack();
     closeCache();

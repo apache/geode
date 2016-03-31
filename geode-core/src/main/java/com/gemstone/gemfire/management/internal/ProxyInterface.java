@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal;
 /**
  * This generic interface is a place holder for all
  * the generic methods that we want to invoke for Proxies
- * @author rishim
  *
  */
 public interface ProxyInterface {

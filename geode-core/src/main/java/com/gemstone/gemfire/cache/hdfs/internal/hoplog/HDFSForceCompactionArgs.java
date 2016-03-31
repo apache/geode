@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * Arguments passed to the HDFSForceCompactionFunction
  * 
- * @author sbawaska
  */
 @SuppressWarnings("serial")
 public class HDFSForceCompactionArgs implements VersionedDataSerializable {

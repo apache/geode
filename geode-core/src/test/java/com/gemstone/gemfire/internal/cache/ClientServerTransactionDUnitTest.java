@@ -98,7 +98,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests the basic client-server transaction functionality
- * @author sbawaska
  */
 public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest {
 
@@ -110,10 +109,14 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   public ClientServerTransactionDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     IgnoredException.addIgnoredException("java.net.SocketException");
+    postSetUpClientServerTransactionDUnitTest();
+  }
+
+  protected void postSetUpClientServerTransactionDUnitTest() throws Exception {
   }
 
   private Integer createRegionsAndStartServer(VM vm, boolean accessor) {
@@ -152,7 +155,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         Properties props = getDistributedSystemProperties();
         props.put("mcast-port", "0");
         props.remove("locators");
-        system = (InternalDistributedSystem)DistributedSystem.connect(props);
+        InternalDistributedSystem system = getSystem(props);
         Cache cache = CacheFactory.create(system);
         cache.createRegion(OTHER_REGION,af.create());
         if (startServer) {

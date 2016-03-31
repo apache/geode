@@ -20,7 +20,6 @@ import com.gemstone.gemfire.management.internal.cli.util.ConnectionEndpoint;
 
 /**
  * 
- * @author Sourabh Bansod
  * 
  * @since 7.0
  */

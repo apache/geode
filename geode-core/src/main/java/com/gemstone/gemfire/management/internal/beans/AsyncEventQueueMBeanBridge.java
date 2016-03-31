@@ -25,7 +25,6 @@ import com.gemstone.gemfire.management.internal.beans.stats.StatsKey;
 
 /**
  * 
- * @author rishim
  * 
  */
 public class AsyncEventQueueMBeanBridge {

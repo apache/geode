@@ -62,15 +62,15 @@ public class Bug48571DUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server = host.getVM(0);
     client = host.getVM(1);
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     reset();
     server.invoke(() -> Bug48571DUnitTest.reset());
     client.invoke(() -> Bug48571DUnitTest.reset());

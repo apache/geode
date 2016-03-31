@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.datasource;
 
 /**
- * @author rreja
  */
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEventListener;
@@ -35,7 +34,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * This class implements a connection pool for Managed connection. Extends the
  * AbstractPoolCache to inherit the pool bahavior.
  * 
- * @author rreja
  */
 public class ManagedPoolCacheImpl extends AbstractPoolCache  {
 

@@ -38,13 +38,6 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
   private messageType kind;
   private int previousViewId;
 
-  public InstallViewMessage(NetView view, Object credentials) {
-    this.view = view;
-    this.kind = messageType.INSTALL;
-    this.credentials = credentials;
-    this.previousViewId = view.getViewId();
-  }
-
   public InstallViewMessage(NetView view, Object credentials, boolean preparing) {
     this.view = view;
     this.kind = preparing? messageType.PREPARE : messageType.INSTALL;

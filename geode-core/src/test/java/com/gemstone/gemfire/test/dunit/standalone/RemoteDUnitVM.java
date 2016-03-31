@@ -28,7 +28,6 @@ import hydra.MethExecutor;
 import hydra.MethExecutorResult;
 
 /**
- * @author dsmith
  *
  */
 public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMIF {

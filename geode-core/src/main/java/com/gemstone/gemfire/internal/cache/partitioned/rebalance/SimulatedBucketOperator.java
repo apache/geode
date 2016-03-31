@@ -22,7 +22,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 
 /**
  * A BucketOperator which does nothing. Used for simulations.
- * @author dsmith
  *
  */
 public class SimulatedBucketOperator implements BucketOperator {

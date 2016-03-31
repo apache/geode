@@ -32,7 +32,6 @@ import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
 
 /***
  * Data class containing the PartitionAttributes for a region on a certain member
- * @author bansods
  *
  */
 public class PartitionAttributesInfo implements Serializable {

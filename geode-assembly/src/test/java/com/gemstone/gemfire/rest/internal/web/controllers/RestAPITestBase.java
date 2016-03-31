@@ -60,14 +60,13 @@ public class RestAPITestBase extends DistributedTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
     if (agentUtil.findWarLocation("geode-web-api") == null) {
       fail("unable to locate geode-web-api WAR file");
     }
-    Wait.pause(1000);
+    Wait.pause(1000); // TODO: replace this with Awaitility
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -76,13 +75,17 @@ public class RestAPITestBase extends DistributedTestCase {
     // gradle sets a property telling us where the build is located
     final String buildDir = System.getProperty("geode.build.dir", System.getProperty("user.dir"));
     Invoke.invokeInEveryVM(() -> System.setProperty("geode.build.dir", buildDir));
+    postSetUpRestAPITestBase();
+  }
+
+  protected void postSetUpRestAPITestBase() throws Exception {
   }
 
   /**
    * close the clients and teh servers
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     vm0.invoke(() -> closeCache());
     vm1.invoke(() -> closeCache());
     vm2.invoke(() -> closeCache());
@@ -128,7 +131,7 @@ public class RestAPITestBase extends DistributedTestCase {
   }
 
   protected CloseableHttpResponse executeFunctionThroughRestCall(String function, String regionName, String filter, String jsonBody, String groups,
-      String members) {
+                                                                 String members) {
     LogWriterUtils.getLogWriter().info("Entering executeFunctionThroughRestCall");
     try {
       CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -196,7 +199,7 @@ public class RestAPITestBase extends DistributedTestCase {
       HttpEntity entity = response.getEntity();
       InputStream content = entity.getContent();
       BufferedReader reader = new BufferedReader(new InputStreamReader(
-          content));
+              content));
       String line;
       StringBuffer sb = new StringBuffer();
       while ((line = reader.readLine()) != null) {

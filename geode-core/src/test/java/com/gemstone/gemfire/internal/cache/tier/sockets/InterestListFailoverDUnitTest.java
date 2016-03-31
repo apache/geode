@@ -48,8 +48,6 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
  * c1 :  validate (r.getEntry("key-1").getValue() == "vm2-key-1")
  *                (r.getEntry("key-6").getValue() == "key-6") // as it is not registered *
  *
- * @author Yogesh Mahajan
- * @author Suyog Bhokare
  *
  */
 public class InterestListFailoverDUnitTest extends DistributedTestCase
@@ -72,8 +70,8 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
@@ -299,7 +297,7 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeAll();
   }
 

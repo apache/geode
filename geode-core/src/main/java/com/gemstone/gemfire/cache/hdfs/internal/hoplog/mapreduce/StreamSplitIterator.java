@@ -28,7 +28,6 @@ import com.gemstone.gemfire.cache.hdfs.internal.hoplog.SequenceFileHoplog;
 
 /**
  * An iterator that iterates over a split in a sequential hoplog.
- * @author dsmith
  */
 public class StreamSplitIterator extends HDFSSplitIterator {
 

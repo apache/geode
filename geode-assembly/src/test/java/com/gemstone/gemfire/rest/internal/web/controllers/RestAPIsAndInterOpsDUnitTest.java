@@ -70,7 +70,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Dunit Test containing inter - operations between REST Client and Gemfire cache client
- * @author Nilkanth Patel
  * @since 8.0
  */
 
@@ -170,9 +169,9 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
 
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void preSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
   }
 
   @Override

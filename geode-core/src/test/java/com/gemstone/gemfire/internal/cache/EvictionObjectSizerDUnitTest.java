@@ -58,11 +58,6 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   /**
    * Without object sizer
    */

@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This test class checks around 89 attributes of Member MBeans
- * @author rishim
  *
  */
 public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
@@ -56,11 +55,6 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
 
   public MemberMBeanAttributesDUnitTest(String name) {
     super(name);
-  }
-
-  public void setUp() throws Exception {
-    super.setUp();  
-
   }
 
   protected void sample(VM vm1) {

@@ -38,7 +38,6 @@ import org.springframework.web.context.request.WebRequest;
  * The DataCommandsController class implements GemFire Management REST API web service endpoints for the
  * Gfsh Data Commands.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.DataCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

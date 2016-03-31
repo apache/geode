@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * created. 
  * The setter methods all return the previous value of the attribute. 
  *
- * @author anil 
  * @since 5.5
  */
 public class CqAttributesMutatorImpl implements CqAttributesMutator {

@@ -47,7 +47,6 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
  * Defines the {@link ExecutionStrategy} for commands that are executed in
  * GemFire SHell (gfsh).
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

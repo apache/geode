@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * ConfigurationParameterImpl. Wrap all delegate calls w/ e.printStackTrace()
  * since the HttpAdaptor devours them
  *
- * @author    Kirk Lund
  * @since     3.5
  *
  */

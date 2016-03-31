@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.cli.ConverterHint;
 
 /**
  * 
- * @author Abhishek Chaudhari 
  * @since 7.0
  */
 public class FilePathConverter implements Converter<File> {

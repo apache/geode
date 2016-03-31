@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Checks that minimum system requirements are met.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

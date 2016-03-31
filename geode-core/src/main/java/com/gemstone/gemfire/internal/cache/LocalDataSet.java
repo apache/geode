@@ -70,7 +70,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * 
- * @author ymahajan
  *
  */
 public final class LocalDataSet implements Region, QueryExecutor {
@@ -186,7 +185,7 @@ public final class LocalDataSet implements Region, QueryExecutor {
     QueryObserver indexObserver = query.startTrace();
 
     try{
-      result = this.proxy.executeQuery(query, parameters, getBucketSet());
+      result = this.proxy.executeQuery(query, parameters, buckets);
     }
     finally {
       query.endTrace(indexObserver, startTime, result);

@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
  * During validation all region operations are paused for a while. Validation
  * happens multiple time during one test run on a fixed time interval.
  * 
- * @author shobhit
  * 
  */
 public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends
@@ -91,7 +90,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends
   }
 
   @Override
-  public void setUp() throws Exception {
+  public final void preSetUp() throws Exception {
     Invoke.invokeInEveryVM(new CacheSerializableRunnable("Set INPLACE_OBJECT_MODIFICATION false") {
       
       @Override
@@ -100,7 +99,6 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends
         IndexManager.INPLACE_OBJECT_MODIFICATION_FOR_TEST = true;
       }
     });
-    super.setUp();
   }
 
   /**
@@ -108,7 +106,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends
    * (mainly because we want to destroy any existing PartitionedRegions)
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     Invoke.invokeInEveryVM(new CacheSerializableRunnable("Set INPLACE_OBJECT_MODIFICATION false") {
       
       @Override
@@ -332,7 +330,6 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends
    * This validator will iterate over RegionEntries and verify their corresponding
    * index key and entry presence in index valuesToEntriesMap.
    * 
-   * @author shobhit
    *
    */
   public class IndexValidator {

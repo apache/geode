@@ -46,7 +46,6 @@ import org.apache.logging.log4j.Logger;
 /**
  * Implements Sequence file based {@link Hoplog}
  * 
- * @author hemantb
  *
  */
 public class SequenceFileHoplog extends AbstractHoplog{

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
  * Reads the first line from the request and interprets the {@link Command}
  * from the memcached client
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class RequestReader {

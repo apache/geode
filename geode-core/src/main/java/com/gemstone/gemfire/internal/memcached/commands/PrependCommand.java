@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.memcached.ValueWrapper;
 /**
  * "prepend" means "add this data to an existing key before existing data".
  * 
- * @author Swapnil Bawaskar
  *
  */
 public class PrependCommand extends StorageCommand {

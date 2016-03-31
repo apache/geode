@@ -158,9 +158,9 @@ public class SnapshotDUnitTest extends CacheTestCase {
     
     assertTrue(caughtException);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     loadCache();
     
     RegionGenerator rgen = new RegionGenerator();

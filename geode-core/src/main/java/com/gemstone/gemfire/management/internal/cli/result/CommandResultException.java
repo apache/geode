@@ -21,7 +21,6 @@ import com.gemstone.gemfire.management.cli.Result;
 /**
  * Exception wrapper around a command result.
  * 
- * @author David Hoots
  * @since 7.0
  */
 public class CommandResultException extends Exception {

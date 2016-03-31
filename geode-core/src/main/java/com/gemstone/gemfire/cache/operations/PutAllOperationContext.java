@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.operations.internal.UpdateOnlyMap;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#PUTALL} operation for both the
  * pre-operation and post-operation cases.
  * 
- * @author Gester Zhou
  * @since 5.7
  */
 public class PutAllOperationContext extends OperationContext {

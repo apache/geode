@@ -30,7 +30,6 @@ import com.gemstone.gemfire.DataSerializer;
  * wraps {@link CacheKey}, and implements equals and
  * hashCode. This is required for register interest
  * operation/prefetching
- * @author sbawaska
  *
  */
 public class KeyWrapper implements DataSerializable {

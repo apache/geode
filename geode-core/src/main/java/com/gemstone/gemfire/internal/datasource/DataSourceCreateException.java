@@ -21,7 +21,6 @@ import com.gemstone.gemfire.GemFireCheckedException;
 /**
  * Exception thrown from DataSource factory.
  * 
- * @author tnegi
  */
 public class DataSourceCreateException extends GemFireCheckedException  {
 private static final long serialVersionUID = 8759147832954825309L;

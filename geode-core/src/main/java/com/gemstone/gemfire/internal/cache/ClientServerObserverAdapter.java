@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
  * interface ClientServerObserver. See the documentation for class
  * ClientServerObserverHolder for details.
  * 
- * @author Yogesh Mahajan
  * @since 5.1
  */
 public class ClientServerObserverAdapter implements ClientServerObserver

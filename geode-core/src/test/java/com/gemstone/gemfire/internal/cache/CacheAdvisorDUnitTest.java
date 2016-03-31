@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Tests the use of CacheDistributionAdvisor in createSubRegion
  *
- * @author Eric Zoerner
  *
  */
 public class CacheAdvisorDUnitTest extends CacheTestCase {
@@ -66,9 +65,9 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
     DistributedSystem ds = cache.getDistributedSystem();
     return ((InternalDistributedSystem)ds).getDistributionManager().getId();
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     List vmList = new ArrayList();
     List idList = new ArrayList();
     for (int h = 0; h < Host.getHostCount(); h++) {

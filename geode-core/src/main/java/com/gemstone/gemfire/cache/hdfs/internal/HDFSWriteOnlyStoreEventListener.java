@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Listener that persists events to a write only HDFS store
  *
- * @author Hemant Bhanawat
  */
 public class HDFSWriteOnlyStoreEventListener implements
     AsyncEventListener {

@@ -87,8 +87,6 @@ import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
  *
  * @since 3.5.1
  *
- * @author Darrel Schneider
- * @author bruce
  *
  */
 public abstract class AbstractRegionEntry implements RegionEntry,

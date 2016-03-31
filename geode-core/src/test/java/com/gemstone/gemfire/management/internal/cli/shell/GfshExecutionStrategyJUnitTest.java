@@ -43,7 +43,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * GfshExecutionStrategyTest - Includes tests to for GfshExecutionStrategyTest
  * 
- * @author apande
  */
 @Category(UnitTest.class)
 public class GfshExecutionStrategyJUnitTest {

@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Test off-heap regions with indexes.
  * 
- * @author darrel
  *
  */
 @Category(IntegrationTest.class)

@@ -36,7 +36,6 @@ import org.junit.experimental.categories.Category;
 import junit.framework.TestCase;
 
 /**
- * @author Asif
  * 
  */
 @Category(UnitTest.class)

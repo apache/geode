@@ -57,7 +57,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 /**
  * Tests propagation of destroy entry operation across the vms
  *
- * @author Yogesh Mahajan
  *
  */
 
@@ -83,10 +82,9 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
-   // pause(5000);
 
     final Host host = Host.getHost(0);
     //Server1 VM
@@ -106,7 +104,6 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
 
     vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT1),new Integer(PORT2)));
     vm3.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT1),new Integer(PORT2)));
-
   }
 
   private void createCache(Properties props) throws Exception
@@ -486,7 +483,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     //close client
     vm2.invoke(() -> DestroyEntryPropagationDUnitTest.closeCache());
     vm3.invoke(() -> DestroyEntryPropagationDUnitTest.closeCache());

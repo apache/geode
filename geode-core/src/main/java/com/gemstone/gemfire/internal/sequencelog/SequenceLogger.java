@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.sequencelog;
  * A logger that allows the user to "log" events in a sequence diagram.
  * Useful for tracking the movement of an object through our 
  * distributed system, for example.
- * @author dsmith
  *
  */
 public interface SequenceLogger {

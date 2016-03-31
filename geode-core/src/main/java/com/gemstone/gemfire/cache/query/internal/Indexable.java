@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
  * indicate that index can be created on such CompiledValues.It indicates that
  * they are filter evaluatable at the atomic level.
  * 
- * @author asif
  * 
  */
 public interface Indexable {

@@ -1318,7 +1318,7 @@ public class FixedPartitioningTestBase extends DistributedTestCase {
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     try {
       closeCache();
       member1.invoke(() -> FixedPartitioningTestBase.closeCache());

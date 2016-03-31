@@ -50,7 +50,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 /**
- * @author hiteshk
  *
  */
 public class JSONPdxClientServerDUnitTest extends CacheTestCase {
@@ -60,7 +59,7 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() {
+  public final void preTearDownCacheTestCase() {
     // this test creates client caches in some VMs and so
     // breaks the contract of CacheTestCase to hold caches in
     // that class's "cache" instance variable

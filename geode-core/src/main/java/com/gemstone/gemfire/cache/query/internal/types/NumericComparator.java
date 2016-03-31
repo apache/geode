@@ -24,7 +24,6 @@ import java.util.*;
  * Comparator for mixed comparisons between numbers.
  *
  * @version     $Revision: 1.1 $
- * @author      ericz
  */
 
 

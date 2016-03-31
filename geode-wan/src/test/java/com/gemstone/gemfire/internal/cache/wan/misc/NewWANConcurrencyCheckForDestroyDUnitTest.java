@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
- * @author shobhit
  *
  * Test verifies that version tag for destroyed entry is propagated back to
  * origin distributed system if the version tag is applied and replaces old
@@ -48,10 +47,6 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
 
   public NewWANConcurrencyCheckForDestroyDUnitTest(String name) {
     super(name);
-  }
-
-  public void setUp() throws Exception {
-    super.setUp();
   }
 
   public void testVersionTagTimestampForDestroy() {

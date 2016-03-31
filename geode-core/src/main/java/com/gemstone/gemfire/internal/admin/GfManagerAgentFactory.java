@@ -23,9 +23,6 @@ import com.gemstone.gemfire.internal.admin.remote.*;
  * A factory for GfManagerAgent instances.  This is the main entry
  * point for the admin API.
  *
- * @author    Pete Matern
- * @author    Darrel Schneider
- * @author    Kirk Lund
  *
  */
 public class GfManagerAgentFactory {

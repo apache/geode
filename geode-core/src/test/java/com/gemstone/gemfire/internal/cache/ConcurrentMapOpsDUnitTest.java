@@ -60,7 +60,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * tests for the concurrentMapOperations. there are more tests in ClientServerMiscDUnitTest
- * @author sbawaska
  *
  */
 public class ConcurrentMapOpsDUnitTest extends CacheTestCase {

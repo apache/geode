@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
-import org.junit.Ignore;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -31,15 +29,17 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.security.templates.DummyAuthenticator;
+import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import org.junit.Ignore;
 
 /**
  * Test for accessing query bind parameters from authorization callbacks
  * 
- * @author tnomulwar
  * 
  */
 public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
@@ -67,8 +67,7 @@ public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
             .set("mcast-port", "0")
             .set("security-client-accessor",
                 "com.gemstone.gemfire.cache.query.dunit.QueryAuthorization.create")
-            .set("security-client-authenticator",
-                "templates.security.DummyAuthenticator.create");
+            .set("security-client-authenticator", DummyAuthenticator.class.getName() + ".create");
         Cache cache = getCache(cf);
         cache.createRegionFactory(RegionShortcut.REPLICATE).create(regName);
         CacheServer server = cache.addCacheServer();
@@ -85,9 +84,9 @@ public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory()
             .addPoolServer(NetworkUtils.getServerHostName(server1.getHost()), port)
-            .set("security-client-auth-init",
-                "templates.security.UserPasswordAuthInit.create")
-            .set("security-username", "root").set("security-password", "root");
+            .set("security-client-auth-init", UserPasswordAuthInit.class.getName() + ".create")
+            .set("security-username", "root")
+            .set("security-password", "root");
 
         ClientCache cache = getClientCache(ccf);
         Region r1 = cache.createClientRegionFactory(

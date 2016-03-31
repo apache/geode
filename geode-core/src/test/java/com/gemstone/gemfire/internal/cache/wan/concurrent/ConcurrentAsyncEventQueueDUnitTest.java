@@ -23,7 +23,6 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 /**
- * @author skumar
  *
  */
 public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {
@@ -34,10 +33,6 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
   public void testConcurrentSerialAsyncEventQueueAttributes() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 

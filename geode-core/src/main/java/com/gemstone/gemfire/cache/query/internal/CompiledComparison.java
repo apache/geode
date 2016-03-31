@@ -45,8 +45,6 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
 /**
  * Comparison value: <, >, <=, >=, <>, =
  * 
- * @author ericz
- * @author asif
  */
 public class CompiledComparison extends AbstractCompiledValue implements
     Negatable, OQLLexerTokenTypes, Indexable {

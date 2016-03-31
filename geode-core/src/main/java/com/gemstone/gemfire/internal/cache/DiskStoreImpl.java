@@ -121,10 +121,6 @@ import com.gemstone.gemfire.i18n.StringId;
  * Represents a (disk-based) persistent store for region data. Used for both
  * persistent recoverable regions and overflow-only regions.
  * 
- * @author David Whitlock
- * @author Darrel Schneider
- * @author Mitul Bid
- * @author Asif
  * 
  * @since 3.2
  */
@@ -2873,8 +2869,6 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * Compacts oplogs
    * 
-   * @author Mitul Bid
-   * @author Asif
    * @since 5.1
    * 
    */

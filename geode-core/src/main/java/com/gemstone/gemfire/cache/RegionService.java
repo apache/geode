@@ -46,7 +46,6 @@ import com.gemstone.gemfire.pdx.PdxInstanceFactory;
  * <p>
  *
  * @since 6.5
- * @author darrel
  */
 public interface RegionService extends AutoCloseable {
   /**

@@ -29,7 +29,6 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
  * {@link UnsupportedOperationException} on unused methods. Also keeps
  * references for {@link #logWriter} and {@link #stack}
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

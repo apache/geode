@@ -30,7 +30,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
  * A PooledDistributionMessage for notifying admin members about changes in 
  * Client Membership received through BridgeMembership 
  * 
- * @author abhishek
  */
 public class ClientMembershipMessage extends PooledDistributionMessage {
   public static final int JOINED  = 0;

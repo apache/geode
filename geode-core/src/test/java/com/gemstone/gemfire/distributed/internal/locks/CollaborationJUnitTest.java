@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 /**
  * Tests the Collaboration Lock used internally by dlock service.
  *
- * @author Kirk Lund
  * @since 4.1.1
  */
 @Category(IntegrationTest.class)

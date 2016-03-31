@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Threads that want to change the topic will wait until the current topic
  * has been released.
  *
- * @author Kirk Lund
  */
 public class Collaboration {
   

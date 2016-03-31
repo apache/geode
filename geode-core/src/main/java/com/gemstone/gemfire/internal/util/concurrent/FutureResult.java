@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Cancelling this future sets the state to cancelled and causes threads
  * waiting on get to proceed with a CancellationException.
  *
- * @author Eric Zoerner
  */
 public class FutureResult implements Future {
   private final StoppableCountDownLatch latch;

@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.statistics.ValueMonitor;
 /**
  * Class to get mappings of stats name to their values
  * 
- * @author rishim
  * 
  */
 public class MBeanStatsMonitor implements StatisticsListener {

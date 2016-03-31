@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
 /**
  * Computes the sum for replicated & PR based queries.
  * 
- * @author ashahid
  *
  */
 public class Sum extends AbstractAggregator {

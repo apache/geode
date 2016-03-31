@@ -45,7 +45,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
-*@author Mitul D Bid
 *This test sees if the TransactionTimeOut works properly
 */
 public class TxnTimeOutDUnitTest extends DistributedTestCase {
@@ -115,15 +114,15 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
     }
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TxnTimeOutDUnitTest.init());
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TxnTimeOutDUnitTest.closeCache());
@@ -211,7 +210,7 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
   public static void runTest1() throws Exception {
     boolean exceptionOccured = false;
     try {
-      system.getLogWriter().fine("<ExpectedException action=add> +" +
+      getSystemStatic().getLogWriter().fine("<ExpectedException action=add> +" +
       		"DistributedSystemDisconnectedException" +
       		"</ExpectedException>");
       Context ctx = cache.getJNDIContext();
@@ -234,7 +233,7 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
       fail("failed in naming lookup: " + e);
     }
     finally {
-      system.getLogWriter().fine("<ExpectedException action=remove> +" +
+      getSystemStatic().getLogWriter().fine("<ExpectedException action=remove> +" +
           "DistributedSystemDisconnectedException" +
           "</ExpectedException>");
     }

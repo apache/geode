@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * and sent to all of the data stores to gather their load. In the future, this
  * class or something like it may be exposed to customers to allow them to 
  * provide different methods for determining load.
- * @author dsmith
  *
  */
 public interface LoadProbe extends DataSerializable {

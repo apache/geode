@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.internal.configuration.domain.Configuration;
 /****
  * CacheListener on ConfigRegion to write the configuration changes to file-system.
- * @author bansods
  *
  */
 public class ConfigurationChangeListener extends CacheListenerAdapter<String, Configuration> {

@@ -33,7 +33,6 @@ import java.util.TreeMap;
 /**
  * Various uitlity methods for open type conversion
  * 
- * @author rishim
  * 
  */
 

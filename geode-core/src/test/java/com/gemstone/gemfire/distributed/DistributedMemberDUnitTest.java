@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.distributed;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -31,28 +33,24 @@ import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-
-import junit.framework.AssertionFailedError;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests the functionality of the {@link DistributedMember} class.
  *
- * @author Kirk Lund
  * @since 5.0
  */
-public class DistributedMemberDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
 
-  public DistributedMemberDUnitTest(String name) {
-    super(name);
-  }
-  
-  protected void sleep(long millis) {
+  protected void sleep(long millis) { // TODO: replace with Awaitility
     try {
       Thread.sleep(millis);
     }
@@ -64,6 +62,7 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
   /**
    * Tests default settings.
    */
+  @Test
   public void testDefaults() {
     Properties config = new Properties();
     config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0"); 
@@ -94,6 +93,7 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testNonDefaultName() {
     Properties config = new Properties();
     config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0"); 
@@ -118,6 +118,7 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
    * Tests the configuration of many Roles and groups in one vm.
    * Confirms no runtime distinction between roles and groups.
    */
+  @Test
   public void testRolesInOneVM() {
     final String rolesProp = "A,B,C";
     final String groupsProp = "D,E,F,G";
@@ -152,6 +153,7 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testTwoMembersSameName() {
     disconnectFromDS(); // or assertion on # members fails when run-dunit-tests
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
@@ -185,7 +187,8 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
    * Tests the configuration of one unique Role in each of four vms. Verifies 
    * that each vm is aware of the other vms' Roles.
    */
-  public void testRolesInAllVMs() {  
+  @Test
+  public void testRolesInAllVMs() {
     disconnectAllFromDS(); // or assertion on # members fails when run-dunit-tests
 
     // connect all four vms...
@@ -227,7 +230,7 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
               assertEquals(3, members.size());
               break;
             }
-            catch (AssertionFailedError e) {
+            catch (AssertionError e) { // TODO: delete this
               if (i < 3) {
                 sleep(200);
               } else {
@@ -268,7 +271,8 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
    * Tests the configuration of one unique group in each of four vms. Verifies 
    * that each vm is aware of the other vms' groups.
    */
-  public void testGroupsInAllVMs() {  
+  @Test
+  public void testGroupsInAllVMs() {
     disconnectFromDS(); // or assertion on # members fails when run-dunit-tests
 
     // connect all four vms...
@@ -307,7 +311,7 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
               assertEquals(3, members.size());
               break;
             }
-            catch (AssertionFailedError e) {
+            catch (AssertionError e) { // TODO: delete this
               if (i < 3) {
                 sleep(200);
               } else {
@@ -359,6 +363,7 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
    * Changing the id can result in bad keys in JMX and can result in numerous
    * errors in Admin/JMX tests.
    */
+  @Test
   public void testGetId() {
     Properties config = new Properties();
     config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -378,7 +383,8 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
       system.disconnect();
     }
   }
-  
+
+  @Test
   public void testFindMemberByName() {
     disconnectAllFromDS(); // or assertion on # members fails when run-dunit-tests
     VM vm0 = Host.getHost(0).getVM(0);
@@ -408,7 +414,7 @@ public class DistributedMemberDUnitTest extends DistributedTestCase {
           assertTrue("Expected" + expected + " got " + members, members.containsAll(expected));
           assertEquals(4, members.size());
         } catch (UnknownHostException e) {
-          Assert.fail("Unable to get IpAddress", e);
+          fail("Unable to get IpAddress", e);
         }
       }
     });

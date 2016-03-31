@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache.partitioned;
 import com.gemstone.gemfire.GemFireException;
 
 /**
- * @author dsmith
  *
  */
 public class RedundancyAlreadyMetException extends GemFireException {

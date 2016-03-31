@@ -44,8 +44,6 @@ import java.util.*;
  *
  * @see com.gemstone.gemfire.internal.Config
  *
- * @author David Whitlock
- * @author Darrel Schneider
  *
  * @since 2.1
  */

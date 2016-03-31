@@ -28,7 +28,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Hosts common utility methods needed by the management package
  * 
- * @author Wes Williams
  * @since Geode 1.0.0.0
  *
  */

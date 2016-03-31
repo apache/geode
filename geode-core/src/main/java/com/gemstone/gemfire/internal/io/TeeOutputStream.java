@@ -24,7 +24,6 @@ import java.io.OutputStream;
  * Delegates all operations to the original underlying OutputStream and a
  * mutable branch OutputStream.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 public class TeeOutputStream extends FilterOutputStream {

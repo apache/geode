@@ -74,8 +74,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 
 /**
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * @since 7.0
  * 
  */
@@ -1044,6 +1042,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     if (this.removalThread != null) {
       this.removalThread.shutdown();
     }
+  }
+  
+  public boolean isRemovalThreadAlive() {
+    if (this.removalThread != null) {
+      return this.removalThread.isAlive();
+    }
+    return false;
   }
   
   @Override

@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 /**
  * {@link Converter} for {@link GfshHelpCommands#obtainHelp(String)}
  * 
- * @author Nikhil Jadhav
  *
  * @since 7.0
  */

@@ -61,10 +61,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * the MemoryMXBean, by polling the JVM and as a listener on GemFire Statistics
  * output in order to accommodate differences in the various JVMs.
  * 
- * @author Kirk Lund
- * @author Mitch Thomas
- * @author Swapnil Bawaskar
- * @author David Hoots
  * @since 9.0
  */
 public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor {
@@ -806,7 +802,6 @@ public void stopMonitoring() {
   /**
    * Polls the heap if stat sampling is disabled.
    * 
-   * @author sbawaska
    */
   class HeapPoller implements Runnable {
     @SuppressWarnings("synthetic-access")

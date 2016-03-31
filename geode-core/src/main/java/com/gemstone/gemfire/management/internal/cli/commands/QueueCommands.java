@@ -52,7 +52,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 /**
  * The QueueCommands class encapsulates all GemFire Queue commands in Gfsh.
  * </p>
- * @author David Hoots
  * 
  * @since 8.0
  */

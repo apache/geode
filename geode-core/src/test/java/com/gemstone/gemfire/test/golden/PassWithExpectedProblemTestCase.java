@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.process.ProcessWrapper;
  * Abstract test case for golden testing framework. This provides basis for
  * unit tests which involve an example that is expected to always pass.
  * 
- * @author Kirk Lund
  */
 public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase implements ExecutableProcess {
 

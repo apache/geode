@@ -53,7 +53,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 
 /****
  * Commands for the shared configuration
- * @author bansods
  *
  */
 @SuppressWarnings("unused")

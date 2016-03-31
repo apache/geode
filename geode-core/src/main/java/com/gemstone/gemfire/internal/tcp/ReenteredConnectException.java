@@ -26,7 +26,6 @@ import com.gemstone.gemfire.GemFireException;
  * This condition has been observered when using an AlertListener, because 
  * we try to transmit messages logged during a connection to the very member
  * we're trying to connect to. 
- * @author dsmith
  *
  */
 public class ReenteredConnectException extends GemFireException {

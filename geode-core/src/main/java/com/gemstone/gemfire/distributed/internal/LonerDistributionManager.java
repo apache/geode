@@ -57,7 +57,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
  * A <code>LonerDistributionManager</code> is a dm that never communicates
  * with anyone else.
  *
- * @author Darrel
  *
  *
  * @since 3.5

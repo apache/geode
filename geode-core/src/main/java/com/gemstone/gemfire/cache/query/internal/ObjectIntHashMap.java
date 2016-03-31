@@ -120,8 +120,6 @@ import java.util.TreeMap;
  * @author Arthur van Hoff
  * @author Neal Gafter
  * 
- * @author Shobhit Agarwal // GemFire Team
- * 
  * @version %I%, %G%
  * @see Object#hashCode()
  * @see Collection

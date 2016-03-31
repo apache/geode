@@ -76,7 +76,6 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 
 /**
  * Dunit class for testing gemfire Client commands : list client , describe client 
- * @author ajayp
  * @since 8.0
  */
 
@@ -1437,7 +1436,7 @@ private void setUpNonSubscribedClient() throws Exception {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     Host.getHost(0).getVM(0).invoke(() -> CacheServerTestUtil.closeCache());
     Host.getHost(0).getVM(1).invoke(() -> CacheServerTestUtil.closeCache());
     Host.getHost(0).getVM(2).invoke(() -> CacheServerTestUtil.closeCache());

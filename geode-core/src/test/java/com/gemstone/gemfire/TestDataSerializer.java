@@ -28,7 +28,6 @@ import util.TestException;
 import com.gemstone.gemfire.internal.cache.tier.sockets.DataSerializerPropogationDUnitTest;
 
 /**
- * @author ashetkar
  *
  */
 public class TestDataSerializer extends DataSerializer {

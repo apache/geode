@@ -64,7 +64,6 @@ import org.json.JSONObject;
 
 /**
  * 
- * @author rishim
  * 
  */
 
@@ -142,11 +141,9 @@ public class QueryDataDUnitTest extends ManagementTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpManagementTestBase() throws Exception {
     initManagement(false);
-
-
   }
 
   private void initCommonRegions(){

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.cli.exceptions;
 /**
  * Indicates inability to create a Subregion of a region.
  *
- * @author Abhishek Chaudhari
  * @since 8.0
  */
 // TODO - Abhishek - Include in GemFire Exception Enhancements

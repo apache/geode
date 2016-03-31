@@ -49,7 +49,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  *
- * @author vjadhav
  */
 public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
     
@@ -77,8 +76,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
     static boolean notified = false;
     
     @Override
-    public void setUp() throws Exception {
-      super.setUp();
+    public final void postSetUp() throws Exception {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
@@ -88,7 +86,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends DistributedTestCase {
     }
     
     @Override
-    protected final void preTearDown() throws Exception {
+    public final void preTearDown() throws Exception {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);

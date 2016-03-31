@@ -25,7 +25,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 
 /**
  * Helps table builder for adjusting result width according to screen width 
- * @author tushark
  *
  */
 

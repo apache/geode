@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  * Provides internal methods for sqlFabric product
  * 
- * @author Yogesh Mahajan
  * 
  * @since 6.1
  * 

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing heap size from Mbean  
- * @author ajayp
  * 
  */
 
@@ -38,12 +37,7 @@ public class TestHeapDUnitTest extends ManagementTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-
-  }
-
-  public static long getHeapSizeOfClient() {    
+  public static long getHeapSizeOfClient() {
     return (Runtime.getRuntime().totalMemory() -   Runtime.getRuntime().freeMemory());
   }
 

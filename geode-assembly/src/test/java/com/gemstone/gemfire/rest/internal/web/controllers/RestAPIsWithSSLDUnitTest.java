@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.BindException;
 import java.security.KeyStore;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -56,11 +57,14 @@ import com.gemstone.gemfire.cache.client.internal.LocatorTestBase;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.management.ManagementTestBase;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
@@ -69,7 +73,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * 
- * @author rishim
  * @since 8.0
  */
 public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
@@ -89,9 +92,9 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void preSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
   }
 
   @Override
@@ -374,7 +377,11 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   }
 
   private int startManagerInVM(VM vm, final String locators, final String[] regions, final Properties sslProperties) {
-
+    
+    IgnoredException.addIgnoredException("java.net.BindException");
+    IgnoredException.addIgnoredException("java.rmi.server.ExportException");
+    IgnoredException.addIgnoredException("com.gemstone.gemfire.management.ManagementException");
+    
     SerializableCallable connect = new SerializableCallable("Start Manager ") {
       public Object call() throws IOException {
         Properties props = new Properties();
@@ -382,12 +389,44 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
         props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
         props.setProperty("jmx-manager", "true");
         props.setProperty("jmx-manager-start", "true");
-        props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
 
-        configureSSL(props, sslProperties, false);
-
-        DistributedSystem ds = getSystem(props);
-        Cache cache = CacheFactory.create(ds);
+        Cache cache = null;
+        while (true) {
+          try {
+            configureSSL(props, sslProperties, false);
+            DistributedSystem ds = getSystem(props);
+            System.out.println("Creating cache with http-service-port " + props.getProperty("http-service-port", "7070") 
+            + " and jmx-manager-port " + props.getProperty("jmx-manager-port", "1099"));            
+            cache = CacheFactory.create(ds);
+            System.out.println("Successfully created cache.");
+            break;
+          }
+          catch (ManagementException ex) {
+            if ((ex.getCause() instanceof BindException) 
+                || (ex.getCause() != null && ex.getCause().getCause() instanceof BindException)) {
+              //close cache and disconnect
+              GemFireCacheImpl existingInstance = GemFireCacheImpl.getInstance();
+              if (existingInstance != null) {
+                existingInstance.close();
+              }
+              InternalDistributedSystem ids = InternalDistributedSystem
+                  .getConnectedInstance();
+              if (ids != null) {
+                ids.disconnect();
+              }
+              //try a different port
+              int httpServicePort = AvailablePortHelper.getRandomAvailableTCPPort();
+              int jmxManagerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+              props.setProperty("http-service-port", Integer.toString(httpServicePort));
+              props.setProperty("jmx-manager-port", Integer.toString(jmxManagerPort));
+              System.out.println("Try a different http-service-port " + httpServicePort);
+              System.out.println("Try a different jmx-manager-port " + jmxManagerPort);
+            }
+            else {
+              throw ex;
+            }
+          }
+        } 
         AttributesFactory factory = new AttributesFactory();
 
         factory.setEnableBridgeConflation(true);

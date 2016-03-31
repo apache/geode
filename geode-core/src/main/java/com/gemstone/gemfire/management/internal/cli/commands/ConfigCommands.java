@@ -70,7 +70,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 
 /****
  *
- * @author David Hoots
  *         Sourabh Bansod
  * @since 7.0
  *

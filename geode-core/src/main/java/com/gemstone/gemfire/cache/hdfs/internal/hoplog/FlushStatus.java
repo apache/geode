@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * Reports the result of a flush request.
  * 
- * @author bakera
  */
 public class FlushStatus implements VersionedDataSerializable {
   private static Version[] serializationVersions = new Version[]{ Version.GFE_81 };

@@ -35,19 +35,19 @@ public class GetTestMethodNameDUnitTest extends DistributedTestCase {
   public void testGetTestMethodName() {
     assertGetTestMethodName("testGetTestMethodName");
   }
-  
+
   public void testGetTestMethodNameChanges() {
     assertGetTestMethodName("testGetTestMethodNameChanges");
   }
-  
+
   public void testGetTestMethodNameInAllVMs() {
     assertGetTestMethodName("testGetTestMethodNameInAllVMs");
-    
+
     for (int vmIndex = 0; vmIndex < Host.getHost(0).getVMCount(); vmIndex++) {
       Host.getHost(0).getVM(vmIndex).invoke(()->assertGetTestMethodName("testGetTestMethodNameInAllVMs"));
     }
   }
-  
+
   private void assertGetTestMethodName(final String expected) {
     assertThat(getTestMethodName()).isEqualTo(expected);
   }

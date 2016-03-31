@@ -46,7 +46,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 /**
  * Mock Extension gfsh commands.
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

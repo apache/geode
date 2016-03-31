@@ -67,11 +67,10 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
     }
 
     @Override
-    public void setUp() throws Exception {
+    public final void preSetUp() throws Exception {
       //Workaround for bug #52004
       IgnoredException.addIgnoredException("InternalFunctionInvocationTargetException");
       IgnoredException.addIgnoredException("Connection refused");
-      super.setUp();
     }
 
     /*

@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * This class tests the ContiunousQuery mechanism in GemFire.
  * This includes the test with diffetent data activities.
  *
- * @author anil
  */
 public class CqPerfDUnitTest extends CacheTestCase {
 
@@ -57,10 +56,9 @@ public class CqPerfDUnitTest extends CacheTestCase {
   public CqPerfDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
-    
+
+  @Override
+  public final void postSetUp() throws Exception {
     // avoid IllegalStateException from HandShake by connecting all vms tor
     // system before creating connection pools
     getSystem();
@@ -69,9 +67,7 @@ public class CqPerfDUnitTest extends CacheTestCase {
         getSystem();
       }
     });
-    
   }
-    
 
   /**
    * Tests the cq performance.

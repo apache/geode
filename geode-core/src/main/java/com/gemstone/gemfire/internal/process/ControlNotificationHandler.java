@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.AbstractLauncher.ServiceState;
  * Separated from ControllableProcess so that an internal object can implement
  * this to avoid exposing these methods via the customer API.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 public interface ControlNotificationHandler {

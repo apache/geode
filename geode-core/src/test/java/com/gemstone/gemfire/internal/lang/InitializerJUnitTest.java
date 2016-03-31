@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * The InitializerJUnitTest class is a test suite of test cases testing the contract and functionality of the Initializer
  * utility class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.lang.Initializer
  * @see org.jmock.Mockery
  * @see org.junit.Assert

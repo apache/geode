@@ -24,7 +24,6 @@ import com.gemstone.gemfire.admin.ManagedEntityConfig;
  * Defines the actual administration (starting, stopping, etc.) of
  * GemFire {@link ManagedEntity}s.
  * 
- * @author Kirk Lund
  */
 interface ManagedEntityController {
   /**

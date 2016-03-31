@@ -65,7 +65,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @author dsmith
  *
  */
 @Category(IntegrationTest.class)
@@ -232,6 +231,7 @@ public class ConnectionManagerJUnitTest {
   
   @Test
   public void testIdleExpiration() throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
+    final long nanoToMillis = 1000000;
     final long idleTimeout = 300;
     manager = new ConnectionManagerImpl("pool",  factory, endpointManager, 5, 2, idleTimeout, -1, logger, 60 * 1000, cancelCriterion, poolStats);
     manager.start(background);
@@ -265,30 +265,31 @@ public class ConnectionManagerJUnitTest {
     Assert.assertEquals(5,factory.creates);
     Assert.assertEquals(0,factory.destroys);
     Assert.assertEquals(0,factory.closes);
-    Assert.assertEquals(0,poolStats.getIdleExpire());
-
-    // make sure a thread local connection that has been passivated can idle-expire
-    manager.passivate(conn1, true);
+    Assert.assertEquals(0,poolStats.getIdleExpire());    
     
+    long startInNanos = System.nanoTime();
     {
-      long start = System.currentTimeMillis();
+   // make sure a thread local connection that has been passivated can idle-expire
+      manager.passivate(conn1, true);
+      
       synchronized(factory) {
-        long remaining = TIMEOUT;
-        while(factory.destroys < 1 && remaining > 0) {
-          factory.wait(remaining); 
-          remaining = TIMEOUT - (System.currentTimeMillis() - start);
+        long waitTime = TIMEOUT * nanoToMillis + startInNanos;
+        while(factory.destroys < 1 && (waitTime - System.nanoTime()) > 0) {
+          factory.wait(idleTimeout); 
         }
       }
-      long elapsed = System.currentTimeMillis() - start;
+      long elapsed = (System.nanoTime() - startInNanos)/nanoToMillis;
       Assert.assertTrue("Elapsed " + elapsed + " is less than idle timeout "
           + idleTimeout,
-          elapsed + ALLOWABLE_ERROR_IN_EXPIRATION >= idleTimeout);
+          elapsed >= idleTimeout && elapsed <= idleTimeout + 100);
       Assert.assertEquals(5,factory.creates);
       Assert.assertEquals(1,factory.destroys);
       Assert.assertEquals(1,factory.closes);
       Assert.assertEquals(1,poolStats.getIdleExpire());
     }
 
+    startInNanos = System.nanoTime();
+    
     // now return all other connections to pool and verify that just 2 expire
     manager.returnConnection(conn2);
     manager.returnConnection(conn3);
@@ -296,18 +297,16 @@ public class ConnectionManagerJUnitTest {
     manager.returnConnection(conn5);
 
     {
-      long start = System.currentTimeMillis();
       synchronized(factory) {
-        long remaining = TIMEOUT;
-        while(factory.destroys < 3 && remaining > 0) {
-          factory.wait(remaining); 
-          remaining = TIMEOUT - (System.currentTimeMillis() - start);
+        long waitTime = TIMEOUT * nanoToMillis + startInNanos;
+        while(factory.destroys < 3 && (waitTime - System.nanoTime()) > 0) {
+          factory.wait(idleTimeout); 
         }
       }
-      long elapsed = System.currentTimeMillis() - start;
+      long elapsed = (System.nanoTime() - startInNanos)/nanoToMillis;
       Assert.assertTrue("Elapsed " + elapsed + " is less than idle timeout "
               + idleTimeout,
-              elapsed + ALLOWABLE_ERROR_IN_EXPIRATION >= idleTimeout);
+              elapsed >= idleTimeout && elapsed <= idleTimeout + 100);
       Assert.assertEquals(5,factory.creates);
       Assert.assertEquals(3,factory.destroys);
       Assert.assertEquals(3,factory.closes);

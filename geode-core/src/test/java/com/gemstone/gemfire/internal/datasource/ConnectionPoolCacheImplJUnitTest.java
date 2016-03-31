@@ -43,7 +43,7 @@ import com.gemstone.gemfire.util.test.TestUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /*
- * @author tnegi this is a Multithreaded test for datasource connection pool.
+ * this is a Multithreaded test for datasource connection pool.
  */
 @Category(IntegrationTest.class)
 public class ConnectionPoolCacheImplJUnitTest {

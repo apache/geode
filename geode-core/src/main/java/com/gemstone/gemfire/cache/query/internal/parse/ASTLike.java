@@ -24,7 +24,6 @@ import antlr.*;
 import com.gemstone.gemfire.cache.query.internal.QCompiler;
 
 /**
- * @author ashahid
  *
  */
 public class ASTLike extends GemFireAST{

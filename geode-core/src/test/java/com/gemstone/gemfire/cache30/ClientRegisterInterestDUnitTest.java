@@ -36,7 +36,6 @@ import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
 /**
  * Tests the client register interest
  *
- * @author Kirk Lund
  * @since 4.2.3
  */
 public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
@@ -46,7 +45,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS(); // cleans up bridge server and client and lonerDS
   }
   

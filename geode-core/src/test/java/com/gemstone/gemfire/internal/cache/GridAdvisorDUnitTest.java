@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Tests the GridAdvisor
  *
- * @author darrel
  * @since 5.7
  */
 public class GridAdvisorDUnitTest extends DistributedTestCase {

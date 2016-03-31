@@ -56,14 +56,12 @@ public class Bug36995DUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
     server3 = host.getVM(2);
-
   }
 
   private void createCache(Properties props) throws Exception
@@ -140,7 +138,7 @@ public class Bug36995DUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
     server1.invoke(() -> Bug36995DUnitTest.closeCache());
     server2.invoke(() -> Bug36995DUnitTest.closeCache());

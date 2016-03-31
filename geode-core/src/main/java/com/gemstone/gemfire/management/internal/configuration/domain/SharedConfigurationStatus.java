@@ -18,7 +18,6 @@ package com.gemstone.gemfire.management.internal.configuration.domain;
 
 /***
  * 
- * @author bansods
  *
  */
 public enum SharedConfigurationStatus {

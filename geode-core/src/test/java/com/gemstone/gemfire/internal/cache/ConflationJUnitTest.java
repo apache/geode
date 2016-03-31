@@ -48,7 +48,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * </ul>
  * The test is done for persist only, overflow only and persist + overflow only (async modes).
  * 
- * @author Mitul Bid
  *
  */
 @Category(IntegrationTest.class)

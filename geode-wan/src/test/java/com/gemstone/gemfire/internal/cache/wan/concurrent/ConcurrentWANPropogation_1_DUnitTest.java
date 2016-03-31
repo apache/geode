@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 /**
  * All the test cases are similar to SerialWANPropogationDUnitTest except that
  * the we create concurrent serial GatewaySender with concurrency of 4
- * @author skumar
  *
  */
 public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {

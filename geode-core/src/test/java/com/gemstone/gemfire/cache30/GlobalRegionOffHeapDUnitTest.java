@@ -28,7 +28,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Tests Global Region with OffHeap memory.
  * 
- * @author Kirk Lund
  * @since 9.0
  */
 @SuppressWarnings({ "deprecation", "serial" })
@@ -39,7 +38,7 @@ public class GlobalRegionOffHeapDUnitTest extends GlobalRegionDUnitTest {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override

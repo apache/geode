@@ -26,7 +26,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
  * MBean that provides access to information and management functionality for a
  * {@link GatewayReceiver}.
  * 
- * @author rishim
  * @since 7.0
  * 
  */

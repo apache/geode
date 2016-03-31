@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
  * This is the SPI for a provider of membership services.
  * 
  * @see com.gemstone.gemfire.distributed.internal.membership.NetMember
- * @author D. Jason Penney
  */
 public interface MemberServices {
 

@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.cache;
  * Defines callbacks that are invoked when a <code>GemFireCache</code> is 
  * created or closed.
  * 
- * @author Kirk Lund
  * @see GemFireCacheImpl#addCacheLifecycleListener(CacheLifecycleListener)
  * @see GemFireCacheImpl#removeCacheLifecycleListener(CacheLifecycleListener)
  */

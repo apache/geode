@@ -71,7 +71,6 @@ import com.gemstone.gemfire.management.internal.cli.json.TypedJson;
  * This function is executed on one or multiple members based on the member
  * input to DistributedSystemMXBean.queryData()
  * 
- * @author rishim
  * 
  */
 public class QueryDataFunction extends FunctionAdapter implements InternalEntity {
@@ -484,7 +483,6 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
    * Function to gather data locally. This function is required to execute query
    * with region context
    * 
-   * @author rishim
    * 
    */
   private class LocalQueryFunction extends FunctionAdapter {

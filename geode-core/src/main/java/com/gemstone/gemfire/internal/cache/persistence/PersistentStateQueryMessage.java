@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @author dsmith
  *
  */
 public class PersistentStateQueryMessage extends

@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.pdx;
 
 /**
- * @author dsmith
  *
  */
 public class SimpleClass2 extends SimpleClass {

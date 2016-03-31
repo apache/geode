@@ -50,7 +50,6 @@ import com.gemstone.gemfire.internal.StatisticDescriptorImpl;
       };
     }
  * 
- * @author Kirk Lund
  * @since 7.0
  * @see com.gemstone.gemfire.Statistics
  */

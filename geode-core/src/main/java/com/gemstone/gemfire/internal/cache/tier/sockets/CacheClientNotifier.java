@@ -128,7 +128,6 @@ import com.gemstone.gemfire.security.AuthenticationRequiredException;
  * client socket connections to clients requesting notification of updates and
  * notifies them when updates occur.
  *
- * @author Barry Oglesby
  *
  * @since 3.2
  */

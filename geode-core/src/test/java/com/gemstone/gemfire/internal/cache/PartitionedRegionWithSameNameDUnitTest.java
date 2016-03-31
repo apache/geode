@@ -44,8 +44,8 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author gthombar This test is to verify creation of partition region and
- *         distributed region with same name.
+ * This test is to verify creation of partition region and
+ * distributed region with same name.
  */
 public class PartitionedRegionWithSameNameDUnitTest extends
     PartitionedRegionDUnitTestCase

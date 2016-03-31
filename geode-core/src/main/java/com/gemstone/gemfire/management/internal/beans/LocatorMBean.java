@@ -22,7 +22,6 @@ import com.gemstone.gemfire.management.LocatorMXBean;
 
 /**
  * 
- * @author rishim
  * 
  */
 public class LocatorMBean extends NotificationBroadcasterSupport implements

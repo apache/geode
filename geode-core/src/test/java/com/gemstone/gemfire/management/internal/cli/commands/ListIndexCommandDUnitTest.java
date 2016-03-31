@@ -54,7 +54,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * The ListIndexCommandDUnitTest class is distributed test suite of test cases for testing the index-based GemFire shell
  * (Gfsh) commands. </p>
  *
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase
  * @see com.gemstone.gemfire.management.internal.cli.commands.IndexCommands
  * @since 7.0
@@ -85,8 +84,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     createDefaultSetup(null);
     setupGemFire();
   }

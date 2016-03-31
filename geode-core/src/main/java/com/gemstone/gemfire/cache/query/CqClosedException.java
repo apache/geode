@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.CacheRuntimeException;
 /**
  * Thrown if the CqQuery on which the operation performed is closed.
  * 
- * @author Anil 
  * @since 5.5
  */
 

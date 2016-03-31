@@ -52,7 +52,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * This region is being implemented to suppress distribution of puts and to
  * allow localDestroys on mirrored regions.
  * 
- * @author Mitul Bid
  * @since 4.3
  *  
  */

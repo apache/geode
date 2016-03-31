@@ -25,7 +25,6 @@ import java.io.*;
 /**
  * Enumerated type for region distribution scope.
  *
- * @author Eric Zoerner
  *
  *
  * @see RegionAttributes#getScope

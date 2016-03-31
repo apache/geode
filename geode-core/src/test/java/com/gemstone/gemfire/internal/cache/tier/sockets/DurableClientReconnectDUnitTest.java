@@ -57,7 +57,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**      
  * Tests for durable reconnect issue
  * 
- * @author Yogesh
  * @since 5.2   
  */
 
@@ -96,9 +95,7 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
   }
  
   @Override
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -117,8 +114,8 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
     
     //CacheServerTestUtil.disableShufflingOfEndpoints();
     System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "false");
-
   }
+
   public void testDurableReconnectSingleServer() throws Exception
   {
     createCacheClientAndConnectToSingleServer(NetworkUtils.getServerHostName(Host.getHost(0)), 0);
@@ -732,7 +729,7 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
 

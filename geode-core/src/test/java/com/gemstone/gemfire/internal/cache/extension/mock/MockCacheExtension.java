@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
  * <dd>{@link com.gemstone.gemfire.cache30.CacheXml81DUnitTest}</dd>
  * </dl>
  * 
- * @author jbarrett@pivotal.io
  *
  * @since 8.1
  */

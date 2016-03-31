@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.management.internal.cli.help.format;
 
 /**
- * @author Nikhil Jadhav
  *
  */
 public class Help {

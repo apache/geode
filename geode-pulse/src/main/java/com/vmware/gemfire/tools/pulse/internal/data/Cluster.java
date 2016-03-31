@@ -58,7 +58,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Class Cluster This class is the Data Model for the data used for the Pulse
  * Web UI.
  *
- * @author Anand Hariharan
  * @since version 7.0.Beta 2012-09-23
  */
 public class Cluster extends Thread {
@@ -227,7 +226,6 @@ public class Cluster extends Thread {
   /**
    * Member Inner Class
    *
-   * @author Anand Hariharan
    *
    */
   public static class Member {
@@ -867,7 +865,6 @@ public class Cluster extends Thread {
   /**
    * Member Inner Class
    *
-   * @author Riya Bhandekar
    *
    */
   public static class Statement {
@@ -1495,7 +1492,6 @@ public class Cluster extends Thread {
   /**
    * Region Inner Class
    *
-   * @author Anchal
    *
    */
   public static class Region {
@@ -1802,7 +1798,6 @@ public class Cluster extends Thread {
   /**
    * Alert Inner Class
    *
-   * @author Anchal
    *
    */
   public static class Alert {
@@ -1899,7 +1894,6 @@ public class Cluster extends Thread {
   /**
    * Client Inner Class
    *
-   * @author Anchal
    *
    */
   public static class Client {
@@ -2045,7 +2039,6 @@ public class Cluster extends Thread {
   /**
    * Gateway Receiver Inner Class
    *
-   * @author Anchal
    *
    */
   public static class GatewayReceiver {
@@ -2118,7 +2111,6 @@ public class Cluster extends Thread {
   /**
    * Gateway Sender Inner class
    *
-   * @author Anchal
    *
    */
   public static class GatewaySender {
@@ -2230,7 +2222,6 @@ public class Cluster extends Thread {
   /**
    * Async Event Queue Inner class
    *
-   * @author rbhandekar
    *
    */
   public static class AsyncEventQueue {
@@ -2911,7 +2902,6 @@ public class Cluster extends Thread {
   /**
    * inner class for creating Mock Data
    *
-   * @author Anand Hariharan
    *
    */
   public class MockDataUpdater implements IClusterUpdater {
@@ -3778,7 +3768,6 @@ public class Cluster extends Thread {
   /**
    * This class is used for switching between production(JMX) and Mock Data
    *
-   * @author Anand Hariharan
    *
    */
   public static class ClusterDataFactory {

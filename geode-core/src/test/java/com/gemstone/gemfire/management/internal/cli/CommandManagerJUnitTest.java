@@ -53,7 +53,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
  * 
- * @author apande
  */
 @Category(UnitTest.class)
 public class CommandManagerJUnitTest {

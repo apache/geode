@@ -96,8 +96,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Tests the Heap Memory thresholds of {@link ResourceManager}
- * @author sbawaska
- * @author Mitch Thomas
  * @since 6.0
  */
 public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
@@ -135,8 +133,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  protected final void postSetUpClientServerTestCase() throws Exception {
     Invoke.invokeInEveryVM(this.setHeapMemoryMonitorTestMode);
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException(expectedBelow);
@@ -177,7 +174,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         irm.setCriticalHeapPercentage(90f);
         
         getCache().getLoggerI18n().fine(addExpectedExString);
-        irm.getHeapMonitor().updateStateAndSendEvent(950);
+        HeapMemoryMonitor.setTestBytesUsedForThresholdSet(950);
+        irm.getHeapMonitor().updateStateAndSendEvent();
         getCache().getLoggerI18n().fine(removeExpectedExString);
         return null;
       }
@@ -2316,7 +2314,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
   /**
    * Used to return and report remote CacheServer port info.
-   * @author rholmes
    */
   private static final class ServerPorts implements Serializable {
     private final int port;

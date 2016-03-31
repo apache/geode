@@ -71,7 +71,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * <LI>{@link AutoBalancer#SCHEDULE}
  * <LI>TBD THRESHOLDS
  * 
- * @author Ashvin Agrawal
  */
 public class AutoBalancer implements Declarable {
   /**

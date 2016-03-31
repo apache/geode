@@ -46,7 +46,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * This class manages the state an logic to backup a single
  * cache.
  * 
- * @author dsmith
  *
  */
 public class BackupManager implements MembershipListener {

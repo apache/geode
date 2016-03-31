@@ -28,7 +28,7 @@ import org.apache.commons.io.filefilter.IOFileFilter
 * start and stop the locator and servers.
 */
 class GemFireRunner(settings: Properties) {
-  val gfshCmd = new File(getCurrentDirectory, "../../gemfire-assembly/build/install/apache-geode/bin/gfsh").toString
+  val gfshCmd = new File(getCurrentDirectory, "../../geode-assembly/build/install/apache-geode/bin/gfsh").toString
   val cacheXMLFile = settings.get("cache-xml-file")
   val numServers: Int = settings.get("num-of-servers").asInstanceOf[String].toInt
   val cwd = new File(".").getAbsolutePath

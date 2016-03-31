@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Verifies that the {@link com.gemstone.gemfire.cache.PartitionResolver} is called only once on a node,
  * and not called while local iteration.
- * @author sbawaska
  *
  */
 public class PartitionResolverDUnitTest extends CacheTestCase {
@@ -69,9 +68,9 @@ public class PartitionResolverDUnitTest extends CacheTestCase {
   public PartitionResolverDUnitTest(String name) {
     super(name);
   }
+
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     host = Host.getHost(0);
     accessor = host.getVM(0);
     datastore1 = host.getVM(1);
@@ -79,7 +78,7 @@ public class PartitionResolverDUnitTest extends CacheTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     CountingResolver.resetResolverCount();
   }
   

@@ -39,7 +39,6 @@ import com.gemstone.gemfire.DataSerializable;
  * load + loadPerConnection*numAdditionalConnections.
  * </code>
  * 
- * @author dsmith
  * @since 5.7
  * 
  */

@@ -22,8 +22,6 @@ import com.gemstone.gemfire.cache.CacheCallback;
  * Callback for users to filter out events before dispatching to remote
  * distributed system
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * 
  * @since 7.0
  */

@@ -26,7 +26,6 @@ package com.gemstone.gemfire.distributed.internal;
     The byteAllowance and rechargeBlockMs settings are used in hashcode calculations,
     and should not be changed if the hashcode of a FlowControlParams needs to remain invariant.
     @since 5.0
-    @author Bruce Schuchardt
 */
 
 public class FlowControlParams implements java.io.Serializable {

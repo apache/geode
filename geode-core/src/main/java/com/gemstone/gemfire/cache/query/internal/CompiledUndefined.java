@@ -31,8 +31,6 @@ import com.gemstone.gemfire.cache.query.types.StructType;
  * Predefined function for identity of the UNDEFINED literal
  * 
  * @version $Revision: 1.2 $
- * @author ericz
- * @author asif
  */
 public class CompiledUndefined extends AbstractCompiledValue implements
     Negatable , Indexable {

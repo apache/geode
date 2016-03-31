@@ -61,7 +61,6 @@ import org.junit.rules.TemporaryFolder;
 
 /**
  * Test ReadOnly operations are accesible from RMI Connector with readOnly user
- * @author tushark
  *
  */
 @Category(IntegrationTest.class)

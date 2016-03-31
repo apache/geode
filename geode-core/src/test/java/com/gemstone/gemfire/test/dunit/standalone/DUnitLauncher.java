@@ -71,7 +71,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Also, it's a good idea to set your working directory, because the test code
  * a lot of files that it leaves around.
  * 
- * @author dsmith
  *
  */
 public class DUnitLauncher {
@@ -349,11 +348,11 @@ public class DUnitLauncher {
 
       if (suspectStringBuilder.length() != 0) {
         System.err.println("Suspicious strings were written to the log during this run.\n"
-            + "Fix the strings or use DistributedTestCase.addExpectedException to ignore.\n"
+            + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
             + suspectStringBuilder);
         
         Assert.fail("Suspicious strings were written to the log during this run.\n"
-            + "Fix the strings or use DistributedTestCase.addExpectedException to ignore.\n"
+            + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
             + suspectStringBuilder);
       }
     }

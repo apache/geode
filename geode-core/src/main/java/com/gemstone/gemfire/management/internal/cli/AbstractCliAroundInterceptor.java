@@ -23,7 +23,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 /**
  * Semi-complete implementation of {@link CliAroundInterceptor} for convenience for implementors.
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

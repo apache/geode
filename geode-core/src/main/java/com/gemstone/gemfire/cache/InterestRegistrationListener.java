@@ -59,7 +59,6 @@ package com.gemstone.gemfire.cache;
  *}
  * </pre>
  *
- * @author Barry Oglesby
  *
  * @since 6.0
  * 

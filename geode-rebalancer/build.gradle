@@ -19,11 +19,16 @@ dependencies {
   provided project(':geode-common')
   provided project(':geode-core')
 
-  compile 'org.quartz-scheduler:quartz:' + project.'quartz.version'
+  compile ('org.quartz-scheduler:quartz:' + project.'quartz.version') {
+    exclude module: 'c3p0'
+    exclude module: 'slf4j-api'
+  }
   testCompile project(':geode-junit')
 
   // the following test dependencies are needed for mocking cache instance
   testRuntime 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
   testRuntime 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
-  runtime 'org.apache.hbase:hbase:' + project.'hbase.version'
+  testRuntime ('org.apache.hbase:hbase:' + project.'hbase.version') {
+    transitive = false
+  }
 }

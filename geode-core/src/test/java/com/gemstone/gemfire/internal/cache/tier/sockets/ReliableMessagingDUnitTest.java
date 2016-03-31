@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * 
- * @author Suyog Bhokare
  * 
  * Tests the reliable messaging functionality - Client sends a periodic
  * ack to the primary server for the messages received.
@@ -326,10 +325,9 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
       sleep(2000);
     }
   }
-  
-  public void setUp() throws Exception
-  {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -339,7 +337,6 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
     createClientCache(PORT1, PORT2);
-
   }
 
   private Cache createCache(Properties props) throws Exception
@@ -413,7 +410,7 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     creationTime = 0;
     closeCache();
     server1.invoke(() -> ReliableMessagingDUnitTest.closeCache());

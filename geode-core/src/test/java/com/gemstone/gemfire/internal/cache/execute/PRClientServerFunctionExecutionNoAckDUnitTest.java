@@ -51,9 +51,6 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
   /*
    * Execution of the function on server using the name of the function
    */

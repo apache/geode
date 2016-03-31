@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.query.internal.QCompiler;
 
 /**
  *
- * @author Eric Zoerner
  */
 public class ASTIteratorDef extends GemFireAST {
   private static final long serialVersionUID = -736956634497535951L;

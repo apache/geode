@@ -51,7 +51,6 @@ import java.util.List;
  * This class contains the implementations for all http Ajax requests needs to
  * be served in Pulse.
  * 
- * @author azambre
  * @since version 7.5
  */
 @Controller

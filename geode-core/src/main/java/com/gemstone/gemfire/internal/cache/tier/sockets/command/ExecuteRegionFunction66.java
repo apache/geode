@@ -55,7 +55,6 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 
 /**
  * 
- * @author kbachhav
  *  @since 6.6
  */
 public class ExecuteRegionFunction66 extends BaseCommand {

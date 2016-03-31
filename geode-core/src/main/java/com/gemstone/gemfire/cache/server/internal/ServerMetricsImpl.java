@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.server.ServerMetrics;
 
 /**
  * Metrics describing the load on a  bridge server.
- * @author dsmith
  * @since 5.7
  *
  */

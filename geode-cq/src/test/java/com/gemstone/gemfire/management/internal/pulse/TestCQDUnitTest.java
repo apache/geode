@@ -29,7 +29,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * This is for testing continuous query.
- * @author ajayp
  * 
  */
 
@@ -44,11 +43,6 @@ public class TestCQDUnitTest extends ManagementTestBase {
 
   public TestCQDUnitTest(String name) {
     super(name);
-  }
-
-  public void setUp() throws Exception {
-    super.setUp();
-
   }
 
   public static long getNumOfCQ() {

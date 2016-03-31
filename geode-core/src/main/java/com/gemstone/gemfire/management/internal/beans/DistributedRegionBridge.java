@@ -46,7 +46,6 @@ import com.gemstone.gemfire.management.internal.beans.stats.RegionClusterStatsMo
  * MBeanAggregator will create this bridge and inject it into a
  * DistributedRegionMBean
  * 
- * @author rishim
  * 
  */
 public class DistributedRegionBridge {

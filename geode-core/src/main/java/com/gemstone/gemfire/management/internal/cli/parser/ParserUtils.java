@@ -29,7 +29,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.Preproce
  * The methods herein always ensure that the syntax is proper before performing
  * the desired operation
  * 
- * @author Nikhil Jadhav
  * @since 7.0
  */
 public class ParserUtils {

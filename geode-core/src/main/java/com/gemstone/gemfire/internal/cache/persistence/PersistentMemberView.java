@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
  * be backed by disk, or it may be only in memory on non-persistent
  * replicas.
  * 
- * @author dsmith
  * 
  */
 public interface PersistentMemberView {

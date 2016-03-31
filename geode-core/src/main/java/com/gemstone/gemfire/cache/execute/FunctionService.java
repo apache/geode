@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * generically to peers in a {@link DistributedSystem} or servers in a {@link Pool}.  
  * </p>
  * 
- * @author Yogesh Mahajan
  * @since 6.0
  */
 public final class FunctionService {

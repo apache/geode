@@ -37,7 +37,6 @@ import com.gemstone.gemfire.i18n.StringId;
 
 import java.io.IOException;
 /**
- * @author aingle
  * @since 6.1
  */
 public class RegisterInterest61 extends BaseCommand {

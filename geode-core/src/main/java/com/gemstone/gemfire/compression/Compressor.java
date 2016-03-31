@@ -20,7 +20,6 @@ package com.gemstone.gemfire.compression;
 /**
  * Interface for a compression codec.
  * 
- * @author rholmes
  */
 public interface Compressor {
 

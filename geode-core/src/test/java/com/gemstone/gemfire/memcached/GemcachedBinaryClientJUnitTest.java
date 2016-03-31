@@ -52,7 +52,6 @@ import net.spy.memcached.MemcachedClient;
 
 /**
  * Test for binary protocol
- * @author sbawaska
  */
 @Category(IntegrationTest.class)
 public class GemcachedBinaryClientJUnitTest extends

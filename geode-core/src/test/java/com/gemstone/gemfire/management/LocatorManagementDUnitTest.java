@@ -46,7 +46,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * DistributedSystem Cache Locator no no yes yes no yes yes yes yes
  * 
  * 
- * @author rishim
  * 
  */
 
@@ -68,8 +67,8 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpManagementTestBase() throws Exception {
     locator = managedNode1;
   }
 

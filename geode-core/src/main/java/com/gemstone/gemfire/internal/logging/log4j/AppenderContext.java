@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Provides the LoggerContext and LoggerConfig for GemFire appenders to attach
  * to. These appenders include AlertAppender and LogWriterAppender.
  * 
- * @author Kirk Lund
  */
 public class AppenderContext {
   

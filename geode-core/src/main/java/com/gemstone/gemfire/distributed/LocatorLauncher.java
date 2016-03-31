@@ -76,8 +76,6 @@ import joptsimple.OptionSet;
 /**
  * The LocatorLauncher class is a launcher for a GemFire Locator.
  * 
- * @author John Blum
- * @author Kirk Lund
  * @see com.gemstone.gemfire.distributed.AbstractLauncher
  * @see com.gemstone.gemfire.distributed.ServerLauncher
  * @since 7.0

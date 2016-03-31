@@ -66,7 +66,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
  * <li>describe region
  * </ul>
  * 
- * @author Sourabh Bansod
  * @since 7.0
  */
 public class RegionCommands implements CommandMarker {

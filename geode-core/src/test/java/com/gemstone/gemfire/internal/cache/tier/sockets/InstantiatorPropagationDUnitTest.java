@@ -91,8 +91,8 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
     // TODO Auto-generated constructor stub
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     client1 = host.getVM(0);
     client2 = host.getVM(1);
@@ -151,7 +151,7 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
     client1.invoke(() -> InstantiatorPropagationDUnitTest.closeCache());

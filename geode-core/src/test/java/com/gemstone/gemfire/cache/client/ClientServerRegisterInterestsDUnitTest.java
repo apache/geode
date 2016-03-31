@@ -44,7 +44,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * The ClientServerRegisterInterestsDUnitTest class is a test suite of test cases testing the interaction between a
  * client and a server in a Register Interests scenario.
  *
- * @author John Blum
  * @see com.gemstone.gemfire.test.dunit.DistributedTestCase
  * @since 8.0
  */
@@ -65,15 +64,14 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     setupGemFireCacheServer();
     IgnoredException.addIgnoredException("java.net.ConnectException");
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     serverPort.set(0);
     entryEvents.clear();
     gemfireServerVm.invoke(new SerializableRunnable() {

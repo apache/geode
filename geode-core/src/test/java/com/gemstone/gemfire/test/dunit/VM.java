@@ -30,7 +30,6 @@ import hydra.MethExecutorResult;
 /**
  * This class represents a Java Virtual Machine that runs on a host.
  *
- * @author David Whitlock
  */
 @SuppressWarnings("serial")
 public class VM implements Serializable {

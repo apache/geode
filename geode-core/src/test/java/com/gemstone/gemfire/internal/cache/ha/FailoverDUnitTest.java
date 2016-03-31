@@ -55,7 +55,6 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
  *  Do some puts on S1 .The expiry is on high side. Stop S1 , the client is failing to S2.During fail over duration do some
  *  puts on S1. The client on failing to S2 may receive duplicate events but should not miss any events.
  *
- *  @author Suyog Bhokare
  *
  */
 public class FailoverDUnitTest extends DistributedTestCase
@@ -76,9 +75,8 @@ public class FailoverDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-	super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -325,7 +323,7 @@ public class FailoverDUnitTest extends DistributedTestCase
 
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
     // then close the servers

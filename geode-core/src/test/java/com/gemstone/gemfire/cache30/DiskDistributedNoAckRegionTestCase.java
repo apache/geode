@@ -20,7 +20,6 @@ import com.gemstone.gemfire.cache.*;
 
 /**
  *
- * @author Eric Zoerner
  *
  */
 public abstract class DiskDistributedNoAckRegionTestCase extends DistributedNoAckRegionDUnitTest {

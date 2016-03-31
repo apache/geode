@@ -16,9 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
@@ -33,7 +37,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * DUnit test for operations on ParallelGatewaySender
  * 
- * @author pdeole
  *
  */
 public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
@@ -42,9 +45,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   public ParallelGatewaySenderOperationsDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  protected final void postSetUpWANTestBase() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe||Unexpected IOException");
   }
   
@@ -581,12 +584,17 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> createReceiver( nyPort ));
     vm2.invoke(() -> createPartitionedRegion( regionName, null, 0, 100, isOffHeap() ));
     validateRegionSizes( regionName, numPuts, vm2 );
+
+    vm4.invoke(() -> {
+      final AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertTrue(sender.getStatistics().getBatchesResized() > 0);
+    });
     ignoredMTLE.remove();
     ignoredGIOE.remove();
   }
 
   private void setMaximumMessageSize(int maximumMessageSizeBytes) {
-    System.setProperty("gemfire.client.max-message-size", String.valueOf(maximumMessageSizeBytes));
+    Message.MAX_MESSAGE_SIZE = maximumMessageSizeBytes;
     LogWriterUtils.getLogWriter().info("Set gemfire.client.max-message-size: " + System.getProperty("gemfire.client.max-message-size"));
   }
 

@@ -20,7 +20,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 
 /**
- * @author dsmith
  *
  */
 public class MessageLogger {

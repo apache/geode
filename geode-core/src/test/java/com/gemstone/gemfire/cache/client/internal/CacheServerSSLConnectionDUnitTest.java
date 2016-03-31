@@ -43,7 +43,7 @@ import com.gemstone.gemfire.util.test.TestUtil;
  * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for details
  */
 public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
-  
+
   private static final long serialVersionUID = 1L;
 
   private static final String TRUSTED_STORE = "trusted.keystore";
@@ -60,14 +60,14 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
   private int cacheServerPort;
   private String hostName;
 
-  public void setUp() throws Exception {
+  @Override
+  public final void preSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
   }
 
   public CacheServerSSLConnectionDUnitTest(String name) {
     super(name);
-  }  
+  }
 
   public Cache createCache(Properties props) throws Exception
   {
@@ -79,7 +79,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     }
     return cache;
   }
-  
+
   private void createServer() throws IOException{
     cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cacheServer = cache.addCacheServer();
@@ -87,20 +87,20 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     cacheServer.start();
     hostName = cacheServer.getHostnameForClients();
   }
-  
+
   public int getCacheServerPort(){
     return cacheServerPort;
   }
-  
+
   public String getCacheServerHost(){
     return hostName;
   }
-  
+
   public void stopCacheServer(){
     this.cacheServer.stop();
   }
-  
-  
+
+
   @SuppressWarnings("rawtypes")
   public void setUpServerVM(boolean cacheServerSslenabled) throws Exception {
     Properties gemFireProps = new Properties();
@@ -109,14 +109,14 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     String cacheServerSslciphers = "any";
     boolean cacheServerSslRequireAuth = true;
     gemFireProps.put(DistributionConfig.SERVER_SSL_ENABLED_NAME,
-        String.valueOf(cacheServerSslenabled));
+            String.valueOf(cacheServerSslenabled));
     gemFireProps.put(DistributionConfig.SERVER_SSL_PROTOCOLS_NAME,
-        cacheServerSslprotocols);
+            cacheServerSslprotocols);
     gemFireProps.put(DistributionConfig.SERVER_SSL_CIPHERS_NAME,
-        cacheServerSslciphers);
+            cacheServerSslciphers);
     gemFireProps.put(
-        DistributionConfig.SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
-        String.valueOf(cacheServerSslRequireAuth));
+            DistributionConfig.SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
+            String.valueOf(cacheServerSslRequireAuth));
 
     String keyStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
     String trustStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
@@ -125,21 +125,21 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME, "password");
     gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME, trustStore);
     gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
-    
+
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter(sw);
     gemFireProps.list(writer);
     System.out.println("Starting cacheserver ds with following properties \n" + sw);
     createCache(gemFireProps);
-    
+
     RegionFactory factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
     Region r = factory.create("serverRegion");
     r.put("serverkey", "servervalue");
   }
-  
+
   public void setUpClientVM(String host, int port,
-      boolean cacheServerSslenabled, boolean cacheServerSslRequireAuth,
-      String keyStore, String trustStore, boolean subscription) {
+                            boolean cacheServerSslenabled, boolean cacheServerSslRequireAuth,
+                            String keyStore, String trustStore, boolean subscription) {
 
     Properties gemFireProps = new Properties();
 
@@ -150,14 +150,14 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     String trustStorePath = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, trustStore);
     //using new server-ssl-* properties
     gemFireProps.put(DistributionConfig.SERVER_SSL_ENABLED_NAME,
-        String.valueOf(cacheServerSslenabled));
+            String.valueOf(cacheServerSslenabled));
     gemFireProps.put(DistributionConfig.SERVER_SSL_PROTOCOLS_NAME,
-        cacheServerSslprotocols);
+            cacheServerSslprotocols);
     gemFireProps.put(DistributionConfig.SERVER_SSL_CIPHERS_NAME,
-        cacheServerSslciphers);
+            cacheServerSslciphers);
     gemFireProps.put(
-        DistributionConfig.SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
-        String.valueOf(cacheServerSslRequireAuth));
+            DistributionConfig.SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
+            String.valueOf(cacheServerSslRequireAuth));
 
     gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_TYPE_NAME, "jks");
     gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_NAME, keyStorePath);
@@ -169,90 +169,90 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     PrintWriter writer = new PrintWriter(sw);
     gemFireProps.list(writer);
     System.out.println("Starting client ds with following properties \n" + sw.getBuffer());
-    
+
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory(gemFireProps);
     clientCacheFactory.setPoolSubscriptionEnabled(subscription).addPoolServer(host, port);
     clientCache = clientCacheFactory.create();
-    
+
     ClientRegionFactory<String,String> regionFactory = clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-    Region<String, String> region = regionFactory.create("serverRegion");  
+    Region<String, String> region = regionFactory.create("serverRegion");
     assertNotNull(region);
   }
-  
+
   public void doClientRegionTest(){
     Region<String, String> region = clientCache.getRegion("serverRegion");
     assertEquals("servervalue",region.get("serverkey"));
     region.put("clientkey", "clientvalue");
     assertEquals("clientvalue",region.get("clientkey"));
   }
-  
+
   public void doServerRegionTest(){
     Region<String, String> region = cache.getRegion("serverRegion");
-    assertEquals("servervalue",region.get("serverkey"));    
+    assertEquals("servervalue",region.get("serverkey"));
     assertEquals("clientvalue",region.get("clientkey"));
   }
-  
-  
+
+
   public static void setUpServerVMTask(boolean cacheServerSslenabled) throws Exception{
     instance.setUpServerVM(cacheServerSslenabled);
   }
-  
+
   public static void createServerTask() throws Exception {
     instance.createServer();
   }
-  
+
   public static void setUpClientVMTask(String host, int port,
-      boolean cacheServerSslenabled, boolean cacheServerSslRequireAuth, String keyStore, String trustStore)
-      throws Exception {
+                                       boolean cacheServerSslenabled, boolean cacheServerSslRequireAuth, String keyStore, String trustStore)
+          throws Exception {
     instance.setUpClientVM(host, port, cacheServerSslenabled,
-        cacheServerSslRequireAuth, keyStore, trustStore, true);
+            cacheServerSslRequireAuth, keyStore, trustStore, true);
   }
   public static void setUpClientVMTaskNoSubscription(String host, int port,
-      boolean cacheServerSslenabled, boolean cacheServerSslRequireAuth, String keyStore, String trustStore)
-      throws Exception {
+                                                     boolean cacheServerSslenabled, boolean cacheServerSslRequireAuth, String keyStore, String trustStore)
+          throws Exception {
     instance.setUpClientVM(host, port, cacheServerSslenabled,
-        cacheServerSslRequireAuth, keyStore, trustStore, false);
+            cacheServerSslRequireAuth, keyStore, trustStore, false);
   }
-  
+
   public static void doClientRegionTestTask() {
     instance.doClientRegionTest();
   }
-  
+
   public static void doServerRegionTestTask() {
     instance.doServerRegionTest();
   }
-  
+
   public static Object[] getCacheServerEndPointTask() { // TODO: avoid Object[]
     Object[] array = new Object[2];
     array[0] = instance.getCacheServerHost();
     array[1] = instance.getCacheServerPort();
     return array;
   }
-  
+
   public static void closeCacheTask(){
     if (instance != null && instance.cache != null) {
       instance.cache.close();
     }
   }
-  
+
   public static void closeClientCacheTask(){
     if (instance != null && instance.clientCache != null) {
       instance.clientCache.close();
     }
   }
-  
+
   public void testCacheServerSSL() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
     VM clientVM = host.getVM(2);
-    
+
     boolean cacheServerSslenabled = true;
     boolean cacheClientSslenabled = true;
     boolean cacheClientSslRequireAuth = true;
-    
+
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
     serverVM.invoke(() -> createServerTask());
-    
+
     Object array[] = (Object[])serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String)array[0];
     int port = (Integer) array[1];
@@ -260,22 +260,22 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
     clientVM.invoke(() -> doClientRegionTestTask());
     serverVM.invoke(() -> doServerRegionTestTask());
-    
+
   }
-  
-  
+
+
   public void testNonSSLClient() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
     VM clientVM = host.getVM(2);
-    
+
     boolean cacheServerSslenabled = true;
     boolean cacheClientSslenabled = false;
     boolean cacheClientSslRequireAuth = true;
-    
+
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
     serverVM.invoke(() -> createServerTask());
-    
+
     Object array[] = (Object[])serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String)array[0];
     int port = (Integer) array[1];
@@ -298,14 +298,14 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
       } else {
         //getLogWriter().error("Unexpected exception ", e);
         fail("Unexpected Exception: " + e + " expected: "
-            + AuthenticationRequiredException.class);
+                + AuthenticationRequiredException.class);
       }
     } finally {
       expect.remove();
       expect2.remove();
     }
   }
-  
+
   public void testSSLClientWithNoAuth() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
@@ -337,23 +337,23 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
       } else {
         //getLogWriter().error("Unexpected exception ", e);
         fail("Unexpected Exception...expected "
-            + AuthenticationRequiredException.class);
+                + AuthenticationRequiredException.class);
       }
     }
   }
-  
+
   public void testSSLClientWithNonSSLServer() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
     VM clientVM = host.getVM(2);
-    
+
     boolean cacheServerSslenabled = false;
     boolean cacheClientSslenabled = true;
     boolean cacheClientSslRequireAuth = true;
-    
+
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
     serverVM.invoke(() -> createServerTask());
-    
+
     Object array[] = (Object[])serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String)array[0];
     int port = (Integer) array[1];
@@ -371,9 +371,9 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
       expect.remove();
     }
   }
-  
+
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
     VM clientVM = host.getVM(2);

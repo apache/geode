@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * Test cases to cover all test cases which pertains to disk from Management
  * layer
  * 
- * @author rishim
  * 
  */
 public class DiskManagementDUnitTest extends ManagementTestBase {
@@ -85,11 +84,10 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
     diskDir.deleteOnExit();
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpManagementTestBase() throws Exception {
     failureCause = "";
     testFailed = false;
-
   }
 
   @Override

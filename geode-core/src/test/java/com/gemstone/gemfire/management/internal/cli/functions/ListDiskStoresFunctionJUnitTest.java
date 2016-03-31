@@ -49,7 +49,6 @@ import org.junit.experimental.categories.Category;
  * The ListDiskStoreFunctionJUnitTest test suite class tests the contract and functionality of the
  * ListDiskStoresFunction.
  * </p>
- * @author jblum
  * @see com.gemstone.gemfire.internal.cache.DiskStoreImpl
  * @see com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails
  * @see com.gemstone.gemfire.management.internal.cli.functions.ListDiskStoresFunction

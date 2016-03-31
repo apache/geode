@@ -25,7 +25,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 
 /**
  * 
- * @author tushark
  *
  */
 public class MultiCommandHelper {

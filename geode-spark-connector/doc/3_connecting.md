@@ -14,7 +14,7 @@ application code. In the following examples, we assume you want to provide
 In `<spark dir>/conf/spark-defaults.com`
 ```
 spark.gemfire.locators=192.168.1.47[10334]
-spark.gemfire.security-client-auth-init=templates.security.UserPasswordAuthInit.create
+spark.gemfire.security-client-auth-init=com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create
 spark.gemfire.security-username=scott
 spark.gemfire.security-password=tiger
 ```
@@ -24,7 +24,7 @@ Or in the Spark application code:
 import io.pivotal.gemfire.spark.connector._
 val sparkConf = new SparkConf()
   .set(GemFireLocatorPropKey, "192.168.1.47[10334]")
-  .set("spark.gemfire.security-client-auth-init", "templates.security.UserPasswordAuthInit.create")
+  .set("spark.gemfire.security-client-auth-init", "com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create")
   .set("spark.gemfire.security-username", "scott")
   .set("spark.gemfire.security-password", "tiger")
 ```
@@ -35,7 +35,7 @@ After this, you can use all connector APIs without providing `GemfireConnectionC
 Here's the code that creates `GemFireConnectionConf` with the same set of 
 properties as the examples above:
 ```
-val props = Map("security-client-auth-init" -> "templates.security.UserPasswordAuthInit.create",
+val props = Map("security-client-auth-init" -> "com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create",
                 "security-username" -> "scott",
                 "security-password" -> "tiger")
 val connConf = GemFireConnectionConf("192.168.1.47[10334]", props)

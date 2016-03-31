@@ -20,7 +20,6 @@ package com.gemstone.gemfire.cache;
  * Custom eviction attributes including {@link EvictionCriteria} and evictor
  * start time and frequency, if any.
  * 
- * @author swale
  * @since gfxd 1.0
  */
 public abstract class CustomEvictionAttributes {

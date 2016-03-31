@@ -23,7 +23,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
  * can be registered with a DistributionAdvisor.
  * 
  * These methods are called while the monitor is held on the DistributionAdvisor.
- * @author dsmith
  *
  */
 public interface ProfileListener {

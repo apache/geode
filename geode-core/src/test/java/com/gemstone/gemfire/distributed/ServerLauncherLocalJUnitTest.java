@@ -55,9 +55,6 @@ import org.junit.experimental.categories.Category;
 /**
  * Integration tests for ServerLauncher as a local API in the local JVM.
  *
- * @author Kirk Lund
- * @author David Hoots
- * @author John Blum
  * @see com.gemstone.gemfire.distributed.AbstractLauncher
  * @see com.gemstone.gemfire.distributed.ServerLauncher
  * @see com.gemstone.gemfire.distributed.ServerLauncher.Builder

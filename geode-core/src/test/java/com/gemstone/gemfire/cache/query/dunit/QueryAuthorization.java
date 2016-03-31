@@ -32,7 +32,6 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * Test authorization class for testing the accessibility of query bind
  * parameters from QueryOperationContext
  * 
- * @author tnomulwar
  * 
  */
 public class QueryAuthorization extends TestCase implements AccessControl {

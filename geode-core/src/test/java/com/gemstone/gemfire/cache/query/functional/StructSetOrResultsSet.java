@@ -57,7 +57,6 @@ import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 
 /**
- * @author vikramj, shobhit
  */
 public class StructSetOrResultsSet extends TestCase {
 

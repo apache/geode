@@ -25,7 +25,6 @@ import com.gemstone.gemfire.admin.ConfigurationParameter;
  * configuration changes made through 
  * {@link ConfigurationParameterImpl#setValue}.
  *
- * @author    Kirk Lund
  * @since     3.5
  *
  */

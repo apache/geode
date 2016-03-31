@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.util;
  * rolling upgrade support when GatewaySenderProfile update request comes from or sent to old member.
  * Old member uses Gateway$OrderPolicy while latest members uses GatewaySender#OrderPolicy
  * 
- * @author kbachhav
  * @since 9.0
  *
  */

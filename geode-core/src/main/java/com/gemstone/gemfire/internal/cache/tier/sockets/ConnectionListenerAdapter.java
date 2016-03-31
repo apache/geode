@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 /**
  * A ConnectionListener that does nothing.
- * @author dsmith
  * @since 5.7
  *
  */

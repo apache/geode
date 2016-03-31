@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * This is for testing Number of clients and can be extended for relevant test
  * addition
  * 
- * @author ajayp
  * 
  */
 
@@ -41,11 +40,6 @@ public class TestClientsDUnitTest extends ManagementTestBase {
 
   public TestClientsDUnitTest(String name) {
     super(name);
-  }
-
-  public void setUp() throws Exception {
-    super.setUp();
-
   }
 
   public static Integer getNumOfClients() {

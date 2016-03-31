@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
  * action is not specified, it defaults to <code>ExpirationAction.INVALIDATE</code>.
  * If the timeout is not specified, it defaults to zero (which means to never timeout).
  *
- * @author Eric Zoerner
  *
  *
  * @see AttributesFactory

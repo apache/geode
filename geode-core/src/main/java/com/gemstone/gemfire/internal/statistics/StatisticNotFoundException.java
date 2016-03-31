@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.statistics;
 import com.gemstone.gemfire.GemFireCheckedException;
 
 /**
- * @author Kirk Lund
  * @since 7.0
  */
 public class StatisticNotFoundException extends GemFireCheckedException {

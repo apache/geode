@@ -23,7 +23,6 @@ import java.util.Iterator;
  * element.  The implementor must provide access to the current element
  * as well as a means to move to the next element.
  * 
- * @author bakera
  *
  * @param <E> the element type
  */

@@ -40,7 +40,6 @@ package com.gemstone.gemfire;
  * }
  * </code>
  * 
- * @author jpenney
  * @see CancelException
  * @since 5.1
  */

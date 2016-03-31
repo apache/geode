@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.lang;
  * The Initializer class is a utility class to identify Initable objects and initialize them by calling their
  * init method.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.lang.Initable
  * @since 8.0
  */

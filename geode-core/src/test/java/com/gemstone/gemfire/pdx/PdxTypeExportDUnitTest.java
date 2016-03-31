@@ -68,9 +68,9 @@ public class PdxTypeExportDUnitTest extends CacheTestCase {
     
     Host.getHost(0).getVM(3).invoke(test);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     loadCache();
   }
   

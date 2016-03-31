@@ -25,7 +25,6 @@ import com.gemstone.gemfire.StatisticsType;
 /**
  * Provides informations of the statistic
  * 
- * @author hgadre
  * 
  */
 public interface StatisticInfo extends DataSerializable {

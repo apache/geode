@@ -28,18 +28,9 @@ import com.gemstone.gemfire.management.internal.security.Resource;
  *
  * Implementations of this interface are <b>not</b> expected to be thread-safe.
  *
- * @author Sumedh Wale
  * @since 5.5
  */
 public abstract class OperationContext {
-
-  /**
-   * Enumeration for various cache operations. Implementations for each of the
-   * supported operation listed here are provided.
-   *
-   * @author Sumedh Wale
-   * @since 5.5
-   */
   public enum OperationCode {
     ALL,
     ALTER,

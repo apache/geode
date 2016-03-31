@@ -37,7 +37,6 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * The ConvertUtilsJUnitTest class is a test suite testing the contract and functionality of the ConvertUtilsJUnitTest class.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.web.util.ConvertUtils
  * @see org.junit.Assert
  * @see org.junit.Test

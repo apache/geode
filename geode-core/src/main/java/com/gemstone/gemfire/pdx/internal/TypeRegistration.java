@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
 /**
  * Interface for the part of the type registry
  * that interacts with remote members
- * @author dsmith
  *
  */
 public interface TypeRegistration {

@@ -43,7 +43,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @author sbawaska
  *
  */
 public abstract class TXMessage extends SerialDistributionMessage 

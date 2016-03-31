@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Contains simple tests for the {@link MemberHealthEvaluator}.
  *
- * @author David Whitlock
  *
  * @since 3.5
  */

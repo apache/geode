@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
  * 
  * @see StatAlert raised and also Gemfire member id which raised the alert
  * 
- * @author abhishek
  * 
  * @since 5.7
  */

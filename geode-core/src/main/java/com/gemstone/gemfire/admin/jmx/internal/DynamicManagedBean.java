@@ -29,7 +29,6 @@ import org.apache.commons.modeler.ManagedBean;
  * Extends ManagedBean to allow for dynamically creating new instances of
  * ManagedBean based on an existing instance of ManagedBean.
  * 
- * @author  Kirk Lund
  * @since 5.0.1
  */
 public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {

@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.concurrent;
 
 /**
  * AL implementation for JDK 5.
- * @author darrel
  */
 public final class AtomicLong5
   extends java.util.concurrent.atomic.AtomicLong

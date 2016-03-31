@@ -35,7 +35,6 @@ import org.springframework.web.util.UriComponentsBuilder;
  * to the GemFire Manager via HTTP.  The SimpleHttpOperationInvoker uses a single URL web service endpoint to process
  * commands and return responses.
  * 
- * @author John Blum
  * @see java.net.URI
  * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
  * @see com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker

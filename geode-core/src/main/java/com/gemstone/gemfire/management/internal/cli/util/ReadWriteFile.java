@@ -35,7 +35,6 @@ import com.gemstone.gemfire.management.internal.cli.GfshParser;
 
 /**
  * 
- * @author Ajay Pande
  * 
  * @since 7.0
  */

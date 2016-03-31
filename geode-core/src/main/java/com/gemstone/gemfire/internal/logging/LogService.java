@@ -40,8 +40,6 @@ import com.gemstone.org.apache.logging.log4j.message.GemFireParameterizedMessage
 /**
  * Centralizes log configuration and initialization.
  * 
- * @author bakera
- * @author David Hoots
  */
 @SuppressWarnings("unused")
 public class LogService extends LogManager {

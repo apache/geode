@@ -26,7 +26,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 
 /***
  * Function to load the shared configuration (already imported) from the disk. 
- * @author bansods
  *
  */
 public class LoadSharedConfigurationFunction extends FunctionAdapter implements

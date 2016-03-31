@@ -24,7 +24,6 @@ import javax.naming.NamingException;
 /**
  * Thrown when a client/peer is unauthorized to perform a requested operation.
  * 
- * @author Neeraj Kumar
  * @since 5.5
  */
 public class NotAuthorizedException extends GemFireSecurityException {

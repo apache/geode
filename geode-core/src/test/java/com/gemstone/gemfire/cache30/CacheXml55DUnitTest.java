@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
  * Tests the declarative caching functionality introduced in the GemFire
  * 5.0 (i.e. congo1). Don't be confused by the 45 in my name :-)
  * 
- * @author Mitch Thomas
  * @since 5.0
  */
 

@@ -65,7 +65,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @author dsmith
  * @since 5.7
  */
 public class ServerLocator implements TcpHandler, DistributionAdvisee {
@@ -79,16 +78,20 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   private final LocatorStats stats;
   private LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
   private Map<ServerLocation, DistributedMember> ownerMap = new HashMap<ServerLocation, DistributedMember>();
-  private volatile ArrayList cachedLocators;
+  private volatile List<ServerLocation> cachedLocators;
   private final Object cachedLocatorsLock = new Object();
   
   private final static AtomicInteger profileSN = new AtomicInteger();
+
+  private static final long SERVER_LOAD_LOG_INTERVAL = (60 * 60 * 1000); // log server load once an hour
   
   private final String logFile;
   private final String hostName;
   private final String memberName;
   
   private ProductUseLog productUseLog;
+
+  private volatile long lastLogTime;
 
   ServerLocator() throws IOException {
     this.port = 10334;
@@ -232,7 +235,7 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   }
   
   private Object getLocatorListResponse(LocatorListRequest request) {
-    ArrayList controllers = getLocators();
+    List<ServerLocation> controllers = getLocators();
     boolean balanced = loadSnapshot.hasBalancedConnections(request.getServerGroup());
     return new LocatorListResponse(controllers, balanced);
   }
@@ -358,16 +361,16 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   
 
   
-  private ArrayList getLocators() {
+  private List<ServerLocation> getLocators() {
     if(cachedLocators != null) {
       return cachedLocators;
     }
     else {
       synchronized(cachedLocatorsLock) {
-        List profiles = advisor.fetchControllers();
-        ArrayList result = new ArrayList(profiles.size() + 1);
-        for (Iterator itr = profiles.iterator(); itr.hasNext(); ) {
-          result.add(buildServerLocation((ControllerProfile) itr.next()));
+        List<ControllerProfile> profiles = advisor.fetchControllers();
+        List<ServerLocation> result = new ArrayList<>(profiles.size() + 1);
+        for (ControllerProfile profile: profiles) {
+          result.add(buildServerLocation(profile));
         }
         result.add(new ServerLocation(hostNameForClients,port));
         cachedLocators = result;
@@ -400,7 +403,6 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     } else {
       cachedLocators = null;
     }
-    logServers();
   }
 
   /**
@@ -434,38 +436,53 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     }
     loadSnapshot.updateLoad(location, load, clientIds);
     this.stats.incServerLoadUpdates();
+    logServers();
   }
 
   private void logServers() {
     if (productUseLog != null) {
-      StringBuilder sb = new StringBuilder(1000);
       Map<ServerLocation, ServerLoad> loadMap = getLoadMap();
       if (loadMap.size() == 0) {
         return;
       }
       
+      long now = System.currentTimeMillis();
+      long lastLogTime = this.lastLogTime;
+      if (now < lastLogTime + SERVER_LOAD_LOG_INTERVAL) {
+        return;
+      }
+      this.lastLogTime = now;
+      
+      int queues = 0;
       int connections = 0;
       for (ServerLoad l: loadMap.values()) {
-        connections += l.getConnectionLoad();
+        queues += l.getSubscriptionConnectionLoad();
+        connections = (int)Math.ceil(l.getConnectionLoad() / l.getLoadPerConnection());
       }
-      sb.append("server summary: ")
-        .append(loadMap.size())
-        .append(" cache servers with ")
-        .append(connections)
-        .append(" client connections")
-        .append(File.separator)
-      .append("current cache servers : ");
       
+      Set<DistributedMember> servers;
       synchronized(ownerMap) {
-        String[] ids = new String[ownerMap.size()];
-        int i=0;
-        for (DistributedMember id: ownerMap.values()) {
-          ids[i++] = id.toString();
-        }
-        Arrays.sort(ids);
-        for (i=0; i<ids.length; i++) {
-          sb.append(ids[i]).append(' ');
-        }
+        servers = new HashSet<>(ownerMap.values());
+      }
+
+      StringBuilder sb = new StringBuilder(1000);
+      sb.append("server count: ")
+        .append(servers.size())
+        .append(" connected client count: ")
+        .append(connections)
+        .append(" client subscription queue count: ")
+        .append(queues)
+        .append(System.lineSeparator())
+        .append("current servers : ");
+      
+      String[] ids = new String[servers.size()];
+      int i=0;
+      for (DistributedMember id: servers) {
+        ids[i++] = id.toString();
+      }
+      Arrays.sort(ids);
+      for (i=0; i<ids.length; i++) {
+        sb.append(ids[i]).append(' ');
       }
       productUseLog.log(sb.toString());
     }

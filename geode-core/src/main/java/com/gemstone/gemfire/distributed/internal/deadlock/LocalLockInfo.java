@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.concurrent.LI;
  * class. It also holds a locality field to identify the VM
  * where the lock is held.
  * 
- * @author dsmith
  *
  */
 class LocalLockInfo implements Serializable {

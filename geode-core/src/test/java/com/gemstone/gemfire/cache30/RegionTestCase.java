@@ -77,7 +77,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * See {@link #getRegionAttributes}.
  *
  *
- * @author David Whitlock
  * @since 3.0
  */
 public abstract class RegionTestCase extends CacheTestCase {
@@ -111,7 +110,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     cleanup();
     Invoke.invokeInEveryVM(getClass(), "cleanup");
     postTearDownRegionTestCase();

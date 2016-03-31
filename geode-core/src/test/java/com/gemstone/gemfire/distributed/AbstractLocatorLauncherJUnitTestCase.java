@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.DistributionLocator;
 
 /**
- * @author Kirk Lund
  * @since 8.0
  */
 public abstract class AbstractLocatorLauncherJUnitTestCase extends AbstractLauncherJUnitTestCase {

@@ -42,7 +42,6 @@ import java.util.concurrent.locks.Lock;
  * com.gemstone.gemfire.distributed.DistributedLockService} and may throw
  * LockNotHeldException or LockServiceDestroyedException.
  * 
- * @author Kirk Lund
  * @since 5.1
  */
 public final class DistributedMemberLock implements Lock {
@@ -53,7 +52,6 @@ public final class DistributedMemberLock implements Lock {
   /**
    * Defines the behavior when attempting to reenter a held lock.
    * 
-   * @author Kirk Lund
    */
   public enum LockReentryPolicy {
     /** Allows lock reentry */

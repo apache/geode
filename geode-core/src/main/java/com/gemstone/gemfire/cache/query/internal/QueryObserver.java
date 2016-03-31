@@ -24,8 +24,6 @@ import com.gemstone.gemfire.cache.query.*;
  * events. See the documentation for class QueryObserverHolder for details.
  * 
  * @version $Revision: 1.2 $
- * @author derekf
- * @author asif
  */
 public interface QueryObserver {
 

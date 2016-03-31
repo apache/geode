@@ -89,7 +89,6 @@ import org.json.JSONTokener;
 
 /**
  * AbstractBaseController class contains common functionalities required for other controllers. 
- * @author Nilkanth Patel, John blum.
  * @since 8.0
  */
 

@@ -23,7 +23,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Just like its parent but enables the server thread pool (aka selector).
  * 
- * @author darrel
  * 
  */
 @Category(IntegrationTest.class)

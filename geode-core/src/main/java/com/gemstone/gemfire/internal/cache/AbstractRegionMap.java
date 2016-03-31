@@ -93,7 +93,6 @@ import com.gemstone.gemfire.pdx.internal.ConvertableToBytes;
  *
  * @since 3.5.1
  *
- * @author Darrel Schneider
  *
  */
 
@@ -954,6 +953,11 @@ public abstract class AbstractRegionMap implements RegionMap {
                     }
                   }
                   if (owner.getIndexManager() != null) {
+                    // Due to having no reverse map, we need to be able to generate the oldkey before doing an update
+                    // Without the BEFORE_UPDATE_OP, we would see duplicate entries in the index as the update could not locate the old key
+                    if (!oldRe.isRemoved()) {
+                      owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY, IndexProtocol.BEFORE_UPDATE_OP);
+                    }
                     owner.getIndexManager().updateIndexes(oldRe, oldRe.isRemoved() ? IndexManager.ADD_ENTRY : IndexManager.UPDATE_ENTRY, 
                         oldRe.isRemoved() ? IndexProtocol.OTHER_OP : IndexProtocol.AFTER_UPDATE_OP);
                   }
@@ -992,10 +996,16 @@ public abstract class AbstractRegionMap implements RegionMap {
                 }
                 incEntryCount(1);
               }
+              
               //Update local indexes
-              if (owner.getIndexManager() != null) {
-                owner.getIndexManager().updateIndexes(newRe, newRe.isRemoved() ? IndexManager.REMOVE_ENTRY : IndexManager.UPDATE_ENTRY, 
-                    newRe.isRemoved() ? IndexProtocol.OTHER_OP : IndexProtocol.AFTER_UPDATE_OP);
+                if (owner.getIndexManager() != null) {
+                  // Due to having no reverse map, we need to be able to generate the oldkey before doing an update
+                  // Without the BEFORE_UPDATE_OP, we would see duplicate entries in the index as the update could not locate the old key
+                  if (oldRe != null && !oldRe.isRemoved()) {
+                    owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY, IndexProtocol.BEFORE_UPDATE_OP);
+                  }
+                  owner.getIndexManager().updateIndexes(newRe, newRe.isRemoved() ? IndexManager.REMOVE_ENTRY : IndexManager.UPDATE_ENTRY,
+                      newRe.isRemoved() ? IndexProtocol.OTHER_OP : IndexProtocol.AFTER_UPDATE_OP);
               }
               done = true;
             } finally {

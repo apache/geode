@@ -22,7 +22,6 @@ import java.util.*;
 /**
  * Contains exceptions generated when attempting to process a commit operation.
  *
- * @author Kirk Lund
  * @since 5.0
  */
 public class CommitReplyException extends ReplyException {

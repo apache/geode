@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Multi-process tests for ProcessLauncher.
  * 
- * @author Kirk Lund
  * @since 7.0
  */
 @SuppressWarnings("serial")
@@ -44,8 +43,7 @@ public class LocalProcessLauncherDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     new File(getClass().getSimpleName()).mkdir();
   }
   

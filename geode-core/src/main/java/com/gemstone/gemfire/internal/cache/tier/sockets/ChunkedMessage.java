@@ -58,7 +58,6 @@ import org.apache.logging.log4j.Logger;
  * 
  * @see com.gemstone.gemfire.internal.cache.tier.MessageType
  * 
- * @author Barry Oglesby
  * 
  * @since 4.2
  */

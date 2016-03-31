@@ -38,8 +38,6 @@ import com.gemstone.org.apache.logging.log4j.message.GemFireParameterizedMessage
  * Implements GemFireLogger with custom levels while also bridging LogWriter 
  * and LogWriterI18n to Log4J.
  * 
- * @author Kirk Lund
- * @author David Hoots
  */
 @SuppressWarnings("unused")
 public final class LogWriterLogger 

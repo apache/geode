@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Does a region putAll on a server
- * @author darrel
  * @since 5.7
  */
 public class PutAllOp {

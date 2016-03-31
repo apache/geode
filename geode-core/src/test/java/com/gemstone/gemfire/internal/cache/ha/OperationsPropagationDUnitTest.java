@@ -100,9 +100,8 @@ public class OperationsPropagationDUnitTest extends DistributedTestCase
    * Create the server1, server2 (in the same DS) and client1 (which is
    * connected only to server2
    */
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     // Server1 VM
     server1 = host.getVM(0);
@@ -116,14 +115,13 @@ public class OperationsPropagationDUnitTest extends DistributedTestCase
     PORT1 = ((Integer)server1.invoke(() -> OperationsPropagationDUnitTest.createServerCache())).intValue();
     PORT2 = ((Integer)server2.invoke(() -> OperationsPropagationDUnitTest.createServerCache())).intValue();
     client1.invoke(() -> OperationsPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT2) ));
-
   }
 
   /**
    * close the caches of the client and the servers
    */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     client1.invoke(() -> OperationsPropagationDUnitTest.closeCache());
     server1.invoke(() -> OperationsPropagationDUnitTest.closeCache());
     server2.invoke(() -> OperationsPropagationDUnitTest.closeCache());

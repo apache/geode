@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.cache.execute.LocalResultCollector;
 
 /**
  * 
- * @author sbawaska
  */
 public class HDFSForceCompactionResultCollector implements LocalResultCollector<Object, List<CompactionStatus>> {
 

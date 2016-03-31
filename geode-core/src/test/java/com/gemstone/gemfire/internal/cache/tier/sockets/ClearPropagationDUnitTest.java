@@ -51,7 +51,6 @@ import com.gemstone.gemfire.cache.client.internal.Connection;
  * This is the DUnit Test to verify clear and DestroyRegion operation in
  * Client-Server Configuration.
  *
- * @author Girish Thombare
  *
  */
 
@@ -83,8 +82,8 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
@@ -107,7 +106,6 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
     client2.invoke(() -> ClearPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2) ));
 
     CacheObserverHolder.setInstance(new CacheObserverAdapter());
-
   }
 
   private void createCache(Properties props) throws Exception
@@ -469,7 +467,7 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     //close client
     client1.invoke(() -> ClearPropagationDUnitTest.closeCache());
     client2.invoke(() -> ClearPropagationDUnitTest.closeCache());

@@ -54,8 +54,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
  * The DurableClientCommands class encapsulates all GemFire shell (Gfsh) commands related to 
  * durable clients and cqs defined in GemFire.
  * </p>
- * @author jhuynh
- * @author bansods
  */
 @SuppressWarnings("unused")
 public class DurableClientCommands extends AbstractCommandsSupport {

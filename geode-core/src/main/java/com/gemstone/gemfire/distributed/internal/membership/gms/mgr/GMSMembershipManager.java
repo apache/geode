@@ -86,6 +86,7 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessageWithDirectReply;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheServerCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -390,7 +391,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * Insert our own MessageReceiver between us and the direct channel, in order
    * to correctly filter membership events.
    * 
-   * @author jpenney
    * 
    */
   class MyDCReceiver implements DirectChannelListener
@@ -1048,6 +1048,13 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   protected void handleOrDeferMessage(DistributionMessage msg) {
     synchronized(startupLock) {
+      if (beingSick || playingDead) {
+        // cache operations are blocked in a "sick" member
+        if (msg.containsRegionContentChange() || msg instanceof PartitionMessageWithDirectReply) {
+          startupMessages.add(new StartupEvent(msg));
+          return;
+        }
+      }
       if (!processingEvents) {
         startupMessages.add(new StartupEvent(msg));
         return;
@@ -2477,8 +2484,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   public synchronized void beHealthy() {
     if (beingSick || playingDead) {
-      beingSick = false;
-      playingDead = false;
+      synchronized(startupMutex) {
+        beingSick = false;
+        playingDead = false;
+        startEventProcessing();
+      }
       logger.info("GroupMembershipService.beHealthy invoked for {} - recovering health now", this.address);
       if (directChannel != null) {
         directChannel.beHealthy();

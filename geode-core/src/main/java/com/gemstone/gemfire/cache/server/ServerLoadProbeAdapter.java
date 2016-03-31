@@ -23,7 +23,6 @@ package com.gemstone.gemfire.cache.server;
  * class and only override the methods for the events of interest.
  * 
  * @since 5.7
- * @author dsmith
  * 
  */
 public abstract class ServerLoadProbeAdapter implements ServerLoadProbe {

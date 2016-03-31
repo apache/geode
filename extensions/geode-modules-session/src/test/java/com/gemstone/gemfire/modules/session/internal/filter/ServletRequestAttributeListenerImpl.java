@@ -21,7 +21,6 @@ import javax.servlet.ServletRequestAttributeEvent;
 import javax.servlet.ServletRequestAttributeListener;
 
 /**
- * @author jdeppe
  */
 public class ServletRequestAttributeListenerImpl extends AbstractListener
     implements ServletRequestAttributeListener {

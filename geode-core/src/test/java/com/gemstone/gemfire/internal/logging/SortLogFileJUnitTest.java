@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests the functionality of the {@link SortLogFile} program.
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

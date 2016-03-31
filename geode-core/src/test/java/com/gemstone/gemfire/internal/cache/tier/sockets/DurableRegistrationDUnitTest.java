@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * 
- * @author Deepkumar Varma
  * 
  * We have 2 servers and One client which registers some keys with durable
  * interest and some without it. We maintain queues on only One server as
@@ -100,8 +99,8 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     this.server1VM = host.getVM(0);
     this.server2VM = host.getVM(1);
@@ -771,7 +770,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 }

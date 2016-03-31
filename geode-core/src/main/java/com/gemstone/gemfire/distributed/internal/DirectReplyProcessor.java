@@ -25,7 +25,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 /**
  * A reply processor optimized for direct ack responses (It skips synchronization,
  * doesn't register with the processor keeper, etc.)
- * @author dsmith
  *
  */
 public class DirectReplyProcessor extends ReplyProcessor21 {

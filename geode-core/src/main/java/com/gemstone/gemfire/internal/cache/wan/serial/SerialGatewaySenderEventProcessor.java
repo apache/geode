@@ -60,8 +60,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 
 /**
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * @since 7.0
  * 
  */

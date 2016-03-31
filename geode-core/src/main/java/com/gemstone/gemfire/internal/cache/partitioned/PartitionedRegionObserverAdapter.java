@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.cache.ProxyBucketRegion;
  * interface PartitionedRegionObserver. See the documentation for class
  * PartitionedRegionObserverHolder for details.
  * 
- * @author Kishor Bachhav
  */
 
 public class PartitionedRegionObserverAdapter implements PartitionedRegionObserver {

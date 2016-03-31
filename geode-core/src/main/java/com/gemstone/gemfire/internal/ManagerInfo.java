@@ -28,7 +28,6 @@ import java.net.InetAddress;
  * in its SystemAdmin  manager VM's main thread.
  * <p> For internal use only.
  *
- * @author darrel
  *
  */
 public class ManagerInfo implements DataSerializable {

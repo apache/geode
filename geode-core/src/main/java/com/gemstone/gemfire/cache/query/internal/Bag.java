@@ -53,8 +53,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @see StructBag
  * @see SortedResultsBag
  *
- * @author Eric Zoerner
- * @author ashahid
  * @since 8.1
  */
 public abstract class Bag<E> extends AbstractCollection<E> implements
@@ -681,7 +679,6 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
   }
 
   /**
-   * @author Asif
    *
    */
   protected class LimitBagIterator extends Bag.BagIterator {

@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * Tests <code>EventTracker</code> management.
  *
- * @author Barry Oglesby
  *
  * @since 6.5
  */
@@ -79,7 +78,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
   }
 
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 

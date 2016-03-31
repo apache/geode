@@ -38,7 +38,6 @@ import com.gemstone.gemfire.internal.cache.Node;
  * 
  * @see java.util.ConcurrentModificationException
  * 
- * @author rreja
  */
 public class VersionedArrayList implements DataSerializable, Versionable, Iterable<Node>
 {

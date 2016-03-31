@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Exception thrown when a DistributionMessage is processed to be propagated
  * back to the sender of the message.
- * @author Eric Zoerner
  *
  */
 public class ReplyException extends GemFireException {

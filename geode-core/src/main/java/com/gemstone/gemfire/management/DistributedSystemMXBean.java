@@ -70,7 +70,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
  * </tr>
  * </table>
  *
- * @author rishim
  * @since 7.0
  *
  */

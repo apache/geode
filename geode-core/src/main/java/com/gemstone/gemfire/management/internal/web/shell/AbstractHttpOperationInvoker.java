@@ -66,7 +66,6 @@ import org.springframework.web.client.RestTemplate;
  * The AbstractHttpOperationInvoker class is an abstract base class encapsulating common functionality for all
  * HTTP-based OperationInvoker implementations.
  * 
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
  * @see com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker
  * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker

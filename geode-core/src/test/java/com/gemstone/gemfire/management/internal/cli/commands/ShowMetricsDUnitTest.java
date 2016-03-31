@@ -50,7 +50,6 @@ import java.util.Collections;
 import java.util.Properties;
 
 /****
- * @author bansods
  */
 public class ShowMetricsDUnitTest extends CliCommandTestBase {
 

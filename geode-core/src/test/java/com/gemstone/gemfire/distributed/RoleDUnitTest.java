@@ -30,15 +30,22 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
- * Tests the functionality of the {@link DistributedMember} class.
+ * Tests the setting of Roles in a DistributedSystem
  *
- * @author Kirk Lund
- * @since 5.0
  */
 public class RoleDUnitTest extends DistributedTestCase {
+  
+  static Properties distributionProperties = new Properties();
 
   public RoleDUnitTest(String name) {
     super(name);
+  }
+  
+  
+  
+  @Override
+  public Properties getDistributedSystemProperties() {
+    return distributionProperties;
   }
   
   /**
@@ -49,12 +56,12 @@ public class RoleDUnitTest extends DistributedTestCase {
     final String[] rolesArray = new String[] {"A","B","C","D","E","F","G"};
 //    final List rolesList = Arrays.asList(rolesArray);
     
-    Properties config = new Properties();
-    config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    config.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    config.setProperty(DistributionConfig.ROLES_NAME, rolesProp);
+    distributionProperties = new Properties();
+    distributionProperties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    distributionProperties.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    distributionProperties.setProperty(DistributionConfig.ROLES_NAME, rolesProp);
 
-    InternalDistributedSystem system = getSystem(config);
+    InternalDistributedSystem system = getSystem(distributionProperties);
     try {
       DM dm = system.getDistributionManager();
       Set allRoles = dm.getAllRoles();
@@ -84,10 +91,8 @@ public class RoleDUnitTest extends DistributedTestCase {
    */
   public void testRolesInDistributedVMs() {  
     // connect all four vms...
-    final String[] vmRoleNames = new String[] 
+    final String[] vmRoles = new String[] 
         {"VM_A", "BAR", "Foo,BAR", "Bip,BAM"};
-    final String[][] vmRoles = new String[][] 
-        {{"VM_A"}, {"BAR"}, {"Foo","BAR"}, {"Bip","BAM"}};
     final Object[][] roleCounts = new Object[][]
         {{"VM_A", new Integer(1)}, {"BAR", new Integer(2)},
          {"Foo", new Integer(1)}, {"Bip", new Integer(1)},
@@ -95,12 +100,14 @@ public class RoleDUnitTest extends DistributedTestCase {
 
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
-      Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
+      Host.getHost(0).getVM(vm).invoke(new SerializableRunnable("create system") {
         public void run() {
           disconnectFromDS();
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, vmRoleNames[vm]);
-          getSystem(config);
+          config.setProperty(DistributionConfig.ROLES_NAME, vmRoles[vm]);
+          config.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+          distributionProperties = config;
+          getSystem();
         }
       });
     }
@@ -108,7 +115,7 @@ public class RoleDUnitTest extends DistributedTestCase {
     // validate roles from each vm...
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
-      Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
+      Host.getHost(0).getVM(vm).invoke(new SerializableRunnable("verify roles") {
         public void run() {
           InternalDistributedSystem sys = getSystem();
           DM dm = sys.getDistributionManager();
@@ -136,6 +143,7 @@ public class RoleDUnitTest extends DistributedTestCase {
         }
       });
     }
+    System.out.println("testRolesInDistributedVMs completed");
   }
   
   /** 
@@ -148,8 +156,9 @@ public class RoleDUnitTest extends DistributedTestCase {
     config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     config.setProperty(DistributionConfig.LOCATORS_NAME, "");
     config.setProperty(DistributionConfig.ROLES_NAME, rolesProp);
+    distributionProperties = config;
 
-    InternalDistributedSystem system = getSystem(config);
+    InternalDistributedSystem system = getSystem();
     try {
       DM dm = system.getDistributionManager();
       InternalDistributedMember member = dm.getDistributionManagerId();

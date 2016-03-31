@@ -23,7 +23,6 @@ package com.gemstone.gemfire.cache;
  * <p>Note that if you wish to refer to an implementation of this interface in XML,
  * the implementation must also implement the Declarable interface.
  * 
- * @author jpenney
  *
  */
 public interface CustomExpiry<K,V> extends CacheCallback {

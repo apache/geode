@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.lang.ObjectUtils;
 /**
  * The Customer class models a customer entity.
  * <p/>
- * @author Nilkanth Patel
  * @since 8.0
  */
 

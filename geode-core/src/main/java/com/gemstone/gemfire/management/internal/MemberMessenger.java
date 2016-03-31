@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.logging.LogWriterImpl;
  * level.
  * 
  * 
- * @author rishim
  * 
  */
 public class MemberMessenger {

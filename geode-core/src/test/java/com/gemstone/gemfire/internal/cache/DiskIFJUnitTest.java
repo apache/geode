@@ -39,7 +39,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Tests DiskRegion's IF file.
- * @author darrel
  *
  */
 @Category(IntegrationTest.class)

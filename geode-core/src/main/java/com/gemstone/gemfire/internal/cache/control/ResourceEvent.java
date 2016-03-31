@@ -21,7 +21,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 
 /**
- * @author sbawaska
  *
  */
 public interface ResourceEvent {

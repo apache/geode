@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 
 /**
  * Contains methods for manipulating resource manager statistics.
- * @author dsmith
  *
  */
 public class ResourceManagerStats {

@@ -62,7 +62,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 /**
- * @author skumar
  *
  */
 public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTestCase{
@@ -114,9 +113,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     super(name);
   }
   
-
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     member0 = host.getVM(0);
     member1 = host.getVM(1);
@@ -126,17 +124,17 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     // close the clients first
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCache());
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCache());
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCache());
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCache());
-    closeCache();
+    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
+    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
+    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
+    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
+    closeCacheAndDisconnect();
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     try {
       member0 = null;
       member1 = null;
@@ -161,7 +159,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     }
   }
 
-  public static void closeCache() {
+  public static void closeCacheAndDisconnect() {
     resetHonourServerGroupsInPRSingleHop();
     if (cache != null && !cache.isClosed()) {
       cache.close();

@@ -27,7 +27,6 @@ import com.gemstone.gemfire.GemFireException;
  * The base class for all com.gemstone.gemfire.security package related
  * exceptions.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public class GemFireSecurityException extends GemFireException {

@@ -60,6 +60,8 @@ public class GatewaySenderStats {
    protected static final String BATCHES_DISTRIBUTED = "batchesDistributed";
    /** Name of the batches redistributed statistic */
    protected static final String BATCHES_REDISTRIBUTED = "batchesRedistributed";
+  /** Name of the batches resized statistic */
+  protected static final String BATCHES_RESIZED = "batchesResized";
    /** Name of the unprocessed events added by primary statistic */
    protected static final String UNPROCESSED_TOKENS_ADDED_BY_PRIMARY = "unprocessedTokensAddedByPrimary";
    /** Name of the unprocessed events added by secondary statistic */
@@ -105,6 +107,8 @@ public class GatewaySenderStats {
    protected static  int batchesDistributedId;
    /** Id of the batches redistributed statistic */
    protected static  int batchesRedistributedId;
+  /** Id of the batches resized statistic */
+  protected static  int batchesResizedId;
    /** Id of the unprocessed events added by primary statistic */
    protected static  int unprocessedTokensAddedByPrimaryId;
    /** Id of the unprocessed events added by secondary statistic */
@@ -191,6 +195,10 @@ public class GatewaySenderStats {
            "Number of batches of events removed from the event queue and resent.",
            "operations", false),
          f.createIntCounter
+          (BATCHES_RESIZED,
+           "Number of batches that were resized because they were too large",
+           "operations", false),
+         f.createIntCounter
           (UNPROCESSED_TOKENS_ADDED_BY_PRIMARY,
            "Number of tokens added to the secondary's unprocessed token map by the primary (though a listener).",
            "tokens"),
@@ -260,6 +268,7 @@ public class GatewaySenderStats {
      batchDistributionTimeId = type.nameToId(BATCH_DISTRIBUTION_TIME);
      batchesDistributedId = type.nameToId(BATCHES_DISTRIBUTED);
      batchesRedistributedId = type.nameToId(BATCHES_REDISTRIBUTED);
+     batchesResizedId = type.nameToId(BATCHES_RESIZED);
      unprocessedTokensAddedByPrimaryId = type.nameToId(UNPROCESSED_TOKENS_ADDED_BY_PRIMARY);
      unprocessedEventsAddedBySecondaryId = type.nameToId(UNPROCESSED_EVENTS_ADDED_BY_SECONDARY);
      unprocessedEventsRemovedByPrimaryId = type.nameToId(UNPROCESSED_EVENTS_REMOVED_BY_PRIMARY);
@@ -433,10 +442,25 @@ public class GatewaySenderStats {
    }
 
    /**
+    * Returns the current value of the batchesResized" stat.
+    * @return the current value of the batchesResized" stat
+    */
+   public int getBatchesResized() {
+     return this.stats.getInt(batchesResizedId);
+   }
+
+   /**
     * Increments the value of the "batchesRedistributed" stat by 1.
     */
    public void incBatchesRedistributed() {
      this.stats.incInt(batchesRedistributedId, 1);
+   }
+
+   /**
+    * Increments the value of the "batchesRedistributed" stat by 1.
+    */
+   public void incBatchesResized() {
+     this.stats.incInt(batchesResizedId, 1);
    }
 
    /**
@@ -740,5 +764,4 @@ public class GatewaySenderStats {
    public Statistics getStats(){
      return stats;
    }
-   
 }

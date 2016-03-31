@@ -43,8 +43,6 @@ import java.util.List;
 import static com.vmware.gemfire.tools.pulse.tests.PulseAbstractTest.getPulseWarPath;
 
 /**
- * @author Sushant Rawal
- * @author tushark
  *
  */
 @Ignore

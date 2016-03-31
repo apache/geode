@@ -83,19 +83,16 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * This class sends the query on various <code>PartitionedRegion</code> data
  * store nodes and collects the results back, does the union of all the results.
  * 
- * @author rreja
- * @author Eric Zoerner
  *   revamped with streaming of results
- * @author Mitch Thomas
  *   retry logic
  */
 public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 {
   private static final Logger logger = LogService.getLogger();
+
   /**
    * An ArrayList which might be unconsumable.
    * @since 6.6.2
-   * @author shobhit
    */
   public static class MemberResultsList extends ArrayList {
     private boolean isLastChunkReceived = false;
@@ -111,7 +108,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * Simple testing interface
-   * @author Mitch Thomas
    * @since 6.0
    */
   public interface TestHook {
@@ -322,13 +318,13 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     } else {
         // send separate message to each recipient since each one has a
         // different list of bucket ids
-        processor = new StreamingQueryPartitionResponse(this.sys, n2b.keySet());
+        processor = createStreamingQueryPartitionResponse(this.sys, n2b);
         for (Iterator<Map.Entry<InternalDistributedMember,List<Integer>>> itr = n2b.entrySet().iterator(); itr.hasNext();) {
           Map.Entry<InternalDistributedMember , List<Integer>> me =  itr.next();
           final InternalDistributedMember rcp =  me.getKey();
           final List<Integer> bucketIds =  me.getValue();
           DistributionMessage m = createRequestMessage(rcp, processor, bucketIds);
-          Set notReceivedMembers = this.sys.getDistributionManager().putOutgoing(m);
+          Set notReceivedMembers = sendMessage(m);
           if (th != null) {
             th.hook(4);
           }
@@ -423,6 +419,14 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       }
     }
     return requiresRetry | localNeedsRetry;
+  }
+
+  protected Set sendMessage(DistributionMessage m) {
+    return this.sys.getDistributionManager().putOutgoing(m);
+  }
+
+  protected StreamingQueryPartitionResponse createStreamingQueryPartitionResponse(InternalDistributedSystem system,HashMap<InternalDistributedMember, List<Integer>> n2b) {
+    return new StreamingQueryPartitionResponse(system, n2b.keySet());
   }
 
   
@@ -820,7 +824,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * @return the node-to-bucket map
    */
   
-  // (package access, and returns map for unit test purposes)
+  // (package access for unit test purposes)
   Map<InternalDistributedMember, List<Integer>> buildNodeToBucketMap() throws QueryException
   {
     return buildNodeToBucketMapForBuckets(this.bucketsToQuery);
@@ -858,7 +862,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       }
     }
     
-    final List allNodes = new ArrayList(this.pr.getRegionAdvisor().adviseDataStore());
+    final List allNodes = getAllNodes();
     /*
     for(Map.Entry<InternalDistributedMember, Collection<Collection>> entry : resultsPerMember.entrySet()) {
       InternalDistributedMember member = entry.getKey();
@@ -880,7 +884,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       final List<Integer> buckets = new ArrayList<Integer>();
       for (Integer bid : bucketIdsToConsider) {
         if (!bucketIds.contains(bid)) {
-          final Set owners = pr.getRegionAdvisor().getBucketOwners(bid.intValue());
+          final Set owners = getBucketOwners(bid);
           if (owners.contains(nd)) {
             buckets.add(bid);
             bucketIds.add(bid);
@@ -902,6 +906,14 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       logger.debug("Node to bucketId map: {}", ret);
     }
     return ret;
+  }
+
+  protected Set<InternalDistributedMember> getBucketOwners(Integer bid) {
+    return pr.getRegionAdvisor().getBucketOwners(bid.intValue());
+  }
+
+  protected ArrayList getAllNodes() {
+    return new ArrayList(this.pr.getRegionAdvisor().adviseDataStore());
   }
 
   /**
@@ -926,7 +938,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
       List<Integer> bucketList = this.node2bucketIds.get(me);
       try {
-        PRQueryProcessor qp = new PRQueryProcessor(this.pr, query, parameters, bucketList);
+        PRQueryProcessor qp = createLocalPRQueryProcessor(bucketList);
         MemberResultsList resultCollector = new MemberResultsList();
         
         // Execute Query.
@@ -975,8 +987,12 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         }
         
         resultCollector.setLastChunkReceived(true);
-        // Add results to the results-list.
-        this.resultsPerMember.put(me, resultCollector);
+        // Add results to the results-list.  If prior successfully completed
+        //results exist from previous executions on different buckets, add (to) those results as well.
+        MemberResultsList otherResults = (MemberResultsList)this.resultsPerMember.put(me, resultCollector);
+        if (otherResults != null) {
+          resultCollector.addAll(otherResults);
+        } 
         
       } catch (ForceReattemptException retryRequired) {
         if (logger.isDebugEnabled()) {
@@ -986,6 +1002,10 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       } 
     }
     return false;
+  }
+
+  protected PRQueryProcessor createLocalPRQueryProcessor(List<Integer> bucketList) {
+    return new PRQueryProcessor(this.pr, query, parameters, bucketList);
   }
 
   protected void memberStreamCorrupted(InternalDistributedMember sender) {
@@ -1004,7 +1024,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * in multipleThreads and results gained from buckets.
    * In future this can be used for adding for more information to final
    * query running info from pool threads.
-   * @author shobhit
    * @since 6.6
    */
   public static class PRQueryResultCollector {

@@ -20,7 +20,6 @@ package com.gemstone.gemfire.management.cli;
  * Indicates that an exception occurred while accessing/creating a Command
  * Service for processing GemFire Command Line Interface (CLI) commands.
  * 
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

@@ -47,7 +47,6 @@ import com.gemstone.gemfire.test.junit.rules.ExpectedTimeoutRule;
 /**
  * Unit tests the PidFile class.
  * 
- * @author Kirk Lund
  * @since 8.2
  */
 @Category(UnitTest.class)

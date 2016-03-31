@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.*;
  * @see #wasInvoked
  * @see TestCacheWriter
  *
- * @author David Whitlock
  *
  * @since 3.0
  */

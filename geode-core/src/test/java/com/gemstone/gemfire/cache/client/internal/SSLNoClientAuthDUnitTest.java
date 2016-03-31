@@ -54,10 +54,9 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
   
   private static SSLNoClientAuthDUnitTest instance = new SSLNoClientAuthDUnitTest("SSLNoClientAuthDUnitTest");
   
-  
-  public void setUp() throws Exception {
+  @Override
+  public final void preSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
   }
 
   public SSLNoClientAuthDUnitTest(String name) {
@@ -267,7 +266,7 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
     VM clientVM = host.getVM(2);

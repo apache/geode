@@ -39,7 +39,6 @@ import java.util.zip.GZIPOutputStream;
  * <code>CacheServerHelper</code> is a static class that provides helper methods
  * for the CacheServer classes.
  *
- * @author Barry Oglesby
  * @since 3.5
  */
 public class CacheServerHelper {

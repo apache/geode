@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -27,23 +29,19 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Make sure that create are distributed and done in
  * remote regions that are CACHED_ALL_EVENTS*.
  *
- * @author darrel
  * @since 5.0
  */
-public class CachedAllEventsDUnitTest extends CacheTestCase {
-
-//  private transient Region r;
-//  private transient DistributedMember otherId;
-//  private transient int invokeCount;
-  
-  public CachedAllEventsDUnitTest(String name) {
-    super(name);
-  }
+@Category(DistributedTest.class)
+public class CachedAllEventsDUnitTest extends JUnit4CacheTestCase {
 
   private VM getOtherVm() {
     Host host = Host.getHost(0);
@@ -75,8 +73,6 @@ public class CachedAllEventsDUnitTest extends CacheTestCase {
     return InternalDistributedSystem.getAnyInstance().getDistributedMember();
   }
   
-  //////////////////////  Test Methods  //////////////////////
-
   /**
    * make sure a remote create will be done in a NORMAL+ALL region
    * @param rmtCreate is true if create should happen in remote region
@@ -98,13 +94,18 @@ public class CachedAllEventsDUnitTest extends CacheTestCase {
       assertEquals(false, r1.containsKey("key"));
     }
   }
-  // TODO these are never used
+
+  @Test
   public void testRemoteCreate_CAE() throws CacheException {
     remoteCreate(DataPolicy.NORMAL, InterestPolicy.ALL, true);
   }
+
+  @Test
   public void testRemoteCreate_CAER() throws CacheException {
     remoteCreate(DataPolicy.REPLICATE, InterestPolicy.CACHE_CONTENT, true);
   }
+
+  @Test
   public void testRemoteCreate_C() throws CacheException {
     remoteCreate(DataPolicy.NORMAL, InterestPolicy.CACHE_CONTENT, false);
   }

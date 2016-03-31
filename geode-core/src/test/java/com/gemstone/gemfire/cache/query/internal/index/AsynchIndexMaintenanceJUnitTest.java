@@ -46,7 +46,6 @@ import static org.junit.Assert.*;
 import junit.framework.TestCase;
 
 /**
- * @author Asif
  *
  */
 @Category(IntegrationTest.class)

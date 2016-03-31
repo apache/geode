@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * A ThreadPoolExecutor with stat support.
- * @author darrel
  *
  */
 public class PooledExecutorWithDMStats extends ThreadPoolExecutor {

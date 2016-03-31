@@ -33,7 +33,6 @@ import com.gemstone.gemfire.cache.Scope;
  * Data class which contains description of a region and provides the aggregated
  * view of the region Used by describe region command
  * 
- * @author Sourabh Bansod 
  * 
  */
 public class RegionDescription implements Serializable {

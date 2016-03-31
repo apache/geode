@@ -51,7 +51,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * eventually destroy region.
  * The Test verifies that fix prevents this.
  * 
- * @author pallavis
  */
 
 public class Bug40299DUnitTest extends CacheTestCase
@@ -77,16 +76,14 @@ public class Bug40299DUnitTest extends CacheTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
   }
 
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception
-  {
+  public final void preTearDownCacheTestCase() throws Exception {
     vm0.invoke(destroyRegion());
   }
 

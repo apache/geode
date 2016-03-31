@@ -54,7 +54,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-
 import org.junit.Test;
 
 import java.io.File;
@@ -71,8 +70,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * The DiskStoreCommandsDUnitTest class is a distributed test suite of test cases for testing the disk store commands
  * that are part of Gfsh. </p>
  *
- * @author John Blum
- * @author David Hoots
  * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
  * @see org.junit.Assert
  * @see org.junit.Test
@@ -1145,13 +1142,25 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   @Override
   protected final void preTearDownCliCommandTestBase() throws Exception {
-    for (String path : this.filesToBeDeleted) {
+    try {
+      deleteFiles();
+    } catch (IOException ex) {
+      // This sometimes throws a DirectoryNotEmptyException. The only reason I can see for this is that additional
+      // files are being written into the directory while it is being deleted (recursively). So let's just try one more
+      // time.
       try {
-        FileUtil.delete(new File(path));
+        deleteFiles();
       } catch (IOException e) {
         LogWriterUtils.getLogWriter().error("Unable to delete file", e);
       }
     }
     this.filesToBeDeleted.clear();
+  }
+
+  private void deleteFiles() throws IOException {
+    for (String path : this.filesToBeDeleted) {
+      FileUtil.delete(new File(path));
+    }
+
   }
 }

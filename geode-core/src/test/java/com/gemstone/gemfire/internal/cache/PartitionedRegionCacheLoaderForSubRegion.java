@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Declarable;
 
 /**
- * @author gthombar
  * This class is cacheLoader for the partition region
  */
 public class PartitionedRegionCacheLoaderForSubRegion implements CacheLoader, Declarable {

@@ -95,9 +95,8 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   
   protected static boolean invalidated = false;
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -806,7 +805,7 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close the clients first
     client1.invoke(() -> CacheServerTransactionsDUnitTest.closeCache());
     client2.invoke(() -> CacheServerTransactionsDUnitTest.closeCache());

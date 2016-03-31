@@ -21,7 +21,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 /**
  * Exception to indicate that Region is empty for data aware functions.
  * 
- * @author skumar
  * @since 6.5
  * 
  */

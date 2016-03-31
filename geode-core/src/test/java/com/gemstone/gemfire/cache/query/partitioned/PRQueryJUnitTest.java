@@ -42,7 +42,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Class verifies Region#query(String predicate) API for PartitionedRegion on a
  * single VM.
  * 
- * @author rreja
  * 
  */
 @Category(IntegrationTest.class)

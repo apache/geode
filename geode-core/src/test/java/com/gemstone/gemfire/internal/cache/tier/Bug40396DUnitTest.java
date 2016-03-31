@@ -37,7 +37,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Test delta propagation for faulty delta implementation
- * @author aingle
  * @since 6.1
  */
 public class Bug40396DUnitTest extends DistributedTestCase {
@@ -59,8 +58,8 @@ public class Bug40396DUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     final Host host = Host.getHost(0);
     server = host.getVM(0);
@@ -202,7 +201,7 @@ public class Bug40396DUnitTest extends DistributedTestCase {
   }
   
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // then close the servers
     server.invoke(() -> Bug40396DUnitTest.removeExceptions());
     server.invoke(() -> Bug40396DUnitTest.closeCache());

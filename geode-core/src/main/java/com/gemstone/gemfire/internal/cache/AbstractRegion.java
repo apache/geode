@@ -106,7 +106,6 @@ import com.google.common.util.concurrent.Service.State;
  * Takes care of RegionAttributes, AttributesMutator, and some no-brainer method
  * implementations.
  *
- * @author Eric Zoerner
  */
 @SuppressWarnings("deprecation")
 public abstract class AbstractRegion implements Region, RegionAttributes,
@@ -1969,7 +1968,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return this.serialNumber;
   }
 
-  public final GemFireCacheImpl getCache() {
+  public /*final*/ GemFireCacheImpl getCache() {
     return this.cache;
   }
 

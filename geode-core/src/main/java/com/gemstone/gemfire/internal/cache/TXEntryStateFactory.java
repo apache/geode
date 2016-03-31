@@ -20,7 +20,6 @@ import com.gemstone.gemfire.internal.cache.RegionEntry;
 
 /**
  * 
- * @author Asif
  *
  */
 public interface TXEntryStateFactory

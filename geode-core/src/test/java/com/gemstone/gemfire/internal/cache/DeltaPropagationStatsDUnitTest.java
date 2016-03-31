@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @author ashetkar
  * 
  */
 public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
@@ -85,8 +84,8 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -95,7 +94,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     lastKeyReceived = false;
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.resetLastKeyReceived());
     vm1.invoke(() -> DeltaPropagationStatsDUnitTest.resetLastKeyReceived());

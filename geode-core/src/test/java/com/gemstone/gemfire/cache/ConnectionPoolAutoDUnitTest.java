@@ -29,10 +29,9 @@ public class ConnectionPoolAutoDUnitTest extends ConnectionPoolDUnitTest {
   public ConnectionPoolAutoDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
-    // TODO Auto-generated method stub
+
+  @Override
+  protected final void postSetUpConnectionPoolDUnitTest() throws Exception {
     ClientServerTestCase.AUTO_LOAD_BALANCE = true;
     Invoke.invokeInEveryVM(new SerializableRunnable("setupAutoMode") {
       public void run() {

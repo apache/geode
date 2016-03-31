@@ -22,8 +22,6 @@
 package com.gemstone.gemfire.internal.datasource;
 
 /**
- * @author tnegi
- * @author asif
  */
 public interface DataSourceResources {
 

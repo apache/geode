@@ -23,7 +23,6 @@ import com.gemstone.gemfire.GemFireCheckedException;
  * Thrown if statistics are requested when statistics are disabled on the
  * region.
  *
- * @author Eric Zoerner
  *
  *
  * @see com.gemstone.gemfire.cache.AttributesFactory#setStatisticsEnabled(boolean)

@@ -74,8 +74,8 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     dataStore1 = host.getVM(0);
     dataStore2 = host.getVM(1);
@@ -103,7 +103,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
 
     SerializableCallable installHook = new SerializableCallable() {
       public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion)cache.getRegion("CustomerPR");
+        PartitionedRegion pr = (PartitionedRegion)basicGetCache().getRegion("CustomerPR");
         Runnable r = new ReadHook();
         pr.getDataStore().setBucketReadHook(r);
         return null;
@@ -112,7 +112,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
     invokeInAllDataStores(installHook);
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        Region region = cache.getRegion("CustomerPR");
+        Region region = basicGetCache().getRegion("CustomerPR");
         Set filter = new HashSet();
         filter.add("1");
         FunctionService.onRegion(region).withFilter(filter).execute(IterateFunction.id, true, false, true).getResult();
@@ -248,7 +248,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
   public void createCache() {
     try {
       getCache();
-      assertNotNull(cache);
+      assertNotNull(basicGetCache());
     }
     catch (Exception e) {
       Assert.fail("Failed while creating the cache", e);
@@ -299,10 +299,10 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
         .setPartitionResolver(new LDSPartitionResolver()).create();
     AttributesFactory attr = new AttributesFactory();
     attr.setPartitionAttributes(prAttr);
-    assertNotNull(cache);
+    assertNotNull(basicGetCache());
 
     if (partitionedRegionName.equals("CustomerPR")) {
-      customerPR = cache.createRegion(partitionedRegionName, attr.create());
+      customerPR = basicGetCache().createRegion(partitionedRegionName, attr.create());
       assertNotNull(customerPR);
       LogWriterUtils.getLogWriter().info(
           "Partitioned Region " + partitionedRegionName
@@ -310,7 +310,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
 
     }
     if (partitionedRegionName.equals("OrderPR")) {
-      orderPR = cache.createRegion(partitionedRegionName, attr.create());
+      orderPR = basicGetCache().createRegion(partitionedRegionName, attr.create());
       assertNotNull(orderPR);
       LogWriterUtils.getLogWriter().info(
           "Partitioned Region " + partitionedRegionName
@@ -319,7 +319,7 @@ public class LocalDataSetDUnitTest extends CacheTestCase {
     }
 
     if (partitionedRegionName.equals("ShipmentPR")) {
-      shipmentPR = cache.createRegion(partitionedRegionName, attr.create());
+      shipmentPR = basicGetCache().createRegion(partitionedRegionName, attr.create());
       assertNotNull(shipmentPR);
       LogWriterUtils.getLogWriter().info(
           "Partitioned Region " + partitionedRegionName

@@ -16,8 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.util.Iterator;
-import java.util.Properties;
+import static com.gemstone.gemfire.test.dunit.Invoke.*;
+import static com.jayway.awaitility.Awaitility.*;
+import static com.jayway.awaitility.Duration.*;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -25,23 +26,16 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.MirrorType;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.ha.HAHelper;
-import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessage;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * This is the bugtest for bug no. 36738. When Object of class
@@ -52,143 +46,89 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * 2. Perform put operations on HARegion with the value as ClientUpdateMessage. 
  * 3. Create server2 and HARegion in it so that GII will happen. 
  * 4. Perform get operations from server2.
- * 
  */
-
-public class HABug36738DUnitTest extends DistributedTestCase
-{
-
-  static VM server1 = null;
-
-  static VM server2 = null;
-
-  private static int NO_OF_PUTS = 10;
+public class HABug36738DUnitTest extends DistributedTestCase {
 
   private static final String REGION_NAME = "HABug36738DUnitTest_Region";
+  private static final String HAREGION_NAME = "haRegion";
+  private static final int COUNT = 10;
 
-  protected static Cache cache = null;
+  private static Cache cache;
 
-  protected static HARegionQueue messageQueue = null;
-
-  static Region haRegion = null;
-
-  final static String HAREGION_NAME = "haRegion";
+  private Region haRegion;
 
   public HABug36738DUnitTest(String name) {
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
-    final Host host = Host.getHost(0);
-    server1 = host.getVM(0);
-    server2 = host.getVM(1);
-
-  }
-
   @Override
-  protected final void preTearDown() throws Exception {
-    server1.invoke(() -> HABug36738DUnitTest.closeCache());
-    server2.invoke(() -> HABug36738DUnitTest.closeCache());
+  public final void preTearDown() throws Exception {
+    disconnectAllFromDS();
+    invokeInEveryVM( () -> cache = null );
   }
 
-  public void testBug36768() throws Exception
-  {
-    createServer1();
-    Wait.pause(10000);
-    server1.invoke(() -> HABug36738DUnitTest.checkRegionQueueSize());
-    createServer2();
-    server1.invoke(() -> HABug36738DUnitTest.checkRegionQueueSize());
-    server2.invoke(() -> HABug36738DUnitTest.checkRegionQueueSize());
-    server2.invoke(() -> HABug36738DUnitTest.printRecs());
+  public void testBug36768() throws Exception {
+    final VM server1 = Host.getHost(0).getVM(0);
+    final VM server2 = Host.getHost(0).getVM(1);
+
+    server1.invoke(() -> createServerCacheWithHAAndRegion());
+    await().atMost(TEN_SECONDS).until( () -> regionExists(server1, HAREGION_NAME) );
+    server1.invoke(() -> checkRegionQueueSize());
+
+    server2.invoke(() -> createServerCacheWithHA());
+
+    server1.invoke(() -> checkRegionQueueSize());
+    server2.invoke(() -> checkRegionQueueSize());
   }
 
-  public static void printRecs()
-  {
-    HARegion region = (HARegion)cache.getRegion(Region.SEPARATOR
-        + HAHelper.getRegionQueueName(HAREGION_NAME));
-    assertNotNull(region);
-    Iterator itr = region.keys().iterator();
-    while (itr.hasNext()) {
-      Object key = itr.next();
-      ClientUpdateMessage value = (ClientUpdateMessage)region.get(key);
-      LogWriterUtils.getLogWriter().info("key : " + key + "Value " + value.getValue());
-
-    }
-
-  }
-
-  // function to create server and region in it.
-  private void createServer1() throws Exception
-  {
-    server1.invoke(() -> HABug36738DUnitTest.createServerCache( new Boolean(true) ));
-  }
-
-  // function to create server without region.
-  private void createServer2() throws Exception
-  {
-    server2.invoke(() -> HABug36738DUnitTest.createServerCache( new Boolean(false) ));
-  }
-
-  public static void createServerCache(Boolean isRegion) throws Exception
-  {
-    new HABug36738DUnitTest("temp").createCache(new Properties());
-    if (isRegion.booleanValue()) {
-      AttributesFactory factory = new AttributesFactory();
-      factory.setScope(Scope.DISTRIBUTED_ACK);
-      factory.setEnableConflation(true);
-      factory.setDataPolicy(DataPolicy.REPLICATE);
-      RegionAttributes attrs = factory.createRegionAttributes();
-      cache.createVMRegion(REGION_NAME, attrs);
-
-    }
-
-    AttributesFactory factoryForHARegion = new AttributesFactory();
-    factoryForHARegion.setMirrorType(MirrorType.KEYS_VALUES);
-    factoryForHARegion.setScope(Scope.DISTRIBUTED_ACK);
-    RegionAttributes ra = factoryForHARegion.createRegionAttributes();
-    haRegion = HARegion.getInstance(HAREGION_NAME, (GemFireCacheImpl)cache, null,
-        ra);
-
-    if (isRegion.booleanValue()) {
-      for (int i = 0; i < NO_OF_PUTS; i++) {
-        ClientUpdateMessage clientMessage = new ClientUpdateMessageImpl(
-            EnumListenerEvent.AFTER_UPDATE, (LocalRegion)haRegion, null, ("value" + i)
-                .getBytes(), (byte)0x01, null, new ClientProxyMembershipID(),
-            new EventID(("memberID" + i).getBytes(), i, i));
-
-        haRegion.put(new Long(i), clientMessage);
-        LogWriterUtils.getLogWriter().info("Putting in the message Queue");
-
-      }
-    }
-  }
-
-  private void createCache(Properties props) throws Exception
-  {
-    DistributedSystem ds = getSystem(props);
-    assertNotNull(ds);
-    ds.disconnect();
-    ds = getSystem(props);
-    cache = CacheFactory.create(ds);
+  private void createServerCacheWithHAAndRegion() throws Exception {
+    createServerCacheWithHA();
     assertNotNull(cache);
-  }
+    assertNotNull(this.haRegion);
 
-  public static void closeCache()
-  {
-    if (cache != null && !cache.isClosed()) {
-      cache.close();
-      cache.getDistributedSystem().disconnect();
+    final AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    factory.setEnableConflation(true);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
+
+    cache.createVMRegion(REGION_NAME, factory.createRegionAttributes());
+
+    for (int i = 0; i < COUNT; i++) {
+      ClientUpdateMessage clientMessage = new ClientUpdateMessageImpl(
+              EnumListenerEvent.AFTER_UPDATE,
+              (LocalRegion)this.haRegion,
+              null,
+              ("value" + i).getBytes(),
+              (byte)0x01,
+              null,
+              new ClientProxyMembershipID(),
+              new EventID(("memberID" + i).getBytes(), i, i));
+
+      this.haRegion.put(i, clientMessage);
     }
   }
 
-  public static void checkRegionQueueSize()
-  {
-    HARegion region = (HARegion)cache.getRegion(Region.SEPARATOR
-        + HAHelper.getRegionQueueName(HAREGION_NAME));
-    assertNotNull(region);
-    LogWriterUtils.getLogWriter().info("Size of the Queue : " + region.size());
+  private void createServerCacheWithHA() throws Exception {
+    cache = CacheFactory.create(getSystem());
 
+    final AttributesFactory factory = new AttributesFactory();
+    factory.setMirrorType(MirrorType.KEYS_VALUES);
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+
+    haRegion = HARegion.getInstance(HAREGION_NAME, (GemFireCacheImpl) cache, null, factory.createRegionAttributes());
+  }
+
+  private void checkRegionQueueSize() {
+    final HARegion region = (HARegion) cache.getRegion(Region.SEPARATOR + HAHelper.getRegionQueueName(HAREGION_NAME));
+    assertNotNull(region);
+    assertEquals(COUNT, region.size());
+  }
+
+  private boolean regionExists(final VM vm, final String name) {
+    return vm.invoke(() -> regionExists(name));
+  }
+
+  private boolean regionExists(final String name) {
+    return cache.getRegion(Region.SEPARATOR + HAHelper.getRegionQueueName(HAREGION_NAME)) != null;
   }
 }

@@ -25,7 +25,6 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 /**
- * @author skumar
  * 
  */
 public class ParallelWANConflationDUnitTest extends WANTestBase {
@@ -35,8 +34,8 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUpWANTestBase() throws Exception {
     IgnoredException.addIgnoredException("java.net.ConnectException");
   }
 

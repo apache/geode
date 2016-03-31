@@ -38,7 +38,6 @@ import java.util.List;
  * allows us to just back out and wait for more data, while exceptions are left to 
  * malformed requests which should never happen if using a proper Redis client.
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public class ByteToCommandDecoder extends ByteToMessageDecoder {

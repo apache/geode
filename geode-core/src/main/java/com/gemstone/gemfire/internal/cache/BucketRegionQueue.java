@@ -55,7 +55,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
 
 /**
- * @author Suranjan Kumar
  * 
  */
 public class BucketRegionQueue extends AbstractBucketRegionQueue {

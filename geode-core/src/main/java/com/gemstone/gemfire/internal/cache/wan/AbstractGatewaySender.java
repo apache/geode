@@ -81,8 +81,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * Abstract implementation of both Serial and Parallel GatewaySender. It handles
  * common functionality like initializing proxy.
  * 
- * @author Suranjan Kumar
- * @author Yogesh Mahajan
  * 
  * @since 7.0
  */
@@ -1298,7 +1296,6 @@ public abstract class AbstractGatewaySender implements GatewaySender,
    * we will release. This is done by making a copy/clone of the original event.
    * This fixes bug 52029.
    * 
-   * @author dschneider
    *
    */
   public static class TmpQueueEvent implements Releasable {

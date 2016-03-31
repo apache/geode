@@ -28,7 +28,6 @@ import java.util.Map;
  * Since any number of DistributedLockService objects can be created by a member there may be 0 or
  * more instances of this MBean available.
  * 
- * @author rishim
  * @since 7.0
  * 
  */

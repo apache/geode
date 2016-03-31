@@ -23,7 +23,6 @@ import java.io.*;
 /**
  * Enumerated type for expiration actions.
  *
- * @author Eric Zoerner
  *
  *
  * @see ExpirationAttributes

@@ -38,7 +38,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases testing the proper
  * functioning of the 'list disk-store' and 'describe disk-store' commands. </p>
  *
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase
  * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
  * @since 7.0
@@ -63,8 +62,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     createDefaultSetup(null);
     setupGemFire();
   }

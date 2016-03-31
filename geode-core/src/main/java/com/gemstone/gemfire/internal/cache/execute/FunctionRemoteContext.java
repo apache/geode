@@ -29,7 +29,6 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 /**
  * FunctionContext for remote/target nodes
  * 
- * @author Yogesh Mahajan  
  *
  */
 public class FunctionRemoteContext implements DataSerializable {

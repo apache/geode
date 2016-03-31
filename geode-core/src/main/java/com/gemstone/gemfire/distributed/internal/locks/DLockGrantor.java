@@ -59,8 +59,6 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWrite
  * <p>
  * ReadWriteLocks are not currently handled by grantor recovery or transfer.
  *
- * @author Kirk Lund
- * @author Darrel Schneider
  */
 @SuppressWarnings("unchecked")
 public class DLockGrantor {

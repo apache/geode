@@ -59,7 +59,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *
  * Test to verify correct propagation of EventID from server to client
  *
- * @author Mitul Bid
  * @since 5.1
  */
 
@@ -87,9 +86,8 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
   }
 
   /** get the hosts and the VMs * */
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
@@ -98,7 +96,7 @@ public class HAEventIdPropagationDUnitTest extends DistributedTestCase
 
   /** close the caches* */
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     client1.invoke(() -> HAEventIdPropagationDUnitTest.closeCache());
     // close server
     server1.invoke(() -> HAEventIdPropagationDUnitTest.closeCache());

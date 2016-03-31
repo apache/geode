@@ -90,7 +90,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Tests putAll for c/s. Also tests removeAll
  * 
- * @author Gester Zhou
  * @since 5.0.23
  */
 @SuppressWarnings("serial")
@@ -2250,6 +2249,15 @@ public void testOneServer() throws CacheException, InterruptedException {
     stopBridgeServers(getCache());
   }
   
+  
+  public void testRepeat() throws Exception {
+    long giveup = System.currentTimeMillis() + (30 * 60000);
+    do {
+      testPartialKeyInPRSingleHop();
+      tearDown(); setUp();
+    } while (System.currentTimeMillis() < giveup);
+  }
+
   /**
    * Tests partial key putAll to 2 PR servers, because putting data at server
    * side is different between PR and LR. PR does it in postPutAll.
@@ -2359,7 +2367,6 @@ public void testOneServer() throws CacheException, InterruptedException {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
-        region.registerInterest("ALL_KEYS");
 
         // create keys
         try {

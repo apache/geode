@@ -24,7 +24,6 @@ package com.gemstone.gemfire.cache.operations;
  * {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_CLEAR} 
  * and {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_DESTROY}.
  * 
- * @author Sumedh Wale
  * @since 5.5
  */
 public abstract class RegionOperationContext extends OperationContext {

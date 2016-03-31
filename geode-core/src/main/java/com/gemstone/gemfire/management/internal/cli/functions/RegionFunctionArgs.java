@@ -19,8 +19,6 @@
  * Used to carry arguments between gfsh region command implementations and the functions
  * that do the work for those commands.
  * 
- * @author Abhishek Chaudhari
- * @author David Hoots
  * @since 7.0
  */
 package com.gemstone.gemfire.management.internal.cli.functions;

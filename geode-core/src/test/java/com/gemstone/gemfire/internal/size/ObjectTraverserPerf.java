@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
 
 /**
- * @author dsmith
  *
  */
 public class ObjectTraverserPerf {

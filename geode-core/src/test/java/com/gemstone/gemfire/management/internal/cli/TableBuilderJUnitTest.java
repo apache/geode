@@ -42,8 +42,6 @@ import static org.powermock.api.mockito.PowerMockito.when;
 /**
  * Testing TableBuilder and TableBuilderHelper using mocks for Gfsh
  *
- * @author tushark
- * @author Jens Deppe
  */
 @Category(IntegrationTest.class)
 @RunWith(PowerMockRunner.class)

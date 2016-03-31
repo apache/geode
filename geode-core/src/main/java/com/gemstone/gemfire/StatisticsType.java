@@ -28,7 +28,6 @@ package com.gemstone.gemfire;
  * To get an instance of this interface use an instance of
  * {@link StatisticsFactory}.
  *
- * @author Darrel Schneider
  *
  * @since 3.0
  */

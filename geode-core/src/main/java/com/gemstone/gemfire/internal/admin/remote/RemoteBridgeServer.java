@@ -45,7 +45,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * that is passed between administration VMs and VMs that host caches
  * with bridge servers.
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class RemoteBridgeServer

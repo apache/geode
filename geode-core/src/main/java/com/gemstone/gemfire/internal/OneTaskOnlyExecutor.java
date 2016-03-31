@@ -44,7 +44,6 @@ import java.util.concurrent.TimeUnit;
  * the currently queued task will be canceled and the new task will be submitted to the queue
  * with the new time. 
  * 
- * @author dsmith
  * @since 6.0
  */
 @SuppressWarnings("synthetic-access")

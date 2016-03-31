@@ -41,7 +41,6 @@ import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
 /**
  * A little test program for testing (and debugging) disk regions.
  *
- * @author David Whitlock
  *
  * @since 3.2
  */

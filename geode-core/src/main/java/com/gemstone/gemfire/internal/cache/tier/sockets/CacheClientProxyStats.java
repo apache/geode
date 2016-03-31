@@ -30,7 +30,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionStats;
  * to a {@link CacheClientProxy}. These statistics are related to cache server
  * client notifications for each client.
  *
- * @author Barry Oglesby
  *
  * @since 4.2
  */

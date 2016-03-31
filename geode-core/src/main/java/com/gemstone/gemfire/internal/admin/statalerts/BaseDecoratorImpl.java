@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
  * @see GaugeThresholdDecoratorImpl
  * @see NumberThresholdDecoratorImpl
  * 
- * @author hgadre
  */
 public abstract class BaseDecoratorImpl implements StatAlertDefinition {
 

@@ -31,7 +31,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  *
- * @author Eric Zoerner
  *
  */
 public class DistributionAdvisorDUnitTest extends DistributedTestCase {
@@ -41,9 +40,9 @@ public class DistributionAdvisorDUnitTest extends DistributedTestCase {
   public DistributionAdvisorDUnitTest(String name) {
     super(name);
   }
-  
-  public void setUp() throws Exception {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     // connect to distributed system in every VM
     Invoke.invokeInEveryVM(new SerializableRunnable("DistributionAdvisorDUnitTest: SetUp") {
       public void run() {
@@ -84,7 +83,7 @@ public class DistributionAdvisorDUnitTest extends DistributedTestCase {
   }
     
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     this.advisor.close();
   }
   

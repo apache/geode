@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.redis;
 /**
  * Interface for executors of a {@link Command}
  * 
- * @author Vitaliy Gavrilov
  *
  */
 public interface Executor {

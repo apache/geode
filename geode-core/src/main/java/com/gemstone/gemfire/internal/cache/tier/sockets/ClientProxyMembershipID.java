@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * This class represents a ConnectionProxy of the CacheClient
  * 
- * @author ashahid
  * 
  *  
  */

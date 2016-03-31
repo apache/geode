@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
  * This class is used to resolve the location of DTD. 
  * During development time the dtd for the latest version is not published 
  * on the www.gemstone.com , then the dtd should be picked up as a resource from the Jar file.
- * @author bansods
  *
  * @deprecated As of 8.1 use {@link CacheXml}
  */

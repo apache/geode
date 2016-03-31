@@ -45,7 +45,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * the list of messages that have been dispatched by this node. The messages are
  * received by other nodes and the processing is handed over to an executor
  * 
- * @author Mitul Bid
  *  
  */
 public final class QueueRemovalMessage extends PooledDistributionMessage

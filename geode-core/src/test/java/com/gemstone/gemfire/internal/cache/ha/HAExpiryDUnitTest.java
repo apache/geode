@@ -50,7 +50,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 4. Waits for the period which is slightly greater than expiration period.
  * 5. Checks size of the regionqueue. Size of the regionqueue should be equal to 0.
  *
- *  @author Girish Thombare
  */
 
 public class HAExpiryDUnitTest extends DistributedTestCase
@@ -81,9 +80,8 @@ public class HAExpiryDUnitTest extends DistributedTestCase
   /**
    * This function creates regionqueue on 4 VMs
    */
-  public void setUp() throws Exception
-  {
-	  super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
 
     vm0 = host.getVM(0);
@@ -93,11 +91,10 @@ public class HAExpiryDUnitTest extends DistributedTestCase
     vm2 = host.getVM(2);
 
     vm3 = host.getVM(3);
-
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     vm0.invoke(() -> HAExpiryDUnitTest.closeCache());
     vm1.invoke(() -> HAExpiryDUnitTest.closeCache());
     vm2.invoke(() -> HAExpiryDUnitTest.closeCache());

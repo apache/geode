@@ -48,7 +48,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * A distributed test suite of test cases for testing the queue commands that are part of Gfsh.
  *
- * @author David Hoots
  * @since 8.0
  */
 public class QueueCommandsDUnitTest extends CliCommandTestBase {
@@ -60,9 +59,9 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     super(testName);
   }
 
-  public void setUp() throws Exception {
+  @Override
+  public final void preSetUp() throws Exception {
     disconnectAllFromDS();
-    super.setUp();
   }
 
   public void testAsyncEventQueue() throws IOException {

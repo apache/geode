@@ -21,7 +21,6 @@ package com.gemstone.gemfire.internal.jta;
  * GlobalTransaction is the JTA concept of a Global Transaction.
  * </p>
  * 
- * @author Mitul Bid
  * 
  * @since 4.0 
  */

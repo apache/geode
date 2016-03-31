@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.util.StopWatch;
  * Manages which implementation of {@link ProcessController} will be used and
  * constructs the instance.
  * 
- * @author Kirk Lund
  * @since 8.0
  */
 public final class ProcessControllerFactory {

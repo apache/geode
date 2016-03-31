@@ -25,7 +25,6 @@ import java.net.Socket;
  * Passed to {@link NativeCalls} API to set these options on the Java
  * {@link Socket} using native OS specific calls.
  * 
- * @author swale
  * @since 8.0
  */
 public enum TCPSocketOptions {

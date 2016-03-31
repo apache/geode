@@ -44,10 +44,6 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   public void test_ParallelGatewaySenderMetaRegionNotExposedToUser_Bug44216() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -565,7 +561,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
   }
 
   
-  public void testParallelPropagationWihtOverflow() throws Exception {
+  public void testParallelPropagationWithOverflow() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 

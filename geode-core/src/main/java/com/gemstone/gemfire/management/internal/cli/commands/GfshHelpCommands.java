@@ -41,8 +41,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 
 /**
  * 
- * @author Nikhil Jadhav
- * @author Abhishek Chaudhari
  * 
  * @since 7.0
  */

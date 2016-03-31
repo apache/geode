@@ -21,7 +21,6 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * Provides the version of the client.
  *
- * @author Sudhir Menon
  * @since 2.0.2
  */
 @SuppressWarnings("deprecation")

@@ -94,8 +94,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     client1 = host.getVM(0);
     client2 = host.getVM(1);
@@ -156,7 +155,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     try {
       // close the clients first
       client1.invoke(() -> DataSerializerPropogationDUnitTest.closeCache());
@@ -1285,7 +1284,6 @@ class Bogus {
 /**
  * This data serializer can be created locally but remote guys who call
  * the default constructor will fail.
- * @author darrel
  *
  */
 class DSObjectLocalOnly extends DataSerializer {

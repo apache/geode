@@ -41,7 +41,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Moved some non-DUnit tests over from com/gemstone/gemfire/internal/jta/dunit/JTADUnitTest
  * 
- * @author Kirk Lund
  */
 @Category(IntegrationTest.class)
 public class JtaIntegrationJUnitTest {

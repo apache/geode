@@ -45,11 +45,6 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
     
   }
   
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
- 
   /*
    * Do a getAll from client and see if all the values are returned.
    * Will also have to see if the function was routed from client to all the servers

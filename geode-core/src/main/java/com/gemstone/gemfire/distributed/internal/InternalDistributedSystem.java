@@ -114,7 +114,6 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * The concrete implementation of {@link DistributedSystem} that
  * provides internal-only functionality.
  *
- * @author David Whitlock
  * @since 3.0
  *
  */
@@ -845,7 +844,6 @@ public class InternalDistributedSystem
   
   /**
    * This class defers to the DM.  If we don't have a DM, we're dead.
-   * @author jpenney
    */
   protected class Stopper extends CancelCriterion {
     @Override
@@ -941,31 +939,14 @@ public class InternalDistributedSystem
    */
   public void disconnect(String reason, Throwable cause, boolean shunned) {
     boolean isForcedDisconnect = dm.getRootCause() instanceof ForcedDisconnectException;
-    boolean reconnected = false;
+    boolean rejoined = false;
     this.reconnected = false;
     if (isForcedDisconnect) {
       this.forcedDisconnect = true;
       resetReconnectAttemptCounter();
-      if (sampler.isSamplingEnabled()) {
-        if (sampler.getStatSamplerStats().getJvmPauses() > 0) {
-          try {
-            // if running tests then create a heap dump
-            Class.forName("com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher");
-            Class<?> jmapClass = Class.forName("sun.tools.jmap.JMap");
-            logger.info("This member of the distributed system has been forced to disconnect.  JVM pauses have been detected - dumping heap");
-            String pid = String.valueOf(OSProcess.getId());
-            String fileName = "java"+pid+".hprof";
-            Object parameters = new String[]{"-dump:format=b,file="+fileName, pid};
-            Method main = jmapClass.getDeclaredMethod("main", String[].class);
-            main.invoke(null, parameters);
-          } catch (Exception e) {
-          }
-        }
-      }
-    
-     reconnected = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
+      rejoined = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
     }
-    if (!reconnected) {
+    if (!rejoined) {
       disconnect(false, reason, shunned);
     }
   }
@@ -2380,7 +2361,6 @@ public class InternalDistributedSystem
   /**
    * A listener that gets invoked after this connection to the
    * distributed system is disconnected
-   * @author jpenney
    *
    */
   public interface ShutdownListener extends DisconnectListener {
@@ -3089,7 +3069,6 @@ public class InternalDistributedSystem
    * Fortify will complain about.
    * </p>
    * 
-   * @author Kirk Lund
    */
   public static interface CreationStackGenerator {
     public Throwable generateCreationStack(final DistributionConfig config);

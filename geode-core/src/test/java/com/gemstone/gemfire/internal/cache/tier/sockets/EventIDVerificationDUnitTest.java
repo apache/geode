@@ -53,8 +53,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * the cache server for create, update, remove and destroy operations.It also checks
  * that peer nodes also get the same EventID.
  *
- * @author Suyog Bhokare
- * @author Asif
  *
  */
 
@@ -84,9 +82,8 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
     super(name);
   }
 
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -99,7 +96,6 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
     // Object[] { new Integer(PORT1),new Integer(PORT2)});
     createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
     CacheObserverHolder.setInstance(new CacheObserverAdapter());
-
   }
 
   public void testEventIDOnServer()
@@ -472,7 +468,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
     // then close the servers

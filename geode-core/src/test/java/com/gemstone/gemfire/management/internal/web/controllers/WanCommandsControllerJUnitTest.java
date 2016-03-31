@@ -35,7 +35,6 @@ import junitparams.Parameters;
  * 
  * Introduced for GEODE-213 "JMX -http manager treats "start gateway-sender" as "start gateway-receiver"
  *  
- * @author Kirk Lund
  */
 @SuppressWarnings("unused")
 @Category(UnitTest.class)

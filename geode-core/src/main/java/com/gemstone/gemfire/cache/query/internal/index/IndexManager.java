@@ -79,8 +79,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 
 /**
- * @author vaibhav
- * @author asif
  */
 public class IndexManager  {
   private static final Logger logger = LogService.getLogger();

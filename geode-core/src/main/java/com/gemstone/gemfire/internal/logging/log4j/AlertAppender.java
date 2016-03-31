@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.tcp.ReenteredConnectException;
  * A Log4j Appender which will notify listeners whenever a message of the
  * requested level is written to the log file.
  * 
- * @author David Hoots
  */
 public final class AlertAppender extends AbstractAppender implements PropertyChangeListener {
   private static final String APPENDER_NAME = AlertAppender.class.getName();

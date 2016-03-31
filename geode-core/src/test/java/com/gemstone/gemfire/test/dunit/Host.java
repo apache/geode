@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.dunit.standalone.RemoteDUnitVMIF;
  * the host on which Hydra's Master VM runs.  RMI registries may be
  * started on other hosts via additional Hydra configuration.</P>
  *
- * @author David Whitlock
  */
 @SuppressWarnings("serial")
 public abstract class Host implements Serializable {

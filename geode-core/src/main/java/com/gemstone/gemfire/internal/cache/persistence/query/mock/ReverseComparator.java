@@ -20,7 +20,6 @@ import java.util.Comparator;
 
 /**
  * A comparator which reverses the comparison order
- * @author dsmith
  *
  */
 public class ReverseComparator implements Comparator<Comparable> {

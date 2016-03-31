@@ -57,7 +57,6 @@ The final step is to produce a {@link Region} by calling {@link #create(String)}
     .create("partition");
 </PRE>
  *
- * @author Mitch Thomas
  * @since 5.0
  */
 

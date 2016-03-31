@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.Operation;
  * Instances of this are delivered to a {@link SystemMemberCacheListener} when a
  * a cache is created or closed.
  *
- * @author Darrel Schneider
  * @since 5.0
  */
 public class SystemMemberCacheEventImpl

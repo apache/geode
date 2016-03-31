@@ -20,7 +20,6 @@
  * <code>MultiVMRegionTestCase</code>.
  * 
  *
- * @author Mitch Thomas
  * @since 4.0
  * @see MultiVMRegionTestCase
  *

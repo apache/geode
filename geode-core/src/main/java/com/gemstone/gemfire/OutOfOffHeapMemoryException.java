@@ -21,7 +21,6 @@ package com.gemstone.gemfire;
  * failed and the Cache will be closed to prevent it from losing distributed
  * consistency.
  * 
- * @author Kirk Lund
  */
 public class OutOfOffHeapMemoryException extends CancelException {
   private static final long serialVersionUID = 4111959438738739010L;

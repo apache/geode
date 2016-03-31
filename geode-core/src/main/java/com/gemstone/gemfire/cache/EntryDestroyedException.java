@@ -18,7 +18,6 @@ package com.gemstone.gemfire.cache;
 /**
  * Indicates that a method was invoked on an entry that has been destroyed.
  *
- * @author Eric Zoerner
  *
  * 
  * @see Region.Entry

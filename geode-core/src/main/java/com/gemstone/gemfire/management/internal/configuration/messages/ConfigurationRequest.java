@@ -30,7 +30,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 
 /***
  * Request sent by a member to the locator requesting the shared configuration
- * @author bansods
  *
  */
 public class ConfigurationRequest implements DataSerializableFixedID{

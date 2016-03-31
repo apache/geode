@@ -37,8 +37,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * just been rolled and the region operation is verified to have been correctly
  * executed.
  * 
- * @author Mitul Bid
- * @author Asif
  *  
  */
 @Category(IntegrationTest.class)

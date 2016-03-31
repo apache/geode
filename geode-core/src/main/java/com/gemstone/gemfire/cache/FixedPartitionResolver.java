@@ -54,7 +54,6 @@ import java.util.Set;
  * &nbsp }<br>
  *
  * @see PartitionResolver
- * @author kbachhav
  * @since 6.6
  *
  * 

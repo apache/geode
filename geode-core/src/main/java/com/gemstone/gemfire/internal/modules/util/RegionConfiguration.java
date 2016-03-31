@@ -30,7 +30,6 @@ import com.gemstone.gemfire.cache.CustomExpiry;
  * Class <code>RegionConfiguration</code> encapsulates the configuration
  * attributes for a <code>Region</code> to be created on the server.
  *
- * @author Barry Oglesby
  *
  * @since 6.5
  */

@@ -79,7 +79,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * This test mimics hydratest/locators/cacheDS.conf in an attempt to reproduce
  * bug #45478. So far this test passes consistently.
  *
- * @author Kirk Lund
  * @since 7.0
  */
 @SuppressWarnings("serial")
@@ -126,12 +125,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
-  @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(getClass(), "cleanup");
     disconnectAllFromDS(); // because this test enabled stat sampling!
   }
@@ -272,7 +266,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
         publishers[pubThread] = pubs[pubVM].invokeAsync(
             new CacheSerializableRunnable("pub-connect-and-put-data-" + pubVM + "-thread-" + pubThread) {
           public void run2() throws CacheException {
-            final PubSubStats statistics = new PubSubStats(system, "pub-" + pubThread, pubVM);
+            final PubSubStats statistics = new PubSubStats(basicGetSystem(), "pub-" + pubThread, pubVM);
             pubStatsRef.set(pubThread, statistics);
             
             final RegionMembershipListener rml = rmlRef.get();
@@ -612,7 +606,6 @@ public class StatisticsDUnitTest extends CacheTestCase {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   static class PubSubStats {
@@ -730,7 +723,6 @@ public class StatisticsDUnitTest extends CacheTestCase {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   static class UpdateListener extends CacheListenerAdapter<String, Number> {
@@ -748,7 +740,6 @@ public class StatisticsDUnitTest extends CacheTestCase {
   }
   
   /**
-   * @author Kirk Lund
    * @since 7.0
    */
   static class RegionMembershipListener extends RegionMembershipListenerAdapter<String, Number> {

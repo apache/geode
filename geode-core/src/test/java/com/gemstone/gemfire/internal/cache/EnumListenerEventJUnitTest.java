@@ -24,8 +24,6 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
- * @author Mitul Bid
- * @author Vishal Rao
  * 
  */
 @Category(UnitTest.class)

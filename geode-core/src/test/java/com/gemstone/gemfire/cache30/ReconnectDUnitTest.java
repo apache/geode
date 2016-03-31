@@ -85,8 +85,7 @@ public class ReconnectDUnitTest extends CacheTestCase
   }
   
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     this.locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final int locPort = this.locatorPort;
     Host.getHost(0).getVM(locatorVMNumber)
@@ -133,7 +132,7 @@ public class ReconnectDUnitTest extends CacheTestCase
   }
   
   @Override
-  protected final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() throws Exception {
     try {
       Host.getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("stop locator") {
         public void run() {
@@ -680,8 +679,8 @@ public class ReconnectDUnitTest extends CacheTestCase
         getSystem(props);
 
         addReconnectListener();
-        
-        system.getLogWriter().info("<ExpectedException action=add>" 
+
+        basicGetSystem().getLogWriter().info("<ExpectedException action=add>"
             + "CacheClosedException" + "</ExpectedException");
         try{
           getCache();
@@ -691,7 +690,7 @@ public class ReconnectDUnitTest extends CacheTestCase
           LogWriterUtils.getLogWriter().info("Got Expected CancelException ");
         }
         finally {
-          system.getLogWriter().info("<ExpectedException action=remove>" 
+          basicGetSystem().getLogWriter().info("<ExpectedException action=remove>"
               + "CacheClosedException" + "</ExpectedException");
         }
         LogWriterUtils.getLogWriter().fine("roleLoss Sleeping SO call dumprun.sh");
@@ -901,7 +900,7 @@ public class ReconnectDUnitTest extends CacheTestCase
           props.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
 
           getSystem(props);
-          system.getLogWriter().info("<ExpectedException action=add>" 
+          basicGetSystem().getLogWriter().info("<ExpectedException action=add>"
               + "CacheClosedException" + "</ExpectedException");
 
           try {
@@ -1015,7 +1014,7 @@ public class ReconnectDUnitTest extends CacheTestCase
           }
           // greplogs won't care if you remove an exception that was never added,
           // and this ensures that it gets removed.
-          system.getLogWriter().info("<ExpectedException action=remove>" 
+          basicGetSystem().getLogWriter().info("<ExpectedException action=remove>"
               + "CacheClosedException" + "</ExpectedException");
         }
 
@@ -1139,7 +1138,7 @@ public class ReconnectDUnitTest extends CacheTestCase
         // since the system will disconnect and attempt to reconnect
         // a new system the old reference to DTC.system can cause
         // trouble, so we first null it out.
-        DistributedTestCase.system = null;
+        nullSystem();
         final DistributedSystem msys = InternalDistributedSystem.getAnyInstance();
         final Locator oldLocator = Locator.getLocator();
         MembershipManagerHelper.crashDistributedSystem(msys);

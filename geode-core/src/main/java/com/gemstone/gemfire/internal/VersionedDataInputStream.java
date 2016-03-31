@@ -26,7 +26,6 @@ import java.io.InputStream;
  * {@link VersionedDataStream} for a stream coming from a different product
  * version.
  * 
- * @author swale
  * @since 7.1
  */
 public final class VersionedDataInputStream extends DataInputStream implements

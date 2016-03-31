@@ -35,7 +35,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Performs eviction dunit tests for off-heap memory.
- * @author rholmes
  */
 public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
   public OffHeapEvictionDUnitTest(String name) {
@@ -43,7 +42,7 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
   }  
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override

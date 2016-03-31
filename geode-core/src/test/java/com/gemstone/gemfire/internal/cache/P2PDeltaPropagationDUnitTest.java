@@ -399,10 +399,9 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
    {
      assertFalse(check);
    }
-   
-  public void setUp() throws Exception
-  {
-    super.setUp();
+
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -496,7 +495,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
     server1.invoke(() -> P2PDeltaPropagationDUnitTest.closeCache());
     server2.invoke(() -> P2PDeltaPropagationDUnitTest.closeCache());

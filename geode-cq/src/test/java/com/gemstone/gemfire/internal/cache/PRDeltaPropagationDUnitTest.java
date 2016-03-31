@@ -126,8 +126,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     dataStore1 = host.getVM(0);
     dataStore2 = host.getVM(1);
@@ -1111,7 +1111,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     closeCache();
     client1.invoke(() -> PRDeltaPropagationDUnitTest.closeCache());
     dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.closeCache());

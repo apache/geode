@@ -25,7 +25,6 @@ import com.gemstone.gemfire.distributed.internal.*;
  * This class maintains statistics in GemFire about the distributed lock 
  * service.
  *
- * @author Kirk Lund
  *
  */
 public class DLockStats implements DistributedLockStats {

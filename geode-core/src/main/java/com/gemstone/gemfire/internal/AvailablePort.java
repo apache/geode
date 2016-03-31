@@ -465,7 +465,6 @@ public class AvailablePort {
   /**
    * This class will keep an allocated port allocated until it is used.
    * This makes the window smaller that can cause bug 46690
-   * @author darrel
    *
    */
   public static class Keeper {

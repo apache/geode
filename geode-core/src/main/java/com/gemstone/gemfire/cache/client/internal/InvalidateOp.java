@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Does a region invalidate on a server
- * @author gregp
  * @since 6.6
  */
 public class InvalidateOp {

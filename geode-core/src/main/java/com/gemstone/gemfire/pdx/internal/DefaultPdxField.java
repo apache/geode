@@ -24,7 +24,6 @@ import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory
 /**
  * Used by {@link PdxInstanceImpl#equals(Object)} to act as if it has
  * a field whose value is always the default.
- * @author darrel
  *
  */
 public class DefaultPdxField extends PdxField {

@@ -136,7 +136,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
  * This class acts as an Bridge between MemberMBean and GemFire Cache and
  * Distributed System
  * 
- * @author rishim
  * 
  */
 public class MemberMBeanBridge {

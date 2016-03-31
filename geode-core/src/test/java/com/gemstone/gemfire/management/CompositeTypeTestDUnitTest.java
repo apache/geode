@@ -43,11 +43,6 @@ public class CompositeTypeTestDUnitTest extends ManagementTestBase {
   
   private static ObjectName objectName;
 
-  public void setUp() throws Exception {
-    super.setUp();
-    
-  }
-
   public void testCompositeTypeGetters() throws Exception{
     
     initManagement(false);

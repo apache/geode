@@ -245,7 +245,6 @@ import com.sun.jna.Platform;
 /**
  * GemFire's implementation of a distributed {@link com.gemstone.gemfire.cache.Cache}.
  *
- * @author Darrel Schneider
  */
 @SuppressWarnings("deprecation")
 public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePerfStats, DistributionAdvisee {
@@ -845,7 +844,11 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         // but it causes quickstart.CqClientTest to hang
         this.listener = new ManagementListener();
         this.system.addResourceListener(listener);
+        if (this.system.isLoner()) {
+          this.system.getInternalLogWriter().info(LocalizedStrings.GemFireCacheImpl_RUNNING_IN_LOCAL_MODE);
+        }
       } else {
+        getLogger().info("Running in client mode");
         this.listener = null;
       }
 

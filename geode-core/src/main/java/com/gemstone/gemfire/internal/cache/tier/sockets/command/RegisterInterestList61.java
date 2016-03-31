@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author aingle
  * @since 6.1
  */
 public class RegisterInterestList61 extends BaseCommand {

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 
 /**
  * A handler which responds to messages for the {@link TcpServer}
- * @author dsmith
  * @since 5.7
  */
 public interface TcpHandler {

@@ -40,7 +40,6 @@ import java.util.Map;
  * 
  * TODO - Store the event state map in DataSerializable object
  * that keeps the map in this compressed format in memory.
- * @author dsmith
  *
  */
 public class EventStateHelper {

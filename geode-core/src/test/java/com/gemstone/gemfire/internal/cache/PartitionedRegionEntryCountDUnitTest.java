@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * This class tests total entry count of partitioned regions.
  * 
- * @author Manish Jha
  * 
  */
 public class PartitionedRegionEntryCountDUnitTest extends CacheTestCase {

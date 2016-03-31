@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Tracks flushes using a queue of latches.
  * 
- * @author bakera
  */
 public class SignalledFlushObserver implements FlushObserver {
   private static class FlushLatch extends CountDownLatch {

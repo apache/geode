@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.logging.PureLogWriter;
 /**
  * Contains Utility functions for use by JTA
  * 
- * @author Mitul D Bid
  */
 public class TransactionUtils {
 

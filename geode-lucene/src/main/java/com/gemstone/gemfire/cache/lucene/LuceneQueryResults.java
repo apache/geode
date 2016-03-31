@@ -27,7 +27,6 @@ import com.gemstone.gemfire.annotations.Experimental;
  * <p>
  * Defines the interface for a container of lucene query result collected from function execution.<br>
  * 
- * @author Xiaojian Zhou
  * 
  * @param <K> The type of the key
  * @param <V> The type of the value

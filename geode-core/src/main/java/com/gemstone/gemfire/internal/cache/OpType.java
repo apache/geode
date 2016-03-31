@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache;
 /**
  * Enumerated type for an event operation.
  * 
- * @author Amey Barve
  * 
  * 
  * @see com.gemstone.gemfire.cache.Operation

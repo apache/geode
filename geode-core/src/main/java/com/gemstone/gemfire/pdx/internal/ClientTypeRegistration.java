@@ -44,7 +44,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.pdx.PdxInitializationException;
 
 /**
- * @author dsmith
  *
  */
 public class ClientTypeRegistration implements TypeRegistration {

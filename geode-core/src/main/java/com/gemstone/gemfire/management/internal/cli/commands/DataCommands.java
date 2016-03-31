@@ -81,8 +81,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 
 /**
  * 
- * @author ajayp
- * @author tushark
  * @since 7.0
  */
 public class DataCommands implements CommandMarker {

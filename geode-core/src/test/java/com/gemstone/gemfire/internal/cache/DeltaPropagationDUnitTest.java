@@ -149,9 +149,8 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  public void setUp() throws Exception {
-    super.setUp();
-
+  @Override
+  public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     VM0 = host.getVM(0);
     VM1 = host.getVM(1);
@@ -166,7 +165,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     DeltaPropagationDUnitTest.closeCache();
     VM2.invoke(() -> DeltaPropagationDUnitTest.closeCache());
     VM3.invoke(() -> DeltaPropagationDUnitTest.closeCache());

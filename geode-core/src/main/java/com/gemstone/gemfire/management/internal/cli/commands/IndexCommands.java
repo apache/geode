@@ -66,7 +66,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 /**
  * The IndexCommands class encapsulates all GemFire shell (Gfsh) commands related to indexes defined in GemFire.
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
  * @see com.gemstone.gemfire.management.internal.cli.domain.IndexDetails
  * @see com.gemstone.gemfire.management.internal.cli.functions.ListIndexFunction

@@ -28,7 +28,6 @@ package com.gemstone.gemfire.cache;
  *<p>
  * The setter methods all return the previous value of the attribute. 
  *
- * @author Eric Zoerner
  *
  *
  * @see Region#getAttributesMutator

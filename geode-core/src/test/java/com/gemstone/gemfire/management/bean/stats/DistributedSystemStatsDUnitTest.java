@@ -34,7 +34,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * @author rishim
  */
 public class DistributedSystemStatsDUnitTest extends ManagementTestBase{
   
@@ -42,10 +41,6 @@ public class DistributedSystemStatsDUnitTest extends ManagementTestBase{
 
   public DistributedSystemStatsDUnitTest(String name) {
     super(name);
-  }
-
-  public void setUp() throws Exception {
-    super.setUp();
   }
 
   public void testDistributedSystemStats() throws Exception {
@@ -63,7 +58,7 @@ public class DistributedSystemStatsDUnitTest extends ManagementTestBase{
       public void run() {
         MemberMBean bean = (MemberMBean) managementService.getMemberMXBean();
         MemberMBeanBridge bridge = bean.getBridge();
-        DiskStoreStats diskStoreStats = new DiskStoreStats(system, "test");
+        DiskStoreStats diskStoreStats = new DiskStoreStats(basicGetSystem(), "test");
         bridge.addDiskStoreStats(diskStoreStats);
         diskStoreStats.startRead();
         diskStoreStats.startWrite();

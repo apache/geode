@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.CreateRegionProcessor;
  * the initialization of a persistent region to exchange
  * profiles with other members. This class also determines which
  * member should be used for initialization.
- * @author dsmith
  *
  */
 public class CreatePersistentRegionProcessor extends CreateRegionProcessor {

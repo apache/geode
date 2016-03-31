@@ -22,7 +22,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 /**
  * Signals defined in the enumerated type were based on Open BSD and the IBM JVM...
  * </p>
- * @author John Blum
  * @see com.gemstone.gemfire.internal.process.signal.SignalType
  * @since 7.0
  * @see <a href="http://www.fromdual.com/operating-system-signals">http://www.fromdual.com/operating-system-signals</a>

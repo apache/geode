@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
  * Test for co-located PR transactions.
  * the test creates two data hosts and uses function execution to 
  * execute transactions.  
- * @author sbawaska
  *
  */
 public class PRTransactionDUnitTest extends PRColocationDUnitTest {
@@ -665,7 +664,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
   
   @Override
-  protected final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(verifyNoTxState);
   }
 

@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * The DurableClientCommandsController class implements GemFire Management REST API web service endpoints for the
  * durable client/CQs Gfsh commands.
  * <p/>
- * @author John Blum
  * @see com.gemstone.gemfire.management.internal.cli.commands.DurableClientCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

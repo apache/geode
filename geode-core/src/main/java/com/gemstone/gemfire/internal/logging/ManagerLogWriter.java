@@ -43,7 +43,6 @@ import com.gemstone.gemfire.internal.util.LogFileUtils;
   * Its just like {@link LocalLogWriter} except it has support for rolling
   * and alerts. 
   *
-  * @author Darrel Schneider
   * @since 1.0
   */
 public class ManagerLogWriter extends LocalLogWriter  {

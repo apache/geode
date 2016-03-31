@@ -52,7 +52,6 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
  * This tests the rolling upgrade for locators with
  * different GOSSIPVERSION.
  *
- * @author shobhit
  *
  */
 @Category(DistributedTest.class)
@@ -67,8 +66,7 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
     Invoke.invokeInEveryVM(new CacheSerializableRunnable("Set TcpServer.isTesting true") {
       
@@ -80,7 +78,7 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  protected final void preTearDown() throws Exception {
+  public final void preTearDown() throws Exception {
     Invoke.invokeInEveryVM(new CacheSerializableRunnable("Set TcpServer.isTesting true") {
       
       @Override

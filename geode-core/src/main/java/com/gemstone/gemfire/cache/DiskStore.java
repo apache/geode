@@ -30,7 +30,6 @@ import java.util.UUID;
  * </PRE>
  * <p>Existing DiskStore instances can be found using {@link Cache#findDiskStore(String)}
  *
- * @author Gester
  * @since 6.5
  *
  */

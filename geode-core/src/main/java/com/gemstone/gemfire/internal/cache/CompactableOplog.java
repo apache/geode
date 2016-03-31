@@ -23,7 +23,6 @@ import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
  * Contract that must be implemented by oplogs so that
  * they can be compacted.
  * 
- * @author Darrel Schneider
  * 
  * @since 6.5
  */

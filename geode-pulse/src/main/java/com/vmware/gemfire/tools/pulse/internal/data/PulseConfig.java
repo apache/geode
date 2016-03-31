@@ -26,7 +26,6 @@ import java.util.logging.Level;
  * 
  * PulseConfig is used for configuring Pulse application.
  * 
- * @author Sachin K
  * @since 7.0.1
  * 
  */

@@ -33,8 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Integration tests for FastLogger when using the default log4j2 config for GemFire.
  * 
- * @author Kirk Lund
- * @author David Hoots
  */
 @Category(IntegrationTest.class)
 public class FastLoggerWithDefaultConfigJUnitTest {
