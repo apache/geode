@@ -86,8 +86,10 @@ public class DataCommandsSecurityTest {
     assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region1")).isInstanceOf(SecurityException.class)
         .hasMessageContaining("REGION:REBALANCE");
 
-    assertThatThrownBy(() -> bean.processCommand("export data --region=region1 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
-    assertThatThrownBy(() -> bean.processCommand("import data --region=region1 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> bean.processCommand("export data --region=region1 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class)
+        .hasMessageContaining("REGION:EXPORT");
+    assertThatThrownBy(() -> bean.processCommand("import data --region=region1 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class)
+        .hasMessageContaining("REGION:IMPORT");
 
     assertThatThrownBy(() -> bean.processCommand("put --key=key1 --value=value1 --region=region1")).isInstanceOf(SecurityException.class)
         .hasMessageContaining("REGION:PUT");
@@ -104,19 +106,21 @@ public class DataCommandsSecurityTest {
   @Test
   public void testNoAccessToRegion(){
     assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region2")).isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for REGION:REBALANCE");
+        .hasMessageContaining("REGION:REBALANCE");
 
-    assertThatThrownBy(() -> bean.processCommand("export data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
-    assertThatThrownBy(() -> bean.processCommand("import data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> bean.processCommand("export data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class)
+        .hasMessageContaining("REGION:EXPORT");
+    assertThatThrownBy(() -> bean.processCommand("import data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class)
+        .hasMessageContaining("REGION:IMPORT");
 
     assertThatThrownBy(() -> bean.processCommand("put --key=key1 --value=value1 --region=region2")).isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for REGION:PUT");
+        .hasMessageContaining("REGION:PUT");
 
     assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region2")).isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for REGION:GET");
+        .hasMessageContaining("REGION:GET");
 
     assertThatThrownBy(() -> bean.processCommand("query --query='SELECT * FROM /region2'")).isInstanceOf(SecurityException.class)
-        .hasMessageStartingWith("Access Denied: Not authorized for QUERY:EXECUTE");
+        .hasMessageContaining("QUERY:EXECUTE");
   }
 
 }
