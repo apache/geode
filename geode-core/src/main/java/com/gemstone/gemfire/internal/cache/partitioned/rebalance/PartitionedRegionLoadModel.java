@@ -402,6 +402,8 @@ public class PartitionedRegionLoadModel {
         //If the bucket creation failed, we need to undo the changes
         //we made to the model
         attemptedBucketCreations.add(move);
+        //remove the bucket from lowRedundancyBuckets before mutating the state
+        lowRedundancyBuckets.remove(bucket);
         bucket.removeMember(targetMember);
         if(bucket.getRedundancy() < requiredRedundancy) {
           lowRedundancyBuckets.add(bucket);
