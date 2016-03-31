@@ -90,6 +90,6 @@ public class CLIOperationContext extends ResourceOperationContext {
 	}
 	
 	public String toString(){
-	  return getResource() + ":"+ getOperationCode() + " commmand=" + command + " options=" + commandOptions;
+	  return super.toString() + " commmand=" + command + " options=" + commandOptions;
 	}
 }

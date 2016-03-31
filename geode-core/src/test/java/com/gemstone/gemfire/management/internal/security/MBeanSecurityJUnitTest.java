@@ -109,7 +109,7 @@ public class MBeanSecurityJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testServerSideCalls(){
-    // calls through ManagementService is not using the MBeanServerWrapper.
+    // calls through ManagementService is not going through authorization checks
     ManagementService service = ManagementService.getManagementService(serverRule.getCache());
     MemberMXBean bean = service.getMemberMXBean();
     bean.compactAllDiskStores();

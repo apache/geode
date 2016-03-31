@@ -53,7 +53,11 @@
         "GATEWAY_RECEIVER:STOP",
         "MANAGER:SET_PULSE_URL",
         "MANAGER:START",
-        "MANAGER:STOP"
+        "MANAGER:STOP",
+        "CLUSTER_CONFIGURTION:STATUS",
+        "DISTRIBUTED_SYSTEM:ALL",
+        "ASYNC_EVENT_QUEUE:CREATE",
+        "ASYNC_EVENT_QUEUE:LIST"
       ]
     },
     {
@@ -86,7 +90,8 @@
     {
       "name": "secureDataUsers",
       "operationsAllowed": [
-        "REGION:GET"
+        "REGION:GET",
+        "QUERY:EXECUTE"
       ],
       "regions": ["region1", "secureRegion"]
     }

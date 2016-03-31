@@ -196,7 +196,6 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     if(user == null)
       return false; // this user is not authorized to do anything
 
-    LogService.getLogger().info("Context received " + context);
     LogService.getLogger().info("Checking for permission " + context.getResource() + ":" + context.getOperationCode());
 
     // check if the user has this permission defined in the context
@@ -212,6 +211,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
           // If this is a Command operation context, we need to further check if the region is allowed in this role
           CLIOperationContext ctx = (CLIOperationContext) context;
+
           String region = ctx.getCommandOptions().get("region");
           if(region==null) {
             region = ctx.getCommandOptions().get("include-region");
@@ -233,7 +233,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
       }
     }
 
-    LogService.getLogger().info("Did not find code " + context.getOperationCode());
+    LogService.getLogger().info("Did not find code " + context);
     return false;
   }
 

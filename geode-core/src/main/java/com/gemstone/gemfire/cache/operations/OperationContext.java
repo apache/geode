@@ -405,4 +405,8 @@ public abstract class OperationContext {
         || opCode.isInvalidate() || opCode.isRegionCreate()
         || opCode.isRegionDestroy() || opCode.isRegionClear());
   }
+
+  public String toString(){
+    return getResource() + ":"+ getOperationCode();
+  }
 }
