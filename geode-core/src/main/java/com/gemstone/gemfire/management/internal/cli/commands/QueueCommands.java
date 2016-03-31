@@ -62,7 +62,7 @@ public class QueueCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE, help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
   @CliMetaData(writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.ASYNC_EVENT_QUEUE, operation = OperationCode.CREATE)
+  @ResourceOperation(resource = Resource.ASYNC_EVENT_QUEUE, operation = OperationCode.MANAGE)
   public Result createAsyncEventQueue(
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, 
                  mandatory = true,

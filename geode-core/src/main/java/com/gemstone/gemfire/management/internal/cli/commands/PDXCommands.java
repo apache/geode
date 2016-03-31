@@ -53,7 +53,7 @@ public class PDXCommands extends AbstractCommandsSupport{
 
   @CliCommand (value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation( resource=Resource.PDX, operation = OperationCode.CONFIGURE)
+  @ResourceOperation( resource=Resource.PDX, operation = OperationCode.MANAGE)
   public Result configurePDX(
       @CliOption (key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -175,7 +175,7 @@ public class PDXCommands extends AbstractCommandsSupport{
 
   @CliCommand (value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.RENAME)
+  @ResourceOperation(resource = Resource.PDX, operation = OperationCode.MANAGE)
   public Result pdxRename(
       @CliOption (key = CliStrings.PDX_RENAME_OLD,
       mandatory=true,

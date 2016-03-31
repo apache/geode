@@ -3,8 +3,17 @@
     {
       "name": "admin",
       "operationsAllowed": [
+        "ASYNC_EVENT_QUEUE:LIST",
+        "ASYNC_EVENT_QUEUE:MANAGE",
+        "CLUSTER_CONFIGURATION:STATUS",
+        "DISKSTORE:LIST",
+        "DISKSTORE:MANAGE",
+        "DISTRIBUTED_SYSTEM:ALL",
+        "DISTRIBUTED_SYSTEM:LIST",
+        "DISTRIBUTED_SYSTEM:MANAGE",
         "GATEWAY:LIST",
-        "GATEWAY:MANAGE"
+        "GATEWAY:MANAGE",
+        "PDX:MANAGE"
       ]
     },
     {
@@ -43,7 +52,7 @@
         "MANAGER:SET_PULSE_URL",
         "MANAGER:START",
         "MANAGER:STOP",
-        "CLUSTER_CONFIGURTION:STATUS",
+        "CLUSTER_CONFIGURATION:STATUS",
         "DISTRIBUTED_SYSTEM:ALL",
         "DISTRIBUTED_SYSTEM:RENAME",
         "DISTRIBUTED_SYSTEM:GC",
@@ -72,7 +81,6 @@
     {
       "name": "dataUsers",
       "operationsAllowed": [
-        "DISTRIBUTED_SYSTEM:LIST",
         "REGION:GET",
         "REGION:REBALANCE",
         "REGION:EXPORT",

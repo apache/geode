@@ -48,7 +48,7 @@ public class StatusCommands extends AbstractCommandsSupport implements CommandMa
   @SuppressWarnings("unchecked")
   @CliCommand (value = CliStrings.STATUS_SHARED_CONFIG, help = CliStrings.STATUS_SHARED_CONFIG_HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_LOCATOR)
-  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURTION, operation = OperationCode.STATUS)
+  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURATION, operation = OperationCode.STATUS)
   public Result statusSharedConfiguration() {
     final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     final Set<DistributedMember> locators = new HashSet<DistributedMember>(cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());

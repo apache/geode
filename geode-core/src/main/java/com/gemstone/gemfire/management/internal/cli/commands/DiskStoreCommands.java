@@ -215,7 +215,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.LIST_DISK_STORE, help = CliStrings.LIST_DISK_STORE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_DISKSTORE })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.LIST)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.LIST)
   public Result listDiskStore() {
     try {
       Set<DistributedMember> dataMembers = getNormalMembers(getCache());
@@ -869,7 +869,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.DESCRIBE_DISK_STORE, help = CliStrings.DESCRIBE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_DISKSTORE })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.LIST)
+  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.LIST)
   public Result describeDiskStore(@CliOption(key = CliStrings.DESCRIBE_DISK_STORE__MEMBER, mandatory = true, optionContext = ConverterHint.MEMBERIDNAME, help = CliStrings.DESCRIBE_DISK_STORE__MEMBER__HELP)
                                   final String memberName,
                                   @CliOption(key = CliStrings.DESCRIBE_DISK_STORE__NAME, mandatory = true, optionContext = ConverterHint.DISKSTORE_ALL, help = CliStrings.DESCRIBE_DISK_STORE__NAME__HELP)

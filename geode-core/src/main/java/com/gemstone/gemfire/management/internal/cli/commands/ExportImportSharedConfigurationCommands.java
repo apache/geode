@@ -64,7 +64,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
 
   @CliCommand(value = { CliStrings.EXPORT_SHARED_CONFIG }, help = CliStrings.EXPORT_SHARED_CONFIG__HELP)
   @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ExportImportSharedConfigurationCommands$ExportInterceptor",  readsSharedConfiguration=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
-  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURTION, operation = OperationCode.EXPORT)
+  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURATION, operation = OperationCode.EXPORT)
   public Result exportSharedConfig(
       @CliOption(key = { CliStrings.EXPORT_SHARED_CONFIG__FILE}, 
       mandatory = true,
@@ -115,7 +115,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
 
   @CliCommand(value = { CliStrings.IMPORT_SHARED_CONFIG }, help = CliStrings.IMPORT_SHARED_CONFIG__HELP)
   @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ExportImportSharedConfigurationCommands$ImportInterceptor", writesToSharedConfiguration=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
-  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURTION, operation = OperationCode.IMPORT)
+  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURATION, operation = OperationCode.IMPORT)
   @SuppressWarnings("unchecked")
   public Result importSharedConfig(
       @CliOption(key = { CliStrings.IMPORT_SHARED_CONFIG__ZIP},

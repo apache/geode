@@ -83,7 +83,7 @@ public class ConfigCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.DESCRIBE_CONFIG }, help = CliStrings.DESCRIBE_CONFIG__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
-  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURTION, operation= OperationCode.LIST)
+  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURATION, operation= OperationCode.LIST)
   public Result describeConfig(
       @CliOption (key = CliStrings.DESCRIBE_CONFIG__MEMBER,
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -197,7 +197,7 @@ public class ConfigCommands implements CommandMarker {
    */
   @CliCommand(value = { CliStrings.EXPORT_CONFIG }, help = CliStrings.EXPORT_CONFIG__HELP)
   @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ConfigCommands$Interceptor", relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
-  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURTION, operation = OperationCode.EXPORT)
+  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURATION, operation = OperationCode.EXPORT)
   public Result exportConfig(
       @CliOption(key = { CliStrings.EXPORT_CONFIG__MEMBER },
                  optionContext = ConverterHint.ALL_MEMBER_IDNAME,
