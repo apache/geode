@@ -764,9 +764,11 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
         }
       }
     });
-    
+
+    cqDUnitTest.executeCQ(client, cqName, true, null);
+
     // Keep updating region (async invocation).
-    server2.invokeAsync(new CacheSerializableRunnable("Update Region"){
+    server2.invoke(new CacheSerializableRunnable("Update Region"){
       public void run2()throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         // Update (totalObjects - 1) entries.
@@ -790,10 +792,6 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
       }
     });
 
-    // Execute CQ.
-    // While region operation is in progress execute CQ.
-    cqDUnitTest.executeCQ(client, cqName, true, null);
-    
     // Verify CQ Cache results.
     server1.invoke(new CacheSerializableRunnable("Verify CQ Cache results"){
       public void run2()throws CacheException {
@@ -803,20 +801,6 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
         } catch (Exception ex) {
           LogWriterUtils.getLogWriter().info("Failed to get the internal CqService.", ex);
           Assert.fail ("Failed to get the internal CqService.", ex);
-        }
-        
-        // Wait till all the region update is performed.
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
-        while(true){
-          if (region.get(""+ totalObjects) == null){
-            try {
-              Thread.sleep(50);
-            } catch (Exception ex){
-              //ignore.
-            }
-            continue;
-          }
-          break;
         }
         Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
         for (InternalCqQuery cq: cqs){
