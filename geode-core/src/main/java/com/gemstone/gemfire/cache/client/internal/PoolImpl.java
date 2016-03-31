@@ -550,19 +550,19 @@ public class PoolImpl implements InternalPool {
       } 
 
       try {
-        if(this.manager != null) {
-          manager.close(keepAlive);
-        }
-      } catch(RuntimeException e) {
-        logger.error(LocalizedMessage.create(LocalizedStrings.PoolImpl_ERROR_ENCOUNTERED_WHILE_STOPPING_CONNECTION_MANAGER), e);
-      }
-      
-      try {
         if(this.queueManager != null) {
           queueManager.close(keepAlive);
         }
       } catch(RuntimeException e) {
         logger.error(LocalizedMessage.create(LocalizedStrings.PoolImpl_ERROR_ENCOUNTERED_WHILE_STOPPING_SUBSCRIPTION_MANAGER), e);
+      }
+      
+      try {
+        if(this.manager != null) {
+          manager.close(keepAlive);
+        }
+      } catch(RuntimeException e) {
+        logger.error(LocalizedMessage.create(LocalizedStrings.PoolImpl_ERROR_ENCOUNTERED_WHILE_STOPPING_CONNECTION_MANAGER), e);
       }
       
       try {
