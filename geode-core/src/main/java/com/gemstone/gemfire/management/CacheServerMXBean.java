@@ -17,10 +17,10 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.management.internal.security.Resource;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a

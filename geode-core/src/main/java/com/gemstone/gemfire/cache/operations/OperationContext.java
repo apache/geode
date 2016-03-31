@@ -17,8 +17,6 @@
 
 package com.gemstone.gemfire.cache.operations;
 
-import com.gemstone.gemfire.management.internal.security.Resource;
-
 /**
  * Encapsulates a cache operation and the data associated with it for both the
  * pre-operation and post-operation cases. Implementations for specific
@@ -31,6 +29,31 @@ import com.gemstone.gemfire.management.internal.security.Resource;
  * @since 5.5
  */
 public abstract class OperationContext {
+
+  public enum Resource {
+    ASYNC_EVENT_QUEUE,
+    CLIENT,
+    CLIENT_SERVER,
+    CLUSTER_CONFIGURTION,
+    CONTINUOUS_QUERY,
+    DISKSTORE,
+    DISKSTORE_OFFLINE,
+    DISTRIBUTED_SYSTEM,
+    FUNCTION,
+    GATEWAY_RECEIVER,
+    GATEWAY_SENDER,
+    INDEX,
+    JMX,
+    LOCATOR,
+    LOCK_SERVICE,
+    MANAGER,
+    MEMBER,
+    PDX,
+    PULSE,
+    QUERY,
+    REGION
+  };
+
   public enum OperationCode {
     ALL,
     ALTER,

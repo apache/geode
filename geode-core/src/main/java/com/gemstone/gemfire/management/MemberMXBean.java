@@ -17,12 +17,12 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.management.internal.security.Resource;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 import java.util.Map;
 
 import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a

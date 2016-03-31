@@ -26,7 +26,6 @@ import com.gemstone.gemfire.management.internal.cli.converters.StringListConvert
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.security.Resource;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.After;
@@ -48,9 +47,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
+import static org.junit.Assert.*;
 
 /**
  * GfshParserJUnitTest - Includes tests to check the parsing and auto-completion

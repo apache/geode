@@ -24,7 +24,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.Argument;
 import com.gemstone.gemfire.management.internal.cli.parser.AvailabilityTarget;
 import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.parser.Option;
-import com.gemstone.gemfire.management.internal.security.Resource;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.After;
@@ -45,10 +44,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
+import static org.junit.Assert.*;
 
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions

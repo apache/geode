@@ -23,7 +23,6 @@ import com.gemstone.gemfire.management.internal.cli.CommandManager;
 import com.gemstone.gemfire.management.internal.cli.GfshParser;
 import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.security.Resource;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.After;
@@ -37,6 +36,7 @@ import org.springframework.shell.event.ParseResult;
 import java.util.List;
 
 import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 

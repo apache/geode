@@ -17,12 +17,12 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.management.internal.Manager;
-import com.gemstone.gemfire.management.internal.security.Resource;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 import javax.management.JMException;
 
 import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a

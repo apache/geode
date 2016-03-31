@@ -74,7 +74,7 @@ import com.gemstone.gemfire.management.internal.cli.util.VisualVmNotFoundExcepti
 import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfigurationStatus;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
-import com.gemstone.gemfire.management.internal.security.Resource;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;

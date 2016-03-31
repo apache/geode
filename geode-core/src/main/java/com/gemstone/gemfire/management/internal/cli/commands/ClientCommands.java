@@ -17,8 +17,33 @@
 
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.util.ArrayList;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.management.CacheServerMXBean;
+import com.gemstone.gemfire.management.ClientHealthStatus;
+import com.gemstone.gemfire.management.ManagementService;
+import com.gemstone.gemfire.management.cli.CliMetaData;
+import com.gemstone.gemfire.management.cli.Result;
+import com.gemstone.gemfire.management.internal.cli.CliUtil;
+import com.gemstone.gemfire.management.internal.cli.LogWrapper;
+import com.gemstone.gemfire.management.internal.cli.functions.ContunuousQueryFunction;
+import com.gemstone.gemfire.management.internal.cli.functions.ContunuousQueryFunction.ClientInfo;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
+import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.SectionResultData;
+import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
+import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
+import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
+import javax.management.ObjectName;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,35 +52,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.management.ObjectName;
-import org.springframework.shell.core.CommandMarker;
-
-import com.gemstone.gemfire.management.CacheServerMXBean;
-import com.gemstone.gemfire.management.ClientHealthStatus;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.internal.cli.functions.ContunuousQueryFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.ContunuousQueryFunction.ClientInfo;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
-import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.SectionResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-
 import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * 

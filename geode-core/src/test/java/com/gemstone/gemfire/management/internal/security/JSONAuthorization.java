@@ -45,6 +45,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 public class JSONAuthorization implements AccessControl, Authenticator {
 

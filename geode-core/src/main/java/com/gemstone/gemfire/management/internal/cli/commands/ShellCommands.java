@@ -48,8 +48,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker;
 import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshHistory;
 import com.gemstone.gemfire.management.internal.cli.util.CauseFinder;
 import com.gemstone.gemfire.management.internal.cli.util.ConnectionEndpoint;
-import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
 import com.gemstone.gemfire.management.internal.web.http.support.SimpleHttpRequester;
@@ -89,6 +87,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  *
