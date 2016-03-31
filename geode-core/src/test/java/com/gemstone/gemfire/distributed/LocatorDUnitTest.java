@@ -1552,7 +1552,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
             return null;
           }
         };
-        Wait.waitForCriterion(waitCriterion, 10 * 1000, 200, true);
+        Wait.waitForCriterion(waitCriterion, 15 * 1000, 200, true);
 
         int netviewId = vm1.invoke(() -> GMSJoinLeaveTestHelper.getViewId());
         assertEquals(netviewId, (int) vm2.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
