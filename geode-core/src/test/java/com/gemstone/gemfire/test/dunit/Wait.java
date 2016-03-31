@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * <code>Wait</code> provides static utility methods to wait for some
  * asynchronous action with intermittent polling.
  * 
- * These methods can be used directly: <code>Wait.waitForCriterion(...)</code>, 
+ * These methods can be used directly: <code>Wait.waitForCriterion(...)</code>,
  * however, they are intended to be referenced through static import:
  *
  * <pre>
@@ -38,8 +38,74 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * </pre>
  *
  * Extracted from DistributedTestCase.
- * 
+ *
+ * <p>Deprecated in favor of using {@link com.jayway.awaitility.Awaitility}.
+ *
+ * <p>Examples of using Awaitility:<pre>
+ *
+ * import static com.jayway.awaitility.Awaitility.*;
+ * import static com.jayway.awaitility.Duration.*; // optional
+ * import static java.util.concurrent.TimeUnit.*; // optional
+ *
+ * await().atMost(2, SECONDS).until(() -> isDone());
+ *
+ * Host.getHost(0).getVM(0).invoke(() -> await().atMost(1, MINUTES).until(() -> isDone()));
+ *
+ * Host.getHost(0).getVM(0).invoke(() -> await("waiting for 4 members").atMost(5, SECONDS).until(() -> getMemberCount(), is(4)));
+ *
+ * await().atMost(5, SECONDS).untilCall(getValue(), equalTo(5));
+ *
+ * volatile boolean done = false;
+ * await().atMost(2, SECONDS).untilCall(Boolean.class, equalTo(this.done));
+ *
+ * AtomicBoolean closed = new AtomicBoolean();
+ * await().atMost(5, SECONDS).untilTrue(closed);
+ *
+ * AtomicBoolean running = new AtomicBoolean();
+ * await().atMost(30, SECONDS).untilFalse(running);
+ *
+ * List members = new ArrayList();
+ * await().untilCall(to(members).size(), greaterThan(2));
+ * </pre>
+ *
+ * <p>NOTE: By default, the pollDelay is equal to the pollInterval which defaults to
+ * ONE_HUNDRED_MILLISECONDS. You may want to add pollDelay(ZERO) to force
+ * Awaitility to check your condition before waiting the pollInterval.
+ *
+ * <p>Example of detailed conversion to Awaitility:<pre>
+ * From:
+ *
+ * public boolean waitForClose() {
+ *   WaitCriterion ev = new WaitCriterion() {
+ *     public boolean done() {
+ *       return isClosed();
+ *     }
+ *     public String description() {
+ *       return "resource never closed";
+ *     }
+ *   };
+ *   Wait.waitForCriterion(ev, 2000, 200, true);
+ *   return true;
+ * }
+ *
+ * To:
+ *
+ * import static com.jayway.awaitility.Awaitility.*;
+ * import static com.jayway.awaitility.Duration.*;
+ * import static java.util.concurrent.TimeUnit.*;
+ *
+ * await("resource never closed").atMost(2, SECONDS).untilCall(() -> isClosed());
+ *
+ * Or:
+ *
+ * await("resource never closed").atMost(2, SECONDS).pollDelay(ZERO).pollInterval(200, MILLISECONDS).untilCall(() -> isClosed());
+ * </pre>
+ *
  * @deprecated Use {@link com.jayway.awaitility.Awaitility} instead.
+ *
+ * @see com.jayway.awaitility.Awaitility
+ * @see com.jayway.awaitility.Duration
+ * @see com.jayway.awaitility.core.ConditionFactory
  */
 @Deprecated
 public class Wait {
