@@ -1,6 +1,26 @@
 {
   "roles": [
     {
+      "name": "admin",
+      "operationsAllowed": [
+        "DISTRIBUTED_SYSTEM:LIST",
+        "GATEWAY_RECEIVER:CREATE",
+        "GATEWAY_RECEIVER:START",
+        "GATEWAY_RECEIVER:STOP",
+        "GATEWAY_RECEIVER:STATUS",
+        "GATEWAY_SENDER:CREATE",
+        "GATEWAY_SENDER:START",
+        "GATEWAY_SENDER:PAUSE",
+        "GATEWAY_SENDER:RESUME",
+        "GATEWAY_SENDER:STOP"
+      ]
+    },
+    {
+      "name": "data-admin",
+      "operationsAllowed": [
+      ]
+    },
+    {
       "name": "everything",
       "operationsAllowed": [
         "DISTRIBUTED_SYSTEM:LIST_DS",
@@ -51,6 +71,7 @@
     {
       "name": "dataUsers",
       "operationsAllowed": [
+        "DISTRIBUTED_SYSTEM:LIST",
         "REGION:GET",
         "REGION:REBALANCE",
         "REGION:EXPORT",
@@ -71,6 +92,13 @@
     }
   ],
   "users": [
+    {
+      "name": "adminUser",
+      "password": "1234567",
+      "roles": [
+        "admin"
+      ]
+    },
     {
       "name": "superuser",
       "password": "1234567",
