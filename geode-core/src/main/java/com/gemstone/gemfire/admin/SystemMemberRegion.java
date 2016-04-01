@@ -301,7 +301,7 @@ public interface SystemMemberRegion {
   /**
    * Returns the <code>MembershipAttributes</code> that configure required
    * roles for reliable access to the region.
-   * @since 5.0
+   * @deprecated this API is scheduled to be removed
    */
   public MembershipAttributes getMembershipAttributes();
   

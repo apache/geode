@@ -87,7 +87,7 @@ public class GatewaySenderEventRemoteDispatcher implements
     }
   }
   
-  protected GatewayAck readAcknowledgement(int lastBatchIdRead) {
+  protected GatewayAck readAcknowledgement() {
     SenderProxy sp = new SenderProxy(this.processor.getSender().getProxy());
     GatewayAck ack = null;
     Exception ex;
@@ -144,7 +144,7 @@ public class GatewaySenderEventRemoteDispatcher implements
   }
   
   @Override
-  public boolean dispatchBatch(List events, boolean removeFromQueueOnException, boolean isRetry) {
+  public boolean dispatchBatch(List events, boolean isRetry) {
     GatewaySenderStats statistics = this.sender.getStatistics();
     boolean success = false;
     try {
@@ -216,8 +216,7 @@ public class GatewaySenderEventRemoteDispatcher implements
       this.connectionLifeCycleLock.readLock().lock();
       try {
         if (connection != null) {
-          sp.dispatchBatch_NewWAN(connection, events, currentBatchId,
-              sender.isRemoveFromQueueOnException(), isRetry);
+          sp.dispatchBatch_NewWAN(connection, events, currentBatchId, isRetry);
           if (logger.isDebugEnabled()) {
             logger.debug("{} : Dispatched batch (id={}) of {} events, queue size: {} on connection {}",
                 this.processor.getSender(), currentBatchId,  events.size(), this.processor.getQueue().size(), connection);
@@ -580,7 +579,6 @@ public class GatewaySenderEventRemoteDispatcher implements
 
     @Override
     public void run() {
-      int lastBatchIdRead = -1;
       if (logger.isDebugEnabled()) {
         logger.debug("AckReaderThread started.. ");
       }
@@ -595,11 +593,10 @@ public class GatewaySenderEventRemoteDispatcher implements
           if (checkCancelled()) {
             break;
           }
-          GatewayAck ack = readAcknowledgement(lastBatchIdRead);
+          GatewayAck ack = readAcknowledgement();
           if (ack != null) {
             boolean gotBatchException = ack.getBatchException() != null;
             int batchId = ack.getBatchId();
-            lastBatchIdRead = batchId;
             int numEvents = ack.getNumEvents();
 
             // If the batch is successfully processed, remove it from the
@@ -615,33 +612,9 @@ public class GatewaySenderEventRemoteDispatcher implements
               // log batch exceptions and remove all the events if remove from
               // exception is true
               // do not remove if it is false
-              if (sender.isRemoveFromQueueOnException()) {
-                // log the batchExceptions
-                logBatchExceptions(ack.getBatchException());
-                  processor.handleSuccessBatchAck(batchId);
-              } else {
-                // we assume that batch exception will not occur for PDX related
-                // events
-                List<GatewaySenderEventImpl> pdxEvents = processor
-                    .getBatchIdToPDXEventsMap().get(
-                        ack.getBatchException().getBatchId());
-                if (pdxEvents != null) {
-                  for (GatewaySenderEventImpl senderEvent : pdxEvents) {
-                    senderEvent.isAcked = true;
-                  }
-                }
-                // log the batchExceptions
-                logBatchExceptions(ack.getBatchException());
-                // remove the events that have been processed.
-                BatchException70 be = ack.getBatchException();
-                List<BatchException70> exceptions = be.getExceptions();
+              logBatchExceptions(ack.getBatchException());
+              processor.handleSuccessBatchAck(batchId);
 
-                for (int i = 0; i < exceptions.get(0).getIndex(); i++) {
-                  processor.eventQueueRemove();
-                }
-                // reset the sender
-                processor.handleException();
-              }
             } // unsuccessful batch
             else { // The batch was successful.
               if (logger.isDebugEnabled()) {
@@ -652,9 +625,9 @@ public class GatewaySenderEventRemoteDispatcher implements
             }
           } else {
             // If we have received IOException.
-            if (logger.isDebugEnabled()) {
+           // if (logger.isDebugEnabled()) {
               logger.debug("{}: Received null ack from remote site.", processor.getSender());
-            }
+            //}
             processor.handleException();
             try { // This wait is before trying to getting new connection to
                   // receive ack. Without this there will be continuous call to

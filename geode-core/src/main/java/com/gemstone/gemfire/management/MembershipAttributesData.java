@@ -26,8 +26,7 @@ import com.gemstone.gemfire.distributed.Role;
  * Composite data type used to distribute the membership attributes for
  * a {@link Region}.
  * 
- * @since 7.0
- * 
+ * @deprecated this API is scheduled to be removed
  */
 public class MembershipAttributesData {
 

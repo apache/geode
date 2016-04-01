@@ -20,15 +20,20 @@
 //
 package com.gemstone.gemfire.distributed.internal.streaming;
 
+import static com.gemstone.gemfire.test.dunit.Wait.pause;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ReplyException;
@@ -39,6 +44,7 @@ import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.jayway.awaitility.Awaitility;
 
 public class StreamingOperationManyDUnitTest extends DistributedTestCase {
 
@@ -52,21 +58,14 @@ public class StreamingOperationManyDUnitTest extends DistributedTestCase {
     // ask four other VMs to connect to the distributed system
     // this will be the data provider
     Host host = Host.getHost(0);
+    HashSet<InternalDistributedMember> otherMemberIds = new HashSet<>();
     for (int i = 0; i < 4; i++) {
       VM vm = host.getVM(i);
-      vm.invoke(new SerializableRunnable("connect to system") {
-        public void run() {
-          assertTrue(getSystem() != null);
-        }
-      });
+      otherMemberIds.add(vm.invoke(() -> getSystem().getDistributedMember()));
     }
 
-    // get the other member id that connected
-    // by getting the list of other member ids and
-    Set setOfIds = getSystem().getDistributionManager().getOtherNormalDistributionManagerIds();
-    assertEquals(4, setOfIds.size());
     TestStreamingOperationManyProviderNoExceptions streamOp = new TestStreamingOperationManyProviderNoExceptions(getSystem());
-    streamOp.getDataFromAll(setOfIds);
+    streamOp.getDataFromAll(otherMemberIds);
     assertTrue(streamOp.dataValidated);
   }
 

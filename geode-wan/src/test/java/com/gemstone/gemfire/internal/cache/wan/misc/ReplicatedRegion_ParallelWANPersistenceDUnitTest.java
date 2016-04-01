@@ -51,8 +51,8 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //create receiver on remote site
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(nyPort, vm2, vm3);
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
@@ -60,10 +60,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
       getTestMethodName() + "_RR", null, isOffHeap() ));
     
     //create cache in local site
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     //create senders with disk store
     String diskStore1 = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
@@ -82,11 +79,8 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
-    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm6.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm7.invoke(() -> WANTestBase.startSender( "ln" ));
-    
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
@@ -154,11 +148,8 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     
     //start the senders in async mode. This will ensure that the 
     //node of shadow PR that went down last will come up first
-    vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm6.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm7.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    
+    startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
+
     LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     //wait for senders running
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
@@ -198,19 +189,15 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //create receiver on remote site
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
-
+    createCacheInVMs(nyPort, vm2, vm3);
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
     vm3.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
-    
+    createReceiverInVMs(nyPort, vm2, vm3);
+
     //create cache in local site
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     //create senders with disk store
     String diskStore1 = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10, false, true, null, null, true ));
@@ -229,11 +216,8 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     vm7.invoke(() -> WANTestBase.createReplicatedRegion( getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
 
-    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm6.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm7.invoke(() -> WANTestBase.startSender( "ln" ));
-    
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
@@ -300,11 +284,8 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     
     //start the senders in async mode. This will ensure that the 
     //node of shadow PR that went down last will come up first
-    vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm6.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm7.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    
+    startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
+
     LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     //wait for senders running
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
@@ -359,6 +340,8 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //create receiver on remote site
+    vm2.invoke(() -> WANTestBase.createCache( nyPort ));
+    vm3.invoke(() -> WANTestBase.createCache( nyPort ));
     vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
     vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
@@ -403,12 +386,9 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     vm5.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
     vm6.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
     vm7.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
-    
-    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm6.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm7.invoke(() -> WANTestBase.startSender( "ln" ));
-    
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
@@ -498,11 +478,8 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     
     //start the senders in async mode. This will ensure that the 
     //node of shadow PR that went down last will come up first
-    vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm6.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm7.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    
+    startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
+
     LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     //wait for senders running
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
@@ -576,13 +553,10 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(nyPort, vm2, vm3);
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( lnPort ));
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     // create senders with disk store
     String diskStore1 = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore( "ln", 2, true, 100, 10,
@@ -611,10 +585,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
         getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
         DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
 
-    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm6.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm7.invoke(() -> WANTestBase.startSender( "ln" ));
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", isOffHeap() ));
@@ -672,8 +643,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
       fail();
     }
 
-    vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    startSenderInVMsAsync("ln", vm4, vm5);
 
     LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     // wait for senders running

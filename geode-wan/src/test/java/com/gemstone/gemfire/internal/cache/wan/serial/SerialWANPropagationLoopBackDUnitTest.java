@@ -36,6 +36,8 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
+    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm3.invoke(() -> WANTestBase.createCache( nyPort ));
     vm2.invoke(() -> WANTestBase.createReceiver( lnPort ));
     vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
@@ -125,13 +127,14 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     Integer tkPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, lnPort ));
 
-    
+    createCacheInVMs(lnPort, vm3, vm6);
+    createCacheInVMs(nyPort, vm4, vm7);
+    createCacheInVMs(tkPort, vm5);
+
     vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
     vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
     vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
-    
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( nyPort ));
+
     // using vm5 for sender in ds 3. cache is already created.
     
     vm6.invoke(() -> WANTestBase.createSender( "ln", 2,
@@ -230,13 +233,14 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     Integer tkPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, lnPort ));
 
-    
+    createCacheInVMs(lnPort, vm3, vm6);
+    createCacheInVMs(nyPort, vm4, vm7);
+    createCacheInVMs(tkPort, vm5);
+
     vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
     vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
     vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
     
-    vm6.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm7.invoke(() -> WANTestBase.createCache( nyPort ));
     // using vm5 for sender in ds 3. cache is already created.
     
     vm6.invoke(() -> WANTestBase.createSender( "ln1", 2,
@@ -373,7 +377,9 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     Integer tkPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, lnPort ));
 
-    
+    vm3.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm4.invoke(() -> WANTestBase.createCache( nyPort ));
+    vm5.invoke(() -> WANTestBase.createCache( tkPort ));
     vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
     vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
     vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));

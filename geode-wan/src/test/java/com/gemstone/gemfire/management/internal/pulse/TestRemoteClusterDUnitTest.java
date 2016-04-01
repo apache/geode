@@ -83,11 +83,11 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
     managing.invoke(() -> WANTestBase.createPartitionedRegion(
         getTestMethodName() + "_PR", "pn", 1, 100, false ));
 
+    WANTestBase.createCacheInVMs(nyPort, nyReceiver);
     nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
 
-    puneSender.invoke(() -> WANTestBase.startSender( "pn" ));
-    managing.invoke(() -> WANTestBase.startSender( "pn" ));
+    WANTestBase.startSenderInVMs("pn", puneSender, managing);
 
     // make sure all the senders are running before doing any puts
     puneSender.invoke(() -> WANTestBase.waitForSenderRunningState( "pn" ));

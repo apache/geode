@@ -28,7 +28,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
  * {@link MembershipAttributes} have been configured with {@link 
  * LossAction#NO_ACCESS} or {@link LossAction#LIMITED_ACCESS}.
  *
- * @since 5.0
+ * @deprecated the MembershipAttributes API is scheduled to be removed
  */
 public class RegionAccessException extends RegionRoleException {
 private static final long serialVersionUID = 3142958723089038406L;

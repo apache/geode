@@ -60,14 +60,17 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
 
     // Site 1
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    createCacheInVMs(lnPort, vm1);
     Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
     
     //Site 2
     Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    createCacheInVMs(nyPort, vm3);
     Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
     //Site 3
     Integer tkPort = (Integer)vm4.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, lnPort ));
+    createCacheInVMs(tkPort, vm5);
     Integer tkRecPort = (Integer) vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 3 distributed systems");
@@ -141,10 +144,12 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
 
     // Site 1
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    vm1.invoke(() -> WANTestBase.createCache(lnPort));
     Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
     
     //Site 2
     Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    vm3.invoke(() -> WANTestBase.createCache(nyPort));
     Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
@@ -244,10 +249,12 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
 
     // Site 1
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    createCacheInVMs(lnPort, vm1);
     Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
     
     //Site 2
     Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    createCacheInVMs(nyPort, vm3);
     Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
@@ -349,10 +356,12 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
 
     // Site 1
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    createCacheInVMs(lnPort, vm1);
     Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    
+
     //Site 2
     Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    createCacheInVMs(nyPort, vm3);
     Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
     
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");

@@ -63,12 +63,9 @@ public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
 
     vm7.invoke(() -> WANTestBase.createClientWithLocator(
       lnPort, "localhost", getTestMethodName() + "_PR" ));
-    
-    AsyncInvocation inv1 = vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    AsyncInvocation inv2 = vm6.invokeAsync(() -> WANTestBase.startSender( "ln" ));
 
-    inv1.join();
-    inv2.join();
+    startSenderInVMsAsync("ln", vm5, vm6);
+
     // before doing any puts, let the senders be running in order to ensure that
     // not a single event will be lost
     

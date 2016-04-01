@@ -88,8 +88,8 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     true, 100, 50, false, false, null, true ));
   
     createSenderPRs();
-    
-    startSenders();
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
     
     pauseSenders();
     
@@ -424,7 +424,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   }
 
   protected void startPausedSenders() {
-    startSenders();
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
     pauseSenders();
   }
@@ -434,13 +434,6 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     vm5.invoke(() ->pauseSender( "ln" ));
     vm6.invoke(() ->pauseSender( "ln" ));
     vm7.invoke(() ->pauseSender( "ln" ));
-  }
-
-  protected void startSenders() {
-    vm4.invoke(() ->startSender( "ln" ));
-    vm5.invoke(() ->startSender( "ln" ));
-    vm6.invoke(() ->startSender( "ln" ));
-    vm7.invoke(() ->startSender( "ln" ));
   }
   
   protected void createSenderPRs() {
@@ -462,13 +455,10 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     Integer lnPort = (Integer)vm0.invoke(() ->createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() ->createFirstRemoteLocator( 2, lnPort ));
 
-    vm2.invoke(() ->createReceiver( nyPort ));
-    vm3.invoke(() ->createReceiver( nyPort ));
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(nyPort, vm2, vm3);
 
-    vm4.invoke(() ->createCache(lnPort ));
-    vm5.invoke(() ->createCache(lnPort ));
-    vm6.invoke(() ->createCache(lnPort ));
-    vm7.invoke(() ->createCache(lnPort ));
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
   }
   
   protected void createSendersNoConflation() {

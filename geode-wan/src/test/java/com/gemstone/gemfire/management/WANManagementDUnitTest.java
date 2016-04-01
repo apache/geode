@@ -79,12 +79,11 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     puneSender.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", "pn", 1, 100, false ));
     managing.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", "pn", 1, 100, false ));
     
-    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    nyReceiver.invoke(() -> WANTestBase.createCache( nyPort ));
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
+    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
-    puneSender.invoke(() -> WANTestBase.startSender( "pn" ));
-    managing.invoke(() -> WANTestBase.startSender( "pn" ));
-
+    WANTestBase.startSenderInVMs("pn", puneSender, managing);
 
     // make sure all the senders are running before doing any puts
     puneSender.invoke(() -> WANTestBase.waitForSenderRunningState( "pn" ));
@@ -122,9 +121,10 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
     puneSender.invoke(() -> WANTestBase.createCache( punePort ));
 
-    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    nyReceiver.invoke(() -> WANTestBase.createCache( nyPort ));
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
-    
+    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+
     // keep a larger batch to minimize number of exception occurrences in the
     // log
     puneSender.invoke(() -> WANTestBase.createSender( "pn",
@@ -183,10 +183,10 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     managing.invoke(() -> WANTestBase.createReplicatedRegionWithAsyncEventQueue(
       getTestMethodName() + "_RR", "pn", false ));
 
-    
-    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    WANTestBase.createCacheInVMs(nyPort, nyReceiver);
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
-    
+    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+
     checkAsyncQueueMBean(puneSender);
     checkAsyncQueueMBean(managing);
     

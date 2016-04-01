@@ -29,7 +29,7 @@ package com.gemstone.gemfire.cache;
  * @see AttributesFactory#setCacheListener
  * @see RegionAttributes#getCacheListener
  * @see AttributesMutator#setCacheListener
- * @since 5.0
+ * @deprecated this feature is scheduled to be removed
  */
 public interface RegionRoleListener<K,V> extends CacheListener<K,V> {
 

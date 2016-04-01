@@ -22,7 +22,7 @@ package com.gemstone.gemfire.cache;
  * Region regions} that have been configured with required roles using 
  * {@link MembershipAttributes}.
  *
- * @since 5.0
+ * @deprecated this feature is scheduled to be removed
  */
 public abstract class RoleException extends CacheRuntimeException {
   private static final long serialVersionUID = -7521056108445887394L;

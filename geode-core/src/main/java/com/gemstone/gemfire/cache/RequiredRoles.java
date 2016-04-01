@@ -36,8 +36,8 @@ import java.util.*;
  * specific <code>Region</code> created. In this case the <code>Role</code> is
  * considered to be absent for that <code>Region</code>.
  *
+ * @deprecated this feature is scheduled to be removed
  * @see com.gemstone.gemfire.distributed.Role
- * @since 5.0
  */
 public class RequiredRoles {
   

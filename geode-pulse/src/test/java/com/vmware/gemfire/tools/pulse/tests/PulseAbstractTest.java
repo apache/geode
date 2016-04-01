@@ -19,6 +19,7 @@
 package com.vmware.gemfire.tools.pulse.tests;
 
 import com.gemstone.gemfire.management.internal.JettyHelper;
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
 import junit.framework.Assert;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -126,6 +127,8 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   private static final String REDUNDANCY_GRID_ID = "redundancyzones_treemap_button";
   private static final String MEMBER_DROPDOWN_ID = "Members";
   private static final String DATA_DROPDOWN_ID = "Data";
+
+  private static final DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
 
   public static void setUpServer(String username, String password, String jsonAuthFile) throws Exception {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -471,7 +474,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
         .getText();
     String memberLoadAvg = JMXProperties.getInstance().getProperty(
         "member.M1.loadAverage");
-    Assert.assertEquals(memberLoadAvg, LoadAvg);
+    Assert.assertEquals(df2.format(Double.valueOf(memberLoadAvg)), LoadAvg);
   }
 
   @Ignore("WIP") // May be useful in near future
@@ -908,7 +911,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
 				  .getText();
 		  String loadAvgM1 = JMXProperties.getInstance().getProperty(
 				  "member.M" + (i) + ".loadAverage");
-		  Assert.assertEquals(loadAvgM1, LoadAvgM1);
+		  Assert.assertEquals(df2.format(Double.valueOf(loadAvgM1)), LoadAvgM1);
 		  
 		  
 		  String ThreadsM1 = driver.findElement(By.xpath("//div[@id='_tooltip']/div/div/div[2]/div[" + (j + 3) + "]/div[2]/div"))

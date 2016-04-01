@@ -60,6 +60,7 @@ public class MemberDetailsService implements PulseService {
 
     JsonNode requestDataJSON = mapper.readTree(request.getParameter("pulseData"));
     String memberName = requestDataJSON.get("MemberDetails").get("memberName").textValue();
+    DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
 
     Cluster.Member clusterMember = cluster.getMember(StringUtils
         .makeCompliantName(memberName));
@@ -70,7 +71,8 @@ public class MemberDetailsService implements PulseService {
       responseJSON.put("clusterId", cluster.getId());
       responseJSON.put("clusterName", cluster.getServerName());
       responseJSON.put("userName", userName);
-      responseJSON.put("loadAverage", clusterMember.getLoadAverage());
+      double loadAvg = clusterMember.getLoadAverage();
+      responseJSON.put("loadAverage", Double.valueOf(df2.format(loadAvg)));
       responseJSON.put("sockets", clusterMember.getTotalFileDescriptorOpen());
       responseJSON.put("threads", clusterMember.getNumThreads());
       responseJSON.put("offHeapFreeSize", clusterMember.getOffHeapFreeSize());
@@ -85,7 +87,6 @@ public class MemberDetailsService implements PulseService {
         responseJSON.put("numClients", clusterMember.getMemberClientsHMap().size());
       }
 
-      DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
       Long diskUsageVal = clusterMember.getTotalDiskUsage();
       Double diskUsage = diskUsageVal.doubleValue() / 1024;
 

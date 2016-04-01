@@ -839,6 +839,7 @@ in the Region.  The class must implement the ObjectSizer interface.
 <!--
 A "membership-attributes" element configures a region for membership
 constraints based on required roles.
+Deprecated this feature is scheduled to be removed
 -->
 <!ELEMENT membership-attributes (required-role*)>
 <!ATTLIST membership-attributes
@@ -1015,7 +1016,8 @@ A "region-time-to-live" element specifies a Region's time to live.
 <!-- ======================================================= -->
 <!--
 A "required-role" element specifies a role that is required for reliable
-access to the region
+access to the region.
+Deprecated this feature is scheduled to be removed
 -->
 
 <!-- ======================================================= -->

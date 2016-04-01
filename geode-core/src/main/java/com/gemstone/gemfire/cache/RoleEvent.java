@@ -24,8 +24,8 @@ import java.util.Set;
  * including its identity and the circumstances of the event. This is 
  * passed in to {@link RegionRoleListener}.
  *
+ * @deprecated this feature is scheduled to be removed
  * @see RegionRoleListener
- * @since 5.0
  */
 public interface RoleEvent<K,V> extends RegionEvent<K,V> {
   

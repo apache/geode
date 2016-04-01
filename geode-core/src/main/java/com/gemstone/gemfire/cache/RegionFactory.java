@@ -745,6 +745,7 @@ public class RegionFactory<K,V>
    * @param ra the MembershipAttributes to use
    * @return a reference to this RegionFactory object
    * @see AttributesFactory#setMembershipAttributes
+   * @deprecated this API is scheduled to be removed
    */
   public RegionFactory<K,V> setMembershipAttributes(MembershipAttributes ra) {
     this.attrsFactory.setMembershipAttributes(ra);

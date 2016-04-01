@@ -24,7 +24,7 @@ package com.gemstone.gemfire.distributed;
  * <a href="DistributedSystem.html#roles">Roles are specified</a> when 
  * connecting to the {@link DistributedSystem}.
  *
- * @since 5.0
+ * @deprecated this feature is scheduled to be removed
  */
 public interface Role extends Comparable<Role> {
   

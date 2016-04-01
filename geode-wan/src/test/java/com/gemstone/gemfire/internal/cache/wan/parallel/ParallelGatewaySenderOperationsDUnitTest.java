@@ -175,11 +175,10 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
 
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(nyPort, vm2, vm3);
 
-    vm4.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm5.invoke(() -> WANTestBase.createCache( lnPort ));
+    createCacheInVMs(lnPort, vm4, vm5);
 
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         true, 100, 10, false, false, null, true ));
@@ -195,9 +194,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
-  
-    vm4.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANTestBase.startSender( "ln" ));
+
+    startSenderInVMs("ln", vm4, vm5);
 
     //wait till the senders are running
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
@@ -283,7 +281,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200 ));
     
     //start the senders again
-    startSenders();
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
     //Region size on remote site should remain same and below the number of puts done in the FIRST RUN
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200 ));
@@ -349,10 +347,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     LogWriterUtils.getLogWriter().info("Starting the senders at the same time");
     //when puts are happening by another thread, start the senders
-    vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm6.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm7.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
 
     LogWriterUtils.getLogWriter().info("All the senders are started");
     
@@ -399,7 +394,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200 ));
     
     //start the senders again
-    startSenders();
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
     //Region size on remote site should remain same and below the number of puts done in the FIRST RUN
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200 ));
@@ -435,10 +430,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     //During sender start, it will wait until those buckets are created for shadowPR as well.
     //Start the senders in async threads, so colocation of shadowPR will be complete and 
     //missing buckets will be created in PRHARedundancyProvider.createMissingBuckets().
-    vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm5.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm6.invokeAsync(() -> WANTestBase.startSender( "ln" ));
-    vm7.invokeAsync(() -> WANTestBase.startSender( "ln" ));
+    startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
 
     waitForSendersRunning();
     
@@ -581,8 +573,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // Start receiver
     IgnoredException ignoredMTLE = IgnoredException.addIgnoredException(MessageTooLargeException.class.getName(), vm4);
     IgnoredException ignoredGIOE = IgnoredException.addIgnoredException(GemFireIOException.class.getName(), vm4);
-    vm2.invoke(() -> createReceiver( nyPort ));
+    vm2.invoke(() -> createCache( nyPort ));
     vm2.invoke(() -> createPartitionedRegion( regionName, null, 0, 100, isOffHeap() ));
+    vm2.invoke(() -> createReceiver( nyPort ));
     validateRegionSizes( regionName, numPuts, vm2 );
 
     vm4.invoke(() -> {
@@ -607,20 +600,17 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     createPartitionedRegions(createAccessors);
 
     if (startSenders) {
-      startSenders();
+      startSenderInVMs("ln", vm4, vm5, vm6, vm7);
     }
   }
 
   private void createSendersAndReceivers(Integer lnPort, Integer nyPort) {
     // Note: This is a test-specific method used by several test to create
     // receivers and senders.
-    vm2.invoke(() -> createReceiver(nyPort));
-    vm3.invoke(() -> createReceiver(nyPort));
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(nyPort, vm2, vm3);
 
-    vm4.invoke(() -> createCache(lnPort));
-    vm5.invoke(() -> createCache(lnPort));
-    vm6.invoke(() -> createCache(lnPort));
-    vm7.invoke(() -> createCache(lnPort));
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     vm4.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
     vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
@@ -645,13 +635,6 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
     vm3.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
-  }
-
-  private void startSenders() {
-    vm4.invoke(() -> startSender("ln"));
-    vm5.invoke(() -> startSender("ln"));
-    vm6.invoke(() -> startSender("ln"));
-    vm7.invoke(() -> startSender("ln"));
   }
 
   private void stopSenders() {

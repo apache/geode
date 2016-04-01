@@ -690,20 +690,6 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   public int getMyDSId() {
     return this.myDSId;
   }
-  
-  /**
-   * @param removeFromQueueOnException the removeFromQueueOnException to set
-   */
-  public void setRemoveFromQueueOnException(boolean removeFromQueueOnException) {
-    this.removeFromQueueOnException = removeFromQueueOnException;
-  }
-
-  /**
-   * @return the removeFromQueueOnException
-   */
-  public boolean isRemoveFromQueueOnException() {
-    return removeFromQueueOnException;
-  }
 
   public CancelCriterion getStopper() {
     return this.stopper;
