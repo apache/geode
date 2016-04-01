@@ -180,9 +180,9 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
       putAndWaitForSuccess(vm2, REGION_NAME, "key2", "value2");
       Assert.assertEquals("value2", getInVM(vm1, "key2"));
     }catch(Exception ec) {
-      if(ec.getCause() != null && !(ec.getCause().getCause() instanceof BindException))
-        throw ec;
-      //else BindException let it pass
+      if(ec.getCause() != null && (ec.getCause().getCause() instanceof BindException))
+        return;//BindException let it pass
+      throw ec;
     }
   }
   
