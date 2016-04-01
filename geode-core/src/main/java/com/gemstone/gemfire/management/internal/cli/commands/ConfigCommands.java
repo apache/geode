@@ -67,8 +67,6 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCo
 import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /****
- *
- *         Sourabh Bansod
  * @since 7.0
  *
  */

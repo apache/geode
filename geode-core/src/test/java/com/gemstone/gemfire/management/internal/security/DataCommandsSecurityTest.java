@@ -67,40 +67,6 @@ public class DataCommandsSecurityTest {
     bean.processCommand("query --query='SELECT * FROM /secureRegion'");
   }
 
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
-  @Test
-  public void testAllAccess(){
-    bean.processCommand("rebalance --include-region=region1");
-    bean.processCommand("export data --region=region1 --file=foo.txt --member=value");
-    bean.processCommand("import data --region=region1 --file=foo.txt --member=value");
-    bean.processCommand("put --key=key1 --value=value1 --region=region1");
-    bean.processCommand("get --key=key1 --region=region1");
-    bean.processCommand("remove --region=region1");
-    bean.processCommand("query --query='SELECT * FROM /region1'");
-  }
-
-  // stranger has no permission granted
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
-  @Test
-  public void testNoAccess(){
-    assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region1")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("REGION:REBALANCE");
-
-    assertThatThrownBy(() -> bean.processCommand("export data --region=region1 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("REGION:EXPORT");
-    assertThatThrownBy(() -> bean.processCommand("import data --region=region1 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("REGION:IMPORT");
-
-    assertThatThrownBy(() -> bean.processCommand("put --key=key1 --value=value1 --region=region1")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("REGION:PUT");
-
-    assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region1")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("REGION:GET");
-
-    assertThatThrownBy(() -> bean.processCommand("query --query='SELECT * FROM /region1'")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("QUERY:EXECUTE");
-  }
-
   // dataUser has all the permissions granted, but not to region2 (only to region1)
   @JMXConnectionConfiguration(user = "dataUser", password = "1234567")
   @Test
