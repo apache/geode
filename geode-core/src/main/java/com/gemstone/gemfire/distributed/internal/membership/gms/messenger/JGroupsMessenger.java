@@ -556,7 +556,13 @@ public class JGroupsMessenger implements Messenger {
       }
       String received = "none";
       long[] senderSeqnos = digest.get(jgSender);
-      if (senderSeqnos == null || senderSeqnos[0] >= seqno.longValue()) {
+      if (senderSeqnos == null) {
+        break;
+      }
+      if (logger.isDebugEnabled()) {
+        logger.debug("waiting for multicast messages from {}.  Current seqno={} and expected seqno={}", sender, senderSeqnos[0], seqno);
+      }
+      if (senderSeqnos[0] >= seqno.longValue()) {
         break;
       }
       long now = System.currentTimeMillis();

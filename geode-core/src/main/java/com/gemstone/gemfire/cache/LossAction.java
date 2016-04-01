@@ -28,7 +28,7 @@ import java.util.*;
  * The <code>LossAction</code> is specified when configuring a region's
  * {@link com.gemstone.gemfire.cache.MembershipAttributes}.
  * 
- * @since 5.0
+ * @deprecated this feature is scheduled to be removed
  */
 public class LossAction implements Serializable {
   private static final long serialVersionUID = -832035480397447797L;

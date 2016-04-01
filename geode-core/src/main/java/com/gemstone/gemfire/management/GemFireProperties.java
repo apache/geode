@@ -314,6 +314,7 @@ public class GemFireProperties {
    * distributed system. This is a comma delimited list of user-defined strings.
    * Any number of members can be configured to perform the same role, and a
    * member can be configured to perform any number of roles.
+   * @deprecated this feature is scheduled to be removed
    **/
   private String roles;
   /**
@@ -321,6 +322,7 @@ public class GemFireProperties {
    * system to reconnect in case of required role loss. The system will attempt
    * to reconnect more than once, and this timeout period applies to each
    * reconnection attempt. Default: "10000"
+   * @deprecated this feature is scheduled to be removed
    **/
   private int maxWaitTimeForReconnect;
   /**
@@ -337,6 +339,7 @@ public class GemFireProperties {
    * asynchronous messaging until this process catches up, departs, or some
    * specified limit is reached, such as async-queue-timeout or
    * async-max-queue-size. Default: "0"
+   * @deprecated this feature is scheduled to be removed
    **/
   private int asyncDistributionTimeout;
   /**

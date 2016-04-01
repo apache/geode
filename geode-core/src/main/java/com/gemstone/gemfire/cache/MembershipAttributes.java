@@ -45,7 +45,7 @@ import java.util.*;
  * required roles are specified.  These attributes are immutable after the
  * <code>Region</code> has been created.</p>
  * 
- * @since 5.0
+ * @deprecated this feature is scheduled to be removed
  */
 public class MembershipAttributes implements DataSerializable, Externalizable {
   

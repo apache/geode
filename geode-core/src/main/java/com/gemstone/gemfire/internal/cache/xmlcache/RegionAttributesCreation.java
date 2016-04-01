@@ -1514,12 +1514,16 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     }
   }
 
-  /** @since 5.0 */
+  /**
+   * @deprecated this API is scheduled to be removed
+   */
   public MembershipAttributes getMembershipAttributes() {
     return this.membershipAttributes;
   }
 
-  /** @since 5.0 */
+  /**
+   * @deprecated this API is scheduled to be removed
+   */
   public void setMembershipAttributes(MembershipAttributes pa) {
     this.membershipAttributes = pa;
     setHasMembershipAttributes(true);

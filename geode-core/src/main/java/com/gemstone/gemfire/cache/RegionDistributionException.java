@@ -31,7 +31,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
  * may be caused by one or more required roles not acknowledging receipt of
  * the message.
  *
- * @since 5.0
+ * @deprecated the MembershipAttributes API is scheduled to be removed
  */
 public class RegionDistributionException extends RegionRoleException {
 private static final long serialVersionUID = -5950359426786805646L;

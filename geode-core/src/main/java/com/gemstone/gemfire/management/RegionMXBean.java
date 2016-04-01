@@ -87,6 +87,8 @@ public interface RegionMXBean {
 
   /**
    * Returns the membership attributes of the Region.
+   * 
+   * @deprecated this API is scheduled to be removed
    */
   public MembershipAttributesData listMembershipAttributes();
 

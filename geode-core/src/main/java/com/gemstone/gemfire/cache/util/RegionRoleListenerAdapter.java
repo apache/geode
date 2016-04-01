@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.RoleEvent;
  * Applications can subclass this class and only override the methods for 
  * the events of interest.
  * 
- * @since 5.0
+ * @deprecated this feature is scheduled to be removed
  */
 public abstract class RegionRoleListenerAdapter<K,V> 
 extends RegionMembershipListenerAdapter<K,V>

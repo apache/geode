@@ -302,7 +302,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  *     are missing from the region membership.
  *     <br>
  *     {@link #setMembershipAttributes} {@link RegionAttributes#getMembershipAttributes}</dd>
- *
+ * <dd><em>Deprecated</em>, this API is scheduled to be removed</dd>
  * </dt>
  * </dl>
  *
@@ -1180,7 +1180,7 @@ public class AttributesFactory<K,V> {
    * Sets the <code>MembershipAttributes</code> that describe the membership
    * roles required for reliable access to the region.
    *
-   * @since 5.0
+   * @deprecated this API is scheduled to be removed
    */
   public void setMembershipAttributes(MembershipAttributes membership) {
     this.regionAttributes.membershipAttributes = membership;
@@ -1979,9 +1979,13 @@ public class AttributesFactory<K,V> {
       return this.customEvictionAttributes;
     }
 
+    /**
+     * @deprecated this API is scheduled to be removed
+     */
     public MembershipAttributes getMembershipAttributes() {
       return this.membershipAttributes;
     }
+    
     public SubscriptionAttributes getSubscriptionAttributes() {
       return this.subscriptionAttributes;
     }

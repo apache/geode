@@ -27,7 +27,7 @@ import java.util.*;
  * The <code>ResumptionAction</code> is specified when configuring a region's 
  * {@link com.gemstone.gemfire.cache.MembershipAttributes}.
  * 
- * @since 5.0
+ * @deprecated this API is scheduled to be removed
  */
 public class ResumptionAction implements java.io.Serializable {
   private static final long serialVersionUID = 6632254151314915610L;

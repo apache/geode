@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache;
  * Reliability for a <code>Region</code> is defined by its 
  * {@link MembershipAttributes}.
  *
- * @since 5.0
+ * @deprecated this feature is scheduled to be removed
  */
 public abstract class RegionRoleException extends RoleException {
   
