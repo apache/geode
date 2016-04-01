@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.disttx;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -34,7 +36,6 @@ import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.PartitionResolver;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.execute.CustomerIDPartitionResolver;
@@ -44,19 +45,21 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * TODO: reenable this test and fix it when work on Dist TX resumes -- it fails with no members to host buckets
  */
-public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
-  VM accessor = null;
-  VM dataStore1 = null;
-  VM dataStore2 = null;
-  VM dataStore3 = null;
+@Category(DistributedTest.class)
+public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
 
-  public DistTXDebugDUnitDisabledTest(String name) {
-    super(name);
-  }
+  protected VM accessor = null;
+  protected VM dataStore1 = null;
+  protected VM dataStore2 = null;
+  protected VM dataStore3 = null;
 
   @Override
   public final void postSetUp() throws Exception {
@@ -74,6 +77,7 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         InternalResourceManager.setResourceObserver(null);
       }
@@ -81,15 +85,15 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
     InternalResourceManager.setResourceObserver(null);
   }
 
-  public static void createCacheInVm() {
-    new DistTXDebugDUnitDisabledTest("temp").getCache();
+  private void createCacheInVm() {
+    getCache();
   }
 
   protected void createCacheInAllVms() {
-    dataStore1.invoke(() -> DistTXDebugDUnitDisabledTest.createCacheInVm());
-    dataStore2.invoke(() -> DistTXDebugDUnitDisabledTest.createCacheInVm());
-    dataStore3.invoke(() -> DistTXDebugDUnitDisabledTest.createCacheInVm());
-    accessor.invoke(() -> DistTXDebugDUnitDisabledTest.createCacheInVm());
+    dataStore1.invoke(() -> createCacheInVm());
+    dataStore2.invoke(() -> createCacheInVm());
+    dataStore3.invoke(() -> createCacheInVm());
+    accessor.invoke(() -> createCacheInVm());
   }
 
   public static void createPR(String partitionedRegionName, Integer redundancy,
@@ -135,12 +139,12 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
   }
 
   protected void createPartitionedRegion(Object[] attributes) {
-    dataStore1.invoke(DistTXDebugDUnitDisabledTest.class, "createPR", attributes);
-    dataStore2.invoke(DistTXDebugDUnitDisabledTest.class, "createPR", attributes);
-    dataStore3.invoke(DistTXDebugDUnitDisabledTest.class, "createPR", attributes);
+    dataStore1.invoke(DistTXDebugDUnitTest.class, "createPR", attributes);
+    dataStore2.invoke(DistTXDebugDUnitTest.class, "createPR", attributes);
+    dataStore3.invoke(DistTXDebugDUnitTest.class, "createPR", attributes);
     // make Local max memory = o for accessor
     attributes[2] = new Integer(0);
-    accessor.invoke(DistTXDebugDUnitDisabledTest.class, "createPR", attributes);
+    accessor.invoke(DistTXDebugDUnitTest.class, "createPR", attributes);
   }
 
   public static void destroyPR(String partitionedRegionName) {
@@ -173,14 +177,15 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
   }
 
   protected void createReplicatedRegion(Object[] attributes) {
-    dataStore1.invoke(DistTXDebugDUnitDisabledTest.class, "createRR", attributes);
-    dataStore2.invoke(DistTXDebugDUnitDisabledTest.class, "createRR", attributes);
-    dataStore3.invoke(DistTXDebugDUnitDisabledTest.class, "createRR", attributes);
+    dataStore1.invoke(DistTXDebugDUnitTest.class, "createRR", attributes);
+    dataStore2.invoke(DistTXDebugDUnitTest.class, "createRR", attributes);
+    dataStore3.invoke(DistTXDebugDUnitTest.class, "createRR", attributes);
     // DataPolicy.EMPTY for accessor
     attributes[1] = Boolean.TRUE;
-    accessor.invoke(DistTXDebugDUnitDisabledTest.class, "createRR", attributes);
+    accessor.invoke(DistTXDebugDUnitTest.class, "createRR", attributes);
   }
 
+  @Test
   public void testTXPR() throws Exception {
     createCacheInAllVms();
     Object[] prAttrs = new Object[] { "pregion1", 1, null, 3, null,
@@ -282,9 +287,10 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
 
     accessor.invoke(TxOps);
 
-    accessor.invoke(() -> DistTXDebugDUnitDisabledTest.destroyPR( "pregion1" ));
+    accessor.invoke(() -> DistTXDebugDUnitTest.destroyPR( "pregion1" ));
   }
 
+  @Test
   public void testTXDestroy_invalidate() throws Exception {
     createCacheInAllVms();
     Object[] prAttrs = new Object[] { "pregion1", 1, null, 3, null,
@@ -366,9 +372,10 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
     dataStore2.invoke(verifySize);
     dataStore3.invoke(verifySize);
 
-    accessor.invoke(() -> DistTXDebugDUnitDisabledTest.destroyPR( "pregion1" ));
+    accessor.invoke(() -> DistTXDebugDUnitTest.destroyPR( "pregion1" ));
   }
 
+  @Test
   public void testTXPR_RR() throws Exception {
     createCacheInAllVms();
     Object[] prAttrs = new Object[] { "pregion1", 1, null, 3, null,
@@ -448,9 +455,10 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
     dataStore2.invoke(verifySize);
     dataStore3.invoke(verifySize);
 
-    accessor.invoke(() -> DistTXDebugDUnitDisabledTest.destroyPR( "pregion1" ));
+    accessor.invoke(() -> DistTXDebugDUnitTest.destroyPR( "pregion1" ));
   }
 
+  @Test
   public void testTXPR2() throws Exception {
     createCacheInAllVms();
     Object[] prAttrs = new Object[] { "pregion1", 1, null, 3, null,
@@ -545,9 +553,10 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
 
     accessor.invoke(TxRollbackOps);
 
-    accessor.invoke(() -> DistTXDebugDUnitDisabledTest.destroyPR( "pregion1" ));
+    accessor.invoke(() -> DistTXDebugDUnitTest.destroyPR( "pregion1" ));
   }
-  
+
+  @Test
   public void testTXPRRR2_create() throws Exception {
     createCacheInAllVms();
     Object[] prAttrs = new Object[] { "pregion1", 1, null, 3, null,
@@ -613,7 +622,8 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
     dataStore2.invoke(verifySize);
     dataStore3.invoke(verifySize);
   }
-  
+
+  @Test
   public void testTXPRRR2_putall() throws Exception {
     createCacheInAllVms();
     Object[] prAttrs = new Object[] { "pregion1", 1, null, 3, null,
@@ -683,7 +693,8 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
     
 //    accessor.invoke(TxOps);
   }
-  
+
+  @Test
   public void testTXPR_putall() throws Exception {
     createCacheInAllVms();
     Object[] prAttrs = new Object[] { "pregion1", 1, null, 3, null,
@@ -741,11 +752,12 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
 //    accessor.invoke(TxOps);
   }
 
-  
+  @Test
   public void testTXRR_removeAll() throws Exception {
     performRR_removeAllTest(false);
   }
-  
+
+  @Test
   public void testTXRR_removeAll_dataNodeAsCoordinator() throws Exception {
     performRR_removeAllTest(true);
   }
@@ -810,7 +822,8 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
     
 //    accessor.invoke(TxOps);
   }
-  
+
+  @Test
   public void testTXPR_removeAll() throws Exception {
     createCacheInAllVms();
     Object[] prAttrs = new Object[] { "pregion1", 1, null, 3, null,
@@ -952,12 +965,13 @@ public class DistTXDebugDUnitDisabledTest extends CacheTestCase {
       accessor.invoke(TxRollbackOps);  
     }
   }
-    
 
+  @Test
   public void testTXRR2() throws Exception {
     performTXRRtestOps(false); // actual test
   }
 
+  @Test
   public void testTXRR2_dataNodeAsCoordinator() throws Exception {
     performTXRRtestOps(true);
   }
