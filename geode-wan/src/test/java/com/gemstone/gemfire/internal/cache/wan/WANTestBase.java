@@ -1364,8 +1364,7 @@ public class WANTestBase extends DistributedTestCase{
             Thread.sleep(milliSeconds);
           }
           catch (InterruptedException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
           }
         }
       });
