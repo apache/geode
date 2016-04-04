@@ -61,7 +61,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.createCache( nyPort ));
     vm3.invoke(() -> WANTestBase.createCache( nyPort ));
-    vm2.invoke(() -> WANTestBase.createReceiverAfterCache( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
     vm2.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
     vm3.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
@@ -124,7 +124,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
             "vm1's region size before restart gatewayhub is " + region.size());
       }
     });
-    vm2.invoke(() -> WANTestBase.createReceiverAfterCache( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
 
     // wait for vm0 to finish its work
     vm4_future.join(MAX_WAIT);

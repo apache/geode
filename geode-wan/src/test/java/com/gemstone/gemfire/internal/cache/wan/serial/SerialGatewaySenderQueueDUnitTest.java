@@ -67,8 +67,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     vm3.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", null, isOffHeap() ));
 
-    vm2.invoke(() -> WANTestBase.createReceiver2( nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver2( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
     
     vm4.invoke(() -> WANTestBase.createCache( lnPort ));
     vm5.invoke(() -> WANTestBase.createCache( lnPort ));
