@@ -2153,7 +2153,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId SwaggerConfig_VENDOR_PRODUCT_LINE = new StringId(6617, "Apache Geode Developer REST API");
   public static final StringId SwaggerConfig_DESCRIPTOR = new StringId(6618, "Developer REST API and interface to Geode''s distributed, in-memory data grid and cache.");
   public static final StringId SwaggerConfig_EULA_LINK = new StringId(6619, "http://www.apache.org/licenses/");
-  public static final StringId SwaggerConfig_SUPPORT_LINK = new StringId(6620, "dev@geode.incubator.apache.org");
+  public static final StringId SwaggerConfig_SUPPORT_LINK = new StringId(6620, "user@geode.incubator.apache.org");
   public static final StringId SwaggerConfig_DOC_TITLE = new StringId(6621, "Apache Geode Documentation");
   public static final StringId SwaggerConfig_DOC_LINK = new StringId(6622, "http://geode.incubator.apache.org/docs/");
 
