@@ -699,7 +699,9 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
       /*
        * We need to make sure that we should fire a TX afterCommit event.
        */
-      if(!disableListeners && (forceListener || (txEvent!=null && txEvent.getEvents().size()>0))) {
+      boolean internalEvent = (txEvent != null && txEvent.hasOnlyInternalEvents());
+      if (!disableListeners && !internalEvent
+          && (forceListener || (txEvent!=null && !txEvent.isEmpty()))) {
         for (int i=0; i < tls.length; i++) {
           try {
             tls[i].afterCommit(txEvent);
@@ -2457,13 +2459,13 @@ private static final long serialVersionUID = 589384721273797822L;
   }
   
   
-	/**
-	 * Disable firing of TX Listeners. Currently on used on clients.
-	 * @param b disable the listeners
-	 */
-	public void setDisableListeners(boolean b) {
-		disableListeners = true;
-	}
+  /**
+   * Disable firing of TX Listeners. Currently on used on clients.
+   * @param b disable the listeners
+   */
+  public void setDisableListeners(boolean b) {
+    disableListeners = true;
+  }
 
   public Version getClientVersion() {
     return clientVersion;

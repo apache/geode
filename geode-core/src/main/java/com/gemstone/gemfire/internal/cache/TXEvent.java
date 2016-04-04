@@ -128,6 +128,27 @@ public class TXEvent implements TransactionEvent, Releasable {
     return this.events;
   }
 
+  /**
+   * Do all operations touch internal regions?
+   * Returns false if the transaction is empty
+   * or if any events touch non-internal regions.
+   */
+  public boolean hasOnlyInternalEvents() {
+    List<CacheEvent<?,?>> txevents = getEvents();
+    if (txevents == null || txevents.isEmpty()) {
+      return false;
+    }
+    for (CacheEvent<?,?> txevent: txevents) {
+      LocalRegion region = (LocalRegion)txevent.getRegion();
+      if (region != null
+          && !region.isPdxTypesRegion()
+          && !region.isInternalRegion()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public final Cache getCache() {
     return this.cache;
   }
