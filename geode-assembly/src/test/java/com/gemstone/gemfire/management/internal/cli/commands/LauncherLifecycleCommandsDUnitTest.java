@@ -799,66 +799,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
   }
 
-  public void test013StartServerWithSpring() {
-    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
-    File workingDirectory = new File(pathname);
-
-    assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
-
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
-
-    command.addOption(CliStrings.START_SERVER__NAME, getClass().getSimpleName().concat("_").concat(getTestMethodName()));
-    command.addOption(CliStrings.START_SERVER__USE_CLUSTER_CONFIGURATION, Boolean.FALSE.toString());
-    command.addOption(CliStrings.START_SERVER__LOG_LEVEL, "config");
-    command.addOption(CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH);
-    command.addOption(CliStrings.START_SERVER__DISABLE_DEFAULT_SERVER);
-    command.addOption(CliStrings.START_SERVER__DIR, pathname);
-    command.addOption(CliStrings.START_SERVER__SPRING_XML_LOCATION, "spring/spring-gemfire-context.xml");
-
-    CommandResult result = executeCommand(command.toString());
-
-    assertNotNull(result);
-    assertEquals(Result.Status.OK, result.getStatus());
-
-    final ServerLauncher springGemFireServer = new ServerLauncher.Builder().setCommand(
-        ServerLauncher.Command.STATUS).setWorkingDirectory(
-        IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDirectory)).build();
-
-    assertNotNull(springGemFireServer);
-
-    ServerState serverState = springGemFireServer.status();
-    
-    assertNotNull(serverState);
-    assertEquals(Status.ONLINE, serverState.getStatus());
-    
-    //Ensure the member name is what is set through spring
-    String logFile = serverState.getLogFile();
-    assertTrue("Log file name was not configured from spring context: " + logFile, logFile.contains("spring_server.log"));
-
-    // Now that the GemFire Server bootstrapped with Spring started up OK, stop it!
-    stopServer(springGemFireServer.getWorkingDirectory());
-
-    WaitCriterion waitCriteria = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        ServerState serverState = springGemFireServer.status();
-        return (serverState != null && Status.NOT_RESPONDING.equals(serverState.getStatus()));
-      }
-
-      @Override
-      public String description() {
-        return "wait for the Locator to stop; the Locator will no longer respond after it stops";
-      }
-    };
-
-    waitForCriterion(waitCriteria, TimeUnit.SECONDS.toMillis(15), TimeUnit.SECONDS.toMillis(5), true);
-
-    serverState = springGemFireServer.status();
-
-    assertNotNull(serverState);
-    assertEquals(Status.NOT_RESPONDING, serverState.getStatus());
-  }
-
   public void test014GemFireServerJvmProcessTerminatesOnOutOfMemoryError() throws Exception {
     int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     final int serverPort = ports[0];

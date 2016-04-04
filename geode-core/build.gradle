@@ -101,11 +101,7 @@ dependencies {
   compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
     ext.optional = true
   }
-  runtime ('org.springframework:spring-aop:' + project.'springframework.version') {
-    exclude module: 'aopalliance'
-    ext.optional = true
-  }
-  compile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  provided ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
     ext.optional = true
@@ -116,6 +112,7 @@ dependencies {
     exclude module: 'cglib'
     exclude module: 'guava'
     exclude module: 'spring-aop'
+    exclude module: 'spring-context-support'
     ext.optional = true
   }
   compile ('org.xerial.snappy:snappy-java:' + project.'snappy-java.version') {
