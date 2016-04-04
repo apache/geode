@@ -1355,6 +1355,22 @@ public class WANTestBase extends DistributedTestCase{
     }
   }
 
+  public static void addListenerToSleepAfterCreateEvent(int milliSeconds) {
+    cache.getRegion(getTestMethodName() + "_RR_1").getAttributesMutator()
+      .addCacheListener(new CacheListenerAdapter<Object, Object>() {
+        @Override
+        public void afterCreate(final EntryEvent<Object, Object> event) {
+          try {
+            Thread.sleep(milliSeconds);
+          }
+          catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+  }
+
+
   public static void createCache(Integer locPort){
     createCache(false, locPort);
   }
