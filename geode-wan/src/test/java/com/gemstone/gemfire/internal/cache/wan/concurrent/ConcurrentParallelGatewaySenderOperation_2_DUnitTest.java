@@ -312,11 +312,11 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer pnPort = (Integer)vm3.invoke(() -> createFirstRemoteLocator(4, lnPort));
 
     createCacheInVMs(nyPort, vm4);
-    vm4.invoke(() -> createReceiver(nyPort));
+    vm4.invoke(() -> createReceiver());
     createCacheInVMs(tkPort, vm5);
-    vm5.invoke(() -> createReceiver(tkPort));
+    vm5.invoke(() -> createReceiver());
     createCacheInVMs(pnPort, vm6);
-    vm6.invoke(() -> createReceiver(pnPort));
+    vm6.invoke(() -> createReceiver());
 
     try {
       vm7.invoke(() -> createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(lnPort));
@@ -366,7 +366,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer nyPort = locatorPorts[1];
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> createReceiver(nyPort));
+    vm2.invoke(() -> createReceiver());
 
     try {
       createAndStartSender(vm4, lnPort, 5, true, false);
@@ -407,9 +407,9 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer tkPort = (Integer)vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(nyPort, vm6);
-    vm6.invoke(() -> createReceiver(nyPort));
+    vm6.invoke(() -> createReceiver());
     createCacheInVMs(tkPort, vm7);
-    vm7.invoke(() -> createReceiver(tkPort));
+    vm7.invoke(() -> createReceiver());
 
     try {
       createAndStartTwoSenders(vm4, lnPort, 4);
@@ -454,7 +454,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer nyPort = locatorPorts[1];
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> createReceiver(nyPort));
+    vm2.invoke(() -> createReceiver());
 
     try {
       createAndStartSenderWithCustomerOrderShipmentRegion(vm4, lnPort, 5, true);
@@ -462,7 +462,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       LogWriterUtils.getLogWriter().info("Created PRs on local site");
 
-      vm2.invoke(() -> createCustomerOrderShipmentPartitionedRegion(null, null, 1, 100, isOffHeap()));
+      vm2.invoke(() -> createCustomerOrderShipmentPartitionedRegion(null, 1, 100, isOffHeap()));
 
       AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.putcolocatedPartitionedRegion( 10 ));
       Wait.pause(1000);
@@ -492,7 +492,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer nyPort = locatorPorts[1];
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     try {
       createAndStartSenderWithCustomerOrderShipmentRegion(vm4, lnPort, 6, true);
@@ -500,8 +500,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       LogWriterUtils.getLogWriter().info("Created PRs on local site");
 
-      vm2.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion( null,
-              null, 1, 100, isOffHeap() ));
+      vm2.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion(null, 1, 100, isOffHeap() ));
 
       AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.putcolocatedPartitionedRegion( 2000 ));
       Wait.pause(1000);
@@ -570,7 +569,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     // Note: This is a test-specific method used by several tests to do puts from vm4 to vm2.
     String regionName = getTestMethodName() + "_PR";
     createCacheInVMs(port, vm2);
-    vm2.invoke(() -> createReceiver(port));
+    vm2.invoke(() -> createReceiver());
     vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
     vm4.invoke(() -> doPuts(regionName, 10));
     vm4.invoke(() -> validateRegionSize(regionName, 10));
@@ -589,7 +588,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
   protected void createAndStartSenderWithCustomerOrderShipmentRegion(VM vm, int port, int concurrencyLevel, boolean manualStart) {
     vm.invoke(() -> createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(port));
-    vm.invoke(() -> createCustomerOrderShipmentPartitionedRegion(null, "ln", 1, 100, isOffHeap()));
+    vm.invoke(() -> createCustomerOrderShipmentPartitionedRegion("ln", 1, 100, isOffHeap()));
     createSender(vm, concurrencyLevel, manualStart);
     vm.invoke(() -> startSender("ln"));
   }

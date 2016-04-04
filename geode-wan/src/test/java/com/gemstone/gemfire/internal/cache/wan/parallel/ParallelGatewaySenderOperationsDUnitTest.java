@@ -16,19 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.RMIException;
@@ -176,7 +170,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer nyPort = locatorPorts[1];
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5);
 
@@ -575,7 +569,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     IgnoredException ignoredGIOE = IgnoredException.addIgnoredException(GemFireIOException.class.getName(), vm4);
     vm2.invoke(() -> createCache( nyPort ));
     vm2.invoke(() -> createPartitionedRegion( regionName, null, 0, 100, isOffHeap() ));
-    vm2.invoke(() -> createReceiver( nyPort ));
+    vm2.invoke(() -> createReceiver());
     validateRegionSizes( regionName, numPuts, vm2 );
 
     vm4.invoke(() -> {
@@ -608,7 +602,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // Note: This is a test-specific method used by several test to create
     // receivers and senders.
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 

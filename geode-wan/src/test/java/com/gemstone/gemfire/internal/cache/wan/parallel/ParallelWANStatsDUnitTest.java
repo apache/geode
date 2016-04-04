@@ -48,7 +48,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createSendersWithConflation(lnPort);
 
@@ -80,7 +80,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createSenders(lnPort);
 
@@ -117,7 +117,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createSenders(lnPort);
 
@@ -155,8 +155,8 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
 
     createCacheInVMs(nyPort, vm2);
     createCacheInVMs(tkPort, vm3);
-    createReceiverInVMs(nyPort, vm2);
-    createReceiverInVMs(tkPort, vm3);
+    createReceiverInVMs(vm2);
+    createReceiverInVMs(vm3);
 
     vm4.invoke(() -> WANTestBase.createCache(lnPort ));
 
@@ -211,7 +211,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createSenders(lnPort);
     
@@ -260,7 +260,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createSenders(lnPort);
 
@@ -296,7 +296,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -345,7 +345,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createSendersWithConflation(lnPort);
 

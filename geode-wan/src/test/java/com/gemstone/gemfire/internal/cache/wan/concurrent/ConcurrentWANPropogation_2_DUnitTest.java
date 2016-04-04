@@ -16,13 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.internal.cache.wan.WANTestBase.MyGatewayEventFilter;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Wait;
@@ -49,7 +44,7 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -79,9 +74,9 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
         getTestMethodName() + "_RR", 150 ));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 150 ));
+        getTestMethodName() + "_RR", 150, 240000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 150 ));
+        getTestMethodName() + "_RR", 150, 240000 ));
   }
 
   public void Bug46921_testSerialReplicatedWanWithPersistence() {
@@ -90,7 +85,7 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -133,8 +128,8 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
 
     createCacheInVMs(nyPort, vm2);
     createCacheInVMs(tkPort, vm3);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( tkPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -184,7 +179,7 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -228,7 +223,7 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -269,7 +264,7 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -309,7 +304,7 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -352,7 +347,7 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
       getTestMethodName(), null, isOffHeap() ));
     vm3.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName(), null, isOffHeap() ));
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -389,7 +384,7 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     WANTestBase.createCacheInVMs(lnPort, vm4, vm5);
 

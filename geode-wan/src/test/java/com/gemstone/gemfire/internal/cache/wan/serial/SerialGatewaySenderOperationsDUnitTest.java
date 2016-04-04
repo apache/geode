@@ -19,8 +19,6 @@ package com.gemstone.gemfire.internal.cache.wan.serial;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Ignore;
-
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
@@ -29,7 +27,6 @@ import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.ServerLocator;
-import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
@@ -70,7 +67,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createSenderCaches(lnPort);
 
@@ -132,7 +129,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createSenderCaches(lnPort);
 
@@ -188,7 +185,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createSenderCaches(lnPort);
 
@@ -273,7 +270,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createSenderCaches(lnPort);
 
@@ -326,7 +323,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createSenderCaches(lnPort);
 
@@ -364,7 +361,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm4);
     createSenderVM4();
@@ -427,7 +424,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     LogWriterUtils.getLogWriter().info("Completed puts in the region");
     vm2.invoke(() -> WANTestBase.validateRegionSize(
@@ -453,7 +450,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createSenderCaches(lnPort);
 
@@ -491,7 +488,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createSenderCaches(lnPort);
 
@@ -527,7 +524,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createSenderCaches(lnPort);
 
@@ -558,7 +555,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5);
 

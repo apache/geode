@@ -98,7 +98,7 @@ public class WANSSLDUnitTest extends WANTestBase{
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
       createCacheInVMs(nyPort, vm2);
-      vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+      vm2.invoke(() -> WANTestBase.createReceiver());
 
       vm4.invoke(() -> WANTestBase.createCacheWithSSL( lnPort ));
 

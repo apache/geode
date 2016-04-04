@@ -67,8 +67,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     vm3.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", null, isOffHeap() ));
 
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(() -> WANTestBase.createReceiver());
     
     vm4.invoke(() -> WANTestBase.createCache( lnPort ));
     vm5.invoke(() -> WANTestBase.createCache( lnPort ));
@@ -148,7 +148,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
 
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(

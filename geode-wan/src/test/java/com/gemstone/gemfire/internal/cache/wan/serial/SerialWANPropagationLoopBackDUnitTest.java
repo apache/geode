@@ -38,8 +38,8 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.createCache( lnPort ));
     vm3.invoke(() -> WANTestBase.createCache( nyPort ));
-    vm2.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(() -> WANTestBase.createReceiver());
 
     vm4.invoke(() -> WANTestBase.createCache( lnPort ));
     vm5.invoke(() -> WANTestBase.createCache( lnPort ));
@@ -131,9 +131,9 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm4, vm7);
     createCacheInVMs(tkPort, vm5);
 
-    vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm4.invoke(() -> WANTestBase.createReceiver());
+    vm5.invoke(() -> WANTestBase.createReceiver());
 
     // using vm5 for sender in ds 3. cache is already created.
     
@@ -237,9 +237,9 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm4, vm7);
     createCacheInVMs(tkPort, vm5);
 
-    vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm4.invoke(() -> WANTestBase.createReceiver());
+    vm5.invoke(() -> WANTestBase.createReceiver());
     
     // using vm5 for sender in ds 3. cache is already created.
     
@@ -380,9 +380,9 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.createCache( lnPort ));
     vm4.invoke(() -> WANTestBase.createCache( nyPort ));
     vm5.invoke(() -> WANTestBase.createCache( tkPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm4.invoke(() -> WANTestBase.createReceiver());
+    vm5.invoke(() -> WANTestBase.createReceiver());
     
     
     vm3.invoke(() -> WANTestBase.createSender( "ln1", 2,

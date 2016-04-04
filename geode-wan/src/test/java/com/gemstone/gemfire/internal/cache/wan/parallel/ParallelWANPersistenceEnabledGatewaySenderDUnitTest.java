@@ -25,11 +25,9 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.internal.cache.ColocationHelper;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallableIF;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 
 public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
@@ -87,7 +85,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -133,7 +131,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
     
     LogWriterUtils.getLogWriter().info("Created remote receivers");
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -198,7 +196,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -329,7 +327,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -560,7 +558,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
       getTestMethodName(), null, 1, 100, isOffHeap() ));
     vm3.invoke(() -> WANTestBase.createPersistentPartitionedRegion(
       getTestMethodName(), null, 1, 100, isOffHeap() ));
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     vm4.invoke(pauseSenderRunnable());
     vm5.invoke(pauseSenderRunnable());
@@ -600,7 +598,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -735,7 +733,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -863,7 +861,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -1073,7 +1071,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1181,7 +1179,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1293,7 +1291,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1431,7 +1429,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1484,7 +1482,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
       createCacheInVMs(nyPort, vm2, vm3);
-      createReceiverInVMs(nyPort, vm2, vm3);
+      createReceiverInVMs(vm2, vm3);
 
       createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 

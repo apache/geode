@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache.wan.misc;
 import java.util.ArrayList;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
@@ -724,7 +723,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
     createCacheInVMs(lnPort, vm4);
-    vm4.invoke(() -> WANTestBase.createReceiver( lnPort ));
+    vm4.invoke(() -> WANTestBase.createReceiver());
     
     vm4.invoke(() -> WANTestBase.createCacheServer( ));
     
@@ -743,7 +742,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   public void test_GetCacheServersDoesNotReturnReceivers_Scenario2() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     createCacheInVMs(lnPort, vm4);
-    vm4.invoke(() -> WANTestBase.createReceiver( lnPort ));
+    vm4.invoke(() -> WANTestBase.createReceiver());
     createCacheInVMs(lnPort, vm5);
     
     vm5.invoke(() -> WANTestBase.createCacheServer( ));
@@ -822,7 +821,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(createReceiverReplicatedRegion());
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -904,7 +903,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(createReceiverReplicatedRegion());
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -981,7 +980,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_RR", null, 1, 100, isOffHeap() ));
 
@@ -1074,7 +1073,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
 
@@ -1169,7 +1168,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 10, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -1256,7 +1255,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 10, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -1428,7 +1427,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
     // ------------- START - CREATE CACHE ON REMOTE SITE ---------------//
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     vm2.invoke(() -> WANTestBase.createSender( "ny", 1,
         false, 100, 10, false, false, null, true ));
