@@ -85,14 +85,9 @@ public final class ProcessUtils {
    * @return true if the Process is a currently running process
    */
   public static boolean isProcessAlive(final Process process) {
-    try {
-      process.exitValue();
-      return false;
-    } catch (IllegalThreadStateException e) {
-      return true;
-    }
+    return process.isAlive();
   }
-  
+
   /**
    * Returns true if a process identified by the process id was
    * running on this host machine and has been terminated by this operation.
