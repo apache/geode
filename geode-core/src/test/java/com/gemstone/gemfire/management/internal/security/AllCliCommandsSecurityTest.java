@@ -204,7 +204,7 @@ public class AllCliCommandsSecurityTest {
 
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
-  // run this test first
+  // the tests are run in alphabetical order, so the naming of the tests do matter
   public void a_testNoAccess(){
     for (Map.Entry<String, String> perm : commands.entrySet()) {
       LogService.getLogger().info("processing: "+perm.getKey());
@@ -216,7 +216,7 @@ public class AllCliCommandsSecurityTest {
 
   @Test
   @JMXConnectionConfiguration(user = "adminUser", password = "1234567")
-  public void b_testBAdminUser() throws Exception {
+  public void b_testAdminUser() throws Exception {
     for (String cmd : commands.keySet()) {
       LogService.getLogger().info("processing: "+cmd);
       bean.processCommand(cmd);
