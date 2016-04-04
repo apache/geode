@@ -1475,7 +1475,6 @@ public class DurableClientTestCase extends DistributedTestCase {
       CountDownLatch clientConnected = new CountDownLatch(1);
       
       public void doTestHook(String spot) {
-        System.out.println("JASON " + spot);
         try {
           if (spot.equals("CLIENT_PRE_RECONNECT")) {
             if (!reconnectLatch.await(60, TimeUnit.SECONDS)) {

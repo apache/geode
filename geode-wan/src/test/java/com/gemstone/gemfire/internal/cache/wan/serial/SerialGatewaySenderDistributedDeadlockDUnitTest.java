@@ -59,8 +59,8 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
 
         //exercise region and gateway operations with different messaging
         exerciseWANOperations();
-        AsyncInvocation invVM4transaction = vm4.invokeAsync(() -> WANTestBase.doTxPuts(getTestMethodName() + "_RR", 100));
-        AsyncInvocation invVM5transaction = vm5.invokeAsync(() -> WANTestBase.doTxPuts(getTestMethodName() + "_RR", 100));
+        AsyncInvocation invVM4transaction = vm4.invokeAsync(() -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
+        AsyncInvocation invVM5transaction = vm5.invokeAsync(() -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
         AsyncInvocation invVM4 = vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
         AsyncInvocation invVM5 = vm5.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
@@ -133,8 +133,8 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
 
         //exercise region and gateway operations with messaging
         exerciseWANOperations();
-        AsyncInvocation invVM4transaction = vm4.invokeAsync(() -> WANTestBase.doTxPuts(getTestMethodName() + "_RR", 100));
-        AsyncInvocation invVM5transaction = vm5.invokeAsync(() -> WANTestBase.doTxPuts(getTestMethodName() + "_RR", 100));
+        AsyncInvocation invVM4transaction = vm4.invokeAsync(() -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
+        AsyncInvocation invVM5transaction = vm5.invokeAsync(() -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
 
         AsyncInvocation invVM4 = vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
         AsyncInvocation invVM5 = vm5.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
@@ -196,7 +196,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         //create receiver
         vm2.invoke(() -> WANTestBase.createReplicatedRegion(
           getTestMethodName() + "_RR", null, false));
-        vm2.invoke(() -> WANTestBase.createReceiver(nyPort));
+        vm2.invoke(() -> WANTestBase.createReceiver());
 
         //create senders
         vm4.invoke(() -> WANTestBase.createReplicatedRegion(
@@ -235,7 +235,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_RR",
                                                                                 "", 0, 113, false));
 
-        vm2.invoke(() -> WANTestBase.createReceiver(nyPort));
+        vm2.invoke(() -> WANTestBase.createReceiver());
 
         //create sender vms
         vm4.invoke(() -> WANTestBase.createPartitionedRegion(
