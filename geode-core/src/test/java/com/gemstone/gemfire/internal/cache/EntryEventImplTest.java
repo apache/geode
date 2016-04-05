@@ -40,8 +40,6 @@ public class EntryEventImplTest {
     // mock a region object
     LocalRegion region = mock(LocalRegion.class);
     doReturn(expectedRegionName).when(region).getFullPath();
-    doReturn(keyInfo).when(region).getKeyInfo(any());
-    doReturn(keyInfo).when(region).getKeyInfo(any(), any());
     doReturn(keyInfo).when(region).getKeyInfo(any(), any(), any());
 
     // create entryevent for the region
