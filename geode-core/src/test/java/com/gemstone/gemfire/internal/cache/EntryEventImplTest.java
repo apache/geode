@@ -47,7 +47,7 @@ public class EntryEventImplTest {
     
     // The name of the region should be in the toString text
     String toStringValue = e.toString();
-    assertTrue("String " + expectedRegionName + " was not in toString text", toStringValue.indexOf(expectedRegionName) > 0);
+    assertTrue("String " + expectedRegionName + " was not in toString text: " + toStringValue, toStringValue.indexOf(expectedRegionName) > 0);
 
     // verify that toString called getFullPath method of region object
     verify(region, Mockito.times(1)).getFullPath();
