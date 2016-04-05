@@ -50,7 +50,7 @@ public class BasicDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void postSetUp() throws Exception {
+  public final void postSetUp() throws Exception {
     bindings = new Properties();
     invokeInEveryVM(() -> bindings = new Properties());
     this.vm0 = Host.getHost(0).getVM(0);
