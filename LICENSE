@@ -202,160 +202,221 @@
 
 ===========================================================================
 
-Apache Geode includes a number of components and libraries with separate 
-copyright notices and license terms. Your use of those components are 
-subject to the terms and conditions of the following licenses. 
+Apache Geode includes a number of components and libraries with separate
+copyright notices and license terms. Your use of those components are
+subject to the terms and conditions of the following licenses.
 
 ---------------------------------------------------------------------------
-Backbone (http://backbonejs.org)
+ANSIBuffer (http://jline.sourceforge.net/apidocs/jline/ANSIBuffer.html)
 ---------------------------------------------------------------------------
-This product bundles Backbone which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
+This product bundles ANSIBuffer, which is available under a BSD license.
+For details, see http://opensource.org/licenses/BSD-3-Clause.
+
+---------------------------------------------------------------------------
+Backbone.js (http://backbonejs.org)
+---------------------------------------------------------------------------
+This product bundles Backbone.js, which is available under an MIT license.
+For details see http://opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+Bootflat (http://bootflat.github.io/)
+---------------------------------------------------------------------------
+This product bundles Bootflat, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.html.
+
+---------------------------------------------------------------------------
+Bootstrap (http://getbootstrap.com/)
+---------------------------------------------------------------------------
+This product bundles Bootstrap, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.html.
 
 ---------------------------------------------------------------------------
 CompactConcurrentHashSet2 (http://gee.cs.oswego.edu/dl/concurrency-interest)
 ---------------------------------------------------------------------------
-This product bundles CompactConcurrentHashSet2 derived from JSR-166 
-ConcurrentHashMap v1.43 which is available in the public domain.  
+This product bundles CompactConcurrentHashSet2, derived from JSR-166
+ConcurrentHashMap v1.43, which is available in the public domain.
+
+---------------------------------------------------------------------------
+Font Awesome (https://fortawesome.github.io/Font-Awesome/)
+---------------------------------------------------------------------------
+This product bundles Font Awesome, which is available under the SIL OFL 1.1
+license (font) and the MIT license (code). For details, see
+http://scripts.sil.org/OFL and http://opensource.org/licenses/mit-license.html.
 
 ---------------------------------------------------------------------------
 Handlebars (http://handlebarsjs.com)
 ---------------------------------------------------------------------------
-This product bundles Handlebars which is available under an MIT license.  
+This product bundles Handlebars, which is available under an MIT license.
 For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+HeadJS (http://headjs.com/)
+---------------------------------------------------------------------------
+This product bundles HeadJS, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.html.
 
 ---------------------------------------------------------------------------
 highlight.js (https://highlightjs.org)
 ---------------------------------------------------------------------------
-This product bundles highlight.js which is available under a BSD 3 clauses license.  
-For details see http://opensource.org/licenses/BSD-3-Clause.
+This product bundles highlight.js, which is available under a BSD 3-clause
+license. For details see http://opensource.org/licenses/BSD-3-Clause.
+
+---------------------------------------------------------------------------
+HTML5 Shiv (https://github.com/aFarkas/html5shiv)
+---------------------------------------------------------------------------
+This product bundles HTML5 Shiv, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.html.
+
+---------------------------------------------------------------------------
+iCheck (http://icheck.fronteed.com/)
+---------------------------------------------------------------------------
+This product bundles iCheck, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.html.
 
 ---------------------------------------------------------------------------
 JOpt Simple (http://pholser.github.io/jopt-simple/)
 ---------------------------------------------------------------------------
-This product bundles JOpt Simple which is available under an MIT license.  
+This product bundles JOpt Simple, which is available under an MIT license.
 For details see http://www.opensource.org/licenses/mit-license.php.
 
 ---------------------------------------------------------------------------
 jQuery (https://jquery.com)
 ---------------------------------------------------------------------------
-This product bundles jQuery which is available under an MIT license.  
+This product bundles jQuery, which is available under an MIT license.
 For details see http://www.opensource.org/licenses/mit-license.php.
 
 ---------------------------------------------------------------------------
 jQuery BBQ (http://benalman.com/projects/jquery-bbq-plugin/)
 ---------------------------------------------------------------------------
-This product bundles jQuery BBQ which is available under an MIT and GPL dual license.  
-For details see http://benalman.com/about/license.
+This product bundles jQuery BBQ, which is available under an MIT and GPL
+dual license. For details see http://benalman.com/about/license.
+
+---------------------------------------------------------------------------
+jQuery.i18n.properties (https://github.com/jquery-i18n-properties/jquery-i18n-properties)
+---------------------------------------------------------------------------
+This product bundles jQuery.i18n.properties, which is available under an
+MIT license. For details, see http://opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery jqGrid (https://plugins.jquery.com/jqGrid/)
+---------------------------------------------------------------------------
+This product bundles jQuery jqGrid, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jScrollPane (http://jscrollpane.kelvinluck.com/)
+---------------------------------------------------------------------------
+This product bundles jScrollPane, which is available under an MIT
+license. For details, see http://opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery Mouse Wheel (http://brandonaaron.net)
+---------------------------------------------------------------------------
+This product bundles jQuery Mouse Wheel, which is available under an MIT
+license. For details, see http://opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery UI MultiSelect Widget (http://www.erichynds.com/jquery/jquery-ui-multiselect-widget/)
+---------------------------------------------------------------------------
+This product bundles jQuery Multiselect Widget, which is available under an
+MIT license. For details, see http://opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery Placeholder (http://webcloud.se)
+---------------------------------------------------------------------------
+This product bundles jQuery Placeholder, which is available under an MIT
+license. For details, see http://opensource.org/licenses/mit-license.php.
 
 ---------------------------------------------------------------------------
 jQuery-slideto (https://github.com/Sleavely/jQuery-slideto)
 ---------------------------------------------------------------------------
-This product bundles jQuery-slideto which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
+This product bundles jQuery-slideto, which is available under an MIT
+license. For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery Sparklines (http://omnipotent.net/jquery.sparkline/)
+---------------------------------------------------------------------------
+This product bundles jQuery Sparklines, which is available under a BSD-like
+license. For details, see http://opensource.org/licenses/BSD-3-Clause.
+
+---------------------------------------------------------------------------
+TableDnD (https://github.com/isocra/TableDnD)
+---------------------------------------------------------------------------
+This product bundles TableDND, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+Timeago (http://timeago.yarp.com/)
+---------------------------------------------------------------------------
+This product bundles jQuery Timeago, which is available under an MIT
+license. For details, see http://opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery UI (http://jqueryui.com/about)
+---------------------------------------------------------------------------
+This product bundles jquery UI, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.php.
 
 ---------------------------------------------------------------------------
 jQuery Wiggle (https://github.com/wilhelm-murdoch/jQuery-Wiggle)
 ---------------------------------------------------------------------------
-This product bundles jQuery Wiggle which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
+This product bundles jQuery Wiggle, which is available under an MIT
+license. For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+zTree (http://zTree.me/)
+---------------------------------------------------------------------------
+This product bundles zTree, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.php.
 
 ---------------------------------------------------------------------------
 JSON (http://json.org)
 ---------------------------------------------------------------------------
-This product bundles JSON which is available under a BSD-like license.  
-For details see http://json.org/license.html.
+This product bundles JSON, which is available under a BSD-like license.
+For details, see http://json.org/license.html.
 
 ---------------------------------------------------------------------------
-reset.css (http://meyerweb.com/eric/tools/css/reset/)
+Normalise.css (https://necolas.github.io/normalize.css/)
 ---------------------------------------------------------------------------
-This product bundles reset.css which is available in the public domain.
+This product bundles Normalise.css, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.html.
+
+---------------------------------------------------------------------------
+Protocol Buffers (https://github.com/google/protobuf)
+---------------------------------------------------------------------------
+This product bundles Protocol Buffers, which is available under a BSD
+license. For details, see http://opensource.org/licenses/BSD-3-Clause.
+
+---------------------------------------------------------------------------
+Reset CSS (http://meyerweb.com/eric/tools/css/reset/)
+---------------------------------------------------------------------------
+This product bundles Reset CSS, which is available in the public domain.
+
+---------------------------------------------------------------------------
+Respond (https://github.com/scottjehl/Respond)
+---------------------------------------------------------------------------
+This product bundles Respond, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.html.
 
 ---------------------------------------------------------------------------
 tooltip.js (http://flowplayer.org/tools/tooltip/)
 ---------------------------------------------------------------------------
-This product bundles tooltip.css which is available in the public domain.
+This product bundles tooltip.css, which is available in the public domain.
 
 ---------------------------------------------------------------------------
-shred (https://github.com/pandastrike/shred)
+Shred (https://github.com/pandastrike/shred)
 ---------------------------------------------------------------------------
-This product bundles shred which is available under an MIT or ISC license.  
+This product bundles shred, which is available under an MIT or ISC license.
 For details see https://github.com/pandastrike/shred/blob/master/LICENSE.
 
 ---------------------------------------------------------------------------
-underscore (http://underscorejs.org)
+Split.js (https://github.com/nathancahill/Split.js)
 ---------------------------------------------------------------------------
-This product bundles underscore which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
+This product bundles Split.js, which is available under an MIT license.
+For details, see http://opensource.org/licenses/mit-license.php.
 
 ---------------------------------------------------------------------------
-jquery jqGrid (https://plugins.jquery.com/jqGrid/)
+Underscore (http://underscorejs.org)
 ---------------------------------------------------------------------------
-This product bundles jqGrid which is available under an MIT license.
+This product bundles Underscore, which is available under an MIT license.
 For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-html5.js (https://github.com/aFarkas/html5shiv)
----------------------------------------------------------------------------
-This product bundles html5 which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-jquery.i18n.properties (https://github.com/jquery-i18n-properties/jquery-i18n-properties)
----------------------------------------------------------------------------
-This product bundles jQuery i18n which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-jquery.jscrollpane (http://jscrollpane.kelvinluck.com/)
----------------------------------------------------------------------------
-This product bundles jquery.jscrollpane which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-jquery.mousewheel (http://brandonaaron.net)
----------------------------------------------------------------------------
-This product bundles jquery.mousewheel which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-jquery.placeholder (http://webcloud.se)
----------------------------------------------------------------------------
-This product bundles jquery.placeholder which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-jquery.tablednd (https://github.com/isocra/TableDnD)
----------------------------------------------------------------------------
-This product bundles jquery.tablednd which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-jquery.timeago (http://timeago.yarp.com/)
----------------------------------------------------------------------------
-This product bundles jquery.timeago which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-jquery.ztree (http://zTree.me/)
----------------------------------------------------------------------------
-This product bundles jquery.ztree which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-jquery.multiselect (http://www.erichynds.com/jquery/jquery-ui-multiselect-widget/)
----------------------------------------------------------------------------
-This product bundles jQuery.multiselect which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-jquery.ui (http://jqueryui.com/about)
----------------------------------------------------------------------------
-This product bundles jquery UI which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-jquery.sparkline.js (http://omnipotent.net/jquery.sparkline/)
----------------------------------------------------------------------------
-This product bundles jquery.sparkline which is available under a BSD-like license.
-For details see http://opensource.org/licenses/BSD-3-Clause.
