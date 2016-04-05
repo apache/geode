@@ -24,8 +24,11 @@ import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.PlaceHolderDiskRegion;
 import com.gemstone.gemfire.internal.size.ObjectGraphSizer.ObjectFilter;
+
+import org.apache.logging.log4j.Logger;
 
 /**
  * An implementation of {@link ObjectSizer} that calculates an accurate, in
@@ -52,9 +55,13 @@ public class ReflectionObjectSizer implements ObjectSizer, Serializable {
       //Protect the user from a couple of pitfalls. If their object
       //has a link to a region or cache, we don't want to size the whole thing.
       if (object instanceof Region || object instanceof Cache
-          || object instanceof PlaceHolderDiskRegion) {
+          || object instanceof PlaceHolderDiskRegion
+          || object instanceof InternalDistributedSystem
+          || object instanceof ClassLoader
+          || object instanceof Logger) {
         return false;
       }
+
       return true;
     }
     
