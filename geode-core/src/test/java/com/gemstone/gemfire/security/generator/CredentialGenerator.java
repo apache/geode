@@ -24,13 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.templates.DummyAuthenticator;
 import com.gemstone.gemfire.security.templates.LdapUserAuthenticator;
 import com.gemstone.gemfire.security.templates.PKCSAuthenticator;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Encapsulates obtaining valid and invalid credentials. Implementations will be

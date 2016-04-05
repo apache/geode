@@ -18,10 +18,12 @@
  */
 package com.gemstone.gemfire.security;
 
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
  * Test for authentication from client to server. This tests for both valid and
@@ -30,7 +32,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @since 5.5
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class ClientAuthenticationDUnitTest extends ClientAuthenticationTestCase {
 
   @Test

@@ -16,14 +16,14 @@
  */
 package com.gemstone.gemfire.security.generator;
 
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.security.templates.PKCSAuthInit;
-import com.gemstone.gemfire.security.templates.PKCSAuthenticator;
-
 import java.security.Principal;
 import java.security.Provider;
 import java.security.Security;
 import java.util.Properties;
+
+import com.gemstone.gemfire.security.templates.PKCSAuthInit;
+import com.gemstone.gemfire.security.templates.PKCSAuthenticator;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 public class PKCSCredentialGenerator extends CredentialGenerator {
 

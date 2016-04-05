@@ -16,10 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import hydra.Log;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
 
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -28,16 +33,14 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class WanCommandStatusDUnitTest extends WANCommandTestBase{
   
   private static final long serialVersionUID = 1L;
 
-  public WanCommandStatusDUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testGatewaySenderStatus(){
 
     Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -69,7 +72,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm5.invoke(() -> WANCommandTestBase.createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, true));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial";
     CommandResult cmdResult = executeCommand(command);
@@ -86,7 +89,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
       assertEquals(2, result_hosts.size());
       
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testGatewaySenderStatus : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
@@ -102,7 +105,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm5.invoke(() -> WANCommandTestBase.startSender( "ln_Serial" ));
     vm5.invoke(() -> WANCommandTestBase.startSender( "ln_Parallel" ));
 
-    Wait.pause(10000);
+    pause(10000);
     command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial";
     cmdResult = executeCommand(command);
@@ -119,7 +122,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
       assertEquals(2, result_hosts.size());
       
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testGatewaySenderStatus : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
@@ -127,7 +130,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     }
   }
 
-  
+  @Test
   public void testGatewaySenderStatus_OnMember(){
 
     Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -157,7 +160,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
 
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
     
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --"
         + CliStrings.STATUS_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
@@ -165,7 +168,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
+      getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
       TabularResultData tableResultData =
           ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
@@ -184,7 +187,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(() -> WANCommandTestBase.startSender( "ln_Serial" ));
     vm4.invoke(() -> WANCommandTestBase.startSender( "ln_Parallel" ));
 
-    Wait.pause(10000);
+    pause(10000);
     command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --"
         + CliStrings.STATUS_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
@@ -197,7 +200,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
 //      assertEquals(1, result_Status.size());
 //      assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
+      getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
       TabularResultData tableResultData =
           ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
@@ -221,13 +224,14 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
       assertTrue(cmdResult != null);
       
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
+      getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testListGatewaySender failed as did not get CommandResult");
     }
   }
-  
+
+  @Test
   public void testGatewaySenderStatus_OnGroups(){
 
     Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -263,7 +267,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
     
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__GROUP + "=Serial_Sender";
     
@@ -282,7 +286,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
       
       
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testGatewaySenderStatus_OnGroups : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
@@ -295,7 +299,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(() -> WANCommandTestBase.startSender( "ln_Serial" ));
     vm4.invoke(() -> WANCommandTestBase.startSender( "ln_Parallel" ));
 
-    Wait.pause(10000);
+    pause(10000);
     command = CliStrings.STATUS_GATEWAYSENDER + " --"
     + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__GROUP + "=Serial_Sender";
     
@@ -313,14 +317,15 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
       assertEquals(1, result_hosts.size());
       
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testGatewaySenderStatus_OnGroups : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testListGatewaySender failed as did not get CommandResult");
     }
   }
-  
+
+  @Test
   public void testGatewayReceiverStatus(){
 
     Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -338,13 +343,13 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(() -> WANCommandTestBase.createAndStartReceiver( lnPort ));
     vm5.invoke(() -> WANCommandTestBase.createAndStartReceiver( lnPort ));
     
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STATUS_GATEWAYRECEIVER; 
     CommandResult cmdResult = executeCommand(command);
     
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
       
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -369,13 +374,13 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(() -> WANCommandTestBase.stopReceiver());
     vm5.invoke(() -> WANCommandTestBase.stopReceiver());
     
-    Wait.pause(10000);
+    pause(10000);
     
     command = CliStrings.STATUS_GATEWAYRECEIVER; 
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
       
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -396,7 +401,8 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
       fail("testGatewayReceiverStatus failed as did not get CommandResult");
     }
   }
-  
+
+  @Test
   public void testGatewayReceiverStatus_OnMember(){
 
     Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -416,7 +422,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     
     final DistributedMember vm3Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
     
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STATUS_GATEWAYRECEIVER+ " --"
     + CliStrings.STATUS_GATEWAYRECEIVER__MEMBER + "=" + vm3Member.getId();
     
@@ -424,7 +430,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info("testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
+      getLogWriter().info("testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       //TabularResultData tableResultData = (TabularResultData) cmdResult.getResultData();
       //List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
@@ -443,7 +449,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(() -> WANCommandTestBase.stopReceiver());
     vm5.invoke(() -> WANCommandTestBase.stopReceiver());
     
-    Wait.pause(10000);
+    pause(10000);
     
     command = CliStrings.STATUS_GATEWAYRECEIVER+ " --"
     + CliStrings.STATUS_GATEWAYRECEIVER__MEMBER + "=" + vm3Member.getId();
@@ -451,7 +457,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
       
 //      TabularResultData tableResultData =
@@ -469,7 +475,8 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
       fail("testGatewayReceiverStatus failed as did not get CommandResult");
     }
   }
-  
+
+  @Test
   public void testGatewayReceiverStatus_OnGroups(){
 
     Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -488,14 +495,14 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm5.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( lnPort, "RG1"  ));
     vm6.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( lnPort, "RG2"  ));
     
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STATUS_GATEWAYRECEIVER + " --"
         + CliStrings.STATUS_GATEWAYRECEIVER__GROUP + "=RG1";
     
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
       
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -515,13 +522,13 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     vm4.invoke(() -> WANCommandTestBase.stopReceiver());
     vm5.invoke(() -> WANCommandTestBase.stopReceiver());
 
-    Wait.pause(10000);
+    pause(10000);
     command = CliStrings.STATUS_GATEWAYRECEIVER + " --"+ CliStrings.STATUS_GATEWAYRECEIVER__GROUP + "=RG1";
     
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testGatewayReceiverStatus_OnGroups : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 

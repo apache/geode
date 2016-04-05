@@ -16,6 +16,27 @@
  */
 package com.gemstone.gemfire.management.internal.configuration;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -57,24 +78,10 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
+@Category(DistributedTest.class)
 public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
   private static final int TIMEOUT = 10000;
   private static final int INTERVAL = 500;
@@ -100,11 +107,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
   
   private static final long serialVersionUID = 1L;
 
-  public ClusterConfigurationDUnitTest(String name) {
-    super(name);
-  }
-  
-  
+  @Test
   public void testConfigDistribution() throws IOException {
     IgnoredException.addIgnoredException("could not get remote locator");
     try {
@@ -248,6 +251,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
    * @throws IOException
    * @since 8.1
    */
+  @Test
   public void testCreateExtensions() throws IOException {
     
     try {
@@ -321,6 +325,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
    * @throws IOException
    * @since 8.1
    */
+  @Test
   public void testDestroyExtensions() throws IOException {
     
     try {
@@ -382,7 +387,9 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     }
   }
 
-  public void _testCreateDiskStore () throws IOException {
+  @Ignore("disabled for unknown reason")
+  @Test
+  public void testCreateDiskStore () throws IOException {
     try {
       Object[] result = setup();
       final int locatorPort = (Integer) result[0];
@@ -488,8 +495,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     }
    
   }
-  
-  public void _testConfigurePDX() throws IOException {
+
+  @Ignore("disabled for unknown reason")
+  @Test
+  public void testConfigurePDX() throws IOException {
     try {
       Object[] result = setup();
       final int locatorPort = (Integer) result[0];
@@ -544,7 +553,8 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
      }
     }
   }
-  
+
+  @Test
   public void testClusterConfigDir() {
     disconnectAllFromDS();
     final int [] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
@@ -605,7 +615,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          Wait.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
+          waitForCriterion(wc, TIMEOUT, INTERVAL, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
@@ -676,7 +686,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          Wait.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
+          waitForCriterion(wc, TIMEOUT, INTERVAL, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }

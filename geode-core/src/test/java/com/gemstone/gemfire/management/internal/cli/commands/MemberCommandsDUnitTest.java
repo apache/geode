@@ -16,6 +16,21 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.EvictionAction;
@@ -26,7 +41,6 @@ import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -39,24 +53,16 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.remote.CommandProcessor;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+@Category(DistributedTest.class)
+public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
 
-/****
- */
-
-public class MemberCommandsDUnitTest extends CacheTestCase {
   private static final long serialVersionUID = 1L;
+
   private static final Map<String, String> EMPTY_ENV = Collections.emptyMap();
   private static final String REGION1 = "region1";
   private static final String REGION2 = "region2";
@@ -66,10 +72,6 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
   private static final String SUBREGION1C = "subregion1C";
   private static final String PR1 = "PartitionedRegion1";
   private static final String PR2 = "ParitionedRegion2";
-
-  public MemberCommandsDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -179,7 +181,7 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
     Properties props = new Properties();
 
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]");
+    props.setProperty(DistributionConfig.LOCATORS_NAME, getServerHostName(host) + "[" + locatorPort + "]");
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
     props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
@@ -196,26 +198,28 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
     final Cache cache = getCache();
   }
 
-  /***
+  /**
    * Tests the execution of "list member" command which should list out all the members in the DS
    *
    * @throws IOException
    * @throws ClassNotFoundException
    */
+  @Test
   public void testListMemberAll() throws IOException, ClassNotFoundException {
     setupSystem();
     CommandProcessor commandProcessor = new CommandProcessor();
     Result result = commandProcessor.createCommandStatement(CliStrings.LIST_MEMBER, EMPTY_ENV).process();
-    LogWriterUtils.getLogWriter().info("#SB" + getResultAsString(result));
+    getLogWriter().info("#SB" + getResultAsString(result));
     assertEquals(true, result.getStatus().equals(Status.OK));
   }
 
-  /****
+  /**
    * Tests the execution of "list member" command, when no cache is created
    *
    * @throws IOException
    * @throws ClassNotFoundException
    */
+  @Test
   public void testListMemberWithNoCache() throws IOException, ClassNotFoundException {
     final Host host = Host.getHost(0);
     final VM[] servers = {host.getVM(0), host.getVM(1)};
@@ -229,35 +233,37 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
       CommandProcessor commandProcessor = new CommandProcessor();
       Result result = commandProcessor.createCommandStatement(CliStrings.LIST_MEMBER, EMPTY_ENV).process();
 
-      LogWriterUtils.getLogWriter().info("#SB" + getResultAsString(result));
+      getLogWriter().info("#SB" + getResultAsString(result));
       assertEquals(true, result.getStatus().equals(Status.ERROR));
     } finally {
       locator.stop(); // fix for bug 46562
     }
   }
 
-  /***
+  /**
    * Tests list member --group=G1
    *
    * @throws IOException
    * @throws ClassNotFoundException
    */
+  @Test
   public void testListMemberWithGroups() throws IOException, ClassNotFoundException {
     setupSystem();
     CommandProcessor commandProcessor = new CommandProcessor();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
     csb.addOption(CliStrings.LIST_MEMBER__GROUP, "G1");
     Result result = commandProcessor.createCommandStatement(csb.toString(), EMPTY_ENV).process();
-    LogWriterUtils.getLogWriter().info("#SB" + getResultAsString(result));
+    getLogWriter().info("#SB" + getResultAsString(result));
     assertEquals(true, result.getStatus().equals(Status.OK));
   }
 
-  /***
+  /**
    * Tests the "describe member" command for all the members in the DS
    *
    * @throws IOException
    * @throws ClassNotFoundException
    */
+  @Test
   public void testDescribeMember() throws IOException, ClassNotFoundException {
     setupSystem();
     CommandProcessor commandProcessor = new CommandProcessor();
@@ -271,7 +277,7 @@ public class MemberCommandsDUnitTest extends CacheTestCase {
       Result result = commandProcessor.createCommandStatement("describe member --name=" + member.getId(),
           EMPTY_ENV).process();
       assertEquals(true, result.getStatus().equals(Status.OK));
-      LogWriterUtils.getLogWriter().info("#SB" + getResultAsString(result));
+      getLogWriter().info("#SB" + getResultAsString(result));
       //assertEquals(true, result.getStatus().equals(Status.OK));
     }
   }

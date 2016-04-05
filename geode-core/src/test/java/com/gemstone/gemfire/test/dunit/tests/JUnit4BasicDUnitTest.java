@@ -24,19 +24,28 @@ import static org.hamcrest.Matchers.*;
 
 import java.util.Properties;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DUnitEnv;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.RMIException;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the basic functionality of the distributed unit
  * test framework.
+ *
+ * @see JUnit4BasicDUnitTest
  */
+@Category(DistributedTest.class)
 @SuppressWarnings("unused")
-public class BasicDUnitTest extends DistributedTestCase {
+public class JUnit4BasicDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String MESSAGE_FOR_remoteThrowException = "Test exception.  Please ignore.";
 
@@ -45,59 +54,67 @@ public class BasicDUnitTest extends DistributedTestCase {
   private VM vm0;
   private VM vm1;
 
-  public BasicDUnitTest(String name) {
-    super(name);
+  @BeforeClass
+  public static void setUpJUnit4BasicDUnitTest() throws Exception {
+    invokeInEveryVM(() -> bindings = new Properties());
   }
 
   @Override
-  public void postSetUp() throws Exception {
-    bindings = new Properties();
-    invokeInEveryVM(() -> bindings = new Properties());
+  public final void postSetUp() throws Exception {
     this.vm0 = Host.getHost(0).getVM(0);
     this.vm1 = Host.getHost(0).getVM(1);
   }
 
-  @Override
-  public void postTearDown() throws Exception {
-    bindings = null;
+  @AfterClass
+  public static void tearDownJUnit4BasicDUnitTest() {
     invokeInEveryVM(() -> bindings = null);
   }
 
-  public void testPreconditions() throws Exception {
+  @Test
+  public void testPreconditions() {
     invokeInEveryVM(() -> assertThat("getUniqueName() must not return null", getUniqueName(), notNullValue()));
     invokeInEveryVM(() -> assertThat("bindings must not be null", bindings, notNullValue()));
   }
 
+  @Test
   public void testInvokeOnClassTargetWithEmptyArgs() throws Exception {
-    assertThat(this.vm0.invoke(BasicDUnitTest.class, "booleanValue", new Object[] {}), is(true));
+    assertThat(this.vm0.invoke(JUnit4BasicDUnitTest.class, "booleanValue", new Object[] {}), is(true));
   }
+  @Test
   public void testInvokeOnObjectTargetWithEmptyArgs() throws Exception {
-    assertThat(this.vm0.invoke(new BasicDUnitTest(""), "booleanValue", new Object[] {}), is(true));
+    assertThat(this.vm0.invoke(new JUnit4BasicDUnitTest(), "booleanValue", new Object[] {}), is(true));
   }
+  @Test
   public void testInvokeAsyncOnClassTargetWithEmptyArgs() throws Exception {
-    AsyncInvocation<?> async = this.vm0.invokeAsync(BasicDUnitTest.class, "booleanValue", new Object[] {}).join();
+    AsyncInvocation<?> async = this.vm0.invokeAsync(JUnit4BasicDUnitTest.class, "booleanValue", new Object[] {}).join();
     assertThat(async.getResult(), is(true));
   }
+  @Test
   public void testInvokeAsyncOnObjectTargetWithEmptyArgs() throws Exception {
-    AsyncInvocation<?> async = this.vm0.invokeAsync(new BasicDUnitTest(""), "booleanValue", new Object[] {}).join();
+    AsyncInvocation<?> async = this.vm0.invokeAsync(new JUnit4BasicDUnitTest(), "booleanValue", new Object[] {}).join();
     assertThat(async.getResult(), is(true));
   }
 
+  @Test
   public void testInvokeOnClassTargetWithNullArgs() throws Exception {
-    assertThat(this.vm0.invoke(BasicDUnitTest.class, "booleanValue", null), is(true));
+    assertThat(this.vm0.invoke(JUnit4BasicDUnitTest.class, "booleanValue", null), is(true));
   }
+  @Test
   public void testInvokeOnObjectTargetWithNullArgs() throws Exception {
-    assertThat(this.vm0.invoke(new BasicDUnitTest(""), "booleanValue", null), is(true));
+    assertThat(this.vm0.invoke(new JUnit4BasicDUnitTest(), "booleanValue", null), is(true));
   }
+  @Test
   public void testInvokeAsyncOnClassTargetWithNullArgs() throws Exception {
-    AsyncInvocation<?> async = this.vm0.invokeAsync(BasicDUnitTest.class, "booleanValue", null).join();
+    AsyncInvocation<?> async = this.vm0.invokeAsync(JUnit4BasicDUnitTest.class, "booleanValue", null).join();
     assertThat(async.getResult(), is(true));
   }
+  @Test
   public void testInvokeAsyncOnObjectTargetWithNullArgs() throws Exception {
-    AsyncInvocation<?> async = this.vm0.invokeAsync(new BasicDUnitTest(""), "booleanValue", null).join();
+    AsyncInvocation<?> async = this.vm0.invokeAsync(new JUnit4BasicDUnitTest(), "booleanValue", null).join();
     assertThat(async.getResult(), is(true));
   }
 
+  @Test
   public void testRemoteInvocationWithException() throws Exception {
     catchException(this.vm0).invoke(() -> remoteThrowException());
 
@@ -107,24 +124,29 @@ public class BasicDUnitTest extends DistributedTestCase {
     assertThat(caughtException().getCause().getMessage(), is(MESSAGE_FOR_remoteThrowException));
   }
 
+  @Test
   public void testInvokeWithLambda() throws Exception {
     assertThat(this.vm0.invoke(() -> DUnitEnv.get().getVMID()), is(0));
     assertThat(this.vm1.invoke(() -> DUnitEnv.get().getVMID()), is(1));
   }
 
+  @Test
   public void testInvokeLambdaAsync() throws Throwable {
     assertThat(this.vm0.invokeAsync(() -> DUnitEnv.get().getVMID()).getResult(), is(0));
   }
 
+  @Test
   public void testInvokeWithNamedLambda() {
     assertThat(this.vm0.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(0));
     assertThat(this.vm1.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(1));
   }
 
+  @Test
   public void testInvokeNamedLambdaAsync() throws Throwable {
     assertThat(this.vm0.invokeAsync("getVMID", () -> DUnitEnv.get().getVMID()).getResult(), is(0));
   }
 
+  @Test
   public void testRemoteInvokeAsync() throws Exception {
     String name = getUniqueName();
     String value = "Hello";
@@ -133,6 +155,7 @@ public class BasicDUnitTest extends DistributedTestCase {
     this.vm0.invokeAsync(() -> remoteValidateBind(name, value )).join().checkException();
   }
 
+  @Test
   public void testRemoteInvokeAsyncWithException() throws Exception {
     AsyncInvocation<?> async = this.vm0.invokeAsync(() -> remoteThrowException()).join();
 
@@ -147,6 +170,7 @@ public class BasicDUnitTest extends DistributedTestCase {
     assertThat(caughtThrowable().getCause().getMessage(), is(MESSAGE_FOR_remoteThrowException));
   }
 
+  @Test
   public void testInvokeNamedRunnableLambdaAsync() throws Exception {
     catchThrowable(this.vm0.invokeAsync("throwSomething", () -> throwException()).join()).checkException();
 
@@ -155,6 +179,7 @@ public class BasicDUnitTest extends DistributedTestCase {
     assertThat(caughtThrowable().getCause(), instanceOf(BasicDUnitException.class));
   }
 
+  @Test
   public void testInvokeNamedRunnableLambda() throws Exception {
     catchException(this.vm0).invoke("throwSomething", () -> throwException());
 
@@ -185,7 +210,7 @@ public class BasicDUnitTest extends DistributedTestCase {
     assertNotNull("value must not be null", value);
     assertNotNull("bindings must not be null", bindings);
 
-    new BasicDUnitTest("").getSystem(); // forces connection
+    new JUnit4BasicDUnitTest().getSystem(); // forces connection
     bindings.setProperty(name, value);
   }
 

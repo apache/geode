@@ -16,8 +16,8 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
-import static org.junit.Assert.fail;
 import static com.gemstone.gemfire.test.dunit.Jitter.*;
+import static org.junit.Assert.*;
 
 import org.apache.logging.log4j.Logger;
 
@@ -104,6 +104,17 @@ public class ThreadUtils {
         .append("\n");
     }
     logger.info(msg.toString());
+  }
+
+  /**
+   * Wait for a thread to join.
+   *
+   * @param async async invocation to wait on
+   * @param timeoutMilliseconds maximum time to wait
+   * @throws AssertionError if the thread does not terminate
+   */
+  public static void join(final AsyncInvocation<?> async, final long timeoutMilliseconds) {
+    join(async.getThread(), timeoutMilliseconds);
   }
 
   /**

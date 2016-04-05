@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.configuration;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 import static com.gemstone.gemfire.test.dunit.Wait.*;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -40,15 +42,16 @@ import com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,6 +62,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+@Category(DistributedTest.class)
 public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
   private static final int TIMEOUT = 10000;
   private static final int INTERVAL = 500;
@@ -68,11 +72,6 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
   private transient ClassBuilder classBuilder = new ClassBuilder();
   public static Set<String> serverNames = new HashSet<String>();
   public static Set<String> jarFileNames = new HashSet<String>();
-
-  public SharedConfigurationEndToEndDUnitTest(String name) {
-    super(name);
-    // TODO Auto-generated constructor stub
-  }
 
   private static final long serialVersionUID = -2276690105585944041L;
 
@@ -93,6 +92,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
     return serverNames;
   }
 
+  @Test
   public void testStartServerAndExecuteCommands() throws InterruptedException, ClassNotFoundException, IOException, ExecutionException {
     IgnoredException.addIgnoredException("EntryDestroyedException");
     Object[] result = setup();
@@ -117,7 +117,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
 
 
     //shutdown everything
-    LogWriterUtils.getLogWriter().info("Shutting down all the members");
+    getLogWriter().info("Shutting down all the members");
     shutdownAll();
     deleteSavedJarFiles();
   }
@@ -147,7 +147,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
 
   protected void executeAndVerifyCommand(String commandString) {
     CommandResult cmdResult = executeCommand(commandString);
-    LogWriterUtils.getLogWriter().info("Command Result : \n" + commandResultToString(cmdResult));
+    getLogWriter().info("Command Result : \n" + commandResultToString(cmdResult));
     assertEquals(Status.OK, cmdResult.getStatus());
     assertFalse(cmdResult.failedToPersist());
   }

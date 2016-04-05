@@ -16,6 +16,17 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -25,30 +36,20 @@ import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Dunit class for testing gemfire function commands : export logs
- *
  */
-
+@Category(DistributedTest.class)
 public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public MiscellaneousCommandsExportLogsPart1DUnitTest(String name) {
-    super(name);
-  }
-
   public static String getMemberId() {
-    Cache cache = new GemfireDataCommandsDUnitTest("test").getCache();
+    Cache cache = new GemfireDataCommandsDUnitTest().getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
@@ -77,6 +78,7 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
     return ("_" + formattedStartDate);
   }
 
+  @Test
   public void testExportLogs() throws IOException {
     Date startDate = new Date(System.currentTimeMillis() - 2 * 60 * 1000);
     SimpleDateFormat sf = new SimpleDateFormat("yyyy/MM/dd");
@@ -95,11 +97,11 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogs" + dir, null, null, logLevel, false, false, start,
         end, 1);
 
-    LogWriterUtils.getLogWriter().info("testExportLogs command result =" + cmdResult);
+    getLogWriter().info("testExportLogs command result =" + cmdResult);
 
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      LogWriterUtils.getLogWriter().info("testExportLogs cmdStringRsult=" + cmdStringRsult);
+      getLogWriter().info("testExportLogs cmdStringRsult=" + cmdStringRsult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testExportLogs failed as did not get CommandResult");
@@ -107,6 +109,7 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
     FileUtil.delete(new File("./testExportLogs" + dir));
   }
 
+  @Test
   public void testExportLogsForMerge() throws IOException {
     setupForExportLogs();
     Date startDate = new Date(System.currentTimeMillis() - 2 * 60 * 1000);
@@ -124,11 +127,11 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
 
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForMerge" + dir, null, null, logLevel, false, true,
         start, end, 1);
-    LogWriterUtils.getLogWriter().info("testExportLogsForMerge command=" + cmdResult);
+    getLogWriter().info("testExportLogsForMerge command=" + cmdResult);
 
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      LogWriterUtils.getLogWriter().info("testExportLogsForMerge cmdStringRsult=" + cmdStringRsult);
+      getLogWriter().info("testExportLogsForMerge cmdStringRsult=" + cmdStringRsult);
 
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {

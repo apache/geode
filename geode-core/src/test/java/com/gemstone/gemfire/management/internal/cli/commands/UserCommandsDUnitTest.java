@@ -16,6 +16,16 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassBuilder;
 import com.gemstone.gemfire.internal.ClassPathLoader;
@@ -25,30 +35,22 @@ import com.gemstone.gemfire.management.internal.cli.CommandManager;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-
-import org.junit.Test;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Properties;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Unit tests for configuring user commands.
  *
  * @since 8.0
  */
+@Category(DistributedTest.class)
 public class UserCommandsDUnitTest extends CliCommandTestBase {
+
   private static final long serialVersionUID = 1L;
   final File jarDirectory = new File(
       (new File(ClassPathLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath())).getParent(),
       "ext");
   final File jarFile = new File(this.jarDirectory, "UserCommandsDUnit.jar");
   boolean deleteJarDirectory = false;
-
-  public UserCommandsDUnitTest(String name) throws Exception {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {

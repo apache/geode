@@ -26,6 +26,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -61,18 +67,13 @@ import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
 import com.gemstone.gemfire.test.junit.rules.serializable.SerializableTestName;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
 
 /**
  * This class is the base class for all distributed tests using JUnit 4.
  *
  * TODO: make this class abstract when JUnit3DistributedTestCase is deleted
  */
-public class JUnit4DistributedTestCase implements DistributedTestFixture, Serializable {
+public abstract class JUnit4DistributedTestCase implements DistributedTestFixture, Serializable {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -98,7 +99,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
    * no-arg constructor.
    */
   public JUnit4DistributedTestCase() {
-    this((DistributedTestFixture)null);
+    this(null);
   }
 
   /**

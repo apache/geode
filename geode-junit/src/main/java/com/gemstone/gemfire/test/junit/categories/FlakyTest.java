@@ -14,23 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.standalone;
+package com.gemstone.gemfire.test.junit.categories;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
-import hydra.MethExecutorResult;
-
-public interface RemoteDUnitVMIF extends Remote {
-
-  MethExecutorResult executeMethodOnObject(Object o, String methodName) throws RemoteException;
-
-  MethExecutorResult executeMethodOnObject(Object o, String methodName,
-      Object[] args) throws RemoteException;
-
-  MethExecutorResult executeMethodOnClass(String name, String methodName,
-      Object[] args) throws RemoteException;
-
-  void shutDownVM() throws RemoteException;
-
+/**
+ * JUnit Test Category that specifies a flickering test that fails
+ * intermittently.
+ */
+public interface FlakyTest {
 }

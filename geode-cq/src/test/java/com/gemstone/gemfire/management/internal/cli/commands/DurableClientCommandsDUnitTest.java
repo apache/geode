@@ -16,13 +16,21 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -44,15 +52,12 @@ import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-
-
+@Category(DistributedTest.class)
 public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -61,11 +66,8 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
   final String cq2 = "cq2";
   final String cq3 = "cq3";
   final String clientName = "dc1";
-  
-  public DurableClientCommandsDUnitTest(String name) {
-    super(name);
-  }
- 
+
+  @Test
   public void testListDurableClientCqs() throws Exception {
     setupSystem();
     setupCqs();
@@ -98,6 +100,7 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(errorMessage));
   }
   
+  @Test
   public void testCloseDurableClients() throws Exception {
     setupSystem();
     setupCqs();
@@ -127,8 +130,8 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     String errorMessage = CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, clientName);
     assertTrue(resultAsString.contains(errorMessage));
   }
-  
-  
+
+  @Test
   public void testCloseDurableCQ() throws Exception{
     setupSystem();
     setupCqs();
@@ -156,17 +159,8 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(Status.ERROR.equals(commandResult.getStatus()));
     
   }
-    
-//  public void testRepeat() throws Exception {
-//    long endTime = System.currentTimeMillis() + (75 * 60000);
-//    while (endTime > System.currentTimeMillis()) {
-//      testCountSubscriptionQueueSize();
-//      tearDown();
-//      setUp();
-//    }
-//    testCountSubscriptionQueueSize();
-//  }
-//  
+
+  @Test
   public void testCountSubscriptionQueueSize() throws Exception {
     setupSystem();
     setupCqs();
@@ -250,7 +244,7 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
   }
   
   private void writeToLog(String text, String resultAsString) {
-    LogWriterUtils.getLogWriter().info(getUniqueName() + ": " + text + "\n" + resultAsString);
+    getLogWriter().info(getUniqueName() + ": " + text + "\n" + resultAsString);
   }
   
   private void setupSystem() throws Exception {
@@ -360,7 +354,7 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
         getSystem(props);
         
         final ClientCacheFactory ccf = new ClientCacheFactory(props);
-        ccf.addPoolServer(NetworkUtils.getServerHostName(server.getHost()), port);
+        ccf.addPoolServer(getServerHostName(server.getHost()), port);
         ccf.setPoolSubscriptionEnabled(true);
         
         ClientCache cache = (ClientCache)getClientCache(ccf);
@@ -368,10 +362,9 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     });
   }
   
-  /* Does few puts on the region on the server
-   * 
+  /**
+   * Does few puts on the region on the server
    */
-  
   private void doPuts(final String regionName, VM server) {
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -423,7 +416,7 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
 
   protected Properties getServerProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+getDUnitLocatorPort()+"]");
     return p;
   }
   

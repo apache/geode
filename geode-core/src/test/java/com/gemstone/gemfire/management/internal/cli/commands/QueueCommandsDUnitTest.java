@@ -16,6 +16,21 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.distributed.Locator;
@@ -29,41 +44,30 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.CopyOnWriteArrayList;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * A distributed test suite of test cases for testing the queue commands that are part of Gfsh.
  *
  * @since 8.0
  */
+@Category(DistributedTest.class)
 public class QueueCommandsDUnitTest extends CliCommandTestBase {
+
   private static final long serialVersionUID = 1L;
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
-
-  public QueueCommandsDUnitTest(final String testName) {
-    super(testName);
-  }
 
   @Override
   public final void preSetUp() throws Exception {
     disconnectAllFromDS();
   }
 
+  @Test
   public void testAsyncEventQueue() throws IOException {
     final String queue1Name = "testAsyncEventQueue1";
     final String queue2Name = "testAsyncEventQueue2";
@@ -236,6 +240,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating async event queues correctly updates the shared configuration.
    */
+  @Test
   public void testCreateUpdatesSharedConfig() throws IOException {
     disconnectAllFromDS();
 
@@ -269,7 +274,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          Wait.waitForCriterion(wc, 5000, 500, true);
+          waitForCriterion(wc, 5000, 500, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
@@ -336,7 +341,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
           xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
           assertTrue(xmlFromConfig.contains(queueName));
         } catch (Exception e) {
-          Assert.fail("Error occurred in cluster configuration service", e);
+          fail("Error occurred in cluster configuration service", e);
         }
       }
     });
@@ -377,7 +382,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
           executeCommand("undeploy --jar=" + fileToDelete.getName());
         }
       } catch (IOException e) {
-        LogWriterUtils.getLogWriter().error("Unable to delete file", e);
+        getLogWriter().error("Unable to delete file", e);
       }
     }
     this.filesToBeDeleted.clear();

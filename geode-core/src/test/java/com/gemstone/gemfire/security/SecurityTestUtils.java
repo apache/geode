@@ -18,15 +18,19 @@
  */
 package com.gemstone.gemfire.security;
 
+import static com.gemstone.gemfire.cache30.ClientServerTestCase.*;
 import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
 import static com.gemstone.gemfire.internal.AvailablePort.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
+import static com.gemstone.gemfire.test.dunit.Assert.assertFalse;
+import static com.gemstone.gemfire.test.dunit.Assert.assertNotNull;
+import static com.gemstone.gemfire.test.dunit.Assert.assertNull;
+import static com.gemstone.gemfire.test.dunit.Assert.assertTrue;
+import static com.gemstone.gemfire.test.dunit.Assert.fail;
 import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
 import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import static com.gemstone.gemfire.cache30.ClientServerTestCase.configureConnectionPoolWithNameAndFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -84,6 +88,7 @@ import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 
 /**
  * Contains utility methods for setting up servers/clients for authentication
@@ -93,7 +98,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  */
 public final class SecurityTestUtils {
 
-  private final DistributedTestCase distributedTestCase = new DistributedTestCase(getClass().getSimpleName()) {}; // TODO: delete
+  private final JUnit4DistributedTestCase distributedTestCase = new JUnit4DistributedTestCase() {}; // TODO: delete
 
   protected static final int NO_EXCEPTION = 0;
   protected static final int AUTHREQ_EXCEPTION = 1;
