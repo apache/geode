@@ -58,7 +58,7 @@ public class BasicDUnitTest extends DistributedTestCase {
   }
 
   @Override
-  public void postTearDown() throws Exception {
+  public final void postTearDown() throws Exception {
     bindings = null;
     invokeInEveryVM(() -> bindings = null);
   }
