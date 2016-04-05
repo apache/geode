@@ -2306,6 +2306,8 @@ public class EntryEventImpl
 
     buf.append("op=");
     buf.append(getOperation());
+    buf.append(";region=");
+    buf.append(this.getRegion().getFullPath());
     buf.append(";key=");
     buf.append(this.getKey());
     buf.append(";oldValue=");
