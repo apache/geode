@@ -438,12 +438,22 @@ public class ServerConnection implements Runnable {
   }
   
   //hitesh:this is for backward compability
-  public long setUserAuthorizeAndPostAuthorizeRequest(AuthorizeRequest authzRequest, AuthorizeRequestPP postAuthzRequest)
-  {
+  public long setUserAuthorizeAndPostAuthorizeRequest(
+      AuthorizeRequest authzRequest, AuthorizeRequestPP postAuthzRequest)
+      throws IOException {
     UserAuthAttributes userAuthAttr = new UserAuthAttributes(authzRequest, postAuthzRequest);
-    if (this.clientUserAuths == null )
+    if (this.clientUserAuths == null) {
       this.initializeClientUserAuths();
-    return this.clientUserAuths.putUserAuth(userAuthAttr);
+    }
+    try {
+      return this.clientUserAuths.putUserAuth(userAuthAttr);
+    } catch (NullPointerException npe) {
+      if (this.isTerminated()) {
+        // Bug #52023.
+        throw new IOException("Server connection is terminated.");
+      }
+      throw npe;
+    }
   }
   //this is backward compability only, if any race condition happens.
   //where server is unregistering the client and client is creating new connection.
@@ -967,11 +977,15 @@ public class ServerConnection implements Runnable {
         throw new  AuthenticationFailedException("Authentication failed");
       }
       
-      return this.clientUserAuths.removeUserId(aIds.getUniqueId(), keepalive);      
-    }
-    catch(Exception ex)
-    {
-      throw new  AuthenticationFailedException("Authentication failed");
+      try {
+        return this.clientUserAuths.removeUserId(aIds.getUniqueId(), keepalive);
+      } catch (NullPointerException npe) {
+        // Bug #52023.
+        logger.debug("Exception {}", npe);
+        return false;
+      }
+    } catch (Exception ex) {
+      throw new AuthenticationFailedException("Authentication failed", ex);
     }
   }
   public byte[] setCredentials(Message msg)
@@ -1940,7 +1954,7 @@ public class ServerConnection implements Runnable {
   }
   
   public AuthorizeRequest getAuthzRequest() 
-      throws AuthenticationRequiredException {
+      throws AuthenticationRequiredException, IOException {
     //look client version and return authzrequest
     //for backward client it will be store in member variable userAuthId 
     //for other look "requestMsg" here and get unique-id from this to get the authzrequest
@@ -1983,8 +1997,17 @@ public class ServerConnection implements Runnable {
                 .toLocalizedString());
         }
       }
-      
-      UserAuthAttributes uaa = this.clientUserAuths.getUserAuthAttributes(uniqueId);
+      UserAuthAttributes uaa = null;
+      try {
+        uaa = this.clientUserAuths.getUserAuthAttributes(uniqueId);
+      } catch (NullPointerException npe) {
+        if (this.isTerminated()) {
+          // Bug #52023.
+          throw new IOException("Server connection is terminated.");
+        } else {
+          logger.debug("Unexpected exception {}", npe);
+        }
+      }
       if (uaa == null) {
         throw new AuthenticationRequiredException(
             "User authorization attributes not found.");
@@ -2002,7 +2025,7 @@ public class ServerConnection implements Runnable {
   }
 
   public AuthorizeRequestPP getPostAuthzRequest() 
-  throws AuthenticationRequiredException{
+  throws AuthenticationRequiredException, IOException {
   //look client version and return authzrequest
   //for backward client it will be store in member variable userAuthId 
   //for other look "requestMsg" here and get unique-id from this to get the authzrequest
@@ -2045,7 +2068,17 @@ public class ServerConnection implements Runnable {
         }
       }
       
-      UserAuthAttributes uaa = this.clientUserAuths.getUserAuthAttributes(uniqueId);
+      UserAuthAttributes uaa = null;
+      try {
+        uaa = this.clientUserAuths.getUserAuthAttributes(uniqueId);
+      } catch (NullPointerException npe) {
+        if (this.isTerminated()) {
+          // Bug #52023.
+          throw new IOException("Server connection is terminated.");
+        } else {
+          logger.debug("Unexpected exception {}", npe);
+        }
+      }
       if (uaa == null) {
         throw new AuthenticationRequiredException(
             "User authorization attributes not found.");
