@@ -37,8 +37,6 @@ import com.gemstone.gemfire.test.dunit.standalone.StandAloneDUnitEnv;
 @SuppressWarnings("serial")
 public class VM implements Serializable {
 
-  private static final int MAX_RETRY_COUNT = 0; // was 120 for JDK 1.3 or 1.4 on Windows
-
   /** The host on which this VM runs */
   private Host host;
 
@@ -160,7 +158,7 @@ public class VM implements Serializable {
       throw new RMIException(this, targetClass.getName(), methodName, new IllegalStateException("VM not available: " + this));
     }
 
-    MethExecutorResult result = execute(targetClass, methodName, args, MAX_RETRY_COUNT);
+    MethExecutorResult result = execute(targetClass, methodName, args);
 
     if (!result.exceptionOccurred()) {
       return result.getResult();
@@ -382,7 +380,7 @@ public class VM implements Serializable {
       throw new RMIException(this, targetObject.getClass().getName(), methodName, new IllegalStateException("VM not available: " + this));
     }
 
-    MethExecutorResult result = execute(targetObject, methodName, args, MAX_RETRY_COUNT);
+    MethExecutorResult result = execute(targetObject, methodName, args);
 
     if (!result.exceptionOccurred()) {
       return result.getResult();
@@ -441,60 +439,23 @@ public class VM implements Serializable {
     return DUnitEnv.get().getWorkingDirectory(getPid());
   }
 
-  private MethExecutorResult execute(final Class targetClass, final String methodName, final Object[] args, int retryCount) {
-//    do {
-//
+  private MethExecutorResult execute(final Class targetClass, final String methodName, final Object[] args) {
       try {
         return this.client.executeMethodOnClass(targetClass.getName(), methodName, args);
-
       } catch (RemoteException e) {
-//        boolean isWindows = false;
-//        String os = System.getProperty("os.name");
-//        if (os != null) {
-//          if (os.indexOf("Windows") != -1) {
-//            isWindows = true;
-//          }
-//        }
-//        if (isWindows && retryCount-- > 0) {
-//          boolean interrupted = Thread.interrupted();
-//          try { Thread.sleep(1000); } catch (InterruptedException ignore) {interrupted = true;}
-//          finally {
-//            if (interrupted) {
-//              Thread.currentThread().interrupt();
-//            }
-//          }
-//        } else {
-          throw new RMIException(this, targetClass.getName(), methodName, e );
-//        }
+        throw new RMIException(this, targetClass.getName(), methodName, e );
       }
-//
-//    } while (true);
   }
 
-  private MethExecutorResult execute(final Object targetObject, final String methodName, final Object[] args, int retryCount) {
-//    do {
-
+  private MethExecutorResult execute(final Object targetObject, final String methodName, final Object[] args) {
       try {
         if (args == null) {
           return this.client.executeMethodOnObject(targetObject, methodName);
         } else {
           return this.client.executeMethodOnObject(targetObject, methodName, args);
         }
-
       } catch (RemoteException e) {
-//        if (retryCount-- > 0) {
-//          boolean interrupted = Thread.interrupted();
-//          try { Thread.sleep(1000); } catch (InterruptedException ignore) {interrupted = true;}
-//          finally {
-//            if (interrupted) {
-//              Thread.currentThread().interrupt();
-//            }
-//          }
-//        } else {
-          throw new RMIException(this, targetObject.getClass().getName(), methodName, e );
-//        }
+        throw new RMIException(this, targetObject.getClass().getName(), methodName, e );
       }
-
-//    } while (true);
   }
 }

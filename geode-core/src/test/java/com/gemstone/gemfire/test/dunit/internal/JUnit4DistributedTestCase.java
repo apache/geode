@@ -70,8 +70,6 @@ import com.gemstone.gemfire.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * This class is the base class for all distributed tests using JUnit 4.
- *
- * TODO: make this class abstract when JUnit3DistributedTestCase is deleted
  */
 public abstract class JUnit4DistributedTestCase implements DistributedTestFixture, Serializable {
 
