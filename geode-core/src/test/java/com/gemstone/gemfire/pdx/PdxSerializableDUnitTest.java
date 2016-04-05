@@ -16,13 +16,23 @@
  */
 package com.gemstone.gemfire.pdx;
 
+import java.util.List;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheEvent;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.TransactionEvent;
+import com.gemstone.gemfire.cache.TransactionListener;
+import com.gemstone.gemfire.cache.TransactionWriter;
+import com.gemstone.gemfire.cache.TransactionWriterException;
 import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.cache30.TestTransactionListener;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.TXEvent;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -78,6 +88,48 @@ public class PdxSerializableDUnitTest extends CacheTestCase {
       
       public Object call() throws Exception {
         assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
+        return null;
+      }
+    });
+  }
+  
+  public void testTransactionCallbacksNotInvoked() {
+    Host host = Host.getHost(0);
+    VM vm1 = host.getVM(0);
+    VM vm2 = host.getVM(1);
+    
+    SerializableCallable createRegionAndAddPoisonedListener = new SerializableCallable() {
+      public Object call() throws Exception {
+        AttributesFactory af = new AttributesFactory();
+        af.setScope(Scope.DISTRIBUTED_ACK);
+        af.setDataPolicy(DataPolicy.REPLICATE);
+        createRootRegion("testSimplePdx", af.create());
+        addPoisonedTransactionListeners();
+        return null;
+      }
+    };
+
+    vm1.invoke(createRegionAndAddPoisonedListener);
+    vm2.invoke(createRegionAndAddPoisonedListener);
+    vm1.invoke(new SerializableCallable() {
+      public Object call() throws Exception {
+        //Check to make sure the type region is not yet created
+        Region r = getRootRegion("testSimplePdx");
+        Cache mycache = getCache();
+        mycache.getCacheTransactionManager().begin();
+        r.put(1, new SimpleClass(57, (byte) 3));
+        mycache.getCacheTransactionManager().commit();
+        //Ok, now the type registry should exist
+        assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
+        return null;
+      }
+    });
+    vm2.invoke(new SerializableCallable() {
+      public Object call() throws Exception {
+      //Ok, now the type registry should exist
+        assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
+        Region r = getRootRegion("testSimplePdx");
+        assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
         return null;
       }
     });
@@ -186,5 +238,59 @@ public class PdxSerializableDUnitTest extends CacheTestCase {
     vm3.invoke(createRegion);
     
     vm3.invoke(checkForObject);
+  }
+
+  /**
+   * add a listener and writer that will throw an exception when invoked
+   * if events are for internal regions
+   */
+  public final void addPoisonedTransactionListeners() {
+    MyTestTransactionListener listener = new MyTestTransactionListener();
+    getCache().getCacheTransactionManager().addListener(listener);
+    getCache().getCacheTransactionManager().setWriter(listener);
+  }
+
+
+  static private class MyTestTransactionListener
+  implements TransactionWriter, TransactionListener {
+    private MyTestTransactionListener() {
+      
+    }
+    
+    private void checkEvent(TransactionEvent event) {
+      List<CacheEvent<?,?>> events = event.getEvents();
+      System.out.println("MyTestTransactionListener.checkEvent: events are " + events);
+      for (CacheEvent<?,?> cacheEvent: events) {
+        if (((LocalRegion)cacheEvent.getRegion()).isPdxTypesRegion()) {
+          throw new UnsupportedOperationException("found internal event: " + cacheEvent
+              + " region=" + cacheEvent.getRegion().getName());
+        }
+      }
+    }
+
+    @Override
+    public void beforeCommit(TransactionEvent event)
+        throws TransactionWriterException {
+      checkEvent(event);
+    }
+
+    @Override
+    public void close() {
+    }
+
+    @Override
+    public void afterCommit(TransactionEvent event) {
+      checkEvent(event);
+    }
+
+    @Override
+    public void afterFailedCommit(TransactionEvent event) {
+      checkEvent(event);
+    }
+
+    @Override
+    public void afterRollback(TransactionEvent event) {
+      checkEvent(event);
+    }
   }
 }

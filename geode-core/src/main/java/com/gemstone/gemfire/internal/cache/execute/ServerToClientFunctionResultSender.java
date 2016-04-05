@@ -239,7 +239,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     }
   }
 
-  protected void authorizeResult(Object oneResult) {
+  protected void authorizeResult(Object oneResult) throws IOException {
     // check if the caller is authorised to receive these function execution
     // results from server
     AuthorizeRequestPP authzRequestPP = this.sc.getPostAuthzRequest();

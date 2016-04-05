@@ -4576,6 +4576,9 @@ public class LocalRegion extends AbstractRegion
   public void refreshEntriesFromServerKeys(Connection con, List serverKeys,
       InterestResultPolicy pol)
   {
+    if (serverKeys == null) {
+      return;
+    }
     ServerRegionProxy proxy = getServerProxy();
     if (logger.isDebugEnabled()) {
       logKeys(serverKeys, pol);
