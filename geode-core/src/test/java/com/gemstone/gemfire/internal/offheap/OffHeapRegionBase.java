@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -615,6 +616,38 @@ public abstract class OffHeapRegionBase {
       assertEquals(value, r.get("key"));
     } finally {
       if (r != null && !r.isDestroyed()) {
+        r.destroyRegion();
+      }
+      closeCache(gfc, false);
+    }
+  }
+
+  @Test
+  public void testPersistentCompressorChange() {
+    GemFireCacheImpl gfc = createCache(true);
+    Region<Object, Object> r = null;
+    String value = "value1";
+    String key = "key";
+
+    try {
+      r = gfc.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setOffHeap(true).setCompressor(new SnappyCompressor()).create("region1");
+      r.put(key, value);
+    } finally {
+      closeCache(gfc, false);
+    }
+
+    gfc = createCache(true);
+    try {
+      r = gfc.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setOffHeap(true).setCompressor(null).create("region1");
+      assertEquals(true, r.containsKey(key));
+      MemoryAllocatorImpl mai = MemoryAllocatorImpl.getAllocator();
+      List<OffHeapStoredObject> orphans = mai.getLostChunks();
+      if (orphans.size() >0) {
+        fail("expected no orphan detected, but gets orphan size " + orphans.size());
+      }
+      assertEquals(value, r.get(key));
+    } finally {
+      if (r !=null && !r.isDestroyed()) {
         r.destroyRegion();
       }
       closeCache(gfc, false);

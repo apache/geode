@@ -678,8 +678,9 @@ public abstract class AbstractRegionMap implements RegionMap {
           incEntryCount(1);
           lruEntryUpdate(newRe);
         } finally {
-          if (OffHeapHelper.release(value)) {
-            ((OffHeapRegionEntry)oldRe).release();
+          OffHeapHelper.release(value);
+          if (oldRe instanceof OffHeapRegionEntry) {
+            ((OffHeapRegionEntry) oldRe).release();
           }
         }
         lruUpdateCallback();
