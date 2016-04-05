@@ -33,21 +33,23 @@ public class EntryEventImplTest {
   String expectedRegionName = "ExpectedFullRegionPathName";
   String key = "key1";
   String value = "value1";
+  KeyInfo keyInfo = new KeyInfo(key, value, null);
 
   @Test
-  public void testToString() {
+  public void verifyToStringOutputHasRegionName() {
     // mock a region object
     LocalRegion region = mock(LocalRegion.class);
     doReturn(expectedRegionName).when(region).getFullPath();
+    doReturn(keyInfo).when(region).getKeyInfo(any());
+    doReturn(keyInfo).when(region).getKeyInfo(any(), any());
+    doReturn(keyInfo).when(region).getKeyInfo(any(), any(), any());
 
     // create entryevent for the region
     EntryEventImpl e = createEntryEvent(region);
-    EntryEventImpl spy = spy(e);
-    doReturn(key).when(spy).getKey();
-    doReturn(value).when(spy).getRawCallbackArgument();
     
     // The name of the region should be in the toString text
-    assertTrue("String expectedRegionName was not in toString text", spy.toString().indexOf(expectedRegionName) > 0);
+    String toStringValue = e.toString();
+    assertTrue("String " + expectedRegionName + " was not in toString text", toStringValue.indexOf(expectedRegionName) > 0);
 
     // verify that toString called getFullPath method of region object
     verify(region, Mockito.times(1)).getFullPath();
