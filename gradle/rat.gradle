@@ -213,7 +213,10 @@ rat {
     'geode-web-api/src/main/webapp/docs/css/screen.css',
     'geode-web-api/src/main/webapp/docs/swagger-ui.js',
     'geode-web-api/src/main/webapp/docs/swagger-ui.min.js',
-    'geode-pulse/src/main/webapp/scripts/multiselect/prettify.js'
+    'geode-pulse/src/main/webapp/scripts/multiselect/prettify.js',
+
+    // MX4J License
+    'geode-core/src/main/java/com/gemstone/gemfire/admin/jmx/internal/MX4JModelMBean.java'
   ]
 }
 
