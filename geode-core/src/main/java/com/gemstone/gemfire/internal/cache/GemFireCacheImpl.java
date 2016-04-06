@@ -2072,10 +2072,10 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
           // ignore
         }
 
-        try {
           GatewaySenderAdvisor advisor = null;
           for (GatewaySender sender : this.getAllGatewaySenders()) {
-            ((AbstractGatewaySender) sender).stop();
+            try {
+            sender.stop();
             advisor = ((AbstractGatewaySender) sender).getSenderAdvisor();
             if (advisor != null) {
               if (isDebugEnabled) {
@@ -2083,12 +2083,11 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
               }
               advisor.close();
             }
+            } catch (CancelException ce) {
+            }
           }
           ParallelGatewaySenderQueue.cleanUpStatics(null);
-        } catch (CancelException ce) {
 
-        }
-        
         destroyGatewaySenderLockService();
 
         if (ASYNC_EVENT_LISTENERS) {
