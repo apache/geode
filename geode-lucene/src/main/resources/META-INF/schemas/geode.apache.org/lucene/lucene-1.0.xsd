@@ -23,22 +23,22 @@ limitations under the License.
     version="1.0">
   
   <xsd:import
-      namespace="http://schema.pivotal.io/gemfire/cache"
-      schemaLocation="http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd"/>
+      namespace="http://geode.apache.org/schema/cache"
+      schemaLocation="http://geode.apache.org/schema/cache/cache-1.0.xsd"/>
   
   <xsd:annotation>
     <xsd:documentation><![CDATA[
 XML schema for Lucene indexes in Geode.
 
   <cache
-    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns="http://geode.apache.org/schema/cache"
     xmlns:lucene="http://geode.apache.org/schema/lucene"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache
-        http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd
+    xsi:schemaLocation="http://geode.apache.org/schema/cache
+        http://geode.apache.org/schema/cache/cache-1.0.xsd
         http://geode.apache.org/schema/lucene
         http://geode.apache.org/schema/lucene/lucene-1.0.xsd"
-    version="9.0">
+    version="1.0">
     
     ]]></xsd:documentation>
   </xsd:annotation>

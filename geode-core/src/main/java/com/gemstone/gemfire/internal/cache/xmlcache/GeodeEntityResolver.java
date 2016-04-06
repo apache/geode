@@ -37,7 +37,7 @@ import org.xml.sax.ext.EntityResolver2;
  */
 public final class GeodeEntityResolver extends DefaultEntityResolver2 {
 
-  private static final String SYSTEM_ID_ROOT = "http://geode.apache.org/schema";
+  private static final String SYSTEM_ID_ROOT = "http://geode.apache.org/";
 
   private static final String CLASSPATH_ROOT = "/META-INF/schemas/geode.apache.org/";
 

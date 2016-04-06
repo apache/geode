@@ -32,10 +32,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 
 
-public class CacheXml90DUnitTest extends CacheXml81DUnitTest {
+public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
   private static final long serialVersionUID = -6437436147079728413L;
 
-  public CacheXml90DUnitTest(String name) {
+  public CacheXmlGeode10DUnitTest(String name) {
     super(name);
   }
 
@@ -44,7 +44,7 @@ public class CacheXml90DUnitTest extends CacheXml81DUnitTest {
 
   protected String getGemFireVersion()
   {
-    return CacheXml.VERSION_9_0;
+    return CacheXml.VERSION_1_0;
   }
 
   @SuppressWarnings("rawtypes")

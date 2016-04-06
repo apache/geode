@@ -23,22 +23,19 @@ import org.junit.experimental.categories.Category;
 import org.xml.sax.EntityResolver;
 
 /**
- * Unit test for {@link PivotalEntityResolver} and
+ * Unit test for {@link GeodeEntityResolver} and
  * {@link DefaultEntityResolver2}.
- * 
- *
- * @since 8.1
  */
 @Category(UnitTest.class)
-public class PivotalEntityResolverJUnitTest extends AbstractEntityResolverTest {
+public class GeodeEntityResolverJUnitTest extends AbstractEntityResolverTest {
 
   private EntityResolver entityResolver;
 
-  private final String systemId = "http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd";
+  private final String systemId = "http://geode.apache.org/schema/cache/cache-1.0.xsd";
 
   @Before
   public void setup() throws Exception {
-    entityResolver = new PivotalEntityResolver();
+    entityResolver = new GeodeEntityResolver();
   }
 
   public EntityResolver getEntityResolver() {

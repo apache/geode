@@ -35,7 +35,6 @@ import javax.xml.xpath.XPathExpressionException;
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.Assert;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -70,7 +69,7 @@ public class XmlEntity implements DataSerializable {
 
   private String prefix = CacheXml.PREFIX;
 
-  private String namespace = CacheXml.NAMESPACE;
+  private String namespace = CacheXml.GEODE_NAMESPACE;
 
   /**
    * Default constructor for serialization only.
@@ -308,7 +307,7 @@ public class XmlEntity implements DataSerializable {
   }
 
   /**
-   * Gets the namespace for the element. Defaults to {@link CacheXml#NAMESPACE}
+   * Gets the namespace for the element. Defaults to {@link CacheXml#GEODE_NAMESPACE}
    * if not set.
    * 
    * @return XML element namespace
@@ -457,7 +456,7 @@ public class XmlEntity implements DataSerializable {
      * Sets the element prefix and namespace as returned by
      * {@link XmlEntity#getPrefix()} and {@link XmlEntity#getNamespace()}
      * respectively. Defaults are {@link CacheXml#PREFIX} and
-     * {@link CacheXml#NAMESPACE} respectively.
+     * {@link CacheXml#GEODE_NAMESPACE} respectively.
      * 
      * @param prefix
      *          Prefix of element
