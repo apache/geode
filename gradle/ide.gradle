@@ -25,6 +25,14 @@ subprojects {
       defaultOutputDir = file('build-eclipse')
       downloadSources = true
       plusConfigurations += [ configurations.provided ]
+      file {
+        // Remove the gradle output directories from the eclipse classpath.
+        // Unfortunately, using minusConfigurations does not work here, because
+        // it removes the entire geode-core project.
+        whenMerged { classpath ->
+            classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build')}
+        }
+      }
     }
     project {
       name = sanitizedName()
@@ -39,7 +47,7 @@ subprojects {
       f.append('encoding/<project>=utf-8')
     }
   }
-  
+
   cleanEclipse << {
     delete '.settings/org.eclipse.core.resources.prefs'
   }

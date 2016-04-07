@@ -31,7 +31,7 @@ dependencies {
     //Lucene test framework.
     testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
     testCompile 'org.apache.lucene:lucene-codecs:' + project.'lucene.version'
-    testCompile project(path: ':geode-core', configuration: 'testOutput', transitive: false)
+    testCompile files(project(':geode-core').sourceSets.test.output)
 
     // the following test dependencies are needed for mocking cache instance
     testRuntime 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'

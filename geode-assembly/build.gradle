@@ -62,7 +62,7 @@ dependencies {
   archives project(':geode-cq')
 
   testCompile project(':geode-junit')
-  testCompile project(path: ':geode-core', configuration: 'testOutput')
+  testCompile files(project(':geode-core').sourceSets.test.output)
   testCompile ('org.springframework:spring-web:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
