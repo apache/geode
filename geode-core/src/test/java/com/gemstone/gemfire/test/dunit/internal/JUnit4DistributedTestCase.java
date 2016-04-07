@@ -545,7 +545,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
 
   private static final void tearDownVM() {
     closeCache();
-
+    disconnectFromDS();
     // keep alphabetized to detect duplicate lines
     CacheCreation.clearThreadLocals();
     CacheServerTestUtil.clearCacheReference();
