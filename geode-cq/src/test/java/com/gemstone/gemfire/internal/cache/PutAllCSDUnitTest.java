@@ -2248,8 +2248,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Stop server
     stopBridgeServers(getCache());
   }
-  
-  
+
   /**
    * Tests partial key putAll to 2 PR servers, because putting data at server
    * side is different between PR and LR. PR does it in postPutAll.

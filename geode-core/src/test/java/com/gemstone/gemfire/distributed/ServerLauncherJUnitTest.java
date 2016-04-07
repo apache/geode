@@ -575,6 +575,76 @@ public class ServerLauncherJUnitTest {
   }
 
   @Test
+  public void reconnectedCacheIsDiscovered() throws Exception {
+    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final Cache mockReconnectedCache = mockContext.mock(Cache.class, "ReconnectedCache");
+
+    mockContext.checking(new Expectations() {{
+      exactly(2).of(mockCache).isReconnecting();
+      will(returnValue(Boolean.FALSE));
+
+      oneOf(mockCache).getCacheServers();
+      will(returnValue(Collections.emptyList()));
+
+      oneOf(mockCache).isReconnecting();
+      will(returnValue(Boolean.TRUE));
+
+      oneOf(mockCache).getReconnectedCache();
+      will(returnValue(mockReconnectedCache));
+
+      oneOf(mockReconnectedCache).close();
+
+    }});
+
+    final ServerLauncher serverLauncher =
+            new Builder()
+                    .setMemberName("serverOne")
+                    .setCache(mockCache)
+                    .build();
+
+    assertNotNull(serverLauncher);
+    serverLauncher.waitOnServer();
+  }
+
+  @Test
+  public void reconnectingDistributedSystemIsDisconnectedOnStop() throws Exception {
+    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
+    final DistributedSystem mockDistributedSystem = mockContext.mock(DistributedSystem.class, "DistributedSystem");
+    final Cache mockReconnectedCache = mockContext.mock(Cache.class, "ReconnectedCache");
+
+    mockContext.checking(new Expectations() {{
+      exactly(1).of(mockCache).isReconnecting();
+      will(returnValue(Boolean.TRUE));
+
+      exactly(1).of(mockCache).getReconnectedCache();
+      will(returnValue(mockReconnectedCache));
+
+      exactly(2).of(mockReconnectedCache).isReconnecting();
+      will(returnValue(Boolean.TRUE));
+
+      exactly(1).of(mockReconnectedCache).getReconnectedCache();
+      will(returnValue(null));
+
+      oneOf(mockReconnectedCache).getDistributedSystem();
+      will(returnValue(mockDistributedSystem));
+
+      oneOf(mockDistributedSystem).stopReconnecting();
+
+      oneOf(mockReconnectedCache).close();
+    }});
+
+    final ServerLauncher serverLauncher =
+            new Builder()
+                    .setMemberName("serverOne")
+                    .setCache(mockCache)
+                    .build();
+
+    assertNotNull(serverLauncher);
+    serverLauncher.setIsRunningForTest();
+    serverLauncher.stop();
+  }
+
+  @Test
   public void testIsWaiting() {
     final Cache mockCache = mockContext.mock(Cache.class, "Cache");
     final DistributedSystem mockDistributedSystem = mockContext.mock(DistributedSystem.class, "DistributedSystem");
@@ -607,6 +677,8 @@ public class ServerLauncherJUnitTest {
       will(returnValue(mockDistributedSystem));
       oneOf(mockDistributedSystem).isConnected();
       will(returnValue(false));
+      oneOf(mockCache).isReconnecting();
+      will(returnValue(Boolean.FALSE));
     }});
 
     final ServerLauncher serverLauncher = new Builder().setMemberName("serverOne").build();
@@ -781,6 +853,8 @@ public class ServerLauncherJUnitTest {
       mockContext.checking(new Expectations() {{
         allowing(mockCache).getDistributedSystem();
         will(returnValue(mockDistributedSystem));
+        allowing(mockCache).isReconnecting();
+        will(returnValue(Boolean.FALSE));
         allowing(mockCache).getCacheServers();
         will(returnValue(Collections.emptyList()));
         oneOf(mockCache).close();

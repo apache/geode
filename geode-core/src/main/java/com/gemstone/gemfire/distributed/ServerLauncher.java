@@ -302,6 +302,15 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @see com.gemstone.gemfire.cache.Cache
    */
   final Cache getCache() {
+    if (this.cache != null) {
+      boolean isReconnecting = this.cache.isReconnecting();
+      if (isReconnecting) {
+        Cache newCache = this.cache.getReconnectedCache();
+        if (newCache != null) {
+          this.cache = newCache;
+        }
+      }
+    }
     return this.cache;
   }
 
@@ -837,7 +846,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    */
   final boolean isWaiting(final Cache cache) {
     //return (isRunning() && !getCache().isClosed());
-    return (isRunning() && cache.getDistributedSystem().isConnected());
+    return (isRunning() && (cache.getDistributedSystem().isConnected() || cache.isReconnecting()));
   }
 
   /**
@@ -1152,10 +1161,15 @@ public class ServerLauncher extends AbstractLauncher<String> {
   
   private ServerState stopInProcess() {
     if (isStoppable()) {
+      if (this.cache.isReconnecting()) {
+        this.cache.getDistributedSystem().stopReconnecting();
+      }
       this.cache.close();
       this.cache = null;
-      this.process.stop();
-      this.process = null;
+      if (this.process != null) {
+        this.process.stop();
+        this.process = null;
+      }
       INSTANCE.compareAndSet(this, null); // note: other thread may return Status.NOT_RESPONDING now
       this.running.set(false);
       return new ServerState(this, Status.STOPPED);
@@ -1253,6 +1267,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return createNoResponseState(e, "Failed to communicate with server with process id " + parsedPid);
     }
   }
+
+  // For testing purposes only!
+  void setIsRunningForTest() {
+    this.running.set(true);
+  }
+
 
   private ServerState createNoResponseState(final Exception cause, final String errorMessage) {
     debug(cause);
