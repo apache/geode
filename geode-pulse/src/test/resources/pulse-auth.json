@@ -3,9 +3,8 @@
     {
       "name": "pulse",
       "operationsAllowed": [
-        "PULSE:PULSE_DASHBOARD",
-        "PULSE:PULSE_DATABROWSER",
-        "JMX:GET"
+        "DATA:READ",
+        "CLUSTER:READ"
       ]
     }
   ],

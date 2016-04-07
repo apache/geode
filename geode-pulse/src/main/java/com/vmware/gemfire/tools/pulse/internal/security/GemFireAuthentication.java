@@ -22,7 +22,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityCoreVersion;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -90,31 +89,6 @@ public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public static boolean authorize(String role){
-		try {
-			GemFireAuthentication authentication = (GemFireAuthentication) SecurityContextHolder
-					.getContext().getAuthentication();
-			MBeanServerConnection mbeanServer = authentication
-					.getRemoteMBeanServer();
-			LOGGER.fine("#GemFireAuthentication : Checking for role="+role);
-			ObjectName name = new ObjectName(PulseConstants.OBJECT_NAME_ACCESSCONTROL_MBEAN);
-			Object[] params = new Object[] {role};
-			String[] signature = new String[] {String.class.getCanonicalName()};
-			Boolean result = (Boolean)mbeanServer.invoke(name, "authorize", params, signature);
-			return result;
-		} catch (MalformedObjectNameException e) {
-			throw new RuntimeException(e);
-		} catch (InstanceNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (MBeanException e) {
-			throw new RuntimeException(e);
-		} catch (ReflectionException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
 
 	public static ArrayList<GrantedAuthority> populateAuthorities(JMXConnector jmxc) {
 		ObjectName name;
@@ -122,14 +96,13 @@ public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
 			name = new ObjectName(PulseConstants.OBJECT_NAME_ACCESSCONTROL_MBEAN);
 			MBeanServerConnection mbeanServer = jmxc.getMBeanServerConnection();
 			ArrayList<GrantedAuthority> authorities = new ArrayList<>();
-			authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 			for(String role : PulseConstants.PULSE_ROLES){
-				Object[] params = new Object[] {"PULSE", role};
+				Object[] params = role.split(":");
 				String[] signature = new String[] {String.class.getCanonicalName(), String.class.getCanonicalName()};
 				boolean result = (Boolean)mbeanServer.invoke(name, "authorize", params, signature);
 				if(result){
 				  //spring sec require ROLE_ prefix
-					authorities.add(new SimpleGrantedAuthority("ROLE_"+role)); 
+					authorities.add(new SimpleGrantedAuthority(role));
 				}
 			}
 			return authorities;
@@ -143,7 +116,7 @@ public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
-		}		
+		}
 	}
 
 	public JMXConnector getJmxc() {

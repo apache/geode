@@ -36,16 +36,16 @@
 		<!-- Can be invoked w/o auth -->
 
 		<!-- Restricted urls -->		
-		<intercept-url pattern="/DataBrowser.html" access="hasRole('ROLE_PULSE_DASHBOARD') and hasRole('ROLE_PULSE_DATABROWSER')" />
-		<intercept-url pattern="/clusterDetail.html" access="hasRole('ROLE_PULSE_DASHBOARD')" />
-		<intercept-url pattern="/MemberDetails.html" access="hasRole('ROLE_PULSE_DASHBOARD')" />
-		<intercept-url pattern="/regionDetail.html" access="hasRole('ROLE_PULSE_DASHBOARD')" />		
-		<intercept-url pattern="/pulse/*" access="hasRole('ROLE_PULSE_DASHBOARD')" />
-		<intercept-url pattern="/clearAlerts" access="hasRole('ROLE_PULSE_DASHBOARD')" />
-		<intercept-url pattern="/acknowledgeAlert" access="hasRole('ROLE_PULSE_DASHBOARD')" />
+		<intercept-url pattern="/DataBrowser.html" access="hasRole('CLUSTER:READ') and hasRole('DATA:READ')" />
+		<intercept-url pattern="/clusterDetail.html" access="hasRole('CLUSTER:READ')" />
+		<intercept-url pattern="/MemberDetails.html" access="hasRole('CLUSTER:READ')" />
+		<intercept-url pattern="/regionDetail.html" access="hasRole('CLUSTER:READ')" />
+		<intercept-url pattern="/pulse/*" access="hasRole('CLUSTER:READ')" />
+		<intercept-url pattern="/clearAlerts" access="hasRole('CLUSTER:READ')" />
+		<intercept-url pattern="/acknowledgeAlert" access="hasRole('CLUSTER:READ')" />
 		<!-- /dataBrowserRegions, /dataBrowserQuery, /dataBrowserQueryHistory, /dataBrowserExport -->
-		<intercept-url pattern="/dataBrowser*" access="hasRole('ROLE_PULSE_DASHBOARD') and hasRole('ROLE_PULSE_DATABROWSER')" />
-		<intercept-url pattern="/getQueryStatisticsGridModel/*" access="hasRole('ROLE_PULSE_DASHBOARD') and hasRole('ROLE_PULSE_DATABROWSER')" />		
+		<intercept-url pattern="/dataBrowser*" access="hasRole('CLUSTER:READ') and hasRole('DATA:READ')" />
+		<intercept-url pattern="/getQueryStatisticsGridModel/*" access="hasRole('CLUSTER:READ') and hasRole('DATA:READ')" />
 		
 		<!-- Restricted urls -->
 		<form-login login-page="/Login.html"
@@ -83,7 +83,7 @@
 		<authentication-manager>
 			<authentication-provider>
 				<user-service>
-					<user name="admin" password="admin" authorities="ROLE_USER,ROLE_PULSE_DASHBOARD,ROLE_PULSE_DATABROWSER" />
+					<user name="admin" password="admin" authorities="CLUSTER:READ,DATA:READ" />
 				</user-service>
 			</authentication-provider>
 		</authentication-manager>

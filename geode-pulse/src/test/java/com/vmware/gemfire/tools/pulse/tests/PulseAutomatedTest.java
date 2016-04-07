@@ -190,6 +190,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 	}
 
 	@Test
+	@Ignore("Issue with highlighting")
 	public void verifyHostTooltipsOfTopologyGraphTest() {		
 		for (int i = 1; i <=3; i++) {
 			clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);

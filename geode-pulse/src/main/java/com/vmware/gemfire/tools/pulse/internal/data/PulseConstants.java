@@ -414,8 +414,8 @@ public class PulseConstants {
       MBEAN_ATTRIBUTE_ENTRYSIZE, MBEAN_ATTRIBUTE_NUMBEROFROWS };
   
   public static final String PULSE_ROLES[] = {
-    "PULSE_DASHBOARD", 
-    "PULSE_DATABROWSER"
+    "CLUSTER:READ",
+    "DATA:READ"
   };
 
   // SSL Related attributes
