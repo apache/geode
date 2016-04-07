@@ -158,6 +158,8 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
     verifyDeadAndLiveServers(0, 1);
     final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     assertNotNull(r1);
+    // Verify for interest registration after cache-server is started.
+    server1.invoke(() -> HAInterestTestCase.verifyInterestRegistration());
 
     WaitCriterion wc = new WaitCriterion() {
       private String excuse;
