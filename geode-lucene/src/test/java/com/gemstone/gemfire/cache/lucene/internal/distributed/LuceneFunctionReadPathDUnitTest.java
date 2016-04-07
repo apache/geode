@@ -79,9 +79,9 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
 
   private void e2eTextSearchForRegionType(RegionShortcut type) {
     final String regionName = type.toString();
-    createPartitionRegionAndIndex(server1, regionName, type);
+    createRegionAndIndex(server1, regionName, type);
     putDataInRegion(server1, regionName);
-    createPartitionRegionAndIndex(server2, regionName, type);
+    createRegionAndIndex(server2, regionName, type);
     // Make sure we can search from both members
     executeTextSearch(server1, regionName);
     executeTextSearch(server2, regionName);
@@ -90,7 +90,7 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
     // Make sure the search still works
     executeTextSearch(server1, regionName);
     executeTextSearch(server2, regionName);
-    destroyRegion(server2, regionName);
+    destroyPartitionRegion(server2, regionName);
   }
 
   private void rebalanceRegion(VM vm) {
@@ -157,8 +157,8 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
     vm.invoke(createSomeData);
   }
 
-  private void createPartitionRegionAndIndex(VM vm, final String regionName, final RegionShortcut type) {
-    SerializableCallable<Object> createPartitionRegion = new SerializableCallable<Object>("createRegionAndIndex") {
+  private void createRegionAndIndex(VM vm, final String regionName, final RegionShortcut type) {
+    SerializableCallable<Object> createRegion = new SerializableCallable<Object>("createRegionAndIndex") {
       private static final long serialVersionUID = 1L;
 
       public Object call() throws Exception {
@@ -168,7 +168,6 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
         service.createIndex(INDEX_NAME, regionName, "text");
         RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(type);
         if (regionName.contains("OVERFLOW")) {
-          System.out.println("yello");
           EvictionAttributesImpl evicAttr = new EvictionAttributesImpl().setAction(EvictionAction.OVERFLOW_TO_DISK);
           evicAttr.setAlgorithm(EvictionAlgorithm.LRU_ENTRY).setMaximum(1);
           regionFactory.setEvictionAttributes(evicAttr);
@@ -177,11 +176,11 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
         return null;
       }
     };
-    vm.invoke(createPartitionRegion);
+    vm.invoke(createRegion);
   }
 
-  private void destroyRegion(VM vm, final String regionName) {
-    SerializableCallable<Object> createPartitionRegion = new SerializableCallable<Object>("destroyRegion") {
+  private void destroyPartitionRegion(VM vm, final String regionName) {
+    SerializableCallable<Object> createPartitionRegion = new SerializableCallable<Object>("destroyPartitionRegion") {
       private static final long serialVersionUID = 1L;
 
       public Object call() throws Exception {

@@ -159,12 +159,31 @@ public class ClientCacheFactory {
    * Create a singleton client cache. If a client cache already exists in this
    * vm that is not compatible with this factory's configuration then create
    * will fail.
-   * <p> While creating the cache instance any declarative cache configuration (cache.xml) is processed and used to initialize the created cache.
+   * <p> While creating the cache instance any declarative cache configuration (cache.xml) 
+   * is processed and used to initialize the created cache.
    * <P>Note that the cache that is produced is a singleton. Before a different instance
    * can be produced the old one must be {@link ClientCache#close closed}.
+   * 
    * @return the singleton client cache
+   * 
+   * @throws CacheXmlException
+   *         If a problem occurs while parsing the declarative caching
+   *         XML file.
+   * @throws TimeoutException
+   *         If a {@link Region#put(Object, Object)} times out while initializing the
+   *         cache.
+   * @throws CacheWriterException
+   *         If a <code>CacheWriterException</code> is thrown while
+   *         initializing the cache.
+   * @throws RegionExistsException
+   *         If the declarative caching XML file describes a region
+   *         that already exists (including the root region).
    * @throws IllegalStateException if a client cache already exists and it
-   * is not compatible with this factory's configuration.
+   *         is not compatible with this factory's configuration.
+   * @throws IllegalStateException if mcast-port or locator is set on client cache.
+   * @throws AuthenticationFailedException if authentication fails.
+   * @throws AuthenticationRequiredException if server is in secure mode and client cache
+   *         is not configured with security credentials.
    */
   public ClientCache create() {
     return basicCreate();

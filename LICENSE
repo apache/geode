@@ -365,3 +365,9 @@ split.js (https://github.com/nathancahill/Split.js)
 ---------------------------------------------------------------------------
 This product bundles split.js which is available under an MIT license.
 For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+MX4J (http://mx4j.sourceforge.net)
+---------------------------------------------------------------------------
+This product bundles MX4JModelMBean.java which is available under the MX4J license.
+For details see http://mx4j.sourceforge.net/docs/ch01s06.html.

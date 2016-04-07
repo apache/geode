@@ -1355,6 +1355,22 @@ public class WANTestBase extends DistributedTestCase{
     }
   }
 
+  public static void addListenerToSleepAfterCreateEvent(int milliSeconds) {
+    cache.getRegion(getTestMethodName() + "_RR_1").getAttributesMutator()
+      .addCacheListener(new CacheListenerAdapter<Object, Object>() {
+        @Override
+        public void afterCreate(final EntryEvent<Object, Object> event) {
+          try {
+            Thread.sleep(milliSeconds);
+          }
+          catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+  }
+
+
   public static void createCache(Integer locPort){
     createCache(false, locPort);
   }
@@ -2798,25 +2814,6 @@ public class WANTestBase extends DistributedTestCase{
     return sb.toString();
   }
 
-  public static int createReceiverAfterCache(int locPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
-    GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    fact.setStartPort(port);
-    fact.setEndPort(port);
-    fact.setManualStart(true);
-    GatewayReceiver receiver = fact.create();
-    try {
-      receiver.start();
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-      fail("Test " + test.getName()
-          + " failed to start GatewayRecevier on port " + port);
-    }
-    return port;
-  }
-
   public static void createReceiverAndServer(int locPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
@@ -2956,24 +2953,6 @@ public class WANTestBase extends DistributedTestCase{
           + " failed to start GatewayRecevier on port " + port);
     }
     return port;
-  }
-
-  public static void createReceiver2(int locPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
-    GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    fact.setStartPort(port);
-    fact.setEndPort(port);
-    fact.setManualStart(true);
-    GatewayReceiver receiver = fact.create();
-    try {
-      receiver.start();
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-      fail("Test " + test.getName()
-          + " failed to start GatewayRecevier on port " + port);
-    }
   }
 
   public static void doDistTXPuts(String regionName, int numPuts) {
