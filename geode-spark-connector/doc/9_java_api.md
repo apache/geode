@@ -6,25 +6,25 @@ understand how the Spark Geode Connector works.
 
 ### Prerequisites
 The best way to use the Spark Geode Connector Java API is to statically
-import all of the methods in `GemFireJavaUtil`. This utility class is
+import all of the methods in `GeodeJavaUtil`. This utility class is
 the main entry point for Spark Geode Connector Java API.
 ```
-import static io.pivotal.gemfire.spark.connector.javaapi.GemFireJavaUtil.*;
+import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.*;
 ```
 
 Create JavaSparkContext (don't forget about the static import):
 ```
 SparkConf conf = new SparkConf();
-conf.set(GemFireLocatorPropKey, "192.168.1.47[10334]")
+conf.set(GeodeLocatorPropKey, "192.168.1.47[10334]")
 JavaSparkContext jsc = new JavaSparkContext(conf);
 ```
 
 ### Accessing Geode region in Java
-Geode region is exposed as `GemFireJavaRegionRDD<K,V>`(subclass of
+Geode region is exposed as `GeodeJavaRegionRDD<K,V>`(subclass of
 `JavaPairRDD<K, V>`):
 ```
-GemFireJavaRegionRDD<Int, Emp> rdd1 = javaFunctions(jsc).gemfireRegion("emps")
-GemFireJavaRegionRDD<Int, Emp> rdd2 = rdd1.where("value.getAge() < 40");
+GeodeJavaRegionRDD<Int, Emp> rdd1 = javaFunctions(jsc).geodeRegion("emps")
+GeodeJavaRegionRDD<Int, Emp> rdd2 = rdd1.where("value.getAge() < 40");
 ```
 
 ### RDD Join and Outer Join
@@ -39,10 +39,10 @@ static class MyKeyFunction implements Function<Tuple2<String, Integer>, Integer>
 MyKeyFunction func = new MyKeyFunction();
 
 JavaPairRDD<Tuple2<String, Integer>, Emp> rdd3j =
-  javaFunction(rdd3).joinGemfireRegion("emps", func);
+  javaFunction(rdd3).joinGeodeRegion("emps", func);
 
 JavaPairRDD<Tuple2<String, Integer>, Option<Emp>> rdd3o = 
-  javaFunction(rdd3).outerJoinGemfireRegion("emps", func);
+  javaFunction(rdd3).outerJoinGeodeRegion("emps", func);
 
 ```
 
@@ -57,11 +57,11 @@ data.add(new Tuple2<>("9", "nine"));
 // create JavaPairRDD
 JavaPairRDD<String, String> rdd1 = jsc.parallelizePairs(data);
 // save to Geode
-javaFunctions(rdd1).saveToGemfire("str_str_region");
+javaFunctions(rdd1).saveToGeode("str_str_region");
 ```
 
 In order to save `JavaRDD<Tuple2<K,V>>`, it needs to be converted to 
-`JavaPairRDD<K,V>` via static method `toJavaPairRDD` from `GemFireJavaUtil`:
+`JavaPairRDD<K,V>` via static method `toJavaPairRDD` from `GeodeJavaUtil`:
 ```
 List<Tuple2<String, String>> data2 = new ArrayList<Tuple2<String, String>>();
 data2.add(new Tuple2<>("11", "eleven"));
@@ -71,7 +71,7 @@ data2.add(new Tuple2<>("13", "thirteen"));
 // create JavaRDD<Tuple2<K,V>>
 JavaRDD<Tuple2<String, String>> rdd2 =  jsc.parallelize(data2);
 // save to Geode
-javaFunctions(toJavaPairRDD(rdd2)).saveToGemfire("str_str_region");
+javaFunctions(toJavaPairRDD(rdd2)).saveToGeode("str_str_region");
 ``` 
 
 ### Saving JavaRDD to Geode
@@ -100,7 +100,7 @@ data.add("ab");
 data.add("abc");
 JavaRDD<String> jrdd =  sc.parallelize(data);
     
-javaFunctions(rdd).saveToGemfire("str_int_region", pairFunc);
+javaFunctions(rdd).saveToGeode("str_int_region", pairFunc);
 ```
 
 ### Saving JavaPairDStream and JavaDStream
@@ -108,21 +108,21 @@ Saving JavaPairDStream and JavaDStream is similar to saving JavaPairRDD
 jand JavaRDD:
 ```
 JavaPairDStream<String, String> ds1 = ...
-javaFunctions(ds1).saveToGemFire("str_str_region");
+javaFunctions(ds1).saveToGeode("str_str_region");
 
 JavaDStream<String> ds2 = ...
-javaFunctions(ds2).saveToGemFire("str_int_region", pairFunc);
+javaFunctions(ds2).saveToGeode("str_int_region", pairFunc);
 ```
 
 ### Using Geode OQL
 
-There are two gemfireOQL Java APIs, with and without GemFireConnectionConf.
-Here is an example without GemFireConnectionConf, it will use default 
-GemFireConnectionConf internally.
+There are two geodeOQL Java APIs, with and without GeodeConnectionConf.
+Here is an example without GeodeConnectionConf, it will use default 
+GeodeConnectionConf internally.
 ```
 // assume there's jsc: JavaSparkContext
 SQLContext sqlContext = new org.apache.spark.sql.SQLContext(jsc);
-DataFrame df = javaFunctions(sqlContext).gemfireOQL("select * from /str_str_region");
+DataFrame df = javaFunctions(sqlContext).geodeOQL("select * from /str_str_region");
 df.show();
 ```
 

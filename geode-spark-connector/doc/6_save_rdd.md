@@ -7,7 +7,7 @@ It is possible to save any RDD to a Geode region. The requirements are:
  - the target region exists.
 
 To save an RDD to an existing Geode region, import 
-`io.pivotal.gemfire.spark.connector._` and call the `saveToGemfire` 
+`io.pivotal.geode.spark.connector._` and call the `saveToGeode` 
 method on RDD.
 
 ### Save RDD[(K, V)] to Geode
@@ -15,13 +15,13 @@ For pair RDD, i.e., RDD[(K, V)], the pair is treated as key/value pair.
 ```
 val data = Array(("1","one"),("2","two"),("3","three"))
 val rdd = sc.parallelize(data)
-rdd.saveToGemfire("str_str_region")
+rdd.saveToGeode("str_str_region")
 ```
 
-If you create GemFireConnectionConf as described in 
+If you create GeodeConnectionConf as described in 
 [Connecting to Geode](3_connecting.md), the last statement becomes:
 ```
-rdd.saveToGemFire("str_str_region", connConf)
+rdd.saveToGeode("str_str_region", connConf)
 ```
 
 You can verify the region contents:
@@ -52,27 +52,27 @@ then the pair is save to Geode.
 ```
 val data2 = Array("a","ab","abc")
 val rdd2 = sc.parallelize(data2)
-rdd2.saveToGemfire("str_int_region", e => (e, e.length))
-// or use GemFireConnectionConf object directly
-// rdd2.saveToGemfire("rgnb", e => (e, e.length), connConf)
+rdd2.saveToGeode("str_int_region", e => (e, e.length))
+// or use GeodeConnectionConf object directly
+// rdd2.saveToGeode("rgnb", e => (e, e.length), connConf)
 ```
 
 ### `rdd.save.batch.size` 
 
-The connector invokes GemFire API `putAll()` to save the data. To make
+The connector invokes Geode API `putAll()` to save the data. To make
 `putAll()` more efficient, the connector invokes putAll() for every 
 10,000 entries by default. This batch size can be changed with optional
 parameter `opConf`. The following shows how to do it:
 
 ```
   // in Scala
-  rdd.saveToGemfire(regionPath, opConf = Map(RDDSaveBatchSizePropKey -> "5000"))
+  rdd.saveToGeode(regionPath, opConf = Map(RDDSaveBatchSizePropKey -> "5000"))
 
   // in Java
   Properties opConf = new Properties();
   opConf.put(RDDSaveBatchSizePropKey, "5000");
   ...
-  javaFunctions(rdd).saveToGemfire(regionPath, opConf); 
+  javaFunctions(rdd).saveToGeode(regionPath, opConf); 
    
   // note: RDDSaveBatchSizePropKey = "rdd.save.batch.size" 
 ```

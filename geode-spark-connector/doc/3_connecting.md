@@ -2,48 +2,48 @@
 
 There are two ways to connect Spark to Geode:
  - Specify Geode connection properties via `SparkConf`.
- - Specify Geode connection properties via `GemFireConnectionConf`.
+ - Specify Geode connection properties via `GeodeConnectionConf`.
 
 ### Specify Geode connection properties via `SparkConf`
-The only required Geode connection property is `spark.gemfire.locators`. 
+The only required Geode connection property is `spark.geode.locators`. 
 This can be specified in `<spark dir>/conf/spark-defaults.conf` or in Spark 
 application code. In the following examples, we assume you want to provide
 3 extra properties: `security-client-auth-init`, `security-username`, and 
-`security-password`, note that they are prefixed with `spark.gemfire.`.
+`security-password`, note that they are prefixed with `spark.geode.`.
  
 In `<spark dir>/conf/spark-defaults.com`
 ```
-spark.gemfire.locators=192.168.1.47[10334]
-spark.gemfire.security-client-auth-init=com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create
-spark.gemfire.security-username=scott
-spark.gemfire.security-password=tiger
+spark.geode.locators=192.168.1.47[10334]
+spark.geode.security-client-auth-init=com.gemstone.geode.security.templates.UserPasswordAuthInit.create
+spark.geode.security-username=scott
+spark.geode.security-password=tiger
 ```
  
 Or in the Spark application code:
 ```
-import io.pivotal.gemfire.spark.connector._
+import io.pivotal.geode.spark.connector._
 val sparkConf = new SparkConf()
-  .set(GemFireLocatorPropKey, "192.168.1.47[10334]")
-  .set("spark.gemfire.security-client-auth-init", "com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create")
-  .set("spark.gemfire.security-username", "scott")
-  .set("spark.gemfire.security-password", "tiger")
+  .set(GeodeLocatorPropKey, "192.168.1.47[10334]")
+  .set("spark.geode.security-client-auth-init", "com.gemstone.geode.security.templates.UserPasswordAuthInit.create")
+  .set("spark.geode.security-username", "scott")
+  .set("spark.geode.security-password", "tiger")
 ```
 
-After this, you can use all connector APIs without providing `GemfireConnectionConf`.
+After this, you can use all connector APIs without providing `GeodeConnectionConf`.
  
-### Specify Geode connection properties via `GemFireConnectionConf`
-Here's the code that creates `GemFireConnectionConf` with the same set of 
+### Specify Geode connection properties via `GeodeConnectionConf`
+Here's the code that creates `GeodeConnectionConf` with the same set of 
 properties as the examples above:
 ```
-val props = Map("security-client-auth-init" -> "com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create",
+val props = Map("security-client-auth-init" -> "com.gemstone.geode.security.templates.UserPasswordAuthInit.create",
                 "security-username" -> "scott",
                 "security-password" -> "tiger")
-val connConf = GemFireConnectionConf("192.168.1.47[10334]", props)
+val connConf = GeodeConnectionConf("192.168.1.47[10334]", props)
 ``` 
 
-Please note that those properties are **not** prefixed with `spark.gemfire.`.
+Please note that those properties are **not** prefixed with `spark.geode.`.
 
-After this, you can use all connector APIs that require `GemFireConnectionConf`.
+After this, you can use all connector APIs that require `GeodeConnectionConf`.
 
 ### Notes about locators
  - You can specify locator in two formats: `host[port]` or `host:port`. For

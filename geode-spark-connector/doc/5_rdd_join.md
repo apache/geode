@@ -2,7 +2,7 @@
 
 The Spark Geode Connector suports using any RDD as a source
 of a join and outer join with a Geode region through APIs
-`joinGemfireRegion[K, V]` and `outerJoinGemfireRegion[K, V]`. 
+`joinGeodeRegion[K, V]` and `outerJoinGeodeRegion[K, V]`. 
 Those two APIs execute a single `region.getAll` call for every 
 partition of the source RDD, so no unnecessary data will be requested
 or transferred. This means a join or outer join between any RDD and
@@ -20,8 +20,8 @@ following examples.
 ### RDD[(K, V1)] join and outer join Region[K, V2]
 
 In this case, the source RDD is a pair RDD,  and it has the same key
-type as the Region. Use API `rdd.joinGemfireRegion[K, V2](regionPath)` and 
-`rdd.outerJoinGemfireRegion[K, V2](regionPath)` do the join and outer
+type as the Region. Use API `rdd.joinGeodeRegion[K, V2](regionPath)` and 
+`rdd.outerJoinGeodeRegion[K, V2](regionPath)` do the join and outer
 join. 
 
 Prepare a source RDD `rdd2`:
@@ -49,7 +49,7 @@ rdd2.foreach(println)
 
 Join RDD `rdd2` with region `emps`, and print out the result:
 ```
-val rdd2j = rdd2.joinGemfireRegion[Int, Emp]("emps")
+val rdd2j = rdd2.joinGeodeRegion[Int, Emp]("emps")
 
 rdd2j.foreach(println)
 ((11,message-11),Emp(11, Taylor, Emma, 44, CA))
@@ -69,7 +69,7 @@ entries have those key values.
 
 Outer join RDD `rdd2` with region `emps`, and print out the result:
 ```
-val rdd2o = rdd2.outerJoinGemfireRegion[Int, Emp]("emps")
+val rdd2o = rdd2.outerJoinGeodeRegion[Int, Emp]("emps")
 
 rdd2o.foreach(println)
 ((18,message-18),Some(Emp(18, Powell, Alice, 58, FL)))
@@ -95,8 +95,8 @@ since there's no region entries have those key values.
 ### RDD[(K1, V1)] join and outer join Region[K2, V2]
 
 In this case, the source RDD is still a pair RDD,  but it has different
-key type. Use API `rdd.joinGemfireRegion[K2, V2](regionPath, func)` and 
-`rdd.outerJoinGemfireRegion[K2, V2](regionPath, func)` do the join and 
+key type. Use API `rdd.joinGeodeRegion[K2, V2](regionPath, func)` and 
+`rdd.outerJoinGeodeRegion[K2, V2](regionPath, func)` do the join and 
 outer join, where `func` is the function to generate key from (k, v)
 pair, the element of source RDD, to join with Geode region.
 
@@ -125,7 +125,7 @@ rdd3.foreach(println)
 
 Join RDD `rdd3` (RDD[(String, Int)] with region `emps` (Region[Int, Emp]), and print out the result:
 ```
-val rdd3j = rdd3.joinGemfireRegion[Int, Emp]("emps", pair => pair._2)
+val rdd3j = rdd3.joinGeodeRegion[Int, Emp]("emps", pair => pair._2)
 
 rdd3j.foreach(println)
 ((message-18,18),Emp(18, Powell, Alice, 58, FL))
@@ -144,7 +144,7 @@ RDD and join key.
 
 Outer join RDD `rdd3` with region `emps`, and print out the result:
 ```
-val rdd3o = rdd3.outerJoinGemfireRegion[Int, Emp]("emps", pair => pair._2)
+val rdd3o = rdd3.outerJoinGeodeRegion[Int, Emp]("emps", pair => pair._2)
 
 rdd3o.foreach(println)
 ((message-18,18),Some(Emp(18, Powell, Alice, 58, FL)))
@@ -166,8 +166,8 @@ rdd3o.foreach(println)
 
 ### RDD[T] join and outer join Region[K, V]
 
-Use API `rdd.joinGemfireRegion[K, V](regionPath, func)` and 
-`rdd.outerJoinGemfireRegion[K, V](regionPath, func)` do the join
+Use API `rdd.joinGeodeRegion[K, V](regionPath, func)` and 
+`rdd.outerJoinGeodeRegion[K, V](regionPath, func)` do the join
 and outer join, where `func` is the function to generate key from
 `t`, the element of source RDD, to join with Geode region.
 
@@ -196,7 +196,7 @@ rdd4.foreach(println)
 
 Join RDD `d4` with region `emps`, and print out the result:
 ```
-val rdd4j = rdd4.joinGemfireRegion[Int, Emp]("emps", x => x/2)
+val rdd4j = rdd4.joinGeodeRegion[Int, Emp]("emps", x => x/2)
 
 rdd4j.foreach(println)
 (22,Emp(11, Taylor, Emma, 44, CA))
@@ -213,7 +213,7 @@ rdd4j.foreach(println)
 
 Outer join RDD `d4` with region `emps`, and print out the result:
 ```
-val rdd4o = rdd4.outerJoinGemfireRegion[Int, Emp]("emps", x => x/2)
+val rdd4o = rdd4.outerJoinGeodeRegion[Int, Emp]("emps", x => x/2)
 
 rdd4o.foreach(println)
 (36,Some(Emp(18, Powell, Alice, 58, FL)))

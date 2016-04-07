@@ -17,9 +17,9 @@ sbt clean package
 ```
 
 The following jar files will be created:
- - `gemfire-spark-connector/target/scala-2.10/gemfire-spark-connector_2.10-0.5.0.jar`
- - `gemfire-functions/target/scala-2.10/gemfire-functions_2.10-0.5.0.jar`
- - `gemfire-spark-demos/target/scala-2.10/gemfire-spark-demos_2.10-0.5.0.jar `
+ - `geode-spark-connector/target/scala-2.10/geode-spark-connector_2.10-0.5.0.jar`
+ - `geode-functions/target/scala-2.10/geode-functions_2.10-0.5.0.jar`
+ - `geode-spark-demos/target/scala-2.10/geode-spark-demos_2.10-0.5.0.jar `
 
 ### Testing
 Commands to run unit and integration tests:
