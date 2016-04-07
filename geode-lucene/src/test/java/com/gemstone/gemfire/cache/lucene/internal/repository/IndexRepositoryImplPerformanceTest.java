@@ -222,7 +222,7 @@ public class IndexRepositoryImplPerformanceTest {
         RegionDirectory dir = new RegionDirectory(new ConcurrentHashMap<String, File>(), new ConcurrentHashMap<ChunkKey, byte[]>());
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         writer = new IndexWriter(dir, config);
-        searcherManager = new SearcherManager(writer, true, null);
+        searcherManager = new SearcherManager(writer, true, true, null);
       }
 
       @Override
@@ -275,7 +275,7 @@ public class IndexRepositoryImplPerformanceTest {
         RAMDirectory dir = new RAMDirectory();
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         writer = new IndexWriter(dir, config);
-        searcherManager = new SearcherManager(writer, true, null);
+        searcherManager = new SearcherManager(writer, true, true, null);
       }
 
       @Override

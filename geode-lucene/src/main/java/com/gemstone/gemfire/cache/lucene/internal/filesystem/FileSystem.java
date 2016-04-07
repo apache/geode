@@ -60,6 +60,11 @@ public class FileSystem {
     // TODO unlock region ?
     return file;
   }
+
+  public File createTemporaryFile(final String name) throws IOException {
+    final File file = new File(this, name);
+    return file;
+  }
   
   public File getFile(final String name) throws FileNotFoundException {
     final File file = fileRegion.get(name);
