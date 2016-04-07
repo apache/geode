@@ -52,7 +52,7 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
+  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     bean.flush();
     bean.forceCompaction();
@@ -67,17 +67,17 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.flush()).isInstanceOf(SecurityException.class).hasMessageContaining("DISKSTORE:FLUSH");
-    assertThatThrownBy(() -> bean.forceCompaction()).hasMessageContaining("DISKSTORE:COMPACT");
-    assertThatThrownBy(() -> bean.forceRoll()).hasMessageContaining("DISKSTORE:ROLL");
-    assertThatThrownBy(() -> bean.getCompactionThreshold()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.getDiskDirectories()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.getDiskReadsRate()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.isAutoCompact()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.isForceCompactionAllowed()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.setDiskUsageCriticalPercentage(0.5f)).hasMessageContaining("DISKSTORE:ALTER");
-    assertThatThrownBy(() -> bean.setDiskUsageWarningPercentage(0.5f)).hasMessageContaining("DISKSTORE:ALTER");
+    assertThatThrownBy(() -> bean.flush()).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.forceCompaction()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.forceRoll()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.getCompactionThreshold()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getDiskDirectories()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getDiskReadsRate()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.isAutoCompact()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.isForceCompactionAllowed()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.setDiskUsageCriticalPercentage(0.5f)).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.setDiskUsageWarningPercentage(0.5f)).hasMessageContaining("DATA:MANAGE");
   }
 }

@@ -32,7 +32,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * @since 7.0
  * 
  */
-@ResourceOperation(resource = Resource.JMX, operation = OperationCode.GET)
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface LockServiceMXBean {
 
   /**
@@ -73,7 +73,7 @@ public interface LockServiceMXBean {
   /**
    * Requests that this member become the granter.
    */
-  @ResourceOperation(resource = Resource.LOCK_SERVICE, operation = OperationCode.BECOME_LOCK_GRANTOR)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void becomeLockGrantor();
 
   /**

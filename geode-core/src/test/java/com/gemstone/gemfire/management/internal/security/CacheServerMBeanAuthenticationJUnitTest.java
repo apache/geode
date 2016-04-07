@@ -44,23 +44,15 @@ public class CacheServerMBeanAuthenticationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
+  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
-    bean.removeIndex("foo"); // "INDEX:DESTROY",
-    bean.executeContinuousQuery("bar"); // CONTNUOUS_QUERY:EXECUTE
-    bean.fetchLoadProbe(); // DISTRIBUTED_SYSTEM:LIST_DS
-    bean.getActiveCQCount(); // DISTRIBUTED_SYSTEM:LIST_DS
-    bean.stopContinuousQuery("bar"); // CONTINUOUS_QUERY:STOP
-    bean.closeAllContinuousQuery("bar"); // CONTINUOUS_QUERY:STOP
-    bean.isRunning(); // DISTRIBUTED_SYSTEM:LIST_DS
-    bean.showClientQueueDetails("foo"); // DISTRIBUTED_SYSTEM:LIST_DS
-  }
-
-  @Test
-  @JMXConnectionConfiguration(user = "user", password = "1234567")
-  public void testSomeAccess() throws Exception {
     bean.removeIndex("foo");
     bean.executeContinuousQuery("bar");
     bean.fetchLoadProbe();
+    bean.getActiveCQCount();
+    bean.stopContinuousQuery("bar");
+    bean.closeAllContinuousQuery("bar");
+    bean.isRunning();
+    bean.showClientQueueDetails("foo");
   }
 }

@@ -19,9 +19,9 @@
 package com.vmware.gemfire.tools.pulse.tests;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
 import com.gemstone.gemfire.management.internal.security.ManagementInterceptor;
+import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
 import org.json.JSONException;
 
@@ -66,7 +66,7 @@ public class Server {
       props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
       props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
       JSONAuthorization.setUpWithJsonFile(jsonAuthFile);
-      Map<String, Object> env = new HashMap<>();
+      Map<String, Object> env = new HashMap<String, Object>();
 
       ManagementInterceptor interceptor = new ManagementInterceptor(props);
       env.put(JMXConnectorServer.AUTHENTICATOR, interceptor);

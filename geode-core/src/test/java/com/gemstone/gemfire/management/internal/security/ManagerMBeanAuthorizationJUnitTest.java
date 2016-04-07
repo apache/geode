@@ -60,23 +60,19 @@ public class ManagerMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
+  @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testAllAccess() throws Exception {
-    managerMXBean.setPulseURL("foo"); // MANAGER:SET_PULSE_URL
-    managerMXBean.start(); // MANAGER.START
-    managerMXBean.stop(); // MANAGER.STOP
+    managerMXBean.setPulseURL("foo");
+    managerMXBean.start();
+    managerMXBean.stop();
+    managerMXBean.isRunning();
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "user", password = "1234567")
+  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testSomeAccess() throws Exception {
-    assertThatThrownBy(() -> managerMXBean.start()).isInstanceOf(SecurityException.class);
-    managerMXBean.getPulseURL();
-  }
-
-  @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
-  public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> managerMXBean.start()).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> managerMXBean.start()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:MANAGE");
+    assertThatThrownBy(() -> managerMXBean.getPulseURL()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:WRITE");
+    managerMXBean.isRunning();
   }
 }

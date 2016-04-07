@@ -68,7 +68,7 @@ public class ClientCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.LIST_CLIENTS, help = CliStrings.LIST_CLIENT__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_LIST })
-  @ResourceOperation(resource = Resource.CLIENT, operation = OperationCode.LIST)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result listClient() {
     Result result = null;
 
@@ -152,7 +152,7 @@ public class ClientCommands implements CommandMarker {
   
   @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_LIST })
-  @ResourceOperation(resource = Resource.CLIENT, operation= OperationCode.LIST)
+  @ResourceOperation(resource = Resource.CLUSTER, operation= OperationCode.READ)
   public Result describeClient(
       @CliOption(key = CliStrings.DESCRIBE_CLIENT__ID, mandatory = true, help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId) {
     Result result = null;   

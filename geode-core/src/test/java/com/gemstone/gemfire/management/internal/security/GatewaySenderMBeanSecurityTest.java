@@ -69,7 +69,7 @@ public class GatewaySenderMBeanSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
+  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     bean.getAlertThreshold();
     bean.getAverageDistributionTimePerBatch();
@@ -88,18 +88,18 @@ public class GatewaySenderMBeanSecurityTest {
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.getAlertThreshold()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
-    assertThatThrownBy(() -> bean.getAverageDistributionTimePerBatch()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
-    assertThatThrownBy(() -> bean.getBatchSize()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
-    assertThatThrownBy(() -> bean.getMaximumQueueMemory()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
-    assertThatThrownBy(() -> bean.getOrderPolicy()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
-    assertThatThrownBy(() -> bean.isBatchConflationEnabled()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
-    assertThatThrownBy(() -> bean.isManualStart()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
-    assertThatThrownBy(() -> bean.pause()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
-    assertThatThrownBy(() -> bean.rebalance()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
-    assertThatThrownBy(() -> bean.resume()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
-    assertThatThrownBy(() -> bean.start()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
-    assertThatThrownBy(() -> bean.stop()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
+    assertThatThrownBy(() -> bean.getAlertThreshold()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getAverageDistributionTimePerBatch()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getBatchSize()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getMaximumQueueMemory()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getOrderPolicy()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
+    assertThatThrownBy(() -> bean.isBatchConflationEnabled()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
+    assertThatThrownBy(() -> bean.isManualStart()).hasMessageStartingWith("Access Denied: Not authorized for CLUSTER:READ");
+    assertThatThrownBy(() -> bean.pause()).hasMessageStartingWith("Access Denied: Not authorized for DATA:MANAGE");
+    assertThatThrownBy(() -> bean.rebalance()).hasMessageStartingWith("Access Denied: Not authorized for DATA:MANAGE");
+    assertThatThrownBy(() -> bean.resume()).hasMessageStartingWith("Access Denied: Not authorized for DATA:MANAGE");
+    assertThatThrownBy(() -> bean.start()).hasMessageStartingWith("Access Denied: Not authorized for DATA:MANAGE");
+    assertThatThrownBy(() -> bean.stop()).hasMessageStartingWith("Access Denied: Not authorized for DATA:MANAGE");
   }
 
 }

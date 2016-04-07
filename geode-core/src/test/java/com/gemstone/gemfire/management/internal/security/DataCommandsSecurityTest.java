@@ -46,7 +46,7 @@ public class DataCommandsSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "dataUser", password = "1234567")
+  @JMXConnectionConfiguration(user = "region1-user", password = "1234567")
   public void testDataUser() throws Exception {
     bean.processCommand("locate entry --key=k1 --region=region1");
     bean.processCommand("query --query='SELECT * FROM /region1'");
@@ -56,7 +56,7 @@ public class DataCommandsSecurityTest {
     assertThatThrownBy(() -> bean.processCommand("query --query='SELECT * FROM /secureRegion")).isInstanceOf(SecurityException.class);
   }
 
-  @JMXConnectionConfiguration(user = "secureDataUser", password = "1234567")
+  @JMXConnectionConfiguration(user = "secure-user", password = "1234567")
   @Test
   public void testSecureDataUser(){
     // can do all these on both regions
@@ -68,25 +68,20 @@ public class DataCommandsSecurityTest {
   }
 
   // dataUser has all the permissions granted, but not to region2 (only to region1)
-  @JMXConnectionConfiguration(user = "dataUser", password = "1234567")
+  @JMXConnectionConfiguration(user = "region1-user", password = "1234567")
   @Test
-  public void testNoAccessToRegion(){
+  public void testRegionAcess(){
     assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region2")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("REGION:REBALANCE");
+        .hasMessageContaining("DATA:MANAGE");
 
-    assertThatThrownBy(() -> bean.processCommand("export data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("REGION:EXPORT");
-    assertThatThrownBy(() -> bean.processCommand("import data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("REGION:IMPORT");
+    assertThatThrownBy(() -> bean.processCommand("export data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> bean.processCommand("import data --region=region2 --file=foo.txt --member=value")).isInstanceOf(SecurityException.class);
 
     assertThatThrownBy(() -> bean.processCommand("put --key=key1 --value=value1 --region=region2")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("REGION:PUT");
+        .hasMessageContaining("DATA:WRITE");
 
-    assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region2")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("REGION:GET");
-
-    assertThatThrownBy(() -> bean.processCommand("query --query='SELECT * FROM /region2'")).isInstanceOf(SecurityException.class)
-        .hasMessageContaining("QUERY:EXECUTE");
+    assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region2")).isInstanceOf(SecurityException.class);
+    assertThatThrownBy(() -> bean.processCommand("query --query='SELECT * FROM /region2'")).isInstanceOf(SecurityException.class);
   }
 
 }

@@ -87,7 +87,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.LIST_INDEX, help = CliStrings.LIST_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA})
-  @ResourceOperation(resource = Resource.INDEX, operation = OperationCode.LIST)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS,
                                      mandatory = false,
                                      specifiedDefaultValue = "true",
@@ -171,7 +171,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.CREATE_INDEX, help = CliStrings.CREATE_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.INDEX, operation = OperationCode.CREATE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   //TODO : Add optionContext for indexName
   public Result createIndex(
       @CliOption (key = CliStrings.CREATE_INDEX__NAME,
@@ -321,7 +321,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.INDEX, operation = OperationCode.DESTROY)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   //TODO : Add optioncontext for the index name.
   public Result destroyIndex(
       @CliOption(
@@ -458,7 +458,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.DEFINE_INDEX, help = CliStrings.DEFINE_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.INDEX, operation = OperationCode.CREATE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   //TODO : Add optionContext for indexName
   public Result defineIndex(
       @CliOption (key = CliStrings.DEFINE_INDEX_NAME,
@@ -527,7 +527,7 @@ public class IndexCommands extends AbstractCommandsSupport {
   
   @CliCommand(value = CliStrings.CREATE_DEFINED_INDEXES, help = CliStrings.CREATE_DEFINED__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.INDEX, operation = OperationCode.CREATE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   //TODO : Add optionContext for indexName
   public Result createDefinedIndexes(
 
@@ -628,7 +628,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.CLEAR_DEFINED_INDEXES, help = CliStrings.CLEAR_DEFINED__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.INDEX, operation = OperationCode.FLUSH)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   //TODO : Add optionContext for indexName
   public Result clearDefinedIndexes() {
     indexDefinitions.clear();

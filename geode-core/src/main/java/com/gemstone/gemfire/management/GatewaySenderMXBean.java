@@ -29,7 +29,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * @since 7.0
  *
  */
-@ResourceOperation(resource = Resource.JMX, operation = OperationCode.GET)
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface GatewaySenderMXBean {
 
   /**
@@ -175,31 +175,31 @@ public interface GatewaySenderMXBean {
    * configuration cannot be changed.
    * 
    */
-  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void start();
 
   /**
    * Stops this GatewaySender.
    */
-  @ResourceOperation(resource=Resource.GATEWAY, operation=OperationCode.MANAGE)
+  @ResourceOperation(resource=Resource.DATA, operation=OperationCode.MANAGE)
   public void stop();
 
   /**
    * Pauses this GatewaySender.
    */
-  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void pause();
 
   /**
    * Resumes this paused GatewaySender.
    */
-  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void resume();
 
   /**
    * Rebalances this GatewaySender.
    */
-  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void rebalance();
   
   /**

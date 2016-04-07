@@ -81,7 +81,7 @@ public class ConfigCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.DESCRIBE_CONFIG }, help = CliStrings.DESCRIBE_CONFIG__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
-  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURATION, operation= OperationCode.LIST)
+  @ResourceOperation(resource = Resource.CLUSTER, operation= OperationCode.READ)
   public Result describeConfig(
       @CliOption (key = CliStrings.DESCRIBE_CONFIG__MEMBER,
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -195,7 +195,7 @@ public class ConfigCommands implements CommandMarker {
    */
   @CliCommand(value = { CliStrings.EXPORT_CONFIG }, help = CliStrings.EXPORT_CONFIG__HELP)
   @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ConfigCommands$Interceptor", relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
-  @ResourceOperation(resource = Resource.CLUSTER_CONFIGURATION, operation = OperationCode.EXPORT)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result exportConfig(
       @CliOption(key = { CliStrings.EXPORT_CONFIG__MEMBER },
                  optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -251,7 +251,7 @@ public class ConfigCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.ALTER_RUNTIME_CONFIG }, help = CliStrings.ALTER_RUNTIME_CONFIG__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALTER_RUNTIME)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public Result alterRuntimeConfig(
       @CliOption (key = {CliStrings.ALTER_RUNTIME_CONFIG__MEMBER},
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,

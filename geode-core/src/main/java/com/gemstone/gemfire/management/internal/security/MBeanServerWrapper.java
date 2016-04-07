@@ -220,7 +220,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throws InstanceNotFoundException, MBeanException, ReflectionException {
     ResourceOperationContext ctx = null;
     if("processCommand".equals(operationName) && params.length==1){
-      ctx = new CLIOperationContext((String)params[0]);
+      ctx = CLIOperationContext.getOperationContext((String)params[0]);
     }
     else {
       ctx = getOperationContext(name, operationName, true);

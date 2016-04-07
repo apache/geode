@@ -139,7 +139,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  *
  * @since 7.0
  */
-@ResourceOperation(resource = Resource.JMX, operation = OperationCode.GET)
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface MemberMXBean {
 
   /**
@@ -148,7 +148,6 @@ public interface MemberMXBean {
    * @param numberOfLines
    *          Number of lines to return, up to a maximum of 100.
    */
-  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.SHOW_LOG)
   public String showLog(int numberOfLines);
 
   /**
@@ -164,7 +163,7 @@ public interface MemberMXBean {
    * 
    * @return A list of names of the disk stores that were compacted.
    */
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.COMPACT)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public String[] compactAllDiskStores();
   
   /**
@@ -172,14 +171,14 @@ public interface MemberMXBean {
    * 
    * @return True if the Manager MBean was successfully created, false otherwise.
    */
-  @ResourceOperation(resource = Resource.MANAGER, operation = OperationCode.CREATE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public boolean createManager();
   
   /**
    * Shuts down the member. This is an asynchronous call and it will 
    * return immediately without waiting for a result.
    */
-  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.SHUTDOWN)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public void shutDownMember();
   
   /**
@@ -200,7 +199,6 @@ public interface MemberMXBean {
    * 
    * @return Result of the execution in JSON format.
    */
-  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.PROCESS_COMMAND)
   String processCommand(String commandString);
   
   /**
@@ -212,7 +210,6 @@ public interface MemberMXBean {
    *          Environmental properties to use during command execution.
    * @return Result of the execution in JSON format.
    */
-  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.PROCESS_COMMAND)
   String processCommand(String commandString, Map<String, String> env);
   
   /**
@@ -226,7 +223,6 @@ public interface MemberMXBean {
    *          Binary data specific to the command being executed.
    * @return Result of the execution in JSON format.
    */
-  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.PROCESS_COMMAND)
   String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData);
 
   /**

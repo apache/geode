@@ -31,7 +31,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * @since 7.0
  * 
  */
-@ResourceOperation(resource = Resource.JMX, operation = OperationCode.GET)
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface ManagerMXBean {
 
   /**
@@ -46,7 +46,7 @@ public interface ManagerMXBean {
    * 
    * @return True if the manager service was successfully started, false otherwise.
    */
-  @ResourceOperation(resource = Resource.MANAGER, operation = OperationCode.START)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public boolean start() throws JMException;
 
   /**
@@ -54,7 +54,7 @@ public interface ManagerMXBean {
    * 
    * @return True if the manager service was successfully stopped, false otherwise.
    */
-  @ResourceOperation(resource = Resource.MANAGER, operation = OperationCode.STOP)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public boolean stop() throws JMException;
 
   /**
@@ -68,7 +68,7 @@ public interface ManagerMXBean {
    * @param pulseURL
    *          The URL for the Pulse application.
    */
-  @ResourceOperation(resource = Resource.MANAGER, operation = OperationCode.SET_PULSE_URL)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.WRITE)
   public void setPulseURL(String pulseURL);
 
   /**
@@ -85,6 +85,6 @@ public interface ManagerMXBean {
    * @param message
    *          The status message.
    */
-  @ResourceOperation(resource = Resource.MANAGER, operation = OperationCode.SET_STATUS_MESSAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.WRITE)
   public void setStatusMessage(String message);
 }

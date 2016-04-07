@@ -28,16 +28,12 @@ import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.SectionResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * 
@@ -52,7 +48,6 @@ public class GfshHelpCommands implements CommandMarker{
   
   @CliCommand(value = CliStrings.HELP, help = CliStrings.HELP__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_HELP})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result obtainHelp(
       @CliArgument(name = CliStrings.HELP__COMMAND, 
                  argumentContext = CliStrings.PARAM_CONTEXT_HELP, 
@@ -65,7 +60,6 @@ public class GfshHelpCommands implements CommandMarker{
   
   @CliCommand(value = CliStrings.HINT, help = CliStrings.HINT__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_HELP})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result hint(
       @CliArgument(name = CliStrings.HINT__TOPICNAME, 
                 argumentContext = ConverterHint.HINTTOPIC, 

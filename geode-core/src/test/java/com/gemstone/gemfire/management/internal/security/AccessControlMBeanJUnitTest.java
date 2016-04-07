@@ -49,10 +49,10 @@ public class AccessControlMBeanJUnitTest {
    * @throws Exception
    */
   @Test
-  @JMXConnectionConfiguration(user = "user", password = "1234567")
+  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testAnyAccess() throws Exception {
-    assertThat(bean.authorize("JMX", "GET")).isEqualTo(true);
-    assertThat(bean.authorize("INDEX", "DESTROY")).isEqualTo(false);
+    assertThat(bean.authorize("DATA", "READ")).isEqualTo(false);
+    assertThat(bean.authorize("CLUSTER", "READ")).isEqualTo(false);
   }
 
 }

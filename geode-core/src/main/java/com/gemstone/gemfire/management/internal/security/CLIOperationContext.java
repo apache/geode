@@ -45,13 +45,20 @@ public class CLIOperationContext extends ResourceOperationContext {
 	private static CommandManager commandManager = null;
 	private static GfshParser parser = null;	
 	
-	public CLIOperationContext(String commandString) throws CommandProcessingException, IllegalStateException{
-		GfshParseResult parseResult = (GfshParseResult) parseCommand(commandString);
-		this.command = parseResult.getCommandName();
-		this.commandOptions = parseResult.getParamValueStrings();
-		ResourceOperation op = findResourceCode(this.command);
+	private CLIOperationContext(String commandName, Map<String,String> commandOptions, ResourceOperation op) throws CommandProcessingException, IllegalStateException{
+		this.command = commandName;
+		this.commandOptions = commandOptions;
 		setResourceOperation(op);
   }
+
+	public static CLIOperationContext getOperationContext(String commandString){
+		GfshParseResult parseResult = (GfshParseResult) parseCommand(commandString);
+		ResourceOperation op = findResourceCode(parseResult.getCommandName());
+		if(op==null)
+			return null;
+
+		return new CLIOperationContext(parseResult.getCommandName(), parseResult.getParamValueStrings(), op);
+	}
 	
 	private static ParseResult parseCommand(String commentLessLine) throws CommandProcessingException, IllegalStateException {
     if (commentLessLine != null) {

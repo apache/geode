@@ -62,7 +62,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
+  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     lockServiceMBean.becomeLockGrantor();
     lockServiceMBean.fetchGrantorMember();
@@ -72,19 +72,19 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "user", password = "1234567")
+  @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testSomeAccess() throws Exception {
     assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).isInstanceOf(SecurityException.class);
     lockServiceMBean.getMemberCount();
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).isInstanceOf(SecurityException.class).hasMessageContaining("LOCK_SERVICE:BECOME_LOCK_GRANTOR");
-    assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> lockServiceMBean.getMemberCount()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> lockServiceMBean.isDistributed()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> lockServiceMBean.getMemberCount()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> lockServiceMBean.isDistributed()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
   }
 }

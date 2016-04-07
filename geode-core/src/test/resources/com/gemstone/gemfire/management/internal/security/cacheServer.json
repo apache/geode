@@ -1,180 +1,157 @@
 {
   "roles": [
     {
-      "name": "admin",
+      "name": "cluster",
       "operationsAllowed": [
-        "ASYNC_EVENT_QUEUE:LIST",
-        "ASYNC_EVENT_QUEUE:MANAGE",
-        "CLUSTER_CONFIGURATION:STATUS",
-        "CLUSTER_CONFIGURATION:LIST",
-        "CLUSTER_CONFIGURATION:IMPORT",
-        "CLUSTER_CONFIGURATION:EXPORT",
-        "DISKSTORE:LIST",
-        "DISKSTORE:MANAGE",
-        "DISTRIBUTED_SYSTEM:ALL",
-        "DISTRIBUTED_SYSTEM:LIST",
-        "DISTRIBUTED_SYSTEM:MANAGE",
-        "DISTRIBUTED_SYSTEM:ALTER_RUNTIME",
-        "GATEWAY:LIST",
-        "GATEWAY:MANAGE",
-        "PDX:MANAGE",
-        "REGION:PUT",
-        "REGION:GET",
-        "REGION:DELETE",
-        "REGION:EXPORT",
-        "REGION:IMPORT",
-        "REGION:REBALANCE",
-        "REGION:CREATE",
-        "REGION:ALTER",
-        "REGION:DESTROY",
-        "REGION:LIST",
-        "QUERY:EXECUTE",
-        "CLIENT:LIST",
-        "FUNCTION:DEPLOY",
-        "FUNCTION:UNDEPLOY",
-        "FUNCTION:LIST",
-        "FUNCTION:DESTROY",
-        "FUNCTION:EXECUTE",
-        "CONTINUOUS_QUERY:STOP",
-        "CONTINUOUS_QUERY:LIST",
-        "INDEX:FLUSH",
-        "INDEX:CREATE",
-        "INDEX:DESTROY",
-        "INDEX:LIST",
-        "MEMBER:START",
-        "MEMBER:STOP",
-        "MEMBER:STATUS",
-        "MEMBER:LIST",
-        "LOCATOR:STOP"
+        "CLUSTER:MANAGE",
+        "CLUSTER:WRITE",
+        "CLUSTER:READ"
       ]
     },
     {
-      "name": "data-admin",
+      "name": "data",
       "operationsAllowed": [
+        "DATA:MANAGE",
+        "DATA:WRITE",
+        "DATA:READ"
       ]
     },
     {
-      "name": "everything",
+      "name": "manage",
       "operationsAllowed": [
-        "DISTRIBUTED_SYSTEM:LIST_DS",
-        "INDEX:DESTROY",
-        "QUERY:EXECUTE",
-        "CONTINUOUS_QUERY:EXECUTE",
-        "CONTINUOUS_QUERY:STOP",
-        "MEMBER:SHUTDOWN",
-        "MEMBER:STATUS",
-        "MEMBER:EXPORT_LOGS",
-        "MEMBER:EXPORT_STACKTRACE",
-        "MEMBER:SHOW_LOG",
-        "DISKSTORE:COMPACT",
-        "DISKSTORE:FLUSH",
-        "DISKSTORE:ROLL",
-        "DISKSTORE:ALTER",
-        "MANAGER:CREATE",
-        "REGION:CREATE",
-        "REGION:REBALANCE",
-        "REGION:EXPORT",
-        "REGION:IMPORT",
-        "REGION:PUT",
-        "REGION:GET",
-        "REGION:DELETE",
-        "LOCK_SERVICE:BECOME_LOCK_GRANTOR",
-        "JMX:GET",
-        "GATEWAY:MANAGE",
-        "MANAGER:SET_PULSE_URL",
-        "MANAGER:START",
-        "MANAGER:STOP",
-        "CLUSTER_CONFIGURATION:STATUS",
-        "DISTRIBUTED_SYSTEM:ALL",
-        "DISTRIBUTED_SYSTEM:RENAME",
-        "DISTRIBUTED_SYSTEM:GC",
-        "DISTRIBUTED_SYSTEM:ALTER_RUNTIME",
-        "DISTRIBUTED_SYSTEM:NETSTAT",
-        "DISTRIBUTED_SYSTEM:SHOW_DEADLOCKS",
-        "DISTRIBUTED_SYSTEM:SHOW_METRICS",
-        "DISTRIBUTED_SYSTEM:SHUTDOWN",
-        "ASYNC_EVENT_QUEUE:CREATE",
-        "ASYNC_EVENT_QUEUE:LIST",
-        "PDX:CONFIGURE"
+        "CLUSTER:MANAGE",
+        "DATA:MANAGE"
       ]
     },
     {
-      "name": "nothing",
+      "name": "write",
       "operationsAllowed": [
+        "CLUSTER:WRITE",
+        "DATA:WRITE"
       ]
     },
     {
-      "name": "something",
+      "name": "read",
       "operationsAllowed": [
-        "JMX:GET",
-        "MANAGER:SET_PULSE_URL"
+        "CLUSTER:READ",
+        "DATA:READ"
       ]
     },
     {
-      "name": "dataUsers",
+      "name": "cluster-manage",
       "operationsAllowed": [
-        "REGION:GET",
-        "REGION:REBALANCE",
-        "REGION:EXPORT",
-        "REGION:IMPORT",
-        "REGION:PUT",
-        "REGION:GET",
-        "REGION:DELETE",
-        "QUERY:EXECUTE"
+        "CLUSTER:MANAGE"
+      ]
+    },
+    {
+      "name": "cluster-write",
+      "operationsAllowed": [
+        "CLUSTER:WRITE"
+      ]
+    },
+    {
+      "name": "cluster-read",
+      "operationsAllowed": [
+        "CLUSTER:READ"
+      ]
+    },
+    {
+      "name": "data-manage",
+      "operationsAllowed": [
+        "DATA:MANAGE"
+      ]
+    },
+    {
+      "name": "data-write",
+      "operationsAllowed": [
+        "DATA:WRITE"
+      ]
+    },
+    {
+      "name": "data-read",
+      "operationsAllowed": [
+        "DATA:READ"
+      ]
+    },
+    {
+      "name": "region1-use",
+      "operationsAllowed": [
+        "DATA:READ"
       ],
       "region": "region1"
     },
     {
-      "name": "secureDataUsers",
+      "name": "secure-use",
       "operationsAllowed": [
-        "REGION:GET",
-        "QUERY:EXECUTE"
+        "DATA:READ"
       ],
       "regions": ["region1", "secureRegion"]
     }
   ],
   "users": [
     {
-      "name": "adminUser",
+      "name": "super-user",
       "password": "1234567",
       "roles": [
-        "admin"
+        "cluster",
+        "data"
       ]
     },
     {
-      "name": "superuser",
+      "name": "cluster-admin",
       "password": "1234567",
       "roles": [
-        "everything"
+        "cluster"
+      ]
+    },
+    {
+      "name": "data-admin",
+      "password": "1234567",
+      "roles": [
+        "cluster-read",
+        "data-manage"
+      ]
+    },
+    {
+      "name": "data-user",
+      "password": "1234567",
+      "roles": [
+        "data-write",
+        "data-read"
+      ]
+    },
+    {
+      "name": "auditor",
+      "password": "1234567",
+      "roles": [
+        "data-read"
+      ]
+    },
+    {
+      "name": "monitor",
+      "password": "1234567",
+      "roles": [
+        "cluster-read"
+      ]
+    },
+    {
+      "name": "region1-user",
+      "password": "1234567",
+      "roles": [
+        "region1-use"
+      ]
+    },
+    {
+      "name": "secure-user",
+      "password": "1234567",
+      "roles": [
+        "secure-use"
       ]
     },
     {
       "name": "stranger",
       "password": "1234567",
       "roles": [
-        "nothing"
-      ]
-    },
-    {
-      "name": "user",
-      "password": "1234567",
-      "roles": [
-        "something"
-      ]
-    },
-    {
-      "name": "dataUser",
-      "password": "1234567",
-      "roles": [
-        "dataUsers"
-      ]
-    },
-    {
-      "name": "secureDataUser",
-      "password": "1234567",
-      "roles": [
-        "secureDataUsers",
-        "dataUsers"
       ]
     }
   ]

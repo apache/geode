@@ -1044,7 +1044,7 @@ public class GfshParserJUnitTest {
   static class Commands implements CommandMarker {
 
     @CliCommand(value = { COMMAND1_NAME, COMMAND1_NAME_ALIAS }, help = COMMAND1_HELP)
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
     public static String command1(
         @CliArgument(name = ARGUMENT1_NAME, argumentContext = ARGUMENT1_CONTEXT, help = ARGUMENT1_HELP, mandatory = true)
         String argument1,
@@ -1060,13 +1060,13 @@ public class GfshParserJUnitTest {
     }
 
     @CliCommand(value = { COMMAND2_NAME })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
     public static String command2() {
       return null;
     }
 
     @CliCommand(value = { "testParamConcat" })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
     public static Result testParamConcat(
         @CliOption(key = { "string" }) String string,
         @CliOption(key = { "stringArray" }) @CliMetaData(valueSeparator = ",") String[] stringArray,
@@ -1077,7 +1077,7 @@ public class GfshParserJUnitTest {
     }
 
     @CliCommand(value = { "testMultiWordArg" })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
     public static Result testMultiWordArg(
         @CliArgument(name = "arg1" ) String arg1,
         @CliArgument(name = "arg2" ) String arg2) {
@@ -1134,13 +1134,13 @@ public class GfshParserJUnitTest {
     static final String C2_MSG_AVAILABLE   = C2_NAME + " is available.";
 
     @CliCommand(value = { C1_NAME })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
     public Result command1() {
       return ResultBuilder.createInfoResult(C1_MSG_AVAILABLE);
     }
 
     @CliCommand(value = { C2_NAME })
-    @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
     public Result command2() {
       return ResultBuilder.createInfoResult(C2_MSG_AVAILABLE);
     }

@@ -29,7 +29,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * @since 7.0
  * 
  */
-@ResourceOperation(resource = Resource.JMX, operation = OperationCode.GET)
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface GatewayReceiverMXBean {
 
   /**
@@ -92,13 +92,13 @@ public interface GatewayReceiverMXBean {
   /**
    * Starts the gateway receiver.
    */
-  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void start() throws Exception;
 
   /**
    * Stops the gateway receiver.
    */
-  @ResourceOperation(resource = Resource.GATEWAY, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void stop() throws Exception;
 
   /**

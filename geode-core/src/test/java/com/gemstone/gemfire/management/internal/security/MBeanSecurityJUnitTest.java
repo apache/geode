@@ -57,7 +57,7 @@ public class MBeanSecurityJUnitTest {
    * No user can call createBean or unregisterBean of GemFire Domain
    */
   @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
+  @JMXConnectionConfiguration(user = "super-user", password = "1234567")
   public void testNoAccessWithWhoever() throws Exception{
     MBeanServerConnection con = connectionRule.getMBeanServerConnection();
     assertThatThrownBy(

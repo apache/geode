@@ -34,7 +34,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * @since 7.0
  *
  */
-@ResourceOperation(resource = Resource.JMX, operation = OperationContext.OperationCode.GET)
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationContext.OperationCode.READ)
 public interface RegionMXBean {
 
   /**

@@ -62,7 +62,7 @@ public class QueueCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE, help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
   @CliMetaData(writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.ASYNC_EVENT_QUEUE, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result createAsyncEventQueue(
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, 
                  mandatory = true,
@@ -202,7 +202,7 @@ public class QueueCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.LIST_ASYNC_EVENT_QUEUES, help = CliStrings.LIST_ASYNC_EVENT_QUEUES__HELP)
-  @ResourceOperation(resource = Resource.ASYNC_EVENT_QUEUE, operation = OperationCode.LIST)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result listAsyncEventQueues() {
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();

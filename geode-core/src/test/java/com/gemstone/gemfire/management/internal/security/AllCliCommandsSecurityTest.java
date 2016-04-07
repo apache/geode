@@ -50,144 +50,147 @@ public class AllCliCommandsSecurityTest {
 
   public AllCliCommandsSecurityTest() {
     // ClientCommands
-    commands.put("list clients", "CLIENT:LIST");
-    commands.put("describe client --clientID=172.16.196.144", "CLIENT:LIST");
+    commands.put("list clients", "CLUSTER:READ");
+    commands.put("describe client --clientID=172.16.196.144", "CLUSTER:READ");
 
     // ConfigCommands
-    commands.put("alter runtime", "DISTRIBUTED_SYSTEM:ALTER_RUNTIME");
-    commands.put("describe config --member=Member1", "CLUSTER_CONFIGURATION:LIST");
-    commands.put("export config --member=member1", "CLUSTER_CONFIGURATION:EXPORT");
+    commands.put("alter runtime", "CLUSTER:MANAGE");
+    commands.put("describe config --member=Member1", "CLUSTER:READ");
+    commands.put("export config --member=member1", "CLUSTER:READ");
 
     //CreateAlterDestroyRegionCommands
-    commands.put("alter region --name=region1 --eviction-max=5000", "REGION:ALTER");
-    commands.put("create region --name=region12", "REGION:CREATE");
-    commands.put("destroy region --name=value", "REGION:DESTROY");
+    commands.put("alter region --name=region1 --eviction-max=5000", "DATA:MANAGE");
+    commands.put("create region --name=region12", "DATA:MANAGE");
+    commands.put("destroy region --name=value", "DATA:MANAGE");
 
     //Data Commands
-    commands.put("rebalance --include-region=region1", "REGION:REBALANCE");
-    commands.put("export data --region=region1 --file=foo.txt --member=value", "REGION:EXPORT");
-    commands.put("import data --region=region1 --file=foo.txt --member=value", "REGION:IMPORT");
-    commands.put("put --key=key1 --value=value1 --region=region1", "REGION:PUT");
-    commands.put("get --key=key1 --region=region1", "REGION:GET");
-    commands.put("remove --region=region1", "REGION:DELETE");
-    commands.put("query --query='SELECT * FROM /region1'", "QUERY:EXECUTE");
+    commands.put("rebalance --include-region=region1", "DATA:MANAGE");
+    commands.put("export data --region=region1 --file=foo.txt --member=value", "DATA:READ");
+    commands.put("import data --region=region1 --file=foo.txt --member=value", "DATA:WRITE");
+    commands.put("put --key=key1 --value=value1 --region=region1", "DATA:WRITE");
+    commands.put("get --key=key1 --region=region1", "DATA:READ");
+    commands.put("remove --region=region1", "DATA:MANAGE");
+    commands.put("query --query='SELECT * FROM /region1'", "DATA:READ");
 
     // Deploy commands
-    commands.put("deploy --jar=group1_functions.jar --group=Group1", "FUNCTION:DEPLOY");
-    commands.put("list deployed", "FUNCTION:LIST");
-    commands.put("undeploy --group=Group1", "FUNCTION:UNDEPLOY");
+    commands.put("deploy --jar=group1_functions.jar --group=Group1", "DATA:MANAGE");
+    commands.put("list deployed", "CLUSTER:READ");
+    commands.put("undeploy --group=Group1", "DATA:MANAGE");
 
     // Diskstore Commands
-    commands.put("backup disk-store --dir=foo", "DISKSTORE:MANAGE");
-    commands.put("list disk-stores", "DISKSTORE:LIST");
-    commands.put("create disk-store --name=foo --dir=bar", "DISKSTORE:MANAGE");
-    commands.put("compact disk-store --name=foo", "DISKSTORE:MANAGE");
-    commands.put("compact offline-disk-store --name=foo --disk-dirs=bar", "DISKSTORE:MANAGE");
-    commands.put("upgrade offline-disk-store --name=foo --disk-dirs=bar", "DISKSTORE:MANAGE");
-    commands.put("describe disk-store --name=foo --member=baz", "DISKSTORE:LIST");
-    commands.put("revoke missing-disk-store --id=foo", "DISKSTORE:MANAGE");
-    commands.put("show missing-disk-stores", "DISKSTORE:MANAGE");
-    commands.put("describe offline-disk-store --name=foo --disk-dirs=bar", "DISKSTORE:LIST");
-    commands.put("export offline-disk-store --name=foo --disk-dirs=bar --dir=baz", "DISKSTORE:MANAGE");
-    commands.put("validate offline-disk-store --name=foo --disk-dirs=bar", "DISKSTORE:MANAGE");
-    commands.put("alter disk-store --name=foo --region=xyz --disk-dirs=bar", "DISKSTORE:MANAGE");
-    commands.put("destroy disk-store --name=foo", "DISKSTORE:MANAGE");
+    commands.put("backup disk-store --dir=foo", "DATA:READ");
+    commands.put("list disk-stores", "CLUSTER:READ");
+    commands.put("create disk-store --name=foo --dir=bar", "DATA:MANAGE");
+    commands.put("compact disk-store --name=foo", "DATA:MANAGE");
+    commands.put("compact offline-disk-store --name=foo --disk-dirs=bar", null);
+    commands.put("upgrade offline-disk-store --name=foo --disk-dirs=bar", null);
+    commands.put("describe disk-store --name=foo --member=baz", "CLUSTER:READ");
+    commands.put("revoke missing-disk-store --id=foo", "DATA:MANAGE");
+    commands.put("show missing-disk-stores", "CLUSTER:READ");
+    commands.put("describe offline-disk-store --name=foo --disk-dirs=bar", null);
+    commands.put("export offline-disk-store --name=foo --disk-dirs=bar --dir=baz", null);
+    commands.put("validate offline-disk-store --name=foo --disk-dirs=bar", null);
+    commands.put("alter disk-store --name=foo --region=xyz --disk-dirs=bar", null); // alteroffline
+    commands.put("destroy disk-store --name=foo", "DATA:MANAGE");
 
     // DurableClientCommands
-    commands.put("close durable-client --durable-client-id=client1", "CONTINUOUS_QUERY:STOP");
-    commands.put("close durable-cq --durable-client-id=client1 --durable-cq-name=cq1", "CONTINUOUS_QUERY:STOP");
-    commands.put("show subscription-queue-size --durable-client-id=client1", "CONTINUOUS_QUERY:LIST");
-    commands.put("list durable-cqs --durable-client-id=client1", "CONTINUOUS_QUERY:LIST");
+    commands.put("close durable-client --durable-client-id=client1", "DATA:MANAGE");
+    commands.put("close durable-cq --durable-client-id=client1 --durable-cq-name=cq1", "DATA:MANAGE");
+    commands.put("show subscription-queue-size --durable-client-id=client1", "CLUSTER:READ");
+    commands.put("list durable-cqs --durable-client-id=client1", "CLUSTER:READ");
 
     //ExportIMportSharedConfigurationCommands
-    commands.put("export cluster-configuration --zip-file-name=mySharedConfig.zip", "CLUSTER_CONFIGURATION:EXPORT");
-    commands.put("import cluster-configuration --zip-file-name=value", "CLUSTER_CONFIGURATION:IMPORT");
+    commands.put("export cluster-configuration --zip-file-name=mySharedConfig.zip", "CLUSTER:READ");
+    commands.put("import cluster-configuration --zip-file-name=value", "CLUSTER:MANAGE");
 
     //FunctionCommands
-    commands.put("destroy function --id=InterestCalculations", "FUNCTION:DESTROY");
-    commands.put("execute function --id=InterestCalculations --group=Group1", "FUNCTION:EXECUTE");
-    commands.put("list functions", "FUNCTION:LIST");
+    commands.put("destroy function --id=InterestCalculations", "DATA:MANAGE");
+    commands.put("execute function --id=InterestCalculations --group=Group1", "DATA:WRITE");
+    commands.put("list functions", "CLUSTER:READ");
 
     //GfshHelpCommands
-    commands.put("hint", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("help", "DISTRIBUTED_SYSTEM:ALL");
+    commands.put("hint", null);
+    commands.put("help", null);
 
     //IndexCommands
-    commands.put("clear defined indexes", "INDEX:FLUSH");
-    commands.put("create defined indexes", "INDEX:CREATE");
-    commands.put("create index --name=myKeyIndex --expression=region1.Id --region=region1 --type=key", "INDEX:CREATE");
-    commands.put("define index --name=myIndex1 --expression=exp1 --region=/exampleRegion", "INDEX:CREATE");
-    commands.put("destroy index --member=server2", "INDEX:DESTROY");
-    commands.put("list indexes", "INDEX:LIST");
+    commands.put("clear defined indexes", "DATA:MANAGE");
+    commands.put("create defined indexes", "DATA:MANAGE");
+    commands.put("create index --name=myKeyIndex --expression=region1.Id --region=region1 --type=key", "DATA:MANAGE");
+    commands.put("define index --name=myIndex1 --expression=exp1 --region=/exampleRegion", "DATA:MANAGE");
+    commands.put("destroy index --member=server2", "DATA:MANAGE");
+    commands.put("list indexes", "CLUSTER:READ");
 
     //LauncherLifecycleCommands
-    commands.put("start jconsole", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("start jvisualvm", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("start locator --name=locator1", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("start pulse", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("start server --name=server1", "MEMBER:START");
-    commands.put("start vsd", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("status locator", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("status server", "MEMBER:STATUS");
-    commands.put("stop locator --name=locator1", "LOCATOR:STOP");
-    commands.put("stop server --name=server1", "MEMBER:STOP");
+    commands.put("start jconsole", null);
+    commands.put("start jvisualvm", null);
+    commands.put("start locator --name=locator1", null);
+    commands.put("start pulse", null);
+    commands.put("start server --name=server1", null);
+    commands.put("start vsd", null);
+    commands.put("status locator", null);
+    commands.put("status server", null);
+    commands.put("stop locator --name=locator1", "CLUSTER:MANAGE");
+    commands.put("stop server --name=server1", "CLUSTER:MANAGE");
 
     //MemberCommands
-    commands.put("describe member --name=server1", "MEMBER:LIST");
-    commands.put("list members", "MEMBER:LIST");
+    commands.put("describe member --name=server1", "CLUSTER:READ");
+    commands.put("list members", "CLUSTER:READ");
 
     // Misc Commands
-    commands.put("change loglevel --loglevel=severe --member=server1", "DISTRIBUTED_SYSTEM:MANAGE");
-    commands.put("export logs --dir=data/logs", "DISTRIBUTED_SYSTEM:LIST");
-    commands.put("export stack-traces --file=stack.txt", "DISTRIBUTED_SYSTEM:LIST");
-    commands.put("gc", "DISTRIBUTED_SYSTEM:MANAGE");
-    commands.put("netstat --member=server1", "DISTRIBUTED_SYSTEM:MANAGE");
-    commands.put("show dead-locks --file=deadlocks.txt", "DISTRIBUTED_SYSTEM:LIST");
-    commands.put("show log --member=locator1 --lines=5", "DISTRIBUTED_SYSTEM:LIST");
-    commands.put("show metrics", "DISTRIBUTED_SYSTEM:LIST");
+    commands.put("change loglevel --loglevel=severe --member=server1", "CLUSTER:WRITE");
+    commands.put("export logs --dir=data/logs", "CLUSTER:READ");
+    commands.put("export stack-traces --file=stack.txt", "CLUSTER:READ");
+    commands.put("gc", "CLUSTER:MANAGE");
+    commands.put("netstat --member=server1", "CLUSTER:READ");
+    commands.put("show dead-locks --file=deadlocks.txt", "CLUSTER:READ");
+    commands.put("show log --member=locator1 --lines=5", "CLUSTER:READ");
+    commands.put("show metrics", "CLUSTER:READ");
 
 
     // PDX Commands
-    commands.put("configure pdx --read-serialized=true", "PDX:MANAGE");
-    commands.put("pdx rename --old=com.gemstone --new=com.pivotal --disk-store=ds1 --disk-dirs=/diskDir1", "PDX:MANAGE");
+    commands.put("configure pdx --read-serialized=true", "DATA:MANAGE");
+    commands.put("pdx rename --old=com.gemstone --new=com.pivotal --disk-store=ds1 --disk-dirs=/diskDir1", "DATA:MANAGE");
 
     // Queue Commands
-    commands.put("create async-event-queue --id=myAEQ --listener=myApp.myListener", "ASYNC_EVENT_QUEUE:MANAGE");
-    commands.put("list async-event-queues", "ASYNC_EVENT_QUEUE:LIST");
+    commands.put("create async-event-queue --id=myAEQ --listener=myApp.myListener", "DATA:MANAGE");
+    commands.put("list async-event-queues", "CLUSTER:READ");
 
     //RegionCommands
-    commands.put("describe region --name=value", "REGION:LIST");
-    commands.put("list regions", "REGION:LIST");
+    commands.put("describe region --name=value", "CLUSTER:READ");
+    commands.put("list regions", "CLUSTER:READ");
 
     // StatusCommands
-    commands.put("status cluster-config-service", "CLUSTER_CONFIGURATION:STATUS");
+    commands.put("status cluster-config-service", "CLUSTER:READ");
 
     // Shell Commands
-    commands.put("connect", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("debug --state=on", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("describe connection", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("echo --string=\"Hello World!\"", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("encrypt password --password=value", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("version", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("sleep", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("sh ls", "DISTRIBUTED_SYSTEM:ALL");
+    commands.put("connect", null);
+    commands.put("debug --state=on", null);
+    commands.put("describe connection", null);
+    commands.put("echo --string=\"Hello World!\"", null);
+    commands.put("encrypt password --password=value", null);
+    commands.put("version", null);
+    commands.put("sleep", null);
+    commands.put("sh ls", null);
 
 
     // WAN Commands
-    commands.put("create gateway-sender --id=sender1 --remote-distributed-system-id=2", "GATEWAY:MANAGE");
-    commands.put("start gateway-sender --id=sender1", "GATEWAY:MANAGE");
-    commands.put("pause gateway-sender --id=sender1", "GATEWAY:MANAGE");
-    commands.put("resume gateway-sender --id=sender1", "GATEWAY:MANAGE");
-    commands.put("stop gateway-sender --id=sender1", "GATEWAY:MANAGE");
-    commands.put("load-balance gateway-sender --id=sender1", "GATEWAY:MANAGE");
-    commands.put("list gateways", "GATEWAY:LIST");
-    commands.put("create gateway-receiver", "GATEWAY:MANAGE");
-    commands.put("start gateway-receiver", "GATEWAY:MANAGE");
-    commands.put("stop gateway-receiver", "GATEWAY:MANAGE");
-    commands.put("status gateway-receiver", "GATEWAY:LIST");
+    commands.put("create gateway-sender --id=sender1 --remote-distributed-system-id=2", "DATA:MANAGE");
+    commands.put("start gateway-sender --id=sender1", "DATA:MANAGE");
+    commands.put("pause gateway-sender --id=sender1", "DATA:MANAGE");
+    commands.put("resume gateway-sender --id=sender1", "DATA:MANAGE");
+    commands.put("stop gateway-sender --id=sender1", "DATA:MANAGE");
+    commands.put("load-balance gateway-sender --id=sender1", "DATA:MANAGE");
+    commands.put("list gateways", "CLUSTER:READ");
+    commands.put("create gateway-receiver", "DATA:MANAGE");
+    commands.put("start gateway-receiver", "DATA:MANAGE");
+    commands.put("stop gateway-receiver", "DATA:MANAGE");
+    commands.put("status gateway-receiver", "CLUSTER:READ");
+    commands.put("status gateway-sender --id=sender1", "CLUSTER:READ");
 
-    commands.put("disconnect", "DISTRIBUTED_SYSTEM:ALL");
-    commands.put("shutdown", "DISTRIBUTED_SYSTEM:MANAGE");
+    //ShellCommand
+    commands.put("disconnect", null);
+    //Misc commands
+    commands.put("shutdown", "CLUSTER:MANAGE");
   }
 
   @ClassRule
@@ -208,14 +211,20 @@ public class AllCliCommandsSecurityTest {
   public void a_testNoAccess(){
     for (Map.Entry<String, String> perm : commands.entrySet()) {
       LogService.getLogger().info("processing: "+perm.getKey());
-      assertThatThrownBy(() -> bean.processCommand(perm.getKey()))
-          .hasMessageStartingWith("Access Denied: Not authorized for " + perm.getValue())
-          .isInstanceOf(SecurityException.class);
+      // for those commands that don't require any permission, any user can execute them
+      if(perm.getValue()==null){
+        bean.processCommand(perm.getKey());
+      }
+      else {
+        assertThatThrownBy(() -> bean.processCommand(perm.getKey()))
+            .hasMessageContaining(perm.getValue())
+            .isInstanceOf(SecurityException.class);
+      }
     }
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "adminUser", password = "1234567")
+  @JMXConnectionConfiguration(user = "super-user", password = "1234567")
   public void b_testAdminUser() throws Exception {
     for (String cmd : commands.keySet()) {
       LogService.getLogger().info("processing: "+cmd);

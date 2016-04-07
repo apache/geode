@@ -68,7 +68,7 @@ public class GatewayReceiverMBeanSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
+  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     bean.getAverageBatchProcessingTime();
     bean.getBindAddress();
@@ -79,11 +79,11 @@ public class GatewayReceiverMBeanSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.getTotalConnectionsTimedOut()).hasMessageStartingWith("Access Denied: Not authorized for JMX:GET");
-    assertThatThrownBy(() -> bean.start()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
-    assertThatThrownBy(() -> bean.stop()).hasMessageStartingWith("Access Denied: Not authorized for GATEWAY:MANAGE");
+    assertThatThrownBy(() -> bean.getTotalConnectionsTimedOut()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.start()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.stop()).hasMessageContaining("DATA:MANAGE");
   }
 
 }

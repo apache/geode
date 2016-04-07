@@ -56,7 +56,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * @since 7.0
  * 
  */
-@ResourceOperation(resource = Resource.JMX, operation = OperationCode.GET)
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface CacheServerMXBean {
 
   /**
@@ -283,7 +283,7 @@ public interface CacheServerMXBean {
    * @param indexName
    *          Name of the index to be removed.
    */
-  @ResourceOperation(resource = Resource.INDEX, operation = OperationCode.DESTROY)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void removeIndex(String indexName) throws Exception;
 
   /**
@@ -301,7 +301,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.EXECUTE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public void executeContinuousQuery(String queryName) throws Exception;
 
   /**
@@ -315,7 +315,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.STOP)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void stopContinuousQuery(String queryName) throws Exception;
 
   /**
@@ -328,7 +328,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.STOP)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void closeAllContinuousQuery(String regionName) throws Exception;
   
   
@@ -342,7 +342,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.STOP)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void closeContinuousQuery(String queryName) throws Exception;
 
 

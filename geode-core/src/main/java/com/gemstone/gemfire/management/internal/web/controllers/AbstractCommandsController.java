@@ -635,7 +635,7 @@ public abstract class AbstractCommandsController {
     SystemManagementService service = (SystemManagementService) ManagementService
         .getExistingManagementService(CacheFactory.getAnyInstance());
     Properties credentials = EnvironmentVariablesHandlerInterceptor.CREDENTIALS.get();
-    CLIOperationContext context = new CLIOperationContext(command);
+    CLIOperationContext context = CLIOperationContext.getOperationContext(command);
     service.getAuthManager().authorize(credentials, context);
     return context;
   }

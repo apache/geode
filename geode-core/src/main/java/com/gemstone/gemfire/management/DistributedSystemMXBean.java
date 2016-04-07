@@ -73,7 +73,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * @since 7.0
  *
  */
-@ResourceOperation(resource = Resource.JMX, operation = OperationCode.GET)
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface DistributedSystemMXBean {
 
   /**
@@ -91,7 +91,6 @@ public interface DistributedSystemMXBean {
   /**
    * Returns a list of names for all members.
    */
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM)
   public String[] listMembers();
 
   /**
@@ -160,7 +159,7 @@ public interface DistributedSystemMXBean {
    *          Minimum level for alerts to be delivered.
    *          Must be one of: WARNING, ERROR, SEVERE or NONE.
    */
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.SET_ALERT_LEVEL)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.WRITE)
   public void changeAlertLevel(String alertLevel) throws Exception;
 
   /**
@@ -243,7 +242,7 @@ public interface DistributedSystemMXBean {
    *          path of the directory for baseline backup.
    * @return The results of the backup request.
    */
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.BACKUP)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath)
       throws Exception;
 
@@ -328,7 +327,7 @@ public interface DistributedSystemMXBean {
    *
    * @return List of names of all distributed members that were shutdown.
    */
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.SHUTDOWN)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public String[] shutDownAllMembers() throws Exception;
 
   /**
@@ -348,7 +347,7 @@ public interface DistributedSystemMXBean {
    *          UUID of the disk store to remove
    * @return True if the request is successful, false otherwise.
    */
-  @ResourceOperation(resource = Resource.DISKSTORE, operation = OperationCode.REVOKE_MISSING)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public boolean revokeMissingDiskStores(String diskStoreId)
       throws Exception;
 
@@ -624,7 +623,7 @@ public interface DistributedSystemMXBean {
    *          will be set.
    * @return a JSON formated string containing data and its type
    */
-  @ResourceOperation(resource = Resource.QUERY, operation = OperationCode.QUERY)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public String queryData(String queryString, String members, int limit) throws Exception;
   
   /**
@@ -654,7 +653,7 @@ public interface DistributedSystemMXBean {
    *          will be set.
    * @return a byte[] which is a compressed JSON string.
    */
-  @ResourceOperation(resource = Resource.QUERY, operation = OperationCode.QUERY)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public byte[] queryDataForCompressedResult(String queryString, String members, int limit) throws Exception;
   
   
@@ -680,7 +679,7 @@ public interface DistributedSystemMXBean {
    */
   public int getQueryResultSetLimit();
 
-  @ResourceOperation(resource = Resource.QUERY, operation = OperationCode.SET_QUERY_RESULT_LIMIT)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void setQueryResultSetLimit(int queryResultSetLimit);
 
   /**
@@ -690,6 +689,6 @@ public interface DistributedSystemMXBean {
    */
   public int getQueryCollectionsDepth();
 
-  @ResourceOperation(resource = Resource.QUERY, operation = OperationCode.SET_QUERY_COLLECTION_DEPTH)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void setQueryCollectionsDepth(int queryCollectionsDepth);
 }

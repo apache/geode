@@ -65,7 +65,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
 
 	@CliCommand(value = CliStrings.LIST_DURABLE_CQS, help = CliStrings.LIST_DURABLE_CQS__HELP)
 	@CliMetaData(shellOnly = false)
-	@ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.LIST)
+	@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 	public Result listDurableClientCqs(
 	@CliOption (key = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID,
 	mandatory=true,
@@ -142,7 +142,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
 
 	@CliCommand(value = CliStrings.COUNT_DURABLE_CQ_EVENTS, help = CliStrings.COUNT_DURABLE_CQ_EVENTS__HELP)
 	@CliMetaData(shellOnly = false)
-	@ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.LIST)
+	@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 	public Result countDurableCqEvents(
 	@CliOption (key = CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID,
 	mandatory=true,
@@ -194,7 +194,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
 
 	@CliCommand(value = CliStrings.CLOSE_DURABLE_CLIENTS, help = CliStrings.CLOSE_DURABLE_CLIENTS__HELP)
 	@CliMetaData(shellOnly = false)
-	@ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation= OperationCode.STOP)
+	@ResourceOperation(resource = Resource.DATA, operation= OperationCode.MANAGE)
 	public Result closeDurableClient(
 	@CliOption (key = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID,
 				mandatory=true,
@@ -233,7 +233,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
 	
 	@CliCommand(value = CliStrings.CLOSE_DURABLE_CQS, help = CliStrings.CLOSE_DURABLE_CQS__HELP)
 	@CliMetaData(shellOnly = false)
-  @ResourceOperation(resource = Resource.CONTINUOUS_QUERY, operation = OperationCode.STOP)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result closeDurableCqs(
 	@CliOption (key = CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID,
 	mandatory=true,

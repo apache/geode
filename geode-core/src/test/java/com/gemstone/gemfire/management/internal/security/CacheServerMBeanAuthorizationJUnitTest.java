@@ -46,10 +46,10 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
-  public void testAllAccess() throws Exception {
+  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
+  public void testDataAdmin() throws Exception {
     bean.removeIndex("foo");
-    bean.executeContinuousQuery("bar");
+    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:READ");
     bean.fetchLoadProbe();
     bean.getActiveCQCount();
     bean.stopContinuousQuery("bar");
@@ -59,23 +59,32 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "user", password = "1234567")
-  public void testSomeAccess() throws Exception {
-    assertThatThrownBy(() -> bean.removeIndex("foo")).isInstanceOf(SecurityException.class);
-    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).isInstanceOf(SecurityException.class);
+  @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
+  public void testClusterAdmin() throws Exception {
+    assertThatThrownBy(() -> bean.removeIndex("foo")).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:READ");
     bean.fetchLoadProbe();
+  }
+
+
+  @Test
+  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
+  public void testDataUser() throws Exception {
+    assertThatThrownBy(() -> bean.removeIndex("foo")).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:MANAGE");
+    bean.executeContinuousQuery("bar");
+    assertThatThrownBy(() -> bean.fetchLoadProbe()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
   }
 
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.removeIndex("foo")).isInstanceOf(SecurityException.class).hasMessageContaining("INDEX:DESTROY");
-    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("CONTINUOUS_QUERY:EXECUTE");
-    assertThatThrownBy(() -> bean.fetchLoadProbe()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.getActiveCQCount()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.stopContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("ONTINUOUS_QUERY:STOP");
-    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("ONTINUOUS_QUERY:STOP");
-    assertThatThrownBy(() -> bean.isRunning()).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.showClientQueueDetails("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("JMX:GET");
+    assertThatThrownBy(() -> bean.removeIndex("foo")).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:READ");
+    assertThatThrownBy(() -> bean.fetchLoadProbe()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getActiveCQCount()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.stopContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.isRunning()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.showClientQueueDetails("bar")).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:READ");
   }
 }

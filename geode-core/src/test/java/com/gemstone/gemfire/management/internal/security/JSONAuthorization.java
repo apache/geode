@@ -145,7 +145,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
       for (int j = 0; j < ops.length(); j++) {
         String[] parts = ops.getString(j).split(":");
         Resource r = Resource.valueOf(parts[0]);
-        OperationCode op = parts.length > 1 ? OperationCode.valueOf(parts[1]) : OperationCode.ALL;
+        OperationCode op = parts.length > 1 ? OperationCode.valueOf(parts[1]) : OperationCode.READ;
         role.permissions.add(new Permission(r, op));
       }
 

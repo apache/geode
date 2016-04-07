@@ -48,7 +48,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker;
 import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshHistory;
 import com.gemstone.gemfire.management.internal.cli.util.CauseFinder;
 import com.gemstone.gemfire.management.internal.cli.util.ConnectionEndpoint;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
 import com.gemstone.gemfire.management.internal.web.http.support.SimpleHttpRequester;
 import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
@@ -86,9 +85,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
-
 /**
  *
  * @since 7.0
@@ -101,7 +97,6 @@ public class ShellCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.EXIT, "quit" }, help = CliStrings.EXIT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public ExitShellRequest exit() throws IOException {
     Gfsh gfshInstance = getGfsh();
 
@@ -125,7 +120,6 @@ public class ShellCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.CONNECT }, help = CliStrings.CONNECT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_MANAGER})
-  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result connect(
     @CliOption(key = { CliStrings.CONNECT__LOCATOR },
                unspecifiedDefaultValue = ConnectionEndpointConverter.DEFAULT_LOCATOR_ENDPOINTS,
@@ -687,7 +681,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.DISCONNECT }, help = CliStrings.DISCONNECT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_MANAGER})
-  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result disconnect() {
     Result result = null;
 
@@ -720,7 +713,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = {CliStrings.DESCRIBE_CONNECTION}, help = CliStrings.DESCRIBE_CONNECTION__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_JMX})
-  @ResourceOperation(resource=Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result describeConnection() {
     Result result = null;
     try {
@@ -748,7 +740,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.ECHO }, help = CliStrings.ECHO__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result echo(
       @CliOption(key = {CliStrings.ECHO__STR, ""},
                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -786,7 +777,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.SET_VARIABLE }, help = CliStrings.SET_VARIABLE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result setVariable(
       @CliOption(key = CliStrings.SET_VARIABLE__VAR,
                  mandatory=true,
@@ -826,7 +816,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.DEBUG }, help = CliStrings.DEBUG__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result debug(
       @CliOption(key = CliStrings.DEBUG__STATE,
                    unspecifiedDefaultValue = "OFF",
@@ -856,7 +845,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = CliStrings.HISTORY, help = CliStrings.HISTORY__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH })
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result history(
       @CliOption(key = { CliStrings.HISTORY__FILE }, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.HISTORY__FILE__HELP)
       String saveHistoryTo,
@@ -968,7 +956,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.RUN }, help = CliStrings.RUN__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result executeScript(
       @CliOption(key = CliStrings.RUN__FILE,
                  optionContext = ConverterHint.FILE,
@@ -1000,7 +987,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = CliStrings.ENCRYPT, help = CliStrings.ENCRYPT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result encryptPassword(
       @CliOption(key = CliStrings.ENCRYPT_STRING,
                  help = CliStrings.ENCRYPT_STRING__HELP,
@@ -1011,7 +997,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.VERSION }, help = CliStrings.VERSION__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result version(
       @CliOption(key = { CliStrings.VERSION__FULL },
                  specifiedDefaultValue = "true",
@@ -1025,7 +1010,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.SLEEP }, help = CliStrings.SLEEP__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result sleep(
       @CliOption(key = { CliStrings.SLEEP__TIME },
                  unspecifiedDefaultValue = "3",
@@ -1040,7 +1024,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
 
   @CliCommand(value = { CliStrings.SH }, help = CliStrings.SH__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM, operation = OperationCode.ALL)
   public Result sh(
       @CliArgument(name = CliStrings.SH__COMMAND,
                    mandatory = true,

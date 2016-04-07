@@ -31,106 +31,52 @@ package com.gemstone.gemfire.cache.operations;
 public abstract class OperationContext {
 
   public enum Resource {
-    ASYNC_EVENT_QUEUE,
-    CLIENT,
-    CLIENT_SERVER,
-    CLUSTER_CONFIGURATION,
-    CONTINUOUS_QUERY,
-    DISKSTORE,
-    DISTRIBUTED_SYSTEM,
-    FUNCTION,
-    GATEWAY,
-    INDEX,
-    JMX,
-    LOCATOR,
-    LOCK_SERVICE,
-    MANAGER,
-    MEMBER,
-    PDX,
-    PULSE,
-    QUERY,
-    REGION
+    CLUSTER,
+    DATA
   };
 
   public enum OperationCode {
-    ALL,
-    ALTER,
-    ALTER_RUNTIME,
-    BACKUP,
-    BECOME_LOCK_GRANTOR,
-    CLOSE_CQ,
-    COMPACT,
-    COMPACT_DISKSTORE, // TODO: Do we need this?
-    CONFIGURE,
-    CONTAINS_KEY,
-    CREATE,
-    CREATE_MANAGER, // TODO: Do we need this?
-    CREATE_QUERY,
-    CREATE_REGION, // TODO: Do we need this?
-    DELETE,
-    DELETE_QUERY,
-    DEPLOY,
-    DESTROY,
-    DESTROY_INDEX, // TODO: Do we need this?
-    EXECUTE,
-    EXECUTE_CQ,
-    EXECUTE_FUNCTION,
-    EXPORT,
-    EXPORT_DATA, // TODO: Do we need this?
-    EXPORT_LOGS,
-    EXPORT_STACKTRACE,
-    FLUSH,
-    GC,
+    @Deprecated
     GET,
-    GET_DURABLE_CQS,
-    IMPORT,
-    IMPORT_DATA, // TODO: Do we need this?
-    INVALIDATE,
-    KEY_SET,
-    LIST,
-    LIST_DS, // TODO: Do we need this?
-    LOCATE_ENTRY, // TODO: Do we need this?
-    MANAGE,  // TODO: Do we need this?
-    NETSTAT,
-    PAUSE,
-    PROCESS_COMMAND,
-    PULSE_DASHBOARD,
-    PULSE_DATABROWSER,
+    @Deprecated
     PUT,
+    @Deprecated
     PUTALL,
-    QUERY,
-    REBALANCE,
-    REGION_CLEAR,
-    REGION_CREATE,
-    REGION_DESTROY,
-    REGISTER_INTEREST,
+    @Deprecated
     REMOVEALL,
-    RENAME,
-    RESOURCE,
-    RESUME,
-    REVOKE_MISSING,
-    ROLL,
-    SET_ALERT_LEVEL,
-    SET_DISK_USAGE_CRITICAL,
-    SET_DISK_USAGE_WARNING,
-    SET_PULSE_URL,
-    SET_QUERY_RESULT_LIMIT,
-    SET_QUERY_COLLECTION_DEPTH,
-    SET_STATUS_MESSAGE,
-    SHOW_DEADLOCKS,
-    SHOW_LOG,
-    SHOW_METRICS,
-    SHOW_MISSING,
-    SHUTDOWN,
-    START,
-    STATUS,
-    STOP,
-    STOP_CONTINUOUS_QUERY, // TODO: Do we need this?
-    STOP_CQ,
-    UNDEPLOY,
+    @Deprecated
+    DESTROY,
+    @Deprecated
+    INVALIDATE,
+    @Deprecated
+    REGISTER_INTEREST,
+    @Deprecated
     UNREGISTER_INTEREST,
-    UPDATE_QUERY,
-    VALIDATE;
+    @Deprecated
+    CONTAINS_KEY,
+    @Deprecated
+    KEY_SET,
+    @Deprecated
+    QUERY,
+    @Deprecated
+    EXECUTE_CQ,
+    @Deprecated
+    STOP_CQ,
+    @Deprecated
+    CLOSE_CQ,
+    @Deprecated
+    REGION_CLEAR,
+    @Deprecated
+    REGION_CREATE,
+    @Deprecated
+    REGION_DESTROY,
+    @Deprecated
+    EXECUTE_FUNCTION,
+    @Deprecated
+    GET_DURABLE_CQS,
+    MANAGE,
+    WRITE,
+    READ;
 
     /**
      * Check if this is an entry get operation.
@@ -350,7 +296,7 @@ public abstract class OperationContext {
   public abstract OperationCode getOperationCode();
 
   public Resource getResource(){
-    return Resource.CLIENT_SERVER;
+    return Resource.DATA;
   }
 
   /**

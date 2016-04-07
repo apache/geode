@@ -36,5 +36,5 @@ public @interface ResourceOperation {
   String label() default ResourceConstants.DEFAULT_LABEL;
 
   @DescriptorKey("operation")
-  OperationCode operation() default OperationCode.ALL;
+  OperationCode operation();
 }

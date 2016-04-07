@@ -78,7 +78,7 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
    */
   @CliCommand(value = { CliStrings.DEPLOY }, help = CliStrings.DEPLOY__HELP)
   @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.DeployCommands$Interceptor", relatedTopic={CliStrings.TOPIC_GEMFIRE_CONFIG}, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.FUNCTION, operation = OperationCode.DEPLOY)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public final Result deploy(
     @CliOption(key = { CliStrings.DEPLOY__GROUP }, help = CliStrings.DEPLOY__GROUP__HELP, optionContext=ConverterHint.MEMBERGROUP)
     @CliMetaData (valueSeparator = ",")
@@ -161,7 +161,7 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
    */
   @CliCommand(value = { CliStrings.UNDEPLOY }, help = CliStrings.UNDEPLOY__HELP)
   @CliMetaData(relatedTopic={CliStrings.TOPIC_GEMFIRE_CONFIG}, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.FUNCTION, operation = OperationCode.UNDEPLOY)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public final Result undeploy(
       @CliOption(key = { CliStrings.UNDEPLOY__GROUP },
                  help = CliStrings.UNDEPLOY__GROUP__HELP, 
@@ -232,7 +232,7 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
    */
   @CliCommand(value = { CliStrings.LIST_DEPLOYED }, help = CliStrings.LIST_DEPLOYED__HELP)
   @CliMetaData(relatedTopic={CliStrings.TOPIC_GEMFIRE_CONFIG})
-  @ResourceOperation(resource = Resource.FUNCTION, operation= OperationCode.LIST)
+  @ResourceOperation(resource = Resource.CLUSTER, operation= OperationCode.READ)
   public final Result listDeployed(
       @CliOption(key = { CliStrings.LIST_DEPLOYED__GROUP },
                  help = CliStrings.LIST_DEPLOYED__GROUP__HELP)

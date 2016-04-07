@@ -96,7 +96,7 @@ public class DataCommands implements CommandMarker {
   @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
       CliStrings.TOPIC_GEMFIRE_REGION })
-  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.REBALANCE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result rebalance(
       @CliOption(key = CliStrings.REBALANCE__INCLUDEREGION, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.REBALANCE__INCLUDEREGION__HELP) String[] includeRegions,
       @CliOption(key = CliStrings.REBALANCE__EXCLUDEREGION, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.REBALANCE__EXCLUDEREGION__HELP) String[] excludeRegions,
@@ -833,7 +833,7 @@ public class DataCommands implements CommandMarker {
   @CliCommand(value = CliStrings.EXPORT_DATA, help = CliStrings.EXPORT_DATA__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
       CliStrings.TOPIC_GEMFIRE_REGION })
-  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.EXPORT)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public Result exportData(
       @CliOption(key = CliStrings.EXPORT_DATA__REGION, mandatory = true, optionContext = ConverterHint.REGIONPATH, help = CliStrings.EXPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.EXPORT_DATA__FILE, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, mandatory = true, help = CliStrings.EXPORT_DATA__FILE__HELP) String filePath,
@@ -889,7 +889,7 @@ public class DataCommands implements CommandMarker {
   @CliCommand(value = CliStrings.IMPORT_DATA, help = CliStrings.IMPORT_DATA__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
       CliStrings.TOPIC_GEMFIRE_REGION })
-  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.IMPORT)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.WRITE)
   public Result importData(
       @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGIONPATH, mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.IMPORT_DATA__FILE, mandatory = true, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
@@ -945,7 +945,7 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.PUT }, help = CliStrings.PUT__HELP)
-  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.PUT)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.WRITE)
   public Result put(
       @CliOption(key = { CliStrings.PUT__KEY }, mandatory = true, help = CliStrings.PUT__KEY__HELP) String key,
       @CliOption(key = { CliStrings.PUT__VALUE }, mandatory = true, help = CliStrings.PUT__VALUE__HELP) String value,
@@ -1013,7 +1013,7 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.GET }, help = CliStrings.GET__HELP)
-  @ResourceOperation(resource = Resource.REGION, operation= OperationCode.GET)
+  @ResourceOperation(resource = Resource.DATA, operation= OperationCode.READ)
   public Result get(
       @CliOption(key = { CliStrings.GET__KEY }, mandatory = true, help = CliStrings.GET__KEY__HELP) String key,
       @CliOption(key = { CliStrings.GET__REGIONNAME }, mandatory = true, help = CliStrings.GET__REGIONNAME__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,
@@ -1068,7 +1068,7 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.LOCATE_ENTRY }, help = CliStrings.LOCATE_ENTRY__HELP)
-  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.GET)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public Result locateEntry(
       @CliOption(key = { CliStrings.LOCATE_ENTRY__KEY }, mandatory = true, help = CliStrings.LOCATE_ENTRY__KEY__HELP) String key,
       @CliOption(key = { CliStrings.LOCATE_ENTRY__REGIONNAME }, mandatory = true, help = CliStrings.LOCATE_ENTRY__REGIONNAME__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,
@@ -1116,7 +1116,7 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.REMOVE }, help = CliStrings.REMOVE__HELP)
-  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.DELETE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result remove(
       @CliOption(key = { CliStrings.REMOVE__KEY }, help = CliStrings.REMOVE__KEY__HELP) String key,
       @CliOption(key = { CliStrings.REMOVE__REGION }, mandatory = true, help = CliStrings.REMOVE__REGION__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,
@@ -1171,7 +1171,7 @@ public class DataCommands implements CommandMarker {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @MultiStepCommand
   @CliCommand(value = { CliStrings.QUERY }, help = CliStrings.QUERY__HELP)
-  @ResourceOperation(resource = Resource.QUERY, operation = OperationCode.EXECUTE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public Object query(
       @CliOption(key = CliStrings.QUERY__QUERY, help = CliStrings.QUERY__QUERY__HELP, mandatory = true) final String query,
       @CliOption(key = CliStrings.QUERY__STEPNAME, mandatory = false, help = "Step name", unspecifiedDefaultValue = CliStrings.QUERY__STEPNAME__DEFAULTVALUE) String stepName,

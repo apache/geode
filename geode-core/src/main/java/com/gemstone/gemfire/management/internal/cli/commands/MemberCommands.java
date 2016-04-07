@@ -64,7 +64,7 @@ public class MemberCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.LIST_MEMBER }, help = CliStrings.LIST_MEMBER__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_SERVER)
-  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.LIST)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result listMember(
 		  @CliOption(key = { CliStrings.LIST_MEMBER__GROUP },
 		             unspecifiedDefaultValue = "",
@@ -109,7 +109,7 @@ public class MemberCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.DESCRIBE_MEMBER }, help = CliStrings.DESCRIBE_MEMBER__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_SERVER)
-  @ResourceOperation(resource = Resource.MEMBER, operation = OperationCode.LIST)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result describeMember(
   	@CliOption(key = CliStrings.DESCRIBE_MEMBER__IDENTIFIER,
   	             optionContext = ConverterHint.ALL_MEMBER_IDNAME,

@@ -34,7 +34,6 @@ import javax.management.remote.JMXConnector;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * Spring security authentication object for GemFire
@@ -59,8 +58,7 @@ import java.util.Set;
  *
  * TODO : Better model would be to maintain background connection map for Databrowser instead
  * of each web session creating rmi connection and map user to correct entry in the connection map
- * 
- * @author Tushar Khairnar
+ *
  * @since version 9.0
  */
 public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {	

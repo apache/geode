@@ -108,7 +108,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
   @CliCommand (value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.CREATE)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result createRegion(
       @CliOption (key = CliStrings.CREATE_REGION__REGION,
                   mandatory = true,
@@ -437,7 +437,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   
   @CliCommand (value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.ALTER)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result alterRegion(
       @CliOption (key = CliStrings.ALTER_REGION__REGION,
                   mandatory = true,
@@ -996,7 +996,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = { CliStrings.DESTROY_REGION }, help = CliStrings.DESTROY_REGION__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.REGION, operation = OperationCode.DESTROY)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result destroyRegion(
       @CliOption(key = CliStrings.DESTROY_REGION__REGION,
           optionContext = ConverterHint.REGIONPATH,

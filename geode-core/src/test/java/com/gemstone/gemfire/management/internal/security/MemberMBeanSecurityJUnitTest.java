@@ -46,7 +46,7 @@ public class MemberMBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "superuser", password = "1234567")
+  @JMXConnectionConfiguration(user = "super-user", password = "1234567")
   public void testAllAccess() throws Exception {
     bean.shutDownMember();
     bean.compactAllDiskStores();
@@ -64,19 +64,47 @@ public class MemberMBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
-  public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.shutDownMember()).isInstanceOf(SecurityException.class).hasMessageContaining("MEMBER:SHUTDOWN");
-    assertThatThrownBy(() -> bean.createManager()).hasMessageContaining("MANAGER:CREATE");
-    assertThatThrownBy(() -> bean.fetchJvmThreads()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.getName()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.getDiskStores()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.hasGatewayReceiver()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.isCacheServer()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.isServer()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.listConnectedGatewayReceivers()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.processCommand("create region --name=Region_A")).hasMessageContaining("REGION:CREATE");
-    assertThatThrownBy(() -> bean.showJVMMetrics()).hasMessageContaining("JMX:GET");
-    assertThatThrownBy(() -> bean.status()).hasMessageContaining("JMX:GET");
+  @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
+  public void testClusterAdmin() throws Exception {
+    assertThatThrownBy(() -> bean.compactAllDiskStores()).hasMessageContaining("DATA:MANAGE");
+    bean.shutDownMember();
+    bean.createManager();
+    bean.fetchJvmThreads();
+    bean.getName();
+    bean.getDiskStores();
+    bean.hasGatewayReceiver();
+    bean.isCacheServer();
+    bean.isServer();
+    bean.listConnectedGatewayReceivers();
+    bean.showJVMMetrics();
+    bean.status();
+  }
+
+  @Test
+  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
+  public void testDataAdmin() throws Exception {
+    bean.compactAllDiskStores();
+    assertThatThrownBy(() -> bean.shutDownMember()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:MANAGE");
+    assertThatThrownBy(() -> bean.createManager()).hasMessageContaining("CLUSTER:MANAGE");
+    bean.showJVMMetrics();
+    bean.status();
+  }
+
+  @Test
+  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
+  public void testDataUser() throws Exception {
+    assertThatThrownBy(() -> bean.shutDownMember()).isInstanceOf(SecurityException.class).hasMessageContaining("CLUSTER:MANAGE");
+    assertThatThrownBy(() -> bean.createManager()).hasMessageContaining("CLUSTER:MANAGE");
+    assertThatThrownBy(() -> bean.compactAllDiskStores()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.fetchJvmThreads()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getName()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.getDiskStores()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.hasGatewayReceiver()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.isCacheServer()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.isServer()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.listConnectedGatewayReceivers()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.processCommand("create region --name=Region_A")).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.showJVMMetrics()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.status()).hasMessageContaining("CLUSTER:READ");
   }
 }
