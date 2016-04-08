@@ -350,16 +350,19 @@ Apache Geode bundles the following files under the MIT license:
     TheDrunkenEpic <http://www.thedrunkenepic.com>
   - jScrollPane (http://jscrollpane.kelvinluck.com/), Copyright (c) 2010
     Kelvin Luck
+  - matchMedia() polyfill (https://github.com/paulirish/matchMedia.js),
+    Copyright (c) 2012 Scott Jehl
   - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
     Copyright (c) Nicolas Gallagher and Jonathan Neal
-  - Respond v1.1.0 (https://github.com/scottjehl/Respond), Copyright (c) 2012
-    Scott Jehl
+  - Respond.js v1.1.0 (https://github.com/scottjehl/Respond), Copyright (c)
+    2012 Scott Jehl
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
     2015 Nathan Cahill
-  - TableDnD v0.5 (https://github.com/isocra/TableDnD), Copyright (c) 2012 Denis
-    Howlett <denish@isocra.com>, Nick Lombard <nickl>, and other
+  - TableDnD v0.5 (https://github.com/isocra/TableDnD), Copyright (c) 2012
+    Denis Howlett <denish@isocra.com>, Nick Lombard <nickl>, and other
     contributors
-  - Timeago v1.3.0 (http://timeago.yarp.com), Copyright (c) 2008-2015 Ryan McGeary
+  - Timeago v1.3.0 (http://timeago.yarp.com), Copyright (c) 2008-2015 Ryan
+    McGeary
   - Underscore (http://underscorejs.org), Copyright (c) 2009-2016 Jeremy
     Ashkenas, DocumentCloud, and Investigative Reporters & Editors
   - zTree v3.5.02 (http://zTree.me/), Copyright (c) 2010 Hunter.z
@@ -455,7 +458,8 @@ SIL Open Font License (https://opensource.org/licenses/OFL-1.1)
 
 Apache Geode bundles the following files under the SIL OFL 1.1 license:
 
-  - Font Awesome (font files) (http://fontawesome.io) Copyright (c) Dave Gandy
+  - Font Awesome (font files) (http://fontawesome.io) Copyright (c) Dave
+    Gandy
 
 Version 1.1 - 26 February 2007
 
