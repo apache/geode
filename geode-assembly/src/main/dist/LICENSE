@@ -263,10 +263,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 
 ---------------------------------------------------------------------------
-The CDDL License (https://opensource.org/licenses/CDDL-1.0)
+The CDDL (https://glassfish.java.net/public/CDDLv1.0.html)
 ---------------------------------------------------------------------------
 
-Apache Geode bundles the following file under the CDDL license:
+Apache Geode bundles the following file under the Common Development and
+Distribution License:
 
   - javax.activation v1.1.1
     (http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp),
@@ -583,6 +584,15 @@ Apache Geode bundles the following file under the CDDL license:
   on an equitable basis. Nothing herein is intended or shall be deemed to
   constitute any admission of liability.
 
+NOTICE PURSUANT TO SECTION 9 OF THE COMMON DEVELOPMENT AND DISTRIBUTION
+LICENSE (CDDL)
+
+The code released under the CDDL shall be governed by the laws of the State
+of California (excluding conflict-of-law provisions). Any litigation
+relating to this License shall be subject to the jurisdiction of the
+Federal Courts of the Northern District of California and the state courts
+of the State of California, with venue lying in Santa Clara County,
+California.
 
 ---------------------------------------------------------------------------
 The ISC License (http://opensource.org/licenses/ISC)
