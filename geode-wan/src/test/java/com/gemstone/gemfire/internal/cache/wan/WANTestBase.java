@@ -3611,6 +3611,10 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void validateRegionSize(String regionName, final int regionSize) {
+    validateRegionSize(regionName, regionSize, 30000);
+  }
+
+  public static void validateRegionSize(String regionName, final int regionSize, long waitTime) {
     IgnoredException exp = IgnoredException.addIgnoredException(ForceReattemptException.class
         .getName());
     IgnoredException exp1 = IgnoredException.addIgnoredException(CacheClosedException.class
@@ -3633,7 +3637,7 @@ public class WANTestBase extends DistributedTestCase{
               + " present region keyset " + r.keySet();
         }
       };
-      Wait.waitForCriterion(wc, 30000, 500, true);
+      Wait.waitForCriterion(wc, waitTime, 500, true);
     } finally {
       exp.remove();
       exp1.remove();
