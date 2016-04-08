@@ -47,6 +47,8 @@ import com.gemstone.gemfire.internal.cache.partitioned.BecomePrimaryBucketMessag
 import com.gemstone.gemfire.internal.cache.partitioned.MoveBucketMessage.MoveBucketResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveBucketMessage.RemoveBucketResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.BucketOperator;
+import com.gemstone.gemfire.internal.cache.partitioned.rebalance.BucketOperatorImpl;
+import com.gemstone.gemfire.internal.cache.partitioned.rebalance.BucketOperatorWrapper;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.ParallelBucketOperator;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.AddressComparor;
@@ -413,9 +415,9 @@ public class PartitionedRegionRebalanceOp {
     }
     BucketOperator operator = simulate ? 
         new SimulatedBucketOperator() 
-        : new BucketOperatorImpl();
+        : new BucketOperatorImpl(this);
     BucketOperatorWrapper wrapper = new BucketOperatorWrapper(
-        operator, rebalanceDetails);
+        operator, rebalanceDetails, stats, leaderRegion);
     return wrapper;
   }
 
@@ -509,17 +511,12 @@ public class PartitionedRegionRebalanceOp {
    *          the member on which to create the redundant bucket
    * @param bucketId
    *          the identifier of the bucket
-   * @param pr
-   *          the partitioned region which contains the bucket
-   * @param forRebalance
-   *          true if part of a rebalance operation
    * @return true if the redundant bucket was created
    */
-  public static boolean createRedundantBucketForRegion(
-      InternalDistributedMember target, int bucketId, PartitionedRegion pr,
-      boolean forRebalance, boolean replaceOfflineData) {
-    return pr.getRedundancyProvider().createBackupBucketOnMember(bucketId,
-        target, forRebalance, replaceOfflineData,null, true);
+  public boolean createRedundantBucketForRegion(
+      InternalDistributedMember target, int bucketId) {
+    return getLeaderRegion().getRedundancyProvider().createBackupBucketOnMember(bucketId,
+        target, isRebalance, replaceOfflineData,null, true);
   }
   
   /**
@@ -529,20 +526,18 @@ public class PartitionedRegionRebalanceOp {
    *          the member on which to create the redundant bucket
    * @param bucketId
    *          the identifier of the bucket
-   * @param pr
-   *          the partitioned region which contains the bucket
    * @return true if the redundant bucket was removed
    */
-  public static boolean removeRedundantBucketForRegion(
-      InternalDistributedMember target, int bucketId, PartitionedRegion pr) {
+  public boolean removeRedundantBucketForRegion(
+      InternalDistributedMember target, int bucketId) {
     boolean removed = false;
-    if (pr.getDistributionManager().getId().equals(target)) {
+    if (getLeaderRegion().getDistributionManager().getId().equals(target)) {
       // invoke directly on local member...
-      removed = pr.getDataStore().removeBucket(bucketId, false);
+      removed = getLeaderRegion().getDataStore().removeBucket(bucketId, false);
     }
     else {
       // send message to remote member...
-      RemoveBucketResponse response = RemoveBucketMessage.send(target, pr,
+      RemoveBucketResponse response = RemoveBucketMessage.send(target, getLeaderRegion(),
           bucketId, false);
       if (response != null) {
         removed = response.waitForResponse();
@@ -558,28 +553,23 @@ public class PartitionedRegionRebalanceOp {
    *          the member which should be primary
    * @param bucketId
    *          the identifier of the bucket
-   * @param pr
-   *          the partitioned region which contains the bucket
-   * @param forRebalance
-   *          true if part of a rebalance operation
    * @return true if the move was successful
    */
-  public static boolean movePrimaryBucketForRegion(
-      InternalDistributedMember target, int bucketId, PartitionedRegion pr,
-      boolean forRebalance) {
+  public boolean movePrimaryBucketForRegion(
+      InternalDistributedMember target, int bucketId) {
     boolean movedPrimary = false;
-    if (pr.getDistributionManager().getId().equals(target)) {
+    if (getLeaderRegion().getDistributionManager().getId().equals(target)) {
       // invoke directly on local member...
-      BucketAdvisor bucketAdvisor = pr.getRegionAdvisor().getBucketAdvisor(
+      BucketAdvisor bucketAdvisor = getLeaderRegion().getRegionAdvisor().getBucketAdvisor(
           bucketId);
       if (bucketAdvisor.isHosting()) {
-        movedPrimary = bucketAdvisor.becomePrimary(forRebalance);
+        movedPrimary = bucketAdvisor.becomePrimary(isRebalance);
       }
     }
     else {
       // send message to remote member...
       BecomePrimaryBucketResponse response = BecomePrimaryBucketMessage.send(
-          target, pr, bucketId, forRebalance);
+          target, getLeaderRegion(), bucketId, isRebalance);
       if (response != null) {
         movedPrimary = response.waitForResponse();
       }
@@ -596,20 +586,18 @@ public class PartitionedRegionRebalanceOp {
    *          member which should receive the bucket
    * @param bucketId
    *          the identifier of the bucket
-   * @param pr
-   *          the partitioned region which contains the bucket
    * @return true if the bucket was moved
    */
-  public static boolean moveBucketForRegion(InternalDistributedMember source,
-      InternalDistributedMember target, int bucketId, PartitionedRegion pr) {
+  public boolean moveBucketForRegion(InternalDistributedMember source,
+      InternalDistributedMember target, int bucketId) {
     boolean movedBucket = false;
-    if (pr.getDistributionManager().getId().equals(target)) {
+    if (getLeaderRegion().getDistributionManager().getId().equals(target)) {
       // invoke directly on local member...
-      movedBucket = pr.getDataStore().moveBucket(bucketId, source, false);
+      movedBucket = getLeaderRegion().getDataStore().moveBucket(bucketId, source, false);
     }
     else {
       // send message to remote member...
-      MoveBucketResponse response = MoveBucketMessage.send(target, pr,
+      MoveBucketResponse response = MoveBucketMessage.send(target, getLeaderRegion(),
           bucketId, source);
       if (response != null) {
         movedBucket = response.waitForResponse();
@@ -624,6 +612,10 @@ public class PartitionedRegionRebalanceOp {
     return isRebalance 
         || director.isRebalanceNecessary(leaderRegion.getRedundancyProvider().isRedundancyImpaired(), 
            leaderRegion.getDataPolicy().withPersistence());
+  }
+  
+  public PartitionedRegion getLeaderRegion() {
+    return leaderRegion;
   }
   
   private class MembershipChangeListener implements MembershipListener {
@@ -648,264 +640,6 @@ public class PartitionedRegionRebalanceOp {
     }
     
     public void quorumLost(Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
-    }
-  }
-  
-  private class BucketOperatorImpl implements BucketOperator {
-
-    @Override
-    public boolean moveBucket(InternalDistributedMember source,
-        InternalDistributedMember target, int bucketId,
-        Map<String, Long> colocatedRegionBytes) {
-
-      InternalResourceManager.getResourceObserver().movingBucket(
-          leaderRegion, bucketId, source, target);
-      return moveBucketForRegion(source, target, bucketId, leaderRegion);
-    }
-
-    @Override
-    public boolean movePrimary(InternalDistributedMember source,
-        InternalDistributedMember target, int bucketId) {
-
-      InternalResourceManager.getResourceObserver().movingPrimary(
-          leaderRegion, bucketId, source, target);
-      return movePrimaryBucketForRegion(target, bucketId, leaderRegion, isRebalance); 
-    }
-
-    @Override
-    public void createRedundantBucket(
-        InternalDistributedMember targetMember, int bucketId,
-        Map<String, Long> colocatedRegionBytes, Completion completion) {
-      boolean result = false;
-      try {
-        result = createRedundantBucketForRegion(targetMember, bucketId,
-          leaderRegion, isRebalance,replaceOfflineData);
-      } finally {
-        if(result) {
-          completion.onSuccess();
-        } else {
-          completion.onFailure();
-        }
-      }
-    }
-    
-    @Override
-    public void waitForOperations() {
-      //do nothing, all operations are synchronous
-    }
-
-    @Override
-    public boolean removeBucket(InternalDistributedMember targetMember, int bucketId,
-        Map<String, Long> colocatedRegionBytes) {
-      return removeRedundantBucketForRegion(targetMember, bucketId,
-          leaderRegion);
-    }
-  }
-
-  /**
-   * A wrapper class which delegates actual bucket operations to the enclosed BucketOperator,
-   * but keeps track of statistics about how many buckets are created, transfered, etc.
-   *
-   */
-  private class BucketOperatorWrapper implements 
-      BucketOperator {
-    private final BucketOperator delegate;
-    private final Set<PartitionRebalanceDetailsImpl> detailSet;
-    private final int regionCount;
-  
-    public BucketOperatorWrapper(
-        BucketOperator delegate,
-        Set<PartitionRebalanceDetailsImpl> rebalanceDetails) {
-      this.delegate = delegate;
-      this.detailSet = rebalanceDetails;
-      this.regionCount = detailSet.size();
-    }
-    @Override
-    public boolean moveBucket(InternalDistributedMember sourceMember,
-        InternalDistributedMember targetMember, int id,
-        Map<String, Long> colocatedRegionBytes) {
-      long start = System.nanoTime();
-      boolean result = false;
-      long elapsed = 0;
-      long totalBytes = 0;
-
-
-      if (stats != null) {
-        stats.startBucketTransfer(regionCount);
-      }
-      try {
-        result = delegate.moveBucket(sourceMember, targetMember, id,
-            colocatedRegionBytes);
-        elapsed = System.nanoTime() - start;
-        if (result) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Rebalancing {} bucket {} moved from {} to {}", leaderRegion, id, sourceMember, targetMember);
-          }
-          for (PartitionRebalanceDetailsImpl details : detailSet) {
-            String regionPath = details.getRegionPath();
-            Long regionBytes = colocatedRegionBytes.get(regionPath);
-            if(regionBytes != null) {
-            //only increment the elapsed time for the leader region
-              details.incTransfers(regionBytes.longValue(),
-                  details.getRegion().equals(leaderRegion) ? elapsed : 0);
-              totalBytes += regionBytes.longValue();
-            }
-          }
-        } else {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Rebalancing {} bucket {} moved failed from {} to {}", leaderRegion, id, sourceMember, targetMember);
-          }
-        }
-      } finally {
-        if(stats != null) {
-          stats.endBucketTransfer(regionCount, result, totalBytes, elapsed);
-        }
-      }
-      
-      return result;
-    }
-
-    @Override
-    public void createRedundantBucket(
-        final InternalDistributedMember targetMember, final int i, 
-        final Map<String, Long> colocatedRegionBytes, final Completion completion) {
-      
-      if(stats != null) {
-        stats.startBucketCreate(regionCount);
-      }
-      
-      final long start = System.nanoTime();
-      delegate.createRedundantBucket(targetMember, i,  
-          colocatedRegionBytes, new Completion() {
-
-        @Override
-        public void onSuccess() {
-          long totalBytes = 0;
-          long elapsed= System.nanoTime() - start;
-          if(logger.isDebugEnabled()) {
-            logger.debug("Rebalancing {} redundant bucket {} created on {}", leaderRegion, i, targetMember);
-          }
-          for (PartitionRebalanceDetailsImpl details : detailSet) {
-            String regionPath = details.getRegionPath();
-            Long lrb = colocatedRegionBytes.get(regionPath);
-            if (lrb != null) { // region could have gone away - esp during shutdow
-              long regionBytes = lrb.longValue();
-              //Only add the elapsed time to the leader region.
-              details.incCreates(regionBytes, 
-                  details.getRegion().equals(leaderRegion) ? elapsed : 0);
-              totalBytes += regionBytes;
-            }
-          }
-
-          if(stats != null) {
-            stats.endBucketCreate(regionCount, true, totalBytes, elapsed);
-          }
-
-        }
-
-        @Override
-        public void onFailure() {
-          long elapsed= System.nanoTime() - start;
-
-          if (logger.isDebugEnabled()) {
-            logger.debug("Rebalancing {} redundant bucket {} failed creation on {}", leaderRegion, i, targetMember);
-          }
-
-          if(stats != null) {
-            stats.endBucketCreate(regionCount, false, 0, elapsed);
-          }
-        }
-      });
-    }
-    
-    @Override
-    public boolean removeBucket(
-        InternalDistributedMember targetMember, int i, 
-        Map<String, Long> colocatedRegionBytes) {
-      boolean result = false;
-      long elapsed = 0;
-      long totalBytes = 0;
-      
-      
-      if(stats != null) {
-        stats.startBucketRemove(regionCount);
-      }
-      try {
-        long start = System.nanoTime();
-        result = delegate.removeBucket(targetMember, i,  
-            colocatedRegionBytes);
-        elapsed= System.nanoTime() - start;
-        if (result) {
-          if(logger.isDebugEnabled()) {
-            logger.debug("Rebalancing {} redundant bucket {} removed from {}", leaderRegion, i, targetMember);
-          }
-          for (PartitionRebalanceDetailsImpl details : detailSet) {
-            String regionPath = details.getRegionPath();
-            Long lrb = colocatedRegionBytes.get(regionPath);
-            if (lrb != null) { // region could have gone away - esp during shutdow
-              long regionBytes = lrb.longValue();
-              //Only add the elapsed time to the leader region.
-              details.incRemoves(regionBytes, 
-                  details.getRegion().equals(leaderRegion) ? elapsed : 0);
-              totalBytes += regionBytes;
-            }
-          }
-        } else {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Rebalancing {} redundant bucket {} failed removal o{}", leaderRegion, i, targetMember);
-          }
-        }
-      } finally {
-        if(stats != null) {
-          stats.endBucketRemove(regionCount, result, totalBytes, elapsed);
-        }
-      }
-      
-      return result;
-    }
-  
-    @Override
-    public boolean movePrimary(InternalDistributedMember source,
-        InternalDistributedMember target, int bucketId) {
-      boolean result = false;
-      long elapsed = 0;
-      
-      if(stats != null) {
-        stats.startPrimaryTransfer(regionCount);
-      }
-
-      try {
-        long start = System.nanoTime();
-        result = delegate.movePrimary(source, target, bucketId);
-        elapsed = System.nanoTime() - start;
-        if (result) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Rebalancing {} primary bucket {} moved from {} to {}", leaderRegion, bucketId, source, target);
-          }
-          for (PartitionRebalanceDetailsImpl details : detailSet) {
-            details.incPrimaryTransfers(details.getRegion().equals(leaderRegion) ? elapsed : 0);
-          }
-        } else {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Rebalancing {} primary bucket {} failed to move from {} to {}", leaderRegion, bucketId, source, target);
-          }
-        }
-    } finally {
-      if(stats != null) {
-        stats.endPrimaryTransfer(regionCount, result, elapsed);
-      }
-    }
-      
-      return result;
-    }
-    
-    @Override
-    public void waitForOperations() {
-      delegate.waitForOperations();
-    }
-
-    public Set<PartitionRebalanceDetailsImpl> getDetailSet() {
-      return this.detailSet;
     }
   }
 }

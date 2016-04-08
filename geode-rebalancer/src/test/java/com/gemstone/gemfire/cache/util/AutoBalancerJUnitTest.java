@@ -58,12 +58,12 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.partitioned.InternalPRInfo;
 import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * UnitTests for AutoBalancer. All collaborators should be mocked.
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class AutoBalancerJUnitTest {
   Mockery mockContext;
 
@@ -598,7 +598,7 @@ public class AutoBalancerJUnitTest {
   static Properties getBasicConfig() {
     Properties props = new Properties();
     // every second schedule
-    props.put(AutoBalancer.SCHEDULE, "* * * * * ?");
+    props.put(AutoBalancer.SCHEDULE, "* 0/30 * * * ?");
     return props;
   }
 }

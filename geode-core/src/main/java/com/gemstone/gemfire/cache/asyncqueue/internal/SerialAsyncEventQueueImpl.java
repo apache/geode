@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache.asyncqueue.internal;
 
+import com.gemstone.gemfire.CancelException;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -168,7 +169,10 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
       }
     }
     this.setIsPrimary(false);
+    try {
     new UpdateAttributesProcessor(this).distribute(false);
+    } catch (CancelException e) {
+    }
     Thread lockObtainingThread = getSenderAdvisor().getLockObtainingThread();
     if (lockObtainingThread != null && lockObtainingThread.isAlive()) {
       // wait a while for thread to terminate

@@ -83,6 +83,30 @@ public class TXRmtEvent implements TransactionEvent
       }
     }
   }
+  
+  /**
+   * Do all operations touch internal regions?
+   * Returns false if the transaction is empty
+   * or if any events touch non-internal regions.
+   */
+  public boolean hasOnlyInternalEvents() {
+    if (events == null || events.isEmpty()) {
+      return false;
+    }
+    Iterator<CacheEvent<?,?>> it = this.events.iterator();
+    while (it.hasNext()) {
+      CacheEvent<?,?> event = it.next();
+      if (isEventUserVisible(event)) {
+        LocalRegion region = (LocalRegion)event.getRegion();
+        if (region != null
+            && !region.isPdxTypesRegion()
+            && !region.isInternalRegion()) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
   public List getCreateEvents()
   {
@@ -174,6 +198,10 @@ public class TXRmtEvent implements TransactionEvent
         return Collections.unmodifiableList(result);
       }
     }
+  }
+  
+  public boolean isEmpty() {
+    return (events == null) || events.isEmpty();
   }
 
   private EntryEventImpl createEvent(LocalRegion r, Operation op,

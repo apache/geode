@@ -156,32 +156,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   protected static final String CORE_DEPENDENCIES_JAR_PATHNAME =
     IOUtils.appendToPath(GEMFIRE_HOME, "lib", "geode-dependencies.jar");
 
-  protected static final String SPRING_AOP_JAR_NAME_PREFIX = "spring-aop";
-  protected static final String SPRING_BEANS_JAR_NAME_PREFIX = "spring-beans";
-  protected static final String SPRING_CONTEXT_JAR_NAME_PREFIX = "spring-context";
-  protected static final String SPRING_CONTEXT_SUPPORT_JAR_NAME_PREFIX = "spring-context-support";
-  protected static final String SPRING_DATA_COMMONS_JAR_NAME_PREFIX = "spring-data-commons";
-  protected static final String SPRING_DATA_GEMFIRE_JAR_NAME_PREFIX = "spring-data-gemfire";
-  protected static final String SPRING_EXPRESSION_JAR_NAME_PREFIX = "spring-expression";
-  protected static final String SPRING_TX_JAR_NAME_PREFIX = "spring-tx";
-
-  protected static final Set<String> SPRING_JAR_NAME_PREFIXES;
-
-  static {
-    Set<String> springJarNamePrefixes = new HashSet<>(8);
-
-    springJarNamePrefixes.add(SPRING_AOP_JAR_NAME_PREFIX);
-    springJarNamePrefixes.add(SPRING_BEANS_JAR_NAME_PREFIX);
-    springJarNamePrefixes.add(SPRING_CONTEXT_JAR_NAME_PREFIX);
-    springJarNamePrefixes.add(SPRING_CONTEXT_SUPPORT_JAR_NAME_PREFIX);
-    springJarNamePrefixes.add(SPRING_DATA_COMMONS_JAR_NAME_PREFIX);
-    springJarNamePrefixes.add(SPRING_DATA_GEMFIRE_JAR_NAME_PREFIX);
-    springJarNamePrefixes.add(SPRING_EXPRESSION_JAR_NAME_PREFIX);
-    springJarNamePrefixes.add(SPRING_TX_JAR_NAME_PREFIX);
-
-    SPRING_JAR_NAME_PREFIXES = Collections.unmodifiableSet(springJarNamePrefixes);
-  }
-
   protected static boolean isAttachApiAvailable() {
     if (ATTACH_API_AVAILABLE.get() == null) {
       try {
@@ -1143,47 +1117,14 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   protected String getServerClasspath(final boolean includeSystemClasspath,
-                                      final boolean includeSpringDependencies,
                                       final String userClasspath)
   {
     List<String> jarFilePathnames = new ArrayList<>();
 
     jarFilePathnames.add(CORE_DEPENDENCIES_JAR_PATHNAME);
 
-    if (includeSpringDependencies) {
-      jarFilePathnames.addAll(getSpringJars());
-    }
-
     return toClasspath(includeSystemClasspath, jarFilePathnames.toArray(new String[jarFilePathnames.size()]),
       userClasspath);
-  }
-
-  protected List<String> getSpringJars() {
-    File gemfireHomeDirectory= new File(GEMFIRE_HOME);
-
-    assertArgument(gemfireHomeDirectory.isDirectory(),
-      "Please set the GEMFIRE environment variable to the product installation directory.");
-
-    List<String> springJarFilePathnames = new ArrayList<>(SPRING_JAR_NAME_PREFIXES.size());
-
-    for (File jarFile : new File(gemfireHomeDirectory, "lib").listFiles(new FileFilter() {
-      @Override public boolean accept(final File pathname) {
-        return (pathname.getName().startsWith("spring-") && pathname.getAbsolutePath().endsWith(".jar"));
-      }
-    })) {
-      String jarFileName = jarFile.getName();
-      String jarFileNamePrefix = jarFileName.substring(0, jarFileName.lastIndexOf("-"));
-
-      if (SPRING_JAR_NAME_PREFIXES.contains(jarFileNamePrefix.toLowerCase().trim())) {
-        springJarFilePathnames.add(jarFile.getAbsolutePath());
-      }
-    }
-
-    assertState(springJarFilePathnames.size() == SPRING_JAR_NAME_PREFIXES.size(),
-      "Unable to find all the necessary Spring JAR files in $GEMFIRE/lib (%1$s): expected (%2$s); but was (%3$s)",
-        gemfireHomeDirectory, SPRING_JAR_NAME_PREFIXES, springJarFilePathnames);
-
-    return springJarFilePathnames;
   }
 
   protected String getSystemClasspath() {
@@ -1809,7 +1750,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     commandLine.add("-server");
     commandLine.add("-classpath");
     commandLine.add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath),
-      launcher.isSpringXmlLocationSpecified(), userClasspath));
+      userClasspath));
 
     addCurrentLocators(commandLine, gemfireProperties);
     addGemFirePropertyFile(commandLine, gemfirePropertiesPathname);

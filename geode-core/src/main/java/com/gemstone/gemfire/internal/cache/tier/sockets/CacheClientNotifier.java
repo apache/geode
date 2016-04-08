@@ -162,6 +162,12 @@ public class CacheClientNotifier {
           messageTimeToLive, transactionTimeToLive,
           listener, overflowAttributesList, isGatewayReceiver);
     }
+    
+    if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
+      // Gateway receiver might have create CCN instance without HaContainer
+      // In this case, the HaContainer should be lazily created here
+      ccnSingleton.initHaContainer(overflowAttributesList);
+    }
 //    else {
 //      ccnSingleton.acceptorStats = acceptorStats;
 //      ccnSingleton.maximumMessageCount = maximumMessageCount;
@@ -1671,9 +1677,11 @@ public class CacheClientNotifier {
 
     if (noActiveServer() && ccnSingleton != null){
       ccnSingleton = null;
-      haContainer.cleanUp();
-      if (isDebugEnabled) {
-        logger.debug("haContainer ({}) is now cleaned up.", haContainer.getName());
+      if (haContainer != null) {
+        haContainer.cleanUp();
+        if (isDebugEnabled) {
+          logger.debug("haContainer ({}) is now cleaned up.", haContainer.getName());
+        }
       }
       this.clearCompiledQueries();
       blackListedClients.clear();
@@ -2147,25 +2155,6 @@ public class CacheClientNotifier {
     // Set the security LogWriter
     this.securityLogWriter = (InternalLogWriter)cache.getSecurityLogger();
 
-    // Create the overflow artifacts
-    if (overflowAttributesList != null
-        && !HARegionQueue.HA_EVICTION_POLICY_NONE.equals(overflowAttributesList
-            .get(0))) {
-      haContainer = new HAContainerRegion(cache.getRegion(Region.SEPARATOR
-          + CacheServerImpl.clientMessagesRegion((GemFireCacheImpl)cache,
-              (String)overflowAttributesList.get(0),
-              ((Integer)overflowAttributesList.get(1)).intValue(),
-              ((Integer)overflowAttributesList.get(2)).intValue(),
-              (String)overflowAttributesList.get(3),
-              (Boolean)overflowAttributesList.get(4))));
-    }
-    else {
-      haContainer = new HAContainerMap(new HashMap());
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug("ha container ({}) has been created.", haContainer.getName());
-    }
-
     this.maximumMessageCount = maximumMessageCount;
     this.messageTimeToLive = messageTimeToLive;
     this.transactionTimeToLive = transactionTimeToLive;
@@ -2608,7 +2597,7 @@ public class CacheClientNotifier {
    * (in case of eviction policy "none"). In both the cases, it'll store
    * HAEventWrapper as its key and ClientUpdateMessage as its value.
    */
-  private final HAContainerWrapper haContainer;
+  private HAContainerWrapper haContainer;
 
   //   /**
   //    * The singleton <code>CacheClientNotifier</code> instance
@@ -2690,6 +2679,29 @@ public class CacheClientNotifier {
    */
   public Map getHaContainer() {
     return haContainer;
+  }
+  
+  public void initHaContainer(List overflowAttributesList) {
+    // lazily initialize haContainer in case this CCN instance was created by a gateway receiver
+    if (overflowAttributesList != null
+        && !HARegionQueue.HA_EVICTION_POLICY_NONE.equals(overflowAttributesList
+            .get(0))) {
+      haContainer = new HAContainerRegion(_cache.getRegion(Region.SEPARATOR
+          + CacheServerImpl.clientMessagesRegion((GemFireCacheImpl)_cache,
+              (String)overflowAttributesList.get(0),
+              ((Integer)overflowAttributesList.get(1)).intValue(),
+              ((Integer)overflowAttributesList.get(2)).intValue(),
+              (String)overflowAttributesList.get(3),
+              (Boolean)overflowAttributesList.get(4))));
+    }
+    else {
+      haContainer = new HAContainerMap(new HashMap());
+    }
+    assert haContainer != null;
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("ha container ({}) has been created.", haContainer.getName());
+    }
   }
 
   private final Set blackListedClients = new CopyOnWriteArraySet();

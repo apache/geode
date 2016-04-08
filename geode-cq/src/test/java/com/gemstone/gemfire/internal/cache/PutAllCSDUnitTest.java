@@ -2248,15 +2248,6 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Stop server
     stopBridgeServers(getCache());
   }
-  
-  
-  public void testRepeat() throws Exception {
-    long giveup = System.currentTimeMillis() + (30 * 60000);
-    do {
-      testPartialKeyInPRSingleHop();
-      tearDown(); setUp();
-    } while (System.currentTimeMillis() < giveup);
-  }
 
   /**
    * Tests partial key putAll to 2 PR servers, because putting data at server

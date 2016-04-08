@@ -283,14 +283,6 @@ public class BlockingProcessStreamReaderJUnitTest extends ProcessStreamReaderTes
     this.stderr.start();
     this.stdout.start();
     
-    // wait for process to start
-    assertEventuallyTrue("Process never started", new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        return ProcessUtils.isProcessAlive(process);
-      }
-    }, WAIT_FOR_PROCESS_TO_START_TIMEOUT, INTERVAL);
-    
     // wait for process to die
     assertEventuallyFalse("Process never died", new Callable<Boolean>() {
       @Override
@@ -362,14 +354,6 @@ public class BlockingProcessStreamReaderJUnitTest extends ProcessStreamReaderTes
   
     this.stderr.start();
     this.stdout.start();
-    
-    // wait for process to start
-    assertEventuallyTrue("Process never started", new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        return ProcessUtils.isProcessAlive(process);
-      }
-    }, WAIT_FOR_PROCESS_TO_START_TIMEOUT, INTERVAL);
     
     // wait for process to die
     assertEventuallyFalse("Process never died", new Callable<Boolean>() {

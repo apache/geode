@@ -187,9 +187,12 @@ final class ProxyRegionMap implements RegionMap {
       throws EntryNotFoundException {
     
     if (event.getOperation().isLocal()) {
+      if (this.owner.isInitialized()) {
+        AbstractRegionMap.forceInvalidateEvent(event, this.owner);
+      }
       throw new EntryNotFoundException(event.getKey().toString());
     }
-    this.owner.cacheWriteBeforeInvalidate(event, invokeCallbacks, forceNewEntry);
+    this.owner.serverInvalidate(event);
     this.owner.recordEvent(event);
     this.owner.basicInvalidatePart2(markerEntry, event, false /*Clear conflict occurred */, true);
     this.owner.basicInvalidatePart3(markerEntry, event, true);
@@ -274,7 +277,7 @@ final class ProxyRegionMap implements RegionMap {
         txEvent.addDestroy(this.owner, markerEntry, key,aCallbackArgument);
       }
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner,
-                                                false, !inTokenMode)) {
+                                                !inTokenMode)) {
         // fix for bug 39526
         EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, op,
             key, null, txId, txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
@@ -304,7 +307,7 @@ final class ProxyRegionMap implements RegionMap {
         txEvent.addInvalidate(this.owner, markerEntry, key, newValue,aCallbackArgument);
       }
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner,
-                                                true, this.owner.isInitialized())) {
+                                                this.owner.isInitialized())) {
         // fix for bug 39526
         boolean cbEventInPending = false;
         EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, 
@@ -338,7 +341,7 @@ final class ProxyRegionMap implements RegionMap {
         txEvent.addPut(putOp, this.owner, markerEntry, key, newValue,aCallbackArgument);
       }
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner,
-                                                false, this.owner.isInitialized())) {
+                                                this.owner.isInitialized())) {
         // fix for bug 39526
         boolean cbEventInPending = false;
         EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, putOp, key, 

@@ -312,47 +312,6 @@ public class LauncherLifecycleCommandsJUnitTest {
   }
 
   @Test
-  public void testGetSpringJars() {
-    List<String> actualSpringJarPathnames = new LauncherLifecycleCommands().getSpringJars();
-
-    assertNotNull(actualSpringJarPathnames);
-    assertEquals(LauncherLifecycleCommands.SPRING_JAR_NAME_PREFIXES.size(), actualSpringJarPathnames.size());
-
-    int springCoreVersion = -1;
-    int springDataCommonsVersion = -1;
-    int springDataGemFireVersion = -1;
-
-    Set<String> expectedSpringJarNames = new HashSet<>(LauncherLifecycleCommands.SPRING_JAR_NAME_PREFIXES);
-
-    assertFalse(expectedSpringJarNames.isEmpty());
-
-    for (String springJarPathname : actualSpringJarPathnames) {
-      String springJarName = springJarPathname.substring(springJarPathname.lastIndexOf(File.separator) + 1);
-      String springJarNamePrefix = springJarName.substring(0, springJarName.lastIndexOf("-"));
-
-      switch (springJarNamePrefix) {
-        case LauncherLifecycleCommands.SPRING_BEANS_JAR_NAME_PREFIX:
-          springCoreVersion = Integer.parseInt(StringUtils.getDigitsOnly(springJarName));
-          break;
-        case LauncherLifecycleCommands.SPRING_DATA_COMMONS_JAR_NAME_PREFIX:
-          springDataCommonsVersion = Integer.parseInt(StringUtils.getDigitsOnly(springJarName));
-          break;
-        case LauncherLifecycleCommands.SPRING_DATA_GEMFIRE_JAR_NAME_PREFIX:
-          springDataGemFireVersion = Integer.parseInt(StringUtils.getDigitsOnly(springJarName));
-          break;
-      }
-
-      expectedSpringJarNames.remove(springJarNamePrefix);
-    }
-
-    assertTrue(String.format("Expected empty; but was (%1$s)", expectedSpringJarNames),
-        expectedSpringJarNames.isEmpty());
-    assertEquals(424, springCoreVersion);
-    assertEquals(191, springDataCommonsVersion);
-    assertEquals(172, springDataGemFireVersion);
-  }
-
-  @Test
   public void testGetSystemClasspath() {
     assertEquals(System.getProperty("java.class.path"), getLauncherLifecycleCommands().getSystemClasspath());
   }
@@ -376,10 +335,9 @@ public class LauncherLifecycleCommandsJUnitTest {
 
     String expectedClasspath = launcherCommands.getGemFireJarPath().concat(File.pathSeparator).concat(
         userClasspath).concat(File.pathSeparator).concat(
-        LauncherLifecycleCommands.CORE_DEPENDENCIES_JAR_PATHNAME).concat(File.pathSeparator).concat(
-        toPath(launcherCommands.getSpringJars().toArray()));
+        LauncherLifecycleCommands.CORE_DEPENDENCIES_JAR_PATHNAME);
 
-    String actualClasspath = launcherCommands.getServerClasspath(false, true, userClasspath);
+    String actualClasspath = launcherCommands.getServerClasspath(false, userClasspath);
 
     assertEquals(expectedClasspath, actualClasspath);
   }

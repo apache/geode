@@ -1145,8 +1145,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   /**
    * for testing, do not use in any other case as it is not thread safe
-   *
-   * @param req
    */
   JoinResponseMessage[] getJoinResponseMessage() {
     return joinResponse;

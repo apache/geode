@@ -2336,6 +2336,9 @@ public class EntryEventImpl
     if (callbacksInvoked()) { 
       buf.append(";callbacksInvoked");
     }
+    if (inhibitCacheListenerNotification()) {
+      buf.append(";inhibitCacheListenerNotification");
+    }
     if (this.versionTag != null) {
       buf.append(";version=").append(this.versionTag);
     }

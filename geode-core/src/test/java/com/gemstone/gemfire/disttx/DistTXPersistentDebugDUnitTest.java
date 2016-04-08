@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.disttx;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
@@ -30,13 +32,13 @@ import com.gemstone.gemfire.internal.cache.execute.data.Customer;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitDisabledTest {
+@Category(DistributedTest.class)
+public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitTest {
 
-  public DistTXPersistentDebugDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void postSetUpDistTXDebugDUnitTest() throws Exception {
     Invoke.invokeInEveryVM(new SerializableCallable() {
@@ -95,7 +97,8 @@ public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitDisabledTest
         RegionAttributes attr = af.create();
         return attr;
       }
-  
+
+  @Test
   public void testBasicDistributedTX() throws Exception {
     createCacheInAllVms();
     final String regionName = "persistentCustomerPRRegion";

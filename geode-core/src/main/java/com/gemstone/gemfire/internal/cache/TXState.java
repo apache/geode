@@ -388,7 +388,10 @@ public class TXState implements TXStateInterface {
       if(!firedWriter && writer!=null) {
         try {
           firedWriter = true;
-          writer.beforeCommit(getEvent());
+          TXEvent event = getEvent();
+          if (!event.hasOnlyInternalEvents()) {
+            writer.beforeCommit(event);
+          }
         } catch(TransactionWriterException twe) {
           cleanup();
           throw new CommitConflictException(twe);
@@ -917,7 +920,10 @@ public class TXState implements TXStateInterface {
         try {
           // need to mark this so we don't fire again in commit
           firedWriter  = true;
-          writer.beforeCommit(getEvent());
+          TXEvent event = getEvent();
+          if (!event.hasOnlyInternalEvents()) {
+            writer.beforeCommit(event);
+          }
         } catch(TransactionWriterException twe) {
           cleanup();
           throw new CommitConflictException(twe);
@@ -1623,7 +1629,7 @@ public class TXState implements TXStateInterface {
 
 
   public boolean isFireCallbacks() {
-    return true;
+    return !getEvent().hasOnlyInternalEvents();
   }
 
   public boolean isOriginRemoteForEvents() {

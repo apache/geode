@@ -2179,9 +2179,11 @@ public class InitialImageOperation  {
         if (logger.isDebugEnabled()) {
           try {
             CacheClientNotifier ccn = CacheClientNotifier.getInstance();
-            CacheClientProxy proxy = ((HAContainerWrapper)ccn.getHaContainer()).getProxy(
-                region.getName());      
-            logger.debug("Processing FilterInfo for proxy: {} : {}", proxy, msg);
+            if (ccn != null && ccn.getHaContainer() != null) {
+              CacheClientProxy proxy = ((HAContainerWrapper)ccn.getHaContainer()).getProxy(
+                  region.getName());      
+              logger.debug("Processing FilterInfo for proxy: {} : {}", proxy, msg);
+            }
           } catch (Exception ex) {
             // Ignore.
           }
@@ -3705,8 +3707,13 @@ public class InitialImageOperation  {
      */
     public void registerFilters(LocalRegion region) {
       CacheClientNotifier ccn = CacheClientNotifier.getInstance();
+
       CacheClientProxy proxy;
       try {
+        if (ccn == null || ccn.getHaContainer() == null) {
+          logger.info("Found null cache client notifier. Failed to register Filters during HARegion GII. Region :{}", region.getName());
+          return;
+        }
         proxy = ((HAContainerWrapper)ccn.getHaContainer()).getProxy(
             region.getName());      
       } catch (Exception ex) {
@@ -3716,7 +3723,7 @@ public class InitialImageOperation  {
       }
       
       if (proxy == null) {
-        logger.info("Found null client proxy. Failed to register Filters during HARegion GII. Region :{}", region.getName());
+        logger.info("Found null client proxy. Failed to register Filters during HARegion GII. Region :{}, HaContainer :{}", region.getName(), ccn.getHaContainer());
         return;
       }
       

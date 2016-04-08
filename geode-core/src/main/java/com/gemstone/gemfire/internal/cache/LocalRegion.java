@@ -3259,9 +3259,8 @@ public class LocalRegion extends AbstractRegion
   /**
    * @since 5.7
    */
-  protected void serverInvalidate(EntryEventImpl event, boolean invokeCallbacks, 
-      boolean forceNewEntry) {
-    if (event.getOperation().isDistributed()) {
+  void serverInvalidate(EntryEventImpl event) {
+    if (event.getOperation().isDistributed() && !event.isOriginRemote()) {
       ServerRegionProxy mySRP = getServerProxy();
       if (mySRP != null) {
         mySRP.invalidate(event);
@@ -3379,15 +3378,6 @@ public class LocalRegion extends AbstractRegion
     }
     serverRegionClear(event);
     return result;
-  }
-
-  /**
-   * @since 5.7
-   */
-  void cacheWriteBeforeInvalidate(EntryEventImpl event, boolean invokeCallbacks, boolean forceNewEntry) {
-    if (!event.getOperation().isLocal() && !event.isOriginRemote()) {
-      serverInvalidate(event, invokeCallbacks, forceNewEntry);
-    }
   }
 
   /**
@@ -4586,6 +4576,9 @@ public class LocalRegion extends AbstractRegion
   public void refreshEntriesFromServerKeys(Connection con, List serverKeys,
       InterestResultPolicy pol)
   {
+    if (serverKeys == null) {
+      return;
+    }
     ServerRegionProxy proxy = getServerProxy();
     if (logger.isDebugEnabled()) {
       logKeys(serverKeys, pol);
