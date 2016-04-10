@@ -36,6 +36,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  *
  * @since     3.5
  */
+@Deprecated
 public class InetAddressUtil {
   
   private static final Logger logger = LogService.getLogger();
