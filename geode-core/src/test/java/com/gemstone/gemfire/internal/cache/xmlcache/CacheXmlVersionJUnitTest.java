@@ -41,21 +41,21 @@ public class CacheXmlVersionJUnitTest {
    */
   @Test
   public void testOrdinal() {
-    assertTrue(VERSION_3_0.compareTo(VERSION_4_0) < 0);
-    assertTrue(VERSION_4_0.compareTo(VERSION_4_1) < 0);
-    assertTrue(VERSION_4_1.compareTo(VERSION_5_0) < 0);
-    assertTrue(VERSION_5_0.compareTo(VERSION_5_1) < 0);
-    assertTrue(VERSION_5_1.compareTo(VERSION_5_5) < 0);
-    assertTrue(VERSION_5_5.compareTo(VERSION_5_7) < 0);
-    assertTrue(VERSION_5_7.compareTo(VERSION_5_8) < 0);
-    assertTrue(VERSION_5_8.compareTo(VERSION_6_0) < 0);
-    assertTrue(VERSION_6_0.compareTo(VERSION_6_1) < 0);
-    assertTrue(VERSION_6_1.compareTo(VERSION_6_5) < 0);
-    assertTrue(VERSION_6_5.compareTo(VERSION_6_6) < 0);
-    assertTrue(VERSION_6_6.compareTo(VERSION_7_0) < 0);
-    assertTrue(VERSION_7_0.compareTo(VERSION_8_0) < 0);
-    assertTrue(VERSION_8_0.compareTo(VERSION_8_1) < 0);
-    assertTrue(VERSION_8_1.compareTo(VERSION_9_0) < 0);
+    assertTrue(GEMFIRE_3_0.compareTo(GEMFIRE_4_0) < 0);
+    assertTrue(GEMFIRE_4_0.compareTo(GEMFIRE_4_1) < 0);
+    assertTrue(GEMFIRE_4_1.compareTo(GEMFIRE_5_0) < 0);
+    assertTrue(GEMFIRE_5_0.compareTo(GEMFIRE_5_1) < 0);
+    assertTrue(GEMFIRE_5_1.compareTo(GEMFIRE_5_5) < 0);
+    assertTrue(GEMFIRE_5_5.compareTo(GEMFIRE_5_7) < 0);
+    assertTrue(GEMFIRE_5_7.compareTo(GEMFIRE_5_8) < 0);
+    assertTrue(GEMFIRE_5_8.compareTo(GEMFIRE_6_0) < 0);
+    assertTrue(GEMFIRE_6_0.compareTo(GEMFIRE_6_1) < 0);
+    assertTrue(GEMFIRE_6_1.compareTo(GEMFIRE_6_5) < 0);
+    assertTrue(GEMFIRE_6_5.compareTo(GEMFIRE_6_6) < 0);
+    assertTrue(GEMFIRE_6_6.compareTo(GEMFIRE_7_0) < 0);
+    assertTrue(GEMFIRE_7_0.compareTo(GEMFIRE_8_0) < 0);
+    assertTrue(GEMFIRE_8_0.compareTo(GEMFIRE_8_1) < 0);
+    assertTrue(GEMFIRE_8_1.compareTo(GEODE_1_0) < 0);
   }
 
   /**

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.mangofactory.swagger.configuration.JacksonScalaSupport;
 import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
 import com.mangofactory.swagger.configuration.SpringSwaggerModelConfig;
@@ -59,12 +60,12 @@ public class SwaggerConfig {
    */
   private ApiInfo apiInfo() {
     return new ApiInfo(
-        "Pivotal" + "\u2122" + " GemFire" + "\u00AE" + " Developer REST API",
-        "Developer REST API and interface to GemFire's distributed, in-memory data grid and cache.",
-        "https://network.pivotal.io/pivotal_software_eula",
-        "support@pivotal.io",
-        "Pivotal GemFire Documentation",
-        "http://gemfire.docs.pivotal.io/index.html");
+        LocalizedStrings.SwaggerConfig_VENDOR_PRODUCT_LINE.toLocalizedString(),
+        LocalizedStrings.SwaggerConfig_DESCRIPTOR.toLocalizedString(),
+        LocalizedStrings.SwaggerConfig_EULA_LINK.toLocalizedString(),
+        LocalizedStrings.SwaggerConfig_SUPPORT_LINK.toLocalizedString(),
+        LocalizedStrings.SwaggerConfig_DOC_TITLE.toLocalizedString(),
+        LocalizedStrings.SwaggerConfig_DOC_LINK.toLocalizedString());
   }
 
   /**

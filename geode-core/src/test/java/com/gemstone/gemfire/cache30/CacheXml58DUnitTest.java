@@ -248,7 +248,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
     AttributesFactory fac = new AttributesFactory(attrs);
 
 //  TODO mthomas 01/20/09 Move test back to using LRUHeap when config issues have settled
-//    if (getGemFireVersion().equals(CacheXml.VERSION_6_0)) {
+//    if (getGemFireVersion().equals(CacheXml.GEMFIRE_6_0)) {
 //      fac.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null,
 //          EvictionAction.OVERFLOW_TO_DISK));
 //    } else {
@@ -303,7 +303,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
     assertEquals(regionAttrs.getEntryIdleTimeout().getTimeout(), expiration.getTimeout());
     assertEquals(regionAttrs.getEntryTimeToLive().getTimeout(), expiration.getTimeout());    
 //  TODO mthomas 01/20/09 Move test back to using LRUHeap when config issues have settled
-//    if (getGemFireVersion().equals(CacheXml.VERSION_6_0)) {
+//    if (getGemFireVersion().equals(CacheXml.GEMFIRE_6_0)) {
 //      assertEquals(ea.getAlgorithm(),EvictionAlgorithm.LRU_HEAP);
 //    } else {
     assertEquals(ea.getAlgorithm(),EvictionAlgorithm.LRU_MEMORY);

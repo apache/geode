@@ -94,7 +94,7 @@ public class CacheElement {
 
   /**
    * Build <code>cache</code> element map for given <cod>doc</code>'s
-   * schemaLocation for {@link CacheXml#NAMESPACE}.
+   * schemaLocation for {@link CacheXml#GEODE_NAMESPACE}.
    * 
    * @param doc
    *          {@link Document} to parse schema for.
@@ -111,7 +111,7 @@ public class CacheElement {
 
     final LinkedHashMap<String, CacheElement> elementMap = new LinkedHashMap<String, CacheElement>();
 
-    buildElementMapCacheType(elementMap, resolveSchema(schemaLocationMap, CacheXml.NAMESPACE));
+    buildElementMapCacheType(elementMap, resolveSchema(schemaLocationMap, CacheXml.GEODE_NAMESPACE));
 
     // if we are ever concerned with the order of extensions or children process them here.
 

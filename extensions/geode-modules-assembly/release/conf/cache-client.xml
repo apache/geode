@@ -16,10 +16,10 @@
 	limitations under the License.
 -->
 <client-cache
-    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns="http://geode.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd"
-    version="9.0">
+    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0">
 
   <!-- The default pool connects to a cache server running on  localhost at
        port 40404. To connect to a different server host and port, modify

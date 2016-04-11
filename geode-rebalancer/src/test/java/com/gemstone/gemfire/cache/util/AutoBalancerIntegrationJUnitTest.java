@@ -144,10 +144,10 @@ public class AutoBalancerIntegrationJUnitTest {
 
   @Test
   public void testInitializerCacheXML() {
-    String configStr = "<cache xmlns=\"http://schema.pivotal.io/gemfire/cache\"                          "
+    String configStr = "<cache xmlns=\"http://geode.apache.org/schema/cache\"                          "
         + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"                                      "
-        + " xsi:schemaLocation=\"http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd\""
-        + " version=\"9.0\">                                                                             "
+        + " xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\""
+        + " version=\"1.0\">                                                                             "
         + "   <initializer>                                                                              "
         + "     <class-name>com.gemstone.gemfire.cache.util.AutoBalancer</class-name>                    "
         + "     <parameter name=\"schedule\">                                                            "
@@ -161,10 +161,10 @@ public class AutoBalancerIntegrationJUnitTest {
 
   @Test(expected = GemFireConfigException.class)
   public void testInitFailOnMissingScheduleConf() {
-    String configStr = "<cache xmlns=\"http://schema.pivotal.io/gemfire/cache\"                          "
+    String configStr = "<cache xmlns=\"http://geode.apache.org/schema/cache\"                          "
         + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"                                      "
-        + " xsi:schemaLocation=\"http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd\""
-        + " version=\"9.0\">                                                                             "
+        + " xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\""
+        + " version=\"1.0\">                                                                             "
         + "   <initializer>                                                                              "
         + "     <class-name>com.gemstone.gemfire.cache.util.AutoBalancer</class-name>                    "
         + "   </initializer>                                                                             "
