@@ -654,7 +654,7 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
         <xsd:annotation>
           <xsd:documentation>
             A "membership-attributes" element configures a region for membership
-            constraints based on required roles.
+            constraints based on required roles.  Deprecated - this feature is scheduled to be removed.
           </xsd:documentation>
         </xsd:annotation>
         <xsd:complexType>
@@ -663,7 +663,7 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
               <xsd:annotation>
                 <xsd:documentation>
                   A "required-role" element specifies a role that is required for reliable
-                  access to the region
+                  access to the region.  Deprecated - this feature is scheduled to be removed.
                 </xsd:documentation>
               </xsd:annotation>
               <xsd:complexType>
