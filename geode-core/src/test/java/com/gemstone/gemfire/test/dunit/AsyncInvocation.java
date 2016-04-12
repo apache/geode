@@ -209,10 +209,10 @@ public class AsyncInvocation<T> {
    *
    * @return this {@code AsyncInvocation}
    *
-   * @throws AssertionError wrapping a {@code TimeoutException} if this
-   *         {@code AsyncInvocation} fails to complete within the specified
-   *         timeout of {@code millis}.
-   *
+//   * @throws AssertionError wrapping a {@code TimeoutException} if this
+//   *         {@code AsyncInvocation} fails to complete within the specified
+//   *         timeout of {@code millis}.
+//   *
    * @throws IllegalArgumentException if the value of {@code millis} is
    *         negative.
    *
@@ -220,7 +220,7 @@ public class AsyncInvocation<T> {
    */
   public synchronized AsyncInvocation<T> join(final long millis) throws InterruptedException {
     this.thread.join(millis);
-    timeoutIfAlive(millis);
+//    timeoutIfAlive(millis);
     return this;
   }
 
@@ -235,10 +235,10 @@ public class AsyncInvocation<T> {
    *
    * @return this {@code AsyncInvocation}
    *
-   * @throws AssertionError wrapping a {@code TimeoutException} if this
-   *         {@code AsyncInvocation} fails to complete within the specified
-   *         timeout of {@code millis}.
-   *
+//   * @throws AssertionError wrapping a {@code TimeoutException} if this
+//   *         {@code AsyncInvocation} fails to complete within the specified
+//   *         timeout of {@code millis}.
+//   *
    * @throws IllegalArgumentException
    *         if the value of {@code millis} is negative, or the value
    *         of {@code nanos} is not in the range {@code 0-999999}.
@@ -247,7 +247,7 @@ public class AsyncInvocation<T> {
    */
   public synchronized AsyncInvocation<T> join(final long millis, final int nanos) throws InterruptedException {
     this.thread.join(millis, nanos);
-    timeoutIfAlive(millis);
+//    timeoutIfAlive(millis);
     return this;
   }
 
@@ -257,16 +257,16 @@ public class AsyncInvocation<T> {
    *
    * @return this {@code AsyncInvocation}
    *
-   * @throws AssertionError wrapping a {@code TimeoutException} if this
-   *         {@code AsyncInvocation} fails to complete within the default
-   *         timeout of 60 seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
-   *
+//   * @throws AssertionError wrapping a {@code TimeoutException} if this
+//   *         {@code AsyncInvocation} fails to complete within the default
+//   *         timeout of 60 seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
+//   *
    * @throws InterruptedException if the current thread is interrupted.
    */
   public AsyncInvocation<T> join() throws InterruptedException {
     // do NOT invoke Thread#join() without a timeout
     join(DEFAULT_JOIN_MILLIS);
-    timeoutIfAlive(DEFAULT_JOIN_MILLIS);
+//    timeoutIfAlive(DEFAULT_JOIN_MILLIS);
     return this;
   }
 
