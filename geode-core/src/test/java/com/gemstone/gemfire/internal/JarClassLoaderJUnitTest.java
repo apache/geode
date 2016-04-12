@@ -171,6 +171,23 @@ public class JarClassLoaderJUnitTest {
   }
 
   @Test
+  public void testFailingCompilation() throws Exception {
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append("import com.gemstone.gemfire.cache.Declarable;");
+    stringBuffer.append("import com.gemstone.gemfire.cache.execute.Function;");
+    stringBuffer.append("import com.gemstone.gemfire.cache.execute.FunctionContext;");
+    stringBuffer.append("public class JarClassLoaderJUnitFunction implements Function {}");
+    String functionString = stringBuffer.toString();
+
+    try {
+      this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitFunction", functionString);
+      fail("This code should have failed to compile and thrown an exception");
+    } catch (Exception ex) {
+      // All good
+    }
+  }
+
+  @Test
   public void testFunctions() throws IOException, ClassNotFoundException {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#1");
     final File jarFile2 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#2");
