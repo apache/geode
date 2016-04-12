@@ -61,9 +61,7 @@ dependencies {
   compile ('mx4j:mx4j-tools:' + project.'mx4j.version') { 
     ext.optional = true;
   }
-  compile ('net.java.dev.jna:jna:' + project.'jna.version') {
-    ext.optional = true
-  }
+  compile ('net.java.dev.jna:jna:' + project.'jna.version')
   provided ('org.apache.hadoop:hadoop-common:' + project.'hadoop.version') {
     transitive=false
   }
