@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -216,11 +217,12 @@ public class LuceneServiceImplJUnitTest {
     assertTrue(chunkPR != null);
   }
   
-  @Test
+  @Test (expected=UnsupportedOperationException.class)
   public void testCreateIndexForRR() throws IOException, ParseException {
-//    service.createIndex("index1", "RR1", "field1", "field2", "field3");
-  
-    
+    getService();
+    service.createIndex("index1", "RR1", "field1", "field2", "field3");
+    createRR("RR1", false);
+    fail("Expect UnsupportedOperationException");
   }
 
 }

@@ -52,23 +52,14 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       assert dataRegion != null;
       RegionAttributes ra = dataRegion.getAttributes();
       DataPolicy dp = ra.getDataPolicy();
-      final boolean isPartitionedRegion = (ra.getPartitionAttributes() == null) ? false : true;
       final boolean withPersistence = dp.withPersistence();
-      final boolean withStorage = isPartitionedRegion?ra.getPartitionAttributes().getLocalMaxMemory()>0:dp.withStorage();
+      final boolean withStorage = ra.getPartitionAttributes().getLocalMaxMemory()>0;
       RegionShortcut regionShortCut;
-      if (isPartitionedRegion) {
-        if (withPersistence) {
-          // TODO: add PartitionedRegionAttributes instead
-          regionShortCut = RegionShortcut.PARTITION_PERSISTENT;
-        } else {
-          regionShortCut = RegionShortcut.PARTITION;
-        }
+      if (withPersistence) {
+        // TODO: add PartitionedRegionAttributes instead
+        regionShortCut = RegionShortcut.PARTITION_PERSISTENT;
       } else {
-        if (withPersistence) {
-          regionShortCut = RegionShortcut.REPLICATE_PERSISTENT;
-        } else {
-          regionShortCut = RegionShortcut.REPLICATE;
-        }
+        regionShortCut = RegionShortcut.PARTITION;
       }
 
       // final boolean isOffHeap = ra.getOffHeap();

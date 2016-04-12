@@ -54,7 +54,7 @@ public class LuceneQueryImplJUnitTest {
   @Before
   public void createCache() {
     cache = new CacheFactory().set("mcast-port", "0").create();
-    region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("region");
+    region = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT).create("region");
   }
 
   @After
