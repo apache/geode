@@ -88,7 +88,9 @@ dependencies {
 
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-  runtime 'org.fusesource.jansi:jansi:' + project.'jansi.version'
+  runtime ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
+    ext.optional = true
+  }
   runtime ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
     ext.optional = true
   }
