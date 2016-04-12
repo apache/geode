@@ -1190,7 +1190,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * @param initiator
    * @param sMembers
    * @param cv
-   * @param initiateRemoval
    */
   private void checkIfAvailable(final InternalDistributedMember initiator,
       List<SuspectRequest> sMembers, final NetView cv) {

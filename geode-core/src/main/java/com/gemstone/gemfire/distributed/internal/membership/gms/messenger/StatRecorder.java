@@ -32,6 +32,8 @@ import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 
+import java.util.concurrent.RejectedExecutionException;
+
 /**
  * JGroups doesn't capture quite the stats we want so this protocol is
  * inserted into the stack to gather the missing ones.
@@ -46,17 +48,19 @@ public class StatRecorder extends Protocol {
   private static final int INCOMING = 1;
   
   DMStats stats;
+  Services services;
   
   private final short nakackHeaderId = ClassConfigurator.getProtocolId(NAKACK2.class);
   private final short unicastHeaderId = ClassConfigurator.getProtocolId(UNICAST3.class);
   private final short frag2HeaderId = ClassConfigurator.getProtocolId(FRAG2.class);
   
   /**
-   * set the statistics object to modify when events are detected
-   * @param stats
+   * sets the services object of the GMS that is using this recorder
+   * @param services the Services collective of the GMS
    */
-  public void setDMStats(DMStats stats) {
-    this.stats = stats;
+  public void setServices(Services services) {
+    this.services = services;
+    this.stats = services.getStatistics();
   }
   
   @Override
@@ -81,7 +85,23 @@ public class StatRecorder extends Protocol {
       filter(msg, OUTGOING);
       break;
     }
-    return down_prot.down(evt);
+    do {
+      try {
+        return down_prot.down(evt);
+      } catch (RejectedExecutionException e) {
+        logger.debug("retrying JGroups message transmission due to rejected execution (GEODE-1178)");
+        try {
+          Thread.sleep(10);
+        } catch (InterruptedException ie) {
+          // down() does not throw InterruptedException so we can only set the interrupt flag and return
+          Thread.currentThread().interrupt();
+          return null;
+        }
+      }
+    } while (services != null
+      && !services.getManager().shutdownInProgress()
+      && !services.getCancelCriterion().isCancelInProgress());
+    return null;
   }
   
 
