@@ -140,6 +140,8 @@ com/gemstone/gemfire/cache/hdfs/internal/hoplog/HdfsSortedOplogOrganizer$HoplogR
 com/gemstone/gemfire/cache/hdfs/internal/hoplog/Hoplog$HoplogVersion,false
 com/gemstone/gemfire/cache/hdfs/internal/hoplog/Hoplog$Meta,false
 com/gemstone/gemfire/cache/hdfs/internal/org/apache/hadoop/io/SequenceFile$CompressionType,false
+com/gemstone/gemfire/cache/operations/OperationContext$OperationCode,false
+com/gemstone/gemfire/cache/operations/OperationContext$Resource,false
 com/gemstone/gemfire/cache/partition/PartitionNotAvailableException,true,1
 com/gemstone/gemfire/cache/persistence/ConflictingPersistentDataException,true,-2629287782021455875
 com/gemstone/gemfire/cache/persistence/PartitionOfflineException,true,-6471045959318795870,offlineMembers:java/util/Set
