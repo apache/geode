@@ -17,8 +17,11 @@
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.internal.AvailablePort.*;
+import static com.gemstone.gemfire.security.ClientAuthenticationTestUtils.createCacheClient;
+import static com.gemstone.gemfire.security.ClientAuthenticationTestUtils.createCacheServer;
 import static com.gemstone.gemfire.security.ClientAuthenticationTestUtils.*;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;
+import static com.gemstone.gemfire.security.SecurityTestUtils.createCacheClient;
 import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 import static com.gemstone.gemfire.test.dunit.Wait.*;

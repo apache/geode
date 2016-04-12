@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
@@ -35,18 +43,12 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
-
+@Category(DistributedTest.class)
 public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
-
-  public ListAndDescribeRegionDUnitTest(String name) {
-    super(name);
-    // TODO Auto-generated constructor stub
-  }
 
   private static final String REGION1 = "region1";
   private static final String REGION2 = "region2";
@@ -186,15 +188,15 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     dataRegionFactory.create(REGION3);
   }
 
-
+  @Test
   public void testListRegion() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_REGION);
     String commandString = csb.toString();
     CommandResult commandResult = executeCommand(commandString);
     String commandResultAsString = commandResultToString(commandResult);
-    LogWriterUtils.getLogWriter().info("Command String : " + commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultAsString);
+    getLogWriter().info("Command String : " + commandString);
+    getLogWriter().info("Output : \n" + commandResultAsString);
     assertEquals(Status.OK, commandResult.getStatus());
     assertTrue(commandResultAsString.contains(PR1));
     assertTrue(commandResultAsString.contains(LOCALREGIONONMANAGER));
@@ -208,8 +210,8 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     commandResultAsString = commandResultToString(commandResult);
-    LogWriterUtils.getLogWriter().info("Command String : " + commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultAsString);
+    getLogWriter().info("Command String : " + commandString);
+    getLogWriter().info("Output : \n" + commandResultAsString);
     assertEquals(Status.OK, commandResult.getStatus());
     assertTrue(commandResultAsString.contains(PR1));
     assertTrue(commandResultAsString.contains(LOCALREGIONONMANAGER));
@@ -219,8 +221,8 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     commandResultAsString = commandResultToString(commandResult);
-    LogWriterUtils.getLogWriter().info("Command String : " + commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultAsString);
+    getLogWriter().info("Command String : " + commandString);
+    getLogWriter().info("Output : \n" + commandResultAsString);
     assertEquals(Status.OK, commandResult.getStatus());
     assertTrue(commandResultAsString.contains(PR1));
     assertTrue(commandResultAsString.contains(REGION1));
@@ -233,8 +235,8 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     commandResultAsString = commandResultToString(commandResult);
-    LogWriterUtils.getLogWriter().info("Command String : " + commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultAsString);
+    getLogWriter().info("Command String : " + commandString);
+    getLogWriter().info("Output : \n" + commandResultAsString);
     assertEquals(Status.OK, commandResult.getStatus());
     assertTrue(commandResultAsString.contains(PR1));
     assertTrue(commandResultAsString.contains(LOCALREGIONONMANAGER));
@@ -244,8 +246,8 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     commandResultAsString = commandResultToString(commandResult);
-    LogWriterUtils.getLogWriter().info("Command String : " + commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultAsString);
+    getLogWriter().info("Command String : " + commandString);
+    getLogWriter().info("Output : \n" + commandResultAsString);
     assertEquals(Status.OK, commandResult.getStatus());
     assertTrue(commandResultAsString.contains(PR1));
     assertTrue(commandResultAsString.contains(REGION1));
@@ -254,6 +256,7 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     assertTrue(commandResultAsString.contains(SUBREGION1A));
   }
 
+  @Test
   public void testDescribeRegion() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESCRIBE_REGION);
@@ -261,8 +264,8 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     String commandString = csb.toString();
     CommandResult commandResult = executeCommand(commandString);
     String commandResultAsString = commandResultToString(commandResult);
-    LogWriterUtils.getLogWriter().info("Command String : " + commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultAsString);
+    getLogWriter().info("Command String : " + commandString);
+    getLogWriter().info("Output : \n" + commandResultAsString);
     assertEquals(Status.OK, commandResult.getStatus());
     assertTrue(commandResultAsString.contains(PR1));
     assertTrue(commandResultAsString.contains("Server1"));
@@ -272,8 +275,8 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
     commandResultAsString = commandResultToString(commandResult);
-    LogWriterUtils.getLogWriter().info("Command String : " + commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultAsString);
+    getLogWriter().info("Command String : " + commandString);
+    getLogWriter().info("Output : \n" + commandResultAsString);
     assertEquals(Status.OK, commandResult.getStatus());
     assertTrue(commandResultAsString.contains(LOCALREGIONONMANAGER));
     assertTrue(commandResultAsString.contains("Manager"));
@@ -283,6 +286,7 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
    * Asserts that a describe region command issued on a region with compression returns the correct non default region
    * attribute for compression and the correct codec value.
    */
+  @Test
   public void testDescribeRegionWithCompressionCodec() {
     final String regionName = "compressedRegion";
     VM vm = Host.getHost(0).getVM(1);

@@ -16,6 +16,19 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Properties;
+import javax.management.ObjectName;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -36,29 +49,16 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.remote.CommandProcessor;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import javax.management.ObjectName;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Properties;
-
-/****
- */
+@Category(DistributedTest.class)
 public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public ShowMetricsDUnitTest(String name) {
-    super(name);
-    // TODO Auto-generated constructor stub
-  }
 
   private void createLocalSetUp() {
     Properties localProps = new Properties();
@@ -70,9 +70,10 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     Region region2 = dataRegionFactory.create("REGION2");
   }
 
-  /*
+  /**
    * tests the default version of "show metrics"
    */
+  @Test
   public void testShowMetricsDefault() {
     createDefaultSetup(null);
     createLocalSetUp();
@@ -96,11 +97,11 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         WaitCriterion wc = createMBeanWaitCriterion(1, "", null, 0);
-        Wait.waitForCriterion(wc, 5000, 500, true);
+        waitForCriterion(wc, 5000, 500, true);
         CommandProcessor commandProcessor = new CommandProcessor();
         Result result = commandProcessor.createCommandStatement("show metrics", Collections.EMPTY_MAP).process();
         String resultStr = commandResultToString((CommandResult) result);
-        LogWriterUtils.getLogWriter().info(resultStr);
+        getLogWriter().info(resultStr);
         assertEquals(resultStr, true, result.getStatus().equals(Status.OK));
         return resultStr;
       }
@@ -112,8 +113,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
     String managerResult = (String) managerResultObj;
 
-    LogWriterUtils.getLogWriter().info("#SB Manager");
-    LogWriterUtils.getLogWriter().info(managerResult);
+    getLogWriter().info("#SB Manager");
+    getLogWriter().info(managerResult);
   }
 
   public void systemSetUp() {
@@ -135,6 +136,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     });
   }
 
+  @Test
   public void testShowMetricsRegion() throws InterruptedException {
     systemSetUp();
     final String regionName = "REGION1";
@@ -143,7 +145,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         WaitCriterion wc = createMBeanWaitCriterion(2, regionName, null, 0);
-        Wait.waitForCriterion(wc, 5000, 500, true);
+        waitForCriterion(wc, 5000, 500, true);
         CommandProcessor commandProcessor = new CommandProcessor();
         Result result = commandProcessor.createCommandStatement("show metrics --region=REGION1",
             Collections.EMPTY_MAP).process();
@@ -159,8 +161,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
     String managerResult = (String) managerResultObj;
 
-    LogWriterUtils.getLogWriter().info("#SB Manager");
-    LogWriterUtils.getLogWriter().info(managerResult);
+    getLogWriter().info("#SB Manager");
+    getLogWriter().info(managerResult);
   }
 
   /***
@@ -213,6 +215,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     return waitCriterion;
   }
 
+  @Test
   public void testShowMetricsMember() throws ClassNotFoundException, IOException, InterruptedException {
     systemSetUp();
     Cache cache = getCache();
@@ -230,9 +233,9 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       public Object call() throws Exception {
 
         WaitCriterion wc = createMBeanWaitCriterion(3, "", distributedMember, 0);
-        Wait.waitForCriterion(wc, 5000, 500, true);
+        waitForCriterion(wc, 5000, 500, true);
         wc = createMBeanWaitCriterion(5, "", distributedMember, cacheServerPort);
-        Wait.waitForCriterion(wc, 10000, 500, true);
+        waitForCriterion(wc, 10000, 500, true);
 
         final String command = CliStrings.SHOW_METRICS + " --" + CliStrings.SHOW_METRICS__MEMBER + "=" + distributedMember.getId() + " --" + CliStrings.SHOW_METRICS__CACHESERVER__PORT + "=" + cacheServerPort + " --" + CliStrings.SHOW_METRICS__FILE + "=" + exportFileName;
 
@@ -257,11 +260,12 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
     String managerResult = (String) managerResultObj;
 
-    LogWriterUtils.getLogWriter().info("#SB Manager");
-    LogWriterUtils.getLogWriter().info(managerResult);
+    getLogWriter().info("#SB Manager");
+    getLogWriter().info(managerResult);
     cs.stop();
   }
 
+  @Test
   public void testShowMetricsRegionFromMember() throws ClassNotFoundException, IOException, InterruptedException {
     systemSetUp();
     Cache cache = getCache();
@@ -275,7 +279,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       public Object call() throws Exception {
 
         WaitCriterion wc = createMBeanWaitCriterion(4, regionName, distributedMember, 0);
-        Wait.waitForCriterion(wc, 5000, 500, true);
+        waitForCriterion(wc, 5000, 500, true);
         CommandProcessor commandProcessor = new CommandProcessor();
         Result result = commandProcessor.createCommandStatement(
             "show metrics --region=" + regionName + " --member=" + distributedMember.getName() + " --file=" + exportFileName,
@@ -298,10 +302,11 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
     String managerResult = (String) managerResultObj;
 
-    LogWriterUtils.getLogWriter().info("#SB Manager");
-    LogWriterUtils.getLogWriter().info(managerResult);
+    getLogWriter().info("#SB Manager");
+    getLogWriter().info(managerResult);
   }
 
+  @Test
   public void testShowMetricsRegionFromMemberWithCategories() throws ClassNotFoundException, IOException, InterruptedException {
     systemSetUp();
     Cache cache = getCache();
@@ -315,7 +320,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       public Object call() throws Exception {
 
         WaitCriterion wc = createMBeanWaitCriterion(4, regionName, distributedMember, 0);
-        Wait.waitForCriterion(wc, 5000, 500, true);
+        waitForCriterion(wc, 5000, 500, true);
         CommandProcessor commandProcessor = new CommandProcessor();
         Result result = commandProcessor.createCommandStatement(
             "show metrics --region=" + regionName + " --member=" + distributedMember.getName() + " --file=" + exportFileName + " --categories=region,eviction",
@@ -338,7 +343,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
     String managerResult = (String) managerResultObj;
 
-    LogWriterUtils.getLogWriter().info("#SB Manager");
-    LogWriterUtils.getLogWriter().info(managerResult);
+    getLogWriter().info("#SB Manager");
+    getLogWriter().info(managerResult);
   }
 }

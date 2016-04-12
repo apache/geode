@@ -18,12 +18,13 @@ package com.gemstone.gemfire.test.dunit.cache.internal;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -56,7 +57,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.logging.log4j.Logger;
 
 /**
  * This class is the base class for all distributed tests using JUnit 4 that

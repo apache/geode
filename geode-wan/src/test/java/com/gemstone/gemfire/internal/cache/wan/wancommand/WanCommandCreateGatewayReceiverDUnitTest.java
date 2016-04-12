@@ -16,11 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import hydra.Log;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -31,22 +35,20 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * DUnit tests for 'create gateway-receiver' command.
  */
-public class WanCommandCreateGatewayReceiverDUnitTest extends
-    WANCommandTestBase {
+@Category(DistributedTest.class)
+public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-  
-  public WanCommandCreateGatewayReceiverDUnitTest(String name) {
-    super(name);
-  }
   
   /**
    * GatewayReceiver with all default attributes
    */
+  @Test
   public void testCreateGatewayReceiverWithDefault() {
 
     VM puneLocator = Host.getLocator();
@@ -68,7 +70,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -109,6 +111,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
   /**
    * GatewayReceiver with given attributes
    */
+  @Test
   public void testCreateGatewayReceiver() {
 
     VM puneLocator = Host.getLocator();
@@ -136,7 +139,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -165,6 +168,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
   /**
    * GatewayReceiver with given attributes and a single GatewayTransportFilter.
    */
+  @Test
   public void testCreateGatewayReceiverWithGatewayTransportFilter() {
 
     VM puneLocator = Host.getLocator();
@@ -193,7 +197,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -225,6 +229,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
   /**
    * GatewayReceiver with given attributes and multiple GatewayTransportFilters.
    */
+  @Test
   public void testCreateGatewayReceiverWithMultipleGatewayTransportFilters() {
 
     VM puneLocator = Host.getLocator();
@@ -254,7 +259,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -288,6 +293,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
    * GatewayReceiver with given attributes.
    * Error scenario where startPort is greater than endPort.
    */
+  @Test
   public void testCreateGatewayReceiver_Error() {
 
     VM puneLocator = Host.getLocator();
@@ -314,7 +320,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -336,6 +342,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
   /**
    * GatewayReceiver with given attributes on the given member.
    */
+  @Test
   public void testCreateGatewayReceiver_onMember() {
 
     VM puneLocator = Host.getLocator();
@@ -366,7 +373,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -391,6 +398,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
   /**
    * GatewayReceiver with given attributes on multiple members.
    */
+  @Test
   public void testCreateGatewayReceiver_onMultipleMembers() {
 
     VM puneLocator = Host.getLocator();
@@ -422,7 +430,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -449,6 +457,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
   /**
    * GatewayReceiver with given attributes on the given group.
    */
+  @Test
   public void testCreateGatewayReceiver_onGroup() {
 
     VM puneLocator = Host.getLocator();
@@ -477,7 +486,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -507,6 +516,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
    * GatewayReceiver with given attributes on the given group.
    * Only 2 of 3 members are part of the group.
    */
+  @Test
   public void testCreateGatewayReceiver_onGroup_Scenario2() {
 
     VM puneLocator = Host.getLocator();
@@ -535,7 +545,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -562,6 +572,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
   /**
    * GatewayReceiver with given attributes on multiple groups.
    */
+  @Test
   public void testCreateGatewayReceiver_onMultipleGroups() {
 
     VM puneLocator = Host.getLocator();
@@ -590,7 +601,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 

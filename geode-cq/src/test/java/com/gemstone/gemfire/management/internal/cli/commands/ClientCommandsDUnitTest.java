@@ -16,15 +16,22 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import hydra.Log;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
-
+import java.util.Properties;
 import javax.management.ObjectName;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -63,23 +70,20 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.SectionResultData;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Dunit class for testing gemfire Client commands : list client , describe client 
  * @since 8.0
  */
-
-
+@Category({ DistributedTest.class, FlakyTest.class }) // see GEODE-1034
 public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -92,15 +96,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
   int port0 = 0;
   int port1= 0;
   
-  
-  
-  public ClientCommandsDUnitTest(String name) {
-    super(name);
-    
-  }
-
-  
-public void waitForListClientMbean(){
+  public void waitForListClientMbean(){
     
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);
@@ -117,7 +113,7 @@ public void waitForListClientMbean(){
           public boolean done() {
             final SystemManagementService service = (SystemManagementService) ManagementService.getManagementService(getCache());
             if (service == null) {
-              Log.getLogWriter().info("waitForListClientMbean Still probing for service");
+              getLogWriter().info("waitForListClientMbean Still probing for service");
               return false;
             } else {      
               final ObjectName cacheServerMBeanName = service.getCacheServerMBeanName(port0,serverMember);                            
@@ -142,7 +138,7 @@ public void waitForListClientMbean(){
             return "waitForListClientMbean Probing ...";
           }
         };
-        Wait.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
+        waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
       }
     }); 
     
@@ -166,7 +162,7 @@ public void waitForListClientMbean2(){
         public boolean done() {
           final SystemManagementService service = (SystemManagementService) ManagementService.getManagementService(getCache());
           if (service == null) {
-            Log.getLogWriter().info("waitForListClientMbean2 Still probing for service");
+            getLogWriter().info("waitForListClientMbean2 Still probing for service");
             return false;
           } else {      
             final ObjectName cacheServerMBeanName = service.getCacheServerMBeanName(port0,serverMember);                            
@@ -191,7 +187,7 @@ public void waitForListClientMbean2(){
           return "waitForListClientMbean2 Probing ...";
         }
       };
-      Wait.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
+      waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
     }
   }); 
   
@@ -216,7 +212,7 @@ public void waitForListClientMbean2(){
           public boolean done() {
             final SystemManagementService service = (SystemManagementService) ManagementService.getManagementService(getCache());
             if (service == null) {
-              Log.getLogWriter().info("waitForMbean Still probing for service");
+              getLogWriter().info("waitForMbean Still probing for service");
               return false;
             } else {      
               final ObjectName cacheServerMBeanName = service.getCacheServerMBeanName(port0,serverMember);                            
@@ -251,7 +247,7 @@ public void waitForListClientMbean2(){
             return "waitForMbean Probing for ";
           }
         };
-        Wait.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
+        waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
       }
     }); 
     
@@ -276,7 +272,7 @@ public void waitForListClientMbean2(){
           public boolean done() {
             final SystemManagementService service = (SystemManagementService) ManagementService.getManagementService(getCache());
             if (service == null) {
-              Log.getLogWriter().info("waitForListClientMbean3 Still probing for service");
+              getLogWriter().info("waitForListClientMbean3 Still probing for service");
               return false;
             } else {      
               final ObjectName cacheServerMBeanName1 = service.getCacheServerMBeanName(port0,serverMember1);                            
@@ -303,13 +299,15 @@ public void waitForListClientMbean2(){
             return "waitForListClientMbean3 Probing ...";
           }
         };
-        Wait.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
+        waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
       }
     }); 
     
   }
-  
- /*public void testDescribeClientWithServers3() throws Exception {
+
+  @Ignore("disabled for unknown reason")
+  @Test
+  public void testDescribeClientWithServers3() throws Exception {
     setupSystem3();    
     String commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId + "\"" ;
     final VM server1 = Host.getHost(0).getVM(1);
@@ -350,7 +348,7 @@ public void waitForListClientMbean2(){
     
     for(String str : clientIds){
       clientId1 = str;
-      Log.getLogWriter().info("testDescribeClientWithServers clientIds for server1 ="+str);
+      getLogWriter().info("testDescribeClientWithServers clientIds for server1 ="+str);
     }
     
     final DistributedMember serverMember2 = getMember(server2);
@@ -373,21 +371,21 @@ public void waitForListClientMbean2(){
     
     for(String str : clientIds2){
       clientId2 = str;
-      Log.getLogWriter().info("testDescribeClientWithServers clientIds for server2 ="+str);
+      getLogWriter().info("testDescribeClientWithServers clientIds for server2 ="+str);
     }
     
     
     commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId1 + "\"" ;
     
-    Log.getLogWriter().info("testDescribeClientWithServers commandStr clientId1 ="+commandString);    
+    getLogWriter().info("testDescribeClientWithServers commandStr clientId1 ="+commandString);    
     
     
     CommandResult commandResultForClient1 = executeCommand(commandString);
-    Log.getLogWriter().info("testDescribeClientWithServers commandStr clientId1="+commandResultForClient1);    
+    getLogWriter().info("testDescribeClientWithServers commandStr clientId1="+commandResultForClient1);    
     
     
     String resultAsString = commandResultToString(commandResultForClient1);
-    Log.getLogWriter().info("testDescribeClientWithServers commandStr clientId1 ="+resultAsString);   
+    getLogWriter().info("testDescribeClientWithServers commandStr clientId1 ="+resultAsString);   
     assertTrue(Status.OK.equals(commandResultForClient1.getStatus()));
     
     verifyClientStats(commandResultForClient1, serverName1);
@@ -396,15 +394,15 @@ public void waitForListClientMbean2(){
     
     commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId2 + "\"" ;
     
-    Log.getLogWriter().info("testDescribeClientWithServers commandStr1="+commandString);    
+    getLogWriter().info("testDescribeClientWithServers commandStr1="+commandString);    
     
     
     CommandResult commandResultForClient2 = executeCommand(commandString);
-    Log.getLogWriter().info("testDescribeClientWithServers commandResult1="+commandResultForClient2);    
+    getLogWriter().info("testDescribeClientWithServers commandResult1="+commandResultForClient2);    
     
     
     resultAsString = commandResultToString(commandResultForClient2);
-    Log.getLogWriter().info("testDescribeClientWithServers resultAsString1="+resultAsString);   
+    getLogWriter().info("testDescribeClientWithServers resultAsString1="+resultAsString);   
     assertTrue(Status.OK.equals(commandResultForClient2.getStatus()));
     
     verifyClientStats(commandResultForClient2, serverName2);
@@ -414,15 +412,15 @@ public void waitForListClientMbean2(){
     closeCacheServer(Host.getHost(0).getVM(3));
     closeCacheServer(Host.getHost(0).getVM(1));
   
-  } */
+  }
  
-public void verifyClientStats(CommandResult commandResultForClient, String serverName){
+ public void verifyClientStats(CommandResult commandResultForClient, String serverName){
    CompositeResultData resultData = (CompositeResultData) commandResultForClient.getResultData();
    SectionResultData section =resultData.retrieveSection("InfoSection");
    assertNotNull(section);    
    for(int i = 0 ; i < 1 ; i++){
      TabularResultData tableRsultData = section.retrieveTableByIndex(i);
-     Log.getLogWriter().info("testDescribeClientWithServers getHeader="+tableRsultData.getHeader());
+     getLogWriter().info("testDescribeClientWithServers getHeader="+tableRsultData.getHeader());
      assertNotNull(tableRsultData);
      
      List<String> minConn = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_MIN_CONN);
@@ -431,7 +429,7 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
      List<String> numCqs = tableRsultData.retrieveAllValues(CliStrings.DESCRIBE_CLIENT_CQs);
      
      
-     Log.getLogWriter().info("testDescribeClientWithServers getHeader numCqs ="+ numCqs);
+     getLogWriter().info("testDescribeClientWithServers getHeader numCqs ="+ numCqs);
      
      assertTrue(minConn.contains("1"));
      assertTrue(maxConn.contains("-1"));
@@ -458,15 +456,17 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
      
    }
  }
-  
-  public void disabled_testDescribeClient() throws Exception {
+
+  @Ignore("disabled for unknown reason")
+  @Test
+  public void testDescribeClient() throws Exception {
     setupSystem();
     
-    Log.getLogWriter().info("testDescribeClient clientId="+clientId);    
+    getLogWriter().info("testDescribeClient clientId="+clientId);    
     assertNotNull(clientId);
     
     String commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId + "\"" ;
-    Log.getLogWriter().info("testDescribeClient commandStr="+commandString);
+    getLogWriter().info("testDescribeClient commandStr="+commandString);
     
     final VM server1 = Host.getHost(0).getVM(1);
     String serverName = (String) server1.invoke(new SerializableCallable(){
@@ -480,11 +480,11 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
     
     
     CommandResult commandResult = executeCommand(commandString);
-    Log.getLogWriter().info("testDescribeClient commandResult="+commandResult);    
+    getLogWriter().info("testDescribeClient commandResult="+commandResult);    
     
     
     String resultAsString = commandResultToString(commandResult);
-    Log.getLogWriter().info("testDescribeClient resultAsString="+resultAsString);   
+    getLogWriter().info("testDescribeClient resultAsString="+resultAsString);   
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
     CompositeResultData resultData = (CompositeResultData) commandResult.getResultData();
@@ -527,13 +527,14 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
     closeCacheServer(Host.getHost(0).getVM(3));
     
     
-  } 
-  
+  }
+
+  @Test
   public void testDescribeClientWithServers() throws Exception {
     setupSystem2();
     
     String commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId + "\"" ;
-    Log.getLogWriter().info("testDescribeClientWithServers commandStr="+commandString);    
+    getLogWriter().info("testDescribeClientWithServers commandStr="+commandString);    
     
     
     final VM server1 = Host.getHost(0).getVM(1);
@@ -547,11 +548,11 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
     
     
     CommandResult commandResult = executeCommand(commandString);
-    Log.getLogWriter().info("testDescribeClientWithServers commandResult="+commandResult);    
+    getLogWriter().info("testDescribeClientWithServers commandResult="+commandResult);    
     
     
     String resultAsString = commandResultToString(commandResult);
-    Log.getLogWriter().info("testDescribeClientWithServers resultAsString="+resultAsString);   
+    getLogWriter().info("testDescribeClientWithServers resultAsString="+resultAsString);   
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
     CompositeResultData resultData = (CompositeResultData) commandResult.getResultData();
@@ -592,9 +593,9 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
     closeNonDurableClient(Host.getHost(0).getVM(3));
     closeCacheServer(Host.getHost(0).getVM(1));
   
-  } 
-  
-  
+  }
+
+  @Test
   public void testListClient() throws Exception {
     setupSystemForListClient();
 
@@ -602,7 +603,7 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
     final VM manager = Host.getHost(0).getVM(0);   
     
     String commandString = CliStrings.LIST_CLIENTS ;
-    Log.getLogWriter().info("testListClient commandStr="+commandString);
+    getLogWriter().info("testListClient commandStr="+commandString);
     
     waitForListClientMbean();  
     
@@ -632,11 +633,11 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
     });
     
     CommandResult commandResult = executeCommand(commandString);
-    Log.getLogWriter().info("testListClient commandResult="+commandResult);    
+    getLogWriter().info("testListClient commandResult="+commandResult);    
     
     
     String resultAsString = commandResultToString(commandResult);
-    Log.getLogWriter().info("testListClient resultAsString="+resultAsString);   
+    getLogWriter().info("testListClient resultAsString="+resultAsString);   
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
     
@@ -650,14 +651,14 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
     List<String> clientNames = tableRsultData.retrieveAllValues(CliStrings.LIST_CLIENT_COLUMN_Clients);
     
     
-    Log.getLogWriter().info("testListClients serverNames : " + serverNames);    
-    Log.getLogWriter().info("testListClients clientNames : " + clientNames);  
+    getLogWriter().info("testListClients serverNames : " + serverNames);    
+    getLogWriter().info("testListClients clientNames : " + clientNames);  
     assertEquals(2, serverNames.size());
     assertEquals(2, clientNames.size());    
     assertTrue(clientNames.contains(clientIds[0]));
     assertTrue(clientNames.contains(clientIds[1]));
     serverName = serverName.replace(":", "-");
-    Log.getLogWriter().info("testListClients serverName : " + serverName);
+    getLogWriter().info("testListClients serverName : " + serverName);
     for(String str : serverNames){
       assertTrue(str.contains(serverName));
     }    
@@ -666,17 +667,17 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
     closeCacheServer(Host.getHost(0).getVM(3));
     
     
-  } 
-  
-  
- public void testListClientForServers() throws Exception {
+  }
+
+  @Test
+  public void testListClientForServers() throws Exception {
     setupSystem3();
 
     
     final VM manager = Host.getHost(0).getVM(0);   
     
     String commandString = CliStrings.LIST_CLIENTS ;
-    Log.getLogWriter().info("testListClientForServers commandStr="+commandString);
+    getLogWriter().info("testListClientForServers commandStr="+commandString);
     
     
     
@@ -716,11 +717,11 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
     });
     
     CommandResult commandResult = executeCommand(commandString);
-    Log.getLogWriter().info("testListClientForServers commandResult="+commandResult);    
+    getLogWriter().info("testListClientForServers commandResult="+commandResult);    
     
     
     String resultAsString = commandResultToString(commandResult);
-    Log.getLogWriter().info("testListClientForServers resultAsString="+resultAsString);   
+    getLogWriter().info("testListClientForServers resultAsString="+resultAsString);   
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
     
@@ -737,10 +738,10 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
     serverName2 = serverName2.replace(":", "-");
     
     
-    Log.getLogWriter().info("testListClientForServers serverNames : " + serverNames);
-    Log.getLogWriter().info("testListClientForServers serverName1 : " + serverName1);
-    Log.getLogWriter().info("testListClientForServers serverName2 : " + serverName2);
-    Log.getLogWriter().info("testListClientForServers clientNames : " + clientNames);
+    getLogWriter().info("testListClientForServers serverNames : " + serverNames);
+    getLogWriter().info("testListClientForServers serverName1 : " + serverName1);
+    getLogWriter().info("testListClientForServers serverName2 : " + serverName2);
+    getLogWriter().info("testListClientForServers clientNames : " + clientNames);
     
     for(String client : clientIds){
       assertTrue(clientNames.contains(client));
@@ -983,7 +984,7 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
           getSystem(props);
           
           final ClientCacheFactory ccf = new ClientCacheFactory(props);
-          ccf.addPoolServer(NetworkUtils.getServerHostName(server.getHost()), port);
+          ccf.addPoolServer(getServerHostName(server.getHost()), port);
           ccf.setPoolSubscriptionEnabled(true);
           ccf.setPoolPingInterval(1);
           ccf.setPoolStatisticInterval(1);
@@ -1003,7 +1004,7 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
         }else{
           String poolName = "new_pool_" + System.currentTimeMillis();
           try{                      
-            PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(NetworkUtils.getServerHostName(server.getHost()), port)
+            PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(getServerHostName(server.getHost()), port)
               .setThreadLocalConnections(true)
               .setMinConnections(1)
               .setSubscriptionEnabled(true)
@@ -1056,7 +1057,7 @@ public void verifyClientStats(CommandResult commandResultForClient, String serve
 
   protected Properties getServerProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+getDUnitLocatorPort()+"]");
     return p;
   }
   
@@ -1077,14 +1078,14 @@ public void waitForNonSubCliMBean(){
             try {         
               final SystemManagementService service = (SystemManagementService) ManagementService.getManagementService(getCache());
               if (service == null) {
-                Log.getLogWriter().info("waitForNonSubScribedClientMBean Still probing for service");
+                getLogWriter().info("waitForNonSubScribedClientMBean Still probing for service");
                 return false;
               } else {      
-                Log.getLogWriter().info("waitForNonSubScribedClientMBean 1");
+                getLogWriter().info("waitForNonSubScribedClientMBean 1");
                 final ObjectName cacheServerMBeanName = service.getCacheServerMBeanName(port0,serverMember);
-                Log.getLogWriter().info("waitForNonSubScribedClientMBean 2 cacheServerMBeanName " + cacheServerMBeanName);
+                getLogWriter().info("waitForNonSubScribedClientMBean 2 cacheServerMBeanName " + cacheServerMBeanName);
                 CacheServerMXBean bean = service.getMBeanProxy(cacheServerMBeanName, CacheServerMXBean.class);
-                Log.getLogWriter().info("waitForNonSubScribedClientMBean 2 bean " + bean);
+                getLogWriter().info("waitForNonSubScribedClientMBean 2 bean " + bean);
                 if(bean.getClientIds().length > 0){
                   return true;
                 }               
@@ -1100,7 +1101,7 @@ public void waitForNonSubCliMBean(){
             return "waitForNonSubScribedClientMBean Probing for ";
           }
         };
-        Wait.waitForCriterion(waitForMaangerMBean, 5* 60 * 1000, 2000, true);
+        waitForCriterion(waitForMaangerMBean, 5* 60 * 1000, 2000, true);
       }
     }); 
     
@@ -1125,14 +1126,14 @@ public void waitForMixedClients(){
             try {         
               final SystemManagementService service = (SystemManagementService) ManagementService.getManagementService(getCache());
               if (service == null) {
-                Log.getLogWriter().info("waitForMixedClients Still probing for service");
+                getLogWriter().info("waitForMixedClients Still probing for service");
                 return false;
               } else {      
-                Log.getLogWriter().info("waitForMixedClients 1");
+                getLogWriter().info("waitForMixedClients 1");
                 final ObjectName cacheServerMBeanName = service.getCacheServerMBeanName(port0,serverMember);
-                Log.getLogWriter().info("waitForMixedClients 2 cacheServerMBeanName " + cacheServerMBeanName);
+                getLogWriter().info("waitForMixedClients 2 cacheServerMBeanName " + cacheServerMBeanName);
                 CacheServerMXBean bean = service.getMBeanProxy(cacheServerMBeanName, CacheServerMXBean.class);
-                Log.getLogWriter().info("waitForMixedClients 2 bean " + bean);
+                getLogWriter().info("waitForMixedClients 2 bean " + bean);
                 if(bean.getClientIds().length > 1){
                   return true;
                 }                
@@ -1148,22 +1149,21 @@ public void waitForMixedClients(){
             return "waitForMixedClients Probing for ";
           }
         };
-        Wait.waitForCriterion(waitForMaangerMBean, 5* 60 * 1000, 2000, true);
+        waitForCriterion(waitForMaangerMBean, 5* 60 * 1000, 2000, true);
       }
     }); 
     
   }
   
-  
-  
+  @Test
   public void testDescribeClientForNonSubscribedClient() throws Exception {
     setUpNonSubscribedClient();
     
-    Log.getLogWriter().info("testDescribeClientForNonSubscribedClient clientId="+clientId);    
+    getLogWriter().info("testDescribeClientForNonSubscribedClient clientId="+clientId);    
     assertNotNull(clientId);
     
     String commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId + "\"" ;
-    Log.getLogWriter().info("testDescribeClientForNonSubscribedClient commandStr="+commandString);
+    getLogWriter().info("testDescribeClientForNonSubscribedClient commandStr="+commandString);
     
     final VM server1 = Host.getHost(0).getVM(1);
     String serverName = (String) server1.invoke(new SerializableCallable(){
@@ -1176,11 +1176,11 @@ public void waitForMixedClients(){
     
     
     CommandResult commandResult = executeCommand(commandString);
-    Log.getLogWriter().info("testDescribeClientForNonSubscribedClient commandResult="+commandResult);    
+    getLogWriter().info("testDescribeClientForNonSubscribedClient commandResult="+commandResult);    
     
     
     String resultAsString = commandResultToString(commandResult);
-    Log.getLogWriter().info("testDescribeClientForNonSubscribedClient resultAsString="+resultAsString);   
+    getLogWriter().info("testDescribeClientForNonSubscribedClient resultAsString="+resultAsString);   
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
     CompositeResultData resultData = (CompositeResultData) commandResult.getResultData();
@@ -1228,8 +1228,9 @@ public void waitForMixedClients(){
     closeCacheServer(Host.getHost(0).getVM(3));
     
     
-  }  
-  
+  }
+
+  @Test
   public void testDescribeMixClientWithServers() throws Exception {
     String[] clientIds = setupSystemWithSubAndNonSubClient();    
     
@@ -1243,13 +1244,13 @@ public void waitForMixedClients(){
     });
     
     String commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientIds[0] + "\"" ;
-    Log.getLogWriter().info("testDescribeMixClientWithServers commandStr="+commandString);
+    getLogWriter().info("testDescribeMixClientWithServers commandStr="+commandString);
     
     
     executeAndVerifyResultsForMixedClients(commandString, serverName );    
     
     String commandString2 = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientIds[1] + "\"" ;
-    Log.getLogWriter().info("testDescribeMixClientWithServers commandString2="+commandString2);   
+    getLogWriter().info("testDescribeMixClientWithServers commandString2="+commandString2);   
     
     
     executeAndVerifyResultsForMixedClients(commandString2,serverName );
@@ -1262,11 +1263,11 @@ public void waitForMixedClients(){
   
 void executeAndVerifyResultsForMixedClients(String commandString, String serverName){
   CommandResult commandResult = executeCommand(commandString);
-  Log.getLogWriter().info("testDescribeMixClientWithServers commandResult="+commandResult);    
+  getLogWriter().info("testDescribeMixClientWithServers commandResult="+commandResult);    
   
   
   String resultAsString = commandResultToString(commandResult);
-  Log.getLogWriter().info("testDescribeMixClientWithServers resultAsString="+resultAsString);
+  getLogWriter().info("testDescribeMixClientWithServers resultAsString="+resultAsString);
   
   
   assertTrue(Status.OK.equals(commandResult.getStatus()));
@@ -1396,7 +1397,7 @@ private void setUpNonSubscribedClient() throws Exception {
           getSystem(props);
           
           final ClientCacheFactory ccf = new ClientCacheFactory(props);
-          ccf.addPoolServer(NetworkUtils.getServerHostName(server.getHost()), port);
+          ccf.addPoolServer(getServerHostName(server.getHost()), port);
           ccf.setPoolSubscriptionEnabled(false);
           ccf.setPoolPingInterval(1);
           ccf.setPoolStatisticInterval(1);
@@ -1416,7 +1417,7 @@ private void setUpNonSubscribedClient() throws Exception {
         }else{
           String poolName = "new_pool_" + System.currentTimeMillis();
           try{                      
-            PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(NetworkUtils.getServerHostName(server.getHost()), port)
+            PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(getServerHostName(server.getHost()), port)
               .setThreadLocalConnections(true)
               .setMinConnections(1)
               .setSubscriptionEnabled(false)

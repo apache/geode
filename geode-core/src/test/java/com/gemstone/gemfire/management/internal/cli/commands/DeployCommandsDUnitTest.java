@@ -16,6 +16,17 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.regex.Pattern;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -35,31 +46,22 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.regex.Pattern;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Unit tests for the DeployCommands class
  *
  * @since 7.0
  */
+@Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class DeployCommandsDUnitTest extends CliCommandTestBase {
-  private static final long serialVersionUID = 1L;
 
   File newDeployableJarFile = new File("DeployCommandsDUnit1.jar");
 
   transient private ClassBuilder classBuilder = new ClassBuilder();
   transient private CommandProcessor commandProcessor;
 
-  public DeployCommandsDUnitTest(String name) {
-    super(name);
-  }
-
-  @SuppressWarnings("serial")
   @Override
   public final void postSetUp() throws Exception {
     this.commandProcessor = new CommandProcessor();
@@ -90,7 +92,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     deleteSavedJarFiles();
   }
 
-  @SuppressWarnings("serial")
+  @Test
   public void testDeploy() throws IOException {
     final Properties props = new Properties();
     final Host host = Host.getHost(0);
@@ -176,7 +178,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(2, countMatchesInString(resultString, "DeployCommandsDUnit6.jar"));
   }
 
-  @SuppressWarnings("serial")
+  @Test
   public void testUndeploy() throws IOException {
     final Properties props = new Properties();
     final Host host = Host.getHost(0);
@@ -253,7 +255,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(4, countMatchesInString(resultString, "DeployCommandsDUnit5.jar"));
   }
 
-  @SuppressWarnings("serial")
+  @Test
   public void testListDeployed() throws IOException {
     final Properties props = new Properties();
     final Host host = Host.getHost(0);
@@ -322,6 +324,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Does an end-to-end test using the complete CLI framework while ensuring that the shared configuration is updated.
    */
+  @Test
   public void testEndToEnd() throws IOException {
     final String groupName = "testDeployEndToEndGroup";
 

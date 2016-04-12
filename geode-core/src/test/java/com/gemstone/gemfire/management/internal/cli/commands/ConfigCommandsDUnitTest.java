@@ -16,6 +16,26 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Invoke.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.Locator;
@@ -35,36 +55,21 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.remote.CommandProcessor;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Dunit class for testing GemFire config commands : export config
  *
  * @since 7.0
  */
+@Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class ConfigCommandsDUnitTest extends CliCommandTestBase {
-  private static final long serialVersionUID = 1L;
 
   File managerConfigFile = new File("Manager-cache.xml");
   File managerPropsFile = new File("Manager-gf.properties");
@@ -77,26 +82,23 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
   File subDir = new File("ConfigCommandsDUnitTestSubDir");
   File subManagerConfigFile = new File(subDir, managerConfigFile.getName());
 
-  public ConfigCommandsDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   protected void preTearDownCliCommandTestBase() throws Exception {
     deleteTestFiles();
-    Invoke.invokeInEveryVM(new SerializableRunnable() {
+    invokeInEveryVM(new SerializableRunnable() {
 
       @Override
       public void run() {
         try {
           deleteTestFiles();
         } catch (IOException e) {
-          Assert.fail("error", e);
+          fail("error", e);
         }
       }
     });
   }
 
+  @Test
   public void testDescribeConfig() throws ClassNotFoundException, IOException {
     createDefaultSetup(null);
     final String controllerName = "Member2";
@@ -123,10 +125,10 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
     List<String> jvmArgs = runtimeBean.getInputArguments();
 
-    LogWriterUtils.getLogWriter().info("#SB Actual JVM Args : ");
+    getLogWriter().info("#SB Actual JVM Args : ");
 
     for (String jvmArg : jvmArgs) {
-      LogWriterUtils.getLogWriter().info("#SB JVM " + jvmArg);
+      getLogWriter().info("#SB JVM " + jvmArg);
     }
 
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
@@ -140,7 +142,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     CommandResult cmdResult = executeCommand(command);
 
     String resultStr = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("#SB Hiding the defaults\n" + resultStr);
+    getLogWriter().info("#SB Hiding the defaults\n" + resultStr);
 
     assertEquals(true, cmdResult.getStatus().equals(Status.OK));
     assertEquals(true, resultStr.contains("G1"));
@@ -150,7 +152,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
     cmdResult = executeCommand(command + " --" + CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS + "=false");
     resultStr = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("#SB No hiding of defaults\n" + resultStr);
+    getLogWriter().info("#SB No hiding of defaults\n" + resultStr);
 
     assertEquals(true, cmdResult.getStatus().equals(Status.OK));
     assertEquals(true, resultStr.contains("is-server"));
@@ -160,7 +162,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     cs.stop();
   }
 
-  @SuppressWarnings("serial")
+  @Test
   public void testExportConfig() throws IOException {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
@@ -252,12 +254,13 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
       FileReader reader = new FileReader(shellConfigFile);
       reader.read(fileContents);
     } catch (Exception ex) {
-      Assert.fail("Unable to read file contents for comparison", ex);
+      fail("Unable to read file contents for comparison", ex);
     }
 
     assertEquals(configToMatch, new String(fileContents));
   }
 
+  @Test
   public void testAlterRuntimeConfig() throws ClassNotFoundException, IOException {
     final String controller = "controller";
     createDefaultSetup(null);
@@ -279,8 +282,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
     CommandResult cmdResult = executeCommand(csb.getCommandString());
     String resultString = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("Result\n");
-    LogWriterUtils.getLogWriter().info(resultString);
+    getLogWriter().info("Result\n");
+    getLogWriter().info(resultString);
     assertEquals(true, cmdResult.getStatus().equals(Status.OK));
     assertEquals(LogWriterImpl.INFO_LEVEL, config.getLogLevel());
     assertEquals(50, config.getLogFileSizeLimit());
@@ -295,6 +298,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     Result result = commandProcessor.createCommandStatement("alter runtime", Collections.EMPTY_MAP).process();
   }
 
+  @Test
   public void testAlterRuntimeConfigRandom() {
     final String member1 = "VM1";
     final String controller = "controller";
@@ -318,8 +322,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     CommandResult cmdResult = executeCommand(csb.getCommandString());
     String resultAsString = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("#SB Result\n");
-    LogWriterUtils.getLogWriter().info(resultAsString);
+    getLogWriter().info("#SB Result\n");
+    getLogWriter().info(resultAsString);
     assertEquals(true, cmdResult.getStatus().equals(Status.ERROR));
     assertTrue(resultAsString.contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE));
 
@@ -327,12 +331,13 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "2000000000");
     cmdResult = executeCommand(csb.getCommandString());
     resultAsString = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("#SB Result\n");
-    LogWriterUtils.getLogWriter().info(resultAsString);
+    getLogWriter().info("#SB Result\n");
+    getLogWriter().info(resultAsString);
     assertEquals(true, cmdResult.getStatus().equals(Status.ERROR));
 
   }
 
+  @Test
   public void testAlterRuntimeConfigOnAllMembers() {
     final String member1 = "VM1";
     final String controller = "controller";
@@ -363,8 +368,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
     CommandResult cmdResult = executeCommand(csb.getCommandString());
     String resultString = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("#SB Result\n");
-    LogWriterUtils.getLogWriter().info(resultString);
+    getLogWriter().info("#SB Result\n");
+    getLogWriter().info(resultString);
     assertEquals(true, cmdResult.getStatus().equals(Status.OK));
     assertEquals(LogWriterImpl.INFO_LEVEL, config.getLogLevel());
     assertEquals(50, config.getLogFileSizeLimit());
@@ -428,7 +433,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          Wait.waitForCriterion(wc, 5000, 500, true);
+          waitForCriterion(wc, 5000, 500, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
@@ -479,7 +484,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
           gemfireProperties = sharedConfig.getConfiguration(groupName).getGemfireProperties();
           assertEquals("fine", gemfireProperties.get(DistributionConfig.LOG_LEVEL_NAME));
         } catch (Exception e) {
-          Assert.fail("Error occurred in cluster configuration service", e);
+          fail("Error occurred in cluster configuration service", e);
         }
       }
     });

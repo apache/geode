@@ -18,16 +18,18 @@
  */
 package com.gemstone.gemfire.security;
 
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
  * this class contains test methods that used to be in its superclass but
  * that test started taking too long and caused dunit runs to hang
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class ClientAuthenticationPart2DUnitTest extends ClientAuthenticationTestCase {
 
   @Test

@@ -16,9 +16,6 @@
  */
 package com.gemstone.gemfire.test.dunit.standalone;
 
-import hydra.Log;
-import hydra.MethExecutorResult;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,6 +38,10 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Properties;
 
+import batterytest.greplogs.ExpectedStrings;
+import batterytest.greplogs.LogConsumer;
+import hydra.Log;
+import hydra.MethExecutorResult;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -48,9 +49,6 @@ import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.Assert;
-
-import batterytest.greplogs.ExpectedStrings;
-import batterytest.greplogs.LogConsumer;
 
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;

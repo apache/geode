@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.internal.tests;
+package com.gemstone.gemfire.test.dunit.tests;
 
 import static org.assertj.core.api.Assertions.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class JUnit4GetDefaultDiskStoreNameDUnitTest extends JUnit4DistributedTestCase {

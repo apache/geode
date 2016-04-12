@@ -26,6 +26,9 @@ import java.util.Properties;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.execute.FunctionService;
@@ -38,10 +41,9 @@ import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
 
   private static final String[] serverIgnoredExceptions = {

@@ -18,13 +18,14 @@
  */
 package com.gemstone.gemfire.security;
 
-//import static com.gemstone.gemfire.security.ClientAuthenticationTestUtils.*;
-//import static com.gemstone.gemfire.security.ClientAuthorizationTestCase.*;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 
 import java.util.Iterator;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.Function;
@@ -36,10 +37,9 @@ import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestCase {
 
   @Override

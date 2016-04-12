@@ -26,15 +26,18 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.test.junit.Retry;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.rules.RetryRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Tests for authorization from client to server. This tests for authorization
@@ -43,14 +46,14 @@ import org.junit.experimental.categories.Category;
  * 
  * @since 5.5
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class, FlakyTest.class}) // GEODE-693, GEODE-1009: getRandomAvailablePort
 public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
   @Rule
   public RetryRule retryRule = new RetryRule();
 
   @Test
-  @Retry(2)
+  @Retry(2) // GEODE-693: getRandomAvailablePort
   public void testAllPostOps() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllPostOps();
 
@@ -112,6 +115,7 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
   }
 
   @Test
+  @Retry(2) // GEODE-1009: getRandomAvailablePort
   public void testAllOpsNotifications() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllOpsNotifications();
 

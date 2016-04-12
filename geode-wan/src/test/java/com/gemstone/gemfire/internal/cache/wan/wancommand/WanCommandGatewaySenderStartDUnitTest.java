@@ -16,10 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import hydra.Log;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
 
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -28,20 +33,18 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public WanCommandGatewaySenderStartDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Test wan commands for error in input 1> start gateway-sender command needs
    * only one of member or group.
    */
+  @Test
   public void testStartGatewaySender_ErrorConditions() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -67,7 +70,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.ERROR, cmdResult.getStatus());
       assertTrue(strCmdResult.contains(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE));
@@ -86,6 +89,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     }
   }
 
+  @Test
   public void testStartGatewaySender() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -115,13 +119,13 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     vm5.invoke(() -> WANCommandTestBase.verifySenderState(
         "ln", false, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --"
         + CliStrings.START_GATEWAYSENDER__ID + "=ln";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       
@@ -146,6 +150,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
    * test to validate that the start gateway sender starts the gateway sender on
    * a member
    */
+  @Test
   public void testStartGatewaySender_onMember() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -166,14 +171,14 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
         "ln", false, false ));
 
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --"
         + CliStrings.START_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.START_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       assertTrue(strCmdResult.contains("is started on member"));
@@ -189,6 +194,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
    * test to validate that the start gateway sender starts the gateway sender on
    * a group of members
    */
+  @Test
   public void testStartGatewaySender_Group() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -221,14 +227,14 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     vm5.invoke(() -> WANCommandTestBase.verifySenderState(
         "ln", false, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --"
         + CliStrings.START_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.START_GATEWAYSENDER__GROUP + "=SenderGroup1";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewaySender_Group stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -253,8 +259,8 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
   /**
    * Test to validate the scenario gateway sender is started when one or more
    * sender members belongs to multiple groups
-   * 
    */
+  @Test
   public void testStartGatewaySender_MultipleGroup() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -299,14 +305,14 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     vm7.invoke(() -> WANCommandTestBase.verifySenderState(
         "ln", false, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --"
         + CliStrings.START_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.START_GATEWAYSENDER__GROUP + "=SenderGroup1,SenderGroup2";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewaySender_Group stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -334,8 +340,8 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
   /**
    * Test to validate the test scenario when one of the member ion group does
    * not have the sender.
-   * 
    */
+  @Test
   public void testStartGatewaySender_Group_MissingSenderFromGroup() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -364,7 +370,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
     vm5.invoke(() -> WANCommandTestBase.verifySenderState(
         "ln", false, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --"
         + CliStrings.START_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.START_GATEWAYSENDER__GROUP + "=SenderGroup1";
@@ -373,7 +379,7 @@ public class WanCommandGatewaySenderStartDUnitTest extends WANCommandTestBase {
       String strCmdResult = commandResultToString(cmdResult);
       assertTrue(strCmdResult.contains("Error"));
       assertTrue(strCmdResult.contains("is not available"));
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewaySender_Group stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());

@@ -29,6 +29,10 @@ import static com.gemstone.gemfire.test.dunit.Wait.*;
 import java.util.Properties;
 import javax.net.ssl.SSLHandshakeException;
 
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -44,16 +48,14 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
  * Tests peer to peer authentication in Gemfire
  * 
  * @since 5.5
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
   private static VM locatorVM = null;

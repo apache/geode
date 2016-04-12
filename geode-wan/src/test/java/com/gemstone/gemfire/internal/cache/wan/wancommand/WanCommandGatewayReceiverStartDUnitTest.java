@@ -16,10 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import hydra.Log;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
 
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -29,20 +34,18 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
+@Category(DistributedTest.class)
+public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public WanCommandGatewayReceiverStartDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Test wan commands for error in input 1> start gateway-sender command needs
    * only one of member or group.
    */
+  @Test
   public void testStartGatewayReceiver_ErrorConditions() {
 
     VM puneLocator = Host.getLocator();
@@ -66,7 +69,7 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewayReceiver_ErrorConditions stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.ERROR, cmdResult.getStatus());
       assertTrue(strCmdResult.contains(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE));
@@ -75,6 +78,7 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
     }
   }
 
+  @Test
   public void testStartGatewayReceiver() {
     
     VM puneLocator = Host.getLocator();
@@ -95,12 +99,12 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
     vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
     vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
     
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.START_GATEWAYRECEIVER;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
@@ -120,6 +124,7 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
    * test to validate that the start gateway sender starts the gateway sender on
    * a member
    */
+  @Test
   public void testStartGatewayReceiver_onMember() {
 
     VM puneLocator = Host.getLocator();
@@ -141,14 +146,14 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
     vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
     
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.START_GATEWAYRECEIVER + " --"
         + CliStrings.START_GATEWAYRECEIVER__MEMBER+ "=" + vm1Member.getId();
     
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewayReceiver_onMember stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       assertTrue(strCmdResult.contains("is started on member"));
@@ -165,6 +170,7 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
    * test to validate that the start gateway sender starts the gateway sender on
    * a group of members
    */
+  @Test
   public void testStartGatewayReceiver_Group() {
 
     VM puneLocator = Host.getLocator();
@@ -185,13 +191,13 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
     vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
     vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
     
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.START_GATEWAYRECEIVER + " --"
         + CliStrings.START_GATEWAYRECEIVER__GROUP + "=RG1";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewayReceiver_Group stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -215,6 +221,7 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
    * sender members belongs to multiple groups
    * 
    */
+  @Test
   public void testStartGatewayReceiver_MultipleGroup() {
     
     VM puneLocator = Host.getLocator();
@@ -239,13 +246,13 @@ public class WanCommandGatewayReceiverStartDUnitTest extends WANCommandTestBase{
     vm6.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
     vm7.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.START_GATEWAYRECEIVER + " --"
         + CliStrings.START_GATEWAYRECEIVER__GROUP + "=RG1,RG2";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStartGatewayReceiver_Group stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());

@@ -55,7 +55,7 @@ import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.internal.AvailablePort.Keeper;
+import com.gemstone.gemfire.internal.AvailablePort.*;
 import com.gemstone.gemfire.internal.cache.AbstractRegionEntry;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
