@@ -31,6 +31,7 @@ import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.io.PrintStream;
