@@ -69,10 +69,10 @@ public class XmlUtilsJUnitTest {
     assertNotNull(schemaLocationMap);
     assertEquals(2, schemaLocationMap.size());
 
-    final List<String> locations1 = schemaLocationMap.get("http://schema.pivotal.io/gemfire/cache");
+    final List<String> locations1 = schemaLocationMap.get("http://geode.apache.org/schema/cache");
     assertNotNull(locations1);
     assertEquals(1, locations1.size());
-    assertEquals("http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd", locations1.get(0));
+    assertEquals("http://geode.apache.org/schema/cache/cache-1.0.xsd", locations1.get(0));
 
     final List<String> locations2 = schemaLocationMap.get("urn:java:com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest");
     assertNotNull(locations2);
@@ -109,11 +109,11 @@ public class XmlUtilsJUnitTest {
     assertNotNull(schemaLocationMap);
     assertEquals(3, schemaLocationMap.size());
 
-    final List<String> locations1 = schemaLocationMap.get("http://schema.pivotal.io/gemfire/cache");
+    final List<String> locations1 = schemaLocationMap.get("http://geode.apache.org/schema/cache");
     assertNotNull(locations1);
     assertEquals(2, locations1.size());
-    assertEquals("http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd", locations1.get(0));
-    assertEquals("cache-8.1.xsd", locations1.get(1));
+    assertEquals("http://geode.apache.org/schema/cache/cache-1.0.xsd", locations1.get(0));
+    assertEquals("cache-1.0.xsd", locations1.get(1));
 
     final List<String> locations2 = schemaLocationMap.get("urn:java:com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest");
     assertNotNull(locations2);
@@ -179,7 +179,7 @@ public class XmlUtilsJUnitTest {
     final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass().getResourceAsStream(
         "XmlUtilsJUnitTest.testQuerySingleElement.xml")));
     final Element root = doc.getDocumentElement();
-    final String cacheNamespace = "http://schema.pivotal.io/gemfire/cache";
+    final String cacheNamespace = "http://geode.apache.org/schema/cache";
     final XPathContext cacheXPathContext = new XPathContext("cache", cacheNamespace);
 
     // There are mulitple region elements, this should get the first one.

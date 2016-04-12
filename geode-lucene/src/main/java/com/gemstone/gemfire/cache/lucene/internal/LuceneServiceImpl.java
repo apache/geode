@@ -182,7 +182,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
       index = new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
     } else {
       // replicated region
-      index = new LuceneIndexForReplicatedRegion(indexName, regionPath, cache);
+      throw new UnsupportedOperationException("Lucene indexes on replicated regions are not supported");
     }
     return index;
   }

@@ -69,7 +69,12 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * This holds the keys that are part of the CQ query results.
    * Using this CQ engine can determine whether to execute 
    * query on old value from EntryEvent, which is an expensive
-   * operation. 
+   * operation.
+   *
+   * NOTE:
+   * In case of RR this map is populated and used as intended.
+   * In case of PR this map will not be populated. If executeCQ happens after update operations
+   * this map will remain empty.
    */
   private volatile HashMap<Object, Object> cqResultKeys;
 

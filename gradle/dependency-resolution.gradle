@@ -29,6 +29,7 @@ subprojects {
       force 'org.springframework:spring-web:' + project.'springframework.version'
       force 'org.springframework:spring-tx:' + project.'springframework.version'
       force 'org.springframework:spring-webmvc:' + project.'springframework.version'
+      force 'org.springframework:spring-core:' + project.'springframework.version'
       force 'jline:jline:' + project.'jline.version'
     }
   }

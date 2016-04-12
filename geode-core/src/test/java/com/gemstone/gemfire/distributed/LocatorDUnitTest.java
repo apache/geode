@@ -1113,6 +1113,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
         try {
           Properties locProps = new Properties();
           locProps.setProperty("mcast-port", "0");
+          locProps.setProperty("member-timeout", "1000");
           locProps.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
 
             Locator.startLocatorAndDS(port, logFile, locProps);
@@ -1130,6 +1131,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
               Properties props = new Properties();
               props.setProperty("mcast-port", "0");
               props.setProperty("locators", locators);
+              props.setProperty("member-timeout", "1000");
               DistributedSystem.connect(props);
             }
           };
@@ -1139,6 +1141,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
       Properties props = new Properties();
       props.setProperty("mcast-port", "0");
       props.setProperty("locators", locators);
+      props.setProperty("member-timeout", "1000");
 
     system = (InternalDistributedSystem)DistributedSystem.connect(props);
     

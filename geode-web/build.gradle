@@ -38,7 +38,12 @@ dependencies {
   }
 
   testCompile 'org.springframework:spring-test:' + project.'springframework.version'
-  
+
+  testCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-aop'
+  }
+
   provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
    
   // have to use output since we exclude the dependent classes from jar :(

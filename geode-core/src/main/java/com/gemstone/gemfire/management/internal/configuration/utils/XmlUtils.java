@@ -21,9 +21,7 @@ import static com.gemstone.gemfire.management.internal.configuration.utils.XmlCo
 import static javax.xml.XMLConstants.NULL_NS_URI;
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -198,7 +196,7 @@ public class XmlUtils {
    * @since 8.1
    */
   private static boolean isMultiple(final LinkedHashMap<String, CacheElement> elementOrderMap, final String namespace, final String type) {
-    if (CacheXml.NAMESPACE.equals(namespace)) {
+    if (CacheXml.GEODE_NAMESPACE.equals(namespace)) {
       // We only keep the cache elements in elementOrderMap
       final CacheElement cacheElement = elementOrderMap.get(type);
       if (null != cacheElement) {
@@ -220,7 +218,7 @@ public class XmlUtils {
    * @since 8.1
    */
   private static int getElementOrder(final LinkedHashMap<String, CacheElement> elementOrderMap, final String namespace, final String type) {
-    if (CacheXml.NAMESPACE.equals(namespace)) {
+    if (CacheXml.GEODE_NAMESPACE.equals(namespace)) {
       // We only keep the cache elements in elementOrderMap
       final CacheElement cacheElement = elementOrderMap.get(type);
       if (null != cacheElement) {

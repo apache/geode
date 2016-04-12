@@ -69,7 +69,7 @@ public class CacheElementJUnitTest {
    */
   @Test
   public void testCacheDefinedAsNestedComplexType8_1() throws Exception {
-    Document doc = loadSchema(CacheXmlVersion.VERSION_8_1.getSchemaLocation());
+    Document doc = loadSchema(CacheXmlVersion.GEMFIRE_8_1.getSchemaLocation());
     final XPathContext xPathContext = new XPathContext(CacheElement.XSD_PREFIX, XMLConstants.W3C_XML_SCHEMA_NS_URI);
     final Node cacheType = XmlUtils.querySingleElement(doc.getFirstChild(), CacheElement.CACHE_TYPE_EMBEDDED, xPathContext);
     assertNotNull("Cache type is not embedded complexType.", cacheType);
@@ -118,9 +118,9 @@ public class CacheElementJUnitTest {
     assertEntry("gateway-conflict-resolver", order++, entries.next());
     assertEntry("async-event-queue", order++, entries.next());
     assertEntry("cache-server", order++, entries.next());
-    assertEntry("bridge-server", order++, entries.next());
     assertEntry("pool", order++, entries.next());
     assertEntry("disk-store", order++, entries.next());
+    assertEntry("hdfs-store", order++, entries.next());
     assertEntry("pdx", order++, entries.next());
     assertEntry("region-attributes", order++, entries.next());
     assertEntry("jndi-bindings", order++, entries.next());

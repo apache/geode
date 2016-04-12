@@ -2248,8 +2248,8 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Stop server
     stopBridgeServers(getCache());
   }
-  
-  
+
+
   /**
    * Tests partial key putAll to 2 PR servers, because putting data at server
    * side is different between PR and LR. PR does it in postPutAll.
@@ -2258,12 +2258,6 @@ public void testOneServer() throws CacheException, InterruptedException {
   public void testPartialKeyInPRSingleHop() throws CacheException, InterruptedException {
     final String title = "testPartialKeyInPRSingleHop_";
     final int cacheWriterAllowedKeyNum = 16;
-    int client1Size;
-    int client2Size;
-    int server1Size;
-    int server2Size;
-
-//    disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -2277,7 +2271,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
     final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 0, "ds1");
     final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 0, "ds1");
-    createClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true);
+    createClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true, false);
     createClient(client2, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true);
 
     server1.invoke(addExceptionTag1(expectedExceptions));
@@ -2285,199 +2279,158 @@ public void testOneServer() throws CacheException, InterruptedException {
     client1.invoke(addExceptionTag1(expectedExceptions));
     client2.invoke(addExceptionTag1(expectedExceptions));
 
-    client2.invoke(new CacheSerializableRunnable(title+"client2 add listener") {
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(regionName);
-        region.getAttributesMutator().addCacheListener(new MyListener(false));
-        
-        region.registerInterest("ALL_KEYS");
-        LogWriterUtils.getLogWriter().info("client2 registerInterest ALL_KEYS at "+region.getFullPath());
-      }
-    });
-    
-    client1.invoke(new CacheSerializableRunnable(title+"do some putAll to get ClientMetaData for future putAll") {
-      public void run2() throws CacheException {
-        doPutAll(regionName, "key-", numberOfEntries);
-      }
-    });
-    
-    WaitCriterion waitForSizes = new WaitCriterion() {
-      public String description() {
-        return "waiting for conditions to be met";
-      }
-      public boolean done() {
-        int c1Size = getRegionSize(client1, regionName);
-        int c2Size = getRegionSize(client2, regionName);
-        int s1Size = getRegionSize(server1, regionName);
-        int s2Size = getRegionSize(server2, regionName);
-        LogWriterUtils.getLogWriter().info("region sizes: "+c1Size+","+c2Size+","+s1Size+","+s2Size);
-        if (c1Size != numberOfEntries) {
-          LogWriterUtils.getLogWriter().info("waiting for client1 to get all updates");
-          return false;
-        }
-        if (c2Size != numberOfEntries) {
-          LogWriterUtils.getLogWriter().info("waiting for client2 to get all updates");
-          return false;
-        }
-        if (s1Size != numberOfEntries) {
-          LogWriterUtils.getLogWriter().info("waiting for server1 to get all updates");
-          return false;
-        }
-        if (s2Size != numberOfEntries) {
-          LogWriterUtils.getLogWriter().info("waiting for server2 to get all updates");
-          return false;
-        }
-        return true;
-      }
-    };
-    Wait.waitForCriterion(waitForSizes, 10000, 1000, true);
+    try {
+      client2.invoke(new CacheSerializableRunnable(title + "client2 add listener") {
+        public void run2() throws CacheException {
+          Region region = getRootRegion().getSubregion(regionName);
+          region.getAttributesMutator().addCacheListener(new MyListener(false));
 
-    client1Size = getRegionSize(client1, regionName);
-    client2Size = getRegionSize(client2, regionName);
-    server1Size = getRegionSize(server1, regionName);
-    server2Size = getRegionSize(server2, regionName);
+          region.registerInterest("ALL_KEYS");
+          LogWriterUtils.getLogWriter().info("client2 registerInterest ALL_KEYS at " + region.getFullPath());
+        }
+      });
 
-    server1.invoke(new CacheSerializableRunnable(title
+      client1.invoke(new CacheSerializableRunnable(title + "do some putAll to get ClientMetaData for future putAll") {
+        public void run2() throws CacheException {
+          doPutAll(regionName, "key-", numberOfEntries);
+        }
+      });
+
+      WaitCriterion waitForSizes = new WaitCriterion() {
+        public String description() {
+          return "waiting for conditions to be met";
+        }
+
+        public boolean done() {
+          int c1Size = getRegionSize(client1, regionName);
+          int c2Size = getRegionSize(client2, regionName);
+          int s1Size = getRegionSize(server1, regionName);
+          int s2Size = getRegionSize(server2, regionName);
+          LogWriterUtils.getLogWriter().info("region sizes: " + c1Size + "," + c2Size + "," + s1Size + "," + s2Size);
+          if (c1Size != numberOfEntries) {
+            LogWriterUtils.getLogWriter().info("waiting for client1 to get all updates");
+            return false;
+          }
+          if (c2Size != numberOfEntries) {
+            LogWriterUtils.getLogWriter().info("waiting for client2 to get all updates");
+            return false;
+          }
+          if (s1Size != numberOfEntries) {
+            LogWriterUtils.getLogWriter().info("waiting for server1 to get all updates");
+            return false;
+          }
+          if (s2Size != numberOfEntries) {
+            LogWriterUtils.getLogWriter().info("waiting for server2 to get all updates");
+            return false;
+          }
+          return true;
+        }
+      };
+      Wait.waitForCriterion(waitForSizes, 10000, 1000, true);
+
+      server1.invoke(new CacheSerializableRunnable(title
         + "server1 add slow listener") {
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(regionName);
-        region.getAttributesMutator().addCacheListener(new MyListener(true));
-      }
-    });
+        public void run2() throws CacheException {
+          Region region = getRootRegion().getSubregion(regionName);
+          region.getAttributesMutator().addCacheListener(new MyListener(true));
+        }
+      });
 
-    // add a listener that will close the cache at the 10th update
-    final SharedCounter sc_server2 = new SharedCounter("server2");
-    server2.invoke(new CacheSerializableRunnable(title
+      // add a listener that will close the cache at the 10th update
+      final SharedCounter sc_server2 = new SharedCounter("server2");
+      server2.invoke(new CacheSerializableRunnable(title
         + "server2 add slow listener") {
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(regionName);
-        region.getAttributesMutator().addCacheListener(new MyListener(server2, true, sc_server2, 10));
-      }
-    });
-    
-    AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(title+"client1 add listener and putAll") {
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(regionName);
-        region.getAttributesMutator().addCacheListener(new MyListener(false));
-
-        // create keys
-        try {
-          doPutAll(regionName, title, numberOfEntries);
-          fail("Expect ServerOperationException caused by PutAllParitialResultException");
-        } catch (ServerOperationException soe) {
-          assertTrue(soe.getMessage().contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0.toLocalizedString(region.getFullPath())));
+        public void run2() throws CacheException {
+          Region region = getRootRegion().getSubregion(regionName);
+          region.getAttributesMutator().addCacheListener(new MyListener(server2, true, sc_server2, 10));
         }
-      }
-    });   
+      });
 
-    // server2 will closeCache after creating 10 keys
-    
-    ThreadUtils.join(async1, 30 * 1000);
-    if (async1.exceptionOccurred()) {
-      Assert.fail("Aync1 get exceptions:", async1.getException());
-    }
+      AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(title + "client1 add listener and putAll") {
+        public void run2() throws CacheException {
+          Region region = getRootRegion().getSubregion(regionName);
+          region.getAttributesMutator().addCacheListener(new MyListener(false));
 
-    client1Size = getRegionSize(client1, regionName);
-    // client2Size maybe more than client1Size
-    client2Size = getRegionSize(client2, regionName);
-    server1Size = getRegionSize(server1, regionName);
-    LogWriterUtils.getLogWriter().info("region sizes: "+client1Size+","+client2Size+","+server1Size);
-//    assertEquals(server1Size, client1Size);
-
-    // restart server2 
-    LogWriterUtils.getLogWriter().info("restarting server 2");
-    createBridgeServer(server2, regionName, serverPort2, true, 0, "ds1");
-    
-    // Test Case1: Trigger singleHop putAll. Stop server2 in middle. 
-    // numberOfEntries/2 + X keys will be created at servers. i.e. X keys at server2,
-    // numberOfEntries/2 keys at server1.
-    // The client should receive a PartialResultException due to PartitionOffline
-    client1Size = getRegionSize(client1, regionName);
-    client2Size = getRegionSize(client2, regionName);
-    server1Size = getRegionSize(server1, regionName);
-    server2Size = getRegionSize(server2, regionName);
-    LogWriterUtils.getLogWriter().info("region sizes after server2 restarted: "+client1Size+","+client2Size+","+server1Size);
-    assertEquals(150, client1Size);
-    assertEquals(client2Size, server1Size);
-    assertEquals(client2Size, server2Size);
-
-    // close a server to re-run the test 
-    closeCache(server2);
-    server1Size = getRegionSize(server1, regionName);
-    client1.invoke(new CacheSerializableRunnable(title+"client1 does putAll again") {
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(regionName);
-
-        // create keys
-        try {
-          doPutAll(regionName, title+"again:", numberOfEntries);
-          fail("Expect ServerOperationException caused by PutAllParitialResultException");
-        } catch (ServerOperationException soe) {
-          assertTrue(soe.getMessage().contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0.toLocalizedString(region.getFullPath())));
+          // create keys
+          try {
+            doPutAll(regionName, title, numberOfEntries);
+            fail("Expect ServerOperationException caused by PutAllParitialResultException");
+          } catch (ServerOperationException soe) {
+            assertTrue(soe.getMessage().contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0.toLocalizedString(region.getFullPath())));
+          }
         }
+      });
+
+      // server2 will closeCache after creating 10 keys
+
+      ThreadUtils.join(async1, 30 * 1000);
+      if (async1.exceptionOccurred()) {
+        Assert.fail("putAll client threw an exception", async1.getException());
       }
-    });   
 
-    int new_server1Size = getRegionSize(server1, regionName);
-    int new_client1Size = getRegionSize(client1, regionName);
-    int new_client2Size = getRegionSize(client2, regionName);
 
-    // Test Case 2: based on case 1, but this time, there should be no X keys 
-    // created on server2.
-    LogWriterUtils.getLogWriter().info("region sizes after re-run the putAll: "+new_client1Size+","+new_client2Size+","+new_server1Size);
-    assertEquals(server1Size+numberOfEntries/2, new_server1Size);
-    assertEquals(client1Size+numberOfEntries/2, new_client1Size);
-    assertEquals(client2Size+numberOfEntries/2, new_client2Size);
+      // restart server2
+      System.out.println("restarting server 2");
+      createBridgeServer(server2, regionName, serverPort2, true, 0, "ds1");
 
-    // restart server2
-    createBridgeServer(server2, regionName, serverPort2, true, 0, "ds1");
-    server1Size = getRegionSize(server1, regionName);
-    server2Size = getRegionSize(server2, regionName);
-    LogWriterUtils.getLogWriter().info("region sizes after restart server2: "+server1Size+","+server2Size);
-    assertEquals(server1Size, server2Size);
+      // Test Case1: Trigger singleHop putAll. Stop server2 in middle.
+      // numberOfEntries/2 + X keys will be created at servers. i.e. X keys at server2,
+      // numberOfEntries/2 keys at server1.
+      // The client should receive a PartialResultException due to PartitionOffline
 
-    // add a cacheWriter for server to fail putAll after it created cacheWriterAllowedKeyNum keys
-    server1.invoke(new CacheSerializableRunnable(title
+      // close a server to re-run the test
+      closeCache(server2);
+      client1.invoke(new CacheSerializableRunnable(title + "client1 does putAll again") {
+        public void run2() throws CacheException {
+          Region region = getRootRegion().getSubregion(regionName);
+
+          // create keys
+          try {
+            doPutAll(regionName, title + "again:", numberOfEntries);
+            fail("Expect ServerOperationException caused by PutAllParitialResultException");
+          } catch (ServerOperationException soe) {
+            assertTrue(soe.getMessage().contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0.toLocalizedString(region.getFullPath())));
+          }
+        }
+      });
+
+      // Test Case 2: based on case 1, but this time, there should be no X keys
+      // created on server2.
+
+      // restart server2
+      createBridgeServer(server2, regionName, serverPort2, true, 0, "ds1");
+
+      // add a cacheWriter for server to fail putAll after it created cacheWriterAllowedKeyNum keys
+      server1.invoke(new CacheSerializableRunnable(title
         + "server1 add cachewriter to throw exception after created some keys") {
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(regionName);
-        region.getAttributesMutator().setCacheWriter(new MyWriter(cacheWriterAllowedKeyNum));
-      }
-    });
-
-    client1.invoke(new CacheSerializableRunnable(title+"client1 does putAll once more") {
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(regionName);
-
-        // create keys
-        try {
-          doPutAll(regionName, title+"once more:", numberOfEntries);
-          fail("Expect ServerOperationException caused by PutAllParitialResultException");
-        } catch (ServerOperationException soe) {
-          assertTrue(soe.getMessage().contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0.toLocalizedString(region.getFullPath())));
+        public void run2() throws CacheException {
+          Region region = getRootRegion().getSubregion(regionName);
+          region.getAttributesMutator().setCacheWriter(new MyWriter(cacheWriterAllowedKeyNum));
         }
-      }
-    });   
+      });
 
-    // Test case 3: encountered 2 PartialResultException in singlehop. 
-    // should consolidate them into 1
-    int oncemore_client1Size = getRegionSize(client1, regionName);
-    int oncemore_client2Size = getRegionSize(client2, regionName);
-    int oncemore_server1Size = getRegionSize(server1, regionName);
-    int oncemore_server2Size = getRegionSize(server2, regionName);
-    LogWriterUtils.getLogWriter().info("region sizes in once more test: "
-        +oncemore_client1Size+","+oncemore_client2Size+","+oncemore_server1Size+","+oncemore_server2Size);
-    int delta_at_server = oncemore_server1Size - server1Size;
-    assertEquals(new_client1Size+delta_at_server, oncemore_client1Size);
-    assertEquals(oncemore_server1Size, oncemore_client2Size);
-    assertEquals(oncemore_server2Size, oncemore_server1Size);
-    server1.invoke(removeExceptionTag1(expectedExceptions));
-    server2.invoke(removeExceptionTag1(expectedExceptions));
-    client1.invoke(removeExceptionTag1(expectedExceptions));
-    client2.invoke(removeExceptionTag1(expectedExceptions));
+      client1.invoke(new CacheSerializableRunnable(title + "client1 does putAll once more") {
+        public void run2() throws CacheException {
+          Region region = getRootRegion().getSubregion(regionName);
 
-    // Stop server
-    stopBridgeServers(getCache());
+          // create keys
+          try {
+            doPutAll(regionName, title + "once more:", numberOfEntries);
+            fail("Expect ServerOperationException caused by PutAllParitialResultException");
+          } catch (ServerOperationException soe) {
+            assertTrue(soe.getMessage().contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0.toLocalizedString(region.getFullPath())));
+          }
+        }
+      });
+    } finally {
+      server1.invoke(removeExceptionTag1(expectedExceptions));
+      server2.invoke(removeExceptionTag1(expectedExceptions));
+      client1.invoke(removeExceptionTag1(expectedExceptions));
+      client2.invoke(removeExceptionTag1(expectedExceptions));
+
+      // Stop server
+      stopBridgeServers(getCache());
+    }
   }
 
   /**
@@ -2505,7 +2458,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
     final int serverPort1 = createBridgeServer(server1, regionName, 0, true, 1, "ds1");
     final int serverPort2 = createBridgeServer(server2, regionName, 0, true, 1, "ds1");
-    createClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true);
+    createClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true, false);
     createClient(client2, regionName, serverHost, new int[] {serverPort1, serverPort2}, -1, -1, false, false, true);
 
     server1.invoke(addExceptionTag1(expectedExceptions));
@@ -2668,7 +2621,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     serverPorts[0] = createBridgeServer(server1, regionName, 0, true, 0, null);
     serverPorts[1] = createBridgeServer(server2, regionName, 0, true, 0, null);
     serverPorts[2] = createBridgeServer(server3, regionName, 0, true, 0, null);
-    createClient(client1, regionName, serverHost, serverPorts, -1, -1, false, true, true);
+    createClient(client1, regionName, serverHost, serverPorts, -1, -1, false, true, true, false);
 
     {
       // Create local region
@@ -3834,8 +3787,15 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
   }
 
+  private void createClient(VM client, String regionName, String serverHost, int[] serverPorts,
+                            int redundancy, int readTimeOut, boolean receiveInvalidates,
+                            boolean concurrencyChecks, boolean enableSingleHop) {
+    createClient(client, regionName, serverHost, serverPorts, redundancy, readTimeOut, receiveInvalidates,
+            concurrencyChecks, enableSingleHop, true /*subscriptionEnabled*/);
+  }
   private void createClient(VM client, final String regionName, final String serverHost, final int[] serverPorts,
-      final int redundency, final int readTimeOut, final boolean receiveInvalidates, final boolean concurrencyChecks, final boolean enableSingleHop) {
+      final int redundency, final int readTimeOut, final boolean receiveInvalidates, final boolean concurrencyChecks,
+      final boolean enableSingleHop, final boolean subscriptionEnabled) {
     client.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         // Create DS
@@ -3860,7 +3820,7 @@ public void testOneServer() throws CacheException, InterruptedException {
               pf.addServer(serverHost, serverPorts[i]);
             }
 
-            pf.setReadTimeout(readTimeOut).setSubscriptionEnabled(true).setPRSingleHopEnabled(enableSingleHop).create("myPool");
+            pf.setReadTimeout(readTimeOut).setSubscriptionEnabled(subscriptionEnabled).setPRSingleHopEnabled(enableSingleHop).create("myPool");
                 factory.setPoolName("myPool");
           }
           else {

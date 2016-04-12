@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -38,6 +39,9 @@ import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.OffHeapRegionEntry;
+import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
@@ -589,4 +593,64 @@ public abstract class OffHeapRegionBase {
     doRegionTest(RegionShortcut.PARTITION_PERSISTENT, "prPersist2", true);
   }
 
+  @Test
+  public void testPersistentChangeFromHeapToOffHeap() {
+    GemFireCacheImpl gfc = createCache(true);
+    Region r = null;
+    final String value = "value big enough to force off-heap storage";
+    try {
+      r = gfc.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setOffHeap(false).create("changedFromHeapToOffHeap");
+      r.put("key", value);
+    } finally {
+      closeCache(gfc, false);
+    }
+    gfc = createCache(true);
+    try {
+      r = gfc.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setOffHeap(true).create("changedFromHeapToOffHeap");
+      assertEquals(true, r.containsKey("key"));
+      LocalRegion lr = (LocalRegion) r;
+      RegionEntry re = lr.getRegionEntry("key");
+      if (!(re instanceof OffHeapRegionEntry)) {
+        fail("expected re to be instanceof OffHeapRegionEntry but it was a " + re.getClass());
+      }
+      assertEquals(value, r.get("key"));
+    } finally {
+      if (r != null && !r.isDestroyed()) {
+        r.destroyRegion();
+      }
+      closeCache(gfc, false);
+    }
+  }
+
+  @Test
+  public void testPersistentCompressorChange() {
+    GemFireCacheImpl gfc = createCache(true);
+    Region<Object, Object> r = null;
+    String value = "value1";
+    String key = "key";
+
+    try {
+      r = gfc.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setOffHeap(true).setCompressor(new SnappyCompressor()).create("region1");
+      r.put(key, value);
+    } finally {
+      closeCache(gfc, false);
+    }
+
+    gfc = createCache(true);
+    try {
+      r = gfc.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setOffHeap(true).setCompressor(null).create("region1");
+      assertEquals(true, r.containsKey(key));
+      MemoryAllocatorImpl mai = MemoryAllocatorImpl.getAllocator();
+      List<OffHeapStoredObject> orphans = mai.getLostChunks();
+      if (orphans.size() >0) {
+        fail("expected no orphan detected, but gets orphan size " + orphans.size());
+      }
+      assertEquals(value, r.get(key));
+    } finally {
+      if (r !=null && !r.isDestroyed()) {
+        r.destroyRegion();
+      }
+      closeCache(gfc, false);
+    }
+  }
 }

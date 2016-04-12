@@ -28,22 +28,25 @@ import java.util.HashMap;
  */
 // TODO future - replace constants in CacheXml with this Enum completely
 public enum CacheXmlVersion {
-  VERSION_3_0(CacheXml.VERSION_3_0, null, CacheXml.PUBLIC_ID_3_0, CacheXml.SYSTEM_ID_3_0),
-  VERSION_4_0(CacheXml.VERSION_4_0, null, CacheXml.PUBLIC_ID_4_0, CacheXml.SYSTEM_ID_4_0),
-  VERSION_4_1(CacheXml.VERSION_4_1, null, CacheXml.PUBLIC_ID_4_1, CacheXml.SYSTEM_ID_4_1),
-  VERSION_5_0(CacheXml.VERSION_5_0, null, CacheXml.PUBLIC_ID_5_0, CacheXml.SYSTEM_ID_5_0),
-  VERSION_5_1(CacheXml.VERSION_5_1, null, CacheXml.PUBLIC_ID_5_1, CacheXml.SYSTEM_ID_5_1),
-  VERSION_5_5(CacheXml.VERSION_5_5, null, CacheXml.PUBLIC_ID_5_5, CacheXml.SYSTEM_ID_5_5),
-  VERSION_5_7(CacheXml.VERSION_5_7, null, CacheXml.PUBLIC_ID_5_7, CacheXml.SYSTEM_ID_5_7),
-  VERSION_5_8(CacheXml.VERSION_5_8, null, CacheXml.PUBLIC_ID_5_8, CacheXml.SYSTEM_ID_5_8),
-  VERSION_6_0(CacheXml.VERSION_6_0, null, CacheXml.PUBLIC_ID_6_0, CacheXml.SYSTEM_ID_6_0),
-  VERSION_6_1(CacheXml.VERSION_6_1, null, CacheXml.PUBLIC_ID_6_1, CacheXml.SYSTEM_ID_6_1),
-  VERSION_6_5(CacheXml.VERSION_6_5, null, CacheXml.PUBLIC_ID_6_5, CacheXml.SYSTEM_ID_6_5),
-  VERSION_6_6(CacheXml.VERSION_6_6, null, CacheXml.PUBLIC_ID_6_6, CacheXml.SYSTEM_ID_6_6),
-  VERSION_7_0(CacheXml.VERSION_7_0, null, CacheXml.PUBLIC_ID_7_0, CacheXml.SYSTEM_ID_7_0),
-  VERSION_8_0(CacheXml.VERSION_8_0, null, CacheXml.PUBLIC_ID_8_0, CacheXml.SYSTEM_ID_8_0),
-  VERSION_8_1(CacheXml.VERSION_8_1, CacheXml.SCHEMA_8_1_LOCATION, null, null),
-  VERSION_9_0(CacheXml.VERSION_9_0, CacheXml.SCHEMA_9_0_LOCATION, null, null);
+  GEMFIRE_3_0(CacheXml.VERSION_3_0, CacheXml.PUBLIC_ID_3_0, CacheXml.SYSTEM_ID_3_0, null, null),
+  GEMFIRE_4_0(CacheXml.VERSION_4_0, CacheXml.PUBLIC_ID_4_0, CacheXml.SYSTEM_ID_4_0, null, null),
+  GEMFIRE_4_1(CacheXml.VERSION_4_1, CacheXml.PUBLIC_ID_4_1, CacheXml.SYSTEM_ID_4_1, null, null),
+  GEMFIRE_5_0(CacheXml.VERSION_5_0, CacheXml.PUBLIC_ID_5_0, CacheXml.SYSTEM_ID_5_0, null, null),
+  GEMFIRE_5_1(CacheXml.VERSION_5_1, CacheXml.PUBLIC_ID_5_1, CacheXml.SYSTEM_ID_5_1, null, null),
+  GEMFIRE_5_5(CacheXml.VERSION_5_5, CacheXml.PUBLIC_ID_5_5, CacheXml.SYSTEM_ID_5_5, null, null),
+  GEMFIRE_5_7(CacheXml.VERSION_5_7, CacheXml.PUBLIC_ID_5_7, CacheXml.SYSTEM_ID_5_7, null, null),
+  GEMFIRE_5_8(CacheXml.VERSION_5_8, CacheXml.PUBLIC_ID_5_8, CacheXml.SYSTEM_ID_5_8, null, null),
+  GEMFIRE_6_0(CacheXml.VERSION_6_0, CacheXml.PUBLIC_ID_6_0, CacheXml.SYSTEM_ID_6_0, null, null),
+  GEMFIRE_6_1(CacheXml.VERSION_6_1, CacheXml.PUBLIC_ID_6_1, CacheXml.SYSTEM_ID_6_1, null, null),
+  GEMFIRE_6_5(CacheXml.VERSION_6_5, CacheXml.PUBLIC_ID_6_5, CacheXml.SYSTEM_ID_6_5, null, null),
+  GEMFIRE_6_6(CacheXml.VERSION_6_6, CacheXml.PUBLIC_ID_6_6, CacheXml.SYSTEM_ID_6_6, null, null),
+  GEMFIRE_7_0(CacheXml.VERSION_7_0, CacheXml.PUBLIC_ID_7_0, CacheXml.SYSTEM_ID_7_0, null, null),
+  GEMFIRE_8_0(CacheXml.VERSION_8_0, CacheXml.PUBLIC_ID_8_0, CacheXml.SYSTEM_ID_8_0, null, null),
+  GEMFIRE_8_1(CacheXml.VERSION_8_1, null, null, CacheXml.SCHEMA_8_1_LOCATION, CacheXml.GEMFIRE_NAMESPACE),
+
+  // Ordinality matters here, so keep the 1.0 version after the 8.x versions
+  // Version 1.0 is the start of Geode versions. In terms of releases, Geode 1.0 > GemFire 8.x.
+  GEODE_1_0(CacheXml.VERSION_1_0, null, null, CacheXml.SCHEMA_1_0_LOCATION, CacheXml.GEODE_NAMESPACE);
 
   private static final HashMap<String, CacheXmlVersion> valuesForVersion = new HashMap<>();
   static {
@@ -54,14 +57,16 @@ public enum CacheXmlVersion {
 
   private final String version;
   private final String schemaLocation;
+  private final String namespace;
   private final String publicId;
   private final String systemId;
 
-  private CacheXmlVersion(String version, String schemaLocation, String publicId, String systemId) {
+  private CacheXmlVersion(String version, String publicId, String systemId, String schemaLocation, String namespace) {
     this.version = version;
-    this.schemaLocation = schemaLocation;
     this.publicId = publicId;
     this.systemId = systemId;
+    this.schemaLocation = schemaLocation;
+    this.namespace = namespace;
   }
 
   /**
@@ -79,13 +84,22 @@ public enum CacheXmlVersion {
 
   /**
    * The schema file location.
-   * 
+   *
    * @return the schemaLocation if schema exists, otherwise null.
-   * 
+   *
    * @since 8.1
    */
   public String getSchemaLocation() {
     return schemaLocation;
+  }
+
+  /**
+   * The namespace.
+   * 
+   * @return the namespace if schema exists, otherwise null.
+   */
+  public String getNamespace() {
+    return namespace;
   }
 
   /**
@@ -111,7 +125,7 @@ public enum CacheXmlVersion {
   /**
    * Get {@link CacheXmlVersion} for given <code>version</code> string. Use
    * constants from {@link CacheXml} for example:
-   * <code>CacheXmlVersion.valueForVersion(CacheXml.VERSION_8_1);</code>
+   * <code>CacheXmlVersion.valueForVersion(CacheXml.GEMFIRE_8_1);</code>
    * 
    * @param version
    *          string to lookup.

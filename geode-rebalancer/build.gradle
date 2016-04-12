@@ -23,6 +23,7 @@ dependencies {
     exclude module: 'c3p0'
     exclude module: 'slf4j-api'
   }
+  compile ('org.springframework:spring-context:' + project.'springframework.version')
   testCompile project(':geode-junit')
 
   // the following test dependencies are needed for mocking cache instance

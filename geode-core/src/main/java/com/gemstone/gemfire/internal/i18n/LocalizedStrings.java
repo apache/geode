@@ -2149,6 +2149,14 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId AbstractGatewaySenderEventProcessor_ATTEMPT_TO_SET_BATCH_SIZE_FAILED = new StringId(6615, "Attempting to set the batch size from {0} to {1} events failed. Instead it was set to 1.");
   public static final StringId GatewaySenderEventRemoteDispatcher_MESSAGE_TOO_LARGE_EXCEPTION = new StringId(6616, "The following exception occurred attempting to send a batch of {0} events. The batch will be tried again after reducing the batch size to {1} events.");
 
+  // Developer REST interface
+  public static final StringId SwaggerConfig_VENDOR_PRODUCT_LINE = new StringId(6617, "Apache Geode Developer REST API");
+  public static final StringId SwaggerConfig_DESCRIPTOR = new StringId(6618, "Developer REST API and interface to Geode''s distributed, in-memory data grid and cache.");
+  public static final StringId SwaggerConfig_EULA_LINK = new StringId(6619, "http://www.apache.org/licenses/");
+  public static final StringId SwaggerConfig_SUPPORT_LINK = new StringId(6620, "user@geode.incubator.apache.org");
+  public static final StringId SwaggerConfig_DOC_TITLE = new StringId(6621, "Apache Geode Documentation");
+  public static final StringId SwaggerConfig_DOC_LINK = new StringId(6622, "http://geode.incubator.apache.org/docs/");
+
   /** Testing strings, messageId 90000-99999 **/
   
   /** These are simple messages for testing, translated with Babelfish. **/

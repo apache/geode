@@ -29,12 +29,11 @@ allprojects {
     }
 
     disableMavenPublishing = {
-      // Use this closure when a project should not publish anything to maven. It appears that the nexus
-      // upload task still needs to exist, which is why an empty one is created.
+      // Use this closure when a project should not publish anything to maven.
       afterEvaluate {
-        tasks.remove(install)
-        tasks.remove(uploadArchives)
-        task uploadArchives << { }
+        install.enabled = false
+        uploadArchives.enabled = false
+        signArchives.enabled = false
       }
     }
   }

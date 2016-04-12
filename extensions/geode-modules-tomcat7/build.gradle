@@ -46,12 +46,7 @@ dependencies {
   testRuntime 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
 
-  provided(project(path: ':extensions/geode-modules', configuration: 'testOutput')) {
-    // Remove everything related to Tomcat 6.x
-    exclude group: 'org.apache.tomcat', module: 'catalina'
-    exclude group: 'org.apache.tomcat', module: 'catalina-ha'
-    exclude group: 'org.apache.tomcat', module: 'juli'
-  }
   testCompile project(path: ':geode-junit')
-  provided project(path: ':geode-core', configuration: 'testOutput')
+  testCompile files(project(':geode-core').sourceSets.test.output)
+  testCompile files(project(':extensions/geode-modules').sourceSets.test.output)
 }

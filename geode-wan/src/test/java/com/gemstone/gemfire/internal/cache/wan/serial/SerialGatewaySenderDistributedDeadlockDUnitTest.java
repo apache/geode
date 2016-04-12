@@ -196,7 +196,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         //create receiver
         vm2.invoke(() -> WANTestBase.createReplicatedRegion(
           getTestMethodName() + "_RR", null, false));
-        vm2.invoke(() -> WANTestBase.createReceiverAfterCache(nyPort));
+        vm2.invoke(() -> WANTestBase.createReceiver(nyPort));
 
         //create senders
         vm4.invoke(() -> WANTestBase.createReplicatedRegion(
@@ -235,7 +235,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_RR",
                                                                                 "", 0, 113, false));
 
-        vm2.invoke(() -> WANTestBase.createReceiverAfterCache(nyPort));
+        vm2.invoke(() -> WANTestBase.createReceiver(nyPort));
 
         //create sender vms
         vm4.invoke(() -> WANTestBase.createPartitionedRegion(

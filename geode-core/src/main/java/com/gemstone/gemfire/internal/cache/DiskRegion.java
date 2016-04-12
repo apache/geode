@@ -165,6 +165,7 @@ public class DiskRegion extends AbstractDiskRegion {
             || ra.getInitialCapacity() != getInitialCapacity()
             || ra.getLoadFactor() != getLoadFactor()
             || ra.getStatisticsEnabled() != getStatisticsEnabled()
+            || offHeap != getOffHeap()
             || !hasSameCompressor(ra)) { 
           if (getRecoveredEntryMap() != null) {
             getRecoveredEntryMap().lruCloseStats();
