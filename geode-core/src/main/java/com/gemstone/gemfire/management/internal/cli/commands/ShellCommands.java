@@ -194,7 +194,9 @@ public class ShellCommands implements CommandMarker {
     } else if (useHttp) {      
       Gfsh gemfireShell = getGfsh();
       try{
-        
+
+        Map<String,String> securityProperties = new HashMap<String, String>();
+
         if (userName != null && userName.length() > 0) {
           if (passwordToUse == null || passwordToUse.length() == 0) {
             passwordToUse = gemfireShell.readWithMask("http password: ", '*');
@@ -202,6 +204,8 @@ public class ShellCommands implements CommandMarker {
           if (passwordToUse == null || passwordToUse.length() == 0) {
             throw new IllegalArgumentException(CliStrings.CONNECT__MSG__JMX_PASSWORD_MUST_BE_SPECIFIED);
           }
+          securityProperties.put("security-username", userName);
+          securityProperties.put("security-password", passwordToUse);
         }
 
         final Map<String, String> sslConfigProps = this.readSSLConfiguration(useSsl, keystoreToUse,keystorePasswordToUse,
@@ -213,8 +217,6 @@ public class ShellCommands implements CommandMarker {
             url = url.replace("http:", "https:");
           }
         }
-
-        Map<String,String> securityProperties = new HashMap<String, String>();
 
         Iterator<String> it = sslConfigProps.keySet().iterator();
         while(it.hasNext()){

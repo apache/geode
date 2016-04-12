@@ -28,11 +28,12 @@ import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
+import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-
+import org.json.JSONException;
 import util.TestException;
 
 import java.io.IOException;
@@ -59,7 +60,7 @@ public abstract class CliCommandTestBase extends CacheTestCase {
 
   private transient HeadlessGfsh shell;
 
-  private boolean useHttpOnConnect = Boolean.getBoolean("useHTTP");
+  private boolean useHttpOnConnect = true;
 
   private int httpPort;
   private int jmxPort;
@@ -91,7 +92,7 @@ public abstract class CliCommandTestBase extends CacheTestCase {
    * @return the default testable GemFire shell.
    */
   @SuppressWarnings("serial")
-  protected final HeadlessGfsh createDefaultSetup(final Properties props) {
+  protected HeadlessGfsh createDefaultSetup( Properties props) {
     Object[] result = (Object[]) Host.getHost(0).getVM(0).invoke(new SerializableCallable() {
       public Object call() {
         final Object[] result = new Object[3];
@@ -117,6 +118,21 @@ public abstract class CliCommandTestBase extends CacheTestCase {
         localProps.setProperty(DistributionConfig.JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
         localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
         localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
+
+        if(localProps.getProperty("jsonFile")!=null){
+          localProps.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
+              JSONAuthorization.class.getName() + ".create");
+          localProps.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+
+          try {
+            JSONAuthorization.setUpWithJsonFile(localProps.getProperty("jsonFile"));
+          } catch (IOException e) {
+            e.printStackTrace();
+          } catch (JSONException e) {
+            e.printStackTrace();
+          }
+          localProps.remove("jsonFile");
+        }
 
         getSystem(localProps);
         verifyManagementServiceStarted(getCache());
@@ -228,6 +244,8 @@ public abstract class CliCommandTestBase extends CacheTestCase {
       endpoint = "http://" + host + ":" + httpPort + "/gemfire/v1";
       command.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
       command.addOption(CliStrings.CONNECT__URL, endpoint);
+      command.addOption(CliStrings.CONNECT__USERNAME, "super-user");
+      command.addOption(CliStrings.CONNECT__PASSWORD, "1234567");
     } else {
       endpoint = host + "[" + jmxPort + "]";
       command.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
