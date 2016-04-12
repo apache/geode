@@ -56,12 +56,14 @@ public class CliCommandTestBase extends JUnit4CacheTestCase {
   private static final long serialVersionUID = 1L;
 
   public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
+  public static final String JSON_AUTHORIZATION_SYSTEM_PROPERTY = "jsonAuthorization";
 
   private ManagementService managementService;
 
   private transient HeadlessGfsh shell;
 
   private boolean useHttpOnConnect = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
+  private String jsonAuthorization = System.getProperty(JSON_AUTHORIZATION_SYSTEM_PROPERTY);
 
   private int httpPort;
   private int jmxPort;
@@ -89,7 +91,8 @@ public class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return the default testable GemFire shell.
    */
   @SuppressWarnings("serial")
-  protected final HeadlessGfsh createDefaultSetup(final Properties props) {
+  protected HeadlessGfsh createDefaultSetup(final Properties props) {
+    final String json = System.getProperty("jsonAuthorization");
     Object[] result = (Object[]) Host.getHost(0).getVM(0).invoke( "createDefaultSetup", () -> {
         final Object[] results = new Object[3];
         final Properties localProps = (props != null ? props : new Properties());
@@ -115,19 +118,18 @@ public class CliCommandTestBase extends JUnit4CacheTestCase {
         localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
         localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
 
-        if(localProps.getProperty("jsonFile")!=null){
+        if(json!=null){
           localProps.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
               JSONAuthorization.class.getName() + ".create");
           localProps.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
 
           try {
-            JSONAuthorization.setUpWithJsonFile(localProps.getProperty("jsonFile"));
+            JSONAuthorization.setUpWithJsonFile(json);
           } catch (IOException e) {
             e.printStackTrace();
           } catch (JSONException e) {
             e.printStackTrace();
           }
-          localProps.remove("jsonFile");
         }
 
         getSystem(localProps);
@@ -231,12 +233,15 @@ public class CliCommandTestBase extends JUnit4CacheTestCase {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CONNECT);
     String endpoint;
 
+    if(jsonAuthorization!=null) {
+      command.addOption(CliStrings.CONNECT__USERNAME, "super-user");
+      command.addOption(CliStrings.CONNECT__PASSWORD, "1234567");
+    }
+
     if (useHttpOnConnect) {
       endpoint = "http://" + host + ":" + httpPort + "/gemfire/v1";
       command.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
       command.addOption(CliStrings.CONNECT__URL, endpoint);
-      command.addOption(CliStrings.CONNECT__USERNAME, "super-user");
-      command.addOption(CliStrings.CONNECT__PASSWORD, "1234567");
     } else {
       endpoint = host + "[" + jmxPort + "]";
       command.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);

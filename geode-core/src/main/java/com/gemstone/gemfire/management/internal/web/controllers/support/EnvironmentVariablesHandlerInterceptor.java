@@ -120,11 +120,13 @@ public class EnvironmentVariablesHandlerInterceptor extends HandlerInterceptorAd
       }
 
     }
+
     GemFireCacheImpl instance = GemFireCacheImpl.getInstance();
     if(instance != null){
       SystemManagementService service = (SystemManagementService) ManagementService
           .getExistingManagementService(instance);
-      service.getAuthManager().verifyCredentials(credentials);
+      //service.getAuthManager().verifyCredentials(credentials);
+      service.getManagementAgent().getManagementInterceptor().authenticate(credentials);
       CREDENTIALS.set(credentials);
     }
 

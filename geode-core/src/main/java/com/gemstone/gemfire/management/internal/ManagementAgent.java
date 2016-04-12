@@ -82,6 +82,7 @@ public class ManagementAgent {
   private JMXConnectorServer cs;
   private final DistributionConfig config;
   private boolean isHttpServiceRunning = false;
+  private ManagementInterceptor managementInterceptor = null;
 
   /**
    * This system property is set to true when the embedded HTTP server is
@@ -96,6 +97,10 @@ public class ManagementAgent {
 
   public synchronized boolean isRunning() {
     return this.running;
+  }
+
+  public ManagementInterceptor getManagementInterceptor() {
+    return managementInterceptor;
   }
 
   public synchronized boolean isHttpServiceRunning() {
@@ -388,11 +393,10 @@ public class ManagementAgent {
     // Environment map. KIRK: why is this declared as HashMap?
     final HashMap<String, Object> env = new HashMap<String, Object>();
 
-    ManagementInterceptor securityInterceptor = null;
     Cache cache = CacheFactory.getAnyInstance();
     if (isCustomAuthenticator()) {
-      securityInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getProperties());
-      env.put(JMXConnectorServer.AUTHENTICATOR, securityInterceptor);
+      managementInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getProperties());
+      env.put(JMXConnectorServer.AUTHENTICATOR, managementInterceptor);
     }
     else {
       /* Disable the old authenticator mechanism */
@@ -466,10 +470,10 @@ public class ManagementAgent {
     };
 
     if (isCustomAuthorizer()) {
-      if(securityInterceptor==null){
-        securityInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getProperties());
+      if(managementInterceptor==null){
+        managementInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getProperties());
       }
-      MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(securityInterceptor);
+      MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(managementInterceptor);
       cs.setMBeanServerForwarder(mBeanServerWrapper);
       logger.info("Starting RMI Connector with Security Interceptor");
     }

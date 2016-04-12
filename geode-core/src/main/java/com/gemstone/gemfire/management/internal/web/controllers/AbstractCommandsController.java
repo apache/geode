@@ -18,7 +18,6 @@
 package com.gemstone.gemfire.management.internal.web.controllers;
 
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
@@ -91,7 +90,6 @@ public abstract class AbstractCommandsController {
 
   private Class accessControlKlass;
 
-  private GemFireCacheImpl cache;
 
   // Convert a predefined exception to an HTTP Status code
   @ResponseStatus(value=HttpStatus.UNAUTHORIZED, reason="Not authenticated")  // 401
@@ -619,11 +617,31 @@ public abstract class AbstractCommandsController {
   protected String processCommand(final String command, final Map<String, String> environment, final byte[][] fileData) {
     logger.info(LogMarker.CONFIG, "Processing Command ({}) with Environment ({}) having File Data ({})...", command,
         environment, (fileData != null));
-    
+//    // create the jmx connection
+//    // con.getMemberMXBean then call the processCommand on that bean
+//    Map<String, String[]> env = new HashMap<>();
+//    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+//    int jmxPort = cache.getDistributedSystem().getConfig().getJmxManagerPort();
+//    Properties credentials = EnvironmentVariablesHandlerInterceptor.CREDENTIALS.get();
+//    if(credentials!=null) {
+//      env.put(JMXConnector.CREDENTIALS, new String[] { credentials.getProperty("security-username"), credentials.getProperty("security-password") });
+//    }
+//
+//    String result = null;
+//    try {
+//      JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + jmxPort + "/jmxrmi");
+//      JMXConnector jmxConnector = JMXConnectorFactory.connect(url, env);
+//      MBeanServerConnection con = jmxConnector.getMBeanServerConnection();
+//
+//      MemberMXBean memberMXBean = JMX.newMXBeanProxy(con, ObjectName.getInstance("GemFire:type=Member,member=Manager"), MemberMXBean.class);
+//      result = memberMXBean.processCommand(command, environment, ArrayUtils.toByteArray(fileData));
+//    }
+//    catch(Exception e){
+//      e.printStackTrace();
+//    }
+
     ResourceOperationContext ctx = authorize(command);
-
     String result =  getManagingMemberMXBean().processCommand(command, environment, ArrayUtils.toByteArray(fileData));
-
     ctx = postAuthorize(command, ctx, result);
 
     return result;
