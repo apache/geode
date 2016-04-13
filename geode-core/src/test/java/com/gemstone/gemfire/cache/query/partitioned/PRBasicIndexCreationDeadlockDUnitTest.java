@@ -16,14 +16,12 @@
  */
 package com.gemstone.gemfire.cache.query.partitioned;
 
-import java.io.File;
-import java.util.Collection;
+import static com.gemstone.gemfire.cache.query.Utils.createPortfoliosAndPositions;
 
-import com.gemstone.gemfire.cache.Cache;
+import java.io.File;
+
 import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager.TestHook;
 import com.gemstone.gemfire.cache.query.internal.index.IndexUtils;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
@@ -31,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
@@ -52,12 +49,19 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
   public PRBasicIndexCreationDeadlockDUnitTest(String name) {
     super(name);
   }
+  public void setCacheInVMs(VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    }
+  }
+  public void setCacheInVMsUsingXML(String xmlFile, VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> GemFireCacheImpl.testCacheXml = PRQHelp.findFile(xmlFile));
+      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    }
+  }
 
-  // int totalNumBuckets = 131;
-
-  int queryTestCycle = 10;
-
-  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
+  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 
   final String name = "PartionedPortfolios";
 
@@ -77,11 +81,11 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    
-    Class valueConstraint = Portfolio.class;
+    setCacheInVMs(vm0,vm1);
     final String fileName1 = "PRPersistentIndexCreation_1.xml";
     final String fileName2 = "PRPersistentIndexCreation_2.xml";
-    
+    setCacheInVMsUsingXML(fileName1, vm0);
+    setCacheInVMsUsingXML(fileName1, vm1);
     final File dir1 = new File("overflowData1");
     final File dir2 = new File("overflowData2");
 
@@ -97,11 +101,11 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
           success = (dir2).mkdir();
         }
       });
-   
-      vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreateThrougXML(name, fileName1));
-      vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreateThrougXML(name, fileName2));
+
+      vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name));
+      vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name));
   
-      final Portfolio[] portfoliosAndPositions = PRQHelp.createPortfoliosAndPositions(100);
+      final Portfolio[] portfoliosAndPositions = createPortfoliosAndPositions(100);
   
       // Putting the data into the PR's created
       vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
@@ -130,7 +134,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
         public void run2() throws CacheException {
           GemFireCacheImpl.testCacheXml = PRQHelp.findFile(fileName1);
           IndexUtils.testHook = new IndexUtilTestHook();
-          PRQHelp.getCache();
+          getCache();
         }
       });
   
@@ -161,7 +165,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
         @Override
         public void run2() throws CacheException {
           GemFireCacheImpl.testCacheXml = PRQHelp.findFile(fileName2);
-          PRQHelp.getCache();
+          getCache();
         }
       });
 
