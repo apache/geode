@@ -16,14 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.ClassRule;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-@Category(IntegrationTest.class)
+@Category(DistributedTest.class)
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -50,7 +50,11 @@ import org.junit.runners.Suite;
     ShowStackTraceDUnitTest.class,
     UserCommandsDUnitTest.class
 })
-public class CommandOverHttpTests {
+public class CommandOverHttpSecurityDUnitTest {
   @ClassRule
-  public static ProvideSystemProperty provideSystemProperty = new ProvideSystemProperty(CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY, "true");
+  public static ProvideSystemProperty systemProperty = new ProvideSystemProperty(CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY, "true");
+
+  @ClassRule
+  public static ProvideSystemProperty securityRule = new ProvideSystemProperty(CliCommandTestBase.JSON_AUTHORIZATION_SYSTEM_PROPERTY, "cacheServer.json");
+
 }

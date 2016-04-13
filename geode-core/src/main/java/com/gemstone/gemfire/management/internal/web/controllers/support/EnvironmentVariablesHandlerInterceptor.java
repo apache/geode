@@ -21,6 +21,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
+import com.gemstone.gemfire.management.internal.security.ManagementInterceptor;
 import com.gemstone.gemfire.security.Authenticator;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -125,8 +126,11 @@ public class EnvironmentVariablesHandlerInterceptor extends HandlerInterceptorAd
     if(instance != null){
       SystemManagementService service = (SystemManagementService) ManagementService
           .getExistingManagementService(instance);
-      //service.getAuthManager().verifyCredentials(credentials);
-      service.getManagementAgent().getManagementInterceptor().authenticate(credentials);
+
+      ManagementInterceptor interceptor = service.getManagementAgent().getManagementInterceptor();
+      if(interceptor!=null) {
+        interceptor.authenticate(credentials);
+      }
       CREDENTIALS.set(credentials);
     }
 
