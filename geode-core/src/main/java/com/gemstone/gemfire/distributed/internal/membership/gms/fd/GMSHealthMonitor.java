@@ -1331,18 +1331,15 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 //    }
     logger.debug("Sending suspect request for members {}", requests);
     List<InternalDistributedMember> recipients;
-//  TODO this needs some rethinking - we need the guys near the
-//  front of the membership view who aren't preferred for coordinator
-//  to see the suspect message.
-//    if (v.size() > 20) {
-//      HashSet<InternalDistributedMember> filter = new HashSet<InternalDistributedMember>();
-//      for (int i = 0; i < requests.size(); i++) {
-//        filter.add(requests.get(i).getSuspectMember());
-//      }
-//      recipients = currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(), 5);
-//    } else {
+    if (currentView.size() > 4) {
+      HashSet<InternalDistributedMember> filter = new HashSet<InternalDistributedMember>();
+      for (int i = 0; i < requests.size(); i++) {
+        filter.add(requests.get(i).getSuspectMember());
+      }
+      recipients = currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(), 5);
+    } else {
       recipients = currentView.getMembers();
-//    }
+    }
 
     SuspectMembersMessage smm = new SuspectMembersMessage(recipients, requests);
     Set<InternalDistributedMember> failedRecipients;
