@@ -81,7 +81,6 @@ sourceSets {
 
 test {
   // test from the actual classpath not the gradle classpath
-  dependsOn copyRuntimeLibs
   dependsOn installDist
   // @TODO: this doesn't seem to be working need to get basename first.
   classpath += files "$buildDir/install/apache-geode/lib/geode-dependencies.jar"
@@ -111,11 +110,6 @@ task defaultCacheConfig(type: JavaExec, dependsOn: classes) {
   doFirst {
     buildDir.mkdirs()
   }
-}
-
-task copyRuntimeLibs(type: Copy) {
-  into "lib"
-  from configurations.testRuntime - configurations.runtime
 }
 
 // This closure sets the gemfire classpath.  If we add another jar to the classpath it must
