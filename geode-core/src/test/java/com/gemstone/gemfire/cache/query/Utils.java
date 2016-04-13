@@ -25,6 +25,12 @@ package com.gemstone.gemfire.cache.query;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.gemstone.gemfire.cache.query.data.Portfolio;
+import com.gemstone.gemfire.cache.query.data.PortfolioData;
+import com.gemstone.gemfire.cache.query.data.Position;
+
+import parReg.query.unittest.NewPortfolio;
+
 /**
  *
  */
@@ -52,5 +58,37 @@ public class Utils {
     } else
       sb.append(r);
     return sb.toString();
+  }
+  /**
+   * This function <br>
+   * 1. The Creates an array of PortfolioData objects
+   *
+   * @return PortFolioData Objects
+   */
+
+  public static PortfolioData[] createPortfolioData(final int cnt, final int cntDest) {
+    PortfolioData[] portfolio = new PortfolioData[cntDest];
+    for (int k = cnt; k < cntDest; k++) {
+      portfolio[k] = new PortfolioData(k);
+    }
+    return portfolio;
+  }
+
+  public static Portfolio[] createPortfoliosAndPositions(int count) {
+    Position.cnt = 0; // reset Portfolio counter
+    Portfolio[] portfolios = new Portfolio[count];
+    for (int i = 0; i < count; i++) {
+      portfolios[i] = new Portfolio(i);
+    }
+    return portfolios;
+  }
+
+  public static NewPortfolio[] createNewPortfoliosAndPositions(int count) {
+    Position.cnt = 0; // reset Portfolio counter
+    NewPortfolio[] portfolios = new NewPortfolio[count];
+    for (int i = 0; i < count; i++) {
+      portfolios[i] = new NewPortfolio("" + i, i);
+    }
+    return portfolios;
   }
 }

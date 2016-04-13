@@ -84,8 +84,6 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
   public static String[] queriesForRR = new String[] { "<trace> select * from /"
       + repRegionName + " where ID=1" };
 
-  private static PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
-
   public static volatile boolean hooked = false;
   /**
    * @param name

@@ -16,11 +16,12 @@
  */
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import static org.junit.Assert.*;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,29 +67,24 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.data.PortfolioData;
-import com.gemstone.gemfire.cache.query.data.Position;
 import com.gemstone.gemfire.cache.query.functional.StructSetOrResultsSet;
 import com.gemstone.gemfire.cache.query.internal.index.PartitionedIndex;
-import com.gemstone.gemfire.cache.query.partitioned.PRQueryPerfDUnitTest.ResultsObject;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ReplyException;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.util.test.TestUtil;
 
-import parReg.query.unittest.NewPortfolio;
 import util.TestException;
 
 /**
@@ -96,30 +92,26 @@ import util.TestException;
  * 
  */
 
-public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
+public class PRQueryDUnitHelper implements Serializable
 {
   /**
    * constructor *
    * 
    * @param name
    */
-
-  public PRQueryDUnitHelper(String name) {
-
-    super(name);
+  static Cache cache = null;
+  public static void setCache(Cache cache) {
+    PRQueryDUnitHelper.cache = cache;
   }
 
-  final Class valueConstraint = PortfolioData.class;
+  public PRQueryDUnitHelper() {
 
-  /**
-   * This function creates a appropriate region (Local or PR ) given the scope &
-   * the isPR parameters *
-   */
-  public CacheSerializableRunnable getCacheSerializableRunnableForLocalRegionCreation(
-      final String regionName) {
-    return getCacheSerializableRunnableForLocalRegionCreation(regionName, this.valueConstraint);
   }
-    
+
+  public static Cache getCache() {
+    return cache;
+  }
+
   public CacheSerializableRunnable getCacheSerializableRunnableForLocalRegionCreation(
       final String regionName, final Class constraint) {
     SerializableRunnable createPrRegion;
@@ -192,20 +184,9 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
     return (CacheSerializableRunnable)createPrRegion;
   }
-  /**
-   * This function creates a Replicated Region using {@link RegionShortcut#REPLICATE}.
-   * 
-   * @param regionName
-   * 
-   * @return cacheSerializable object
-   */
+
   public CacheSerializableRunnable getCacheSerializableRunnableForReplicatedRegionCreation(
-      final String regionName) {
-    return getCacheSerializableRunnableForLocalRegionCreation(regionName, this.valueConstraint);
-  }
-    
-  public CacheSerializableRunnable getCacheSerializableRunnableForReplicatedRegionCreation(
-      final String regionName, final Class constraint) {
+    final String regionName) {
     SerializableRunnable createPrRegion;
     createPrRegion = new CacheSerializableRunnable(regionName) {
       @Override
@@ -246,11 +227,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRCreate(
-         final String regionName, final int redundancy) {
-    return getCacheSerializableRunnableForPRCreate(regionName, redundancy, this.valueConstraint);
-  }
-
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRCreate(
     final String regionName, final int redundancy, final Class constraint) {
       
     SerializableRunnable createPrRegion;
@@ -259,8 +235,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
       public void run2() throws CacheException
       {
 
-        //closeCache();
-        disconnectFromDS();
         Cache cache = getCache();
         Region partitionedregion = null;
         AttributesFactory attr = new AttributesFactory();
@@ -297,8 +271,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
         public void run2() throws CacheException
         {
 
-          //closeCache();
-          disconnectFromDS();
           Cache cache = getCache();
           Region partitionedregion = null;
           try {
@@ -339,12 +311,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
         public void run2() throws CacheException
         {
 
-          //closeCache();
-          disconnectFromDS();
           Cache cache = getCache();
           Region partitionedregion = null;
           try {
-            cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("diskstore");
+            cache.createDiskStoreFactory().setDiskDirs(JUnit4CacheTestCase.getDiskDirs()).create("diskstore");
             AttributesFactory attr = new AttributesFactory();
             attr.setValueConstraint(constraint);
             attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
@@ -397,8 +367,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
         public void run2() throws CacheException
         {
   
-          //closeCache();
-          //disconnectFromDS();
           Cache cache = getCache();
           Region partitionedregion = null;
           try {
@@ -456,10 +424,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
         Region region = cache.getRegion(regionName);
         for (int j = from; j < to; j++)
           region.put(new Integer(j), portfolio[j]);
-//        getLogWriter()
-//            .info(
-//                "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: Inserted Portfolio data on Region "
-//                    + regionName);
       }
     };
     return (CacheSerializableRunnable)prPuts;
@@ -492,38 +456,22 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
               case 0:
                 // Put operation
                 region.put(new Integer(j), new Portfolio(j));
-//                getLogWriter()
-//                    .info(
-//                        "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: INSERTED Portfolio data for key "
-//                            + j);
                 break;
               case 1:
                 // invalidate
                 if (region.containsKey(new Integer(j))) {
                   region.invalidate(new Integer(j));
-//                  getLogWriter()
-//                      .info(
-//                          "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: INVALIDATED data for key "
-//                              + j);
                 }
                 break;
               case 2:
                 if (region.containsKey(new Integer(j))) {
                   region.destroy(new Integer(j));
-//                  getLogWriter()
-//                      .info(
-//                          "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: DESTROYED Portfolio data for key "
-//                              + j);
                 }
                 break;
               case 3:
 
                 if (!region.containsKey(new Integer(j))) {
                   region.create(new Integer(j), null);
-//                  getLogWriter()
-//                      .info(
-//                          "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: INSERTED Null data for key "
-//                              + j);
                 }
 
                 break;
@@ -544,25 +492,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
     return (CacheSerializableRunnable) prPuts;
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRPutsAndDestroy(
-      final String regionName, final int from, final int to) {
-    SerializableRunnable prPuts = new CacheSerializableRunnable("PRPuts") {
-      @Override
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        Region region = cache.getRegion(regionName);
-        
-        for (int j = from; j < to; j++) {
-          region.put(new Integer(j), new Portfolio(j));
-        }
-        
-        for (int j = from; j < to; j++) {
-          region.destroy(new Integer(j));
-        }
-      }
-    };
-    return (CacheSerializableRunnable) prPuts;
-  }
   /**
    * This function puts portfolio objects into the created Region (PR or Local) *
    * 
@@ -584,10 +513,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
         Region region = cache.getRegion(regionName);
         for (int j = from, i = to ; j < to; j++, i++)
           region.put(new Integer(i), portfolio[j]);
-//        getLogWriter()
-//            .info(
-//                "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: Inserted Portfolio data on Region "
-//                    + regionName);
       }
     };
     return (CacheSerializableRunnable)prPuts;
@@ -612,10 +537,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
         Region region = cache.getRegion(regionName);
         for (int j = from; j < to; j++)
           region.put(portfolio[j], portfolio[j]);
-//        getLogWriter()
-//            .info(
-//                "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: Inserted Portfolio data on Region "
-//                    + regionName);
       }
     };
     return (CacheSerializableRunnable)prPuts;
@@ -703,7 +624,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
         try {
           for (int j = 0; j < queries.length; j++) {
             synchronized (region) {
-              // getCache().getLogger().info("About to execute local query: " + queries[j]);
               if (fullQueryOnPortfolioPositions) {
                 params = new Object[] { local, new Double((j % 25) * 1.0 + 1) };
                 r[j][0] = qs.newQuery(queries[j]).execute(params);
@@ -711,23 +631,15 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
               else {
                 r[j][0] = local.query(queries[j]);
               }
-              // getCache().getLogger().info("Executed local query " + j + ": " + queries[j] + "; on region: " + local.getFullPath() +
-              // "; region size=" + local.size() + "; region values=" + local.values() + ";results=" + r[j][0]);
               if (fullQueryOnPortfolioPositions) {
-//                getCache().getLogger().info("About to execute PR query: " + queries[j]);
                 params = new Object[] { region, new Double((j % 25) * 1.0 + 1) };
                 r[j][1] = qs.newQuery(queries[j]).execute(params);
-//                getCache().getLogger().info("Finished executing PR query: " + queries[j]);
               }
               else {
                 r[j][1] = region.query(queries[j]);
               }
              }
            }
-//          getLogWriter()
-//              .info(
-//                  "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
-
           compareTwoQueryResults(r, queries.length);
         }
         catch (QueryInvocationTargetException e) {
@@ -764,10 +676,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
         }
         finally {
-          for (int i=0; i<expectedExceptions.length; i++) {
+          for (final String expectedException : expectedExceptions) {
             getCache().getLogger().info(
-              "<ExpectedException action=remove>" + expectedExceptions[i]
-                  + "</ExpectedException>");
+              "<ExpectedException action=remove>" + expectedException
+                + "</ExpectedException>");
           }
         }
 
@@ -841,10 +753,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
             QueryInvocationTargetException.class.getName()
         };
 
-        for (int i=0; i<expectedExceptions.length; i++) {
+        for (final String expectedException : expectedExceptions) {
           getCache().getLogger().info(
-              "<ExpectedException action=add>" + expectedExceptions[i]
-                                                                    + "</ExpectedException>");
+            "<ExpectedException action=add>" + expectedException
+              + "</ExpectedException>");
         }
 
         String distinct = "SELECT DISTINCT ";
@@ -863,8 +775,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
               // Execute on remote region.
               qStr = (distinct + queries[j].replace("REGION_NAME", regionName)); 
               r[j][1] = qs.newQuery(qStr).execute();
-
-//              getCache().getLogger().info("Finished executing PR query: " + qStr);
             }
           }
 
@@ -872,7 +782,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
           .info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
 
-          // compareTwoQueryResults(r, queries.length);
           StructSetOrResultsSet ssORrs = new  StructSetOrResultsSet();
           ssORrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length,queries);
           
@@ -907,10 +816,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
         }
         finally {
-          for (int i=0; i<expectedExceptions.length; i++) {
+          for (final String expectedException : expectedExceptions) {
             getCache().getLogger().info(
-                "<ExpectedException action=remove>" + expectedExceptions[i]
-                                                                         + "</ExpectedException>");
+              "<ExpectedException action=remove>" + expectedException
+                + "</ExpectedException>");
           }
         }
 
@@ -973,10 +882,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
             QueryInvocationTargetException.class.getName()
         };
 
-        for (int i=0; i<expectedExceptions.length; i++) {
+        for (final String expectedException : expectedExceptions) {
           getCache().getLogger().info(
-              "<ExpectedException action=add>" + expectedExceptions[i]
-                                                                    + "</ExpectedException>");
+            "<ExpectedException action=add>" + expectedException
+              + "</ExpectedException>");
         }
 
         String distinct = "SELECT DISTINCT ";
@@ -985,19 +894,17 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
         StructSetOrResultsSet ssORrs = new  StructSetOrResultsSet();
         
         try {
-          for (int j = 0; j < queries.length; j++) {
+          for (final String query : queries) {
             String qStr = null;
             synchronized (region) {
               // Execute on local region.
-              qStr = (distinct + queries[j].replace("REGION_NAME", localRegion)); 
+              qStr = (distinct + query.replace("REGION_NAME", localRegion));
               r[0][0] = qs.newQuery(qStr).execute();
 
               // Execute on remote region.
-              qStr = (distinct + queries[j].replace("REGION_NAME", regionName)); 
+              qStr = (distinct + query.replace("REGION_NAME", regionName));
               r[0][1] = qs.newQuery(qStr).execute();
-
-//              getCache().getLogger().info("Finished executing PR query: " + qStr);
-              ssORrs.CompareQueryResultsWithoutAndWithIndexes(r, 1, true,queries);
+              ssORrs.CompareQueryResultsWithoutAndWithIndexes(r, 1, true, queries);
             }
           }
 
@@ -1035,10 +942,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
         }
         finally {
-          for (int i=0; i<expectedExceptions.length; i++) {
+          for (final String expectedException : expectedExceptions) {
             getCache().getLogger().info(
-                "<ExpectedException action=remove>" + expectedExceptions[i]
-                                                                         + "</ExpectedException>");
+              "<ExpectedException action=remove>" + expectedException
+                + "</ExpectedException>");
           }
         }
 
@@ -1098,10 +1005,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
             QueryInvocationTargetException.class.getName()
         };
 
-        for (int i=0; i<expectedExceptions.length; i++) {
+        for (final String expectedException : expectedExceptions) {
           getCache().getLogger().info(
-              "<ExpectedException action=add>" + expectedExceptions[i]
-                                                                    + "</ExpectedException>");
+            "<ExpectedException action=add>" + expectedException
+              + "</ExpectedException>");
         }
 
         String distinct = "<TRACE>SELECT DISTINCT ";
@@ -1123,6 +1030,7 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
                 if(sr.asList().size() > l*l) {
                   fail("The resultset size exceeds limit size. Limit size="+ l*l+", result size ="+ sr.asList().size());
                 }
+
                 // Execute on remote region.
                 qStr = (distinct + queries[j].replace("REGION_NAME", regionName));
                 qStr += (" LIMIT " + (l*l));
@@ -1132,9 +1040,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
                 if(srr.size() > l*l) {
                   fail("The resultset size exceeds limit size. Limit size="+ l*l+", result size ="+ srr.asList().size());
                 }
-                //assertEquals("The resultset size is not same as limit size.", l*l, srr.asList().size());
-
-//                getCache().getLogger().info("Finished executing PR query: " + qStr);
               }
             }
             StructSetOrResultsSet ssORrs = new  StructSetOrResultsSet();
@@ -1144,9 +1049,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
           com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
           .info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
-
-          // compareTwoQueryResults(r, queries.length);
-          
         }
         catch (QueryInvocationTargetException e) {
           // throw an unchecked exception so the controller can examine the cause and see whether or not it's okay
@@ -1178,10 +1080,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
         }
         finally {
-          for (int i=0; i<expectedExceptions.length; i++) {
+          for (final String expectedException : expectedExceptions) {
             getCache().getLogger().info(
-                "<ExpectedException action=remove>" + expectedExceptions[i]
-                                                                         + "</ExpectedException>");
+              "<ExpectedException action=remove>" + expectedException
+                + "</ExpectedException>");
           }
         }
 
@@ -1228,7 +1130,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
        };
 
        Object r[][] = new Object[queries.length][2];
-       Region local = cache.getRegion(localRegion);
        Region region = cache.getRegion(regionName);
        assertNotNull(region);
 
@@ -1240,10 +1141,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
            QueryInvocationTargetException.class.getName()
        };
 
-       for (int i=0; i<expectedExceptions.length; i++) {
+       for (final String expectedException : expectedExceptions) {
          getCache().getLogger().info(
-             "<ExpectedException action=add>" + expectedExceptions[i]
-                                                                   + "</ExpectedException>");
+           "<ExpectedException action=add>" + expectedException
+             + "</ExpectedException>");
        }
 
        QueryService qs = getCache().getQueryService();
@@ -1262,16 +1163,12 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
               qStr = queries[j];
               SelectResults srr = (SelectResults) qs.newQuery(qStr.replace(regionName, localRegion)).execute();
               r[j][1] = srr;
-
-//              getCache().getLogger().info(
-//                  "Finished executing PR query: " + qStr);
             }
           }
          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
          .info(
              "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
 
-         // compareTwoQueryResults(r, queries.length);
          StructSetOrResultsSet ssORrs = new  StructSetOrResultsSet();
          ssORrs.CompareCountStarQueryResultsWithoutAndWithIndexes(r, queries.length,true,queries);
          
@@ -1306,10 +1203,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
        }
        finally {
-         for (int i=0; i<expectedExceptions.length; i++) {
+         for (final String expectedException : expectedExceptions) {
            getCache().getLogger().info(
-               "<ExpectedException action=remove>" + expectedExceptions[i]
-                                                                        + "</ExpectedException>");
+             "<ExpectedException action=remove>" + expectedException
+               + "</ExpectedException>");
          }
        }
 
@@ -1322,56 +1219,19 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
   /**
    * Insure queries on a pr is using index if not fail.
    */
-  public CacheSerializableRunnable getCacheSerializableRunnableForIndexUsageCheck(final String name) {
+  public CacheSerializableRunnable getCacheSerializableRunnableForIndexUsageCheck() {
     SerializableRunnable PrIndexCheck = new CacheSerializableRunnable("PrIndexCheck") {
       @Override
       public void run2() {
         Cache cache = getCache();
         
-//        Region parRegion = cache.getRegion(name);
         QueryService qs = cache.getQueryService();
         LogWriter logger = cache.getLogger();
       
           Collection indexes = qs.getIndexes();
           Iterator it = indexes.iterator();
-          while(it.hasNext()) {         
-            //logger.info("Following indexes found : " + it.next());
+          while(it.hasNext()) {
             PartitionedIndex ind = (PartitionedIndex)it.next();
-            /*List bucketIndex = ind.getBucketIndexes();
-            int k = 0;
-            logger.info("Total number of bucket index : "+bucketIndex.size());
-            while ( k < bucketIndex.size() ){
-              Index bukInd = (Index)bucketIndex.get(k);
-              logger.info("Buket Index "+bukInd+"  usage : "+bukInd.getStatistics().getTotalUses());
-              // if number of quries on pr change in getCacheSerializableRunnableForPRQueryAndCompareResults
-              // literal 6  should change.
-              //Asif :  With the optmization of Range Queries a where clause
-              // containing something like ID > 4 AND ID < 9 will be evaluated 
-              //using a single index lookup, so accordingly modifying the 
-              //assert value from 7 to 6
-              // Anil : With aquiringReadLock during Index.getSizeEstimate(), the
-              // Index usage in case of "ID = 0 OR ID = 1" is increased by 3.
-              int indexUsageWithSizeEstimation = 3;
-              int expectedUse = 6;
-              long indexUse = bukInd.getStatistics().getTotalUses();
-              // Anil : With chnages to use single index for PR query evaluation, once the index
-              // is identified the same index is used on other PR buckets, the sieEstimation is
-              // done only once, which adds additional index use for only one bucket index.
-              if (!(indexUse == expectedUse || indexUse == (expectedUse + indexUsageWithSizeEstimation))){
-                fail ("Index usage is not as expected, expected it to be either " + 
-                    expectedUse + " or " + (expectedUse + indexUsageWithSizeEstimation) + 
-                    " it is: " + indexUse);
-                //assertEquals(6 + indexUsageWithSizeEstimation, bukInd.getStatistics().getTotalUses());
-              }
-              k++;
-            }*/
-            //Shobhit: Now we dont need to check stats per bucket index,
-            //stats are accumulated in single pr index stats.
-            
-            // Anil : With aquiringReadLock during Index.getSizeEstimate(), the
-            // Index usage in case of "ID = 0 OR ID = 1" is increased by 3.
-            int indexUsageWithSizeEstimation = 3;
-            
             logger.info("index uses for "+ind.getNumberOfIndexedBuckets()+" index "+ind.getName()+": "+ind.getStatistics().getTotalUses());
             assertEquals(6, ind.getStatistics().getTotalUses());
           }
@@ -1421,8 +1281,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
         }
         catch (QueryException e) {
-          // assertTrue("caught Exception"+ e.getMessage(),false);
-
           com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
               .error(
                   "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryWithConstantsAndComparingResults: Caught an Exception while querying Constants"
@@ -1475,46 +1333,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
     return (CacheSerializableRunnable)createPrRegion;
   }
-  /**
-   * This function creates a Accessor node region on the given PR given the
-   * scope parameter.
-   * 
-   * @param regionName
-   * @return cacheSerializable object
-   */
-
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRAccessorCreate(
-      final String regionName, final int redundancy)
-  {
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName) {
-      @Override
-      public void run2() throws CacheException
-      {
-        Cache cache = getCache();
-        Region partitionedregion = null;
-        int maxMem = 0;
-        AttributesFactory attr = new AttributesFactory();
-        attr.setValueConstraint(valueConstraint);
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        PartitionAttributes prAttr = paf.setLocalMaxMemory(maxMem)
-        .setRedundantCopies(redundancy).create();
-        attr.setPartitionAttributes(prAttr);
-        partitionedregion = cache.createRegion(regionName, attr.create());
-        assertNotNull(
-            "PRQueryDUnitHelper#getCacheSerializableRunnableForPRAccessorCreate: Partitioned Region "
-                + regionName + " not in cache", cache.getRegion(regionName));
-        assertNotNull(
-            "PRQueryDUnitHelper#getCacheSerializableRunnableForPRAccessorCreate: Partitioned Region ref null",
-            partitionedregion);
-        assertTrue(
-            "PRQueryDUnitHelper#getCacheSerializableRunnableForPRAccessorCreate: Partitioned Region ref claims to be destroyed",
-            !partitionedregion.isDestroyed());
-      }
-    };
-
-    return (CacheSerializableRunnable)createPrRegion;
-  }
 
   /*
    * This function compares the two result sets passed based on <br> 1. Type
@@ -1528,8 +1346,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
     Set set1 = null;
     Set set2 = null;
-//    Iterator itert1 = null;
-//    Iterator itert2 = null;
     ObjectType type1, type2;
 
     for (int j = 0; j < len; j++) {
@@ -1579,68 +1395,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
         assertEquals("PRQueryDUnitHelper#compareTwoQueryResults: FAILED: "
                      + "result contents are not equal, ", set1, set2);
-//        if (r[j][0] instanceof StructSet) {
-//          boolean pass = true;
-//          itert1 = set1.iterator();
-//          while (itert1.hasNext()) {
-//            StructImpl p1 = (StructImpl)itert1.next();
-//            itert2 = set2.iterator();
-//            boolean found = false;
-//            while (itert2.hasNext()) {
-//              StructImpl p2 = (StructImpl)itert2.next();
-//              Object[] values1 = p1.getFieldValues();
-//              Object[] values2 = p2.getFieldValues();
-//              if (values1.length != values2.length) {
-//                fail("PRQueryDUnitHelper#compareTwoQueryResults: The length of the values in struct fields does not match");
-//              }
-//              boolean exactMatch = true;
-//              for (int k = 0; k < values1.length; k++) {
-//                if (!values1[k].equals(values2[k]))
-//                  exactMatch = false;
-//              }
-//              if (exactMatch)
-//                found = true;
-//            }
-//
-//            if (!found)
-//              pass = false;
-//          }
-//
-//          if (pass) {
-//            getLogWriter()
-//            .info(
-//                  "PRQueryDUnitHelper#compareTwoQueryResults: Results found are StructSet and both of them are Equal.");
-//          }
-//          else {
-//            fail("PRQueryDUnitHelper#compareTwoQueryResults: Test failed the contents of the two resultSets are not same");
-//          }
-//        }
-//        else {
-//          boolean pass = true;
-//          itert1 = set1.iterator();
-//          while (itert1.hasNext()) {
-//            Object p1 = itert1.next();
-//            itert2 = set2.iterator();
-//            boolean found = false;
-//            while (itert2.hasNext()) {
-//              Object p2 = itert2.next();
-//              if (p2.equals(p1)) {
-//                found = true;
-//              }
-//            }
-//            if (!found)
-//              pass = false;
-//          }
-//
-//          if (pass) {
-//            getLogWriter()
-//              .info(
-//                  "PRQueryDUnitHelper#compareTwoQueryResults: Results found are ResultsSet and both of them are Equal.");
-//          }
-//          else {
-//            fail("PRQueryDUnitHelper#compareTwoQueryResults: Test failed the contents of the two resultSets are not same");
-//          }
-//        }
       }
     }
   }
@@ -1652,13 +1406,13 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
    * 3. Compares the appropriate resultSet <br>
    * 
    * @param regionName
-   * 
-   * 
+   *
+   *
    * @return cacheSerializable object
    */
 
   public CacheSerializableRunnable getCacheSerializableRunnableForPRInvalidQuery(
-      final String regionName, final String invalidQuery)
+    final String regionName)
   {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRQuery") {
       @Override
@@ -1704,7 +1458,7 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
    */
 
   public CacheSerializableRunnable getCacheSerializableRunnableForRegionClose(
-      final String regionName, final int redundancy)
+      final String regionName, final int redundancy, final Class constraint)
   {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("regionClose") {
       @Override
@@ -1729,12 +1483,8 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
         com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
             .info(
                 "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForRegionClose: Region Closed on VM ");
-//        Region partitionedregion = null;
-//        Properties localProps = new Properties();
-//        String maxMem = "0";
-
         AttributesFactory attr = new AttributesFactory();
-        attr.setValueConstraint(PortfolioData.class);
+        attr.setValueConstraint(constraint);
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         PartitionAttributes prAttr = paf.setRedundantCopies(redundancy)
             .create();
@@ -1761,16 +1511,18 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
    * 2. creates the cache again & also the PR <br>
    * 
    * @return cacheSerializable object
+   *
+   * NOTE: Closing of the cache must be done from the test case rather than in PRQueryDUintHelper
+   *
    */
 
   public CacheSerializableRunnable getCacheSerializableRunnableForCacheClose(
-      final String regionName, final int redundancy)
+      final String regionName, final int redundancy, final Class constraint)
   {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("cacheClose") {
       @Override
       public void run2() throws CacheException
       {
-        Cache cache = getCache();
         final String expectedCacheClosedException = CacheClosedException.class
             .getName();
         final String expectedReplyException = ReplyException.class.getName();
@@ -1780,26 +1532,12 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
         getCache().getLogger().info(
             "<ExpectedException action=add>" + expectedReplyException
                 + "</ExpectedException>");
-
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
-            .info(
-                "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForCacheClose: Closing cache");
-        closeCache();
-
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
-            .info(
-                "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForCacheClose: cache Closed on VM ");
-        cache = getCache();
-
+        Cache cache = getCache();
         com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
             .info(
                 "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForCacheClose: Recreating the cache ");
-//        Region partitionedregion = null;
-//        Properties localProps = new Properties();
-//        String maxMem = "0";
-
         AttributesFactory attr = new AttributesFactory();
-        attr.setValueConstraint(PortfolioData.class);
+        attr.setValueConstraint(constraint);
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         PartitionAttributes prAttr = paf.setRedundantCopies(redundancy)
             .create();
@@ -1836,208 +1574,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
     return (CacheSerializableRunnable)PrRegion;
   }
 
-  /**
-   * This function <br>
-   * 1. The Creates an array of PortfolioData objects
-   * 
-   * @return PortFolioData Objects
-   */
-
-  public PortfolioData[] createPortfolioData(final int cnt, final int cntDest) {
-    PortfolioData[] portfolio = new PortfolioData[cntDest];
-    for (int k = cnt; k < cntDest; k++) {
-      portfolio[k] = new PortfolioData(k);
-    }
-    return portfolio;
-  }
-  
-  public Portfolio[] createPortfoliosAndPositions(int count) {
-    Position.cnt = 0; // reset Portfolio counter
-    Portfolio[] portfolios = new Portfolio[count];
-    for (int i = 0; i < count; i++) {
-      portfolios[i] = new Portfolio(i);
-    }
-    return portfolios;
-  }
-    
-
-  /**
-   * This function <br>
-   * 1. calls the region.destroyRegion() on the VM <br>
-   * 
-   * 
-   * @return cacheSerializable object
-   */
-
-  public CacheSerializableRunnable getCacheSerializableRunnableForRegionDestroy(
-      final String regionName, final int redundancy)
-  {
-    SerializableRunnable PrRegion = new CacheSerializableRunnable(
-        "regionDestroy") {
-      @Override
-      public void run2() throws CacheException
-      {
-        Cache cache = getCache();
-        final String expectedRegionDestroyedException = RegionDestroyedException.class
-            .getName();
-        final String expectedReplyException = ReplyException.class.getName();
-        getCache().getLogger().info(
-            "<ExpectedException action=add>" + expectedRegionDestroyedException
-                + "</ExpectedException>");
-        getCache().getLogger().info(
-            "<ExpectedException action=add>" + expectedReplyException
-                + "</ExpectedException>");
-
-        Region region = cache.getRegion(regionName);
-
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
-            .info(
-                "PRQueryRegionDestroyedDUnitTest#getCacheSerializableRunnableForRegionClose: Destroying region "
-                    + region);
-        region.destroyRegion();
-
-        assertTrue("Region destroy failed", region.isDestroyed());
-
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + expectedReplyException
-                + "</ExpectedException>");
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>"
-                + expectedRegionDestroyedException + "</ExpectedException>");
-      }
-
-    };
-    return (CacheSerializableRunnable)PrRegion;
-  }
-
-  /**
-   * This function <br>
-   * 1. Creates & executes a query with Logical Operators on the given PR Region
-   * 2. Executes the same query on the local region <br>
-   * 3. Compares the appropriate resultSet <br>
-   * 4. Compares and Print's the time taken for each <br>
-   */
-
-  public CacheSerializableRunnable PRQueryingVsLocalQuerying(
-      final String regionName, final String localRegion, final ResultsObject perfR)
-  {
-    SerializableRunnable PrRegion = new CacheSerializableRunnable("PRvsLocal") {
-      @Override
-      public void run2() throws CacheException
-      {
-        PerfResultsObject prfRObject=new PerfResultsObject(perfR);
-        Cache cache = getCache();
-        // Querying the localRegion and the PR region
-
-        String[] query = { "ID = 0 OR ID = 1", "ID > 4 AND ID < 9", "ID = 5",
-            "ID < 5 ", "ID <= 5" , "ID > 7 AND status ='active'" };
-        Object r[][] = new Object[query.length][2];
-
-        Region local = cache.getRegion(localRegion);
-        Region region = cache.getRegion(regionName);
-        assertEquals(local.values(), region.values());
-        
-        long startTimeLocal = System.currentTimeMillis();
-        try {
-          for (int j = 0; j < query.length; j++) {
-            r[j][0] = local.query(query[j]);
-
-          }
-          long endTimeLocal=System.currentTimeMillis();
-          long queryTimeLocal = endTimeLocal-startTimeLocal;
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("PRQueryDUnitHelper#PRQueryingVsLocalQuerying: Time to Query Local cache "+queryTimeLocal + " ms");
-          
-          long startTimePR = System.currentTimeMillis();
-          for (int k = 0; k < query.length; k++) {
-            r[k][1] = region.query(query[k]);
-
-          }
-          long endTimePR = System.currentTimeMillis();
-          long queryTimePR = endTimePR-startTimePR;
-          
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("PRQueryDUnitHelper#PRQueryingVsLocalQuerying: Time to Query PR "+queryTimePR+" ms");
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
-              .info(
-                  "PRQueryDUnitHelper#PRQueryingVsLocalQuerying: Queries Executed successfully on Local region & PR Region");
-
-          prfRObject.QueryingTimeLocal=queryTimeLocal;
-          prfRObject.QueryingTimePR=queryTimePR;
-          
-          prfRObject.displayResults();
-          compareTwoQueryResults(r, query.length);
-          
-        }
-        catch (QueryException e) {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()
-              .error(
-                  "PRQueryDUnitHelper#PRQueryingVsLocalQuerying: Caught QueryException while querying"
-                      + e, e);
-          fail("PRQueryDUnitHelper#PRQueryingVsLocalQuerying: Caught unexpected query exception. Exception is "
-              + e);
-        }
-
-      }
-
-    };
-    return (CacheSerializableRunnable)PrRegion;
-  }
-  
-  class PerfResultsObject implements Serializable {
-    String OperationDescription;
-    String Scope= null;
-    long QueryingTimeLocal;
-    long QueryingTimePR;
-    int NumberOfDataStores = 0;
-    int NumberOfAccessors = 0;
-    int redundancy=0;
-    
-    public PerfResultsObject(ResultsObject prfR){
-      this.OperationDescription=prfR.OperationDescription;
-      this.redundancy=prfR.redundancy;
-      this.NumberOfAccessors=prfR.NumberOfAccessors;
-      this.NumberOfDataStores=prfR.NumberOfDataStores;
-    }
-    
-    
-    
-    public void displayResults(){
-      
-      try {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("PRQueryDUnitHelper:PerfResultsObject#displayResults");
-        BufferedWriter out = new BufferedWriter(new FileWriter("PRQueryPerfDUnitTest.txt", true));
-        
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("~~~~~~~~~~~~~~~~~~~~~~~PR Querying Performance Results~~~~~~~~~~~~~~~~~~~~~~~");
-        out.write("~~~~~~~~~~~~~~~~~~~~~~~PR Querying Performance Results~~~~~~~~~~~~~~~~~~~~~~~\n\n");
-        
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(this.OperationDescription);
-        out.write("\t"+this.OperationDescription+"\n\n");
-        
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Scope                    : "+this.Scope);
-        out.write("Scope                    : "+this.Scope+"\n\n");
-        
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Redundancy Level         : "+this.redundancy);
-        out.write("Redundancy Level         : "+this.redundancy+"\n\n");
-        
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Number of Accessor       : "+this.NumberOfAccessors);
-        out.write("Number of Accessor       : "+this.NumberOfAccessors+"\n\n");
-        
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Number of Datastore/s    : "+this.NumberOfDataStores);
-        out.write("Number of Datastore/s    : "+this.NumberOfDataStores+"\n\n");
-        
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("QueryingTime Local       : "+this.QueryingTimeLocal+" ms");
-        out.write("QueryingTime Local       : "+this.QueryingTimeLocal+" ms\n\n");
-        
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("QueryingTime PR          : "+this.QueryingTimePR+" ms");
-        out.write("QueryingTime PR          : "+this.QueryingTimePR+" ms\n");
-        
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        out.write("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
-        out.close();
-    } catch (IOException e) {
-    }
-    }
-  }
-    
     /**
    * This function creates a appropriate index on a  PR given the name and 
    * other parameters.
@@ -2064,15 +1600,7 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
                 indexedExpression, fromClause);
             logger.info(
                 "Index creted on partitioned region : " + parIndex);
-        /*    logger.info(
-                "Number of buckets indexed in the partitioned region locally : "
-                    + "" + ((PartitionedIndex)parIndex).getNumberOfIndexedBucket()
-                    + " and remote buckets indexed : "
-                    + ((PartitionedIndex)parIndex).getNumRemoteBucketsIndexed());
-                    */
-  
-            
-          } 
+          }
           else {
           logger.info("Test Creating index with Name : [ "+indexName+" ] " +
                         "IndexedExpression : [ "+indexedExpression+" ] Alias : [ "+alias+" ] FromClause : [ "+region.getFullPath() + " " + alias+" ] " );
@@ -2086,13 +1614,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
                   + " and remote buckets indexed : "
                   + ((PartitionedIndex)parIndex).getNumRemoteBucketsIndexed());
           }
-          /*
-           * assertEquals("Max num of buckets in the partiotion regions and
-           * the " + "buckets indexed should be equal",
-           * ((PartitionedRegion)region).getTotalNumberOfBuckets(),
-           * (((PartionedIndex)parIndex).getNumberOfIndexedBucket()+((PartionedIndex)parIndex).getNumRemtoeBucketsIndexed()));
-           * should put all the assetion in a seperate function.
-           */
         }
         catch (Exception ex) {
           Assert.fail("Creating Index in this vm failed : ", ex);
@@ -2189,129 +1710,37 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
   }
 
   /**
-   * Creates an xml file used in subsequent tasks.
-   * 
-   */
-
-  public CacheSerializableRunnable getCacheSerializableForPrXmlFileGenerator(
-      final String regionName, final int redundancy, final String fileName)
-  {
-    SerializableRunnable prXMLFileCreator = new CacheSerializableRunnable(
-        "prXmlFileCreator") {
-      @Override
-      public void run2()
-      {
-        Cache cache = getCache();
-        Region partitionedregion = cache.getRegion(regionName);
-        cache.getLogger().info(
-            "the index created : "
-                + ((PartitionedRegion)partitionedregion).getIndex());
-        /*
-         try {
-         //AttributesFactory attr = new AttributesFactory();
-         //attr.setValueConstraint(valueConstraint);
-         // attr.setScope(scope);
-
-         PartitionAttributesFactory paf = new PartitionAttributesFactory();
-         PartitionAttributes prAttr = paf.setRedundantCopies(redundancy).create();
-
-         attr.setPartitionAttributes(prAttr);
-
-         // partitionedregion = cache.createRegion(regionName, attr.create());
-         }
-         catch (IllegalStateException ex) {
-         getLogWriter()
-         .warning(
-         "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Creation caught IllegalStateException",
-         ex);
-         }
-         assertNotNull(
-         "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region "
-         + regionName + " not in cache", cache.getRegion(regionName));
-         assertNotNull(
-         "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region ref null",
-         partitionedregion);
-         assertTrue(
-         "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region ref claims to be destroyed",
-         !partitionedregion.isDestroyed());
-         */
-        // genrate the xml file.
-        writeCacheXml(fileName, cache);
-      }
-
-    };
-    return (CacheSerializableRunnable)prXMLFileCreator;
-  }
-  
-  /**
-   * Finish what beginCacheXml started. It does this be generating a cache.xml
-   * file and then creating a real cache using that cache.xml.
-   */
-  public void writeCacheXml(String name, Cache cache)
-  {
-    File file = new File(name + "-cache.xml");
-    try {
-      PrintWriter pw = new PrintWriter(new FileWriter(file), true);
-      CacheXmlGenerator.generate(cache, pw);
-      pw.close();
-    }
-    catch (IOException ex) {
-      Assert.fail("IOException during cache.xml generation to " + file, ex);
-    }
-
-  }
-  
-  /**
    * Creats a partiotioned region using an xml file descriptions.
    * 
-   * @param xmlFileName
-   * 
+   *
    * @return CacheSerializable
    *
    */
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRCreateThrougXML(
-      final String regionName, final String xmlFileName)
+  public CacheSerializableRunnable getCacheSerializableRunnableForPRCreate(final String regionName)
   {
     SerializableRunnable prIndexCreator = new CacheSerializableRunnable(
         "PrRegionCreator") {
       @Override
       public void run2()
       {
-        InternalDistributedSystem sys = null;
         try {
-        closeCache();
-       // Properties props = new Properties();
-        File file = findFile(xmlFileName);
-       // props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, file
-       //     .toString());
-        GemFireCacheImpl.testCacheXml = file;
-        sys = getSystem();
-        // add expected exception for possible index conflict
-        sys.getLogWriter().info("<ExpectedException action=add>"
-            + IndexNameConflictException.class.getName()
-            + "</ExpectedException>");
-        Cache cache = getCache();
-        LogWriter logger = cache.getLogger();
-        PartitionedRegion region = (PartitionedRegion)cache
+          Cache cache = getCache();
+          LogWriter logger = cache.getLogger();
+          PartitionedRegion region = (PartitionedRegion)cache
             .getRegion(regionName);
-        Map indexMap = region.getIndex();
-        Set indexSet = indexMap.entrySet();
-        Iterator it = indexSet.iterator();
-        while (it.hasNext()) {
-          Map.Entry entry = (Map.Entry)it.next();
-          Index index = (Index)entry.getValue();
-          logger.info("The partitioned index created on this region "
+          Map indexMap = region.getIndex();
+          Set indexSet = indexMap.entrySet();
+          Iterator it = indexSet.iterator();
+          while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry)it.next();
+            Index index = (Index)entry.getValue();
+            logger.info("The partitioned index created on this region "
               + " " + index);
-          logger.info("Current number of buckets indexed : " + ""
+            logger.info("Current number of buckets indexed : " + ""
               + ((PartitionedIndex)index).getNumberOfIndexedBuckets());
         }
         }
         finally {
-          if (sys != null) {
-            sys.getLogWriter().info("<ExpectedException action=remove>"
-                + IndexNameConflictException.class.getName()
-                + "</ExpectedException>");
-          }
           GemFireCacheImpl.testCacheXml = null;
         }
                
@@ -2321,7 +1750,7 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
   }
   
   
-  protected File findFile(String fileName)
+  public File findFile(String fileName)
   {
     return new File(TestUtil.getResourcePath(PRQueryDUnitHelper.class, fileName));
   }
@@ -2329,15 +1758,14 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
   public CacheSerializableRunnable getCacheSerializableRunnableForIndexCreationCheck(
       final String name)
   {
-    CacheSerializableRunnable prIndexCheck = new CacheSerializableRunnable(
+    return new CacheSerializableRunnable(
         "PrIndexCreationCheck") {
       @Override
       public void run2()
       {
-        //closeCache();
-        Cache cache = getCache();
-        LogWriter logger = cache.getLogger();
-        PartitionedRegion region = (PartitionedRegion)cache.getRegion(name);
+        Cache cache1 = getCache();
+        LogWriter logger = cache1.getLogger();
+        PartitionedRegion region = (PartitionedRegion) cache1.getRegion(name);
         Map indexMap = region.getIndex();
         Set indexSet = indexMap.entrySet();
         Iterator it = indexSet.iterator();
@@ -2349,13 +1777,12 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
           logger.info("Current number of buckets indexed : " + ""
               + ((PartitionedIndex)index).getNumberOfIndexedBuckets());
         }
-        
-        closeCache();
-        disconnectFromDS();
+
+        JUnit4CacheTestCase.closeCache();
+        JUnit4DistributedTestCase.disconnectFromDS();
 
       }
     };
-    return prIndexCheck;
   }
   
   /**
@@ -2417,17 +1844,17 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
   public CacheSerializableRunnable getCacheSerializableRunnableForRemoveIndex(
       final String name, final boolean random)
   {
-    CacheSerializableRunnable prRemoveIndex = new CacheSerializableRunnable(
+    return new CacheSerializableRunnable(
         "PrRemoveIndex") {
       @Override
       public void run2()
       {
-        
-        Cache cache = getCache();
-        LogWriter logger = cache.getLogger();
-        logger.info("Got the following cache : "+cache);
-        Region parRegion = cache.getRegion(name);
-        QueryService qs = cache.getQueryService();
+
+        Cache cache1 = getCache();
+        LogWriter logger = cache1.getLogger();
+        logger.info("Got the following cache : "+ cache1);
+        Region parRegion = cache1.getRegion(name);
+        QueryService qs = cache1.getQueryService();
         if (!random) {
           Collection indexes = qs.getIndexes();
           assertEquals(3, indexes.size());
@@ -2462,7 +1889,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
       } // ends run
     };
-    return prRemoveIndex;
   }
 
   public SerializableRunnableIF getCacheSerializableRunnableForPRColocatedDataSetQueryAndCompareResults(
@@ -2511,10 +1937,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
             ForceReattemptException.class.getName(),
             QueryInvocationTargetException.class.getName() };
 
-        for (int i = 0; i < expectedExceptions.length; i++) {
+        for (final String expectedException : expectedExceptions) {
           getCache().getLogger().info(
-              "<ExpectedException action=add>" + expectedExceptions[i]
-                  + "</ExpectedException>");
+            "<ExpectedException action=add>" + expectedException
+              + "</ExpectedException>");
         }
 
         QueryService qs = getCache().getQueryService();
@@ -2581,10 +2007,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
                   cce);
 
         } finally {
-          for (int i = 0; i < expectedExceptions.length; i++) {
+          for (final String expectedException : expectedExceptions) {
             getCache().getLogger().info(
-                "<ExpectedException action=remove>" + expectedExceptions[i]
-                    + "</ExpectedException>");
+              "<ExpectedException action=remove>" + expectedException
+                + "</ExpectedException>");
           }
         }
 
@@ -2640,10 +2066,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
             ForceReattemptException.class.getName(),
             QueryInvocationTargetException.class.getName() };
 
-        for (int i = 0; i < expectedExceptions.length; i++) {
+        for (final String expectedException : expectedExceptions) {
           getCache().getLogger().info(
-              "<ExpectedException action=add>" + expectedExceptions[i]
-                  + "</ExpectedException>");
+            "<ExpectedException action=add>" + expectedException
+              + "</ExpectedException>");
         }
 
         QueryService qs = getCache().getQueryService();
@@ -2710,10 +2136,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
                   cce);
 
         } finally {
-          for (int i = 0; i < expectedExceptions.length; i++) {
+          for (final String expectedException : expectedExceptions) {
             getCache().getLogger().info(
-                "<ExpectedException action=remove>" + expectedExceptions[i]
-                    + "</ExpectedException>");
+              "<ExpectedException action=remove>" + expectedException
+                + "</ExpectedException>");
           }
         }
 
@@ -2739,7 +2165,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
             "r1.ID = pos2.id",
             "r1.ID = pos2.id AND r1.ID > 5",
             "r1.ID = pos2.id AND r1.status = 'active'",
-            // "r1.ID = r2.id LIMIT 10",
             "r1.ID = pos2.id ORDER BY r1.ID",
             "r1.ID = pos2.id ORDER BY pos2.id",
             "r1.ID = pos2.id ORDER BY r2.status",
@@ -2770,14 +2195,13 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
             ForceReattemptException.class.getName(),
             QueryInvocationTargetException.class.getName() };
 
-        for (int i = 0; i < expectedExceptions.length; i++) {
+        for (final String expectedException : expectedExceptions) {
           getCache().getLogger().info(
-              "<ExpectedException action=add>" + expectedExceptions[i]
-                  + "</ExpectedException>");
+            "<ExpectedException action=add>" + expectedException
+              + "</ExpectedException>");
         }
 
         QueryService qs = getCache().getQueryService();
-        Object[] params;
         try {
           for (int j = 0; j < queries.length; j++) {
             getCache().getLogger().info(
@@ -2808,7 +2232,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
               .info(
                   "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
 
-          // compareTwoQueryResults(r, queries.length);
           StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
           ssORrs.CompareQueryResultsAsListWithoutAndWithIndexes(r,
               queries.length, false, false, queries);
@@ -2840,10 +2263,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
                   cce);
 
         } finally {
-          for (int i = 0; i < expectedExceptions.length; i++) {
+          for (final String expectedException : expectedExceptions) {
             getCache().getLogger().info(
-                "<ExpectedException action=remove>" + expectedExceptions[i]
-                    + "</ExpectedException>");
+              "<ExpectedException action=remove>" + expectedException
+                + "</ExpectedException>");
           }
         }
 
@@ -2900,10 +2323,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
             ForceReattemptException.class.getName(),
             QueryInvocationTargetException.class.getName() };
 
-        for (int i = 0; i < expectedExceptions.length; i++) {
+        for (final String expectedException : expectedExceptions) {
           getCache().getLogger().info(
-              "<ExpectedException action=add>" + expectedExceptions[i]
-                  + "</ExpectedException>");
+            "<ExpectedException action=add>" + expectedException
+              + "</ExpectedException>");
         }
 
         QueryService qs = getCache().getQueryService();
@@ -2938,7 +2361,6 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
               .info(
                   "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
 
-          // compareTwoQueryResults(r, queries.length);
           StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
           ssORrs.CompareQueryResultsAsListWithoutAndWithIndexes(r,
               queries.length, false, false, queries);
@@ -2970,10 +2392,10 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
                   cce);
 
         } finally {
-          for (int i = 0; i < expectedExceptions.length; i++) {
+          for (final String expectedException : expectedExceptions) {
             getCache().getLogger().info(
-                "<ExpectedException action=remove>" + expectedExceptions[i]
-                    + "</ExpectedException>");
+              "<ExpectedException action=remove>" + expectedException
+                + "</ExpectedException>");
           }
         }
 
@@ -3029,19 +2451,9 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
   public SerializableRunnable getCacheSerializableRunnableForCloseCache() {
     return new SerializableRunnable() {
       public void run() {
-        closeCache();
+        JUnit4CacheTestCase.closeCache();
       }
     };
-  }
-
-
-  public NewPortfolio[] createNewPortfoliosAndPositions(int count) {
-    Position.cnt = 0; // reset Portfolio counter
-    NewPortfolio[] portfolios = new NewPortfolio[count];
-    for (int i = 0; i < count; i++) {
-      portfolios[i] = new NewPortfolio("" + i, i);
-    }
-    return portfolios;
   }
 }
 
