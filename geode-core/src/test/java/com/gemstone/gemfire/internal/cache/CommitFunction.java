@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.execute.util;
+package com.gemstone.gemfire.internal.cache;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -135,7 +135,8 @@ public class CommitFunction implements Function {
   }
 
   public boolean isHA() {
-    return false;
+    //GEM-207
+    return true;
   }
 
 }
