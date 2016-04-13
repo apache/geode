@@ -1055,7 +1055,9 @@ public class SocketCreator {
             sslSocket.startHandshake();
             SSLSession session = sslSocket.getSession();
             Certificate[] peer = session.getPeerCertificates();
-            logger.info(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate)peer[0]).getSubjectDN()));
+            if (logger.isDebugEnabled()) {
+              logger.debug(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate)peer[0]).getSubjectDN()));
+            }
           }
           catch (SSLPeerUnverifiedException ex) {
             if (this.needClientAuth) {
@@ -1119,7 +1121,9 @@ public class SocketCreator {
         sslSocket.startHandshake();
         SSLSession session = sslSocket.getSession();
         Certificate[] peer = session.getPeerCertificates();
-        logger.info(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate)peer[0]).getSubjectDN()));
+        if (logger.isDebugEnabled()) {
+          logger.debug(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate)peer[0]).getSubjectDN()));
+        }
       }
       catch (SSLPeerUnverifiedException ex) {
         if (this.needClientAuth) {
