@@ -16,7 +16,10 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -26,8 +29,12 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.GemFireConfigException;
+import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -50,11 +57,10 @@ import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.RMIException;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Tests the functionality of the {@link DistributedSystem} class.
@@ -386,6 +392,14 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
             system.disconnect();
           } catch (GemFireConfigException e) {
             return; // 
+          }
+          catch (RMIException e) {
+            if (e.getCause() instanceof SystemConnectException) {
+              //GEODE-1198: for this test, the membership-port-range has only 3 ports available.
+              //If in some rare cases, one of the ports is used by others, it will get this 
+              //exception. So just ignore it. Since adding one more port will also fail the test.
+              return;
+            }
           }
           fail("expected a GemFireConfigException but didn't get one");
         }
