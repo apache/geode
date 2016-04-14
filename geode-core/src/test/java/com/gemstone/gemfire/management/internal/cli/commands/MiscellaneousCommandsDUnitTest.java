@@ -16,20 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
-import static com.gemstone.gemfire.test.dunit.Invoke.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -56,6 +42,19 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.addIgnoredException;
+import static com.gemstone.gemfire.test.dunit.Invoke.invokeInEveryVM;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
 /**
  * Dunit class for testing gemfire function commands : GC, Shutdown
@@ -65,6 +64,10 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
   private static String cachedLogLevel;
+
+  public MiscellaneousCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
+    super(useHttpOnConnect, jsonAuthorization);
+  }
 
   @Override
   protected final void preTearDownCliCommandTestBase() throws Exception {
@@ -103,8 +106,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  public static String getMemberId() {
-    Cache cache = new GemfireDataCommandsDUnitTest().getCache();
+  public String getMemberId() {
+    Cache cache = getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
@@ -112,7 +115,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   public void testGCForMemberID() {
     createDefaultSetup(null);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
     String command = "gc --member=" + vm1MemberId;
     CommandResult cmdResult = executeCommand(command);
     cmdResult.resetToFirstLine();
@@ -139,7 +142,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       props.setProperty("log-file", "testShowLogDefault.log");
       createDefaultSetup(props);
       final VM vm1 = Host.getHost(0).getVM(0);
-      final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
+      final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
       String command = "show log --member=" + vm1MemberId;
       CommandResult cmdResult = executeCommand(command);
       if (cmdResult != null) {
@@ -162,7 +165,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     try {
       createDefaultSetup(props);
       final VM vm1 = Host.getHost(0).getVM(0);
-      final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
+      final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
       String command = "show log --member=" + vm1MemberId + " --lines=50";
       CommandResult cmdResult = executeCommand(command);
       if (cmdResult != null) {

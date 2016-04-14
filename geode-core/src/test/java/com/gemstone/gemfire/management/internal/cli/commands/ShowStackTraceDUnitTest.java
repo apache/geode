@@ -16,16 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
@@ -35,6 +25,16 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.test.dunit.Assert.assertFalse;
+import static com.gemstone.gemfire.test.dunit.Assert.assertTrue;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 
 /***
  * DUnit test for 'show stack-trace' command
@@ -43,6 +43,10 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 public class ShowStackTraceDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
+
+  public ShowStackTraceDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
+    super(useHttpOnConnect, jsonAuthorization);
+  }
 
   private void createCache(Properties props) {
     getSystem(props);

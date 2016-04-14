@@ -16,15 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
@@ -54,6 +45,14 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 @Category({ DistributedTest.class, FlakyTest.class }) // see GEODE-689, GEODE-1048
 public class IndexCommandsDUnitTest extends CliCommandTestBase {
@@ -64,6 +63,10 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   private static final String indexName = "Id1";
   private static final String parRegPersName = "ParRegPers";
   private static final String repRegPersName = "RepRegPer";
+
+  public IndexCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
+    super(useHttpOnConnect, jsonAuthorization);
+  }
 
   Region<?, ?> createParReg(String regionName, Cache cache, Class keyConstraint, Class valueConstraint) {
     RegionFactory regionFactory = cache.createRegionFactory();

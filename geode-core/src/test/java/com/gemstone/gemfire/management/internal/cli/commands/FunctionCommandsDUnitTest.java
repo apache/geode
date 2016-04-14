@@ -16,16 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.util.List;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -47,6 +37,15 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.List;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
 /**
  * Dunit class for testing gemfire function commands : execute function, destroy function, list function
@@ -58,6 +57,10 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   private static final String REGION_NAME = "FunctionCommandsReplicatedRegion";
   private static final String REGION_ONE = "RegionOne";
   private static final String REGION_TWO = "RegionTwo";
+
+  public FunctionCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization){
+    super(useHttpOnConnect, jsonAuthorization);
+  }
 
   void setupWith2Regions() {
     final VM vm1 = Host.getHost(0).getVM(1);
@@ -130,8 +133,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
   }
 
-  public static String getMemberId() {
-    Cache cache = new FunctionCommandsDUnitTest().getCache(); // TODO: get rid of this kind of stuff
+  public String getMemberId() {
+    Cache cache = getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
@@ -250,7 +253,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> FunctionCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
 
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
@@ -407,7 +410,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> FunctionCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
     String command = "destroy function --id=" + function.getId() + " --member=" + vm1MemberId;
     getLogWriter().info("testDestroyOnMember command=" + command);
     CommandResult cmdResult = executeCommand(command);

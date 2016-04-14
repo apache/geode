@@ -31,7 +31,8 @@ import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.json.JSONException;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -39,6 +40,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -51,24 +54,37 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 /**
  * Base class for all the CLI/gfsh command dunit tests.
  */
-public class CliCommandTestBase extends JUnit4CacheTestCase {
+@RunWith(Parameterized.class)
+public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
   private static final long serialVersionUID = 1L;
-
-  public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
-  public static final String JSON_AUTHORIZATION_SYSTEM_PROPERTY = "jsonAuthorization";
 
   private ManagementService managementService;
 
   private transient HeadlessGfsh shell;
 
-  private boolean useHttpOnConnect = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
-  private String jsonAuthorization = System.getProperty(JSON_AUTHORIZATION_SYSTEM_PROPERTY);
+  protected boolean useHttpOnConnect;
+  protected String jsonAuthorization;
 
   private int httpPort;
   private int jmxPort;
 
   private String jmxHost;
+
+  public CliCommandTestBase(boolean useHttpOnConnect, String jsonAuthorization){
+    this.useHttpOnConnect = useHttpOnConnect;
+    this.jsonAuthorization = jsonAuthorization;
+  }
+
+  @Parameterized.Parameters
+  public static Collection parameters() {
+    return Arrays.asList(new Object[][] {
+        { false, null },
+        { true, null },
+        { false, "cacheServer.json" },
+        { true, "cacheServer.json" }
+    });
+  }
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -92,7 +108,6 @@ public class CliCommandTestBase extends JUnit4CacheTestCase {
    */
   @SuppressWarnings("serial")
   protected HeadlessGfsh createDefaultSetup(final Properties props) {
-    final String json = System.getProperty("jsonAuthorization");
     Object[] result = (Object[]) Host.getHost(0).getVM(0).invoke( "createDefaultSetup", () -> {
         final Object[] results = new Object[3];
         final Properties localProps = (props != null ? props : new Properties());
@@ -118,18 +133,12 @@ public class CliCommandTestBase extends JUnit4CacheTestCase {
         localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
         localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
 
-        if(json!=null){
+        if(jsonAuthorization!=null){
           localProps.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
               JSONAuthorization.class.getName() + ".create");
           localProps.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
 
-          try {
-            JSONAuthorization.setUpWithJsonFile(json);
-          } catch (IOException e) {
-            e.printStackTrace();
-          } catch (JSONException e) {
-            e.printStackTrace();
-          }
+          JSONAuthorization.setUpWithJsonFile(jsonAuthorization);
         }
 
         getSystem(localProps);
@@ -246,6 +255,7 @@ public class CliCommandTestBase extends JUnit4CacheTestCase {
       endpoint = host + "[" + jmxPort + "]";
       command.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
     }
+    System.out.println(getClass().getSimpleName()+" using endpoint: "+endpoint);
 
     CommandResult result = executeCommand(shell, command.toString());
 

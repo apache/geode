@@ -16,17 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.regex.Pattern;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -47,6 +36,16 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.regex.Pattern;
+
+import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 /**
  * Unit tests for the DeployCommands class
@@ -61,6 +60,10 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
   transient private ClassBuilder classBuilder = new ClassBuilder();
   transient private CommandProcessor commandProcessor;
+
+  public DeployCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization){
+    super(useHttpOnConnect, jsonAuthorization);
+  }
 
   @Override
   public final void postSetUp() throws Exception {
