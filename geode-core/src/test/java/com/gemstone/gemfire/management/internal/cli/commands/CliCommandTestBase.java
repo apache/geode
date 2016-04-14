@@ -50,7 +50,7 @@ import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 /**
  * Base class for all the CLI/gfsh command dunit tests.
  */
-public class CliCommandTestBase extends JUnit4CacheTestCase {
+public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
   private static final long serialVersionUID = 1L;
 
