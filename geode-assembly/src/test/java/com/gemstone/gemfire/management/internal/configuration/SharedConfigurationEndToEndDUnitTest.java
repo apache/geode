@@ -73,10 +73,6 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = -2276690105585944041L;
 
-  public SharedConfigurationEndToEndDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
-  }
-
   public Set<String> startServers(HeadlessGfsh gfsh, String locatorString, int numServers, String serverNamePrefix, int startNum) throws ClassNotFoundException, IOException {
     Set<String> serverNames = new HashSet<String>();
 

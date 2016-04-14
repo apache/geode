@@ -52,6 +52,8 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -73,6 +75,7 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 
 @Category({ DistributedTest.class, FlakyTest.class }) // GEODE-973
+@RunWith(Parameterized.class)
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -95,8 +98,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   @Rule
   public RetryRule retryRule = new RetryRule();
 
-  public CreateAlterDestroyRegionCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization){
-    super(useHttpOnConnect, jsonAuthorization);
+  public CreateAlterDestroyRegionCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth){
+    super(useHttpOnConnect, enableAuth);
   }
 
   /**
@@ -104,7 +107,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
    */
   @Test
   public void testCreateRegionWithGoodCompressor() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     VM vm = Host.getHost(0).getVM(1);
 
     // Create a cache in vm 1
@@ -140,7 +143,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
    */
   @Test
   public void testCreateRegionWithBadCompressor() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     VM vm = Host.getHost(0).getVM(1);
 
@@ -170,7 +173,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
    */
   @Test
   public void testCreateRegionWithNoCompressor() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     VM vm = Host.getHost(0).getVM(1);
 
@@ -202,7 +205,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
   @Test
   public void testDestroyDistributedRegion() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     for (int i = 1; i <= 2; i++) {
       Host.getHost(0).getVM(i).invoke(() -> {
@@ -258,7 +261,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
   @Test
   public void testDestroyLocalRegions() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     for (int i = 1; i <= 3; i++) {
       Host.getHost(0).getVM(i).invoke(() -> {
@@ -299,7 +302,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
   @Test
   public void testDestroyLocalAndDistributedRegions() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     for (int i = 1; i <= 2; i++) {
       Host.getHost(0).getVM(i).invoke(() -> {
@@ -367,7 +370,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   @Test
   @Retry(2) // GEODE-973: getRandomAvailablePort
   public void testCreateRegion46391() throws IOException {
-    createDefaultSetup(null); // GEODE-973: getRandomAvailablePort
+    setUpJmxManagerOnVm0ThenConnect(null); // GEODE-973: getRandomAvailablePort
     String command = CliStrings.CREATE_REGION + " --" + CliStrings.CREATE_REGION__REGION + "=" + this.region46391 + " --" + CliStrings.CREATE_REGION__REGIONSHORTCUT + "=REPLICATE";
 
     getLogWriter().info("testCreateRegion46391 create region command=" + command);
@@ -401,7 +404,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   @Ignore("bug51924")
   @Test
   public void testAlterRegion() throws IOException {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     CommandResult cmdResult = executeCommand(CliStrings.LIST_REGION);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -803,7 +806,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -937,7 +940,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);

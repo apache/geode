@@ -43,6 +43,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import javax.management.ObjectName;
 import java.io.File;
@@ -56,12 +58,13 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public ShowMetricsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
+  public ShowMetricsDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
+    super(useHttpOnConnect, enableAuth);
   }
 
   private void createLocalSetUp() {
@@ -79,7 +82,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
    */
   @Test
   public void testShowMetricsDefault() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     createLocalSetUp();
     final VM vm1 = Host.getHost(0).getVM(1);
     final String vm1Name = "VM" + vm1.getPid();
@@ -122,7 +125,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
   }
 
   public void systemSetUp() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     createLocalSetUp();
     final VM vm1 = Host.getHost(0).getVM(1);
     final String vm1Name = "VM" + vm1.getPid();

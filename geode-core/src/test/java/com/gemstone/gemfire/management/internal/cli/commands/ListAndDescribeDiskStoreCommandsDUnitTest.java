@@ -32,6 +32,8 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.Serializable;
 import java.util.Properties;
@@ -50,10 +52,11 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
  * @since 7.0
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
-  public ListAndDescribeDiskStoreCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
+  public ListAndDescribeDiskStoreCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
+    super(useHttpOnConnect, enableAuth);
   }
 
   protected static String toString(final Result result) {
@@ -71,7 +74,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
 
   @Override
   public final void postSetUp() throws Exception {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     setupGemFire();
   }
 

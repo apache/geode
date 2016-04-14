@@ -54,6 +54,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,19 +82,20 @@ import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
+@RunWith(Parameterized.class)
 public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
 
-  public DiskStoreCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization){
-    super(useHttpOnConnect, jsonAuthorization);
+  public DiskStoreCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth){
+    super(useHttpOnConnect, enableAuth);
   }
 
   @Test
   public void testMissingDiskStore() {
     final String regionName = "testShowMissingDiskStoreRegion";
 
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
@@ -245,7 +248,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void testDescribeOfflineDiskStore() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     final File diskStoreDir = new File(new File(".").getAbsolutePath(), "DiskStoreCommandDUnitDiskStores");
     diskStoreDir.mkdir();
@@ -343,7 +346,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void testValidateDiskStore() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     final File diskStoreDir = new File(new File(".").getAbsolutePath(), "DiskStoreCommandDUnitDiskStores");
     diskStoreDir.mkdir();
@@ -390,7 +393,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void testExportOfflineDiskStore() throws Exception {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     final File diskStoreDir = new File(new File(".").getAbsolutePath(), "DiskStoreCommandDUnitDiskStores");
     diskStoreDir.mkdir();
@@ -491,7 +494,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     final File diskStoreDir = new File(new File(".").getAbsolutePath(), diskStoreName);
@@ -647,7 +650,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     disconnectAllFromDS();
 
     //Now do the command execution
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
     if (gfshInstance == null) {
@@ -748,7 +751,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     final String incrementalBackUpName = "incrementalBackUp";
     final VM manager = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
 
     File controllerDiskDir = new File(controllerDiskDirName);
@@ -841,7 +844,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
 
     CommandResult cmdResult = executeCommand(CliStrings.LIST_DISK_STORE);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -960,7 +963,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
 
     CommandResult cmdResult = executeCommand(CliStrings.LIST_DISK_STORE);
     assertEquals(Result.Status.OK, cmdResult.getStatus());

@@ -31,7 +31,6 @@ import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.IOException;
@@ -54,7 +53,6 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 /**
  * Base class for all the CLI/gfsh command dunit tests.
  */
-@RunWith(Parameterized.class)
 public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
   private static final long serialVersionUID = 1L;
@@ -63,26 +61,34 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
   private transient HeadlessGfsh shell;
 
-  protected boolean useHttpOnConnect;
-  protected String jsonAuthorization;
+  protected boolean useHttpOnConnect = false;
+  protected boolean enableAuth = false;
+  protected String jsonAuthorization = "cacheServer.json";
+  protected String username = "super-user";
+  protected String password = "1234567";
 
-  private int httpPort;
-  private int jmxPort;
+  protected int httpPort;
+  protected int jmxPort;
 
-  private String jmxHost;
+  protected String jmxHost;
 
-  public CliCommandTestBase(boolean useHttpOnConnect, String jsonAuthorization){
+  public CliCommandTestBase(){
+    this(false, false);
+  }
+
+  // Junit will use the parameters to initialize the test class and run the tests with different parameters
+  public CliCommandTestBase(boolean useHttpOnConnect, boolean enableAuth){
     this.useHttpOnConnect = useHttpOnConnect;
-    this.jsonAuthorization = jsonAuthorization;
+    this.enableAuth = enableAuth;
   }
 
   @Parameterized.Parameters
   public static Collection parameters() {
     return Arrays.asList(new Object[][] {
-        { false, null },
-        { true, null },
-        { false, "cacheServer.json" },
-        { true, "cacheServer.json" }
+        { false, false },  // useHttpOnConnect=false, no security enabled
+        { true, false }, // useHttpOnConnect=true, no security enabled
+        { false, true }, // useHttpOnConnect=false, security enabled with cacheServer.json
+        { true, true } // useHttpOnConnect=true, security enabled with cacheServer.json
     });
   }
 
@@ -107,55 +113,59 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return the default testable GemFire shell.
    */
   @SuppressWarnings("serial")
-  protected HeadlessGfsh createDefaultSetup(final Properties props) {
-    Object[] result = (Object[]) Host.getHost(0).getVM(0).invoke( "createDefaultSetup", () -> {
-        final Object[] results = new Object[3];
-        final Properties localProps = (props != null ? props : new Properties());
+  protected HeadlessGfsh setUpJmxManagerOnVm0ThenConnect(final Properties props) {
+    setUpJMXManagerOnVM(0, props);
+    shellConnect();
+    return shell;
+  }
 
-        try {
-          jmxHost = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException ignore) {
-          jmxHost = "localhost";
-        }
+  protected void setUpJMXManagerOnVM(int vm, final Properties props){
+    Object[] result = (Object[]) Host.getHost(0).getVM(vm).invoke( "setUpJmxManagerOnVm0ThenConnect", () -> {
+      final Object[] results = new Object[3];
+      final Properties localProps = (props != null ? props : new Properties());
 
-        if (!localProps.containsKey(DistributionConfig.NAME_NAME)) {
-          localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
-        }
+      try {
+        jmxHost = InetAddress.getLocalHost().getHostName();
+      } catch (UnknownHostException ignore) {
+        jmxHost = "localhost";
+      }
 
-        final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+      if (!localProps.containsKey(DistributionConfig.NAME_NAME)) {
+        localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
+      }
 
-        jmxPort = ports[0];
-        httpPort = ports[1];
+      final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
 
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
-        localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
+      jmxPort = ports[0];
+      httpPort = ports[1];
 
-        if(jsonAuthorization!=null){
-          localProps.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
-              JSONAuthorization.class.getName() + ".create");
-          localProps.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+      localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
+      localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
+      localProps.setProperty(DistributionConfig.JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
+      localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
+      localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
 
-          JSONAuthorization.setUpWithJsonFile(jsonAuthorization);
-        }
+      if(enableAuth){
+        localProps.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
+            JSONAuthorization.class.getName() + ".create");
+        localProps.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
 
-        getSystem(localProps);
-        verifyManagementServiceStarted(getCache());
+        JSONAuthorization.setUpWithJsonFile(jsonAuthorization);
+      }
 
-        results[0] = jmxHost;
-        results[1] = jmxPort;
-        results[2] = httpPort;
+      getSystem(localProps);
+      verifyManagementServiceStarted(getCache());
 
-        return results;
+      results[0] = jmxHost;
+      results[1] = jmxPort;
+      results[2] = httpPort;
+
+      return results;
     });
 
     this.jmxHost = (String) result[0];
     this.jmxPort = (Integer) result[1];
     this.httpPort = (Integer) result[2];
-
-    return defaultShellConnect();
   }
 
   /**
@@ -184,7 +194,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @param cache Cache to use when creating the management service
    */
   private void verifyManagementServiceStarted(Cache cache) {
-    assert (cache != null);
+    assertTrue(cache != null);
 
     this.managementService = ManagementService.getExistingManagementService(cache);
     assertNotNull(this.managementService);
@@ -218,35 +228,39 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Connect the default shell to the default JMX server.
-   *
-   * @return The default shell.
-   */
-  private HeadlessGfsh defaultShellConnect() {
-    HeadlessGfsh shell = getDefaultShell();
-    shellConnect(this.jmxHost, this.jmxPort, this.httpPort, shell);
-    return shell;
-  }
-
-  /**
    * Connect a shell to the JMX server at the given host and port
+   *
    *
    * @param host    Host of the JMX server
    * @param jmxPort Port of the JMX server
    * @param shell   Shell to connect
    */
   protected void shellConnect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell) {
-    assert (host != null);
-    assert (shell != null);
+    assertTrue(host != null);
+    assertTrue(shell != null);
 
+    CommandResult result = connect(host, jmxPort, httpPort, shell);
+    if (!shell.isConnectedAndReady()) {
+      throw new AssertionError(
+          "Connect command failed to connect to manager, result=" + commandResultToString(result));
+    }
+    info("Successfully connected to managing node using " + (useHttpOnConnect ? "HTTP" : "JMX"));
+    assertEquals(true, shell.isConnectedAndReady());
+  }
+
+  protected CommandResult shellConnect(){
+    return connect(this.jmxHost, this.jmxPort, this.httpPort, getDefaultShell());
+  }
+
+  protected CommandResult connect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell){
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CONNECT);
-    String endpoint;
 
-    if(jsonAuthorization!=null) {
-      command.addOption(CliStrings.CONNECT__USERNAME, "super-user");
-      command.addOption(CliStrings.CONNECT__PASSWORD, "1234567");
+    if(enableAuth) {
+      command.addOption(CliStrings.CONNECT__USERNAME, username);
+      command.addOption(CliStrings.CONNECT__PASSWORD, password);
     }
 
+    String endpoint;
     if (useHttpOnConnect) {
       endpoint = "http://" + host + ":" + httpPort + "/gemfire/v1";
       command.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
@@ -257,15 +271,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     }
     System.out.println(getClass().getSimpleName()+" using endpoint: "+endpoint);
 
-    CommandResult result = executeCommand(shell, command.toString());
-
-    if (!shell.isConnectedAndReady()) {
-      throw new AssertionError(
-          "Connect command failed to connect to manager " + endpoint + " result=" + commandResultToString(result));
-    }
-
-    info("Successfully connected to managing node using " + (useHttpOnConnect ? "HTTP" : "JMX"));
-    assertEquals(true, shell.isConnectedAndReady());
+    return executeCommand(shell, command.toString());
   }
 
   /**

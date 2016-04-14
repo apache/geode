@@ -106,10 +106,6 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
   
   private static final long serialVersionUID = 1L;
 
-  public ClusterConfigurationDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
-  }
-
   @Test
   public void testConfigDistribution() throws IOException {
     IgnoredException.addIgnoredException("could not get remote locator");

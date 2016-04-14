@@ -25,12 +25,20 @@ import java.util.Properties;
 
 public class JsonAuthorizationCacheStartRule extends ExternalResource {
   private Cache cache;
-  private int jmxManagerPort;
+  private int jmxManagerPort = 0;
+  private int httpPort = 0;
   private String jsonFile;
   private boolean doAuthorization;
 
   public JsonAuthorizationCacheStartRule(int jmxManagerPort, String jsonFile) {
     this.jmxManagerPort = jmxManagerPort;
+    this.jsonFile = jsonFile;
+    this.doAuthorization = true;
+  }
+
+  public JsonAuthorizationCacheStartRule(int jmxManagerPort, int httpPort, String jsonFile) {
+    this.jmxManagerPort = jmxManagerPort;
+    this.httpPort = httpPort;
     this.jsonFile = jsonFile;
     this.doAuthorization = true;
   }
@@ -49,7 +57,7 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
     properties.put(DistributionConfig.JMX_MANAGER_NAME, "true");
     properties.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     properties.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxManagerPort));
-    properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
+    properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
     properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
         JSONAuthorization.class.getName() + ".create");
     if (doAuthorization) {

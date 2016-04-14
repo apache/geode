@@ -95,10 +95,6 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
   int port0 = 0;
   int port1= 0;
 
-  public ClientCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
-  }
-
   public void waitForListClientMbean(){
     
     final VM manager = Host.getHost(0).getVM(0);
@@ -776,7 +772,7 @@ public void waitForListClientMbean2(){
   private void setupSystemForListClient() throws Exception {
     disconnectAllFromDS();
     final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
     
     final VM server1 = Host.getHost(0).getVM(1);
     final VM client1 = Host.getHost(0).getVM(2);
@@ -795,7 +791,7 @@ public void waitForListClientMbean2(){
   private void setupSystem() throws Exception {
     disconnectAllFromDS();
     final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
     
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);
@@ -830,7 +826,7 @@ public void waitForListClientMbean2(){
   private void setupSystem2() throws Exception {
     disconnectAllFromDS();
     final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
     
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);
@@ -864,7 +860,7 @@ public void waitForListClientMbean2(){
    private void setupSystem3() throws Exception {
     disconnectAllFromDS();
     final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
     
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);
@@ -1319,7 +1315,7 @@ void executeAndVerifyResultsForMixedClients(String commandString, String serverN
 private void setUpNonSubscribedClient() throws Exception {
   disconnectAllFromDS();
   final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-  createDefaultSetup(getServerProperties());
+  setUpJmxManagerOnVm0ThenConnect(getServerProperties());
   
   final VM manager = Host.getHost(0).getVM(0);
   final VM server1 = Host.getHost(0).getVM(1);
@@ -1356,7 +1352,7 @@ private void setUpNonSubscribedClient() throws Exception {
     String[] cliendIds = new String[2];
     disconnectAllFromDS();
     final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
     
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);

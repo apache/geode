@@ -39,10 +39,6 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public WanCommandListDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
-  }
-
   @Test
   public void testListGatewayWithNoSenderReceiver() {
 
@@ -52,7 +48,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
     Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
@@ -81,7 +77,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
     Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
@@ -134,7 +130,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + lnPort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
     Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
 
@@ -184,7 +180,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + lnPort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
     Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
 
@@ -246,7 +242,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + lnPort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
     Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
 

@@ -69,10 +69,6 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
   static VM vm6;
   static VM vm7;
 
-  public WANCommandTestBase(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);

@@ -44,6 +44,8 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.FileReader;
@@ -67,6 +69,7 @@ import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
  * @since 7.0
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 @SuppressWarnings("serial")
 public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
@@ -81,8 +84,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
   File subDir = new File("ConfigCommandsDUnitTestSubDir");
   File subManagerConfigFile = new File(subDir, managerConfigFile.getName());
 
-  public ConfigCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
+  public ConfigCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
+    super(useHttpOnConnect, enableAuth);
   }
 
   @Override
@@ -103,7 +106,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void testDescribeConfig() throws ClassNotFoundException, IOException {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     final String controllerName = "Member2";
 
     /***
@@ -170,7 +173,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
 
     // Create a cache in another VM (VM1)
     Host.getHost(0).getVM(1).invoke(new SerializableRunnable() {
@@ -266,7 +269,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testAlterRuntimeConfig() throws ClassNotFoundException, IOException {
     final String controller = "controller";
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, controller);
     localProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "error");
@@ -305,7 +308,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
   public void testAlterRuntimeConfigRandom() {
     final String member1 = "VM1";
     final String controller = "controller";
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, controller);
     localProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "error");
@@ -344,7 +347,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
   public void testAlterRuntimeConfigOnAllMembers() {
     final String member1 = "VM1";
     final String controller = "controller";
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, controller);
     localProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "error");
@@ -447,7 +450,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);

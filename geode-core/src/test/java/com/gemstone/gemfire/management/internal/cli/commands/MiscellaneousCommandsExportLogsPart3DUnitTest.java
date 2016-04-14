@@ -31,6 +31,8 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,12 +48,13 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
  * Dunit class for testing gemfire function commands : export logs
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public MiscellaneousCommandsExportLogsPart3DUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
+  public MiscellaneousCommandsExportLogsPart3DUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
+    super(useHttpOnConnect, enableAuth);
   }
 
   public String getMemberId() {
@@ -61,7 +64,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
 
   void setupForExportLogs() {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
@@ -89,7 +92,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     String dir = getCurrentTimeString();
 
     Date startDate = new Date(System.currentTimeMillis() - 2 * 60 * 1000);
@@ -122,7 +125,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
 
   @Test
   public void testExportLogsForMember() throws IOException {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     Date startDate = new Date(System.currentTimeMillis() - 2 * 60 * 1000);
     SimpleDateFormat sf = new SimpleDateFormat("yyyy/MM/dd");

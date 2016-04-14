@@ -39,6 +39,8 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -66,14 +68,15 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
  */
 @SuppressWarnings("unused")
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class ListIndexCommandDUnitTest extends CliCommandTestBase {
 
   protected static final int DEFAULT_REGION_INITIAL_CAPACITY = 10000;
 
   private final AtomicLong idGenerator = new AtomicLong(0l);
 
-  public ListIndexCommandDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
+  public ListIndexCommandDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
+    super(useHttpOnConnect, enableAuth);
   }
 
   protected static String toString(final Result result) {
@@ -91,7 +94,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
 
   @Override
   public final void postSetUp() throws Exception {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     setupGemFire();
   }
 

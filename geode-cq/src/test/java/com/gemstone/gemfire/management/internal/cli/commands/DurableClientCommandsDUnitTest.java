@@ -66,10 +66,6 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
   final String cq3 = "cq3";
   final String clientName = "dc1";
 
-  public DurableClientCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
-  }
-
   @Test
   public void testListDurableClientCqs() throws Exception {
     setupSystem();
@@ -253,7 +249,7 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
   private void setupSystem() throws Exception {
     disconnectAllFromDS();
     final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
     
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);

@@ -29,6 +29,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface JMXConnectionConfiguration {
   String user();
-
   String password();
 }

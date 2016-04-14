@@ -42,6 +42,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -63,6 +65,7 @@ import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
  */
 @SuppressWarnings("unused")
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends CliCommandTestBase {
 
   private static final String GEMFIRE_MANAGER_NAME = "GemManagerNode";
@@ -71,8 +74,8 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   private static final String USERS_REGION_NAME = "Users";
 
 
-  public GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest(boolean useHttpOnConnect, String jsonAuthorization){
-    super(useHttpOnConnect, jsonAuthorization);
+  public GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest(boolean useHttpOnConnect, boolean enableAuth){
+    super(useHttpOnConnect, enableAuth);
   }
 
   protected static String getRegionPath(final String regionName) {
@@ -96,7 +99,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   @Override
   public final void postSetUp() throws Exception {
     Properties managerDistributedSystemProperties = createDistributedSystemProperties(GEMFIRE_MANAGER_NAME);
-    HeadlessGfsh gfsh = createDefaultSetup(managerDistributedSystemProperties);
+    HeadlessGfsh gfsh = setUpJmxManagerOnVm0ThenConnect(managerDistributedSystemProperties);
 
     assertNotNull(gfsh);
     assertTrue(gfsh.isConnectedAndReady());

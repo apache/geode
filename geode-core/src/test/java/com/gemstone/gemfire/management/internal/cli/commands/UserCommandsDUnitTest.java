@@ -28,6 +28,8 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,6 +44,7 @@ import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
  * @since 8.0
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class UserCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -51,8 +54,8 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
   final File jarFile = new File(this.jarDirectory, "UserCommandsDUnit.jar");
   boolean deleteJarDirectory = false;
 
-  public UserCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
+  public UserCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
+    super(useHttpOnConnect, enableAuth);
   }
 
   @Override
@@ -134,7 +137,7 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     CommandResult cmdResult = executeCommand("ucdunitcmd");
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -159,7 +162,7 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
 
     Properties properties = new Properties();
     properties.setProperty(DistributionConfig.USER_COMMAND_PACKAGES, "junit.ucdunit");
-    createDefaultSetup(properties);
+    setUpJmxManagerOnVm0ThenConnect(properties);
 
     CommandResult cmdResult = executeCommand("ucdunitcmd");
     assertEquals(Result.Status.OK, cmdResult.getStatus());

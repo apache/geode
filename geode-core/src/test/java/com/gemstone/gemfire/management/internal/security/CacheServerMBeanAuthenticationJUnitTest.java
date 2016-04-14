@@ -43,7 +43,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
     bean = connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
   }
 
-  @Test
+  @Test()
   @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     bean.removeIndex("foo");

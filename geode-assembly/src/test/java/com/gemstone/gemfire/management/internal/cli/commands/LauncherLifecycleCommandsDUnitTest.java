@@ -108,10 +108,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
   private final Queue<Integer> processIds = new ConcurrentLinkedDeque<>();
 
-  public LauncherLifecycleCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
-  }
-
   protected static String getMemberId(final int jmxManagerPort, final String memberName) throws Exception {
     return getMemberId(InetAddress.getLocalHost().getHostName(), jmxManagerPort, memberName);
   }

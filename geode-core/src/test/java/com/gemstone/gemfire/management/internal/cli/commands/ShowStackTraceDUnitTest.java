@@ -27,6 +27,8 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,12 +42,13 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
  * DUnit test for 'show stack-trace' command
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class ShowStackTraceDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public ShowStackTraceDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
-    super(useHttpOnConnect, jsonAuthorization);
+  public ShowStackTraceDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
+    super(useHttpOnConnect, enableAuth);
   }
 
   private void createCache(Properties props) {
@@ -75,7 +78,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     final Properties propsManager = createProperties(host, "Manager", "G1");
     final Properties propsServer2 = createProperties(host, "Server", "G2");
 
-    createDefaultSetup(propsManager);
+    setUpJmxManagerOnVm0ThenConnect(propsManager);
 
     servers[1].invoke(new SerializableRunnable("Create cache for server1") {
       public void run() {

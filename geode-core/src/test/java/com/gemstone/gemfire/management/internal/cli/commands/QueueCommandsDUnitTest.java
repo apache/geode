@@ -36,6 +36,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,13 +57,14 @@ import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
  * @since 8.0
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
 
-  public QueueCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization) {
+  public QueueCommandsDUnitTest(boolean useHttpOnConnect, boolean jsonAuthorization) {
     super(useHttpOnConnect, jsonAuthorization);
   }
 
@@ -78,7 +81,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
 
     CommandResult cmdResult = executeCommand(CliStrings.LIST_ASYNC_EVENT_QUEUES);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -288,7 +291,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);

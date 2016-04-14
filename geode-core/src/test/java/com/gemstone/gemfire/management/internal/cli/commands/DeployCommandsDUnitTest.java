@@ -38,6 +38,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -54,6 +56,7 @@ import static com.gemstone.gemfire.test.dunit.Assert.*;
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
+@RunWith(Parameterized.class)
 public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
   File newDeployableJarFile = new File("DeployCommandsDUnit1.jar");
@@ -61,8 +64,8 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
   transient private ClassBuilder classBuilder = new ClassBuilder();
   transient private CommandProcessor commandProcessor;
 
-  public DeployCommandsDUnitTest(boolean useHttpOnConnect, String jsonAuthorization){
-    super(useHttpOnConnect, jsonAuthorization);
+  public DeployCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth){
+    super(useHttpOnConnect, enableAuth);
   }
 
   @Override
@@ -370,7 +373,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a JAR file
     this.classBuilder.writeJarFromName("DeployCommandsDUnitA", this.newDeployableJarFile);
