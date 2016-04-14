@@ -16,8 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
 import java.io.Serializable;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -29,10 +35,10 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases testing the proper
@@ -42,6 +48,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
  * @since 7.0
  */
+@Category(DistributedTest.class)
 public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   protected static String toString(final Result result) {
@@ -55,10 +62,6 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     }
 
     return buffer.toString().trim();
-  }
-
-  public ListAndDescribeDiskStoreCommandsDUnitTest(final String testName) {
-    super(testName);
   }
 
   @Override
@@ -89,7 +92,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
   protected Properties createDistributedSystemProperties(final String gemfireName) {
     final Properties distributedSystemProperties = new Properties();
 
-    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
     distributedSystemProperties.setProperty(DistributionConfig.NAME_NAME, gemfireName);
 
     return distributedSystemProperties;
@@ -121,23 +124,26 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     });
   }
 
+  @Test
   public void testListDiskStore() throws Exception {
     final Result result = executeCommand(CliStrings.LIST_DISK_STORE);
 
     assertNotNull(result);
-    LogWriterUtils.getLogWriter().info(toString(result));
+    getLogWriter().info(toString(result));
     assertEquals(Result.Status.OK, result.getStatus());
   }
 
+  @Test
   public void testDescribeDiskStore() throws Exception {
     final Result result = executeCommand(
         CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=producerData");
 
     assertNotNull(result);
-    LogWriterUtils.getLogWriter().info(toString(result));
+    getLogWriter().info(toString(result));
     assertEquals(Result.Status.OK, result.getStatus());
   }
 
+  @Test
   public void testDescribeDiskStoreWithInvalidMemberName() throws Exception {
     final Result commandResult = executeCommand(
         CliStrings.DESCRIBE_DISK_STORE + " --member=badMemberName --name=producerData");
@@ -148,6 +154,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
         toString(commandResult));
   }
 
+  @Test
   public void testDescribeDiskStoreWithInvalidDiskStoreName() {
     final Result commandResult = executeCommand(
         CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=badDiskStoreName");

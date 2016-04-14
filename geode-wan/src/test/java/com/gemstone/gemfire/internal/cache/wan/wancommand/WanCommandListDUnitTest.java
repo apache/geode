@@ -16,10 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import hydra.Log;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
 
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result;
@@ -28,16 +33,14 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class WanCommandListDUnitTest extends WANCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public WanCommandListDUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testListGatewayWithNoSenderReceiver() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -54,19 +57,19 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
     vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
     
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.LIST_GATEWAY;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info("testListGatewaySender : : " + strCmdResult);
+      getLogWriter().info("testListGatewaySender : : " + strCmdResult);
       assertEquals(Result.Status.ERROR, cmdResult.getStatus());
     } else {
       fail("testListGatewaySender failed as did not get CommandResult");
     }
   }
 
-  
+  @Test
   public void testListGatewaySender() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -98,12 +101,12 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm5.invoke(() -> WANCommandTestBase.createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.LIST_GATEWAY;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info("testListGatewaySender" + strCmdResult);
+      getLogWriter().info("testListGatewaySender" + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       
       TabularResultData tableResultData =
@@ -119,6 +122,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     }
   }
 
+  @Test
   public void testListGatewayReceiver() {
 
     Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -145,12 +149,12 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm6.invoke(() -> WANCommandTestBase.createSender(
         "ln_Parallel", 1, true, 100, 400, false, false, null, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.LIST_GATEWAY;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info("testListGatewayReceiver" + strCmdResult);
+      getLogWriter().info("testListGatewayReceiver" + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       
       TabularResultData tableResultData =
@@ -167,7 +171,8 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       fail("testListGatewayReceiver failed as did not get CommandResult");
     }
   }
-  
+
+  @Test
   public void testListGatewaySenderGatewayReceiver() throws GfJsonException {
 
     Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -202,13 +207,13 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm7.invoke(() -> WANCommandTestBase.createSender(
         "ln_Parallel", 1, true, 100, 400, false, false, null, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.LIST_GATEWAY;
     CommandResult cmdResult = executeCommand(command);
     
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testListGatewaySenderGatewayReceiver : " + strCmdResult );
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       
@@ -228,7 +233,8 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       fail("testListGatewaySenderGatewayReceiver failed as did not get CommandResult");
     }
   }
-  
+
+  @Test
   public void testListGatewaySenderGatewayReceiver_group() {
 
     Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -266,12 +272,12 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     vm7.invoke(() -> WANCommandTestBase.createSender(
         "ln_Parallel", 1, true, 100, 400, false, false, null, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Serial_Sender";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testListGatewaySenderGatewayReceiver_group : " + strCmdResult );
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       
@@ -300,7 +306,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       assertEquals(1, ports.size());
       
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testListGatewaySenderGatewayReceiver_group : " + strCmdResult );
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
@@ -311,7 +317,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testListGatewaySenderGatewayReceiver_group : " + strCmdResult );
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       
@@ -333,7 +339,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testListGatewaySenderGatewayReceiver_group : " + strCmdResult );
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       
@@ -354,7 +360,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testListGatewaySenderGatewayReceiver_group : " + strCmdResult );
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       

@@ -16,29 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.deadlock.GemFireDeadlockDetector;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.cli.Result.Status;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.remote.CommandProcessor;
-import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Invoke.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,15 +31,38 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.execute.FunctionContext;
+import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.execute.ResultCollector;
+import com.gemstone.gemfire.distributed.DistributedLockService;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.deadlock.GemFireDeadlockDetector;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.management.cli.Result;
+import com.gemstone.gemfire.management.cli.Result.Status;
+import com.gemstone.gemfire.management.internal.cli.CliUtil;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.cli.remote.CommandProcessor;
+import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * This DUnit tests uses same code as GemFireDeadlockDetectorDUnitTest and uses the command processor for executing the
  * "show deadlock" command
  */
-public class ShowDeadlockDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
   private static final Set<Thread> stuckThreads = Collections.synchronizedSet(new HashSet<Thread>());
   private static final Map<String, String> EMPTY_ENV = Collections.emptyMap();
@@ -73,7 +76,7 @@ public class ShowDeadlockDUnitTest extends CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(new SerializableRunnable() {
+    invokeInEveryVM(new SerializableRunnable() {
       private static final long serialVersionUID = 1L;
 
       public void run() {
@@ -85,10 +88,7 @@ public class ShowDeadlockDUnitTest extends CacheTestCase {
     CliUtil.isGfshVM = true;
   }
 
-  public ShowDeadlockDUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testNoDeadlock() throws ClassNotFoundException, IOException {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -112,7 +112,7 @@ public class ShowDeadlockDUnitTest extends CacheTestCase {
 
     String deadLockOutputFromCommand = getResultAsString(result);
 
-    LogWriterUtils.getLogWriter().info("output = " + deadLockOutputFromCommand);
+    getLogWriter().info("output = " + deadLockOutputFromCommand);
     assertEquals(true, result.hasIncomingFiles());
     assertEquals(true, result.getStatus().equals(Status.OK));
     assertEquals(true, deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK));
@@ -126,7 +126,7 @@ public class ShowDeadlockDUnitTest extends CacheTestCase {
 
   private static final Lock lock = new ReentrantLock();
 
-
+  @Test
   public void testDistributedDeadlockWithFunction() throws InterruptedException, ClassNotFoundException, IOException {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -148,7 +148,7 @@ public class ShowDeadlockDUnitTest extends CacheTestCase {
     Result result = commandProcessor.createCommandStatement(csb.toString(), EMPTY_ENV).process();
 
     String deadLockOutputFromCommand = getResultAsString(result);
-    LogWriterUtils.getLogWriter().info("Deadlock = " + deadLockOutputFromCommand);
+    getLogWriter().info("Deadlock = " + deadLockOutputFromCommand);
     result.saveIncomingFiles(null);
     assertEquals(true, deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED));
     assertEquals(true, result.getStatus().equals(Status.OK));
@@ -185,7 +185,7 @@ public class ShowDeadlockDUnitTest extends CacheTestCase {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e) {
-          Assert.fail("interrupted", e);
+          fail("interrupted", e);
         }
         ResultCollector collector = FunctionService.onMember(basicGetSystem(), member).execute(new TestFunction());
         //wait the function to lock the lock on member.

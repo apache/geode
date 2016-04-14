@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.internal.lang.ThrowableUtils.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -9047,16 +9049,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     try {
       async.getResult();
     } catch (Throwable e) {
-      if (e.getCause() instanceof RMIException) {
-        Throwable e2 = e.getCause();
-        if (e2.getCause() instanceof AssertionFailedError &&
-            e2.getCause().getMessage().equals(expectedError)) {
-          failed=true;
-        }
-      }
-      if (!failed) {
-        com.gemstone.gemfire.test.dunit.Assert.fail("asyncInvocation 0 returned exception", e);
-      }
+      assertTrue(hasCauseMessage(e, expectedError));
     }
     return failed;
   }

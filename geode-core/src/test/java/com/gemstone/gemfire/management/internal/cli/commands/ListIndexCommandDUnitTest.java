@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +30,9 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -45,10 +51,10 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * The ListIndexCommandDUnitTest class is distributed test suite of test cases for testing the index-based GemFire shell
@@ -59,6 +65,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * @since 7.0
  */
 @SuppressWarnings("unused")
+@Category(DistributedTest.class)
 public class ListIndexCommandDUnitTest extends CliCommandTestBase {
 
   protected static final int DEFAULT_REGION_INITIAL_CAPACITY = 10000;
@@ -76,11 +83,6 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     }
 
     return buffer.toString();
-  }
-
-
-  public ListIndexCommandDUnitTest(final String testName) {
-    super(testName);
   }
 
   @Override
@@ -136,7 +138,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
   protected Properties createDistributedSystemProperties(final String gemfireName) {
     final Properties distributedSystemProperties = new Properties();
 
-    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
     distributedSystemProperties.setProperty(DistributionConfig.NAME_NAME, gemfireName);
 
     return distributedSystemProperties;
@@ -174,7 +176,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
               }
             }
           } catch (Exception e) {
-            LogWriterUtils.getLogWriter().error(
+            getLogWriter().error(
                 String.format("Error occurred creating Index (%1$s) on Region (%2$s) - (%3$s)", indexName,
                     region.getFullPath(), e.getMessage()));
           }
@@ -276,11 +278,11 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
   @SuppressWarnings("unchecked")
   protected <T extends Comparable<T>, B extends AbstractBean<T>> B query(final Cache cache, final String queryString) {
     try {
-      LogWriterUtils.getLogWriter().info(String.format("Running Query (%1$s) in GemFire...", queryString));
+      getLogWriter().info(String.format("Running Query (%1$s) in GemFire...", queryString));
 
       final SelectResults<B> results = (SelectResults<B>) cache.getQueryService().newQuery(queryString).execute();
 
-      LogWriterUtils.getLogWriter().info(
+      getLogWriter().info(
           String.format("Running Query (%1$s) in GemFire returned (%2$d) result(s).", queryString, results.size()));
 
       return (results.iterator().hasNext() ? results.iterator().next() : null);
@@ -292,12 +294,12 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
   protected <T extends Comparable<T>, B extends AbstractBean<T>> B query(final Region<T, B> region,
       final String queryPredicate) {
     try {
-      LogWriterUtils.getLogWriter().info(
+      getLogWriter().info(
           String.format("Running Query (%1$s) on Region (%2$s)...", queryPredicate, region.getFullPath()));
 
       final SelectResults<B> results = region.query(queryPredicate);
 
-      LogWriterUtils.getLogWriter().info(
+      getLogWriter().info(
           String.format("Running Query (%1$s) on Region (%2$s) returned (%3$d) result(s).", queryPredicate,
               region.getFullPath(), results.size()));
 
@@ -309,11 +311,12 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testListIndex() throws Exception {
     final Result result = executeCommand(CliStrings.LIST_INDEX + " --" + CliStrings.LIST_INDEX__STATS);
 
     assertNotNull(result);
-    LogWriterUtils.getLogWriter().info(toString(result));
+    getLogWriter().info(toString(result));
     assertEquals(Result.Status.OK, result.getStatus());
   }
 

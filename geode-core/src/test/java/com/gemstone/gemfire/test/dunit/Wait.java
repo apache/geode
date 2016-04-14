@@ -16,8 +16,8 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
-import static org.junit.Assert.fail;
 import static com.gemstone.gemfire.test.dunit.Jitter.*;
+import static org.junit.Assert.*;
 
 import org.apache.logging.log4j.Logger;
 

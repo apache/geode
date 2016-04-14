@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.Instantiator;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
@@ -38,8 +41,7 @@ import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
  * Tests for authorization callback that modify objects and callbacks from
@@ -57,7 +59,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @since 5.5
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
 
   private static final String preAccessor = FilterPreAuthorization.class.getName() + ".create";

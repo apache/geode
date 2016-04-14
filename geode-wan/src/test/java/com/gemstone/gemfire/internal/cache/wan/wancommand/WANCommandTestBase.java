@@ -16,13 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.management.remote.JMXConnectorServer;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -44,13 +45,13 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
-public class WANCommandTestBase extends CliCommandTestBase{
+public class WANCommandTestBase extends CliCommandTestBase {
 
   static Cache cache;
   private JMXConnectorServer jmxConnectorServer;
@@ -67,10 +68,6 @@ public class WANCommandTestBase extends CliCommandTestBase{
   static VM vm6;
   static VM vm7;
 
-  public WANCommandTestBase(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
@@ -86,7 +83,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static Integer createFirstLocatorWithDSId(int dsId) {
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
@@ -99,7 +96,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
@@ -112,7 +109,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static void createCache(Integer locPort){
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
@@ -121,7 +118,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static void createCacheWithGroups(Integer locPort, String groups){
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
@@ -214,7 +211,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static int createAndStartReceiver(int locPort) {
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
@@ -238,7 +235,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static int createReceiver(int locPort) {
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
@@ -256,7 +253,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static int createReceiverWithGroup(int locPort, String groups) {
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     Properties props =  test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
@@ -275,7 +272,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static void startReceiver() {
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     try {
       Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
       for (GatewayReceiver receiver : receivers) {
@@ -288,7 +285,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static void stopReceiver() {
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       receiver.stop();
@@ -296,7 +293,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static int createAndStartReceiverWithGroup(int locPort, String groups) {
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
@@ -444,7 +441,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
   }
 
   public static void verifyReceiverState(boolean isRunning) {
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       assertEquals(isRunning, receiver.isRunning());
@@ -455,7 +452,7 @@ public class WANCommandTestBase extends CliCommandTestBase{
       int startPort, int endPort, String bindAddress, int maxTimeBetweenPings,
       int socketBufferSize, List<String> expectedGatewayTransportFilters) {
 
-    WANCommandTestBase test = new WANCommandTestBase(getTestMethodName());
+    WANCommandTestBase test = new WANCommandTestBase();
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     assertEquals("Number of receivers is incorrect", 1, receivers.size());
     for (GatewayReceiver receiver : receivers) {

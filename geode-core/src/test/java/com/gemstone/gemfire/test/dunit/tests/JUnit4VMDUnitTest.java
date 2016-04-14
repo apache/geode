@@ -14,22 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.internal.tests;
+package com.gemstone.gemfire.test.dunit.tests;
+
+import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.RMIException;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.internal.JUnit3DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of the {@link VM} class.
  */
-public class JUnit3VMDUnitTest extends JUnit3DistributedTestCase {
+@Category(DistributedTest.class)
+public class JUnit4VMDUnitTest extends JUnit4DistributedTestCase {
 
   private static final AtomicInteger COUNTER = new AtomicInteger();
   private static final boolean BOOLEAN_VALUE = true;
@@ -37,34 +44,35 @@ public class JUnit3VMDUnitTest extends JUnit3DistributedTestCase {
   private static final long LONG_VALUE = 42L;
   private static final String STRING_VALUE = "BLAH BLAH BLAH";
 
-  public JUnit3VMDUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testInvokeStaticBoolean() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     assertEquals(BOOLEAN_VALUE, (boolean) vm.invoke(() -> remoteBooleanMethod()));
   }
 
+  @Test
   public void testInvokeStaticByte() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     assertEquals(BYTE_VALUE, (byte) vm.invoke(() -> remoteByteMethod()));
   }
 
+  @Test
   public void testInvokeStaticLong() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     assertEquals(LONG_VALUE, (long) vm.invoke(() -> remoteLongMethod()));
   }
 
+  @Test
   public void testInvokeInstance() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     assertEquals(STRING_VALUE, vm.invoke(new ClassWithString(), "getString"));
   }
 
+  @Test
   public void testInvokeRunnableWithException() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
@@ -76,6 +84,7 @@ public class JUnit3VMDUnitTest extends JUnit3DistributedTestCase {
     }
   }
 
+  @Test
   public void testReturnValue() throws Exception {
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(0);

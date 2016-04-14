@@ -16,10 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import hydra.Log;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
 
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -29,20 +34,18 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public WanCommandGatewayReceiverStopDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Test wan commands for error in input 1> start gateway-sender command needs
    * only one of member or group.
    */
+  @Test
   public void testStopGatewayReceiver_ErrorConditions() {
 
     VM puneLocator = Host.getLocator();
@@ -66,7 +69,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewayReceiver_ErrorConditions stringResult : "
               + strCmdResult + ">>>>");
       assertEquals(Result.Status.ERROR, cmdResult.getStatus());
@@ -76,6 +79,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     }
   }
 
+  @Test
   public void testStopGatewayReceiver() {
 
     VM puneLocator = Host.getLocator();
@@ -96,12 +100,12 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
     vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewayReceiver stringResult : " + strCmdResult + ">>>>");
 
       TabularResultData resultData = (TabularResultData) cmdResult
@@ -123,6 +127,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
    * test to validate that the start gateway sender starts the gateway sender on
    * a member
    */
+  @Test
   public void testStopGatewayReceiver_onMember() {
 
     VM puneLocator = Host.getLocator();
@@ -144,14 +149,14 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
 
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --"
         + CliStrings.STOP_GATEWAYRECEIVER__MEMBER + "=" + vm1Member.getId();
 
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewayReceiver_onMember stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -169,6 +174,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
    * test to validate that the start gateway sender starts the gateway sender on
    * a group of members
    */
+  @Test
   public void testStopGatewayReceiver_Group() {
 
     VM puneLocator = Host.getLocator();
@@ -189,13 +195,13 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
     vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --"
         + CliStrings.STOP_GATEWAYRECEIVER__GROUP + "=RG1";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewayReceiver_Group stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -220,6 +226,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
    * sender members belongs to multiple groups
    * 
    */
+  @Test
   public void testStopGatewayReceiver_MultipleGroup() {
 
     VM puneLocator = Host.getLocator();
@@ -244,13 +251,13 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     vm6.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
     vm7.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --"
         + CliStrings.STOP_GATEWAYRECEIVER__GROUP + "=RG1,RG2";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewayReceiver_Group stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());

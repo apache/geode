@@ -16,12 +16,13 @@
  */
 package com.gemstone.gemfire.security.templates;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Implementation of {@link ErrorHandler} interface to handle validation errors

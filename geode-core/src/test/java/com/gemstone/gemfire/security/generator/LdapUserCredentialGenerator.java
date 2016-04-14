@@ -16,18 +16,19 @@
  */
 package com.gemstone.gemfire.security.generator;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.security.templates.LdapUserAuthenticator;
-import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-import org.apache.logging.log4j.Logger;
-
 import java.security.Principal;
 import java.util.Properties;
 import java.util.Random;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.security.templates.LdapUserAuthenticator;
+import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 public class LdapUserCredentialGenerator extends CredentialGenerator {
 

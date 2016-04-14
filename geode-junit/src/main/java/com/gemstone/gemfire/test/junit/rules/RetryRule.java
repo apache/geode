@@ -79,7 +79,7 @@ public class RetryRule implements TestRule, Serializable {
     return this.implementation.apply(base, description);
   }
 
-  protected abstract class AbstractRetryRule implements TestRule {
+  protected abstract class AbstractRetryRule implements TestRule, Serializable {
     protected AbstractRetryRule() {
     }
     protected void evaluate(final Statement base, final Description description, final int retryCount) throws Throwable {

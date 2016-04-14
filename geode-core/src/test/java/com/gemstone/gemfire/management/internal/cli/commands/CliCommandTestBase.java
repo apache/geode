@@ -16,24 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.internal.cli.CommandManager;
-import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-
-import util.TestException;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -47,11 +31,26 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.management.ManagementService;
+import com.gemstone.gemfire.management.internal.cli.CommandManager;
+import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
+import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
+import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+
 /**
  * Base class for all the CLI/gfsh command dunit tests.
- *
  */
-public class CliCommandTestBase extends CacheTestCase {
+public class CliCommandTestBase extends JUnit4CacheTestCase {
 
   private static final long serialVersionUID = 1L;
 
@@ -67,10 +66,6 @@ public class CliCommandTestBase extends CacheTestCase {
   private int jmxPort;
 
   private String jmxHost;
-
-  public CliCommandTestBase(String name) {
-    super(name);
-  }
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -238,7 +233,7 @@ public class CliCommandTestBase extends CacheTestCase {
     CommandResult result = executeCommand(shell, command.toString());
 
     if (!shell.isConnectedAndReady()) {
-      throw new TestException(
+      throw new AssertionError(
           "Connect command failed to connect to manager " + endpoint + " result=" + commandResultToString(result));
     }
 
@@ -273,9 +268,9 @@ public class CliCommandTestBase extends CacheTestCase {
       info("Started testable shell: " + shell);
       return shell;
     } catch (ClassNotFoundException e) {
-      throw new TestException(getStackTrace(e));
+      throw new AssertionError(getStackTrace(e));
     } catch (IOException e) {
-      throw new TestException(getStackTrace(e));
+      throw new AssertionError(getStackTrace(e));
     }
   }
 
@@ -338,9 +333,9 @@ public class CliCommandTestBase extends CacheTestCase {
     try {
       info("Executing command " + command + " with command Mgr " + CommandManager.getInstance());
     } catch (ClassNotFoundException cnfex) {
-      throw new TestException(getStackTrace(cnfex));
+      throw new AssertionError(getStackTrace(cnfex));
     } catch (IOException ioex) {
-      throw new TestException(getStackTrace(ioex));
+      throw new AssertionError(getStackTrace(ioex));
     }
 
     shell.executeCommand(command);
@@ -540,18 +535,18 @@ public class CliCommandTestBase extends CacheTestCase {
   }
 
   protected void info(String string) {
-    LogWriterUtils.getLogWriter().info(string);
+    getLogWriter().info(string);
   }
 
   protected void debug(String string) {
-    LogWriterUtils.getLogWriter().fine(string);
+    getLogWriter().fine(string);
   }
 
   protected void error(String string) {
-    LogWriterUtils.getLogWriter().error(string);
+    getLogWriter().error(string);
   }
 
   protected void error(String string, Throwable e) {
-    LogWriterUtils.getLogWriter().error(string, e);
+    getLogWriter().error(string, e);
   }
 }

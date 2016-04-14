@@ -16,12 +16,12 @@
  */
 package com.gemstone.gemfire.security.templates;
 
+import java.util.Properties;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-
-import java.util.Properties;
 
 /**
  * An {@link AuthInitialize} implementation that obtains the user name and
