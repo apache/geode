@@ -32,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
@@ -1036,7 +1035,7 @@ public class Message  {
   public void setComms(Socket socket, ByteBuffer bb, MessageStats msgStats) throws IOException {
     this.sockCh = socket.getChannel();
     if (this.sockCh == null) {
-      setComms(socket, SocketUtils.getInputStream(socket), SocketUtils.getOutputStream(socket), bb, msgStats);
+      setComms(socket, socket.getInputStream(), socket.getOutputStream(), bb, msgStats);
     } else {
       setComms(socket, null, null,  bb, msgStats);
     }

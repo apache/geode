@@ -19,8 +19,6 @@ package com.gemstone.gemfire.internal;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -995,13 +993,7 @@ public class SocketCreator {
           if (optionalWatcher != null) {
             optionalWatcher.beforeConnect(socket);
           }
-          if (timeout > 0) {
-            SocketUtils.connect(socket, sockaddr, timeout);
-          }
-          else {
-            SocketUtils.connect(socket, sockaddr, 0);
-
-          }
+          socket.connect(sockaddr, Math.max(timeout,0));
           configureClientSSLSocket( socket );
           return socket;
         } 
@@ -1024,12 +1016,7 @@ public class SocketCreator {
             if (optionalWatcher != null) {
               optionalWatcher.beforeConnect(socket);
             }
-          if (timeout > 0) {
-            SocketUtils.connect(socket, sockaddr, timeout);
-            }
-            else {
-              SocketUtils.connect(socket, sockaddr, 0);
-            }
+            socket.connect(sockaddr, Math.max(timeout,0));
           }
           return socket;
         }

@@ -17,20 +17,6 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.security.Principal;
-import java.util.Properties;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.IncompatibleVersionException;
 import com.gemstone.gemfire.cache.UnsupportedVersionException;
@@ -40,7 +26,6 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataStream;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
@@ -52,6 +37,15 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.security.Principal;
+import java.util.Properties;
 
 /**
  * A <code>ServerHandShakeProcessor</code> verifies the client's version compatibility with server.
@@ -422,7 +416,7 @@ public class ServerHandShakeProcessor {
     try {
       soTimeout = socket.getSoTimeout();
       socket.setSoTimeout(timeout);
-      InputStream is = SocketUtils.getInputStream(socket);//socket.getInputStream();
+      InputStream is = socket.getInputStream();
       short clientVersionOrdinal = Version.readOrdinalFromInputStream(is);
       if (clientVersionOrdinal == -1) {
         throw new EOFException(
