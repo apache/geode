@@ -97,6 +97,11 @@ public class JSSESocketJUnitTest {
     
     TestAppender.create();
     
+    // Get original base log level
+    Level originalBaseLevel = LogService.getBaseLogLevel();
+    try {
+    // Set base log level to debug to log the SSL messages
+    LogService.setBaseLogLevel(Level.DEBUG);
     {
       System.setProperty( "gemfire.mcast-port", "0");
       System.setProperty( "gemfire.ssl-enabled", "true" );
@@ -145,6 +150,10 @@ public class JSSESocketJUnitTest {
     }
     if ( peerLogCount != 2 ) {
       throw new Exception( "Expected to find to peer identities logged." );
+    }
+    } finally {
+      // Reset original base log level
+      LogService.setBaseLogLevel(originalBaseLevel);
     }
   }
   
@@ -230,7 +239,7 @@ public class JSSESocketJUnitTest {
       Appender appender = new TestAppender();
       Logger socketCreatorLogger = (Logger) LogManager.getLogger(SOCKET_CREATOR_CLASSNAME);
       LoggerConfig config = socketCreatorLogger.getContext().getConfiguration().getLoggerConfig(SOCKET_CREATOR_CLASSNAME);
-      config.addAppender(appender, Level.INFO, null);
+      config.addAppender(appender, Level.DEBUG, null);
       return appender;
     }
 
