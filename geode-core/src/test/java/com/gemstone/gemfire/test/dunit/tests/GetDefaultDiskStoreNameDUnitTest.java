@@ -26,7 +26,6 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 @SuppressWarnings("serial")
-@Category(DistributedTest.class)
 public class GetDefaultDiskStoreNameDUnitTest extends DistributedTestCase {
 
   public GetDefaultDiskStoreNameDUnitTest(final String name) {
