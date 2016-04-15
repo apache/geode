@@ -70,7 +70,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * share the same gossip server port.
  * 
  * @since 5.7
- * 
  */
 public class TcpServer {
   /**
@@ -197,6 +196,9 @@ public class TcpServer {
       } else
         srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port,
             BACKLOG, bind_address);
+
+        // TODO:GEODE-1243: srv_Sock now has a real port even though this.port is still zero -- update it or use a second var
+
       // srv_sock=new ServerSocket(port, 20, bind_address); // backlog of 20
       // connections
       {

@@ -386,7 +386,8 @@ public class InternalLocator extends Locator implements ConnectListener {
       
     slocator = createLocator(port, logFile, stateFile, logger, securityLogger, bindAddress, hostnameForClients, dsProperties, startDistributedSystem);
     
-    
+    // TODO:GEODE-1243: this.server is now a TcpServer and it should store or return its non-zero port in a variable to use here
+
     if (enableServerLocator) {
       slocator.handler.willHaveServerLocator = true;
     }
@@ -397,7 +398,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     
     if (startDistributedSystem) {
       try {
-        slocator.startDistributedSystem();
+        slocator.startDistributedSystem(); // TODO:GEODE-1243: throws Exception if TcpServer still has zero for its locator port
       } catch (RuntimeException e) {
         slocator.stop();
         throw e;
