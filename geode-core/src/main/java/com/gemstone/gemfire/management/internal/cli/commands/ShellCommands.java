@@ -859,7 +859,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
       long lineNumber = 0;
 
       while (it.hasNext()) {
-        String line = (String) it.next();
+        String line = it.next().toString();
         if (line.isEmpty() == false) {
           if (flagForLineNumbers) {
             lineNumber++;
