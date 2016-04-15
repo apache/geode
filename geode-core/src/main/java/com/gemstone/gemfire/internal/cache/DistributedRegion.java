@@ -17,8 +17,6 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -113,8 +111,6 @@ import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationE
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueConfigurationException;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderConfigurationException;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
@@ -1263,8 +1259,6 @@ public class DistributedRegion extends LocalRegion implements
    */
   private final Set<DistributedMember> memoryThresholdReachedMembers =
     new CopyOnWriteArraySet<DistributedMember>();
-
-  private ConcurrentParallelGatewaySenderQueue hdfsQueue;
 
   /** Sets and returns giiMissingRequiredRoles */
   private boolean checkInitialImageForReliability(
@@ -2424,9 +2418,16 @@ public class DistributedRegion extends LocalRegion implements
   /** @return the deserialized value */
   @Override
   @Retained
-  protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate,
-      TXStateInterface txState, boolean generateCallbacks, Object localValue, boolean disableCopyOnRead,
-        boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS)
+  protected Object findObjectInSystem(KeyInfo keyInfo,
+                                      boolean isCreate,
+                                      TXStateInterface txState,
+                                      boolean generateCallbacks,
+                                      Object localValue,
+                                      boolean disableCopyOnRead,
+                                      boolean preferCD,
+                                      ClientProxyMembershipID requestingClient,
+                                      EntryEventImpl clientEvent,
+                                      boolean returnTombstones)
       throws CacheLoaderException, TimeoutException
   {
     checkForLimitedOrNoAccess();
@@ -2545,18 +2546,6 @@ public class DistributedRegion extends LocalRegion implements
     }
   }
   
-  protected ConcurrentParallelGatewaySenderQueue getHDFSQueue() {
-    if (this.hdfsQueue == null) {
-      String asyncQId = this.getPartitionedRegion().getHDFSEventQueueName();
-      final AsyncEventQueueImpl asyncQ =  (AsyncEventQueueImpl)this.getCache().getAsyncEventQueue(asyncQId);
-      final AbstractGatewaySender gatewaySender = (AbstractGatewaySender)asyncQ.getSender();
-      AbstractGatewaySenderEventProcessor ep = gatewaySender.getEventProcessor();
-      if (ep == null) return null;
-      hdfsQueue = (ConcurrentParallelGatewaySenderQueue)ep.getQueue();
-    }
-    return hdfsQueue;
-  }
-
   /** hook for subclasses to note that a cache load was performed
    * @see BucketRegion#performedLoad
    */

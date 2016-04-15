@@ -179,7 +179,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
           public boolean done() {
             Entry<?,?> entry = null;
             try {
-              entry = region.getDataStore().getEntryLocally(0, key, false, false, false);
+              entry = region.getDataStore().getEntryLocally(0, key, false, false);
             } catch (EntryNotFoundException e) {
               // expected
             } catch (ForceReattemptException e) {
@@ -443,7 +443,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
           public boolean done() {
             Entry<?,?> entry = null;
             try {
-              entry = region.getDataStore().getEntryLocally(0, key, false, false, false);
+              entry = region.getDataStore().getEntryLocally(0, key, false, false);
             } catch (EntryNotFoundException e) {
               // expected
             } catch (ForceReattemptException e) {
@@ -582,7 +582,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
           public boolean done() {
             Entry<?,?> entry = null;
             try {
-              entry = region.getDataStore().getEntryLocally(0, key, false, false, false);
+              entry = region.getDataStore().getEntryLocally(0, key, false, false);
             } catch (EntryNotFoundException e) {
               // expected
             } catch (ForceReattemptException e) {

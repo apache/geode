@@ -7384,19 +7384,6 @@ public final class Oplog implements CompactableOplog, Flushable {
       // TODO Auto-generated method stub
     }
     @Override
-    public boolean isMarkedForEviction() {
-      // TODO Auto-generated method stub
-      return false;
-    }
-    @Override
-    public void setMarkedForEviction() {
-      // TODO Auto-generated method stub
-    }
-    @Override
-    public void clearMarkedForEviction() {
-      // TODO Auto-generated method stub
-    }
-    @Override
     public boolean isInvalid() {
       // TODO Auto-generated method stub
       return false;

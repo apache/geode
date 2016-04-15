@@ -297,7 +297,6 @@ public class PulseConstants {
   public static final String COMPOSITE_DATA_KEY_DISKSTORENAME = "diskStoreName";
   public static final String COMPOSITE_DATA_KEY_DISKSYNCHRONOUS = "diskSynchronous";
   public static final String COMPOSITE_DATA_KEY_COMPRESSIONCODEC = "compressionCodec";
-  public static final String COMPOSITE_DATA_KEY_HDFSWRITEONLY = "hdfsWriteOnly";
   public static final String COMPOSITE_DATA_KEY_ENABLEOFFHEAPMEMORY = "enableOffHeapMemory";
   public static final String COMPOSITE_DATA_KEY_CONNECTIONSACTIVE = "connectionsActive";
   public static final String COMPOSITE_DATA_KEY_CONNECTED = "connected";

@@ -299,7 +299,7 @@ public final class FetchBulkEntriesMessage extends PartitionMessage
             Object key = it.next();
             VersionTagHolder clientEvent = new VersionTagHolder();
             Object value = map.get(key, null, true, true, true, null,
-                clientEvent, allowTombstones, false);
+                clientEvent, allowTombstones);
 
             if (needToWriteBucketInfo) {
               DataSerializer.writePrimitiveInt(map.getId(), mos);

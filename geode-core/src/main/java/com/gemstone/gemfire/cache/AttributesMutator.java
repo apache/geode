@@ -166,20 +166,6 @@ public interface AttributesMutator<K,V> {
   public EvictionAttributesMutator getEvictionAttributesMutator();
 
   /**
-   * Changes the evictor frequency for custom eviction attributes.
-   * 
-   * @param newStart
-   *          the new start time in millis since epoch for the evictor task
-   * 
-   * @param newInterval
-   *          the new interval between evictor task invocations in millis
-   * 
-   * @return the updated {@link CustomEvictionAttributes}
-   */
-  public CustomEvictionAttributes setCustomEvictionAttributes(long newStart,
-      long newInterval);
-
-  /**
    * Sets cloning on region
    * @param cloningEnable
    * @since 6.1

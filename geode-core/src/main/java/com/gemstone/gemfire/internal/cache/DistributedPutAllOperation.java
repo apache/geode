@@ -856,7 +856,6 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     PutAllMessage msg = new PutAllMessage();
     msg.eventId = event.getEventId();
     msg.context = event.getContext();
-	msg.setFetchFromHDFS(event.isFetchFromHDFS());
     msg.setPutDML(event.isPutDML());
     return msg;
   }
@@ -871,7 +870,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
   public PutAllPRMessage createPRMessagesNotifyOnly(int bucketId) {
     final EntryEventImpl event = getBaseEvent();
     PutAllPRMessage prMsg = new PutAllPRMessage(bucketId, putAllDataSize, true,
-        event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument(), false, false /*isPutDML*/);
+        event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument(), false /*isPutDML*/);
     if (event.getContext() != null) {
       prMsg.setBridgeContext(event.getContext());
     }
@@ -900,7 +899,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
       PutAllPRMessage prMsg = (PutAllPRMessage)prMsgMap.get(bucketId);
       if (prMsg == null) {
         prMsg = new PutAllPRMessage(bucketId.intValue(), putAllDataSize, false,
-            event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument(), event.isFetchFromHDFS(), event.isPutDML());
+            event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument(), event.isPutDML());
         prMsg.setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());
 
         // set dpao's context(original sender) into each PutAllMsg
@@ -1077,9 +1076,6 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
 
     protected EventID eventId = null;
     
-    // By default, fetchFromHDFS == true;
-    private transient boolean fetchFromHDFS = true;
-    
     private transient boolean isPutDML = false;
 
     protected static final short HAS_BRIDGE_CONTEXT = UNRESERVED_FLAGS_START;
@@ -1137,12 +1133,11 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
      *          the region the entry is put in
      */
     public void doEntryPut(PutAllEntryData entry, DistributedRegion rgn,
-        boolean requiresRegionContext, boolean fetchFromHDFS, boolean isPutDML) {
+        boolean requiresRegionContext, boolean isPutDML) {
       @Released EntryEventImpl ev = PutAllMessage.createEntryEvent(entry, getSender(), 
           this.context, rgn,
           requiresRegionContext, this.possibleDuplicate,
           this.needsRouting, this.callbackArg, true, skipCallbacks);
-	  ev.setFetchFromHDFS(fetchFromHDFS);
       ev.setPutDML(isPutDML);
       // we don't need to set old value here, because the msg is from remote. local old value will get from next step
       try {
@@ -1237,7 +1232,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
               logger.debug("putAll processing {} with {} sender={}", putAllData[i], putAllData[i].versionTag, sender);
             }
             putAllData[i].setSender(sender);
-            doEntryPut(putAllData[i], rgn, requiresRegionContext,  fetchFromHDFS, isPutDML);
+            doEntryPut(putAllData[i], rgn, requiresRegionContext,  isPutDML);
           }
         }
       }, ev.getEventId());
@@ -1366,10 +1361,6 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
       return Arrays.asList(ops);
     }
     
-    public void setFetchFromHDFS(boolean val) {
-      this.fetchFromHDFS = val;
-    }
-    
     public void setPutDML(boolean val) {
       this.isPutDML = val;
     }
@@ -1377,9 +1368,6 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     @Override
     protected short computeCompressedExtBits(short bits) {
       bits = super.computeCompressedExtBits(bits);
-      if (fetchFromHDFS) {
-        bits |= FETCH_FROM_HDFS;
-      }
       if (isPutDML) {
         bits |= IS_PUT_DML;
       }

@@ -96,8 +96,6 @@ public interface GatewaySender {
 
   public static final int DEFAULT_DISPATCHER_THREADS = 5;
   
-  public static final int DEFAULT_HDFS_DISPATCHER_THREADS = 5;
-  
   public static final OrderPolicy DEFAULT_ORDER_POLICY = OrderPolicy.KEY;
   /**
    * The default maximum amount of memory (MB) to allow in the queue before

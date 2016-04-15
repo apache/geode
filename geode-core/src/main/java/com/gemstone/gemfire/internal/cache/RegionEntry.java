@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
-import com.gemstone.gemfire.cache.EvictionCriteria;
 
 /**
  * Internal interface for a region entry.
@@ -413,25 +412,6 @@ public interface RegionEntry {
    * @param underUpdate
    */
   public void setUpdateInProgress(final boolean underUpdate);
-
-  /**
-   * Returns true if this entry has been marked for eviction for custom eviction
-   * via {@link EvictionCriteria}.
-   */
-  public boolean isMarkedForEviction();
-
-  /**
-   * Marks this entry for eviction by custom eviction via
-   * {@link EvictionCriteria}.
-   */
-  public void setMarkedForEviction();
-
-  /**
-   * Clears this entry as for eviction by custom eviction via
-   * {@link EvictionCriteria} or when an update is done after it was marked for
-   * eviction.
-   */
-  public void clearMarkedForEviction();
 
   /**
    * Event containing this RegionEntry is being passed through

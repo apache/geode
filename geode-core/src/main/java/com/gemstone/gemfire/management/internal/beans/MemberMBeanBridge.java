@@ -49,7 +49,6 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
@@ -1010,32 +1009,6 @@ public class MemberMBeanBridge {
     return listDiskStores(true);
   }
 
-  
-
-  
-  /**
-   * @return list all the HDFSStore's name at cache level
-   */
-  
-  public String[] getHDFSStores() {
-    GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
-    String[] retStr = null;
-    Collection<HDFSStoreImpl> hdfsStoreCollection = null;
-    hdfsStoreCollection = cacheImpl.getHDFSStores();
-      
-    if (hdfsStoreCollection != null && hdfsStoreCollection.size() > 0) {
-      retStr = new String[hdfsStoreCollection.size()];
-      Iterator<HDFSStoreImpl> it = hdfsStoreCollection.iterator();
-      int i = 0;
-      while (it.hasNext()) {
-        retStr[i] = it.next().getName();
-        i++;
-
-      }
-    }
-    return retStr;
-  }
-      
   /**
    * 
    * @return log of the member.

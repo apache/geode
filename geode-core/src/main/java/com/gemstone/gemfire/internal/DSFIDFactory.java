@@ -52,7 +52,6 @@ import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSGatewayEventImpl;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.internal.CqEntry;
 import com.gemstone.gemfire.cache.query.internal.CumulativeNonDistinctResults;
@@ -1023,8 +1022,6 @@ public final class DSFIDFactory implements DataSerializableFixedID {
         RemoteFetchVersionMessage.FetchVersionReplyMessage.class);
     registerDSFID(RELEASE_CLEAR_LOCK_MESSAGE, ReleaseClearLockMessage.class);
     registerDSFID(PR_TOMBSTONE_MESSAGE, PRTombstoneMessage.class);
-    registerDSFID(HDFS_GATEWAY_EVENT_IMPL, HDFSGatewayEventImpl.class);
-    
     registerDSFID(REQUEST_RVV_MESSAGE, InitialImageOperation.RequestRVVMessage.class);
     registerDSFID(RVV_REPLY_MESSAGE, InitialImageOperation.RVVReplyMessage.class);
     registerDSFID(SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE, SnappyCompressedCachedDeserializable.class);

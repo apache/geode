@@ -130,14 +130,6 @@ public interface DistributedSystemMXBean {
    */
   public Map<String, String[]> listMemberDiskstore();
 
-  
-  /**
-   *  @return A map of all {@link DistributedMember}s and their HDFSStore's.
-   */
-  
-  public Map<String, String[]> listMemberHDFSStore();
-  
-  
   /**
    * Returns a list of IDs for all gateway senders.
    */

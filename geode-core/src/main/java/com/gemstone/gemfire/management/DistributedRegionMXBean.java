@@ -130,7 +130,6 @@ public interface DistributedRegionMXBean {
   /**
    * Returns the number of entries in the Region.
    * 
-   * For HDFS regions it will be count of only in memory data.
    */
   public long getSystemRegionEntryCount();
 
@@ -305,14 +304,4 @@ public interface DistributedRegionMXBean {
    * Returns the number of members whose entry count is 0.
    */
   public int getEmptyNodes();
-  
-  
-  /**
-   * An estimated entry count for HDFS Read-Write region.This may not be accurate but acts
-   * as an indicative value.
-   * 
-   * For other regions it will be -1 ( Not Available)
-   */
-  public long getEstimatedSizeForHDFSRegion();
-
 }

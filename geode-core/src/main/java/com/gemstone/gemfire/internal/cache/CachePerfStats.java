@@ -156,13 +156,6 @@ public class CachePerfStats {
   protected static final int compressionPreCompressedBytesId;
   protected static final int compressionPostCompressedBytesId;
   
-  protected static final int evictByCriteria_evictionsId;// total actual evictions (entries evicted)
-  protected static final int evictByCriteria_evictionTimeId;// total eviction time including product + user expr. 
-  protected static final int evictByCriteria_evictionsInProgressId;
-  protected static final int evictByCriteria_evaluationsId;// total eviction attempts
-  protected static final int evictByCriteria_evaluationTimeId;// time taken to evaluate user expression.
-  
-
   /** The Statistics object that we delegate most behavior to */
   protected final Statistics stats;
 
@@ -521,12 +514,6 @@ public class CachePerfStats {
     compressionDecompressionsId = type.nameToId("decompressions");
     compressionPreCompressedBytesId = type.nameToId("preCompressedBytes");
     compressionPostCompressedBytesId = type.nameToId("postCompressedBytes");
-    
-    evictByCriteria_evictionsId = type.nameToId("evictByCriteria_evictions");
-    evictByCriteria_evictionTimeId = type.nameToId("evictByCriteria_evictionTime"); 
-    evictByCriteria_evictionsInProgressId = type.nameToId("evictByCriteria_evictionsInProgress");
-    evictByCriteria_evaluationsId= type.nameToId("evictByCriteria_evaluations");
-    evictByCriteria_evaluationTimeId = type.nameToId("evictByCriteria_evaluationTime");
   }
   
   ////////////////////////  Constructors  ////////////////////////
@@ -1353,67 +1340,5 @@ public class CachePerfStats {
     if (enableClockStats) {
       stats.incLong(exportTimeId, getStatTime() - start);
     }
-  }
-  
-//  // used for the case of evict on incoming
-  public long startCustomEviction() {
-    return NanoTimer.getTime();
-  }
-
-  // used for the case of evict on incoming
-  public void endCustomEviction(long start) {
-    long ts = NanoTimer.getTime();
-    stats.incLong(evictByCriteria_evictionTimeId, ts - start);
-  }
-
-  public void incEvictionsInProgress() {
-    this.stats.incLong(evictByCriteria_evictionsInProgressId, 1);
-  }
-
-  public void decEvictionsInProgress() {
-    this.stats.incLong(evictByCriteria_evictionsInProgressId, -1);
-  }
-
-  public void incEvictions() {
-    this.stats.incLong(evictByCriteria_evictionsId, 1);
-  }
-
-  public void incEvaluations() {
-    this.stats.incLong(evictByCriteria_evaluationsId, 1);
-  }
-
-  public void incEvaluations(int delta) {
-    this.stats.incLong(evictByCriteria_evaluationsId, delta);
-  }
-  
-  public long startEvaluation() {
-    return NanoTimer.getTime();
-  }
-
-  public void endEvaluation(long start, long notEvaluationTime) {
-    long ts = NanoTimer.getTime();
-    long totalTime = ts - start;
-    long evaluationTime = totalTime - notEvaluationTime;
-    stats.incLong(evictByCriteria_evaluationTimeId, evaluationTime);
-  }
-
-  public long getEvictions() {
-    return stats.getLong(evictByCriteria_evictionsId);
-  }
-
-  public long getEvictionsInProgress() {
-    return stats.getLong(evictByCriteria_evictionsInProgressId);
-  }
-
-  public long getEvictionsTime() {
-    return stats.getLong(evictByCriteria_evictionTimeId);
-  }
-
-  public long getEvaluations() {
-    return stats.getLong(evictByCriteria_evaluationsId);
-  }
-
-  public long getEvaluationTime() {
-    return stats.getLong(evictByCriteria_evaluationTimeId);
   }
 }

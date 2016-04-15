@@ -93,11 +93,9 @@ public final class GetMessage extends PartitionMessageWithDirectReply
   
   private boolean returnTombstones;
 
-  private boolean allowReadFromHDFS;
   // reuse some flags
   protected static final int HAS_LOADER = NOTIFICATION_ONLY;
   protected static final int CAN_START_TX = IF_NEW;
-  protected static final int READ_FROM_HDFS = IF_OLD;
 
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
@@ -106,15 +104,14 @@ public final class GetMessage extends PartitionMessageWithDirectReply
   }
   
   private GetMessage(InternalDistributedMember recipient, int regionId,
-      DirectReplyProcessor processor,
-      final Object key, final Object aCallbackArgument, ClientProxyMembershipID context,
-      boolean returnTombstones, boolean allowReadFromHDFS) {
+                     DirectReplyProcessor processor,
+                     final Object key, final Object aCallbackArgument, ClientProxyMembershipID context,
+                     boolean returnTombstones) {
     super(recipient, regionId, processor);
     this.key = key;
     this.cbArg = aCallbackArgument;
     this.context = context;
     this.returnTombstones = returnTombstones;
-	this.allowReadFromHDFS = allowReadFromHDFS;
   }
 
   private static final boolean ORDER_PR_GETS = Boolean.getBoolean("gemfire.order-pr-gets");
@@ -191,7 +188,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply
         KeyInfo keyInfo = r.getKeyInfo(key, cbArg);
         boolean lockEntry = forceUseOfPRExecutor || isDirectAck();
         
-        val = r.getDataView().getSerializedValue(r, keyInfo, !lockEntry, this.context, event, returnTombstones, allowReadFromHDFS);
+        val = r.getDataView().getSerializedValue(r, keyInfo, !lockEntry, this.context, event, returnTombstones);
         
         if(val == BucketRegion.REQUIRES_ENTRY_LOCK) {
           Assert.assertTrue(!lockEntry);
@@ -272,14 +269,12 @@ public final class GetMessage extends PartitionMessageWithDirectReply
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.allowReadFromHDFS) s |= READ_FROM_HDFS;
     return s;
   }
 
   @Override
   protected void setBooleans(short s, DataInput in) throws ClassNotFoundException, IOException {
     super.setBooleans(s, in);
-    if ((s & READ_FROM_HDFS) != 0) this.allowReadFromHDFS = true;
   }
 
   public void setKey(Object key)
@@ -303,15 +298,18 @@ public final class GetMessage extends PartitionMessageWithDirectReply
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static GetResponse send(InternalDistributedMember recipient,
-      PartitionedRegion r, final Object key, final Object aCallbackArgument,
-      ClientProxyMembershipID requestingClient, boolean returnTombstones, boolean allowReadFromHDFS)
+                                 PartitionedRegion r,
+                                 final Object key,
+                                 final Object aCallbackArgument,
+                                 ClientProxyMembershipID requestingClient,
+                                 boolean returnTombstones)
       throws ForceReattemptException
   {
     Assert.assertTrue(recipient != null,
         "PRDistribuedGetReplyMessage NULL reply message");
     GetResponse p = new GetResponse(r.getSystem(), Collections.singleton(recipient), key);
     GetMessage m = new GetMessage(recipient, r.getPRId(), p,
-        key, aCallbackArgument, requestingClient, returnTombstones, allowReadFromHDFS);
+        key, aCallbackArgument, requestingClient, returnTombstones);
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(LocalizedStrings.GetMessage_FAILED_SENDING_0.toLocalizedString(m));

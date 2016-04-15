@@ -145,7 +145,7 @@ public class DistTXState extends TXState {
               } 
             } 
           } // end if primary
-        } // end non-hdfs buckets
+        }
       }
     }
   }

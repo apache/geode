@@ -1407,7 +1407,14 @@ public class TXState implements TXStateInterface {
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getDeserializedValue(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion, boolean)
    */
-  public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS, boolean retainResult) {
+  public Object getDeserializedValue(KeyInfo keyInfo,
+                                     LocalRegion localRegion,
+                                     boolean updateStats,
+                                     boolean disableCopyOnRead,
+                                     boolean preferCD,
+                                     EntryEventImpl clientEvent,
+                                     boolean returnTombstones,
+                                     boolean retainResult) {
     TXEntryState tx = txReadEntry(keyInfo, localRegion, true, true/*create txEntry is absent*/);
     if (tx != null) {
       Object v = tx.getValue(keyInfo, localRegion, preferCD);
@@ -1416,7 +1423,8 @@ public class TXState implements TXStateInterface {
       }
       return v;
     } else {
-      return localRegion.getDeserializedValue(null, keyInfo, updateStats, disableCopyOnRead, preferCD, clientEvent, returnTombstones, allowReadFromHDFS, retainResult);
+      return localRegion.getDeserializedValue(null, keyInfo, updateStats, disableCopyOnRead, preferCD, clientEvent, returnTombstones,
+        retainResult);
     }
   }
 
@@ -1425,15 +1433,19 @@ public class TXState implements TXStateInterface {
    * @see com.gemstone.gemfire.internal.cache.InternalDataView#getSerializedValue(com.gemstone.gemfire.internal.cache.LocalRegion, java.lang.Object, java.lang.Object)
    */
   @Retained
-  public Object getSerializedValue(LocalRegion localRegion, KeyInfo keyInfo, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, 
-      boolean returnTombstones, boolean allowReadFromHDFS) throws DataLocationException {
+  public Object getSerializedValue(LocalRegion localRegion,
+                                   KeyInfo keyInfo,
+                                   boolean doNotLockEntry,
+                                   ClientProxyMembershipID requestingClient,
+                                   EntryEventImpl clientEvent,
+                                   boolean returnTombstones) throws DataLocationException {
     final Object key = keyInfo.getKey();
     TXEntryState tx = txReadEntry(keyInfo, localRegion, true,true/*create txEntry is absent*/);
     if (tx != null) {
       Object val = tx.getPendingValue();
       if(val==null || Token.isInvalidOrRemoved(val)) {
         val = findObject(keyInfo,localRegion, val!=Token.INVALID,
-            true, val, false, false, requestingClient, clientEvent, false, allowReadFromHDFS);
+            true, val, false, false, requestingClient, clientEvent, false);
       }
       return val;
     } else {
@@ -1441,7 +1453,7 @@ public class TXState implements TXStateInterface {
       // so we should never come here
       assert localRegion instanceof PartitionedRegion;
       PartitionedRegion pr = (PartitionedRegion)localRegion;
-      return pr.getDataStore().getSerializedLocally(keyInfo, doNotLockEntry, null, null, returnTombstones, allowReadFromHDFS);
+      return pr.getDataStore().getSerializedLocally(keyInfo, doNotLockEntry, null, null, returnTombstones);
     }
   }
 
@@ -1519,9 +1531,17 @@ public class TXState implements TXStateInterface {
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.TXStateInterface#findObject(com.gemstone.gemfire.internal.cache.LocalRegion, java.lang.Object, java.lang.Object, boolean, boolean, java.lang.Object)
    */
-  public Object findObject(KeyInfo key, LocalRegion r, boolean isCreate,
-      boolean generateCallbacks, Object value, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) {
-    return r.findObjectInSystem(key, isCreate, this, generateCallbacks, value, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
+  public Object findObject(KeyInfo key,
+                           LocalRegion r,
+                           boolean isCreate,
+                           boolean generateCallbacks,
+                           Object value,
+                           boolean disableCopyOnRead,
+                           boolean preferCD,
+                           ClientProxyMembershipID requestingClient,
+                           EntryEventImpl clientEvent,
+                           boolean returnTombstones) {
+    return r.findObjectInSystem(key, isCreate, this, generateCallbacks, value, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
   }
 
   private boolean readEntryAndCheckIfDestroyed(KeyInfo keyInfo, LocalRegion localRegion,

@@ -672,19 +672,6 @@ public final class Operation implements java.io.Serializable {
                     OP_DETAILS_REMOVEALL
                     );
     
-  /**
-   * An entry local destroy caused by an eviction.
-   * @see Region#localDestroy(Object)
-   */
-  public static final Operation CUSTOM_EVICT_DESTROY
-    = new Operation("EVICT_DESTROY",
-                    false, // isLocal
-                    false, // isRegion
-                    OP_TYPE_DESTROY,
-                    OP_DETAILS_EVICT
-                    );
-
-
   /** The name of this mirror type. */
   private final transient String name;
     

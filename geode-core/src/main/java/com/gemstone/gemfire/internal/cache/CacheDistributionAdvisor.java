@@ -38,8 +38,6 @@ import com.gemstone.gemfire.cache.InterestPolicy;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreFactoryImpl;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -1228,29 +1226,15 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       public boolean include(final Profile profile) {
         if (profile instanceof CacheProfile) {
           final CacheProfile cp = (CacheProfile)profile;
-          /*Since HDFS queues are created only when a region is created, this check is 
-           * unnecessary. Also this check is creating problem because hdfs queue is not 
-           * created on an accessor. Hence removing this check for hdfs queues. */
-          Set<String> allAsyncEventIdsNoHDFS = removeHDFSQueues(allAsyncEventIds);
-          Set<String> profileQueueIdsNoHDFS = removeHDFSQueues(cp.asyncEventQueueIds);
-          if (allAsyncEventIdsNoHDFS.equals(profileQueueIdsNoHDFS)) {
+          if (allAsyncEventIds.equals(cp.asyncEventQueueIds)) {
             return true;
           }else{
-            differAsycnQueueIds.add(allAsyncEventIdsNoHDFS);
-            differAsycnQueueIds.add(profileQueueIdsNoHDFS);
+            differAsycnQueueIds.add(allAsyncEventIds);
+            differAsycnQueueIds.add(cp.asyncEventQueueIds);
             return false;
           }
         }
         return false;
-      }
-      private Set<String> removeHDFSQueues(Set<String> queueIds){
-        Set<String> queueIdsWithoutHDFSQueues = new HashSet<String>();
-        for (String queueId: queueIds){
-          if (!queueId.startsWith(HDFSStoreFactoryImpl.DEFAULT_ASYNC_QUEUE_ID_FOR_HDFS)){
-            queueIdsWithoutHDFSQueues.add(queueId);
-          }
-        }
-        return queueIdsWithoutHDFSQueues;
       }
     });
     return differAsycnQueueIds;
