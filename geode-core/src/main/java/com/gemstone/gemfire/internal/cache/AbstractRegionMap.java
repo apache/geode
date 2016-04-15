@@ -1626,7 +1626,7 @@ public abstract class AbstractRegionMap implements RegionMap {
               // a receipt of a TXCommitMessage AND there are callbacks installed
               // for this region
               boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady || inRI);
-              EntryEventImpl cbEvent = createCBEvent(owner, op,
+              @Released EntryEventImpl cbEvent = createCBEvent(owner, op,
                   key, null, txId, txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
               try {
               
@@ -1858,7 +1858,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         // the destroy is already applied on the Initial image provider, thus 
         // causing region entry to be absent. 
         // Notify clients with client events.
-        EntryEventImpl cbEvent = createCBEvent(owner, op,
+        @Released EntryEventImpl cbEvent = createCBEvent(owner, op,
             key, null, txId, txEvent, eventId, aCallbackArgument, 
             filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
         try {
@@ -2397,7 +2397,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     final LocalRegion owner = _getOwner();
     owner.checkBeforeEntrySync(txEvent);
     
-    EntryEventImpl cbEvent = null;
+    @Released EntryEventImpl cbEvent = null;
     boolean forceNewEntry = !owner.isInitialized() && owner.isAllEvents();
 
     final boolean hasRemoteOrigin = !((TXId)txId).getMemberId().equals(owner.getMyId());
@@ -2997,7 +2997,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                       stats.incEvictionsInProgress();
                       // set the flag on event saying the entry should be evicted 
                       // and not indexed
-                      EntryEventImpl destroyEvent = EntryEventImpl.create (owner, Operation.DESTROY, event.getKey(),
+                      @Released EntryEventImpl destroyEvent = EntryEventImpl.create (owner, Operation.DESTROY, event.getKey(),
                           null/* newValue */, null, false, owner.getMyId());
                       try {
 
@@ -3340,8 +3340,8 @@ public abstract class AbstractRegionMap implements RegionMap {
     final boolean isTXHost = txEntryState != null;
     final boolean isClientTXOriginator = owner.cache.isClient() && !hasRemoteOrigin;
     final boolean isRegionReady = owner.isInitialized();
-    EntryEventImpl cbEvent = null;
-    EntryEventImpl sqlfEvent = null;
+    @Released EntryEventImpl cbEvent = null;
+    @Released EntryEventImpl sqlfEvent = null;
     boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady);
     boolean cbEventInPending = false;
     cbEvent = createCBEvent(owner, putOp, key, newValue, txId, 
@@ -3785,6 +3785,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   /** create a callback event for applying a transactional change to the local cache */
+  @Retained
   public static final EntryEventImpl createCBEvent(final LocalRegion re,
       Operation op, Object key, Object newValue, TransactionId txId, 
       TXRmtEvent txEvent,EventID eventId, Object aCallbackArgument,FilterRoutingInfo filterRoutingInfo,ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag, long tailKey)
@@ -3799,7 +3800,7 @@ public abstract class AbstractRegionMap implements RegionMap {
       eventRegion = re.getPartitionedRegion();
     }
     
-    EntryEventImpl retVal = EntryEventImpl.create(
+    @Retained EntryEventImpl retVal = EntryEventImpl.create(
         re, op, key, newValue,
         aCallbackArgument,
         txEntryState == null, originator);

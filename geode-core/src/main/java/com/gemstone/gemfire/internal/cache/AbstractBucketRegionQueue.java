@@ -48,6 +48,7 @@ import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 public abstract class AbstractBucketRegionQueue extends BucketRegion {
   protected static final Logger logger = LogService.getLogger();
@@ -232,7 +233,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     if (logger.isDebugEnabled()) {
       logger.debug(" destroying primary key {}", key);
     }
-    EntryEventImpl event = getPartitionedRegion().newDestroyEntryEvent(key,
+    @Released EntryEventImpl event = getPartitionedRegion().newDestroyEntryEvent(key,
         null);
     event.setEventId(new EventID(cache.getSystem()));
     try {

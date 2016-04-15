@@ -54,6 +54,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 /**
  * 
@@ -130,7 +131,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor extends
     if (sender.getOrderPolicy() == OrderPolicy.KEY || sender.getOrderPolicy() == OrderPolicy.PARTITION) {
       // Create copy since the event id will be changed, otherwise the same
       // event will be changed for multiple gateways. Fix for bug 44471.
-      EntryEventImpl clonedEvent = new EntryEventImpl((EntryEventImpl)event);
+      @Released EntryEventImpl clonedEvent = new EntryEventImpl((EntryEventImpl)event);
       try {
       EventID originalEventId = clonedEvent.getEventId();
       if (logger.isDebugEnabled()) {

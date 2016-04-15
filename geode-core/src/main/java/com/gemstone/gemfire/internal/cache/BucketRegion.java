@@ -97,6 +97,8 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.concurrent.AtomicLong5;
 
@@ -1118,6 +1120,7 @@ implements Bucket
    * @return an event for EVICT_DESTROY
    */
   @Override
+  @Retained
   protected EntryEventImpl generateEvictDestroyEvent(Object key) {
     EntryEventImpl event = super.generateEvictDestroyEvent(key);
     event.setInvokePRCallbacks(true);   //see bug 40797
@@ -1620,6 +1623,7 @@ implements Bucket
     //we already distributed this info.
   }
   
+  @Retained
   EntryEventImpl createEventForPR(EntryEventImpl sourceEvent) {
     EntryEventImpl e2 = new EntryEventImpl(sourceEvent);
     boolean returned = false;
@@ -1663,7 +1667,7 @@ implements Bucket
       }
       super.invokeTXCallbacks(eventType, event, callThem);
     }
-    final EntryEventImpl prevent = createEventForPR(event);
+    @Released final EntryEventImpl prevent = createEventForPR(event);
     try {
       this.partitionedRegion.invokeTXCallbacks(eventType, prevent, this.partitionedRegion.isInitialized() ? callDispatchListenerEvent : false);
     } finally {
@@ -1691,7 +1695,7 @@ implements Bucket
       }
       super.invokeDestroyCallbacks(eventType, event, callThem, notifyGateways);
     }
-    final EntryEventImpl prevent = createEventForPR(event);
+    @Released final EntryEventImpl prevent = createEventForPR(event);
     try {
       this.partitionedRegion.invokeDestroyCallbacks(eventType, prevent, this.partitionedRegion.isInitialized() ? callDispatchListenerEvent : false, false);
     } finally {
@@ -1718,7 +1722,7 @@ implements Bucket
       }
       super.invokeInvalidateCallbacks(eventType, event, callThem);
     }
-    final EntryEventImpl prevent = createEventForPR(event);
+    @Released final EntryEventImpl prevent = createEventForPR(event);
     try {
       this.partitionedRegion.invokeInvalidateCallbacks(eventType, prevent, this.partitionedRegion.isInitialized() ? callDispatchListenerEvent : false);
     } finally {
@@ -1749,7 +1753,7 @@ implements Bucket
       super.invokePutCallbacks(eventType, event, callThem, notifyGateways);
     }
 
-    final EntryEventImpl prevent = createEventForPR(event);
+    @Released final EntryEventImpl prevent = createEventForPR(event);
     try {
       this.partitionedRegion.invokePutCallbacks(eventType, prevent,
               this.partitionedRegion.isInitialized() ? callDispatchListenerEvent : false, false);
@@ -2577,7 +2581,7 @@ implements Bucket
   public boolean customEvictDestroy(Object key)
   {
     checkReadiness();
-    final EntryEventImpl event = 
+    @Released final EntryEventImpl event = 
           generateCustomEvictDestroyEvent(key);
     event.setCustomEviction(true);
     boolean locked = false;

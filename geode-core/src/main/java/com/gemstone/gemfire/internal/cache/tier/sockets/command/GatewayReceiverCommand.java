@@ -37,6 +37,7 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -194,7 +195,7 @@ public class GatewayReceiverCommand extends BaseCommand {
       int actionType = actionTypePart.getInt();
       
       long versionTimeStamp = VersionTag.ILLEGAL_VERSION_TIMESTAMP;
-      EntryEventImpl clientEvent = null;
+      EventIDHolder clientEvent = null;
       
       boolean callbackArgExists = false;
 
@@ -306,7 +307,7 @@ public class GatewayReceiverCommand extends BaseCommand {
           if (region == null) {
             handleRegionNull(servConn, regionName, batchId);
           } else {
-            clientEvent = new EntryEventImpl(eventId);
+            clientEvent = new EventIDHolder(eventId);
             if (versionTimeStamp > 0) {
               VersionTag tag = VersionTag.create(region.getVersionMember());
               tag.setIsGatewayTag(true);
@@ -415,7 +416,7 @@ public class GatewayReceiverCommand extends BaseCommand {
           if (region == null) {
             handleRegionNull(servConn, regionName, batchId);
           } else {
-            clientEvent = new EntryEventImpl(eventId);
+            clientEvent = new EventIDHolder(eventId);
             if (versionTimeStamp > 0) {
               VersionTag tag = VersionTag.create(region.getVersionMember());
               tag.setIsGatewayTag(true);
@@ -514,7 +515,7 @@ public class GatewayReceiverCommand extends BaseCommand {
           if (region == null) {
             handleRegionNull(servConn, regionName, batchId);
           } else {
-            clientEvent = new EntryEventImpl(eventId);
+            clientEvent = new EventIDHolder(eventId);
             if (versionTimeStamp > 0) {
               VersionTag tag = VersionTag.create(region.getVersionMember());
               tag.setIsGatewayTag(true);
@@ -596,7 +597,7 @@ public class GatewayReceiverCommand extends BaseCommand {
               handleRegionNull(servConn, regionName, batchId);
             } else {
 
-              clientEvent = new EntryEventImpl(eventId);
+              clientEvent = new EventIDHolder(eventId);
               
               if (versionTimeStamp > 0) {
                 VersionTag tag = VersionTag.create(region.getVersionMember());

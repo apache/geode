@@ -61,6 +61,8 @@ import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * Handles distribution of a Region.putall operation.
@@ -193,8 +195,9 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
       public boolean hasNext() {
         return DistributedPutAllOperation.this.putAllDataSize > position;
       };
+      @Retained
       public Object next() {
-        EntryEventImpl ev = getEventForPosition(position);
+        @Retained EntryEventImpl ev = getEventForPosition(position);
         position++;
         return ev;
       };
@@ -214,7 +217,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     }
   }
   
-  
+  @Retained
   public EntryEventImpl getEventForPosition(int position) {
     PutAllEntryData entry = this.putAllData[position];
     if (entry == null) {
@@ -224,7 +227,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
       return entry.event;
     }
     LocalRegion region = (LocalRegion)this.event.getRegion();
-    EntryEventImpl ev = EntryEventImpl.create(
+    @Retained EntryEventImpl ev = EntryEventImpl.create(
         region,
         entry.getOp(),
         entry.getKey(), null/* value */, this.event.getCallbackArgument(),
@@ -813,13 +816,17 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     }
     FilterRoutingInfo consolidated = new FilterRoutingInfo();
     for (int i=0; i<this.putAllData.length; i++) {
-      EntryEventImpl ev = getEventForPosition(i);
+      @Released EntryEventImpl ev = getEventForPosition(i);
       if (ev != null) {
+        try {
         FilterRoutingInfo eventRouting = advisor.adviseFilterRouting(ev, cacheOpRecipients);
         if (eventRouting != null) {
           consolidated.addFilterInfo(eventRouting);
         }
         putAllData[i].filterRouting = eventRouting;
+        } finally {
+          ev.release();
+        }
       }
     }
     // we need to create routing information for each PUT event
@@ -1093,11 +1100,12 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
      * basicOperateOnRegion
      */
     @Override
+    @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn)
     throws EntryNotFoundException
     {
       // Gester: We have to specify eventId for the message of MAP
-      EntryEventImpl event = EntryEventImpl.create(
+      @Retained EntryEventImpl event = EntryEventImpl.create(
           rgn,
           Operation.PUTALL_UPDATE /* op */, null /* key */, null/* value */,
           this.callbackArg, true /* originRemote */, getSender());
@@ -1133,7 +1141,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
      */
     public void doEntryPut(PutAllEntryData entry, DistributedRegion rgn,
         boolean requiresRegionContext, boolean fetchFromHDFS, boolean isPutDML) {
-      EntryEventImpl ev = PutAllMessage.createEntryEvent(entry, getSender(), 
+      @Released EntryEventImpl ev = PutAllMessage.createEntryEvent(entry, getSender(), 
           this.context, rgn,
           requiresRegionContext, this.possibleDuplicate,
           this.needsRouting, this.callbackArg, true, skipCallbacks);
@@ -1164,6 +1172,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
      * @param callbackArg
      * @return the event to be used in applying the element
      */
+    @Retained
     public static EntryEventImpl createEntryEvent(PutAllEntryData entry,
         InternalDistributedMember sender, ClientProxyMembershipID context,
         DistributedRegion rgn, boolean requiresRegionContext, 
@@ -1174,7 +1183,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
         ((KeyWithRegionContext)key).setRegionContext(rgn);
       }
       EventID evId = entry.getEventID();
-      EntryEventImpl ev = EntryEventImpl.create(rgn, entry.getOp(),
+      @Retained EntryEventImpl ev = EntryEventImpl.create(rgn, entry.getOp(),
           key, null/* value */, callbackArg,
           originRemote, sender, !skipCallbacks,
           evId);

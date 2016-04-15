@@ -896,6 +896,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         DistributedPutAllOperation putAllForBucket = 
             bucketToPutallMap.get(bucketId);;
         if (putAllForBucket == null) {
+          // TODO DISTTX: event is never released
           EntryEventImpl event = EntryEventImpl.createPutAllEvent(null, region,
               Operation.PUTALL_CREATE, key,
               putallOp.putAllData[i].getValue());
@@ -976,6 +977,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         DistributedRemoveAllOperation removeAllForBucket = 
             bucketToRemoveAllMap.get(bucketId);
         if (removeAllForBucket == null) {
+          // TODO DISTTX: event is never released
           EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, region, key);
           event.setEventId(op.removeAllData[i].getEventID());
           removeAllForBucket = new DistributedRemoveAllOperation(

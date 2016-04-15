@@ -67,6 +67,8 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
@@ -450,7 +452,10 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
 //  }
 
 
-  /** create a new EntryEvent to be used in notifying listeners, bridge servers, etc. */
+  /** create a new EntryEvent to be used in notifying listeners, bridge servers, etc.
+   * Caller must release result if it is != to sourceEvent
+   */
+  @Retained
   EntryEventImpl createListenerEvent(EntryEventImpl sourceEvent, PartitionedRegion r,
       InternalDistributedMember member) {
     final EntryEventImpl e2;
@@ -795,7 +800,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)this.key).setRegionContext(r);
     }
-    final EntryEventImpl ev = EntryEventImpl.create(
+    @Released final EntryEventImpl ev = EntryEventImpl.create(
         r,
         getOperation(),
         getKey(),
@@ -906,7 +911,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
       }
     }
     else { // notificationOnly
-      EntryEventImpl e2 = createListenerEvent(ev, r, dm.getDistributionManagerId());
+      @Released EntryEventImpl e2 = createListenerEvent(ev, r, dm.getDistributionManagerId());
       final EnumListenerEvent le;
       try {
       if (e2.getOperation().isCreate()) {

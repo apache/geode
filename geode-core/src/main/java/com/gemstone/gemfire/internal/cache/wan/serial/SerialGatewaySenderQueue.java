@@ -1134,7 +1134,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
               }
               if (wasEmpty) continue;
             }
-            
+            // release not needed since disallowOffHeapValues called
             EntryEventImpl event = EntryEventImpl.create((LocalRegion)region,
                 Operation.DESTROY, (lastDestroyedKey + 1) , null/* newValue */, null, false,
                 cache.getMyId());

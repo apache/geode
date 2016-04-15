@@ -816,10 +816,12 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     if (pdxRegion != null && pdxRegion.size() != pdxEventsMap.size()) {
       for (Map.Entry<Object, Object> typeEntry : pdxRegion.entrySet()) {
         if(!pdxEventsMap.containsKey(typeEntry.getKey())){
+          // event should never be off-heap so it does not need to be released
           EntryEventImpl event = EntryEventImpl.create(
               (LocalRegion) pdxRegion, Operation.UPDATE,
               typeEntry.getKey(), typeEntry.getValue(), null, false,
               cache.getMyId());
+          event.disallowOffHeapValues();
           event.setEventId(new EventID(cache.getSystem()));
           List<Integer> allRemoteDSIds = new ArrayList<Integer>();
           for (GatewaySender sender : cache.getGatewaySenders()) {

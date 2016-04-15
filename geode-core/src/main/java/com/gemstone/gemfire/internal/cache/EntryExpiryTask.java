@@ -35,6 +35,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 public class EntryExpiryTask extends ExpiryTask {
 
@@ -120,7 +121,7 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = EntryEventImpl.create(
+    @Released EntryEventImpl event = EntryEventImpl.create(
         lr, Operation.EXPIRE_DESTROY, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
     try {
@@ -142,7 +143,7 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = EntryEventImpl.create(lr,
+    @Released EntryEventImpl event = EntryEventImpl.create(lr,
         Operation.EXPIRE_INVALIDATE, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
     try {
@@ -162,7 +163,7 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = EntryEventImpl.create(lr,
+    @Released EntryEventImpl event = EntryEventImpl.create(lr,
         Operation.EXPIRE_LOCAL_DESTROY, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
     try {
@@ -182,7 +183,7 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = EntryEventImpl.create(lr,
+    @Released EntryEventImpl event = EntryEventImpl.create(lr,
         Operation.EXPIRE_LOCAL_INVALIDATE, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
     try {

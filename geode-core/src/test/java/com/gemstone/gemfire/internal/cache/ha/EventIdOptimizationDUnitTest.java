@@ -41,6 +41,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
@@ -326,9 +327,9 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
     ServerRegionProxy srp = new ServerRegionProxy(regionName, pool);
 
     for (int i = 0; i < eventIds.length; i++) {
-      srp.destroyOnForTestsOnly(connection, "KEY-" + i, null, Operation.DESTROY, new EntryEventImpl(eventIds[i]), null);
+      srp.destroyOnForTestsOnly(connection, "KEY-" + i, null, Operation.DESTROY, new EventIDHolder(eventIds[i]), null);
     }
-    srp.destroyOnForTestsOnly(connection, LAST_KEY, null, Operation.DESTROY, new EntryEventImpl(eventIdForLastKey), null);
+    srp.destroyOnForTestsOnly(connection, LAST_KEY, null, Operation.DESTROY, new EventIDHolder(eventIdForLastKey), null);
   }
 
   /**

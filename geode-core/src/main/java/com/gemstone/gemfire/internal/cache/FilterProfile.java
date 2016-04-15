@@ -73,6 +73,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
 
 /**
@@ -1173,7 +1174,8 @@ public class FilterProfile implements DataSerializableFixedID {
       for (int idx=0; idx < size; idx++) {
         PutAllEntryData pEntry = putAllData[idx];
         if (pEntry != null) {
-          final EntryEventImpl ev = dpao.getEventForPosition(idx);
+          @Released final EntryEventImpl ev = dpao.getEventForPosition(idx);
+          try {
           FilterRoutingInfo fri = pEntry.filterRouting;
           FilterInfo fi = null;
           if (fri != null) {
@@ -1212,6 +1214,9 @@ public class FilterProfile implements DataSerializableFixedID {
             fi.setInterestedClientsInv(clientsInv);
           }
           ev.setLocalFilterInfo(fi);
+          } finally {
+            ev.release();
+          }
         }
       }
     }
@@ -1230,7 +1235,8 @@ public class FilterProfile implements DataSerializableFixedID {
      for (int idx=0; idx < size; idx++) {
        RemoveAllEntryData pEntry = removeAllData[idx];
        if (pEntry != null) {
-         final EntryEventImpl ev = op.getEventForPosition(idx);
+         @Released final EntryEventImpl ev = op.getEventForPosition(idx);
+         try {
          FilterRoutingInfo fri = pEntry.filterRouting;
          FilterInfo fi = null;
          if (fri != null) {
@@ -1272,6 +1278,9 @@ public class FilterProfile implements DataSerializableFixedID {
          //          this.region.getLogWriterI18n().fine("setting event routing to " + fi);
          //        }
          ev.setLocalFilterInfo(fi);
+         } finally {
+           ev.release();
+         }
        }
      }
    }

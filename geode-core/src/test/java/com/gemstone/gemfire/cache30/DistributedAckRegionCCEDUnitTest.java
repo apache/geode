@@ -57,6 +57,7 @@ import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.TombstoneService;
 import com.gemstone.gemfire.internal.cache.UpdateOperation;
+import com.gemstone.gemfire.internal.cache.VersionTagHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.versions.VMVersionTag;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
@@ -472,10 +473,9 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       tag.setEntryVersion(0xFFFFFF);
       tag.setDistributedSystemId(1);
       tag.setRegionVersion(CCRegion.getVersionVector().getNextVersion());
-      EntryEventImpl holder = EntryEventImpl.createVersionTagHolder(tag);
+      VersionTagHolder holder = new VersionTagHolder(tag);
       ClientProxyMembershipID id = ClientProxyMembershipID.getNewProxyMembership(CCRegion.getDistributionManager().getSystem());
       CCRegion.basicBridgePut("cckey0", "newvalue", null, true, null, id, true, holder, false);
-      holder.release();
       vm0.invoke(new SerializableRunnable("check conflation count") {
         public void run() {
           assertEquals("expected one conflated event", 1, CCRegion.getCachePerfStats().getConflatedEventsCount());

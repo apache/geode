@@ -21,6 +21,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
@@ -192,12 +193,12 @@ public class Put extends BaseCommand {
             // isObject
             // the true after null doesn't matter and is not used.
             result = region.basicBridgeCreate(key, null, true, callbackArg,
-                servConn.getProxyID(), true, new EntryEventImpl(eventId), false);
+                servConn.getProxyID(), true, new EventIDHolder(eventId), false);
           }
           else {
             // Put the entry
             result = region.basicBridgePut(key, value, null, isObject, callbackArg,
-                servConn.getProxyID(), true, new EntryEventImpl(eventId), servConn.isSqlFabricSystem());
+                servConn.getProxyID(), true, new EventIDHolder(eventId), servConn.isSqlFabricSystem());
           }
           if (result) {
             servConn.setModificationInfo(true, regionName, key);

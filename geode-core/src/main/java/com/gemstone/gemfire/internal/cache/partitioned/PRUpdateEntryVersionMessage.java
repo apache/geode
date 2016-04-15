@@ -130,6 +130,7 @@ public class PRUpdateEntryVersionMessage extends
       ((KeyWithRegionContext) key).setRegionContext(pr);
     }
 
+    // release not needed because disallowOffHeapValues called
     final EntryEventImpl event = EntryEventImpl.create(pr, getOperation(),
         getKey(), null, /* newValue */
         null, /* callbackargs */

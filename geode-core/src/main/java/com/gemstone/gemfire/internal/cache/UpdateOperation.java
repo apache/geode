@@ -45,6 +45,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
@@ -198,6 +199,7 @@ public class UpdateOperation extends AbstractUpdateOperation
     }
 
     @Override
+    @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException {
       EntryEventImpl ev = createEntryEvent(rgn);
@@ -325,6 +327,7 @@ public class UpdateOperation extends AbstractUpdateOperation
       }
     }
 
+    @Retained
     protected EntryEventImpl createEntryEvent(DistributedRegion rgn)
     {
       Object argNewValue = null;
@@ -333,7 +336,7 @@ public class UpdateOperation extends AbstractUpdateOperation
       if (rgn.keyRequiresRegionContext()) {
         ((KeyWithRegionContext)this.key).setRegionContext(rgn);
       }
-      EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), this.key,
+      @Retained EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), this.key,
           argNewValue, // oldValue,
           this.callbackArg, originRemote, getSender(), generateCallbacks);
       setOldValueInEvent(result);
@@ -568,6 +571,7 @@ public class UpdateOperation extends AbstractUpdateOperation
     protected transient ClientProxyMembershipID clientID;
 
     @Override
+    @Retained
     final public EntryEventImpl createEntryEvent(DistributedRegion rgn)
     {
       // Object oldValue = null;
@@ -579,7 +583,7 @@ public class UpdateOperation extends AbstractUpdateOperation
       if (rgn.keyRequiresRegionContext()) {
         ((KeyWithRegionContext)this.key).setRegionContext(rgn);
       }
-      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key,
+      @Retained EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key,
           argNewValue, this.callbackArg, originRemote, getSender(),
           generateCallbacks);
       ev.setContext(this.clientID);

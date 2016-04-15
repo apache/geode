@@ -58,6 +58,7 @@ import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
 import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.cache.VersionTagHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -182,7 +183,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply
     Object val = null;
     try {
     if (ds != null) {
-      EntryEventImpl event = EntryEventImpl.createVersionTagHolder();
+      VersionTagHolder event = new VersionTagHolder();
       try {
         if (r.keyRequiresRegionContext()) {
           ((KeyWithRegionContext)this.key).setRegionContext(r);
@@ -214,8 +215,6 @@ public final class GetMessage extends PartitionMessageWithDirectReply
       catch (DataLocationException e) {
         sendReply(getSender(), getProcessorId(), dm, new ReplyException(e), r, startTime);
         return false;
-      } finally {
-        event.release();
       }
 
       if (logger.isTraceEnabled(LogMarker.DM)) {

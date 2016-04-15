@@ -59,6 +59,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 /**
  * A Replicate Region putAll message.  Meant to be sent only to
@@ -356,7 +357,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
     final DistributedRegion dr = (DistributedRegion)r;
     
     // create a base event and a DPAO for PutAllMessage distributed btw redundant buckets
-    EntryEventImpl baseEvent = EntryEventImpl.create(
+    @Released EntryEventImpl baseEvent = EntryEventImpl.create(
         r, Operation.PUTALL_CREATE,
         null, null, this.callbackArg, false, eventSender, !skipCallbacks);
     try {
@@ -383,7 +384,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
 //        final boolean requiresRegionContext = dr.keyRequiresRegionContext();
         InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
         for (int i = 0; i < putAllDataCount; ++i) {
-          EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(r, myId, eventSender, i, putAllData, false, bridgeContext, posDup, !skipCallbacks, isPutDML);
+          @Released EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(r, myId, eventSender, i, putAllData, false, bridgeContext, posDup, !skipCallbacks, isPutDML);
           try {
           ev.setPutAllOperation(dpao);
           if (logger.isDebugEnabled()) {

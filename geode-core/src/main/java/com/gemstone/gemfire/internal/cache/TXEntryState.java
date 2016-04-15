@@ -948,16 +948,15 @@ public class TXEntryState implements Releasable
   //                       + " isDis=" + isLocalEventDistributed());
   //    System.out.flush();
   //  }
+  @Retained
   EntryEvent getEvent(LocalRegion r, Object key, TXState txs)
   {
     // dumpOp();
-    //TODO:ASIF : Shopuld we generate EventID ? At this point not generating
     LocalRegion eventRegion = r;
     if (r.isUsedForPartitionedRegionBucket()) {
       eventRegion = r.getPartitionedRegion();
     }
-    EntryEventImpl result = new TxEntryEventImpl(eventRegion, key);
-    // OFFHEAP: freeOffHeapResources on this event is called from TXEvent.freeOffHeapResources.
+    @Retained EntryEventImpl result = new TxEntryEventImpl(eventRegion, key);
     boolean returnedResult = false;
     try {
     if (this.destroy == DESTROY_NONE || isOpDestroy()) {
@@ -2065,6 +2064,7 @@ public class TXEntryState implements Releasable
     /**
      * Creates a local tx entry event
      */
+    @Retained
     TxEntryEventImpl(LocalRegion r, Object key) {
       //TODO:ASIF :Check if the eventID should be created. Currently not
       // creating it
