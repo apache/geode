@@ -24,11 +24,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.DoubleField;
+import org.apache.lucene.document.DoublePoint;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.FloatField;
-import org.apache.lucene.document.IntField;
-import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.FloatPoint;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexableField;
@@ -79,13 +79,13 @@ public class SerializerUtil {
     if(clazz == String.class) {
       doc.add(new TextField(field, (String)fieldValue, Store.NO));
     } else if (clazz == Long.class) {
-      doc.add(new LongField(field, (Long) fieldValue, Store.NO));
+      doc.add(new LongPoint(field, (Long) fieldValue));
     } else if (clazz == Integer.class) {
-      doc.add(new IntField(field, (Integer) fieldValue, Store.NO));
+      doc.add(new IntPoint(field, (Integer) fieldValue));
     } else if (clazz == Float.class) {
-      doc.add(new FloatField(field, (Float) fieldValue, Store.NO));
+      doc.add(new FloatPoint(field, (Float) fieldValue));
     }  else if (clazz == Double.class) {
-        doc.add(new DoubleField(field, (Double) fieldValue, Store.NO));
+        doc.add(new DoublePoint(field, (Double) fieldValue));
     } else {
       return false;
     }

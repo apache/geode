@@ -36,6 +36,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -54,6 +55,8 @@ import static com.gemstone.gemfire.test.dunit.Assert.*;
  *
  * @since 7.0
  */
+@Category(DistributedTest.class)
+@SuppressWarnings("serial")
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
 @RunWith(Parameterized.class)

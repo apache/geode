@@ -16,6 +16,43 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -45,39 +82,6 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runners.MethodSorters;
-
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.TimeUnit;
 
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
@@ -810,68 +814,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
     assertNotNull(locatorState);
     assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
-  }
-
-  @Ignore("Disabled until GEODE-1025, SGF-476 are resolved")
-  @Test
-  public void test013StartServerWithSpring() {
-    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
-    File workingDirectory = new File(pathname);
-
-    assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
-
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
-
-    command.addOption(CliStrings.START_SERVER__NAME, getClass().getSimpleName().concat("_").concat(getTestMethodName()));
-    command.addOption(CliStrings.START_SERVER__USE_CLUSTER_CONFIGURATION, Boolean.FALSE.toString());
-    command.addOption(CliStrings.START_SERVER__LOG_LEVEL, "config");
-    command.addOption(CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH);
-    command.addOption(CliStrings.START_SERVER__DISABLE_DEFAULT_SERVER);
-    command.addOption(CliStrings.START_SERVER__DIR, pathname);
-    command.addOption(CliStrings.START_SERVER__SPRING_XML_LOCATION, "spring/spring-gemfire-context.xml");
-
-    CommandResult result = executeCommand(command.toString());
-
-    assertNotNull(result);
-    assertEquals(Result.Status.OK, result.getStatus());
-
-    final ServerLauncher springGemFireServer = new ServerLauncher.Builder().setCommand(
-        ServerLauncher.Command.STATUS).setWorkingDirectory(
-        IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDirectory)).build();
-
-    assertNotNull(springGemFireServer);
-
-    ServerState serverState = springGemFireServer.status();
-
-    assertNotNull(serverState);
-    assertEquals(Status.ONLINE, serverState.getStatus());
-
-    //Ensure the member name is what is set through spring
-    String logFile = serverState.getLogFile();
-    assertTrue("Log file name was not configured from spring context: " + logFile, logFile.contains("spring_server.log"));
-
-    // Now that the GemFire Server bootstrapped with Spring started up OK, stop it!
-    stopServer(springGemFireServer.getWorkingDirectory());
-
-    WaitCriterion waitCriteria = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        ServerState serverState = springGemFireServer.status();
-        return (serverState != null && Status.NOT_RESPONDING.equals(serverState.getStatus()));
-      }
-
-      @Override
-      public String description() {
-        return "wait for the Locator to stop; the Locator will no longer respond after it stops";
-      }
-    };
-
-    waitForCriterion(waitCriteria, TimeUnit.SECONDS.toMillis(15), TimeUnit.SECONDS.toMillis(5), true);
-
-    serverState = springGemFireServer.status();
-
-    assertNotNull(serverState);
-    assertEquals(Status.NOT_RESPONDING, serverState.getStatus());
   }
 
   @Test

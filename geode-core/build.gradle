@@ -61,9 +61,7 @@ dependencies {
   compile ('mx4j:mx4j-tools:' + project.'mx4j.version') { 
     ext.optional = true;
   }
-  compile ('net.java.dev.jna:jna:' + project.'jna.version') {
-    ext.optional = true
-  }
+  compile ('net.java.dev.jna:jna:' + project.'jna.version')
   provided ('org.apache.hadoop:hadoop-common:' + project.'hadoop.version') {
     transitive=false
   }
@@ -88,7 +86,9 @@ dependencies {
 
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-  runtime 'org.fusesource.jansi:jansi:' + project.'jansi.version'
+  runtime ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
+    ext.optional = true
+  }
   runtime ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
     ext.optional = true
   }

@@ -74,7 +74,6 @@ import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
 import com.gemstone.gemfire.distributed.internal.PooledExecutorWithDMStats;
 import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor.BucketProfile;
@@ -1483,7 +1482,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
       }
     } else {
       s.setSoTimeout(this.acceptTimeout);
-      communicationMode = (byte)SocketUtils.getInputStream(s).read();//getInputStream().read();
+      communicationMode = (byte)s.getInputStream().read();
       if (logger.isTraceEnabled()) {
         logger.trace("read communications mode(2) ", communicationMode);
       }

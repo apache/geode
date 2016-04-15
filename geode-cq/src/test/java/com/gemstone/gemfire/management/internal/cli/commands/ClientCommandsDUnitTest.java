@@ -376,15 +376,15 @@ public void waitForListClientMbean2(){
     
     commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId1 + "\"" ;
     
-    getLogWriter().info("testDescribeClientWithServers commandStr clientId1 ="+commandString);    
+    getLogWriter().info("testDescribeClientWithServers commandStr clientId1 ="+commandString);
     
     
     CommandResult commandResultForClient1 = executeCommand(commandString);
-    getLogWriter().info("testDescribeClientWithServers commandStr clientId1="+commandResultForClient1);    
+    getLogWriter().info("testDescribeClientWithServers commandStr clientId1="+commandResultForClient1);
     
     
     String resultAsString = commandResultToString(commandResultForClient1);
-    getLogWriter().info("testDescribeClientWithServers commandStr clientId1 ="+resultAsString);   
+    getLogWriter().info("testDescribeClientWithServers commandStr clientId1 ="+resultAsString);
     assertTrue(Status.OK.equals(commandResultForClient1.getStatus()));
     
     verifyClientStats(commandResultForClient1, serverName1);
@@ -393,15 +393,15 @@ public void waitForListClientMbean2(){
     
     commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId2 + "\"" ;
     
-    getLogWriter().info("testDescribeClientWithServers commandStr1="+commandString);    
+    getLogWriter().info("testDescribeClientWithServers commandStr1="+commandString);
     
     
     CommandResult commandResultForClient2 = executeCommand(commandString);
-    getLogWriter().info("testDescribeClientWithServers commandResult1="+commandResultForClient2);    
+    getLogWriter().info("testDescribeClientWithServers commandResult1="+commandResultForClient2);
     
     
     resultAsString = commandResultToString(commandResultForClient2);
-    getLogWriter().info("testDescribeClientWithServers resultAsString1="+resultAsString);   
+    getLogWriter().info("testDescribeClientWithServers resultAsString1="+resultAsString);
     assertTrue(Status.OK.equals(commandResultForClient2.getStatus()));
     
     verifyClientStats(commandResultForClient2, serverName2);
@@ -461,7 +461,7 @@ public void waitForListClientMbean2(){
   public void testDescribeClient() throws Exception {
     setupSystem();
     
-    getLogWriter().info("testDescribeClient clientId="+clientId);    
+    getLogWriter().info("testDescribeClient clientId="+clientId);
     assertNotNull(clientId);
     
     String commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId + "\"" ;
@@ -479,11 +479,11 @@ public void waitForListClientMbean2(){
     
     
     CommandResult commandResult = executeCommand(commandString);
-    getLogWriter().info("testDescribeClient commandResult="+commandResult);    
+    getLogWriter().info("testDescribeClient commandResult="+commandResult);
     
     
     String resultAsString = commandResultToString(commandResult);
-    getLogWriter().info("testDescribeClient resultAsString="+resultAsString);   
+    getLogWriter().info("testDescribeClient resultAsString="+resultAsString);
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
     CompositeResultData resultData = (CompositeResultData) commandResult.getResultData();
@@ -533,7 +533,7 @@ public void waitForListClientMbean2(){
     setupSystem2();
     
     String commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId + "\"" ;
-    getLogWriter().info("testDescribeClientWithServers commandStr="+commandString);    
+    getLogWriter().info("testDescribeClientWithServers commandStr="+commandString);
     
     
     final VM server1 = Host.getHost(0).getVM(1);
@@ -547,11 +547,11 @@ public void waitForListClientMbean2(){
     
     
     CommandResult commandResult = executeCommand(commandString);
-    getLogWriter().info("testDescribeClientWithServers commandResult="+commandResult);    
+    getLogWriter().info("testDescribeClientWithServers commandResult="+commandResult);
     
     
     String resultAsString = commandResultToString(commandResult);
-    getLogWriter().info("testDescribeClientWithServers resultAsString="+resultAsString);   
+    getLogWriter().info("testDescribeClientWithServers resultAsString="+resultAsString);
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
     CompositeResultData resultData = (CompositeResultData) commandResult.getResultData();
@@ -632,11 +632,11 @@ public void waitForListClientMbean2(){
     });
     
     CommandResult commandResult = executeCommand(commandString);
-    getLogWriter().info("testListClient commandResult="+commandResult);    
+    getLogWriter().info("testListClient commandResult="+commandResult);
     
     
     String resultAsString = commandResultToString(commandResult);
-    getLogWriter().info("testListClient resultAsString="+resultAsString);   
+    getLogWriter().info("testListClient resultAsString="+resultAsString);
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
     
@@ -650,8 +650,8 @@ public void waitForListClientMbean2(){
     List<String> clientNames = tableRsultData.retrieveAllValues(CliStrings.LIST_CLIENT_COLUMN_Clients);
     
     
-    getLogWriter().info("testListClients serverNames : " + serverNames);    
-    getLogWriter().info("testListClients clientNames : " + clientNames);  
+    getLogWriter().info("testListClients serverNames : " + serverNames);
+    getLogWriter().info("testListClients clientNames : " + clientNames);
     assertEquals(2, serverNames.size());
     assertEquals(2, clientNames.size());    
     assertTrue(clientNames.contains(clientIds[0]));
@@ -716,11 +716,11 @@ public void waitForListClientMbean2(){
     });
     
     CommandResult commandResult = executeCommand(commandString);
-    getLogWriter().info("testListClientForServers commandResult="+commandResult);    
+    getLogWriter().info("testListClientForServers commandResult="+commandResult);
     
     
     String resultAsString = commandResultToString(commandResult);
-    getLogWriter().info("testListClientForServers resultAsString="+resultAsString);   
+    getLogWriter().info("testListClientForServers resultAsString="+resultAsString);
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
     
@@ -1158,7 +1158,7 @@ public void waitForMixedClients(){
   public void testDescribeClientForNonSubscribedClient() throws Exception {
     setUpNonSubscribedClient();
     
-    getLogWriter().info("testDescribeClientForNonSubscribedClient clientId="+clientId);    
+    getLogWriter().info("testDescribeClientForNonSubscribedClient clientId="+clientId);
     assertNotNull(clientId);
     
     String commandString = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientId + "\"" ;
@@ -1175,11 +1175,11 @@ public void waitForMixedClients(){
     
     
     CommandResult commandResult = executeCommand(commandString);
-    getLogWriter().info("testDescribeClientForNonSubscribedClient commandResult="+commandResult);    
+    getLogWriter().info("testDescribeClientForNonSubscribedClient commandResult="+commandResult);
     
     
     String resultAsString = commandResultToString(commandResult);
-    getLogWriter().info("testDescribeClientForNonSubscribedClient resultAsString="+resultAsString);   
+    getLogWriter().info("testDescribeClientForNonSubscribedClient resultAsString="+resultAsString);
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
     CompositeResultData resultData = (CompositeResultData) commandResult.getResultData();
@@ -1249,7 +1249,7 @@ public void waitForMixedClients(){
     executeAndVerifyResultsForMixedClients(commandString, serverName );    
     
     String commandString2 = CliStrings.DESCRIBE_CLIENT + " --" + CliStrings.DESCRIBE_CLIENT__ID + "=\""+ clientIds[1] + "\"" ;
-    getLogWriter().info("testDescribeMixClientWithServers commandString2="+commandString2);   
+    getLogWriter().info("testDescribeMixClientWithServers commandString2="+commandString2);
     
     
     executeAndVerifyResultsForMixedClients(commandString2,serverName );
@@ -1262,7 +1262,7 @@ public void waitForMixedClients(){
   
 void executeAndVerifyResultsForMixedClients(String commandString, String serverName){
   CommandResult commandResult = executeCommand(commandString);
-  getLogWriter().info("testDescribeMixClientWithServers commandResult="+commandResult);    
+  getLogWriter().info("testDescribeMixClientWithServers commandResult="+commandResult);
   
   
   String resultAsString = commandResultToString(commandResult);

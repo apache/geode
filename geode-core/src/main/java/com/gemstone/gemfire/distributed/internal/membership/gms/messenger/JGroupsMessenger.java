@@ -293,7 +293,7 @@ public class JGroupsMessenger implements Messenger {
     // give the stats to the jchannel statistics recorder
     StatRecorder sr = (StatRecorder)myChannel.getProtocolStack().findProtocol(StatRecorder.class);
     if (sr != null) {
-      sr.setDMStats(services.getStatistics());
+      sr.setServices(services);
     }
     
     Transport transport = (Transport)myChannel.getProtocolStack().getTransport();

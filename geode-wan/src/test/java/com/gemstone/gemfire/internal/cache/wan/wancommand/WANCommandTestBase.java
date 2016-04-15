@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.management.remote.JMXConnectorServer;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DiskStore;

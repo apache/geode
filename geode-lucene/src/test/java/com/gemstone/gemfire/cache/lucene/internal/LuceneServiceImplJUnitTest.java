@@ -39,8 +39,10 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -48,6 +50,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
@@ -67,22 +70,21 @@ public class LuceneServiceImplJUnitTest {
   private IndexWriter writer;
   LuceneServiceImpl service = null;
   private static final Logger logger = LogService.getLogger();
-  
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+
   // lucene service will register query execution function on initialization
   @Test
   public void shouldRegisterQueryFunction() {
     Function function = FunctionService.getFunction(LuceneFunction.ID);
     assertNull(function);
 
-    cache = createBasicCache();
+    cache = getCache();
     new LuceneServiceImpl().init(cache);
 
     function = FunctionService.getFunction(LuceneFunction.ID);
     assertNotNull(function);
-  }
-  
-  private GemFireCacheImpl createBasicCache() {
-    return (GemFireCacheImpl) new CacheFactory().set("mcast-port", "0").create();
   }
 
   @After
@@ -93,34 +95,35 @@ public class LuceneServiceImplJUnitTest {
     }
   }
   
-  private void getCache() {
+  private Cache getCache() {
     try {
        cache = CacheFactory.getAnyInstance();
     } catch (Exception e) {
       //ignore
     }
     if (null == cache) {
-      cache = createBasicCache();
+      cache = new CacheFactory().set("mcast-port", "0").create();
     }
+    return cache;
   }
   
-  private void getService() {
+  private LuceneService getService() {
     if (cache == null) {
       getCache();
     }
     if (service == null) {
       service = (LuceneServiceImpl)LuceneServiceProvider.get(cache);
     }
+    return service;
   }
   
   private LocalRegion createPR(String regionName, boolean isSubRegion) {
     if (isSubRegion) {
-      LocalRegion root = (LocalRegion)cache.createRegionFactory(RegionShortcut.REPLICATE).create("root");
+      LocalRegion root = (LocalRegion)cache.createRegionFactory(RegionShortcut.PARTITION).create("root");
       LocalRegion region = (LocalRegion)cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT).
           createSubregion(root, regionName);
       return region;
     } else {
-      LocalRegion root = (LocalRegion)cache.createRegionFactory(RegionShortcut.REPLICATE).create("root");
       LocalRegion region = (LocalRegion)cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT).
           create(regionName);
       return region;
@@ -134,25 +137,21 @@ public class LuceneServiceImplJUnitTest {
           createSubregion(root, regionName);
       return region;
     } else {
-      LocalRegion root = (LocalRegion)cache.createRegionFactory(RegionShortcut.REPLICATE).create("root");
       LocalRegion region = (LocalRegion)cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT).
           create(regionName);
       return region;
     }
   }
-  
-  /**Test that we don't allow the user
-   * to create the region first.
-   */
+
   @Test(expected = IllegalStateException.class)
-  public void createRegionFirst() throws IOException, ParseException {
+  public void cannotCreateLuceneIndexAfterRegionHasBeenCreated() throws IOException, ParseException {
     getService();
     LocalRegion userRegion = createPR("PR1", false);
     service.createIndex("index1", "PR1", "field1", "field2", "field3");
   }
 
   @Test
-  public void testCreateIndexForPR() throws IOException, ParseException {
+  public void canCreateLuceneIndexForPR() throws IOException, ParseException {
     getService();
     service.createIndex("index1", "PR1", "field1", "field2", "field3");
     LocalRegion userRegion = createPR("PR1", false);
@@ -184,7 +183,7 @@ public class LuceneServiceImplJUnitTest {
   }
 
   @Test
-  public void testCreateIndexForPRWithAnalyzer() throws IOException, ParseException {
+  public void canCreateLuceneIndexForPRWithAnalyzer() throws IOException, ParseException {
     getService();
     StandardAnalyzer sa = new StandardAnalyzer();
     KeywordAnalyzer ka = new KeywordAnalyzer();
@@ -217,12 +216,13 @@ public class LuceneServiceImplJUnitTest {
     assertTrue(chunkPR != null);
   }
   
-  @Test (expected=UnsupportedOperationException.class)
-  public void testCreateIndexForRR() throws IOException, ParseException {
+  @Test
+  public void cannotCreateLuceneIndexForReplicateRegion() throws IOException, ParseException {
+    expectedException.expect(UnsupportedOperationException.class);
+    expectedException.expectMessage("Lucene indexes on replicated regions are not supported");
     getService();
     service.createIndex("index1", "RR1", "field1", "field2", "field3");
     createRR("RR1", false);
-    fail("Expect UnsupportedOperationException");
   }
 
 }

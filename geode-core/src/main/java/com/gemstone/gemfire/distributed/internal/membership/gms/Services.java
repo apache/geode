@@ -102,6 +102,19 @@ public class Services {
   }
   
 
+  /**
+   * for testing only - create a non-functional Services object with a Stopper
+   */
+  public Services() {
+    this.cancelCriterion = new Stopper();
+    this.stats = null;
+    this.config = null;
+    this.manager = null;
+    this.joinLeave = null;
+    this.healthMon = null;
+    this.messenger = null;
+    this.auth = null;
+  }
 
   public Services(
       DistributedMembershipListener listener, DistributionConfig config,
@@ -348,10 +361,10 @@ public class Services {
   public boolean isAutoReconnectEnabled() {
     return !getConfig().getDistributionConfig().getDisableAutoReconnect();
   }
-  
+
   public class Stopper extends CancelCriterion {
     volatile String reasonForStopping = null;
-    
+
     public void cancel(String reason) {
       this.reasonForStopping = reason;
     }
@@ -362,7 +375,7 @@ public class Services {
         return Services.this.shutdownCause.toString();
       return reasonForStopping;
     }
-    
+
     public boolean isCancelInProgress() {
       return cancelInProgress() != null;
     }
@@ -381,7 +394,7 @@ public class Services {
         }
       }
     }
-    
+
   }
-  
+
 }

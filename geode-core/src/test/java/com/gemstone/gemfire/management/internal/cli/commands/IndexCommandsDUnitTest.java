@@ -139,7 +139,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     return regionFactory.create(regionName);
   }
 
-  @Test
   public void testCreateKeyIndexOnRegionWithPersistence() {
     setupSystemPersist();
 
@@ -169,7 +168,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(Status.OK.equals(commandResult.getStatus()));
   }
 
-  @Test
   public void testCreateAndDestroyIndex() {
     setupSystem();
     /***
@@ -211,7 +209,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(resultAsString.contains(indexName));
   }
 
-  @Test
   public void testCreateIndexMultipleIterators() {
     setupSystem();
 
@@ -236,7 +233,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(indexName));
   }
 
-  @Test
   public void testCreateMultipleIndexes() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
@@ -270,7 +266,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(indexName));
   }
 
-  @Test
   public void testClearMultipleIndexes() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
@@ -304,7 +299,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(!resultAsString.contains(indexName));
   }
 
-  @Test
   public void testCreateAndDestroyIndexOnMember() {
     setupSystem();
     /***
@@ -354,7 +348,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(resultAsString.contains(VM1Name));
   }
 
-  @Test
   public void testCreateAndDestroyIndexOnGroup() {
     setupSystem();
     /***
@@ -422,7 +415,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Test
   public void testCreateAndDestroyIndexWithIncorrectInput() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
@@ -541,7 +533,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
   }
 
-  @Test
   public void testDestroyIndexWithoutIndexName() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
@@ -603,7 +594,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating and destroying indexes correctly updates the shared configuration.
    */
-  @Test
   public void testCreateDestroyUpdatesSharedConfig() {
     disconnectAllFromDS();
 
@@ -648,7 +638,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    setUpJmxManagerOnVm0ThenConnect(managerProps);
+    createDefaultSetup(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -766,7 +756,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
   private void setupSystem() {
     disconnectAllFromDS();
-    setUpJmxManagerOnVm0ThenConnect(null);
+    createDefaultSetup(null);
     final String parRegName = "StocksParReg";
 
     final VM manager = Host.getHost(0).getVM(0);
@@ -796,7 +786,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
   private void setupSystemPersist() {
     disconnectAllFromDS();
-    setUpJmxManagerOnVm0ThenConnect(null);
+    createDefaultSetup(null);
     final String parRegName = "StocksParReg";
 
     final VM manager = Host.getHost(0).getVM(0);

@@ -19,9 +19,10 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -41,6 +42,7 @@ import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
@@ -54,6 +56,7 @@ import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.jayway.awaitility.Awaitility;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexRecoveryHAJUnitTest {
@@ -120,6 +123,8 @@ public class LuceneIndexRecoveryHAJUnitTest {
 
   @Test
   public void recoverPersistentIndex() throws Exception {
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX, REGION);
+
     LuceneService service = LuceneServiceProvider.get(cache);
     service.createIndex(INDEX, REGION, Type1.fields);
 
@@ -133,8 +138,7 @@ public class LuceneIndexRecoveryHAJUnitTest {
     value = new Type1("lucene world", 1, 2L, 3.0, 4.0f);
     userRegion.put("value3", value);
 
-    // TODO flush queue
-    TimeUnit.MILLISECONDS.sleep(500);
+    waitUntilQueueEmpty(aeqId);
 
     LuceneQuery<Integer, Type1> query = service.createLuceneQueryFactory().create(INDEX, REGION, "s:world");
     LuceneQueryResults<Integer, Type1> results = query.search();
@@ -153,7 +157,6 @@ public class LuceneIndexRecoveryHAJUnitTest {
     results = query.search();
     Assert.assertEquals(3, results.size());
 
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX, REGION);
     PartitionedRegion chunkRegion = (PartitionedRegion) cache.getRegion(aeqId + ".chunks");
     assertNotNull(chunkRegion);
     chunkRegion.destroyRegion();
@@ -185,8 +188,7 @@ public class LuceneIndexRecoveryHAJUnitTest {
     value = new Type1("lucene world", 1, 2L, 3.0, 4.0f);
     userRegion.put("value3", value);
 
-    // TODO flush queue
-    TimeUnit.MILLISECONDS.sleep(500);
+    waitUntilQueueEmpty(aeqId);
 
     PartitionedRegion fileRegion = (PartitionedRegion) cache.getRegion(aeqId + ".files");
     assertNotNull(fileRegion);
@@ -197,5 +199,11 @@ public class LuceneIndexRecoveryHAJUnitTest {
     LuceneQuery<Integer, Type1> query = service.createLuceneQueryFactory().create(INDEX, REGION, "s:world");
     LuceneQueryResults<Integer, Type1> results = query.search();
     Assert.assertEquals(3, results.size());
+  }
+
+  private void waitUntilQueueEmpty(final String aeqId) {
+    // TODO flush queue
+    AsyncEventQueue queue = cache.getAsyncEventQueue(aeqId);
+    Awaitility.waitAtMost(1000, TimeUnit.MILLISECONDS).until(() -> assertEquals(0, queue.size()));
   }
 }

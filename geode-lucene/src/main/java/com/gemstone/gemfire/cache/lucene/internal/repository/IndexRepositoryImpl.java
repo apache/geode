@@ -51,7 +51,7 @@ public class IndexRepositoryImpl implements IndexRepository {
   public IndexRepositoryImpl(Region<?,?> region, IndexWriter writer, LuceneSerializer serializer) throws IOException {
     this.region = region;
     this.writer = writer;
-    searcherManager = new SearcherManager(writer, APPLY_ALL_DELETES, null);
+    searcherManager = new SearcherManager(writer, APPLY_ALL_DELETES, true, null);
     this.serializer = serializer;
   }
 

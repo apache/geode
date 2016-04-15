@@ -44,6 +44,12 @@ compile '/community/*' do
   layout 'community'
 end
 
+compile '/releases/*' do
+  @releases = true
+  filter :erb
+  layout 'releases'
+end
+
 compile '*' do
   if item.binary?
     # don’t filter binary items

@@ -28,6 +28,7 @@ subprojects {
     repositoryUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
     snapshotRepositoryUrl = 'https://repository.apache.org/content/repositories/snapshots'
   }
+
   
   modifyPom {
     withXml {
@@ -115,6 +116,40 @@ subprojects {
             }
           }
         }
+      }
+    }
+  }
+}
+
+//Prompt the user for a password to sign archives or upload artifacts, if requested
+gradle.taskGraph.whenReady { taskGraph ->
+  if (project.hasProperty('askpass')) {
+    if(taskGraph.allTasks.any {it instanceof Sign}) {
+      if(!project.hasProperty('signing.keyId') || !project.hasProperty('signing.secretKeyRingFile')) {
+        println "You must configure your signing.keyId and signing.secretKeyRingFile"
+        println "in ~/gradle/.properties in order to sign jars\n"
+        println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
+        throw new GradleException("Signing key/keyring is missing")
+      }
+
+      if(!project.hasProperty('signing.password')) {
+        def password = PasswordDialog.askPassword("Please enter your password to unlock your gpg keyring for signing artifacts")
+        
+        subprojects { ext."signing.password" = password }
+      }
+    }
+
+    if(taskGraph.allTasks.any {it.name == 'uploadArchives'}) {
+      if(!project.hasProperty('nexusUsername')) {
+        println "You must configure your nexusUsername in ~/gradle/.properties in order to uploadArchives\n"
+        println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
+        throw new GradleException("nexusUsername is missing")
+      }
+
+      if(!project.hasProperty('nexusPassword')) {
+        def password = PasswordDialog.askPassword("Please enter your apache password to uploadArchives to nexus")
+        
+        subprojects { ext."nexusPassword" = password }
       }
     }
   }

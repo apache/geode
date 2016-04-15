@@ -74,6 +74,8 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 
 /**
@@ -211,7 +213,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     int action = paction;
     this.requestInProgress = true;
-    Scope scope = this.region.scope;
+    Scope scope = this.region.getScope();
     if (localWriter != null) {
       doLocalWrite(localWriter, event, action);
       this.requestInProgress = false;
@@ -220,14 +222,22 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     if (scope == Scope.LOCAL && (region.getPartitionAttributes() == null)) {
       return false;
     }
+    @Released
     CacheEvent listenerEvent = getEventForListener(event);
+    try {
     if (action == BEFOREUPDATE && listenerEvent.getOperation().isCreate()) {
       action = BEFORECREATE;
     }
-    boolean cacheWrote = netWrite(getEventForListener(event), action, netWriteRecipients);
+    boolean cacheWrote = netWrite(listenerEvent, action, netWriteRecipients);
     this.requestInProgress = false;
     return cacheWrote;
-
+    } finally {
+      if (event != listenerEvent) {
+        if (listenerEvent instanceof EntryEventImpl) {
+          ((EntryEventImpl) listenerEvent).release();
+        }
+      }
+    }
   }
 
   public void memberJoined(InternalDistributedMember id) {
@@ -810,16 +820,20 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   /**
    * Returns an event for listener notification.  The event's operation
-   * may be altered to conform to the ConcurrentMap implementation specification
+   * may be altered to conform to the ConcurrentMap implementation specification.
+   * If the returned value is not == to the event parameter then the caller
+   * is responsible for releasing it.
    * @param event the original event
    * @return the original event or a new event having a change in operation
    */
+  @Retained
   private CacheEvent getEventForListener(CacheEvent event) {
     Operation op = event.getOperation();
     if (!op.isEntry()) {
       return event;
     } else {
       EntryEventImpl r = (EntryEventImpl)event;
+      @Retained
       EntryEventImpl result = r;
       if (r.isSingleHop()) {
         // fix for bug #46130 - origin remote incorrect for one-hop operation in receiver
@@ -856,6 +870,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         return false;
       }
     }
+    @Released
     CacheEvent event = getEventForListener(pevent);
     
     int action = paction;
@@ -898,8 +913,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   /** Return true if cache writer was invoked */
   private boolean netWrite(CacheEvent event, int action, Set writeCandidateSet)
   throws CacheWriterException, TimeoutException {
-
-    // assert !writeCandidateSet.isEmpty();
+    if (writeCandidateSet == null || writeCandidateSet.isEmpty()) {
+      return false;
+    }
     ArrayList list = new ArrayList(writeCandidateSet);
     Collections.shuffle(list);
     InternalDistributedMember[] writeCandidates = (InternalDistributedMember[])list.

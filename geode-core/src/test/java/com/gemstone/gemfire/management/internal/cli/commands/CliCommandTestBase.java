@@ -16,6 +16,21 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -239,13 +254,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     assertTrue(host != null);
     assertTrue(shell != null);
 
-    CommandResult result = connect(host, jmxPort, httpPort, shell);
-    if (!shell.isConnectedAndReady()) {
-      throw new AssertionError(
-          "Connect command failed to connect to manager, result=" + commandResultToString(result));
-    }
-    info("Successfully connected to managing node using " + (useHttpOnConnect ? "HTTP" : "JMX"));
-    assertEquals(true, shell.isConnectedAndReady());
+    connect(host, jmxPort, httpPort, shell);
   }
 
   protected CommandResult shellConnect(){
@@ -271,7 +280,16 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     }
     System.out.println(getClass().getSimpleName()+" using endpoint: "+endpoint);
 
-    return executeCommand(shell, command.toString());
+    CommandResult result = executeCommand(shell, command.toString());
+
+    if (!shell.isConnectedAndReady()) {
+      throw new TestException(
+          "Connect command failed to connect to manager " + endpoint + " result=" + commandResultToString(result));
+    }
+
+    info("Successfully connected to managing node using " + (useHttpOnConnect ? "HTTP" : "JMX"));
+    assertEquals(true, shell.isConnectedAndReady());
+    return result;
   }
 
   /**

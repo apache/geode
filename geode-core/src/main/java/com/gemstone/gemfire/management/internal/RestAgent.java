@@ -17,26 +17,25 @@
 
 package com.gemstone.gemfire.management.internal;
 
-import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.ManagementService;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+
+import java.net.UnknownHostException;
 
 /**
  * Agent implementation that controls the HTTP server end points used for REST
  * clients to connect gemfire data node.
- * 
+ * <p>
  * The RestAgent is used to start http service in embedded mode on any non
  * manager data node with developer REST APIs service enabled.
  *
@@ -109,8 +108,9 @@ public class RestAgent {
   public void startHttpService() {
     // TODO: add a check that will make sure that we start HTTP service on
     // non-manager data node
+    String httpServiceBindAddress = getBindAddressForHttpService();
     logger.info("Attempting to start HTTP service on port ({}) at bind-address ({})...",
-        this.config.getHttpServicePort(), this.config.getHttpServiceBindAddress());
+        this.config.getHttpServicePort(), httpServiceBindAddress);
 
     // Find the developer REST WAR file
     final String gemfireAPIWar = agentUtil.findWarLocation("geode-web-api");
@@ -124,10 +124,9 @@ public class RestAgent {
         logger.warn("Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire Developer REST API, please deploy the /geode-web-api WAR file in your application server."); 
       } else if (agentUtil.isWebApplicationAvailable(gemfireAPIWar)) {
 
-        final String bindAddress = this.config.getHttpServiceBindAddress();
         final int port = this.config.getHttpServicePort();
 
-        this.httpServer = JettyHelper.initJetty(bindAddress, port,
+        this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port,
             this.config.getHttpServiceSSLEnabled(),
             this.config.getHttpServiceSSLRequireAuthentication(),
             this.config.getHttpServiceSSLProtocols(), this.config.getHttpServiceSSLCiphers(),
@@ -136,8 +135,8 @@ public class RestAgent {
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar);
 
         if (logger.isDebugEnabled()) {
-          logger.debug("Starting HTTP embedded server on port ({}) at bind-address ({})...",
-              ((ServerConnector) this.httpServer.getConnectors()[0]).getPort(), bindAddress);
+          logger.info("Starting HTTP embedded server on port ({}) at bind-address ({})...",
+              ((ServerConnector) this.httpServer.getConnectors()[0]).getPort(), httpServiceBindAddress);
         }
 
         this.httpServer = JettyHelper.startJetty(this.httpServer);
@@ -149,6 +148,28 @@ public class RestAgent {
                         // server.start() fails due to an exception
       throw new RuntimeException("HTTP service failed to start due to " + e.getMessage());
     }
+  }
+
+  private String getBindAddressForHttpService() {
+    java.lang.String bindAddress = this.config.getHttpServiceBindAddress();
+    if (StringUtils.isBlank(bindAddress)) {
+      if (StringUtils.isBlank(this.config.getServerBindAddress())) {
+        if (StringUtils.isBlank(this.config.getBindAddress())) {
+          try {
+            bindAddress = SocketCreator.getLocalHost().getHostAddress();
+            logger.info("RestAgent.getBindAddressForHttpService.localhost: " + SocketCreator.getLocalHost().getHostAddress());
+          } catch (UnknownHostException e) {
+            logger.error("LocalHost could not be found.", e);
+            return bindAddress;
+          }
+        } else {
+          bindAddress = this.config.getBindAddress();
+        }
+      } else {
+        bindAddress = this.config.getServerBindAddress();
+      }
+    }
+    return bindAddress;
   }
 
   private void stopHttpService() {

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.persistence;
 
+import static com.gemstone.gemfire.internal.lang.ThrowableUtils.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -1317,8 +1319,8 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     try {
       async1.getResult();
       fail("Should have seen a CacheClosedException");
-    } catch (Exception e) {
-      if (! (e.getCause().getCause() instanceof CacheClosedException)) {
+    } catch (AssertionError e) {
+      if (!CacheClosedException.class.isInstance(getRootCause(e))) {
         throw e;
       }
     }

@@ -22,14 +22,17 @@ import static com.gemstone.gemfire.test.dunit.Invoke.*;
 import java.util.Properties;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Verifies that overriding {@code getDistributedSystemProperties} results
  * in {@code disconnectAllFromDS} during tear down.
  */
+@Category(DistributedTest.class)
 public class JUnit4OverridingGetPropertiesDisconnectsAllDUnitTest extends JUnit4DistributedTestCase {
 
   @Override

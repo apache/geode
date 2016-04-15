@@ -176,7 +176,6 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.JarDeployer;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.SocketIOWithTimeout;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
@@ -2072,9 +2071,9 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
           // ignore
         }
 
-          GatewaySenderAdvisor advisor = null;
-          for (GatewaySender sender : this.getAllGatewaySenders()) {
-            try {
+        GatewaySenderAdvisor advisor = null;
+        for (GatewaySender sender : this.getAllGatewaySenders()) {
+          try {
             sender.stop();
             advisor = ((AbstractGatewaySender) sender).getSenderAdvisor();
             if (advisor != null) {
@@ -2083,10 +2082,10 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
               }
               advisor.close();
             }
-            } catch (CancelException ce) {
-            }
+          } catch (CancelException ce) {
           }
-          ParallelGatewaySenderQueue.cleanUpStatics(null);
+        }
+        ParallelGatewaySenderQueue.cleanUpStatics(null);
 
         destroyGatewaySenderLockService();
 
@@ -2350,7 +2349,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       SequenceLoggerImpl.signalCacheClose();
       SystemFailure.signalCacheClose();
       
-      SocketIOWithTimeout.stopSelectorCleanUpThread();
     } // static synchronization on GemFireCache.class
 
   }
