@@ -56,6 +56,8 @@ import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import com.gemstone.gemfire.cache.query.UDAExistsException;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDAManager;
 import com.gemstone.gemfire.cache.query.internal.cq.ClientCQ;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
@@ -67,6 +69,7 @@ import com.gemstone.gemfire.cache.query.internal.index.IndexUtils;
 import com.gemstone.gemfire.cache.query.internal.index.PartitionedIndex;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -996,6 +999,17 @@ public class DefaultQueryService implements QueryService {
 
   public InternalPool getPool() {
     return pool;
+  }
+
+  @Override
+  public void createUDA(String udaName, String udaClass) throws UDAExistsException, NameResolutionException {
+    ((GemFireCacheImpl)this.cache).getUDAManager().createUDA(udaName, udaClass);
+    
+  }
+
+  @Override
+  public void removeUDA(String udaName) {
+    ((GemFireCacheImpl)this.cache).getUDAManager().removeUDA(udaName);
   }
   
 }

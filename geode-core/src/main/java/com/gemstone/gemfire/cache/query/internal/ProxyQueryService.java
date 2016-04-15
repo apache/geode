@@ -43,6 +43,7 @@ import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.RegionNotFoundException;
+import com.gemstone.gemfire.cache.query.UDAExistsException;
 import com.gemstone.gemfire.cache.query.internal.cq.ClientCQ;
 import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -446,6 +447,17 @@ public class ProxyQueryService implements QueryService {
 
   private void postOp() {
     UserAttributes.userAttributes.set(null);
+  }
+
+  @Override
+  public void createUDA(String udaName, String udaClass) throws UDAExistsException {
+    throw new UnsupportedOperationException("UDA creation on server is not supported from the client");
+  }
+
+  @Override
+  public void removeUDA(String udaName) {
+    throw new UnsupportedOperationException("UDA removal on server is not supported from the client");
+    
   }
 
 }

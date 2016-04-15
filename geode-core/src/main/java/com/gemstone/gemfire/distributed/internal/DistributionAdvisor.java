@@ -1545,6 +1545,19 @@ public class DistributionAdvisor  {
       this.peerMemberId = memberId;
       this.version = version;
     }
+    
+    /**
+     * Default no op method, which needs to be overridden by the profile class which needs to be
+     * collected and sent to the caller. The overriding method should fill in the profile & add it
+     * to the replyProfiles List 
+     * @param dm 
+     * @param adviseePath
+     * @param replyProfiles
+     */
+    public void collectProfile(DistributionManager dm, String adviseePath,
+        final List<Profile> replyProfiles) {
+      // nothing by default;
+    }
 
     /**
      * Return object that uniquely identifies this profile.

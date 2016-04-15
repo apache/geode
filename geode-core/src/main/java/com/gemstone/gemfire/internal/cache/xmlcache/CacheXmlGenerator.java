@@ -58,6 +58,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
+import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -99,7 +100,9 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
+import com.gemstone.gemfire.cache.query.Aggregator;
 import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDAManager;
 import com.gemstone.gemfire.cache.query.internal.index.HashIndex;
 import com.gemstone.gemfire.cache.query.internal.index.PrimaryKeyIndex;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -535,7 +538,11 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       } else if(this.version.compareTo(CacheXmlVersion.GEMFIRE_6_6) >= 0) {
         generate(this.cache.getCacheTransactionManager());
       }
-
+     
+      if (this.version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+        generateUDA(this.cache);
+      }
+     
       generateDynamicRegionFactory(this.cache);
 
       if (!isClientCache) {
@@ -1390,6 +1397,23 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
     handler.endElement("", DYNAMIC_REGION_FACTORY, DYNAMIC_REGION_FACTORY);
+  }
+  
+  private void generateUDA(Cache c) throws SAXException {
+    UDAManager udaMgr = ((InternalCache)c).getUDAManager();
+    Map<String, String> map = udaMgr.getUDAs();
+    if (map.isEmpty()) {
+      return;
+    }
+    handler.startElement("", UDA_MANAGER, UDA_MANAGER, EMPTY);
+    for (Map.Entry<String, String> entry : map.entrySet()) {
+      AttributesImpl atts = new AttributesImpl();
+      atts.addAttribute("", "", UDA_NAME, "", entry.getKey());
+      atts.addAttribute("", "", UDA_CLASS, "", entry.getValue());
+      handler.startElement("", UDA, UDA, atts);
+      handler.endElement("", UDA, UDA);
+    }
+    handler.endElement("", UDA_MANAGER, UDA_MANAGER);
   }
 
   private void generateGatewaySender(GatewaySender sender) throws SAXException {

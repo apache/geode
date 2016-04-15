@@ -16,23 +16,17 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
+import com.gemstone.gemfire.cache.query.Aggregator;
 import com.gemstone.gemfire.cache.query.AmbiguousNameException;
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
 import com.gemstone.gemfire.cache.query.NameResolutionException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.internal.aggregate.AvgBucketNode;
+import com.gemstone.gemfire.cache.query.internal.aggregate.Avg;
 import com.gemstone.gemfire.cache.query.internal.aggregate.AvgDistinct;
-import com.gemstone.gemfire.cache.query.internal.aggregate.AvgDistinctPRQueryNode;
-import com.gemstone.gemfire.cache.query.internal.aggregate.AvgPRQueryNode;
 import com.gemstone.gemfire.cache.query.internal.aggregate.Count;
 import com.gemstone.gemfire.cache.query.internal.aggregate.CountDistinct;
-import com.gemstone.gemfire.cache.query.internal.aggregate.CountDistinctPRQueryNode;
-import com.gemstone.gemfire.cache.query.internal.aggregate.SumDistinctPRQueryNode;
-import com.gemstone.gemfire.cache.query.internal.aggregate.CountPRQueryNode;
-import com.gemstone.gemfire.cache.query.internal.aggregate.DistinctAggregator;
 import com.gemstone.gemfire.cache.query.internal.aggregate.MaxMin;
-import com.gemstone.gemfire.cache.query.internal.aggregate.Avg;
 import com.gemstone.gemfire.cache.query.internal.aggregate.Sum;
 import com.gemstone.gemfire.cache.query.internal.aggregate.SumDistinct;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
@@ -40,6 +34,7 @@ import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 
 /**
+ * Represents the  built-in aggregate function node
  * 
  *
  */
@@ -67,20 +62,12 @@ public class CompiledAggregateFunction extends AbstractCompiledValue {
   }
 
   @Override
-  public Object evaluate(ExecutionContext context)
-      throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException {
-    boolean isPRQueryNode = context.getIsPRQueryNode();
-    boolean isBucketNode = context.getBucketList() != null;
+  public Aggregator evaluate(ExecutionContext context) throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+                                                      QueryInvocationTargetException {
     switch (this.aggFuncType) {
 
     case OQLLexerTokenTypes.SUM:
-      if (isPRQueryNode) {
-        return this.distinctOnly ? new SumDistinctPRQueryNode() : new Sum();
-      } else {
-        return this.distinctOnly ? (isBucketNode ? new DistinctAggregator()
-            : new SumDistinct()) : new Sum();
-      }
+      return this.distinctOnly ? new SumDistinct() : new Sum();
 
     case OQLLexerTokenTypes.MAX:
       return new MaxMin(true);
@@ -89,33 +76,21 @@ public class CompiledAggregateFunction extends AbstractCompiledValue {
       return new MaxMin(false);
 
     case OQLLexerTokenTypes.AVG:
-      if (isPRQueryNode) {
-        return this.distinctOnly ? new AvgDistinctPRQueryNode()
-            : new AvgPRQueryNode();
-      } else {
-        return this.distinctOnly ? (isBucketNode ? new DistinctAggregator()
-            : new AvgDistinct()) : (isBucketNode ? new AvgBucketNode()
-            : new Avg());
-      }
+
+      return this.distinctOnly ? new AvgDistinct() : new Avg();
 
     case OQLLexerTokenTypes.COUNT:
-      if (isPRQueryNode) {
-        return this.distinctOnly ? new CountDistinctPRQueryNode()
-            : new CountPRQueryNode();
-      } else {
-        return this.distinctOnly ? (isBucketNode ? new DistinctAggregator()
-            : new CountDistinct()) : new Count();
-      }
+
+      return this.distinctOnly ? new CountDistinct() : new Count();
 
     default:
-      throw new UnsupportedOperationException(
-          "Aggregate function not implemented");
+      throw new UnsupportedOperationException("Aggregate function not implemented");
 
     }
 
   }
 
-  private String getStringRep() {
+  protected String getStringRep() {
     switch (this.aggFuncType) {
 
     case OQLLexerTokenTypes.SUM:
@@ -132,8 +107,7 @@ public class CompiledAggregateFunction extends AbstractCompiledValue {
     case OQLLexerTokenTypes.COUNT:
       return "count";
     default:
-      throw new UnsupportedOperationException(
-          "Aggregate function not implemented");
+      throw new UnsupportedOperationException("Aggregate function not implemented");
 
     }
   }
@@ -159,16 +133,14 @@ public class CompiledAggregateFunction extends AbstractCompiledValue {
       return new ObjectTypeImpl(Integer.class);
 
     default:
-      throw new UnsupportedOperationException(
-          "Aggregate function not implemented");
+      throw new UnsupportedOperationException("Aggregate function not implemented");
 
     }
   }
 
   @Override
-  public void generateCanonicalizedExpression(StringBuffer clauseBuffer,
-      ExecutionContext context) throws AmbiguousNameException,
-      TypeMismatchException, NameResolutionException {
+  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context) throws AmbiguousNameException, TypeMismatchException,
+                                                                                                  NameResolutionException {
     clauseBuffer.insert(0, ')');
     if (this.expr != null) {
       this.expr.generateCanonicalizedExpression(clauseBuffer, context);

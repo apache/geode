@@ -16,17 +16,29 @@
  */
 package com.gemstone.gemfire.cache.query.internal.aggregate;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.cache.query.Aggregator;
 import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
 
 /**
  * Computes the sum for replicated & PR based queries.
  * 
  *
  */
-public class Sum extends AbstractAggregator {
+public class Sum extends AbstractAggregator implements DataSerializableFixedID{
 
   private double result = 0;
 
+  
+  public Sum() {   
+  }
+  
   @Override
   public void accumulate(Object value) {
     if (value != null && value != QueryService.UNDEFINED) {
@@ -43,5 +55,31 @@ public class Sum extends AbstractAggregator {
   @Override
   public Object terminate() {
     return downCast(result);
+  }
+  
+  @Override
+  public void merge(Aggregator aggregator) {
+    Sum sumAgg = (Sum)aggregator;
+    this.result += sumAgg.result; 
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {   
+    return null;
+  }
+
+  @Override
+  public int getDSFID() {    
+    return AGG_FUNC_SUM;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writePrimitiveDouble(this.result, out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {    
+    this.result = DataSerializer.readPrimitiveDouble(in);
   }
 }

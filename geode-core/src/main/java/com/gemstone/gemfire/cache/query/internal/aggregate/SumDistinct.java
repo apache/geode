@@ -22,6 +22,9 @@ package com.gemstone.gemfire.cache.query.internal.aggregate;
  */
 public class SumDistinct extends DistinctAggregator {
 
+  public SumDistinct() {   
+  }
+  
   @Override
   public Object terminate() {
     double sum = 0;
@@ -29,6 +32,5 @@ public class SumDistinct extends DistinctAggregator {
       sum += ((Number) o).doubleValue();
     }
     return downCast(sum);
-  }
-
+  }   
 }

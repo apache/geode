@@ -52,6 +52,7 @@ import com.gemstone.gemfire.cache.query.internal.CumulativeNonDistinctResults;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
 import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
+import com.gemstone.gemfire.cache.query.internal.CumulativeNonDistinctResults.Metadata;
 import com.gemstone.gemfire.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
 import com.gemstone.gemfire.cache.query.internal.NWayMergeResults;
 import com.gemstone.gemfire.cache.query.internal.OrderByComparator;
@@ -785,12 +786,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   /**
    * Applies order-by on the results returned from PR nodes and puts the results in 
    * the cumulative result set.
-   * The order-by is applied by running a generated query on the each result returned
-   * by the remote nodes.
-   * Example generated query: SELECT DISTINCT * FROM $1 p ORDER BY p.ID
-   * Where results are passed as bind parameter.
-   * This is added as quick turn-around, this is added based on most commonly used
-   * queries, needs to be investigated further.
+   *
    */   
   private SelectResults buildSortedResult(CompiledSelect cs, int limit) throws QueryException {
     

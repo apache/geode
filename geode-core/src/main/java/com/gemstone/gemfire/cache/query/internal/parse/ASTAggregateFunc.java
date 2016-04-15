@@ -30,7 +30,7 @@ public class ASTAggregateFunc extends GemFireAST {
   private static final long serialVersionUID = 8713004765228379685L;
   private int  aggFunctionType;
   private boolean  distinctOnly = false;
-  
+  private String udaName;
   
   public ASTAggregateFunc() { 
     
@@ -43,6 +43,10 @@ public class ASTAggregateFunc extends GemFireAST {
   
   public void setAggregateFunctionType(int type) {
     this.aggFunctionType = type;
+  }
+  
+  public void setUDAName(String name) {
+    this.udaName = name;
   }
   
   public void setDistinctOnly(boolean distinctOnly) {
@@ -60,6 +64,10 @@ public class ASTAggregateFunc extends GemFireAST {
         throw new QueryInvalidException("invalid parameter to aggregate function");
       }
     }
-    compiler.aggregateFunction((CompiledValue)expr, this.aggFunctionType, this.distinctOnly);
+    if(this.aggFunctionType == OQLLexerTokenTypes.UDA) {
+      compiler.uda((CompiledValue)expr,this.aggFunctionType,this.getText() );
+    }else {
+      compiler.aggregateFunction((CompiledValue)expr, this.aggFunctionType, this.distinctOnly);
+    }
   }
 }

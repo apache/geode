@@ -646,7 +646,15 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short CUMULATIVE_RESULTS = 168;
   public static final short DISTTX_ROLLBACK_MESSAGE = 169;
   public static final short DISTTX_ROLLBACK_REPLY_MESSAGE = 170;
-  // 171..999 unused
+  public static final short AGG_FUNC_AVG = 171;
+  public static final short AGG_FUNC_COUNT = 172;
+  public static final short AGG_FUNC_SUM = 173;
+  public static final short AGG_FUNC_DISTINCT_AGG = 174;
+  public static final short AGG_FUNC_MAX_MIN = 175;
+  public static final short UDA_PROFILE = 176;
+  public static final short UDA_MESSAGE = 177;
+  public static final short COLLECT_ATTRIBUTES_MESSAGE = 178;
+  // 179..999 unused
 
   public static final short ADD_HEALTH_LISTENER_REQUEST = 1000;
   public static final short ADD_HEALTH_LISTENER_RESPONSE = 1001;

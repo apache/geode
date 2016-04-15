@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.query.internal.aggregate;
 
+import java.math.BigDecimal;
+
 import com.gemstone.gemfire.cache.query.Aggregator;
 
 /**
@@ -24,23 +26,20 @@ import com.gemstone.gemfire.cache.query.Aggregator;
  *
  */
 public abstract class AbstractAggregator implements Aggregator {
-
   public static Number downCast(double value) {
     Number retVal;
-    if (value % 1 == 0) {
-      long longValue = (long) value;
-      if (longValue <= Integer.MAX_VALUE && longValue >= Integer.MIN_VALUE) {
-        retVal = Integer.valueOf((int) longValue);
+    BigDecimal db = new BigDecimal(value);
+    try {
+      long val = db.longValueExact();
+      if (val <= Integer.MAX_VALUE && val >= Integer.MIN_VALUE) {
+        retVal = Integer.valueOf((int) val);
       } else {
-        retVal = Long.valueOf(longValue);
+        retVal = Long.valueOf(val);
       }
-    } else {
-      if (value <= Float.MAX_VALUE && value >= Float.MIN_VALUE) {
-        retVal = Float.valueOf((float) value);
-      } else {
-        retVal = Double.valueOf(value);
-      }
+    } catch (ArithmeticException se) {
+      retVal = Double.valueOf(value);
     }
+
     return retVal;
   }
 }

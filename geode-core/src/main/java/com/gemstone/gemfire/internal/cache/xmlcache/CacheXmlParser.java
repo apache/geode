@@ -90,6 +90,9 @@ import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreCreation;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.cache.query.IndexType;
+import com.gemstone.gemfire.cache.query.NameResolutionException;
+import com.gemstone.gemfire.cache.query.UDAExistsException;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDAManager;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
@@ -1967,6 +1970,23 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     this.stack.push(icd);
   }
   
+  private void startUDA(Attributes atts) {
+    String name = atts.getValue(UDA_NAME);
+    String clazz = atts.getValue(UDA_CLASS);
+    Map<String, String> map = (Map<String, String>)this.stack.peek();
+    map.put(name, clazz);
+  }
+  private void startUDAManager() {
+    this.stack.push(new HashMap<String, String>());
+  }
+  
+  private void endUDAManager() {
+    Map<String, String> map = (Map<String, String>)this.stack.pop();
+    for(Map.Entry<String, String> entry : map.entrySet()) {
+      this.cache.addUDA(entry.getKey(), entry.getValue());
+    }
+  }
+  
   /**
    * When index element is ending we need to verify all attributes because of
    * new index tag definition since 6.6.1 and support previous definition also. 
@@ -2931,6 +2951,11 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       //push it in stack
       startIndex(atts);
       //this.stack.push(new IndexCreationData(atts.getValue(NAME)));
+    }else if (qName.equals(UDA_MANAGER)) {     
+      startUDAManager();      
+    }
+    else if (qName.equals(UDA)) {     
+      startUDA(atts);      
     }
     else if (qName.equals(FUNCTIONAL)) {
       startFunctionalIndex(atts);
@@ -3299,6 +3324,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
       else if (qName.equals(INDEX)) {
         endIndex();
+      }
+      else if (qName.equals(UDA_MANAGER)) {
+        endUDAManager();
+      }else if (qName.equals(UDA)) {        
       }
       else if (qName.equals(PRIMARY_KEY)) {
       }

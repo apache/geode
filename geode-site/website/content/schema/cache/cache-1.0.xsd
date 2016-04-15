@@ -77,6 +77,18 @@ declarative caching XML file elements unless indicated otherwise.
       <xsd:sequence>
         <xsd:element maxOccurs="1" minOccurs="0" name="cache-transaction-manager" type="gf:cache-transaction-manager-type" />
         <xsd:element maxOccurs="1" minOccurs="0" name="dynamic-region-factory" type="gf:dynamic-region-factory-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="uda-manager">
+          <xsd:complexType>
+           <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="uda">
+              <xsd:complexType>
+                <xsd:attribute name="name" type="xsd:string" use="required" />
+                <xsd:attribute name="class" type="xsd:string" use="required" />
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
+         </xsd:complexType>
+        </xsd:element>  
         <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway-hub">
           <xsd:annotation>
             <xsd:documentation>
@@ -1353,6 +1365,7 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
       <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
     </xsd:sequence>
   </xsd:complexType>
+
 
   <xsd:complexType name="jndi-bindings-type">
     <xsd:annotation>

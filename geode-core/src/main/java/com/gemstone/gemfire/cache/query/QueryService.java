@@ -847,5 +847,27 @@ public interface QueryService {
    * 
    */
   public CqServiceStatistics getCqStatistics();
+  
+  /**
+   * Creates a UserDefinedAggregate ( UDA ) which can be referenced in querying.
+   * The UDA class must implement {@link Aggregator} interface.
+   * This call defines the UDA through out the system , getting executed on all peers     
+   * @param udaName String alias with which the UDA class is refered to
+   * @param udaClass Fully qualified UDA class name
+   * @throws UDAExistsException If the system has already a UDA defined with the udaName
+   * @throws NameResolutionException If system is unable to load the UDA class using the class name
+   * 
+   * @since 9.0
+   */
+  public void createUDA(String udaName, String udaClass) throws UDAExistsException, NameResolutionException;
+  
+  /**
+   * Removes the UDA defined in system with name
+   * This call removes the UDA mapping from the system ,  getting executed on all peers
+   * @param udaName String alias with which the UDA is known
+   * 
+   * @since 9.0
+   */
+  public void removeUDA(String udaName) ;
     
 }

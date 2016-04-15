@@ -25,6 +25,9 @@ import com.gemstone.gemfire.cache.query.QueryService;
  */
 public class AvgDistinct extends SumDistinct {
 
+  public AvgDistinct() {
+  }
+
   @Override
   public void accumulate(Object value) {
     if (value != null && value != QueryService.UNDEFINED) {
@@ -38,5 +41,4 @@ public class AvgDistinct extends SumDistinct {
     double result = sum / this.distinct.size();
     return downCast(result);
   }
-
 }

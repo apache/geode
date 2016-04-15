@@ -343,6 +343,7 @@ tokens {
     COUNT;
     MAX;
     MIN;
+    UDA;
 }
 
 queryProgram :
@@ -919,7 +920,17 @@ conversionExpr :
               TOK_LPAREN!
               stringLiteral TOK_COMMA! stringLiteral
               TOK_RPAREN! 
-           )    
+           )
+         |
+           (
+            n:Identifier^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc>
+              TOK_LPAREN! tokExpr1:expr TOK_RPAREN! 
+              { 
+                ((ASTAggregateFunc)#conversionExpr).setAggregateFunctionType(UDA);
+                ((ASTAggregateFunc)#conversionExpr).setUDAName(n.getText());
+               }
+           
+           )      
 	)
     ;
 

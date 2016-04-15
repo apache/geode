@@ -165,6 +165,50 @@ public class UpdateAttributesProcessor {
     this.processor = processor;
   }
 
+  /**
+   * Collects the profile from the remote peers.
+   * The profile to be collected is  defined by the ID contained in DataSerializableFixedID.getDSFID 
+   * for that profile. This method is different in the sense, it does not send this member's profile
+   * to the peers.
+   * Note: The dsfID should be that of a Profile type class .
+   * 
+   * @param dsfID ID contained in DataSerializableFixedID.getDSFID 
+   * for that profile
+   */
+  public void collect(int dsfID) {
+    DM mgr = this.advisee.getDistributionManager();
+    DistributionAdvisor advisor = this.advisee.getDistributionAdvisor();
+
+    final Set recipients = advisor.adviseProfileExchange();
+    if (recipients.isEmpty()) {
+      return;
+    }
+
+    ReplyProcessor21 processor = null;
+    // Scope scope = this.region.scope;
+
+    // always require an ack to prevent misordering of messages
+    InternalDistributedSystem system = this.advisee.getSystem();
+    processor = new UpdateAttributesReplyProcessor(system, recipients);
+    CollectAttributesMessage message = getCollectAttributesMessage(processor, recipients, dsfID);
+    mgr.putOutgoing(message);
+    this.processor = processor;
+    waitForProfileResponse();
+  }
+
+  CollectAttributesMessage getCollectAttributesMessage(ReplyProcessor21 processor, Set recipients, int dsfID) {
+
+    CollectAttributesMessage msg = new CollectAttributesMessage();
+    msg.dsfID = dsfID;
+
+    msg.adviseePath = this.advisee.getFullPath();
+    msg.setRecipients(recipients);
+    if (processor != null) {
+      msg.processorId = processor.getProcessorId();
+    }
+
+    return msg;
+  }
 
   UpdateAttributesMessage getUpdateAttributesMessage(ReplyProcessor21 processor,
                                                      Set recipients) {
@@ -547,6 +591,108 @@ public class UpdateAttributesProcessor {
     @Override
     public boolean getInlineProcess() {
       return true;
+    }
+  }
+  
+  public static final class CollectAttributesMessage extends HighPriorityDistributionMessage 
+  implements MessageWithReply {
+    protected int dsfID;
+
+    protected String adviseePath;
+    protected int processorId = 0;
+
+    @Override
+    public int getProcessorId() {
+      return this.processorId;
+    }
+
+    @Override
+    protected void process(DistributionManager dm) {
+      Throwable thr = null;
+
+      boolean sendReply = this.processorId != 0;
+      List<Profile> replyProfiles = null;
+      try {
+        // create a dummy profile object
+        Profile dummyProfile = (Profile) DSFIDFactory.getDSFIDInstance(this.dsfID);
+        replyProfiles = new ArrayList<Profile>();
+        dummyProfile.collectProfile(dm, this.adviseePath, replyProfiles);
+      } catch (CancelException e) {
+
+      } catch (Throwable t) {
+        Error err;
+        if (t instanceof Error && SystemFailure.isJVMFailureError(err = (Error) t)) {
+          SystemFailure.initiateFailure(err);
+          // If this ever returns, rethrow the error. We're poisoned
+          // now, so don't let this thread continue.
+          throw err;
+        }
+        // Whenever you catch Error or Throwable, you must also
+        // check for fatal JVM error (see above). However, there is
+        // _still_ a possibility that you are dealing with a cascading
+        // error condition, so you also need to check to see if the JVM
+        // is still usable:
+        SystemFailure.checkFailure();
+        thr = t;
+      } finally {
+        if (sendReply) {
+          ReplyException rex = null;
+          if (thr != null) {
+            rex = new ReplyException(thr);
+          }
+          if (replyProfiles == null || replyProfiles.size() <= 1) {
+            Profile p = null;
+            if (replyProfiles != null && replyProfiles.size() == 1) {
+              p = replyProfiles.get(0);
+            }
+            ProfileReplyMessage.send(getSender(), this.processorId, rex, dm, p);
+          } else {
+            Profile[] profiles = new Profile[replyProfiles.size()];
+            replyProfiles.toArray(profiles);
+            ProfilesReplyMessage.send(getSender(), this.processorId, rex, dm, profiles);
+          }
+        }
+      }
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buff = new StringBuilder();
+      buff.append("CollectAttributesMessage (adviseePath=");
+      buff.append(this.adviseePath);
+      buff.append("; processorId=");
+      buff.append(this.processorId);
+      buff.append("; dsfid=");
+      buff.append(this.dsfID);
+
+      buff.append(")");
+      return buff.toString();
+    }
+
+    public int getDSFID() {
+      return COLLECT_ATTRIBUTES_MESSAGE;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      super.fromData(in);
+      this.adviseePath = DataSerializer.readString(in);
+      this.processorId = in.readInt();
+      this.dsfID = in.readInt();
+
+      // set the processor ID to be able to send reply to sender in case of any
+      // unexpected exception during deserialization etc.
+      ReplyProcessor21.setMessageRPId(this.processorId);
+
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      super.toData(out);
+      DataSerializer.writeString(this.adviseePath, out);
+      out.writeInt(this.processorId);
+      out.writeInt(this.dsfID);
+
     }
   }
 }

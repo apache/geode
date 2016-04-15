@@ -21,7 +21,17 @@ package com.gemstone.gemfire.cache.query;
  * result. In addition to the methods in the interface, implementing classes
  * must have a 0-arg public constructor.
  * 
- *
+ * For replicated Regions, it is necessary to implement required functionality in {@link #accumulate(Object)} and {@link #terminate()}
+ * 
+ * For PartitionedRegions, the aggregator Objects are themselves serialized from the
+ * bucket nodes to the query node. On the query node, the aggregators are merged
+ * in {@link #merge(Aggregator)}
+ * 
+ * For PartitionedRegions, the aggregator class needs to be serializable
+ * 
+ * 
+ * @author ashahid
+ * @since 9.0
  */
 public interface Aggregator {
 
@@ -42,4 +52,12 @@ public interface Aggregator {
    * @return Return the result scalar value
    */
   public Object terminate();
+
+  /**
+   * Merges the incoming aggregator from bucket nodes with the resultant aggregator
+   * on the query node
+   * 
+   * @param otherAggregator
+   */
+  public void merge(Aggregator otherAggregator);
 }
