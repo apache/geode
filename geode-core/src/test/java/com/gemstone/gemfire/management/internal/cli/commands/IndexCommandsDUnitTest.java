@@ -16,6 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
@@ -45,16 +51,9 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 @Category({ DistributedTest.class, FlakyTest.class }) // see GEODE-689, GEODE-1048
 @RunWith(Parameterized.class)
@@ -638,7 +637,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -756,7 +755,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
   private void setupSystem() {
     disconnectAllFromDS();
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     final String parRegName = "StocksParReg";
 
     final VM manager = Host.getHost(0).getVM(0);
@@ -786,7 +785,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
   private void setupSystemPersist() {
     disconnectAllFromDS();
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     final String parRegName = "StocksParReg";
 
     final VM manager = Host.getHost(0).getVM(0);

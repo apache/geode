@@ -81,26 +81,26 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
   @Test
   public void testPauseGatewaySender_onMember() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm3.invoke(() -> createCache( punePort ));
+    vm3.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm3.invoke(() -> startSender( "ln" ));
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", true, false ));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
+    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> getMember());
     pause(10000);
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --"
         + CliStrings.PAUSE_GATEWAYSENDER__ID + "=ln --"
@@ -116,7 +116,7 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
       fail("testPauseGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", true, true ));
   }
 
@@ -133,23 +133,23 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
 
     Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm3.invoke(() -> createCache( punePort ));
+    vm3.invoke(() -> createSender( "ln",
             2, false, 100, 400, false, false, null, true ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm4.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createSender( "ln",
             2, false, 100, 400, false, false, null, true ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm5.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createSender( "ln",
             2, false, 100, 400, false, false, null, true ));
 
     vm3.invoke(() -> startSender( "ln" ));
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
             "ln", true, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
             "ln", true, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
             "ln", true, false ));
 
     pause(10000);
@@ -172,11 +172,11 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
       fail("testPauseGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
             "ln", true, true ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
             "ln", true, true ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
             "ln", true, true ));
   }
 

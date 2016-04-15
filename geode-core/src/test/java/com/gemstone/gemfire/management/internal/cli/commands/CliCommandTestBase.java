@@ -25,6 +25,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -47,23 +49,6 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.junit.runners.Parameterized;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
@@ -283,7 +268,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     CommandResult result = executeCommand(shell, command.toString());
 
     if (!shell.isConnectedAndReady()) {
-      throw new TestException(
+      throw new AssertionError(
           "Connect command failed to connect to manager " + endpoint + " result=" + commandResultToString(result));
     }
 

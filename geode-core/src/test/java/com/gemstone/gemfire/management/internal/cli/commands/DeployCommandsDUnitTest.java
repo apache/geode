@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.regex.Pattern;
+
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -36,27 +44,16 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.regex.Pattern;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 /**
  * Unit tests for the DeployCommands class
  *
  * @since 7.0
  */
-@Category(DistributedTest.class)
-@SuppressWarnings("serial")
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
 @RunWith(Parameterized.class)
