@@ -27,10 +27,6 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -61,17 +57,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Properties;
-import java.util.Set;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
-
 /***
  * DUnit test to test export and import of shared configuration.
  */
@@ -87,8 +72,8 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
   File newDeployableJarFile = new File("DeployCommandsDUnit1.jar");
   private transient ClassBuilder classBuilder = new ClassBuilder();
 
-  public SharedConfigurationCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
-    super(useHttpOnConnect, enableAuth);
+  public SharedConfigurationCommandsDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
   }
 
   @Test

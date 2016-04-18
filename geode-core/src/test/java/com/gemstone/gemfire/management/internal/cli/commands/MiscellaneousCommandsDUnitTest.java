@@ -26,10 +26,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -62,16 +58,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.addIgnoredException;
-import static com.gemstone.gemfire.test.dunit.Invoke.invokeInEveryVM;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
-
 /**
  * Dunit class for testing gemfire function commands : GC, Shutdown
  */
@@ -82,8 +68,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   private static final long serialVersionUID = 1L;
   private static String cachedLogLevel;
 
-  public MiscellaneousCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
-    super(useHttpOnConnect, enableAuth);
+  public MiscellaneousCommandsDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
   }
 
   @Override

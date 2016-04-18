@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheLoaderException;
@@ -45,15 +54,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
-
 /**
  * The GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest class is test suite of test cases testing the Gfsh
  * 'get' data command when a cache miss occurs on data in a Region with a CacheLoader defined.
@@ -74,8 +74,8 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   private static final String USERS_REGION_NAME = "Users";
 
 
-  public GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest(boolean useHttpOnConnect, boolean enableAuth){
-    super(useHttpOnConnect, enableAuth);
+  public GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest(boolean useHttpOnConnect){
+    super(useHttpOnConnect);
   }
 
   protected static String getRegionPath(final String regionName) {

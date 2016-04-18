@@ -64,8 +64,8 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
   transient private ClassBuilder classBuilder = new ClassBuilder();
   transient private CommandProcessor commandProcessor;
 
-  public DeployCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth){
-    super(useHttpOnConnect, enableAuth);
+  public DeployCommandsDUnitTest(boolean useHttpOnConnect){
+    super(useHttpOnConnect);
   }
 
   @Override

@@ -16,9 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-
+import java.io.ObjectInputStream;
+import java.util.Set;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -44,8 +43,9 @@ import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
-import java.io.ObjectInputStream;
-import java.util.Set;
+
+import com.gemstone.gemfire.management.internal.ManagementConstants;
+import com.gemstone.gemfire.security.GemFireSecurityException;
 
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to
@@ -219,7 +219,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
       throws InstanceNotFoundException, MBeanException, ReflectionException {
     ResourceOperationContext ctx = null;
-    if("processCommand".equals(operationName) && params.length==1){
+    if("processCommand".equals(operationName) && params.length>=1){
       ctx = CLIOperationContext.getOperationContext((String)params[0]);
     }
     else {

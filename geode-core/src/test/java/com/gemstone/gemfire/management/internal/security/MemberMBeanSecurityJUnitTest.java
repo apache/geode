@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static org.assertj.core.api.Assertions.*;
+
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.MemberMXBean;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -24,8 +26,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Category(IntegrationTest.class)
 public class MemberMBeanSecurityJUnitTest {

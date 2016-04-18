@@ -16,6 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.io.Serializable;
+import java.util.Properties;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
@@ -35,14 +41,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.Serializable;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
-import static com.gemstone.gemfire.test.dunit.Assert.assertNotNull;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getDUnitLogLevel;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-
 /**
  * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases testing the proper
  * functioning of the 'list disk-store' and 'describe disk-store' commands. </p>
@@ -55,8 +53,8 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 @RunWith(Parameterized.class)
 public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
-  public ListAndDescribeDiskStoreCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
-    super(useHttpOnConnect, enableAuth);
+  public ListAndDescribeDiskStoreCommandsDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
   }
 
   protected static String toString(final Result result) {

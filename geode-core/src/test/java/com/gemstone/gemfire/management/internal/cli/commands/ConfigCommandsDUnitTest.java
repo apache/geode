@@ -32,10 +32,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.Locator;
@@ -67,22 +63,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.Invoke.invokeInEveryVM;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
-
 /**
  * Dunit class for testing GemFire config commands : export config
  *
@@ -104,8 +84,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
   File subDir = new File("ConfigCommandsDUnitTestSubDir");
   File subManagerConfigFile = new File(subDir, managerConfigFile.getName());
 
-  public ConfigCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
-    super(useHttpOnConnect, enableAuth);
+  public ConfigCommandsDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
   }
 
   @Override

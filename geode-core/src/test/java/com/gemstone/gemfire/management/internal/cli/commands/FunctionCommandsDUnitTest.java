@@ -23,9 +23,6 @@ import static com.gemstone.gemfire.test.dunit.Wait.*;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -52,13 +49,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.List;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
-
 /**
  * Dunit class for testing gemfire function commands : execute function, destroy function, list function
  */
@@ -71,8 +61,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   private static final String REGION_ONE = "RegionOne";
   private static final String REGION_TWO = "RegionTwo";
 
-  public FunctionCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth){
-    super(useHttpOnConnect, enableAuth);
+  public FunctionCommandsDUnitTest(boolean useHttpOnConnect){
+    super(useHttpOnConnect);
   }
 
   void setupWith2Regions() {

@@ -17,16 +17,37 @@
 
 package com.gemstone.gemfire.management.internal.web.controllers;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
+import java.net.URI;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import javax.management.JMX;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
+import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.MemberMXBean;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
+import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
+import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
 import com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor;
 import com.gemstone.gemfire.management.internal.web.controllers.support.MemberMXBeanAdapter;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
@@ -41,23 +62,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import javax.management.JMX;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
-import java.net.URI;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * The AbstractCommandsController class is the abstract base class encapsulating common functionality across all
@@ -427,15 +431,20 @@ public abstract class AbstractCommandsController {
    */
   protected synchronized MemberMXBean getManagingMemberMXBean() {
     if (managingMemberMXBeanProxy == null) {
-      final MBeanServer platformMBeanServer = getMBeanServer();
+      SystemManagementService service = (SystemManagementService) ManagementService
+          .getExistingManagementService(GemFireCacheImpl.getInstance());
+      MBeanServer mbs = getMBeanServer();
+      MBeanServerWrapper wrapper = service.getManagementAgent().getMBeanServerWrapper();
+      MBeanServer wrappedMbs = mbs;
+      if(wrapper!=null) {
+        wrapper.setMBeanServer(mbs);
+        wrappedMbs = wrapper;
+      }
 
-      final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(platformMBeanServer,
+      final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(wrappedMbs,
         MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
 
-      /*managingMemberMXBeanProxy = createMemberMXBeanForManagerUsingAdapter(platformMBeanServer,
-      distributedSystemMXBean.getMemberObjectName());*/
-
-      managingMemberMXBeanProxy = createMemberMXBeanForManagerUsingProxy(platformMBeanServer,
+      managingMemberMXBeanProxy = createMemberMXBeanForManagerUsingProxy(wrappedMbs,
         distributedSystemMXBean.getMemberObjectName());
     }
 

@@ -23,9 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassBuilder;
 import com.gemstone.gemfire.internal.ClassPathLoader;
@@ -40,13 +37,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
 
 /**
  * Unit tests for configuring user commands.
@@ -64,8 +54,8 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
   final File jarFile = new File(this.jarDirectory, "UserCommandsDUnit.jar");
   boolean deleteJarDirectory = false;
 
-  public UserCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
-    super(useHttpOnConnect, enableAuth);
+  public UserCommandsDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
   }
 
   @Override

@@ -73,22 +73,19 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   protected String jmxHost;
 
   public CliCommandTestBase(){
-    this(false, false);
+    this(false);
   }
 
   // Junit will use the parameters to initialize the test class and run the tests with different parameters
-  public CliCommandTestBase(boolean useHttpOnConnect, boolean enableAuth){
+  public CliCommandTestBase(boolean useHttpOnConnect){
     this.useHttpOnConnect = useHttpOnConnect;
-    this.enableAuth = enableAuth;
   }
 
   @Parameterized.Parameters
   public static Collection parameters() {
     return Arrays.asList(new Object[][] {
-        { false, false },  // useHttpOnConnect=false, no security enabled
-        { true, false }, // useHttpOnConnect=true, no security enabled
-        { false, true }, // useHttpOnConnect=false, security enabled with cacheServer.json
-        { true, true } // useHttpOnConnect=true, security enabled with cacheServer.json
+        { false},  // useHttpOnConnect=false,
+        { true } // useHttpOnConnect=true,
     });
   }
 

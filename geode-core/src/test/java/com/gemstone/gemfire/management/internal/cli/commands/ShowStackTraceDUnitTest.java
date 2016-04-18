@@ -23,9 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
@@ -40,14 +37,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.test.dunit.Assert.assertFalse;
-import static com.gemstone.gemfire.test.dunit.Assert.assertTrue;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-
 /***
  * DUnit test for 'show stack-trace' command
  */
@@ -57,8 +46,8 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public ShowStackTraceDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
-    super(useHttpOnConnect, enableAuth);
+  public ShowStackTraceDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
   }
 
   private void createCache(Properties props) {

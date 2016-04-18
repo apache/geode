@@ -16,6 +16,28 @@
  */
 package com.gemstone.gemfire.management.internal;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import javax.management.MBeanServer;
+import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXServiceURL;
+import javax.management.remote.rmi.RMIConnectorServer;
+import javax.management.remote.rmi.RMIJRMPServerImpl;
+import javax.management.remote.rmi.RMIServerImpl;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -35,28 +57,6 @@ import com.gemstone.gemfire.management.internal.unsafe.ReadOpFileAccessControlle
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-
-import javax.management.MBeanServer;
-import javax.management.remote.JMXConnectorServer;
-import javax.management.remote.JMXServiceURL;
-import javax.management.remote.rmi.RMIConnectorServer;
-import javax.management.remote.rmi.RMIJRMPServerImpl;
-import javax.management.remote.rmi.RMIServerImpl;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.rmi.AlreadyBoundException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 
 /**
  * Agent implementation that controls the JMX server end points for JMX clients
@@ -83,6 +83,7 @@ public class ManagementAgent {
   private final DistributionConfig config;
   private boolean isHttpServiceRunning = false;
   private ManagementInterceptor managementInterceptor = null;
+  private MBeanServerWrapper mBeanServerWrapper = null;
 
   /**
    * This system property is set to true when the embedded HTTP server is
@@ -101,6 +102,10 @@ public class ManagementAgent {
 
   public ManagementInterceptor getManagementInterceptor() {
     return managementInterceptor;
+  }
+
+  public MBeanServerWrapper getMBeanServerWrapper() {
+    return mBeanServerWrapper;
   }
 
   public synchronized boolean isHttpServiceRunning() {
@@ -473,7 +478,7 @@ public class ManagementAgent {
       if(managementInterceptor==null){
         managementInterceptor = new ManagementInterceptor(cache.getDistributedSystem().getProperties());
       }
-      MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(managementInterceptor);
+      mBeanServerWrapper = new MBeanServerWrapper(managementInterceptor);
       cs.setMBeanServerForwarder(mBeanServerWrapper);
       logger.info("Starting RMI Connector with Security Interceptor");
     }

@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -44,15 +41,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
-import static com.gemstone.gemfire.test.dunit.Assert.fail;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-
 /**
  * Dunit class for testing gemfire function commands : export logs
  */
@@ -62,8 +50,8 @@ public class MiscellaneousCommandsExportLogsPart2DUnitTest extends CliCommandTes
 
   private static final long serialVersionUID = 1L;
 
-  public MiscellaneousCommandsExportLogsPart2DUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
-    super(useHttpOnConnect, enableAuth);
+  public MiscellaneousCommandsExportLogsPart2DUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
   }
 
 

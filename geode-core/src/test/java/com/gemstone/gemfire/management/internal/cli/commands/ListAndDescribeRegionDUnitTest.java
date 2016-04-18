@@ -21,9 +21,6 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
@@ -51,11 +48,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.Properties;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
 public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
@@ -69,8 +61,8 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
   private static final String PR1 = "PR1";
   private static final String LOCALREGIONONMANAGER = "LocalRegionOnManager";
 
-  public ListAndDescribeRegionDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
-    super(useHttpOnConnect, enableAuth);
+  public ListAndDescribeRegionDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
   }
 
   static class CacheListener2 extends CacheListenerAdapter {

@@ -66,8 +66,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   private static final String parRegPersName = "ParRegPers";
   private static final String repRegPersName = "RepRegPer";
 
-  public IndexCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth) {
-    super(useHttpOnConnect, enableAuth);
+  public IndexCommandsDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
   }
 
   Region<?, ?> createParReg(String regionName, Cache cache, Class keyConstraint, Class valueConstraint) {

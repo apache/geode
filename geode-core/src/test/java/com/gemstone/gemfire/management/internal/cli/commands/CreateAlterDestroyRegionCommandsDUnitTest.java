@@ -35,11 +35,6 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -79,25 +74,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.jayway.awaitility.Awaitility.waitAtMost;
-
 @Category({ DistributedTest.class, FlakyTest.class }) // GEODE-973
 @RunWith(Parameterized.class)
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
@@ -122,8 +98,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   @Rule
   public RetryRule retryRule = new RetryRule();
 
-  public CreateAlterDestroyRegionCommandsDUnitTest(boolean useHttpOnConnect, boolean enableAuth){
-    super(useHttpOnConnect, enableAuth);
+  public CreateAlterDestroyRegionCommandsDUnitTest(boolean useHttpOnConnect){
+    super(useHttpOnConnect);
   }
 
   /**

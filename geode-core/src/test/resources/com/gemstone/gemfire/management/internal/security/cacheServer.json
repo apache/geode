@@ -121,20 +121,6 @@
       ]
     },
     {
-      "name": "auditor",
-      "password": "1234567",
-      "roles": [
-        "data-read"
-      ]
-    },
-    {
-      "name": "monitor",
-      "password": "1234567",
-      "roles": [
-        "cluster-read"
-      ]
-    },
-    {
       "name": "region1-user",
       "password": "1234567",
       "roles": [
@@ -152,6 +138,48 @@
       "name": "stranger",
       "password": "1234567",
       "roles": [
+      ]
+    },
+    {
+      "name": "data-reader",
+      "password": "1234567",
+      "roles": [
+        "data-read"
+      ]
+    },
+    {
+      "name": "data-writer",
+      "password": "1234567",
+      "roles": [
+        "data-write"
+      ]
+    },
+    {
+      "name": "data-manager",
+      "password": "1234567",
+      "roles": [
+        "data-manage"
+      ]
+    },
+    {
+      "name": "cluster-reader",
+      "password": "1234567",
+      "roles": [
+        "cluster-read"
+      ]
+    },
+    {
+      "name": "cluster-writer",
+      "password": "1234567",
+      "roles": [
+        "cluster-write"
+      ]
+    },
+    {
+      "name": "cluster-manager",
+      "password": "1234567",
+      "roles": [
+        "cluster-manage"
       ]
     }
   ]
