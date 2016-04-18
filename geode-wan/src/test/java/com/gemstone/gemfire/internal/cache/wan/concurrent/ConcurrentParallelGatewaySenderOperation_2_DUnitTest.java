@@ -70,7 +70,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
-      vm2.invoke(() -> createReceiver(nyPort));
+      vm2.invoke(() -> createReceiver());
 
       vm4.invoke(() -> doPuts(regionName, 10));
       vm4.invoke(() -> validateRegionSize(regionName, 10));
@@ -109,7 +109,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
-      vm2.invoke(() -> createReceiver(nyPort));
+      vm2.invoke(() -> createReceiver());
 
       vm4.invoke(() -> doPuts(regionName, 10));
       vm4.invoke(() -> validateRegionSize(regionName, 10));
@@ -149,7 +149,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
-      vm2.invoke(() -> createReceiver(nyPort));
+      vm2.invoke(() -> createReceiver());
 
       vm4.invoke(() -> doPuts(regionName, 10));
       vm4.invoke(() -> validateRegionSize(regionName, 10));
@@ -274,7 +274,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
-      vm2.invoke(() -> createReceiver(nyPort));
+      vm2.invoke(() -> createReceiver());
 
       vm4.invoke(() -> doPuts(regionName, 10));
       vm4.invoke(() -> validateRegionSize(regionName, 10));
