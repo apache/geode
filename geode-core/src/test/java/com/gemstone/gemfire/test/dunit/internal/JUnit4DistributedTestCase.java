@@ -375,7 +375,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
       Host host = Host.getHost(hostIndex);
       for (int vmIndex = 0; vmIndex < host.getVMCount(); vmIndex++) {
         final String vmDefaultDiskStoreName = getDefaultDiskStoreName(hostIndex, vmIndex, className, methodName);
-        host.getVM(vmIndex).invoke(()->setUpVM(methodName, vmDefaultDiskStoreName));
+        host.getVM(vmIndex).invoke("setupVM", ()->setUpVM(methodName, vmDefaultDiskStoreName));
       }
     }
 
