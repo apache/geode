@@ -35,7 +35,7 @@ import com.gemstone.gemfire.lang.Identifiable;
  *
  * @since 6.0
  */
-public interface Function extends Identifiable {
+public interface Function extends Identifiable<String> {
 
   /**
    * Specifies whether the function sends results while executing.

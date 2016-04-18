@@ -8441,6 +8441,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final long oldClientTimeout = TombstoneService.CLIENT_TOMBSTONE_TIMEOUT;
     final long oldExpiredTombstoneLimit = TombstoneService.EXPIRED_TOMBSTONE_LIMIT;
     final boolean oldIdleExpiration = TombstoneService.IDLE_EXPIRATION;
+    final double oldLimit = TombstoneService.GC_MEMORY_THRESHOLD;
     try {
       SerializableRunnable setTimeout = new SerializableRunnable() {
         public void run() {
@@ -8448,6 +8449,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           TombstoneService.CLIENT_TOMBSTONE_TIMEOUT = 19000;
           TombstoneService.EXPIRED_TOMBSTONE_LIMIT = 1000;
           TombstoneService.IDLE_EXPIRATION = true;
+          TombstoneService.GC_MEMORY_THRESHOLD = 0;  // turn this off so heap profile won't cause test to fail
         }
       };
       vm0.invoke(setTimeout);
@@ -8503,6 +8505,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           WaitCriterion waitForExpiration = new WaitCriterion() {
             @Override
             public boolean done() {
+              // TODO: in GEODE-561 this was changed to no longer wait for it
+              // to go to zero. But I think it should.
               return CCRegion.getTombstoneCount() < numEntries;
             }
             @Override
@@ -8528,11 +8532,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
       vm0.invoke(new SerializableRunnable("create/destroy entries and check tombstone count") {
         public void run() {
-          double oldLimit = TombstoneService.GC_MEMORY_THRESHOLD;
           long count = CCRegion.getTombstoneCount();
           final long origCount = count;
           try {
-            TombstoneService.GC_MEMORY_THRESHOLD = 0;  // turn this off so heap profile won't cause test to fail
             WaitCriterion waitForExpiration = new WaitCriterion() {
               @Override
               public boolean done() {
@@ -8571,8 +8573,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             throw e;
           } catch (CacheException e) {
             com.gemstone.gemfire.test.dunit.Assert.fail("while performing create/destroy operations", e);
-          } finally {
-            TombstoneService.GC_MEMORY_THRESHOLD = oldLimit;
           }
         }
       });
@@ -8616,16 +8616,18 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           assertEquals("expected zero tombstones", 0, count);
           assertEquals("expected "+numEntries+" afterCreates", numEntries, afterCreates);
           assertEquals(numEntries, CCRegion.size());
-          // make sure the actual removal of the tombstones by the sweeper doesn't mess
-          // up anything
-          try {
-            Thread.sleep(TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT + 5000);
-          } catch (InterruptedException e) {
-            fail("sleep was interrupted");
-          }
-          count = CCRegion.getTombstoneCount();
-          assertEquals("expected zero tombstones", 0, count);
-          assertEquals(numEntries, CCRegion.size());
+          // TODO: It is not clear what this hard sleep is testing since the tombstone count
+          // has already gone to zero. Deadcoding since it always sleeps for no reason.
+//          // make sure the actual removal of the tombstones by the sweeper doesn't mess
+//          // up anything
+//          try {
+//            Thread.sleep(TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT + 5000);
+//          } catch (InterruptedException e) {
+//            fail("sleep was interrupted");
+//          }
+//          count = CCRegion.getTombstoneCount();
+//          assertEquals("expected zero tombstones", 0, count);
+//          assertEquals(numEntries, CCRegion.size());
         }
       });
 
@@ -8643,6 +8645,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           TombstoneService.CLIENT_TOMBSTONE_TIMEOUT = oldClientTimeout;
           TombstoneService.EXPIRED_TOMBSTONE_LIMIT = oldExpiredTombstoneLimit;
           TombstoneService.IDLE_EXPIRATION = oldIdleExpiration;
+          TombstoneService.GC_MEMORY_THRESHOLD = oldLimit;
         }
       };
       vm0.invoke(resetTimeout);
