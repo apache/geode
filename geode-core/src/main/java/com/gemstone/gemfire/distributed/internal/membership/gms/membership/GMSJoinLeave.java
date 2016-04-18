@@ -414,6 +414,29 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         joinResponse.wait(timeout);
       }
       response = joinResponse[0];
+      
+      if (response != null && response.getCurrentView() != null && !isJoined) {
+        //reset joinResponse[0]
+        joinResponse[0] = null;
+        // we got view here that means either we have to wait for
+        NetView v = response.getCurrentView();
+        InternalDistributedMember coord = v.getCoordinator();
+        if (searchState.alreadyTried.contains(coord)) {
+          // we already sent join request to it..so lets wait some more time here
+          // assuming we got this response immediately, so wait for same timeout here..
+          long timeout = Math.max(services.getConfig().getMemberTimeout(), services.getConfig().getJoinTimeout() / 5);
+          joinResponse.wait(timeout);
+          response = joinResponse[0];
+        } else {
+          // try on this coordinator
+          searchState.possibleCoordinator = coord;
+          response = null;
+        }
+        searchState.view = v;
+      }
+      if (isJoined) {
+        return null;
+      }
     }
     return response;
   }
@@ -619,6 +642,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     synchronized (viewRequests) {
       viewRequests.add(request);
       viewRequests.notifyAll();
+    }
+    if (viewCreator != null) {
+      viewCreator.informToPendingJoinRequests();
     }
   }
 
@@ -1174,6 +1200,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private void processFindCoordinatorResponse(FindCoordinatorResponse resp) {
     synchronized (searchState.responses) {
       searchState.responses.add(resp);
+      searchState.responses.notifyAll();
     }
   }
 
@@ -1771,7 +1798,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   }
 
   class ViewCreator extends Thread {
-    boolean shutdown = false;
+    volatile boolean shutdown = false;
     volatile boolean waiting = false;
     volatile boolean testFlagForRemovalRequest = false;
 
@@ -1960,6 +1987,39 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         }
       } finally {
         shutdown = true;
+        informToPendingJoinRequests();
+      }
+    }
+    
+    synchronized void informToPendingJoinRequests() {
+      if (!shutdown) {
+        return;
+      }
+
+      ArrayList<DistributionMessage> requests = new ArrayList<>();
+      synchronized (viewRequests) {
+        if (viewRequests.size() > 0) {
+          requests.addAll(viewRequests);
+        } else {
+          return;
+        }
+        viewRequests.clear();
+      }
+
+      for (DistributionMessage msg : requests) {
+        switch (msg.getDSFID()) {
+        case JOIN_REQUEST:
+          logger.info("Informing to pending join requests {}", msg);
+
+          NetView v = currentView;
+          if (!v.getCoordinator().equals(localAddress)) {
+            //lets inform that coordinator has been changed
+            JoinResponseMessage jrm = new JoinResponseMessage(((JoinRequestMessage) msg).getMemberID(), v);
+            services.getMessenger().send(jrm);
+          }
+        default:
+          break;
+        }
       }
     }
 
