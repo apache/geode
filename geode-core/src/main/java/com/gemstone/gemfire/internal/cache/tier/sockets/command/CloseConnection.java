@@ -19,6 +19,7 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.sockets.*;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
@@ -40,11 +41,16 @@ public class CloseConnection extends BaseCommand {
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
       throws IOException {
     CacheServerStats stats = servConn.getCacheServerStats();
-    {
-      long oldStart = start;
-      start = DistributionStats.getStatTime();
-      stats.incReadCloseConnectionRequestTime(start - oldStart);
+    long oldStart = start;
+    boolean respondToClient = servConn.getClientVersion().compareTo(Version.GFE_90) >= 0;
+    start = DistributionStats.getStatTime();
+    stats.incReadCloseConnectionRequestTime(start - oldStart);
+
+    if (respondToClient) {
+      // newer clients will wait for a response or EOFException
+      servConn.setAsTrue(REQUIRES_RESPONSE);
     }
+
     try {
       // clientHost = theSocket.getInetAddress().getCanonicalHostName();
       servConn.setClientDisconnectCleanly();
@@ -66,6 +72,9 @@ public class CloseConnection extends BaseCommand {
       }
     }
     finally {
+      if (respondToClient) {
+        writeReply(msg, servConn);
+      }
       servConn.setFlagProcessMessagesAsFalse();
 
       stats.incProcessCloseConnectionTime(DistributionStats.getStatTime()
