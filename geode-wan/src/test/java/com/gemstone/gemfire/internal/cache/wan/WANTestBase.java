@@ -356,6 +356,23 @@ public class WANTestBase extends DistributedTestCase{
     return port;
   }
 
+  public static int createReceiverInSecuredCache() {
+    GatewayReceiverFactory fact = WANTestBase.cache.createGatewayReceiverFactory();
+    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    fact.setStartPort(port);
+    fact.setEndPort(port);
+    fact.setManualStart(true);
+    GatewayReceiver receiver = fact.create();
+    try {
+      receiver.start();
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+      com.gemstone.gemfire.test.dunit.Assert.fail("Failed to start GatewayRecevier on port " + port, e);
+    }
+    return port;
+  }
+
   public static void createReplicatedRegion(String regionName, String senderIds, Boolean offHeap){
     IgnoredException exp = IgnoredException.addIgnoredException(ForceReattemptException.class
         .getName());
