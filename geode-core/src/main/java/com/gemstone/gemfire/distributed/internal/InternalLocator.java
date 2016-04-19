@@ -170,6 +170,8 @@ public class InternalLocator extends Locator implements ConnectListener {
   private DistributionConfigImpl config;
   
   private LocatorMembershipListener locatorListener;
+
+  private WanLocatorDiscoverer locatorDiscoverer;
   
   /** whether the locator was stopped during forced-disconnect processing but a reconnect will occur */
   private volatile boolean stoppedForReconnect;
@@ -844,9 +846,9 @@ public class InternalLocator extends Locator implements ConnectListener {
       InternalDistributedSystem.addConnectListener(this);
     }
     
-    WanLocatorDiscoverer s = WANServiceProvider.createLocatorDiscoverer();
-    if(s != null) {
-      s.discover(this.port, config, locatorListener);
+    this.locatorDiscoverer = WANServiceProvider.createLocatorDiscoverer();
+    if(this.locatorDiscoverer != null) {
+      this.locatorDiscoverer.discover(this.port, config, locatorListener);
     }
   }
   
@@ -949,6 +951,11 @@ public class InternalLocator extends Locator implements ConnectListener {
         }
       }
       return;
+    }
+
+    if (this.locatorDiscoverer != null) {
+      this.locatorDiscoverer.stop();
+      this.locatorDiscoverer = null;
     }
 
     if (this.server.isAlive()) {

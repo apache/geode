@@ -26,6 +26,7 @@ import java.util.Set;
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.IncompatibleSystemException;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
@@ -464,5 +465,44 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
         
   }
-  
+
+  public void testNoThreadLeftBehind() {
+    // Get active thread count before test
+    int activeThreadCountBefore = Thread.activeCount();
+
+    // Start / stop locator
+    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    WANTestBase.createFirstRemoteLocator( 2, port );
+    disconnectFromDS();
+
+    // Validate active thread count after test
+
+    // Wait up to 60 seconds for all threads started during the test
+    // (including the 'WAN Locator Discovery Thread') to stop
+    // Note: Awaitility is not being used since it adds threads
+    for (int i=0; i<60; i++) {
+      if (Thread.activeCount() > activeThreadCountBefore) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          fail("Caught the following exception waiting for threads to stop: " + e);
+        }
+      } else {
+        break;
+      }
+    }
+
+    // Fail if the active thread count after the test is greater than the active thread count before the test
+    if (Thread.activeCount() > activeThreadCountBefore) {
+      OSProcess.printStacks(0);
+      StringBuilder builder = new StringBuilder();
+      builder
+          .append("Expected ")
+          .append(activeThreadCountBefore)
+          .append(" threads but found ")
+          .append(Thread.activeCount())
+          .append(". Check log file for a thread dump.");
+      fail(builder.toString());
+    }
+  }
 }
