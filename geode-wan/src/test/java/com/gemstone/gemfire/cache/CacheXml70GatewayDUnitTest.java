@@ -94,8 +94,8 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     
     GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
     gatewayReceiverFactory.setBindAddress("");
-    gatewayReceiverFactory.setStartPort(54321);
-    gatewayReceiverFactory.setEndPort(54331);
+    gatewayReceiverFactory.setStartPort(20000);
+    gatewayReceiverFactory.setEndPort(29999);
     gatewayReceiverFactory.setMaximumTimeBetweenPings(2000);
     gatewayReceiverFactory.setSocketBufferSize(1500);
     GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
