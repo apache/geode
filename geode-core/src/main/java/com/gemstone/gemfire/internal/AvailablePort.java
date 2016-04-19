@@ -195,10 +195,7 @@ public class AvailablePort {
     try {
       //(new Exception("Opening server socket on " + port)).printStackTrace();
       server = new ServerSocket();
-      String osName = System.getProperty("os.name");
-      if(osName != null && !osName.startsWith("Windows")) {
-        server.setReuseAddress(true);  
-      }      
+      server.setReuseAddress(true);
       if (addr != null) {
         server.bind(new InetSocketAddress(addr, port));
       }
