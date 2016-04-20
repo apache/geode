@@ -736,8 +736,9 @@ DEALINGS IN THE SOFTWARE.
 The MX4J License (http://mx4j.sourceforge.net/docs/ch01s06.html)
 ---------------------------------------------------------------------------
 
-Apache Geode bundles the following file under the MIT license:
+Apache Geode bundles the following file under the MX4J license:
 
+  - MX4JModelMBean.java (http://mx4j.sourceforge.net)
   - MX4J v3.0.1 (http://mx4j.sourceforge.net), Copyright (c) MX4J
 
 Version 1.0
