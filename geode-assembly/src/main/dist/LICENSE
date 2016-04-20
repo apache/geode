@@ -208,6 +208,9 @@ Apache Geode includes a number of components and libraries with separate
 copyright notices and license terms. Your use of those components are
 subject to the terms and conditions of the following licenses.
 
+Apache Geode bundles the Droid fonts (http://www.droidfonts.com) under
+the Apache License v2.0.
+
 ---------------------------------------------------------------------------
 The BSD 3-Clause License (http://opensource.org/licenses/BSD-3-Clause)
 ---------------------------------------------------------------------------
