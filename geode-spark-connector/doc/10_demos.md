@@ -40,21 +40,21 @@ gfsh> create region --name=str_int_region --type=PARTITION --key-constraint=java
 
 And deploy Geode functions required by the Spark Geode Connector:
 ```
-gfsh> deploy --jar=<path to connector project>/gemfire-functions/target/scala-2.10/gemfire-functions_2.10-0.5.0.jar
+gfsh> deploy --jar=<path to connector project>/geode-functions/target/scala-2.10/geode-functions_2.10-0.5.0.jar
 ```
 
 ### Run simple demos
 This section describes how to run `RDDSaveJavaDemo.java`, 
 `PairRDDSaveJavaDemo.java` and `RegionToRDDJavaDemo.java`:
 ```
-export SPARK_CLASSPATH=$CONNECTOR/gemfire-spark-connector/target/scala-2.10/gemfire-spark-connector_2.10-0.5.0.jar:$GEODE/lib/server-dependencies.jar
+export SPARK_CLASSPATH=$CONNECTOR/geode-spark-connector/target/scala-2.10/geode-spark-connector_2.10-0.5.0.jar:$GEODE/lib/server-dependencies.jar
 
 cd <spark 1.3 dir>
-bin/spark-submit --master=local[2] --class demo.RDDSaveJavaDemo $CONNECTOR/gemfire-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar locatorHost[port]
+bin/spark-submit --master=local[2] --class demo.RDDSaveJavaDemo $CONNECTOR/geode-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar locatorHost[port]
 
-bin/spark-submit --master=local[2] --class demo.PairRDDSaveJavaDemo $CONNECTOR/gemfire-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar locatorHost[port]
+bin/spark-submit --master=local[2] --class demo.PairRDDSaveJavaDemo $CONNECTOR/geode-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar locatorHost[port]
 
-bin/spark-submit --master=local[2] --class demo.RegionToRDDJavaDemo $CONNECTOR/gemfire-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar locatorHost[port]
+bin/spark-submit --master=local[2] --class demo.RegionToRDDJavaDemo $CONNECTOR/geode-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar locatorHost[port]
 ```
 
 ### Run stateful network word count
@@ -67,7 +67,7 @@ $ nc -lk 9999
 
 **Terminal-2**, start word count Spark app: 
 ```
-bin/spark-submit --master=local[2] demo.NetworkWordCount $CONNECTOR/gemfire-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar localhost 9999 locatorHost:port`
+bin/spark-submit --master=local[2] demo.NetworkWordCount $CONNECTOR/geode-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar localhost 9999 locatorHost:port`
 ```
 
 Switch to Terminal-1, type some words, and hit `enter` or `return` key, then check word count at **Terminal-3**, which has `gfsh` connected to the Geode cluster:
