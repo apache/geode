@@ -60,16 +60,15 @@ import com.gemstone.gemfire.internal.cache.Oplog.OPLOG_TYPE;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.jayway.awaitility.Awaitility;
 
 /**
  * Testing Oplog API's
- *
  */
 @Category(IntegrationTest.class)
-public class OplogJUnitTest extends DiskRegionTestingBase
-{
+public class OplogJUnitTest extends DiskRegionTestingBase {
   boolean proceed = false;
 
   private final DiskRegionProperties diskProps = new DiskRegionProperties();
@@ -3420,9 +3419,9 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * Tests reduction in size of disk stats 
    * when the oplog is rolled.
    */
+  @Category(FlakyTest.class) // GEODE-527: jvm sizing sensitive, non-thread-safe test hooks, time sensitive
   @Test
-  public void testStatsSizeReductionOnRolling() throws Exception 
-  {
+  public void testStatsSizeReductionOnRolling() throws Exception {
     final int MAX_OPLOG_SIZE = 500*2;
     diskProps.setMaxOplogSize(MAX_OPLOG_SIZE);
     diskProps.setPersistBackup(true);
@@ -3445,6 +3444,8 @@ public class OplogJUnitTest extends DiskRegionTestingBase
     final int key3_size = DiskOfflineCompactionJUnitTest.getSize4Create(extra_byte_num_per_entry, "key3", val);
     final int tombstone_key1 = DiskOfflineCompactionJUnitTest.getSize4TombstoneWithKey(extra_byte_num_per_entry, "key1");
     final int tombstone_key2 = DiskOfflineCompactionJUnitTest.getSize4TombstoneWithKey(extra_byte_num_per_entry, "key2");
+
+    // TODO: move static methods from DiskOfflineCompactionJUnitTest to shared util class
 
     CacheObserver old = CacheObserverHolder
           .setInstance(new CacheObserverAdapter() {
@@ -3553,7 +3554,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase
    * Tests stats verification with rolling enabled
    */
 //   @Test
-//  public void testSizeStatsAfterRecreationWithRollingEnabled() throws Exception 
+//  public void testSizeStatsAfterRecreationWithRollingEnabled() throws Exception
 //   {
 //     final int MAX_OPLOG_SIZE = 500;
 //     diskProps.setMaxOplogSize(MAX_OPLOG_SIZE);

@@ -1347,7 +1347,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
           cqe.printStackTrace();
-          fail("Failed to getCQService.");
+          Assert.fail("Failed to getCQService.", cqe);
         }
         
         CqQuery cQuery = cqService.getCq(cqName);

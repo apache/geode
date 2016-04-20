@@ -28,7 +28,6 @@ import java.util.Random;
 /**
  * This class determines whether or not a given port is available and
  * can also provide a randomly selected available port.
- *
  */
 public class AvailablePort {
 

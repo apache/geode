@@ -46,14 +46,11 @@ import com.gemstone.gemfire.test.junit.rules.RetryRule;
  * 
  * @since 5.5
  */
-@Category({ DistributedTest.class, SecurityTest.class, FlakyTest.class}) // GEODE-693, GEODE-1009: getRandomAvailablePort
+@Category({ DistributedTest.class, SecurityTest.class })
 public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
-  @Rule
-  public RetryRule retryRule = new RetryRule();
-
+  @Category(FlakyTest.class) // GEODE-693: getRandomAvailablePort
   @Test
-  @Retry(2) // GEODE-693: getRandomAvailablePort
   public void testAllPostOps() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllPostOps();
 
@@ -114,8 +111,8 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1009: random ports, uses Random, time sensitive, waitForCondition (waitForCriterion)
   @Test
-  @Retry(2) // GEODE-1009: getRandomAvailablePort
   public void testAllOpsNotifications() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllOpsNotifications();
 

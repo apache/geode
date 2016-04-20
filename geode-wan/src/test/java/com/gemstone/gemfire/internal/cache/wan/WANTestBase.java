@@ -114,6 +114,7 @@ import com.gemstone.gemfire.internal.cache.wan.serial.ConcurrentSerialGatewaySen
 import com.gemstone.gemfire.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import com.gemstone.gemfire.pdx.SimpleClass;
 import com.gemstone.gemfire.pdx.SimpleClass1;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -1036,7 +1037,7 @@ public class WANTestBase extends DistributedTestCase{
     }
     for (AsyncInvocation invocation : tasks) {
       try {
-        invocation.join(30000);
+        invocation.join(30000); // TODO: these might be AsyncInvocation orphans
       }
       catch (InterruptedException e) {
         fail("Starting senders was interrupted");
@@ -1966,8 +1967,8 @@ public class WANTestBase extends DistributedTestCase{
     }
     catch (IOException e) {
       e.printStackTrace();
-      fail("Test " + getTestMethodName()
-          + " failed to start GatewayRecevier on port " + port);
+      Assert.fail("Test " + getTestMethodName()
+          + " failed to start GatewayRecevier on port " + port, e);
     }
     return port;
   }
@@ -2709,9 +2710,9 @@ public class WANTestBase extends DistributedTestCase{
       List<Future<Object>> l = execService.invokeAll(tasks);
       for (Future<Object> f : l)
         f.get();
-    } catch (InterruptedException e1) {
+    } catch (InterruptedException e1) { // TODO: eats exception
       e1.printStackTrace();
-    } catch (ExecutionException e) {
+    } catch (ExecutionException e) { // TODO: eats exceptions
       e.printStackTrace();
     }
     execService.shutdown();
@@ -3676,7 +3677,7 @@ public class WANTestBase extends DistributedTestCase{
     }
     for (AsyncInvocation invocation : invocations) {
       invocation.join();
-      assertFalse(invocation.exceptionOccurred());
+      invocation.checkException();
     }
   }
 

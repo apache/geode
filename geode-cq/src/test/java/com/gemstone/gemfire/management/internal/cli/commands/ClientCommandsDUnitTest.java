@@ -83,7 +83,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
  * Dunit class for testing gemfire Client commands : list client , describe client 
  * @since 8.0
  */
-@Category({ DistributedTest.class, FlakyTest.class }) // see GEODE-1034
+@Category(DistributedTest.class)
 public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -595,6 +595,7 @@ public void waitForListClientMbean2(){
   
   }
 
+  @Category(FlakyTest.class) // GEODE-908: random ports, BindException, time sensitive, HeadlessGfsh
   @Test
   public void testListClient() throws Exception {
     setupSystemForListClient();
@@ -1154,7 +1155,8 @@ public void waitForMixedClients(){
     }); 
     
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-910: random ports, HeadlessGfsh
   @Test
   public void testDescribeClientForNonSubscribedClient() throws Exception {
     setUpNonSubscribedClient();
@@ -1230,6 +1232,7 @@ public void waitForMixedClients(){
     
   }
 
+  @Category(FlakyTest.class) // GEODE-1227: HeadlessGFSH, random ports, BindException
   @Test
   public void testDescribeMixClientWithServers() throws Exception {
     String[] clientIds = setupSystemWithSubAndNonSubClient();    

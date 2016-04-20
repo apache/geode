@@ -38,6 +38,7 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class ShellCommandsDUnitTest extends CliCommandTestBase {
@@ -54,6 +55,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
         "localhost[" + locatorPort + "]").toString());
   }
 
+  @Category(FlakyTest.class) // GEODE-989: random ports, suspect string: DiskAccessException, disk pollution, HeadlessGfsh, time sensitive
   @Test
   public void testConnectToLocatorBecomesManager() {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);

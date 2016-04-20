@@ -44,6 +44,7 @@ import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -55,7 +56,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  *
  *
  */
-@Category(IntegrationTest.class)
+@Category({ IntegrationTest.class, FlakyTest.class }) // GEODE-1059: uses PRQueryHelper which launches dunit vms in IntegrationTest
 public class QueryREUpdateInProgressJUnitTest {
 
   private static final String exampleRegionName = "exampleRegion2";

@@ -18,6 +18,8 @@ package com.gemstone.gemfire.internal.cache.wan.parallel;
 
 import java.io.IOException;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -29,9 +31,9 @@ import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
-    WANTestBase {
+public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
   
@@ -446,6 +448,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * Dispatcher should not start dispatching events recovered from persistent sender.
    * Check if the remote site receives all the events.
    */
+  @Category(FlakyTest.class) // GEODE-1124: random ports, time sensitive, waitForCriterion, async behavior
   public void testPersistentPRWithGatewaySenderPersistenceEnabled_Restart2() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

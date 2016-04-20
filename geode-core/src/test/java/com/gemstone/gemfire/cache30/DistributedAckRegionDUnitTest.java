@@ -39,8 +39,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  */
 public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
 
-
-  
   public DistributedAckRegionDUnitTest(String name) {
     super(name);
   }

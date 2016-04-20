@@ -18,6 +18,8 @@ package com.gemstone.gemfire.internal.cache.wan.parallel;
 
 import java.util.Set;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.EntryExistsException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
@@ -32,6 +34,7 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class ParallelWANPropagationDUnitTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
@@ -680,6 +683,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", 1000 ));
   }
 
+  @Category(FlakyTest.class) // GEODE-1008 and GEODE-1180: random ports, async actions, thread sleeps, time sensitive, waitForCriterion
   public void testPartitionedParallelPropagationHA() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");

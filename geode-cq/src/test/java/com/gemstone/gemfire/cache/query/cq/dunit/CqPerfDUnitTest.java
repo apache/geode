@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.query.CqAttributes;
 import com.gemstone.gemfire.cache.query.CqAttributesFactory;
@@ -43,11 +45,11 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
  * This includes the test with diffetent data activities.
- *
  */
 public class CqPerfDUnitTest extends CacheTestCase {
 
@@ -399,6 +401,7 @@ public class CqPerfDUnitTest extends CacheTestCase {
    * To test the changes relating to, executing CQ only once for all similar CQs.
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1164: random ports, thread sleeps, time sensitive, eats exceptions (fixed 1), async behavior
   public void testMatchingCqs() throws Exception {
     
     final Host host = Host.getHost(0);

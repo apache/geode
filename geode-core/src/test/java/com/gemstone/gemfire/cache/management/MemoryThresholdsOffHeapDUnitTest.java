@@ -26,6 +26,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.AttributesMutator;
 import com.gemstone.gemfire.cache.CacheException;
@@ -82,6 +84,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests the Off-Heap Memory thresholds of {@link ResourceManager}
@@ -512,6 +515,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    * to a safe state then test that they are allowed.
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-438: test pollution, async actions, time sensitive, waitForCriterion, TODO: consider disconnect DS in setup
   public void testDRLoadRejection() throws Exception {
     final Host host = Host.getHost(0);
     final VM replicate1 = host.getVM(1);
@@ -725,6 +729,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     prRemotePutRejection(false, true, false);
   }
 
+  @Category(FlakyTest.class) // GEODE-596: BindException, random ports
   public void testPR_RemotePutRejectionCacheClose() throws Exception {
     prRemotePutRejection(true, false, false);
   }
@@ -741,6 +746,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     prRemotePutRejection(true, false, true);
   }
 
+  @Category(FlakyTest.class) // GEODE-500: random ports, time sensitive, memory sensitive and GC dependent, waitForCriterions
   public void testPR_RemotePutRejectionWithTx() throws Exception {
     prRemotePutRejection(false, false, true);
   }
@@ -916,13 +922,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    * if the VM with the bucket is in a critical state.
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-551: waitForCriterion, memory sensitive
   public void testPRLoadRejection() throws Exception {
     final Host host = Host.getHost(0);
     final VM accessor = host.getVM(1);
     final VM ds1 = host.getVM(2);
     final String rName = getUniqueName();
 
-    // Make sure the desired VMs will have a fresh DS.
+    // Make sure the desired VMs will have a fresh DS. TODO: convert these from AsyncInvocation to invoke
     AsyncInvocation d0 = accessor.invokeAsync(() -> DistributedTestCase.disconnectFromDS());
     AsyncInvocation d1 = ds1.invokeAsync(() -> DistributedTestCase.disconnectFromDS());
     d0.join();

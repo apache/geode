@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -42,15 +42,10 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- *
- */
 public class NetSearchMessagingDUnitTest extends CacheTestCase {
 
-  /**
-   * @param name
-   */
   public NetSearchMessagingDUnitTest(String name) {
     super(name);
   }
@@ -111,7 +106,8 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
     }
     
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-1155: time sensitive, waitForCriterion
   public void testNetSearchNormals() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

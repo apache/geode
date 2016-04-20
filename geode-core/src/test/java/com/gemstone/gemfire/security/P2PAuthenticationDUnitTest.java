@@ -48,6 +48,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
@@ -176,6 +177,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Authenticator is incorrect
    */
+  @Category(FlakyTest.class) // GEODE-1089: random port
   @Test
   public void testP2PAuthenticationWithInvalidAuthenticator() throws Exception {
     int locatorPort = getRandomAvailablePort(SOCKET);
@@ -204,6 +206,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1091: random port
   @Test
   public void testP2PAuthenticationWithNoCredentials() throws Exception {
     int locatorPort = getRandomAvailablePort(SOCKET);

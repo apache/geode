@@ -51,15 +51,16 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Tests transaction expiration functionality
  *
  * @since 4.0
- *
  */
 @Category(IntegrationTest.class)
 public class TXExpiryJUnitTest {
@@ -326,6 +327,7 @@ public class TXExpiryJUnitTest {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-845: time sensitive, expiration, eats exceptions (1 fixed), waitForCriterion, 3 second timeout
   @Test
   public void testRegionIdleExpiration() throws CacheException {
     Region<String, String> exprReg = createRegion("TXRegionIdle");
@@ -392,7 +394,7 @@ public class TXExpiryJUnitTest {
         ExpiryTask.suspendExpiration();
         this.txMgr.commit();
       } catch (CommitConflictException error) {
-        fail("Expiration should not cause commit to fail");
+        Assert.fail("Expiration should not cause commit to fail", error);
       }
       assertEquals("value", exprReg.getEntry("key0").getValue());
       waitForRegionExpiration(lr, useTTL);

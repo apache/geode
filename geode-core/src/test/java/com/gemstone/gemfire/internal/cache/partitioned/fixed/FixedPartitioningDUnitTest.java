@@ -19,6 +19,8 @@ package com.gemstone.gemfire.internal.cache.partitioned.fixed;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.DuplicatePrimaryPartitionException;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
@@ -28,14 +30,12 @@ import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This Dunit test class have multiple tests to tests different validations of
  * static partitioning
- * 
- * 
  */
-
 public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
   public FixedPartitioningDUnitTest(String name) {
@@ -453,7 +453,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     
   }
 
-  
+  @Category(FlakyTest.class) // GEODE-567: async actions, waitForCriterion, time sensitive, non-thread-safe test hook, eats exceptions (partially fixed)
   public void testBug43283() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -501,7 +501,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       catch (Exception e) {
         e.printStackTrace();
         if (!(e.getCause() instanceof PartitionNotAvailableException)) {
-          fail("exception thrown is not PartitionNotAvailableException");
+          Assert.fail("exception thrown is not PartitionNotAvailableException", e);
         }
       }
       try {
@@ -511,7 +511,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       }
       catch (InterruptedException e) {
         e.printStackTrace();
-        fail("Unexpected Exception");
+        Assert.fail("Unexpected Exception", e);
       }
     } finally {
       member1.invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());

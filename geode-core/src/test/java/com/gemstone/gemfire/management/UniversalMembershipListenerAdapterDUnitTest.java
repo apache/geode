@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -54,13 +56,13 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests the UniversalMembershipListenerAdapter.
  *
  * @since 4.2.1
  */
-
 public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTestCase {
   protected static final boolean CLIENT = true;
   protected static final boolean SERVER = false;
@@ -699,6 +701,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   /**
    * Tests notification of events for loner bridge clients in server process.
    */
+  @Category(FlakyTest.class) // GEODE-1174: random port, async behavior, condition await loops
   public void testSystemClientEventsInServer() throws Exception {
      try {
        doTestSystemClientEventsInServer();

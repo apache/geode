@@ -55,7 +55,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-@Category({ DistributedTest.class, FlakyTest.class }) // see GEODE-689, GEODE-1048
+@Category(DistributedTest.class)
 public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -230,6 +230,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(indexName));
   }
 
+  @Category(FlakyTest.class) // GEODE-1048: HeadlessGFSH, random ports
   @Test
   public void testCreateMultipleIndexes() {
     setupSystem();
@@ -264,6 +265,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(indexName));
   }
 
+  @Category(FlakyTest.class) // GEODE-689: random ports, unused returns, HeadlessGfsh
   @Test
   public void testClearMultipleIndexes() {
     setupSystem();

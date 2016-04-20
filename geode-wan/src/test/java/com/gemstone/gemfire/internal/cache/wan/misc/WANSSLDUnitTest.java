@@ -16,11 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class WANSSLDUnitTest extends WANTestBase{
 
@@ -28,6 +31,7 @@ public class WANSSLDUnitTest extends WANTestBase{
     super(name);
   }
 
+  @Category(FlakyTest.class) // GEODE-1207: random ports, eats exceptions, time sensitive, waitForCriterion
   public void testSenderSSLReceiverSSL(){
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

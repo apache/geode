@@ -19,6 +19,8 @@ package com.gemstone.gemfire.internal.cache.wan;
 import java.io.IOException;
 import java.util.List;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
@@ -40,6 +42,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class CacheClientNotifierDUnitTest extends WANTestBase {
   private static final int NUM_KEYS = 10;
@@ -162,6 +165,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
    * The test will start several cache servers, including gateway receivers.
    * Shutdown them and verify the CacheClientNofifier for each server is correct
    */
+  @Category(FlakyTest.class) // GEODE-1183: random ports, failure to start threads, eats exceptions, time sensitive
   public void testMultipleCacheServer() throws Exception {
     /* test senario: */
     /* create 1 GatewaySender on vm0 */

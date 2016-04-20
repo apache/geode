@@ -41,6 +41,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Dunit class for testing gemfire function commands : export logs
@@ -80,6 +81,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     return ("_" + formattedStartDate);
   }
 
+  @Category(FlakyTest.class) // GEODE-672: random ports, java.rmi.server.ExportException: Port already in use, HeadlessGfsh, disk IO
   @Test
   public void testExportLogsForGroup() throws IOException {
     Properties localProps = new Properties();

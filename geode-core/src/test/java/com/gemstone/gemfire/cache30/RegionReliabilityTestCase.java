@@ -25,6 +25,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.AttributesMutator;
 import com.gemstone.gemfire.cache.CacheException;
@@ -71,6 +73,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests region reliability defined by MembershipAttributes.
@@ -953,6 +956,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of FULL_ACCESS on local entry expiration actions.
    */
+  @Category(FlakyTest.class) // GEODE-447: time sensitive, expiration, waitForMemberTimeout is unimplemented
   public void testFullAccessWithLocalEntryExpiration() throws Exception {
     final String name = this.getUniqueName();
     

@@ -81,6 +81,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Dunit class for testing gemfire data commands : get, put, remove, select, rebalance
@@ -1212,6 +1213,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     vm2.invoke(checkPutKeysInVM2);
   }
 
+  @Category(FlakyTest.class) // GEODE-1182: random ports, BindException, HeadlessGFSH, waitForCriterion, time sensitive
   @Test
   public void testGetLocateEntryJsonKeys() {
     final String keyPrefix = "testKey";

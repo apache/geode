@@ -16,9 +16,10 @@
  */
 package com.gemstone.gemfire.cache;
 
-import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
@@ -40,6 +41,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.SerialGatewaySenderCreation;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
 
@@ -87,8 +89,9 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
       CacheXml70DUnitTest.validateAsyncEventQueue(asyncEventQueue, asyncEventQueueOnCache);
     }
   }
-  
-  public void testGatewayReceiver() throws CacheException{
+
+  @Category(FlakyTest.class) // GEODE-978: hardcoded port range, BindException
+  public void testGatewayReceiver() throws Exception{
     getSystem();
     CacheCreation cache = new CacheCreation();
     
@@ -103,12 +106,9 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
     gatewayReceiverFactory.addGatewayTransportFilter(myStreamfilter2);
     GatewayReceiver receiver1 = gatewayReceiverFactory.create();
-    try {
-      receiver1.start();
-    }
-    catch (IOException e) {
-      fail("Could not start GatewayReceiver");
-    }
+
+    receiver1.start();
+
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);

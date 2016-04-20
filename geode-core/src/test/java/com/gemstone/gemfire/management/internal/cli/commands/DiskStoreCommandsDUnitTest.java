@@ -69,6 +69,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * The DiskStoreCommandsDUnitTest class is a distributed test suite of test cases for testing the disk store commands
@@ -831,6 +832,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(true, resultAsString.contains(vm1Name));
   }
 
+  @Category(FlakyTest.class) // GEODE-1206: random ports, BindException
   @Test
   public void testCreateDiskStore() {
     final String diskStore1Name = "testCreateDiskStore1";

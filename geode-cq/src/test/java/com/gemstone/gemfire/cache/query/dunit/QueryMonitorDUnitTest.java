@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
@@ -58,6 +60,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests for QueryMonitoring service.
@@ -472,6 +475,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   /**
    * Tests query execution on local vm.
    */
+  @Category(FlakyTest.class) // GEODE-577: eats exceptions
   public void testQueryExecutionLocally() throws Exception {
 
     setup(2);
@@ -530,11 +534,11 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
               Query query = queryService.newQuery(qStr);
               query.execute();
               fail("The query should have been canceled by the QueryMonitor. Query: " + qStr);
-            }catch (Exception e){
+            }catch (Exception e){ // TODO: this is too broad -- catch only the expected exception
               verifyException(e);
             }
           }
-        } catch (Exception ex){
+        } catch (Exception ex){ // TODO: do not catch or rethrow inside AssertionError
           GemFireCacheImpl.getInstance().getLogger().fine("Exception creating the query service", ex);
         }
       }

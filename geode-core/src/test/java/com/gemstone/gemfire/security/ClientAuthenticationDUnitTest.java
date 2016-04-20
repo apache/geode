@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
@@ -75,6 +76,7 @@ public class ClientAuthenticationDUnitTest extends ClientAuthenticationTestCase 
     doTestCredentialsWithFailover(false);
   }
 
+  @Category(FlakyTest.class) // GEODE-838: random ports, thread sleeps, time sensitive
   @Test
   public void testCredentialsForNotifications() throws Exception {
     doTestCredentialsForNotifications(false);

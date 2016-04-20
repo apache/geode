@@ -47,14 +47,8 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-/**
- *
- */
 public class DistributedAckPersistentRegionCCEDUnitTest extends DistributedAckRegionCCEDUnitTest {
 
-  /**
-   * @param name
-   */
   public DistributedAckPersistentRegionCCEDUnitTest(String name) {
     super(name);
   }

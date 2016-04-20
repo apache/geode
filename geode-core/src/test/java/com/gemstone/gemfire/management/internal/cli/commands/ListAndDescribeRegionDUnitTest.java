@@ -46,6 +46,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
@@ -286,6 +287,7 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
    * Asserts that a describe region command issued on a region with compression returns the correct non default region
    * attribute for compression and the correct codec value.
    */
+  @Category(FlakyTest.class) // GEODE-1033: HeadlesssGFSH, random port, Snappy dependency
   @Test
   public void testDescribeRegionWithCompressionCodec() {
     final String regionName = "compressedRegion";

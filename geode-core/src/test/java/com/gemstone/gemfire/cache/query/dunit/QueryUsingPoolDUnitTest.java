@@ -26,6 +26,7 @@ import java.util.Set;
 
 import cacheRunner.Portfolio;
 import cacheRunner.Position;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
@@ -58,6 +59,7 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests remote (client/server) query execution.
@@ -1454,6 +1456,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   /**
    * Tests client-server query using parameters (compiled queries).
    */
+  @Category(FlakyTest.class) // GEODE-1146: time senstiive, thread sleeps, uses zero port for servers (good!), async actions, AsyncInvocation orphans
   public void testBindParamsWithMulitipleClients() throws CacheException {
 
     final String name = this.getName();

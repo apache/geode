@@ -45,8 +45,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *
  * @since 3.0
  */
-public class DistributedNoAckRegionDUnitTest
-  extends MultiVMRegionTestCase {
+public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
 
   public DistributedNoAckRegionDUnitTest(String name) {
     super(name);

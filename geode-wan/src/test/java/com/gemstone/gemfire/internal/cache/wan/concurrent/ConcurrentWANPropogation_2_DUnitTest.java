@@ -16,28 +16,28 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * All the test cases are similar to SerialWANPropogationDUnitTest except that
  * the we create concurrent serial GatewaySender with concurrency of 4
- *
  */
 public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
 
-  /**
-   * @param name
-   */
   public ConcurrentWANPropogation_2_DUnitTest(String name) {
     super(name);
   }
 
   private static final long serialVersionUID = 1L;
-  
+
+  @Category(FlakyTest.class) // GEODE-1121: random ports, async behavior, time sensitive, waitForCriterion, possibly memory intensive
   public void testSerialReplicatedWanWithOverflow() {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

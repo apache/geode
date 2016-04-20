@@ -16,16 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- *
- */
 public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
   
@@ -577,6 +577,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * Normal scenario in which a sender is stopped and then started again on accessor node.
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1011: random ports, time sensitive, waitForCriterion, 5 minute timeouts, 5 second thread sleeps, async actions
   public void testParallelPropagationSenderStartAfterStopOnAccessorNode() throws Throwable {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

@@ -22,6 +22,8 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -52,19 +54,13 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- *
- */
-public class PersistentColocatedPartitionedRegionDUnitTest extends
-    PersistentPartitionedRegionTestBase {
+public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPartitionedRegionTestBase {
 
   private static final int NUM_BUCKETS = 15;
   private static final int MAX_WAIT = 30 * 1000;
 
-  /**
-   * @param name
-   */
   public PersistentColocatedPartitionedRegionDUnitTest(String name) {
     super(name);
   }
@@ -1183,7 +1179,8 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends
     //make sure we didn't get an exception
     async0.getResult(MAX_WAIT);
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-506: time sensitive, async actions with 30 sec max
   public void testRebalanceWithOfflineChildRegion() throws Throwable {
     SerializableRunnable createParentPR = new SerializableRunnable() {
       public void run() {
@@ -1409,6 +1406,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends
    * a PR with persistent data.
    * @throws Throwable
    */
+  @Category(FlakyTest.class) // GEODE-900: disk dependency, filesystem sensitive
   public void testModifyColocation() throws Throwable {
     //Create PRs where region3 is colocated with region1.
     createColocatedPRs("region1");

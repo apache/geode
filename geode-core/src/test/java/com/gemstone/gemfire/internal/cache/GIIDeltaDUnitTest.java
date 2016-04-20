@@ -66,6 +66,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -73,10 +74,8 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.experimental.categories.Category;
 
-/**
- *
- */
 public class GIIDeltaDUnitTest extends CacheTestCase {
 
   VM P; // GII provider
@@ -1196,6 +1195,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * In this test, GII thread will get the GIILock before tombstone GC, so tombstone GC should 
    * wait for all GIIs to finish
    */
+  @Category(FlakyTest.class) // GEODE-633: SLOW_DISTRIBUTION_MS, non-thread safe test hook, async actions, time sensitive, waitForCriterion, thread joins, forceGC
   public void testTombstoneGCInMiddleOfGII() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1539,6 +1539,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * R off line, then run P7. Restart R. It will trigger deltaGII to chunk entry P7(key1).
    * After that, do clear(). Make sure R should not contain key1 after GII.     
    */
+  @Category(FlakyTest.class) // GEODE-1068: time sensitive, SLOW_DISTRIBUTION_MS, waitForCriterion, possible thread unsafe test hooks, async actions, depends on stats
   public void testClearAfterChunkEntries() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1724,6 +1725,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * Before GII, P's RVV is P7,R6(3-6), R's RVV is P6,R6, RVVGC are both P4,R0
    * By changing MAX_UNFINISHED_OPERATIONS to be 1, 2. It should be fullGII then deltaGII.    
    */
+  @Category(FlakyTest.class) // GEODE-686: time sensitive, SLOW_DISTRIBUTION_MS, forceGC
   public void testFullGIITriggeredByTooManyUnfinishedOps() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1894,6 +1896,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * at the end. 
    * @throws Throwable
    */
+  @Category(FlakyTest.class) // GEODE-1137: orphaned AsyncInvocations, time sensitive, GC, waitForCriterion, thread unsafe test hooks/observers, expiration
   public void testTombstoneGCDuringFullGII() throws Throwable {
     prepareForEachTest();
     

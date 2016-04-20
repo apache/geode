@@ -20,9 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Wait;
-
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
   
@@ -121,7 +123,7 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     assertEquals(1, createList2.size());
   }
   
-  
+  @Category(FlakyTest.class) // GEODE-1148: random ports, eats exceptions (fixed 1), time sensitive, thread sleeps, waitForCriterion
   public void testReplicatedSerialPropagationLoopBack3SitesLoop() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

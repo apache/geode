@@ -19,8 +19,10 @@ package com.gemstone.gemfire.internal.cache.wan.misc;
 import java.util.ArrayList;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
+import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.cache30.MyGatewayTransportFilter1;
 import com.gemstone.gemfire.cache30.MyGatewayTransportFilter2;
@@ -33,6 +35,7 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class WanValidationsDUnitTest extends WANTestBase {
 
@@ -1247,7 +1250,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
       }
     }
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-1019: random ports, time sensitive, waitForCriterion, suspect string: loss of quorum
   public void testBug50434_PR_Parallel_pass() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

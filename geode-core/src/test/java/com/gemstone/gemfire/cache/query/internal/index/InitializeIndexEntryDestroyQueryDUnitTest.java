@@ -18,6 +18,8 @@ package com.gemstone.gemfire.cache.query.internal.index;
 
 import java.util.Arrays;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
@@ -41,13 +43,12 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Test creates a local region. Creates and removes index in a parallel running thread.
  * Then destroys and puts back entries in separated thread in the same region and runs
  * query parallely and checks for UNDEFINED values in result set of the query.
- *
- *
  */
 public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
 
@@ -207,6 +208,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1036: uses PRQueryDUnitHelper, time sensitive, async actions, overly long joins (16+ minutes), eats exceptions (fixed 1), thread sleeps
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -255,7 +257,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
             index = cache.getQueryService().createIndex("statusIndex", "p.status", "/"+name+" p");
           } catch (Exception e1) {
             e1.printStackTrace();
-            fail("Index creation failed");
+            Assert.fail("Index creation failed", e1);
           }
           assertNotNull(index);
 
@@ -320,7 +322,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
             PRQHelp.getCache().getLogger().fine("Querying the region");
             results = (SelectResults)query.execute();
           } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // TODO: eats exceptions
           }
 
           for (Object obj : results) {
@@ -332,12 +334,12 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
       }
     });
 
-    ThreadUtils.join(asyInvk0, 1000 * 1000);
+    ThreadUtils.join(asyInvk0, 1000 * 1000); // TODO: this is way too long: 16.67 minutes!
     if (asyInvk0.exceptionOccurred()) {
       Assert.fail("asyInvk0 failed", asyInvk0.getException());
     }
     
-    ThreadUtils.join(asyInvk1, 1000 * 1000);
+    ThreadUtils.join(asyInvk1, 1000 * 1000); // TODO: this is way too long: 16.67 minutes!
     if (asyInvk1.exceptionOccurred()) {
       Assert.fail("asyInvk1 failed", asyInvk1.getException());
     }

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException;
@@ -27,11 +29,10 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.RMIException;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * DUnit test for operations on ParallelGatewaySender
- * 
- *
  */
 public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
@@ -249,6 +250,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * Normal scenario in which a sender is stopped and then started again.
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-933: thread sleeps, random ports, async actions, time sensitive
   public void testParallelPropagationSenderStartAfterStop() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     Integer[] locatorPorts = createLNAndNYLocators();

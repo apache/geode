@@ -60,7 +60,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 /**
  * Dunit class for testing gemfire function commands : GC, Shutdown
  */
-@Category({ DistributedTest.class, FlakyTest.class }) // see GEODE-1034
+@Category(DistributedTest.class)
 public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -78,6 +78,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
+  @Category(FlakyTest.class) // GEODE-1034: random ports, GC sensitive, memory sensitive, HeadlessGFSH
   @Test
   public void testGCForGroup() {
     Properties localProps = new Properties();

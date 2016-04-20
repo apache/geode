@@ -268,9 +268,9 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       info("Started testable shell: " + shell);
       return shell;
     } catch (ClassNotFoundException e) {
-      throw new AssertionError(getStackTrace(e));
+      throw new AssertionError(e);
     } catch (IOException e) {
-      throw new AssertionError(getStackTrace(e));
+      throw new AssertionError(e);
     }
   }
 
@@ -333,9 +333,9 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     try {
       info("Executing command " + command + " with command Mgr " + CommandManager.getInstance());
     } catch (ClassNotFoundException cnfex) {
-      throw new AssertionError(getStackTrace(cnfex));
+      throw new AssertionError(cnfex);
     } catch (IOException ioex) {
-      throw new AssertionError(getStackTrace(ioex));
+      throw new AssertionError(ioex);
     }
 
     shell.executeCommand(command);
@@ -526,12 +526,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     }
 
     return stringToSearch.substring(startIndex, endIndex);
-  }
-
-  protected static String getStackTrace(Throwable aThrowable) {
-    StringWriter sw = new StringWriter();
-    aThrowable.printStackTrace(new PrintWriter(sw, true));
-    return sw.toString();
   }
 
   protected void info(String string) {
