@@ -326,8 +326,6 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
   @Ignore("disabled for some reason?")
   @Test
   public void testP2PViewChangeReject() throws Exception {
-    int locatorPort = getRandomAvailablePort(SOCKET);
-
     final Host host = Host.getHost(0);
     final VM peer2 = host.getVM(1);
     final VM peer3 = host.getVM(2);

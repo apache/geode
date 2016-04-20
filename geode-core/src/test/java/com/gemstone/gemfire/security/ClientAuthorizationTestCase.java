@@ -56,6 +56,7 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.internal.AvailablePort.*;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.AbstractRegionEntry;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
@@ -756,7 +757,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         if (useThisVM) {
           SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps, new int[] { port1, port2 }, 0, setupDynamicRegionFactory, NO_EXCEPTION);
         } else {
-          clientVM.invoke(() -> SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps, new int[] { port1, port2 }, 0, setupDynamicRegionFactory, NO_EXCEPTION));
+          clientVM.invoke("SecurityTestUtils.createCacheClientWithDynamicRegion",
+              () -> SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps, new int[] { port1, port2 }, 0, setupDynamicRegionFactory, NO_EXCEPTION));
         }
       }
 
@@ -775,7 +777,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
       } else {
         byte ordinal = opCode.toOrdinal();
         int[] indices = currentOp.getIndices();
-        clientVM.invoke(() -> ClientAuthorizationTestCase.doOp( new Byte(ordinal), indices, new Integer(opFlags), new Integer(expectedResult) ));
+        clientVM.invoke("ClientAuthorizationTestCase.doOp",
+            () -> ClientAuthorizationTestCase.doOp( new Byte(ordinal), indices, new Integer(opFlags), new Integer(expectedResult) ));
       }
     }
   }
@@ -828,10 +831,11 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     Properties serverProps = buildProperties(authenticator, accessor, false, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    Keeper locator1PortKeeper = getRandomAvailablePortKeeper(SOCKET);
-    Keeper locator2PortKeeper = getRandomAvailablePortKeeper(SOCKET);
-    Keeper port1Keeper = getRandomAvailablePortKeeper(SOCKET);
-    Keeper port2Keeper = getRandomAvailablePortKeeper(SOCKET);
+    List<Keeper> randomAvailableTCPPortKeepers = AvailablePortHelper.getRandomAvailableTCPPortKeepers(4);
+    Keeper locator1PortKeeper = randomAvailableTCPPortKeepers.get(0);
+    Keeper locator2PortKeeper = randomAvailableTCPPortKeepers.get(1);
+    Keeper port1Keeper = randomAvailableTCPPortKeepers.get(2);
+    Keeper port2Keeper = randomAvailableTCPPortKeepers.get(3);
     int locator1Port = locator1PortKeeper.getPort();
     int locator2Port = locator2PortKeeper.getPort();
     int port1 = port1Keeper.getPort();
@@ -852,8 +856,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
           port1Keeper.release();
 
           // Start the first server and execute the operation block
-          server1.invoke(() -> ClientAuthorizationTestCase.createCacheServer(locator1Port, port1, serverProps, javaProps ));
-          server2.invoke(() -> closeCache());
+          server1.invoke("createCacheServer", () -> ClientAuthorizationTestCase.createCacheServer(locator1Port, port1, serverProps, javaProps ));
+          server2.invoke("closeCache", () -> closeCache());
 
           executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps, extraAuthzProps, tgen, rnd);
 
@@ -862,8 +866,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
             locator2PortKeeper.release();
             port2Keeper.release();
 
-            server2.invoke(() -> ClientAuthorizationTestCase.createCacheServer(locator2Port, port2, serverProps, javaProps ));
-            server1.invoke(() -> closeCache());
+            server2.invoke("createCacheServer", () -> ClientAuthorizationTestCase.createCacheServer(locator2Port, port2, serverProps, javaProps ));
+            server1.invoke("closeCache", () -> closeCache());
 
             executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps, extraAuthzProps, tgen, rnd);
           }

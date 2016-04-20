@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -86,8 +87,9 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
     Properties serverProps = buildProperties(authenticator, accessor, true, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    int port1 = getRandomAvailablePort(SOCKET);
-    int port2 = getRandomAvailablePort(SOCKET);
+    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int port1 = randomAvailableTCPPorts[0];
+    int port2 = randomAvailableTCPPorts[1];
 
     // Perform all the ops on the clients
     List opBlock = new ArrayList();
