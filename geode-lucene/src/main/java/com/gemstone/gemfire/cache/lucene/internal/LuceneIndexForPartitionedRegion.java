@@ -138,13 +138,14 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   Region createFileRegion(final RegionShortcut regionShortCut,
                                 final String fileRegionName,
-                                final PartitionAttributes partitionAttributes)
-  {
+                                final PartitionAttributes partitionAttributes) {
+    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory<String, File>();
+    partitionAttributesFactory.setColocatedWith(regionPath);
+    configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
+
     return cache.<String, File> createRegionFactory(regionShortCut)
-        .setPartitionAttributes(new PartitionAttributesFactory<String, File>().setColocatedWith(regionPath)
-            .setTotalNumBuckets(partitionAttributes.getTotalNumBuckets())
-            .create())
-            .create(fileRegionName);
+        .setPartitionAttributes(partitionAttributesFactory.create())
+        .create(fileRegionName);
   }
 
   String createFileRegionName() {
@@ -157,12 +158,13 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   Region<ChunkKey, byte[]> createChunkRegion(final RegionShortcut regionShortCut,
                            final String fileRegionName,
-                           final PartitionAttributes partitionAttributes, final String chunkRegionName)
-  {
+                           final PartitionAttributes partitionAttributes, final String chunkRegionName) {
+    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory<String, File>();
+    partitionAttributesFactory.setColocatedWith(fileRegionName);
+    configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
+
     return cache.<ChunkKey, byte[]> createRegionFactory(regionShortCut)
-      .setPartitionAttributes(new PartitionAttributesFactory<ChunkKey, byte[]>().setColocatedWith(fileRegionName)
-        .setTotalNumBuckets(partitionAttributes.getTotalNumBuckets())
-        .create())
+      .setPartitionAttributes(partitionAttributesFactory.create())
       .create(chunkRegionName);
   }
 
@@ -170,7 +172,11 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return LuceneServiceImpl.getUniqueIndexName(indexName, regionPath) + ".chunks";
   }
 
-
+  private PartitionAttributesFactory configureLuceneRegionAttributesFactory(PartitionAttributesFactory attributesFactory, PartitionAttributes dataRegionAttributes) {
+    attributesFactory.setTotalNumBuckets(dataRegionAttributes.getTotalNumBuckets());
+    attributesFactory.setRedundantCopies(dataRegionAttributes.getRedundantCopies());
+    return attributesFactory;
+  }
 
   public void close() {
     // TODO Auto-generated method stub
