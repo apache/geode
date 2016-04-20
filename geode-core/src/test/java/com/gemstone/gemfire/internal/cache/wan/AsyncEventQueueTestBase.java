@@ -101,12 +101,6 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
 
   protected static VM vm4;
 
-  protected static VM vm5;
-
-  protected static VM vm6;
-
-  protected static VM vm7;
-
   protected static AsyncEventListener eventListener1;
 
   private static final long MAX_WAIT = 10000;
@@ -134,9 +128,6 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     vm2 = host.getVM(2);
     vm3 = host.getVM(3);
     vm4 = host.getVM(4);
-    vm5 = host.getVM(5);
-    vm6 = host.getVM(6);
-    vm7 = host.getVM(7);
   }
 
   @Override
@@ -1549,9 +1540,6 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     vm2.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
     vm3.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
     vm4.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm5.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm6.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm7.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
   }
 
   public static void cleanupVM() throws IOException {
