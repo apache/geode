@@ -16,21 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -43,9 +28,19 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
@@ -72,7 +67,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     preTearDownCliCommandTestBase();
     destroyDefaultSetup();
   }
-  
+
   protected void preTearDownCliCommandTestBase() throws Exception {
   }
 
@@ -89,41 +84,38 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    */
   @SuppressWarnings("serial")
   protected final HeadlessGfsh createDefaultSetup(final Properties props) {
-    Object[] result = (Object[]) Host.getHost(0).getVM(0).invoke(new SerializableCallable() {
-      public Object call() {
-        final Object[] result = new Object[3];
-        final Properties localProps = (props != null ? props : new Properties());
+    Object[] result = Host.getHost(0).getVM(0).invoke("create Default setup",() -> {
+      final Object[] returnValue = new Object[3];
+      final Properties localProps = (props != null ? props : new Properties());
 
-        try {
-          jmxHost = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException ignore) {
-          jmxHost = "localhost";
-        }
-
-        if (!localProps.containsKey(DistributionConfig.NAME_NAME)) {
-          localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
-        }
-
-        final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-
-        jmxPort = ports[0];
-        httpPort = ports[1];
-
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
-        localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
-
-        getSystem(localProps);
-        verifyManagementServiceStarted(getCache());
-
-        result[0] = jmxHost;
-        result[1] = jmxPort;
-        result[2] = httpPort;
-
-        return result;
+      try {
+        jmxHost = InetAddress.getLocalHost().getHostName();
+      } catch (UnknownHostException ignore) {
+        jmxHost = "localhost";
       }
+
+      if (!localProps.containsKey(DistributionConfig.NAME_NAME)) {
+        localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
+      }
+      final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+
+      jmxPort = ports[0];
+      httpPort = ports[1];
+
+      localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
+      localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
+      localProps.setProperty(DistributionConfig.JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
+      localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
+      localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
+
+      getSystem(localProps);
+      verifyManagementServiceStarted(getCache());
+
+      returnValue[0] = jmxHost;
+      returnValue[1] = jmxPort;
+      returnValue[2] = httpPort;
+
+      return returnValue;
     });
 
     this.jmxHost = (String) result[0];
@@ -150,11 +142,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
     disconnectAllFromDS();
 
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      public void run() {
-        verifyManagementServiceStopped();
-      }
-    });
+    Host.getHost(0).getVM(0).invoke("verify service stopped", () -> verifyManagementServiceStopped());
   }
 
   /**
@@ -176,7 +164,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     try {
       manager = CommandManager.getInstance();
       Map<String, CommandTarget> commands = manager.getCommands();
-      Set set = commands.keySet();
       if (commands.size() < 1) {
         return false;
       }
