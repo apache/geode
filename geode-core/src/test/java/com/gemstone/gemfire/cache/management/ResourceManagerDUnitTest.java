@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -66,13 +67,13 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests com.gemstone.gemfire.cache.control.ResourceManager.
  * 
  * TODO: javadoc this test properly and cleanup the helper methods to be
  * more flexible and understandable
- *  
  */
 public class ResourceManagerDUnitTest extends CacheTestCase {
   private static final Logger logger = LogService.getLogger();
@@ -968,6 +969,8 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
         }
       });
   }
+
+  @Category(FlakyTest.class) // GEODE-755: thread unsafe test hook (bucketReadHook), remove bucket fails, possible product bug in rebalancing
   public void testRemoveDuringGet() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {
         public void runit(PartitionedRegion pr, Object key, Object value) {
@@ -975,6 +978,8 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
         }
       });
   }
+
+  @Category(FlakyTest.class) // GEODE-673: thread unsafe test hook (bucketReadHook), remove bucket fails, possible product bug in rebalancing
   public void testRemoveDuringContainsKey() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {
         public void runit(PartitionedRegion pr, Object key, Object value) {
@@ -982,6 +987,7 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
         }
       });
   }
+
   public void testRemoveDuringContainsValueForKey() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {
         public void runit(PartitionedRegion pr, Object key, Object value) {
@@ -989,6 +995,7 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
         }
       });
   }
+
   public void testRemoveDuringKeySet() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {
         public void runit(PartitionedRegion pr, Object key, Object value) {
@@ -996,6 +1003,7 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
         }
       });
   }
+
   public void testRemoveDuringValues() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {
         public void runit(PartitionedRegion pr, Object key, Object value) {
@@ -1003,6 +1011,7 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
         }
       });
   }
+
   public void testRemoveDuringEntrySet() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {
         public void runit(PartitionedRegion pr, Object key, Object value) {
@@ -1014,6 +1023,7 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
         }
       });
   }
+
   public void testRemoveDuringQuery() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {
         public void runit(PartitionedRegion pr, Object key, Object value) {
@@ -1029,8 +1039,7 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
         }
       });
   }
-  
-  
+
   public void testRemoveBucketMessage() {
     final String[] regionPath = new String[] {
         getUniqueName() + "-PR-0"
@@ -1129,6 +1138,7 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
    * Creates a chain of three colocated PRs and then calls removeBucket
    * to make sure that all colocated buckets are removed together.
    */
+  @Category(FlakyTest.class) // GEODE-928: RemoveBucketMessage failure?
   public void testRemoveColocatedBuckets() {
     final String[] regionPath = new String[] {
         getUniqueName() + "-PR-0", 

@@ -54,6 +54,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
@@ -67,6 +70,7 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests the ability of the {@link Locator} API to start and stop
@@ -1436,6 +1440,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * end up only have 1 master.
    * GEODE-870
    */
+  @Category(FlakyTest.class) // GEODE-1150: random ports, disk pollution, waitForCriterion, time sensitive, eats exceptions (fixed several)
   public void testMultipleLocatorsRestartingAtSameTime() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -1494,7 +1499,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
               return system.getDM().getViewMembers().size() == 6;
             } catch (Exception e) {
               e.printStackTrace();
-              fail("unexpected exception");
+              com.gemstone.gemfire.test.dunit.Assert.fail("unexpected exception", e);
             }
             return false; // NOTREACHED
           }
@@ -1518,7 +1523,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
               return system.getDM().getAllHostedLocators().size() == 0;
             } catch (Exception e) {
               e.printStackTrace();
-              fail("unexpected exception");
+              com.gemstone.gemfire.test.dunit.Assert.fail("unexpected exception", e);
             }
             return false; // NOTREACHED
           }
@@ -1546,7 +1551,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
               return system.getDM().getAllHostedLocators().size() == 2;
             } catch (Exception e) {
               e.printStackTrace();
-              fail("unexpected exception");
+              com.gemstone.gemfire.test.dunit.Assert.fail("unexpected exception", e);
             }
             return false; // NOTREACHED
           }

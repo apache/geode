@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.Statistics;
@@ -66,6 +68,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests the ClientMembership API including ClientMembershipListener.
@@ -741,6 +744,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
    * server joins when the client connects to the server. If the server
    * crashes or departs gracefully, the client will detect this as a crash.
    */
+  @Category(FlakyTest.class) // GEODE-1240: eats exceptions, random ports, time sensitive waits
   public void testClientMembershipEventsInClient() throws Exception {
     getSystem();
     IgnoredException.addIgnoredException("IOException");

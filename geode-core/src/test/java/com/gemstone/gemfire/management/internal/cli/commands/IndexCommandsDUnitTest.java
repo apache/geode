@@ -55,7 +55,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-@Category({ DistributedTest.class, FlakyTest.class }) // see GEODE-689, GEODE-1048
+@Category(DistributedTest.class)
 @RunWith(Parameterized.class)
 public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
@@ -232,6 +232,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(indexName));
   }
 
+  @Category(FlakyTest.class) // GEODE-1048: HeadlessGFSH, random ports
+  @Test
   public void testCreateMultipleIndexes() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
@@ -265,6 +267,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(indexName));
   }
 
+  @Category(FlakyTest.class) // GEODE-689: random ports, unused returns, HeadlessGfsh
+  @Test
   public void testClearMultipleIndexes() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
@@ -298,6 +302,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(!resultAsString.contains(indexName));
   }
 
+  @Test
   public void testCreateAndDestroyIndexOnMember() {
     setupSystem();
     /***
@@ -347,6 +352,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(resultAsString.contains(VM1Name));
   }
 
+  @Test
   public void testCreateAndDestroyIndexOnGroup() {
     setupSystem();
     /***
@@ -414,6 +420,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testCreateAndDestroyIndexWithIncorrectInput() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
@@ -532,6 +539,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
   }
 
+  @Test
   public void testDestroyIndexWithoutIndexName() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
@@ -593,6 +601,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating and destroying indexes correctly updates the shared configuration.
    */
+  @Test
   public void testCreateDestroyUpdatesSharedConfig() {
     disconnectAllFromDS();
 

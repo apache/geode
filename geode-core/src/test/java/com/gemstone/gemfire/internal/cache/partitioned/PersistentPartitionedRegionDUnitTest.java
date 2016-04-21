@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -88,10 +89,10 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests the basic use cases for PR persistence.
- *
  */
 public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedRegionTestBase {
   private static final int NUM_BUCKETS = 15;
@@ -441,7 +442,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     }
     ex.remove();
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-974: async actions, time sensitive, 65 second timeouts
   public void testRevokeBeforeStartup() throws Throwable {
     IgnoredException.addIgnoredException("RevokeFailedException");
     Host host = Host.getHost(0);
@@ -1070,10 +1072,12 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     
     
   
-  /** Test the with redundancy
+  /**
+   * Test the with redundancy
    * 1, we restore the same buckets when the
    * missing member comes back online.
    */
+  @Category(FlakyTest.class) // GEODE-1047: thread unsafe test hook, CountDownLatch, async behavior
   public void testMissingMemberRedundancy1() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1627,8 +1631,9 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * 4. Member B destroys the bucket and throws a partition offline exception, because it wasn't able to complete initialization.
    * 5. Member A recovers, and gets stuck waiting for member B.
    * @throws Throwable 
-  */
-  public void testBug42226() throws Throwable {
+   */
+  @Category(FlakyTest.class) // GEODE-1208: time sensitive, multiple non-thread-safe test hooks, async actions
+  public void testBug42226() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);

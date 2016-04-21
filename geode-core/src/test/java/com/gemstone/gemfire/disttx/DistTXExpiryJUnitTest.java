@@ -33,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Same tests as that of {@link TXExpiryJUnitTest} after setting
  * "distributed-transactions" property to true
- *
  */
 @Category({IntegrationTest.class, DistributedTransactionsTest.class })
 public class DistTXExpiryJUnitTest extends TXExpiryJUnitTest {

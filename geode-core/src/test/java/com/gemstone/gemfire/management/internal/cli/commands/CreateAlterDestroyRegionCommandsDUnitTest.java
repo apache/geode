@@ -35,6 +35,10 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -63,18 +67,10 @@ import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.Retry;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.gemstone.gemfire.test.junit.rules.RetryRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-@Category({ DistributedTest.class, FlakyTest.class }) // GEODE-973
+@Category(DistributedTest.class)
 @RunWith(Parameterized.class)
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
 
@@ -94,9 +90,6 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   String alterVm2Name;
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
-
-  @Rule
-  public RetryRule retryRule = new RetryRule();
 
   public CreateAlterDestroyRegionCommandsDUnitTest(boolean useHttpOnConnect){
     super(useHttpOnConnect);
@@ -367,8 +360,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     };
   }
 
+  @Category(FlakyTest.class) // GEODE-973: random ports, BindException, java.rmi.server.ExportException: Port already in use
   @Test
-  @Retry(2) // GEODE-973: getRandomAvailablePort
   public void testCreateRegion46391() throws IOException {
     setUpJmxManagerOnVm0ThenConnect(null); // GEODE-973: getRandomAvailablePort
     String command = CliStrings.CREATE_REGION + " --" + CliStrings.CREATE_REGION__REGION + "=" + this.region46391 + " --" + CliStrings.CREATE_REGION__REGIONSHORTCUT + "=REPLICATE";

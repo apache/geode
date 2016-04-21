@@ -35,6 +35,7 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -60,6 +61,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
         "localhost[" + locatorPort + "]").toString());
   }
 
+  @Category(FlakyTest.class) // GEODE-989: random ports, suspect string: DiskAccessException, disk pollution, HeadlessGfsh, time sensitive
   @Test
   public void testConnectToLocatorBecomesManager() {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
@@ -295,7 +297,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void testHistory() {
+  public void testHistoryWithEntry() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
     if (gfshInstance == null) {
@@ -303,9 +305,39 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
 
     gfshInstance.setDebug(false);
+
+    // Generate a line of history
+    executeCommand("help");
+    executeCommand("connect");
+
+    String command = "history";
+    CommandResult cmdResult = executeCommand(command);
+    String result = printCommandOutput(cmdResult);
+
+    assertEquals("  1  0: help\n  2  1: connect\n\n\n", result);
+
+    if (cmdResult != null) {
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+    } else {
+      fail("testHistory failed");
+    }
+  }
+
+  @Test
+  public void testEmptyHistory() {
+    Gfsh gfshInstance = Gfsh.getCurrentInstance();
+
+    if (gfshInstance == null) {
+      fail("In testHistory command gfshInstance is null");
+    }
+
+    gfshInstance.setDebug(false);
+
     String command = "history";
     CommandResult cmdResult = executeCommand(command);
     printCommandOutput(cmdResult);
+    cmdResult.resetToFirstLine();
+    assertEquals("", cmdResult.nextLine());
 
     if (cmdResult != null) {
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -322,8 +354,12 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
       fail("In testHistory command gfshInstance is null");
     }
 
+    // Generate a line of history
+    executeCommand("help");
+
     String historyFileName = gfshInstance.getGfshConfig().getHistoryFileName();
     File historyFile = new File(historyFileName);
+    historyFile.deleteOnExit();
     String fileName = historyFile.getParent();
     fileName = fileName + File.separator + getClass().getSimpleName() + "_" + getName() + "-exported.history";
 
@@ -336,6 +372,8 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     } else {
       fail("testHistory failed");
     }
+    assertTrue(historyFile.exists());
+    assertTrue(0L != historyFile.length());
   }
 
   @Test
@@ -347,6 +385,10 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
 
     gfshInstance.setDebug(false);
+
+    // Generate a line of history
+    executeCommand("help");
+
     String command = "history --clear";
     CommandResult cmdResult = executeCommand(command);
     printCommandOutput(cmdResult);
@@ -363,7 +405,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  private static void printCommandOutput(CommandResult cmdResult) {
+  private static String printCommandOutput(CommandResult cmdResult) {
     assertNotNull(cmdResult);
     getLogWriter().info("Command Output : ");
     StringBuilder sb = new StringBuilder();
@@ -373,6 +415,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
     getLogWriter().info(sb.toString());
     getLogWriter().info("");
+    return sb.toString();
   }
 
   private void printAllEnvs(Gfsh gfsh) {

@@ -39,6 +39,8 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
 
   private static final Logger logger = LogService.getLogger();
+
+  private volatile boolean stopped = false;
   
   private ExecutorService _executor;
   
@@ -65,8 +67,17 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
     exchangeRemoteLocators(port, config, locatorListener);
     this._executor.shutdown();
   }
-  
-  
+
+  @Override
+  public void stop() {
+    this.stopped = true;
+  }
+
+  @Override
+  public boolean isStopped() {
+    return this.stopped;
+  }
+
   /**
    * For WAN 70 Exchange the locator information within the distributed system
    * 
@@ -90,7 +101,7 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
       DistributionLocatorId localLocatorId = new DistributionLocatorId(
           locatorsOnThisVM.nextToken());
       if (!locatorId.equals(localLocatorId)) {
-        LocatorDiscovery localDiscovery = new LocatorDiscovery(localLocatorId, request, locatorListener);
+        LocatorDiscovery localDiscovery = new LocatorDiscovery(this, localLocatorId, request, locatorListener);
         LocatorDiscovery.LocalLocatorDiscovery localLocatorDiscovery = localDiscovery.new LocalLocatorDiscovery();
         this._executor.execute(localLocatorDiscovery);
       }
@@ -112,7 +123,7 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
       while (remoteLocators.hasMoreTokens()) {
         DistributionLocatorId remoteLocatorId = new DistributionLocatorId(
             remoteLocators.nextToken());
-        LocatorDiscovery localDiscovery = new LocatorDiscovery(remoteLocatorId,
+        LocatorDiscovery localDiscovery = new LocatorDiscovery(this, remoteLocatorId,
             request, locatorListener);
         LocatorDiscovery.RemoteLocatorDiscovery remoteLocatorDiscovery = localDiscovery.new RemoteLocatorDiscovery();
         this._executor.execute(remoteLocatorDiscovery);

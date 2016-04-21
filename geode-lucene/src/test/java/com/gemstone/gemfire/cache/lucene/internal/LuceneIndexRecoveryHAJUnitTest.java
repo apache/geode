@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal;
 
 import static org.junit.Assert.*;
@@ -55,11 +54,13 @@ import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.jayway.awaitility.Awaitility;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexRecoveryHAJUnitTest {
+
   private static final String INDEX = "index";
   private static final String REGION = "indexedRegion";
   String[] indexedFields = new String[] { "txt" };
@@ -121,6 +122,7 @@ public class LuceneIndexRecoveryHAJUnitTest {
     Assert.assertNotEquals(newRepo, repo);
   }
 
+  @Category(FlakyTest.class) // GEODE-1012: time sensitive, awaitility, short timeout
   @Test
   public void recoverPersistentIndex() throws Exception {
     String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX, REGION);
@@ -166,6 +168,7 @@ public class LuceneIndexRecoveryHAJUnitTest {
     userRegion.destroyRegion();
   }
 
+  @Category(FlakyTest.class) // GEODE-1013: time sensitive, awaitility, short timeout, possible disk pollution
   @Test
   public void overflowRegionIndex() throws Exception {
     String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX, REGION);

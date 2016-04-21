@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
@@ -75,6 +76,7 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
@@ -337,6 +339,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   // Put data, get data and make the metadata stable.
   // Now verify that metadata has all 8 buckets info.
   // Now update and ensure the fetch service is never called.
+  @Category(FlakyTest.class) // GEODE-493: random ports, waitForCriterions
   public void test_MetadataContents() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
@@ -362,6 +365,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   // once,
   // fetchservice has to be triggered.
   // Now put again from c2.There should be no hop at all.
+  @Category(FlakyTest.class) // GEODE-699: random ports, async actions, time sensitive
   public void test_MetadataServiceCallAccuracy() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
@@ -679,6 +683,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     assertFalse(cms.isRefreshMetadataTestOnly());
   }
 
+  @Category(FlakyTest.class) // GEODE-853: random ports, pause sleeps, time sensitive, 5 second thread sleeps
   public void testServerLocationRemovalThroughPing() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));

@@ -43,6 +43,7 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -156,6 +157,7 @@ public class GemcachedDevelopmentJUnitTest {
     assertNull(client.get("key1"));
   }
 
+  @Category(FlakyTest.class) // GEODE-1140: time sensitive, thread sleep
   @Test
   public void testExpiration() throws Exception {
     MemcachedClient client = bootstrapClient();

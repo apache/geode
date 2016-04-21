@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -49,16 +51,13 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
- * 
- * 
  * Tests the reliable messaging functionality - Client sends a periodic
  * ack to the primary server for the messages received.
- * 
  */
-public class ReliableMessagingDUnitTest extends DistributedTestCase
-{
+public class ReliableMessagingDUnitTest extends DistributedTestCase {
 
   static VM server1 = null;
 
@@ -106,11 +105,12 @@ public class ReliableMessagingDUnitTest extends DistributedTestCase
     server1.invoke(() -> ReliableMessagingDUnitTest.checkTidAndSeq());   
   }
 
-  /*
+  /**
    * If the primary fails before receiving an ack from the messages it delivered
    * then it should send an ack to the new primary so that new primary can sends
    * QRM to other redundant servers.    
    */
+  @Category(FlakyTest.class) // GEODE-694: async queuing
   public void testPeriodicAckSendByClientPrimaryFailover() throws Exception {    
     IgnoredException.addIgnoredException("java.net.ConnectException");
     createEntries();

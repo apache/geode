@@ -61,18 +61,14 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    vm4.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2,
-        true, 10, 10, false, false, null, true ));
-    vm5.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2,
-        true, 10, 10, false, false, null, true ));
-    vm6.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2,
-        true, 10, 10, false, false, null, true ));
-    vm7.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2,
-        true, 10, 10, false, false, null, true ));
+    vm4.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2, 10, 10, false, true ));
+    vm5.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2, 10, 10, false, true ));
+    vm6.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2, 10, 10, false, true ));
+    vm7.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2, 10, 10, false, true ));
 
     vm4.invoke(() -> WANTestBase.createPartitionedRegion(
         getTestMethodName(), "ln", 1, 100, isOffHeap() ));
@@ -127,8 +123,8 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.resumeSender( "ln" ));
     vm7.invoke(() -> WANTestBase.resumeSender( "ln" ));
     
-    vm2.invoke(() -> WANTestBase.validateRegionSize( getTestMethodName(), 50 ));
-    vm3.invoke(() -> WANTestBase.validateRegionSize( getTestMethodName(), 50 ));
+    vm2.invoke(() -> WANTestBase.validateRegionSize( getTestMethodName(), 50, 240000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize( getTestMethodName(), 50, 240000 ));
   }
   
   /**
@@ -141,7 +137,7 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -222,7 +218,7 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -303,7 +299,7 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 

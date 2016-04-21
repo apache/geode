@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
@@ -49,6 +51,8 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+
 /**
  * Test class for Partitioned Region and CQs
  * 
@@ -56,7 +60,6 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
  */
 public class PrCqUsingPoolDUnitTest extends CacheTestCase {
 
-  
   public PrCqUsingPoolDUnitTest(String name) {
     super(name);
   }
@@ -1189,6 +1192,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
    * thus making the query data and region data inconsistent.
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1181: random ports, eats exceptions (fixed some), async behavior
   public void testEventsDuringQueryExecution() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1250,9 +1254,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
         try {
           cqResults = cq1.executeWithInitialResults();
         } catch (Exception ex){
-          AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
-          err.initCause(ex);
-          throw err;
+          throw new AssertionError("Failed to execute  CQ " + cqName, ex);
         }
         
         //getLogWriter().info("initial result size = " + cqResults.size());
@@ -1952,7 +1954,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
           cqService = (PoolManager.find(poolName)).getQueryService();
         } catch (Exception cqe) {
           cqe.printStackTrace();
-          fail("Failed to getCQService.");
+          Assert.fail("Failed to getCQService.", cqe);
         }
         // Create CQ Attributes.
         CqAttributesFactory cqf = new CqAttributesFactory();
@@ -1968,10 +1970,8 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
           assertTrue("newCq() state mismatch", cq1.getState().isStopped());
           LogWriterUtils.getLogWriter().info("Created a new CqQuery : "+cq1);
         } catch (Exception ex){
-          AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
-          err.initCause(ex);
-          LogWriterUtils.getLogWriter().info("CqService is :" + cqService, err);
-          throw err;
+          LogWriterUtils.getLogWriter().info("CqService is :" + cqService, ex);
+          throw new AssertionError("Failed to create CQ " + cqName + " . ", ex);
         }
       }
     });   

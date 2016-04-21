@@ -21,6 +21,8 @@ package com.gemstone.gemfire.cache.query.internal.index;
 
 import java.util.Collection;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
@@ -50,6 +52,7 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This test is similar to {@link ConcurrentIndexUpdateWithoutWLDUnitTest} except
@@ -58,11 +61,8 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
  * 
  * During validation all region operations are paused for a while. Validation
  * happens multiple time during one test run on a fixed time interval.
- * 
- * 
  */
-public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends
-    DistributedTestCase {
+public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends DistributedTestCase {
   
   PRQueryDUnitHelper helper = new PRQueryDUnitHelper("ConcurrentIndexUpdateWithoutWLDUnitTest");
   private static String regionName = "Portfolios";
@@ -173,6 +173,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends
     };
   }
 
+  @Category(FlakyTest.class) // GEODE-431: time sensitive, uses PRQueryDUnitHelper whcih eats exceptions, async actions, uses Random
   public void testRangeIndex() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

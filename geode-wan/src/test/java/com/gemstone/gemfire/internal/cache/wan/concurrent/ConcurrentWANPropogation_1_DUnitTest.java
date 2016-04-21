@@ -84,8 +84,8 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
   
-    vm2.invoke(() -> WANTestBase.createReceiver(nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver(nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(() -> WANTestBase.createReceiver());
     
     vm4.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_RR", 1000 ));
@@ -100,7 +100,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -143,7 +143,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -230,7 +230,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
 
     //these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
     //these are part of local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -310,7 +310,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
 
     //these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
 
     //these are part of local site
@@ -379,7 +379,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
 
     //these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //these are part of local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -457,7 +457,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);

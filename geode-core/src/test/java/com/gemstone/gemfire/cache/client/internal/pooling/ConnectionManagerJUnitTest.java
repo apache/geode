@@ -62,13 +62,12 @@ import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class ConnectionManagerJUnitTest {
+
   private static final long TIMEOUT = 30 * 1000;
   //This is added for some windows machines which think the connection expired
   //before the idle timeout due to precision issues.
@@ -228,7 +227,8 @@ public class ConnectionManagerJUnitTest {
 //    }
 //    
 //  }
-  
+
+  @Category(FlakyTest.class) // GEODE-923: time sensitive, expiration, thread sleeps, wait loop
   @Test
   public void testIdleExpiration() throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
     final long nanoToMillis = 1000000;

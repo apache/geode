@@ -29,6 +29,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.experimental.categories.Category;
 import util.TestException;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -93,6 +94,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests the Heap Memory thresholds of {@link ResourceManager}
@@ -398,6 +400,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    * 
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-427: random ports, time sensitive, waitForCriterions
   public void testEventDelivery() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -566,6 +569,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     prRemotePutRejection(true, false, true);
   }
 
+  @Category(FlakyTest.class) // GEODE-987: random ports, failed to throw expected ResourceException, overly complex expected exception handling, memory and GC sensitive, expiration, waitForCriterion
   public void testPR_RemotePutRejectionWithTx() throws Exception {
     prRemotePutRejection(false, false, true);
   }

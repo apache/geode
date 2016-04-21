@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import junit.framework.Assert;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
@@ -69,16 +70,10 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- *
- */
 public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitTest {
 
-  
-  /**
-   * @param name
-   */
   public DistributedAckRegionCCEDUnitTest(String name) {
     super(name);
   }
@@ -287,11 +282,12 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     versionTestConcurrentEvents();
   }
   
-  
+  @Category(FlakyTest.class) // GEODE-720: time sensitive, async actions, thread sleeps
   public void testClearWithConcurrentEvents() throws Exception {
     z_versionTestClearWithConcurrentEvents(true);
   }
 
+  @Category(FlakyTest.class) // GEODE-599 and GEODE-1046: async actions, thread sleeps -- // GEODE-1046: this may be hitting a product bug!
   public void testClearWithConcurrentEventsAsync() throws Exception {
     versionTestClearWithConcurrentEventsAsync();
   }

@@ -837,6 +837,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(true, resultAsString.contains(vm1Name));
   }
 
+  @Category(FlakyTest.class) // GEODE-1206: random ports, BindException
   @Test
   public void testCreateDiskStore() {
     final String diskStore1Name = "testCreateDiskStore1";

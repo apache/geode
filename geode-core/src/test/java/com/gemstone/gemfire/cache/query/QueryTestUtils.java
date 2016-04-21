@@ -70,6 +70,97 @@ public class QueryTestUtils implements Serializable {
   public QueryTestUtils() {
     queries = new HashMap<String, String>();
     bindQueries = new HashMap<String, String>();
+    initializeQueryMap();
+    initializeBindQueryMap();
+  }
+
+  public void initializeBindQueryMap() {
+    //BIND QUERIES
+    bindQueries.put("1", "$1 AND $2");
+    bindQueries.put("2", "$1 IN $2");
+    bindQueries.put("3", "$1 IN $3");
+    bindQueries.put("4", "$1 IN SET(1, 'a', $2, $3, $4, $5)");
+    bindQueries.put("5", "$1 OR $2");
+    bindQueries.put("6", "$1[$2]");
+    bindQueries.put("7", "$1[0][0]");
+    bindQueries.put("8", "$3 IN $2");
+    bindQueries.put("9", "(SELECT DISTINCT * FROM /root/exampleRegion WHERE ID < $1).size");
+    bindQueries.put("10", "/exampleRegion.containsValue($1)");
+    bindQueries.put("11", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 ,  it1.subjects  type Student$Subject  where subject='Hindi'");
+    bindQueries.put("12", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 ,  it1.subjects x  type Student$Subject  where x.subject='Hindi'");
+    bindQueries.put("13", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 , (list<Student$Subject>) it1.subjects   where subject='Hindi'");
+    bindQueries.put("14", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 ,  it1.teachers  type Student$Teacher  where teacher='Y'");
+    bindQueries.put("15", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 ,  it1.teachers x  type Student$Teacher  where x.teacher='Y'");
+    bindQueries.put("16", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 , (list<Student$Teacher>) it1.teachers  where teacher='Y'");
+    bindQueries.put("17", "IS_DEFINED($1)");
+    bindQueries.put("18", "IS_UNDEFINED($1)");
+    bindQueries.put("19", "NOT $1");
+    bindQueries.put("20", "NOT $2");
+    bindQueries.put("21", "NOT $3");
+    bindQueries.put("22", "NOT $4");
+    bindQueries.put("23", "SELECT  distinct ID, description, createTime FROM /exampleRegion1 pf1 where pf1.ID != $1 limit 10");
+    bindQueries.put("24", "SELECT  distinct ID, description, createTime FROM /exampleRegion1 pf1 where pf1.ID != $1 order by ID");
+    bindQueries.put("25", "SELECT * FROM /exampleRegion pf WHERE pf = $1");
+    bindQueries.put("26", "SELECT * FROM /exampleRegion pf WHERE pf > $1");
+    bindQueries.put("27", "SELECT * FROM /exampleRegion.keys k WHERE k.ID = $1");
+    bindQueries.put("28", "SELECT * FROM /exampleRegion.keys key WHERE key.ID > $1");
+    bindQueries.put("29", "SELECT * FROM /exampleRegion.values pf WHERE pf < $1");
+    bindQueries.put("30", "SELECT * FROM /root/exampleRegion WHERE ID < $1 and Ticker = $2");
+    bindQueries.put("31", "SELECT * FROM /root/exampleRegion WHERE ID = $1 and Ticker = $2");
+    bindQueries.put("32", "SELECT DISTINCT * FROM $1 z where z.status = 'active'");
+    bindQueries.put("33", "SELECT DISTINCT * FROM /exampleRegion WHERE ID < $1 ORDER BY $2");
+    bindQueries.put("34", "SELECT DISTINCT * FROM /exampleRegion where ID = $1");
+    bindQueries.put("35", "SELECT DISTINCT * FROM /exampleRegion where status = $1");
+    bindQueries.put("36", "SELECT DISTINCT * FROM /exampleRegion where status.equals($1)");
+    bindQueries.put("37", "SELECT DISTINCT * FROM /root/exampleRegion WHERE ID < $1 ORDER BY $2");
+    bindQueries.put("38", "SELECT DISTINCT * FROM /root/exampleRegion WHERE ID < $1 ORDER BY ID");
+    bindQueries.put("39", "SELECT DISTINCT booleanValue from $1 TYPE boolean");
+    bindQueries.put("40", "SELECT DISTINCT booleanValue from (set<boolean>) $1");
+    bindQueries.put("41", "SELECT DISTINCT byteValue from $1 TYPE byte");
+    bindQueries.put("42", "SELECT DISTINCT byteValue from (set<byte>) $1");
+    bindQueries.put("43", "SELECT DISTINCT charValue from $1 TYPE char");
+    bindQueries.put("44", "SELECT DISTINCT charValue from (set<char>) $1");
+    bindQueries.put("45", "SELECT DISTINCT doubleValue from $1 TYPE double");
+    bindQueries.put("46", "SELECT DISTINCT doubleValue from (set<double>) $1");
+    bindQueries.put("47", "SELECT DISTINCT floatValue from $1 TYPE float");
+    bindQueries.put("48", "SELECT DISTINCT floatValue from (set<float>) $1");
+    bindQueries.put("49", "SELECT DISTINCT intern from $1 TYPE string");
+    bindQueries.put("50", "SELECT DISTINCT intern from (set<string>) $1");
+    bindQueries.put("51", "SELECT DISTINCT longValue from $1 TYPE long");
+    bindQueries.put("52", "SELECT DISTINCT longValue from (set<long>) $1");
+    bindQueries.put("53", "SELECT DISTINCT shortValue from $1 TYPE short");
+    bindQueries.put("54", "SELECT DISTINCT shortValue from (set<short>) $1");
+    bindQueries.put("55", "SELECT ID, status FROM /exampleRegion.keys WHERE ID = $1");
+    bindQueries.put("56", "SELECT distinct *  FROM /exampleRegion ps WHERE ps.status like $1 AND ps.ID > 2 AND ps.ID < 150");
+    bindQueries.put("57", "SELECT distinct *  FROM /exampleRegion ps WHERE ps.status like $1");
+    bindQueries.put("58", "SELECT e.key, e.value FROM /exampleRegion.entrySet e WHERE e.key IN $1");
+    bindQueries.put("59", "SELECT e.value FROM /exampleRegion.entrySet e WHERE e.key IN $1");
+    bindQueries.put("60", "SELECT itr.value FROM /root/exampleRegion.entries itr where itr.key = $1");
+    bindQueries.put("61", "SELECT k.ID, k.status FROM /exampleRegion.keys k WHERE k.ID = $1 and k.status = $2");
+    bindQueries.put("62", "SELECT key.ID FROM /exampleRegion.keys key WHERE key.ID = $1");
+    bindQueries.put("63", "Select distinct * from /exampleRegion.keys keys where keys.hashCode >= $1");
+    bindQueries.put("64", "Select distinct intValue from $1 TYPE int");
+    bindQueries.put("65", "Select distinct intValue from (array<int>) $1");
+    bindQueries.put("66", "Select distinct intValue from (list<int>) $1");
+    bindQueries.put("67", "Select distinct keys.hashCode  from /exampleRegion.keys() keys where keys.hashCode >= $1");
+    bindQueries.put("68", "Select distinct value.secId from /exampleRegion , getPositions($1)");
+    bindQueries.put("69", "import com.gemstone.gemfire.cache.\"query\".data.Position;select distinct * from $1 r, r.positions.values pVal TYPE Position where r.status = 'active' AND pVal.mktValue >= 25.00");
+    bindQueries.put("70", "import com.gemstone.gemfire.cache.\"query\".data.Position;select distinct r from $1 r, r.positions.values pVal TYPE Position where pVal.mktValue < $2");
+    bindQueries.put("71", "import com.gemstone.gemfire.cache.\"query\".data.Position;select distinct r.ID, status, mktValue from $1 r, r.positions.values pVal TYPE Position where r.status = 'active' AND pVal.mktValue >= 25.00");
+    bindQueries.put("72", "import java.util.Map$Entry as Entry;select distinct value.secId from /exampleRegion, getPositions(23) type Entry");
+    bindQueries.put("73", "select * from $1");
+    bindQueries.put("74", "select ALL * from $1");
+    bindQueries.put("75", "select distinct * from $1 where status = 'active'");
+    bindQueries.put("76", "select distinct * from $1");
+    bindQueries.put("77", "select distinct * from /exampleRegion pf where pf.getCW(pf.ID) != $1");
+    bindQueries.put("78", "select distinct * from /exampleRegion pf where pf.getCW(pf.ID) < $1");
+    bindQueries.put("79", "select distinct * from /exampleRegion pf where pf.getCW(pf.ID) > $1");
+    bindQueries.put("80", "select distinct * from /root/exampleRegion where ticker = $1");
+    bindQueries.put("81", "select p from /exampleRegion.values p where p like $1");
+    bindQueries.put("82", "select p.positions.get('acc') from $1 p");
+  }
+
+  public void initializeQueryMap() {
     queries.put("1","SELECT DISTINCT * FROM /exampleRegion WHERE status = 'active'");
     queries.put("2","SELECT * FROM /exampleRegion WHERE \"type\" = 'type1' and status = 'active'");
     queries.put("3","SELECT key, positions FROM /exampleRegion.entrySet, value.positions.values positions WHERE positions.mktValue >= 25.00");
@@ -954,90 +1045,6 @@ public class QueryTestUtils implements Serializable {
     queries.put("1210","select * from /region1 r1, /region2 r2, r2.positions.values pos2 where" + "r1.ID = pos2.id AND r1.positions.size = r2.positions.size AND r2.positions.size > 0");
     queries.put("1211","select * from /region1 r1, /region2 r2, r2.positions.values pos2 where" + "r1.ID = pos2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)");
     queries.put("1212","select * from /region1 r1, /region2 r2, r2.positions.values pos2 where" + "r1.ID = pos2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)");
-    
-    //BIND QUERIES
-    bindQueries.put("1", "$1 AND $2");
-    bindQueries.put("2", "$1 IN $2");
-    bindQueries.put("3", "$1 IN $3");
-    bindQueries.put("4", "$1 IN SET(1, 'a', $2, $3, $4, $5)");
-    bindQueries.put("5", "$1 OR $2");
-    bindQueries.put("6", "$1[$2]");
-    bindQueries.put("7", "$1[0][0]");
-    bindQueries.put("8", "$3 IN $2");
-    bindQueries.put("9", "(SELECT DISTINCT * FROM /root/exampleRegion WHERE ID < $1).size");
-    bindQueries.put("10", "/exampleRegion.containsValue($1)");
-    bindQueries.put("11", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 ,  it1.subjects  type Student$Subject  where subject='Hindi'");
-    bindQueries.put("12", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 ,  it1.subjects x  type Student$Subject  where x.subject='Hindi'");
-    bindQueries.put("13", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 , (list<Student$Subject>) it1.subjects   where subject='Hindi'");
-    bindQueries.put("14", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 ,  it1.teachers  type Student$Teacher  where teacher='Y'");
-    bindQueries.put("15", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 ,  it1.teachers x  type Student$Teacher  where x.teacher='Y'");
-    bindQueries.put("16", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 , (list<Student$Teacher>) it1.teachers  where teacher='Y'");
-    bindQueries.put("17", "IS_DEFINED($1)");
-    bindQueries.put("18", "IS_UNDEFINED($1)");
-    bindQueries.put("19", "NOT $1");
-    bindQueries.put("20", "NOT $2");
-    bindQueries.put("21", "NOT $3");
-    bindQueries.put("22", "NOT $4");
-    bindQueries.put("23", "SELECT  distinct ID, description, createTime FROM /exampleRegion1 pf1 where pf1.ID != $1 limit 10");
-    bindQueries.put("24", "SELECT  distinct ID, description, createTime FROM /exampleRegion1 pf1 where pf1.ID != $1 order by ID");
-    bindQueries.put("25", "SELECT * FROM /exampleRegion pf WHERE pf = $1");
-    bindQueries.put("26", "SELECT * FROM /exampleRegion pf WHERE pf > $1");
-    bindQueries.put("27", "SELECT * FROM /exampleRegion.keys k WHERE k.ID = $1");
-    bindQueries.put("28", "SELECT * FROM /exampleRegion.keys key WHERE key.ID > $1");
-    bindQueries.put("29", "SELECT * FROM /exampleRegion.values pf WHERE pf < $1");
-    bindQueries.put("30", "SELECT * FROM /root/exampleRegion WHERE ID < $1 and Ticker = $2");
-    bindQueries.put("31", "SELECT * FROM /root/exampleRegion WHERE ID = $1 and Ticker = $2");
-    bindQueries.put("32", "SELECT DISTINCT * FROM $1 z where z.status = 'active'");
-    bindQueries.put("33", "SELECT DISTINCT * FROM /exampleRegion WHERE ID < $1 ORDER BY $2");
-    bindQueries.put("34", "SELECT DISTINCT * FROM /exampleRegion where ID = $1");
-    bindQueries.put("35", "SELECT DISTINCT * FROM /exampleRegion where status = $1");
-    bindQueries.put("36", "SELECT DISTINCT * FROM /exampleRegion where status.equals($1)");
-    bindQueries.put("37", "SELECT DISTINCT * FROM /root/exampleRegion WHERE ID < $1 ORDER BY $2");
-    bindQueries.put("38", "SELECT DISTINCT * FROM /root/exampleRegion WHERE ID < $1 ORDER BY ID");
-    bindQueries.put("39", "SELECT DISTINCT booleanValue from $1 TYPE boolean");
-    bindQueries.put("40", "SELECT DISTINCT booleanValue from (set<boolean>) $1");
-    bindQueries.put("41", "SELECT DISTINCT byteValue from $1 TYPE byte");
-    bindQueries.put("42", "SELECT DISTINCT byteValue from (set<byte>) $1");
-    bindQueries.put("43", "SELECT DISTINCT charValue from $1 TYPE char");
-    bindQueries.put("44", "SELECT DISTINCT charValue from (set<char>) $1");
-    bindQueries.put("45", "SELECT DISTINCT doubleValue from $1 TYPE double");
-    bindQueries.put("46", "SELECT DISTINCT doubleValue from (set<double>) $1");
-    bindQueries.put("47", "SELECT DISTINCT floatValue from $1 TYPE float");
-    bindQueries.put("48", "SELECT DISTINCT floatValue from (set<float>) $1");
-    bindQueries.put("49", "SELECT DISTINCT intern from $1 TYPE string");
-    bindQueries.put("50", "SELECT DISTINCT intern from (set<string>) $1");
-    bindQueries.put("51", "SELECT DISTINCT longValue from $1 TYPE long");
-    bindQueries.put("52", "SELECT DISTINCT longValue from (set<long>) $1");
-    bindQueries.put("53", "SELECT DISTINCT shortValue from $1 TYPE short");
-    bindQueries.put("54", "SELECT DISTINCT shortValue from (set<short>) $1");
-    bindQueries.put("55", "SELECT ID, status FROM /exampleRegion.keys WHERE ID = $1");
-    bindQueries.put("56", "SELECT distinct *  FROM /exampleRegion ps WHERE ps.status like $1 AND ps.ID > 2 AND ps.ID < 150");
-    bindQueries.put("57", "SELECT distinct *  FROM /exampleRegion ps WHERE ps.status like $1");
-    bindQueries.put("58", "SELECT e.key, e.value FROM /exampleRegion.entrySet e WHERE e.key IN $1");
-    bindQueries.put("59", "SELECT e.value FROM /exampleRegion.entrySet e WHERE e.key IN $1");
-    bindQueries.put("60", "SELECT itr.value FROM /root/exampleRegion.entries itr where itr.key = $1");
-    bindQueries.put("61", "SELECT k.ID, k.status FROM /exampleRegion.keys k WHERE k.ID = $1 and k.status = $2");
-    bindQueries.put("62", "SELECT key.ID FROM /exampleRegion.keys key WHERE key.ID = $1");
-    bindQueries.put("63", "Select distinct * from /exampleRegion.keys keys where keys.hashCode >= $1");
-    bindQueries.put("64", "Select distinct intValue from $1 TYPE int");
-    bindQueries.put("65", "Select distinct intValue from (array<int>) $1");
-    bindQueries.put("66", "Select distinct intValue from (list<int>) $1");
-    bindQueries.put("67", "Select distinct keys.hashCode  from /exampleRegion.keys() keys where keys.hashCode >= $1");
-    bindQueries.put("68", "Select distinct value.secId from /exampleRegion , getPositions($1)");
-    bindQueries.put("69", "import com.gemstone.gemfire.cache.\"query\".data.Position;select distinct * from $1 r, r.positions.values pVal TYPE Position where r.status = 'active' AND pVal.mktValue >= 25.00");
-    bindQueries.put("70", "import com.gemstone.gemfire.cache.\"query\".data.Position;select distinct r from $1 r, r.positions.values pVal TYPE Position where pVal.mktValue < $2");
-    bindQueries.put("71", "import com.gemstone.gemfire.cache.\"query\".data.Position;select distinct r.ID, status, mktValue from $1 r, r.positions.values pVal TYPE Position where r.status = 'active' AND pVal.mktValue >= 25.00");
-    bindQueries.put("72", "import java.util.Map$Entry as Entry;select distinct value.secId from /exampleRegion, getPositions(23) type Entry");
-    bindQueries.put("73", "select * from $1");
-    bindQueries.put("74", "select ALL * from $1");
-    bindQueries.put("75", "select distinct * from $1 where status = 'active'");
-    bindQueries.put("76", "select distinct * from $1");
-    bindQueries.put("77", "select distinct * from /exampleRegion pf where pf.getCW(pf.ID) != $1");
-    bindQueries.put("78", "select distinct * from /exampleRegion pf where pf.getCW(pf.ID) < $1");
-    bindQueries.put("79", "select distinct * from /exampleRegion pf where pf.getCW(pf.ID) > $1");
-    bindQueries.put("80", "select distinct * from /root/exampleRegion where ticker = $1");
-    bindQueries.put("81", "select p from /exampleRegion.values p where p like $1");
-    bindQueries.put("82", "select p.positions.get('acc') from $1 p");
   }
   
   public static QueryService getQueryService() {
@@ -1205,29 +1212,6 @@ public class QueryTestUtils implements Serializable {
       cache.close();
     }
   }
- 
-  /**
-   * Executes queries corresponding to the keys passed using array<br>  
-   *    <P><code>
-   *    String[] arr = {"1", "2", "3"};<br>
-   *    new QueryTestUtils().executeQueries(vm0, arr);
-   *    </code></P>
-   * @param vm
-   *  The VM on which the queries are to be executed
-   * @param qarr
-   *  Array of keys, queries in the values of which to be executed
-   */
-  public void executeQueries(VM vm, final String qarr[]) {
-    vm.invoke(new CacheSerializableRunnable("Executing query") {
-      public void run2() throws CacheException {
-        try {
-          executeQueries(qarr);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-    });
-  }
 
   /**
    * Executes queries corresponding to the keys passed using array<br>  
@@ -1330,46 +1314,6 @@ public class QueryTestUtils implements Serializable {
     return result;
   }
 
-  /**
-   * Executes a particular bind query corresponding to the ID passed using array<br>  
-   *    <P><code>
-   *    String[] arr = {"1", "2", "3"};<br>
-   *    new QueryTestUtils().executeBindQuery(vm0, "1", arr);
-   *    </code></P>
-   * @param vm
-   *  The vm on which the query is to be executed   
-   */
-  public void executeBindQuery(VM vm, final String queryId,
-      final Object[] params) {
-    vm.invoke(new SerializableRunnable() {
-      public void run() {
-        executeBindQuery(queryId, params);
-      }
-    });
-  }
-
-  /**
-   * Executes a particular bind query corresponding to the ID passed using array<br>  
-   *    <P><code>
-   *    String[] arr = {"1", "2", "3"};<br>
-   *    new QueryTestUtils().executeBindQuery("1", arr);
-   *    </code></P>
-   */
-  
-  public Object executeBindQuery(final String queryId, final Object[] params) {
-    Object result = null;
-    QueryService qs = cache.getQueryService();
-    String query = bindQueries.get(queryId);
-    try {
-      getLogger().fine("\nExecuting query: " + query);
-      result = qs.newQuery(query).execute(params);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    return result;
-  }
-
- 
   private LogWriter getLogger() {
     if (cache == null) {
       return null;

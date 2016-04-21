@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -64,9 +66,9 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-public class DistributedRegionFunctionExecutionDUnitTest extends
-    DistributedTestCase {
+public class DistributedRegionFunctionExecutionDUnitTest extends DistributedTestCase {
 
   VM replicate1 = null;
 
@@ -455,7 +457,8 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
 
     executeFunction_SendException();
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-632: random ports, eats exceptions
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_NoLastResult() {
     VM empty1 = replicate3;
     VM empty2 = normal;
@@ -990,7 +993,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
           .getResult();
       fail("FunctionException expected : Function did not send last result");
     }
-    catch (Exception ex) {
+    catch (Exception ex) { // TODO: this is too broad -- catch just the expected exception
       assertTrue(ex.getMessage().contains("did not send last result"));
     }
   }

@@ -25,9 +25,12 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Test to make sure cache close is working.
@@ -233,7 +236,8 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
       * This was throwing NPEs until my fix...
       */
   }
- 
+
+  @Category(FlakyTest.class) // GEODE-674: possible disk pollution, file size sensitive
   public void testSimpleStartRestartWithRolling() throws Exception {
     Properties props = new Properties();
     String baseLogName = "restarto";
@@ -292,7 +296,8 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
     }
 
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-677: possible disk pollution, file size sensitive
   public void testStartWithRollingThenRestartWithRolling() throws Exception {
     Properties props = new Properties();
     String baseLogName = "biscuits";
@@ -367,7 +372,8 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
     // Reenable this assertion once this issue (bug 42176) is fixed.
     assertTrue(f1c3.exists());
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-676: possible disk pollution, file size sensitive
   public void testLogFileLayoutAndRolling() throws Exception {
     String baseLogName = "tacos";
       Properties props = new Properties();
@@ -401,6 +407,7 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
       
   }
 
+  @Category(FlakyTest.class) // GEODE-675: possible disk pollution, file size sensitive
   public void testSecurityLogFileLayoutAndRolling() throws Exception {
     String baseLogName = "securitytacos";
       Properties props = new Properties();

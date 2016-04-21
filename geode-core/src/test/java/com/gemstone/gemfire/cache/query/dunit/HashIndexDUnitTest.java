@@ -50,6 +50,7 @@ public class HashIndexDUnitTest extends DistributedTestCase{
     Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     utils = new QueryTestUtils();
+    utils.initializeQueryMap();
     utils.createServer(vm0, DistributedTestUtils.getAllDistributedSystemProperties(new Properties()));
     utils.createReplicateRegion("exampleRegion", vm0);
     utils.createHashIndex(vm0,"ID", "r.ID", "/exampleRegion r");

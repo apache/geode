@@ -22,7 +22,7 @@ object Dependencies {
   object Compile {
     val sparkStreaming = "org.apache.spark" %% "spark-streaming" % "1.3.0" 
     val sparkSql = "org.apache.spark" %% "spark-sql" % "1.3.0"
-    val gemfire = "org.apache.geode" % "geode-core" % "1.0.0-incubating.M2-SNAPSHOT" excludeAll(ExclusionRule(organization = "org.jboss.netty") )
+    val geode = "org.apache.geode" % "geode-core" % "1.0.0-incubating.M3-SNAPSHOT" excludeAll(ExclusionRule(organization = "org.jboss.netty") )
   }
 
   object Test {
@@ -37,9 +37,9 @@ object Dependencies {
 
   val unitTests = Seq(scalaTest, mockito, junit, novoCode)
 
-  val connector = unitTests ++ Seq(sparkStreaming, sparkSql, gemfire)
+  val connector = unitTests ++ Seq(sparkStreaming, sparkSql, geode)
 
-  val functions = Seq(gemfire, junit)
+  val functions = Seq(geode, junit)
  
-  val demos = Seq(sparkStreaming, sparkSql, gemfire)
+  val demos = Seq(sparkStreaming, sparkSql, geode)
 }

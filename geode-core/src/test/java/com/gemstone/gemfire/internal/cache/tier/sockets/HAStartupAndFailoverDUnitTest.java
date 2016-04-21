@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -47,14 +49,12 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Test to verify Startup. and failover during startup.
- *
- *
  */
-public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
-{
+public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
   protected static Cache cache = null;
   VM server1 = null;
   VM server2 = null;
@@ -204,8 +204,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     /**
      * verify that Primary Should Be Null And EPList Should Be Empty When All Servers Are Dead
      */
-    public void testPrimaryShouldBeNullAndEPListShouldBeEmptyWhenAllServersAreDead() throws Exception
-    {
+    @Category(FlakyTest.class) // GEODE-1045: random ports, time senstive, waitForCriterion
+    public void testPrimaryShouldBeNullAndEPListShouldBeEmptyWhenAllServersAreDead() throws Exception {
       createClientCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       verifyPrimaryShouldNotBeNullAndEPListShouldNotBeEmpty();
       server1.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
@@ -214,6 +214,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       verifyDeadAndLiveServers(3,0);
       verifyPrimaryShouldBeNullAndEPListShouldBeEmpty();
     }
+
     /**
      * Tests failover initialization by cacheClientUpdater Thread
      * on failure in Primary Server
@@ -288,9 +289,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     /**
      * Tests failover initialization by cache operation Threads on secondary
      */
-    public void testInitiateFailoverByCacheOperationThreads_Secondary() throws Exception
-    {
-
+    @Category(FlakyTest.class) // GEODE-357: random ports, eats exceptions (fixed 1), time sensitive, waitForCriterions
+    public void testInitiateFailoverByCacheOperationThreads_Secondary() throws Exception {
       // create a client with large retry interval for server monitors and no client updater thread
       // so that only cache operation can detect a server failure and should initiate failover
       createClientCacheWithLargeRetryIntervalAndWithoutCallbackConnection(this.getName()
@@ -377,7 +377,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       bs.stop();
     }
     catch (Exception ex) {
-      fail("while setting stopServer  " + ex);
+      Assert.fail("while setting stopServer", ex);
     }
   }
 
@@ -405,6 +405,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       try{
         assertNull("Primary endpoint should be null as all server are dead", pool.getPrimaryName());
         assertEquals("Endpoint List should be Empty as all server are dead", 0, pool.getConnectedServerCount());
+        fail("NoSubscriptionServersAvailableException is expected"); // TODO:KIRK: added this line
       } catch (NoSubscriptionServersAvailableException e) {
         // pass
       } catch(Exception e){

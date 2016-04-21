@@ -61,7 +61,7 @@ import org.junit.runners.Parameterized;
 /**
  * Dunit class for testing gemfire function commands : GC, Shutdown
  */
-@Category({ DistributedTest.class, FlakyTest.class }) // see GEODE-1034
+@Category(DistributedTest.class)
 @RunWith(Parameterized.class)
 public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
@@ -84,6 +84,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
+  @Category(FlakyTest.class) // GEODE-1034: random ports, GC sensitive, memory sensitive, HeadlessGFSH
   @Test
   public void testGCForGroup() {
     Properties localProps = new Properties();

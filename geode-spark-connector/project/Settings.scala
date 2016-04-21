@@ -24,7 +24,7 @@ object Settings extends Build {
     organization := "io.pivotal",
     version := "0.5.0",
     scalaVersion := "2.10.4",
-    organization := "io.pivotal.gemfire.spark",
+    organization := "io.pivotal.geode.spark",
     organizationHomepage := Some(url("http://www.pivotal.io/"))
   ) 
 
@@ -43,7 +43,7 @@ object Settings extends Build {
   val gfcITSettings = inConfig(IntegrationTest)(Defaults.itSettings) ++
     Seq(parallelExecution in IntegrationTest := false, fork in IntegrationTest := true)
 
-  val gfcCompileSettings = inConfig(Compile)(Defaults.compileSettings) ++ Seq(unmanagedSourceDirectories in Compile += baseDirectory.value /"../gemfire-functions/src")
+  val gfcCompileSettings = inConfig(Compile)(Defaults.compileSettings) ++ Seq(unmanagedSourceDirectories in Compile += baseDirectory.value /"../geode-functions/src")
 
   val gfcSettings = commonSettings ++ gfcITSettings ++ gfcCompileSettings 
 

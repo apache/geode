@@ -20,9 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Wait;
-
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
   
@@ -38,8 +40,8 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.createCache( lnPort ));
     vm3.invoke(() -> WANTestBase.createCache( nyPort ));
-    vm2.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(() -> WANTestBase.createReceiver());
 
     vm4.invoke(() -> WANTestBase.createCache( lnPort ));
     vm5.invoke(() -> WANTestBase.createCache( lnPort ));
@@ -121,7 +123,7 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     assertEquals(1, createList2.size());
   }
   
-  
+  @Category(FlakyTest.class) // GEODE-1148: random ports, eats exceptions (fixed 1), time sensitive, thread sleeps, waitForCriterion
   public void testReplicatedSerialPropagationLoopBack3SitesLoop() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -131,9 +133,9 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm4, vm7);
     createCacheInVMs(tkPort, vm5);
 
-    vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm4.invoke(() -> WANTestBase.createReceiver());
+    vm5.invoke(() -> WANTestBase.createReceiver());
 
     // using vm5 for sender in ds 3. cache is already created.
     
@@ -237,9 +239,9 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm4, vm7);
     createCacheInVMs(tkPort, vm5);
 
-    vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm4.invoke(() -> WANTestBase.createReceiver());
+    vm5.invoke(() -> WANTestBase.createReceiver());
     
     // using vm5 for sender in ds 3. cache is already created.
     
@@ -380,9 +382,9 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.createCache( lnPort ));
     vm4.invoke(() -> WANTestBase.createCache( nyPort ));
     vm5.invoke(() -> WANTestBase.createCache( tkPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm4.invoke(() -> WANTestBase.createReceiver());
+    vm5.invoke(() -> WANTestBase.createReceiver());
     
     
     vm3.invoke(() -> WANTestBase.createSender( "ln1", 2,

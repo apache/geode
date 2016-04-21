@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.experimental.categories.Category;
 import util.TestException;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -53,15 +54,12 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests propagation of destroy entry operation across the vms
- *
- *
  */
-
-public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
-{
+public class DestroyEntryPropagationDUnitTest extends DistributedTestCase {
 
   VM vm0 = null;
 
@@ -177,8 +175,8 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
    * are situation of Interest List fail over
    *
    */
-  public void testVerifyDestroyNotReceivedBySender()
-  {
+  @Category(FlakyTest.class) // GEODE-897: random port, time sensitive, waitForCriterion, 2 minute timeouts, eats exception (1 fixed)
+  public void testVerifyDestroyNotReceivedBySender() {
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
     //First create entries on both servers via the two client
     vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createEntriesK1andK2());
@@ -294,7 +292,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
       }
     }
     catch (Exception ex) {
-      fail("while killing Server  " + ex);
+      Assert.fail("while killing Server", ex);
     }
   }
 

@@ -83,6 +83,7 @@ public class QueryTestUtilsJUnitTest {
 
   @Test
   public void testQueries()  {
+    utils.initializeQueryMap();
     String[] queries = { "1" }; //SELECT * FROM /exampleRegion WHERE status = 'active'
     int results = 0;
     try {

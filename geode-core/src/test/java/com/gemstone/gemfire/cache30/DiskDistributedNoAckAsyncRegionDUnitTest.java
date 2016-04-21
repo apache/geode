@@ -20,10 +20,6 @@ import com.gemstone.gemfire.cache.*;
 import java.io.*;
 import com.gemstone.gemfire.internal.OSProcess;
 
-/**
- *
- *
- */
 public class DiskDistributedNoAckAsyncRegionDUnitTest extends DiskDistributedNoAckRegionTestCase {
   
   /** Creates a new instance of DiskDistributedNoAckSyncOverflowRegionTest */

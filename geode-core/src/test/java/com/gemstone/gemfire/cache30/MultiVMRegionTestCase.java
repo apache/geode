@@ -47,6 +47,7 @@ import junit.framework.AssertionFailedError;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
@@ -127,7 +128,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
-
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Abstract superclass of {@link Region} tests that involve more than
@@ -1164,6 +1165,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   /**
    * Tests that a {@link CacheListener} is invoked in a remote VM.
    */
+  @Category(FlakyTest.class) // GEODE-153 & GEODE-932: time sensitive, waitForInvocation (waitForCriterion), 3 second timeouts
   public void testRemoteCacheListener() throws InterruptedException {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
@@ -3840,8 +3842,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that an entry in a distributed region that expires with a distributed
    * destroy causes an event in other VM with isExpiration flag set.
    */
-    public void testEntryTtlDestroyEvent()
-    throws InterruptedException {
+  @Category(FlakyTest.class) // GEODE-583: time sensitive, expiration, waitForCriterion, short timeouts
+  public void testEntryTtlDestroyEvent() throws InterruptedException {
       
       if(getRegionAttributes().getPartitionAttributes() != null)
         return;
@@ -3994,11 +3996,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
 
   /**
-     * Tests that an entry in a distributed region expires with a local
-     * destroy after a given time to live.
-     */
-    public void testEntryTtlLocalDestroy()
-    throws InterruptedException {
+   * Tests that an entry in a distributed region expires with a local
+   * destroy after a given time to live.
+   */
+  @Category(FlakyTest.class) // GEODE-671: time sensitive, expiration, retry loop, async actions, waitForCriterion
+  public void testEntryTtlLocalDestroy() throws InterruptedException {
       if(getRegionAttributes().getPartitionAttributes() != null)
         return;
       final boolean mirrored = getRegionAttributes().getDataPolicy().withReplication();

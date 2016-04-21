@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -52,9 +53,9 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
- *
  * Start client 1
  * Start client 2
  * Start Server 1
@@ -69,13 +70,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *
  * The key is to verify that the memberid being used by the client
  * to register with the server is the same across servers
- *
- *
- *
  */
-
-public class UpdatePropagationDUnitTest extends DistributedTestCase
-{
+public class UpdatePropagationDUnitTest extends DistributedTestCase {
 
   VM server1 = null;
 
@@ -253,10 +249,9 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
   /**
    * This tests whether the updates are received by other clients or not , if there are
    * situation of Interest List fail over
-   *
    */
-  public void testVerifyUpdatesReceivedByOtherClients()
-  {
+  @Category(FlakyTest.class) // GEODE-430: time sensitive, random ports, port reuse, thread sleeps (5 seconds), eats exceptions (fixed 1), async actions, waitForCriterion
+  public void testVerifyUpdatesReceivedByOtherClients() {
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
     //  First create entries on both servers via the two client
     client1.invoke(() -> createEntriesK1andK2());
@@ -390,7 +385,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
       srp.putOnForTestsOnly(conn, "key2", "server-value2", new EventID(new byte[] {1},159632,2), null);
     }
     catch (Exception ex) {
-      fail("while setting acquireConnections  " + ex);
+      Assert.fail("while setting acquireConnections", ex);
     }
   }
 

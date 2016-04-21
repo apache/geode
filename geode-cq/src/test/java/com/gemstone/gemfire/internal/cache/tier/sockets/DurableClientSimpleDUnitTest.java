@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 import java.util.Iterator;
 
 import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
@@ -51,6 +52,7 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
 
@@ -2945,6 +2947,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
    * being reactivated
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1060: random ports, async actions, time sensitive, eats exceptions (fixed 1)
   public void testCqCloseExceptionDueToActivatingClient() throws Exception {
     try {
       String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
@@ -2999,7 +3002,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
           catch (CqException e) {
             String expected = LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_RESTARTING_DURABLE_CLIENT.toLocalizedString("All", proxyId.getDurableId());
             if (!e.getMessage().equals(expected)) {            
-             fail("Not the expected exception, was expecting " + (LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_RESTARTING_DURABLE_CLIENT.toLocalizedString("All", proxyId.getDurableId()) + " instead of exception: " + e.getMessage()));
+             Assert.fail("Not the expected exception, was expecting " + (LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_RESTARTING_DURABLE_CLIENT.toLocalizedString("All", proxyId.getDurableId()) + " instead of exception: " + e.getMessage()), e);
             }
           }
         }

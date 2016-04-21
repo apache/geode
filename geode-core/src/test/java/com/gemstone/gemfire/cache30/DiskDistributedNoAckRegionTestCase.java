@@ -18,11 +18,8 @@ package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
 
-/**
- *
- *
- */
 public abstract class DiskDistributedNoAckRegionTestCase extends DistributedNoAckRegionDUnitTest {
+
   final protected DiskRegionTestImpl regionTestImpl;
   
   /** Creates a new instance of DiskDistributedNoAckRegionTest */
@@ -36,6 +33,6 @@ public abstract class DiskDistributedNoAckRegionTestCase extends DistributedNoAc
   }
   
   public void testBackupFillInValues() throws CacheException {
-        this.regionTestImpl.testBackupFillValues();
+    this.regionTestImpl.testBackupFillValues();
   }
 }

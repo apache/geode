@@ -15,7 +15,7 @@ is a good starting point.
 You need 2 terminals to follow along, one for Geode shell `gfsh`, and one for Spark shell. Set up Jdk 1.7 on both of them.
 
 ### Geode `gfsh` terminal
-In this terminal, start Geode cluster, deploy Spark Geode Connector's gemfire-function jar, and create demo regions.
+In this terminal, start Geode cluster, deploy Spark Geode Connector's geode-function jar, and create demo regions.
 
 Set up environment variables:
 ```
@@ -41,9 +41,9 @@ gfsh>create region --name=str_str_region --type=PARTITION --key-constraint=java.
 gfsh>create region --name=int_str_region --type=PARTITION --key-constraint=java.lang.Integer --value-constraint=java.lang.String
 ```
 
-Deploy Spark Geode Connector's gemfire-function jar (`gemfire-functions_2.10-0.5.0.jar`):
+Deploy Spark Geode Connector's geode-function jar (`geode-functions_2.10-0.5.0.jar`):
 ```
-gfsh>deploy --jar=<path to connector project>/gemfire-functions/target/scala-2.10/gemfire-functions_2.10-0.5.0.jar
+gfsh>deploy --jar=<path to connector project>/geode-functions/target/scala-2.10/geode-functions_2.10-0.5.0.jar
 ```
 
 ### Spark shell terminal
@@ -52,7 +52,7 @@ In this terminal, setup Spark environment, and start Spark shell.
 Set Geode locator property in Spark configuration: add 
 following to `<spark-dir>/conf/spark-defaults.conf`:
 ```
-spark.gemfire.locators=localhost[55221]
+spark.geode.locators=localhost[55221]
 ```
 Note:
  - if the file doesn't exist, create one. 
@@ -69,20 +69,20 @@ under the same directory to `log4j.properties` and update the file.
 
 Start spark-shell:
 ```
-bin/spark-shell --master local[*] --jars $CONNECTOR/gemfire-spark-connector/target/scala-2.10/gemfire-spark-connector_2.10-0.5.0.jar,$GEODE/lib/server-dependencies.jar
+bin/spark-shell --master local[*] --jars $CONNECTOR/geode-spark-connector/target/scala-2.10/geode-spark-connector_2.10-0.5.0.jar,$GEODE/lib/server-dependencies.jar
 ```
 
 Check Geode locator property in the Spark shell:
 ```
-scala> sc.getConf.get("spark.gemfire.locators")
+scala> sc.getConf.get("spark.geode.locators")
 res0: String = localhost[55221]
 ```
 
 In order to enable Geode specific functions, you need to import 
-`io.pivotal.gemfire.spark.connector._`
+`io.pivotal.geode.spark.connector._`
 ```
-scala> import io.pivotal.gemfire.spark.connector._
-import io.pivotal.gemfire.spark.connector._
+scala> import io.pivotal.geode.spark.connector._
+import io.pivotal.geode.spark.connector._
 ```
 
 ### Save Pair RDD to Geode
@@ -153,16 +153,16 @@ NEXT_STEP_NAME : END
 ### Expose Geode Region As RDD
 The same API is used to expose both replicated and partitioned region as RDDs. 
 ```
-scala> val rdd = sc.gemfireRegion[String, String]("str_str_region")
-rdd: io.pivotal.gemfire.spark.connector.rdd.GemFireRDD[String,String] = GemFireRDD[2] at RDD at GemFireRDD.scala:19
+scala> val rdd = sc.geodeRegion[String, String]("str_str_region")
+rdd: io.pivotal.geode.spark.connector.rdd.GemFireRDD[String,String] = GemFireRDD[2] at RDD at GemFireRDD.scala:19
 
 scala> rdd.foreach(println)
 (1,one)
 (3,three)
 (2,two)
 
-scala> val rdd2 = sc.gemfireRegion[Int, String]("int_str_region")
-rdd2: io.pivotal.gemfire.spark.connector.rdd.GemFireRDD[Int,String] = GemFireRDD[3] at RDD at GemFireRDD.scala:19
+scala> val rdd2 = sc.geodeRegion[Int, String]("int_str_region")
+rdd2: io.pivotal.geode.spark.connector.rdd.GemFireRDD[Int,String] = GemFireRDD[3] at RDD at GemFireRDD.scala:19
 
 scala> rdd2.foreach(println)
 (2,ab)

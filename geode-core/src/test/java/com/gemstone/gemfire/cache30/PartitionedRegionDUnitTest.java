@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -46,6 +48,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the functionality of a cache {@link Region region}
@@ -309,6 +312,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   /**
    * test with multiple vms and a decent spread of keys
    */
+  @Category(FlakyTest.class) // GEODE-555: retry loops, use of Random
   public void testExtendedKeysValues() {
     final String regionName = getUniqueName();
     final int numEntries = 20000;
@@ -354,7 +358,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
               assertTrue("should have been end of keys iteration", !keysIt.hasNext());
               assertTrue("should have been end of entries iteration", !entriesIt.hasNext());
             }
-            catch (Exception ex) {
+            catch (Exception ex) { // TODO: remove all of this and just disconnect DS in tear down
               try {
                 getRootRegion().getSubregion(regionName).destroyRegion();
               }

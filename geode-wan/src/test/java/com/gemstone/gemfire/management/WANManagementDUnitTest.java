@@ -81,7 +81,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     
     nyReceiver.invoke(() -> WANTestBase.createCache( nyPort ));
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
-    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    nyReceiver.invoke(() -> WANTestBase.createReceiver());
 
     WANTestBase.startSenderInVMs("pn", puneSender, managing);
 
@@ -123,7 +123,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
     nyReceiver.invoke(() -> WANTestBase.createCache( nyPort ));
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
-    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    nyReceiver.invoke(() -> WANTestBase.createReceiver());
 
     // keep a larger batch to minimize number of exception occurrences in the
     // log
@@ -185,7 +185,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
     WANTestBase.createCacheInVMs(nyPort, nyReceiver);
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
-    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    nyReceiver.invoke(() -> WANTestBase.createReceiver());
 
     checkAsyncQueueMBean(puneSender);
     checkAsyncQueueMBean(managing);
