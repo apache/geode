@@ -46,6 +46,14 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+
 /**
  * Tests remote (client/server) query execution.
  *
