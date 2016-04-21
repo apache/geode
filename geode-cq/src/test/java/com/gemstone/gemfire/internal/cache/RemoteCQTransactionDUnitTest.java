@@ -15,14 +15,6 @@
  * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
- */
-
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,7 +25,6 @@ import java.util.Set;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheEvent;
 import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.CacheWriterException;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -897,8 +888,7 @@ protected static class ClientListener extends CacheListenerAdapter {
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
-        
+
         assertTrue(((ClientCQListener)custRegion.getCache().getQueryService().getCqs()[0].getCqAttributes().getCqListener()).invoked);
         assertTrue(cl.invoked);
         return null;
@@ -940,7 +930,6 @@ protected static class ClientListener extends CacheListenerAdapter {
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
         assertTrue(cl.invoked);
         assertTrue(((ClientCQListener)custRegion.getCache().getQueryService().getCqs()[0].getCqAttributes().getCqListener()).invoked);
         return null;
@@ -982,7 +971,6 @@ protected static class ClientListener extends CacheListenerAdapter {
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
         assertTrue(cl.invoked);
         assertTrue(((ClientCQListener)custRegion.getCache().getQueryService().getCqs()[0].getCqAttributes().getCqListener()).invoked);
         return null;
@@ -1023,7 +1011,6 @@ protected static class ClientListener extends CacheListenerAdapter {
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
         assertTrue(cl.invoked);
         assertTrue(((ClientCQListener)custRegion.getCache().getQueryService().getCqs()[0].getCqAttributes().getCqListener()).invoked);
         return null;
@@ -1064,7 +1051,6 @@ protected static class ClientListener extends CacheListenerAdapter {
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
         assertTrue(cl.invoked);
         assertTrue(((ClientCQListener)custRegion.getCache().getQueryService().getCqs()[0].getCqAttributes().getCqListener()).invoked);
         return null;
@@ -1106,7 +1092,6 @@ protected static class ClientListener extends CacheListenerAdapter {
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
         assertTrue(cl.invoked);
         assertTrue(((ClientCQListener)custRegion.getCache().getQueryService().getCqs()[0].getCqAttributes().getCqListener()).invoked);
         return null;
