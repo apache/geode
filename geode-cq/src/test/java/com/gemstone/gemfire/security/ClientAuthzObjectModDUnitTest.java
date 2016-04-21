@@ -97,7 +97,7 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
     Properties serverProps = buildProperties(authenticator, extraProps, preAccessor, postAccessor);
 
     // Get ports for the servers
-    int[] portsList = AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite(2);
+    int[] portsList = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     int port1 = portsList[0];
     int port2 = portsList[1];
 

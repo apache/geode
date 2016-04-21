@@ -193,7 +193,7 @@ public class MultiUserDurableCQAuthzDUnitTest extends ClientAuthorizationTestCas
     }
 
     // Get ports for the servers
-    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     int port1 = randomAvailableTCPPorts[0];
     int port2 = randomAvailableTCPPorts[1];
     int locatorPort = randomAvailableTCPPorts[2];
