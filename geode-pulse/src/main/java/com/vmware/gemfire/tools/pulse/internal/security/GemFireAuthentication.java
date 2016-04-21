@@ -16,23 +16,20 @@
  */
 package com.vmware.gemfire.tools.pulse.internal.security;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
+
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
 import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityCoreVersion;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-import javax.management.remote.JMXConnector;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Spring security authentication object for GemFire
@@ -62,7 +59,7 @@ import java.util.Collection;
  */
 public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {	
 
-  private final static PulseLogWriter LOGGER = PulseLogWriter.getLogger();
+  private final static PulseLogWriter logger = PulseLogWriter.getLogger();
   
 	private JMXConnector jmxc=null;	
 	
@@ -92,31 +89,25 @@ public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
 
 	public static ArrayList<GrantedAuthority> populateAuthorities(JMXConnector jmxc) {
 		ObjectName name;
+		ArrayList<GrantedAuthority> authorities = new ArrayList<>();
 		try {
 			name = new ObjectName(PulseConstants.OBJECT_NAME_ACCESSCONTROL_MBEAN);
 			MBeanServerConnection mbeanServer = jmxc.getMBeanServerConnection();
-			ArrayList<GrantedAuthority> authorities = new ArrayList<>();
+
 			for(String role : PulseConstants.PULSE_ROLES){
 				Object[] params = role.split(":");
 				String[] signature = new String[] {String.class.getCanonicalName(), String.class.getCanonicalName()};
 				boolean result = (Boolean)mbeanServer.invoke(name, "authorize", params, signature);
 				if(result){
-				  //spring sec require ROLE_ prefix
 					authorities.add(new SimpleGrantedAuthority(role));
 				}
 			}
-			return authorities;
-		} catch (MalformedObjectNameException e) {
-			throw new RuntimeException(e);
-		} catch (InstanceNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (MBeanException e) {
-			throw new RuntimeException(e);
-		} catch (ReflectionException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		}catch (Exception e){
+			throw new RuntimeException(e.getMessage(), e);
 		}
+
+		return authorities;
+
 	}
 
 	public JMXConnector getJmxc() {

@@ -18,11 +18,13 @@ package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.management.internal.security.ResourceConstants.*;
 
+import java.util.Collections;
 import java.util.Properties;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.remote.JMXAuthenticator;
 import javax.management.remote.JMXConnectionNotification;
+import javax.management.remote.JMXPrincipal;
 import javax.security.auth.Subject;
 
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
@@ -49,8 +51,8 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
 
     ShiroUtil.login(username, password);
 
-    // we are not using JMX mechanism to do authentication, therefore, this return value does not matter
-    return null;
+    return new Subject(true, Collections.singleton(new JMXPrincipal(username)), Collections.EMPTY_SET,
+      Collections.EMPTY_SET);
   }
 
   @Override

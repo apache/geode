@@ -76,6 +76,7 @@ public class ShiroUtil {
       currentUser.checkPermission(permission);
     }
     catch(ShiroException e){
+      LogService.getLogger().info(currentUser.getPrincipal() + " not authorized for "+resource+":"+operation+":"+regionName);
       throw new GemFireSecurityException(e.getMessage(), e);
     }
   }

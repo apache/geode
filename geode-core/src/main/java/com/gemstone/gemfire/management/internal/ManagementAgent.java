@@ -30,7 +30,13 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Set;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXServiceURL;
 import javax.management.remote.rmi.RMIConnectorServer;
@@ -38,6 +44,7 @@ import javax.management.remote.rmi.RMIJRMPServerImpl;
 import javax.management.remote.rmi.RMIServerImpl;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
+import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -50,9 +57,12 @@ import com.gemstone.gemfire.internal.tcp.TCPConduit;
 import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagerMXBean;
+import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
 import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.unsafe.ReadOpFileAccessController;
 import com.gemstone.gemfire.security.JMXShiroAuthenticator;
+
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -442,10 +452,11 @@ public class ManagementAgent {
       shiroAuthenticator = new JMXShiroAuthenticator();
       env.put(JMXConnectorServer.AUTHENTICATOR, shiroAuthenticator);
       cs.addNotificationListener(shiroAuthenticator, null, cs.getAttributes());
-      if(! StringUtils.isBlank(shiroConfig) || isCustomAuthorizer()) {
-        MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper();
-        cs.setMBeanServerForwarder(mBeanServerWrapper);
-      }
+      // always going to assume authorization is needed as well, if no custom AccessControl, then the CustomAuthRealm
+      // should take care of that
+      MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper();
+      cs.setMBeanServerForwarder(mBeanServerWrapper);
+      registerAccessControlMBean();
     }
 
     else {
@@ -471,6 +482,31 @@ public class ManagementAgent {
       logger.debug("Finished starting jmx manager agent.");
     }
   }
+
+  private void registerAccessControlMBean() {
+    try {
+      AccessControlMBean acc = new AccessControlMBean();
+      ObjectName accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
+      MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+
+      Set<ObjectName> names = platformMBeanServer.queryNames(accessControlMBeanON, null);
+      if (names.isEmpty()) {
+        try {
+          platformMBeanServer.registerMBean(acc, accessControlMBeanON);
+          logger.info("Registered AccessContorlMBean on " + accessControlMBeanON);
+        } catch (InstanceAlreadyExistsException e) {
+          throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
+        } catch (MBeanRegistrationException e) {
+          throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
+        } catch (NotCompliantMBeanException e) {
+          throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
+        }
+      }
+    } catch (MalformedObjectNameException e) {
+      throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
+    }
+  }
+
 
   private boolean isCustomAuthenticator() {
     String factoryName = config.getSecurityClientAuthenticator();

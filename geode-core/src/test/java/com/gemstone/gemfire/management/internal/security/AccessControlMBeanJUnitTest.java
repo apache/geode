@@ -16,16 +16,16 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static org.assertj.core.api.Assertions.*;
+
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Category(IntegrationTest.class)
 public class AccessControlMBeanJUnitTest {
@@ -50,11 +50,9 @@ public class AccessControlMBeanJUnitTest {
    * @throws Exception
    */
   @Test
-  @Ignore("No AccessControlMBean")
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testAnyAccess() throws Exception {
     assertThat(bean.authorize("DATA", "READ")).isEqualTo(false);
     assertThat(bean.authorize("CLUSTER", "READ")).isEqualTo(false);
   }
-
 }

@@ -38,11 +38,18 @@ import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.security.CustomAuthRealm;
 import com.gemstone.gemfire.security.JMXShiroAuthenticator;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
-import org.json.JSONException;
+
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.Realm;
 
 public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"
@@ -52,7 +59,7 @@ public class Server {
   private JMXConnectorServer cs;
   private String propFile = null;
 
-  public Server(int port, String properties, String jsonAuthFile) throws IOException, JSONException {
+  public Server(int port, String properties, String jsonAuthFile) throws Exception {
     this.propFile = properties;
     mbs = ManagementFactory.getPlatformMBeanServer();
     url = new JMXServiceURL(formJMXServiceURLString(DEFAULT_HOST, port));
@@ -64,14 +71,29 @@ public class Server {
       System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
       Properties props = new Properties();
       props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
-      props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+      //props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
       JSONAuthorization.setUpWithJsonFile(jsonAuthFile);
       Map<String, Object> env = new HashMap<String, Object>();
 
+      // set up Shiro Security Manager
+      Realm realm = new CustomAuthRealm(props);
+      SecurityManager securityManager = new DefaultSecurityManager(realm);
+      SecurityUtils.setSecurityManager(securityManager);
+
+      // register the AccessControll bean
+      AccessControlMBean acc = new AccessControlMBean();
+      ObjectName accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
+      MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+      platformMBeanServer.registerMBean(acc, accessControlMBeanON);
+
+      // wire in the authenticator and authorizaton
       JMXShiroAuthenticator interceptor = new JMXShiroAuthenticator();
       env.put(JMXConnectorServer.AUTHENTICATOR, interceptor);
       cs = JMXConnectorServerFactory.newJMXConnectorServer(url, env, mbs);
       cs.setMBeanServerForwarder(new MBeanServerWrapper());
+
+      //set up the AccessControlMXBean
+
     } else {
       System.setProperty("spring.profiles.active", "pulse.authentication.default");
       cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);

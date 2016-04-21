@@ -95,7 +95,9 @@ public class CustomAuthRealm extends AuthorizingRealm{
   public boolean isPermitted(PrincipalCollection principals, Permission permission) {
     ResourceOperationContext context =(ResourceOperationContext)permission;
     Principal principal = (Principal)principals.getPrimaryPrincipal();
-
+    // if no access control is specified, then we allow all
+    if(StringUtils.isBlank(authzFactoryName))
+      return true;
     AccessControl accessControl = getAccessControl(principal, false);
     return accessControl.authorizeOperation(null, context);
   }
