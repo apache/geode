@@ -89,7 +89,7 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
       boolean done = false;
       do {
         Thread.sleep(10);
-        done = r.containsValueForKey("key");
+        done = !r.containsValueForKey("key");
       } while (!done && System.currentTimeMillis() < giveup);
 
       if (r.containsValueForKey("key")) {
@@ -139,7 +139,7 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
       do {
         Thread.sleep(10);
         // If the value is gone then we expired and are done
-        done = r.containsValueForKey("key");
+        done = !r.containsValueForKey("key");
       } while (!done && System.currentTimeMillis() < giveup);
 
       if (r.containsValueForKey("key")) {
