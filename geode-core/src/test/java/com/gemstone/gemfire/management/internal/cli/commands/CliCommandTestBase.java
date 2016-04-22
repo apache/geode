@@ -157,6 +157,10 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
       return results;
     });
+
+    this.jmxHost = (String) result[0];
+    this.jmxPort = (Integer) result[1];
+    this.httpPort = (Integer) result[2];
   }
 
   /**

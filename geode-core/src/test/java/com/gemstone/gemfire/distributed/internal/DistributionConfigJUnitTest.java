@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import java.util.Properties;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.internal.ConfigSource;
+import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.Before;
@@ -38,11 +40,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-/**
- * Created by jiliao on 2/2/16.
- */
-@Category(UnitTest.class)
 
+@Category(UnitTest.class)
 public class DistributionConfigJUnitTest {
   static Map<String, ConfigAttribute> attributes;
   static Map<String, Method> setters;
@@ -105,6 +104,21 @@ public class DistributionConfigJUnitTest {
     assertEquals(stringList.size(), 70);
     assertEquals(fileList.size(), 5);
     assertEquals(otherList.size(), 3);
+  }
+
+  @Test
+  public void testAttributeDesc(){
+    String[] attNames = AbstractDistributionConfig._getAttNames();
+    for(String attName:attNames){
+      assertTrue("Does not contain description for attribute "+ attName, AbstractDistributionConfig.dcAttDescriptions.containsKey(attName));
+    }
+    List<String> attList = Arrays.asList(attNames);
+    for(Object attName:AbstractDistributionConfig.dcAttDescriptions.keySet()){
+      if(!attList.contains(attName)){
+        System.out.println("Has unused description for "+attName.toString());
+      }
+      //assertTrue("Has unused description for "+attName.toString(), attList.contains(attName));
+    }
   }
 
   @Test
@@ -300,6 +314,20 @@ public class DistributionConfigJUnitTest {
     config.modifiable = true;
     assertTrue(config.isAttributeModifiable(DistributionConfig.HTTP_SERVICE_PORT_NAME));
     assertTrue(config.isAttributeModifiable("jmx-manager-http-port"));
+  }
+
+
+  @Test
+  public void testSecurityProps(){
+    Properties props = new Properties();
+    props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
+    props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+    props.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "config");
+    // add another non-security property to verify it won't get put in the security properties
+    props.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, 2);
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertEquals(config.getSecurityProps().size(), 3);
   }
 
   public final static Map<Class<?>, Class<?>> classMap = new HashMap<Class<?>, Class<?>>();

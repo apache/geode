@@ -168,7 +168,7 @@ public final class SystemManagementService extends BaseManagementService {
       SecurityUtils.setSecurityManager(securityManager);
     }
     else if (!StringUtils.isBlank(customAuthenticator)) {
-      Realm realm = new CustomAuthRealm(config.toProperties());
+      Realm realm = new CustomAuthRealm(config.getSecurityProps());
       SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
     }
