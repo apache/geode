@@ -108,6 +108,14 @@ public class EnvironmentVariablesHandlerInterceptor extends HandlerInterceptorAd
                               final Exception ex)
     throws Exception
   {
+    afterConcurrentHandlingStarted(request, response, handler);
     ShiroUtil.logout();
+  }
+
+  @Override
+  public void afterConcurrentHandlingStarted(
+    HttpServletRequest request, HttpServletResponse response, Object handler)
+    throws Exception {
+    ENV.remove();
   }
 }
