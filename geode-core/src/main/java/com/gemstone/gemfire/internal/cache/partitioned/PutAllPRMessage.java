@@ -72,6 +72,8 @@ import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationE
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * A Partitioned Region update message.  Meant to be sent only to
@@ -359,12 +361,13 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
   }
 
   /* we need a event with content for waitForNodeOrCreateBucket() */
+  @Retained
   public EntryEventImpl getFirstEvent(PartitionedRegion r) {
     if (putAllPRDataSize == 0) {
       return null;
     }
     
-    EntryEventImpl ev = EntryEventImpl.create(r, 
+    @Retained EntryEventImpl ev = EntryEventImpl.create(r, 
         putAllPRData[0].getOp(),
         putAllPRData[0].getKey(), 
         putAllPRData[0].getValue(), 
@@ -408,7 +411,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     }
     
     DistributedPutAllOperation dpao = null;
-    EntryEventImpl baseEvent = null;
+    @Released EntryEventImpl baseEvent = null;
     BucketRegion bucketRegion = null;
     PartitionedRegionDataStore ds = r.getDataStore();
     InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
@@ -486,7 +489,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
            * in this request, because these request will be blocked by foundKey
            */
           for (int i=0; i<putAllPRDataSize; i++) {
-            EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,putAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks, this.isPutDML);
+            @Released EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,putAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks, this.isPutDML);
             try {
             key = ev.getKey();
 
@@ -596,6 +599,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
 	return true;
   }
   
+  @Retained
   public static EntryEventImpl getEventFromEntry(LocalRegion r,
       InternalDistributedMember myId, InternalDistributedMember eventSender,
       int idx, DistributedPutAllOperation.PutAllEntryData[] data,
@@ -610,7 +614,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
       //  true/* generate Callbacks */,
       //  prd.getEventID());
     
-    EntryEventImpl ev = EntryEventImpl.create(r, prd.getOp(), prd.getKey(), prd
+    @Retained EntryEventImpl ev = EntryEventImpl.create(r, prd.getOp(), prd.getKey(), prd
         .getValue(), null, false, eventSender, !skipCallbacks, prd.getEventID());
     boolean evReturned = false;
     try {

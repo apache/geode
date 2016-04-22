@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gemstone.gemfire.cache.Region;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -63,6 +65,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LuceneServiceImplJUnitTest {
+
   Cache cache;
   ClientCache clientCache;
   private LuceneIndexImpl repo;
@@ -93,6 +96,13 @@ public class LuceneServiceImplJUnitTest {
 
     function = FunctionService.getFunction(LuceneFunction.ID);
     assertNotNull(function);
+  }
+
+  @After
+  public void destroyService() {
+    if (null != service) {
+      service = null;
+    }
   }
 
   @After
@@ -134,28 +144,34 @@ public class LuceneServiceImplJUnitTest {
     return service;
   }
 
+
+  private Region createRegion(String regionName, RegionShortcut shortcut) {
+    return cache.createRegionFactory(shortcut).create(regionName);
+  }
+
   private LocalRegion createPR(String regionName, boolean isSubRegion) {
     if (isSubRegion) {
-      LocalRegion root = (LocalRegion)cache.createRegionFactory(RegionShortcut.PARTITION).create("root");
-      LocalRegion region = (LocalRegion)cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT).
+      LocalRegion root = (LocalRegion) cache.createRegionFactory(RegionShortcut.PARTITION).create("root");
+      LocalRegion region = (LocalRegion) cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT).
         createSubregion(root, regionName);
       return region;
-    } else {
-      LocalRegion region = (LocalRegion)cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT).
-        create(regionName);
+    }
+    else {
+      LocalRegion region = (LocalRegion) createRegion(regionName, RegionShortcut.PARTITION_PERSISTENT);
       return region;
     }
   }
 
   private LocalRegion createRR(String regionName, boolean isSubRegion) {
     if (isSubRegion) {
-      LocalRegion root = (LocalRegion)cache.createRegionFactory(RegionShortcut.REPLICATE).create("root");
-      LocalRegion region = (LocalRegion)cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT).
+
+      LocalRegion root = (LocalRegion) cache.createRegionFactory(RegionShortcut.REPLICATE).create("root");
+      LocalRegion region = (LocalRegion) cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT).
         createSubregion(root, regionName);
       return region;
-    } else {
-      LocalRegion region = (LocalRegion)cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT).
-        create(regionName);
+    }
+    else {
+      LocalRegion region = (LocalRegion) createRegion(regionName, RegionShortcut.REPLICATE_PERSISTENT);
       return region;
     }
   }
@@ -166,38 +182,6 @@ public class LuceneServiceImplJUnitTest {
 
     LocalRegion userRegion = createPR("PR1", false);
     service.createIndex("index1", "PR1", "field1", "field2", "field3");
-  }
-
-  @Test
-  public void canCreateLuceneIndexForPR() throws IOException, ParseException {
-    getService();
-    service.createIndex("index1", "PR1", "field1", "field2", "field3");
-    LocalRegion userRegion = createPR("PR1", false);
-    LuceneIndexImpl index1 = (LuceneIndexImpl) service.getIndex("index1", "PR1");
-    assertTrue(index1 instanceof LuceneIndexForPartitionedRegion);
-    LuceneIndexForPartitionedRegion index1PR = (LuceneIndexForPartitionedRegion)index1;
-    assertEquals("index1", index1.getName());
-    assertEquals("/PR1", index1.getRegionPath());
-    String[] fields1 = index1.getFieldNames();
-    assertEquals(3, fields1.length);
-    Analyzer analyzer = index1PR.getAnalyzer();
-    assertTrue(analyzer instanceof StandardAnalyzer);
-    RepositoryManager RepositoryManager = index1PR.getRepositoryManager();
-    assertTrue(RepositoryManager != null);
-
-    final String fileRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1")+".files";
-    final String chunkRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1")+".chunks";
-    PartitionedRegion filePR = (PartitionedRegion)cache.getRegion(fileRegionName);
-    PartitionedRegion chunkPR = (PartitionedRegion)cache.getRegion(chunkRegionName);
-    assertTrue(filePR != null);
-    assertTrue(chunkPR != null);
-
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(index1.getName(), index1.getRegionPath());
-    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl)cache.getAsyncEventQueue(aeqId);
-    assertTrue(aeq != null);
-
-    //Make sure our queue doesn't show up in the list of async event queues 
-    assertEquals(Collections.emptySet(), cache.getAsyncEventQueues());
   }
 
   @Test
@@ -214,9 +198,9 @@ public class LuceneServiceImplJUnitTest {
 
     service.createIndex("index1", "PR1", analyzerPerField);
     createPR("PR1", false);
-    LuceneIndexImpl index1 = (LuceneIndexImpl)service.getIndex("index1", "PR1");
+    LuceneIndexImpl index1 = (LuceneIndexImpl) service.getIndex("index1", "PR1");
     assertTrue(index1 instanceof LuceneIndexForPartitionedRegion);
-    LuceneIndexForPartitionedRegion index1PR = (LuceneIndexForPartitionedRegion)index1;
+    LuceneIndexForPartitionedRegion index1PR = (LuceneIndexForPartitionedRegion) index1;
     assertEquals("index1", index1.getName());
     assertEquals("/PR1", index1.getRegionPath());
     String[] fields1 = index1.getFieldNames();
@@ -226,10 +210,10 @@ public class LuceneServiceImplJUnitTest {
     RepositoryManager RepositoryManager = index1PR.getRepositoryManager();
     assertTrue(RepositoryManager != null);
 
-    final String fileRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1")+".files";
-    final String chunkRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1")+".chunks";
-    PartitionedRegion filePR = (PartitionedRegion)cache.getRegion(fileRegionName);
-    PartitionedRegion chunkPR = (PartitionedRegion)cache.getRegion(chunkRegionName);
+    final String fileRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1") + ".files";
+    final String chunkRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1") + ".chunks";
+    PartitionedRegion filePR = (PartitionedRegion) cache.getRegion(fileRegionName);
+    PartitionedRegion chunkPR = (PartitionedRegion) cache.getRegion(chunkRegionName);
     assertTrue(filePR != null);
     assertTrue(chunkPR != null);
   }
@@ -241,6 +225,72 @@ public class LuceneServiceImplJUnitTest {
     getService();
     service.createIndex("index1", "RR1", "field1", "field2", "field3");
     createRR("RR1", false);
+  }
+
+  @Test
+  public void canCreateIndexForAllNonProxyPartitionRegionTypes() {
+    for (RegionShortcut shortcut : RegionShortcut.values()) {
+      String sname = shortcut.name().toLowerCase();
+      if (sname.contains("partition") && !sname.contains("proxy")) {
+        canCreateLuceneIndexForPRType(shortcut);
+        //Destroying cache and service for now because aeq's are not completely being cleaned up correctly after
+        // being destroyed.  Instead we should close the aeq and clean up any regions associated with this lucene
+        //index but only after aeq destroy works properly
+        destroyCache();
+        destroyService();
+      }
+    }
+  }
+
+  public void canCreateLuceneIndexForPRType(RegionShortcut regionShortcut) {
+    getService();
+    service.createIndex("index1", "PR1", "field1", "field2", "field3");
+    Region region = null;
+    AsyncEventQueueImpl aeq = null;
+    try {
+      region = createRegion("PR1", regionShortcut);
+      LuceneIndexImpl index1 = (LuceneIndexImpl) service.getIndex("index1", "PR1");
+      assertTrue(index1 instanceof LuceneIndexForPartitionedRegion);
+      LuceneIndexForPartitionedRegion index1PR = (LuceneIndexForPartitionedRegion) index1;
+      assertEquals("index1", index1.getName());
+      assertEquals("/PR1", index1.getRegionPath());
+      String[] fields1 = index1.getFieldNames();
+      assertEquals(3, fields1.length);
+      Analyzer analyzer = index1PR.getAnalyzer();
+      assertTrue(analyzer instanceof StandardAnalyzer);
+      RepositoryManager RepositoryManager = index1PR.getRepositoryManager();
+      assertTrue(RepositoryManager != null);
+
+      final String fileRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1") + ".files";
+      final String chunkRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1") + ".chunks";
+      PartitionedRegion filePR = (PartitionedRegion) cache.getRegion(fileRegionName);
+      PartitionedRegion chunkPR = (PartitionedRegion) cache.getRegion(chunkRegionName);
+      assertTrue(filePR != null);
+      assertTrue(chunkPR != null);
+
+      String aeqId = LuceneServiceImpl.getUniqueIndexName(index1.getName(), index1.getRegionPath());
+      aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
+      assertTrue(aeq != null);
+
+      //Make sure our queue doesn't show up in the list of async event queues
+      assertEquals(Collections.emptySet(), cache.getAsyncEventQueues());
+    }
+    finally {
+      String aeqId = LuceneServiceImpl.getUniqueIndexName("index1", "PR1");
+      PartitionedRegion chunkRegion = (PartitionedRegion) cache.getRegion(aeqId + ".chunks");
+      if (chunkRegion != null) {
+        chunkRegion.destroyRegion();
+      }
+      PartitionedRegion fileRegion = (PartitionedRegion) cache.getRegion(aeqId + ".files");
+      if (fileRegion != null) {
+        fileRegion.destroyRegion();
+      }
+      ((GemFireCacheImpl) cache).removeAsyncEventQueue(aeq);
+      if (aeq != null) {
+        aeq.destroy();
+      }
+      region.destroyRegion();
+    }
   }
 
 }

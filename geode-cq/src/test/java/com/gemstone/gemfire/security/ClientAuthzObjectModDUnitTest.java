@@ -17,15 +17,14 @@
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.internal.AvailablePort.*;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -39,7 +38,6 @@ import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.security.generator.DummyAuthzCredentialGenerator;
 import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
@@ -72,13 +70,8 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
     //this would be automatically registered in the static initializer, but with dunit
     //a previous test may have already loaded these classes. We clear the instantiators
     //between each test.
-    SerializableRunnable registerInstantiator = new SerializableRunnable() {
-      public void run() {
-        Instantiator.register(new MyInstantiator(), false);
-      }
-    };
-    server1.invoke(registerInstantiator);
-    server2.invoke(registerInstantiator);
+    server1.invoke("registerInstantiator", () -> Instantiator.register(new MyInstantiator(), false));
+    server2.invoke("registerInstantiator", () -> Instantiator.register(new MyInstantiator(), false));
   }
 
   @Category(FlakyTest.class) // GEODE-1228: random ports, BindException, uses Random
@@ -95,20 +88,21 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
     String authInit = credentialGenerator.getAuthInit();
     String authenticator = credentialGenerator.getAuthenticator();
 
-    getLogWriter().info("testPutsGetsObjectModWithFailover: Using authinit: " + authInit);
-    getLogWriter().info("testPutsGetsObjectModWithFailover: Using authenticator: " + authenticator);
-    getLogWriter().info("testPutsGetsObjectModWithFailover: Using pre-operation accessor: " + preAccessor);
-    getLogWriter().info("testPutsGetsObjectModWithFailover: Using post-operation accessor: " + postAccessor);
+    System.out.println("testPutsGetsObjectModWithFailover: Using authinit: " + authInit);
+    System.out.println("testPutsGetsObjectModWithFailover: Using authenticator: " + authenticator);
+    System.out.println("testPutsGetsObjectModWithFailover: Using pre-operation accessor: " + preAccessor);
+    System.out.println("testPutsGetsObjectModWithFailover: Using post-operation accessor: " + postAccessor);
 
     // Start servers with all required properties
     Properties serverProps = buildProperties(authenticator, extraProps, preAccessor, postAccessor);
 
     // Get ports for the servers
-    int port1 = getRandomAvailablePort(SOCKET);
-    int port2 =getRandomAvailablePort(SOCKET);
+    int[] portsList = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int port1 = portsList[0];
+    int port2 = portsList[1];
 
     // Perform all the ops on the clients
-    List opBlock = new ArrayList();
+    List<OperationWithAction> opBlock = new ArrayList();
     Random rnd = new Random();
 
     for (int opNum = 0; opNum < allOps.length; ++opNum) {
@@ -118,13 +112,13 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
         // End of current operation block; execute all the operations on the servers with failover
         if (opBlock.size() > 0) {
           // Start the first server and execute the operation block
-          server1.invoke(() -> createCacheServer(getLocatorPort(), port1, serverProps, javaProps ));
-          server2.invoke(() -> closeCache());
+          server1.invoke("createCacheServer", () -> createCacheServer(getLocatorPort(), port1, serverProps, javaProps ));
+          server2.invoke("closeCache", () -> closeCache());
           executeOpBlock(opBlock, port1, port2, authInit, extraProps, null, tgen, rnd);
           if (!currentOp.equals(OperationWithAction.OPBLOCK_NO_FAILOVER)) {
             // Failover to the second server and run the block again
-            server2.invoke(() -> createCacheServer(getLocatorPort(), port2, serverProps, javaProps ));
-            server1.invoke(() -> closeCache());
+            server2.invoke("createCacheServer", () -> createCacheServer(getLocatorPort(), port2, serverProps, javaProps ));
+            server1.invoke("closeCache", () -> closeCache());
             executeOpBlock(opBlock, port1, port2, authInit, extraProps, null, tgen, rnd);
           }
           opBlock.clear();

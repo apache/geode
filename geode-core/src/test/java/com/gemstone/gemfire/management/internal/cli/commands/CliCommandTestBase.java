@@ -25,8 +25,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -46,9 +44,22 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.junit.runners.Parameterized;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
@@ -94,7 +105,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     preTearDownCliCommandTestBase();
     destroyDefaultSetup();
   }
-  
+
   protected void preTearDownCliCommandTestBase() throws Exception {
   }
 
@@ -144,7 +155,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
       if(enableAuth){
         localProps.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
-            JSONAuthorization.class.getName() + ".create");
+          JSONAuthorization.class.getName() + ".create");
         localProps.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
 
         JSONAuthorization.setUpWithJsonFile(jsonAuthorization);
@@ -159,12 +170,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
       return results;
     });
-
-    this.jmxHost = (String) result[0];
-    this.jmxPort = (Integer) result[1];
-    this.httpPort = (Integer) result[2];
-  }
-
   /**
    * Destroy all of the components created for the default setup.
    */
@@ -178,11 +183,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
     disconnectAllFromDS();
 
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      public void run() {
-        verifyManagementServiceStopped();
-      }
-    });
+    Host.getHost(0).getVM(0).invoke("verify service stopped", () -> verifyManagementServiceStopped());
   }
 
   /**
@@ -204,7 +205,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     try {
       manager = CommandManager.getInstance();
       Map<String, CommandTarget> commands = manager.getCommands();
-      Set set = commands.keySet();
       if (commands.size() < 1) {
         return false;
       }

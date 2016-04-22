@@ -18,6 +18,7 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -80,7 +81,7 @@ public class QueuedOperation
     else {
       // it is an entry operation
       //TODO :EventID should be passed from the sender & should be reused here
-      EntryEventImpl ee = EntryEventImpl.create(
+      @Released EntryEventImpl ee = EntryEventImpl.create(
           lr, this.op, this.key, null,
           this.cbArg, true, src);
       try {

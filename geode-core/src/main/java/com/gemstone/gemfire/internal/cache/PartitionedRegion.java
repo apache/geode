@@ -252,6 +252,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.sequencelog.RegionLogger;
 import com.gemstone.gemfire.internal.util.TransformUtils;
@@ -2341,7 +2342,7 @@ public class PartitionedRegion extends LocalRegion implements
         if (isDebugEnabled) {
           logger.debug("PR.postPutAll encountered exception at sendMsgByBucket, ",ex);
         }
-        EntryEventImpl firstEvent = prMsg.getFirstEvent(this);
+        @Released EntryEventImpl firstEvent = prMsg.getFirstEvent(this);
         try {
           partialKeys.saveFailedKey(firstEvent.getKey(), ex);
         } finally {
@@ -2442,7 +2443,7 @@ public class PartitionedRegion extends LocalRegion implements
         if (isDebugEnabled) {
           logger.debug("PR.postRemoveAll encountered exception at sendMsgByBucket, ",ex);
         }
-        EntryEventImpl firstEvent = prMsg.getFirstEvent(this);
+        @Released EntryEventImpl firstEvent = prMsg.getFirstEvent(this);
         try {
           partialKeys.saveFailedKey(firstEvent.getKey(), ex);
         } finally {
@@ -2489,7 +2490,7 @@ public class PartitionedRegion extends LocalRegion implements
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
     // retry the put remotely until it finds the right node managing the bucket
-    EntryEventImpl event = prMsg.getFirstEvent(this);
+    @Released EntryEventImpl event = prMsg.getFirstEvent(this);
     try {
     RetryTimeKeeper retryTime = null;
     InternalDistributedMember currentTarget = getNodeForBucketWrite(bucketId.intValue(), null);
@@ -2626,7 +2627,8 @@ public class PartitionedRegion extends LocalRegion implements
   private VersionedObjectList sendMsgByBucket(final Integer bucketId, RemoveAllPRMessage prMsg)
   {
     // retry the put remotely until it finds the right node managing the bucket
-    EntryEventImpl event = prMsg.getFirstEvent(this);
+    @Released EntryEventImpl event = prMsg.getFirstEvent(this);
+    try {
     RetryTimeKeeper retryTime = null;
     InternalDistributedMember currentTarget = getNodeForBucketWrite(bucketId.intValue(), null);
     if (logger.isDebugEnabled()) {
@@ -2751,6 +2753,9 @@ public class PartitionedRegion extends LocalRegion implements
       this.prStats.incRemoveAllRetries();
     } // for
     // NOTREACHED
+    } finally {
+      event.release();
+    }
   }
 
   public VersionedObjectList tryToSendOnePutAllMessage(PutAllPRMessage prMsg,InternalDistributedMember currentTarget) throws DataLocationException {

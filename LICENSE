@@ -208,6 +208,9 @@ Apache Geode includes a number of components and libraries with separate
 copyright notices and license terms. Your use of those components are
 subject to the terms and conditions of the following licenses.
 
+Apache Geode bundles the Droid fonts (http://www.droidfonts.com) under
+the Apache License v2.0.
+
 ---------------------------------------------------------------------------
 The BSD 3-Clause License (http://opensource.org/licenses/BSD-3-Clause)
 ---------------------------------------------------------------------------
@@ -322,6 +325,8 @@ Apache Geode bundles the following files under the MIT license:
     (c) 2014 Alexander Farkas (aFarkas)
   - iCheck v0.8 (http://icheck.fronteed.com/), Copyright (c) 2013 Damir
     Foy, http://damirfoy.com
+  - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/), 
+    Copyright (c) 2011 Sencha Inc.
   - JOpt Simple (http://pholser.github.io/jopt-simple/), Copyright (c)
     2004-2015 Paul R. Holser, Jr.
   - jQuery JavaScript Library v.1.7.2 (https://jquery.com), Copyright (c)
@@ -384,6 +389,61 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+
+
+---------------------------------------------------------------------------
+The MX4J License (http://mx4j.sourceforge.net/docs/ch01s06.html)
+---------------------------------------------------------------------------
+
+Apache Geode bundles the following files under the MX4J License:
+
+  - MX4JModelMBean.java (http://mx4j.sourceforge.net)
+
+Version 1.0
+
+Copyright (c) 2001-2004 by the MX4J contributors.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in
+   the documentation and/or other materials provided with the
+   distribution.
+
+3. The end-user documentation included with the redistribution,
+   if any, must include the following acknowledgment:
+      "This product includes software developed by the
+       MX4J project (http://mx4j.sourceforge.net)."
+   Alternately, this acknowledgment may appear in the software itself,
+   if and wherever such third-party acknowledgments normally appear.
+
+4. The name "MX4J" must not be used to endorse or promote
+   products derived from this software without prior written
+   permission.
+   For written permission, please contact
+   biorn_steedom [at] users [dot] sourceforge [dot] net
+
+5. Products derived from this software may not be called "MX4J",
+   nor may "MX4J" appear in their name, without prior written
+   permission of Simone Bordet.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED.  IN NO EVENT SHALL THE MX4J CONTRIBUTORS
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
 
 
 ---------------------------------------------------------------------------

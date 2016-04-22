@@ -57,6 +57,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
@@ -683,7 +684,7 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)this.key).setRegionContext(r);
     }
-    this.event = EntryEventImpl.create(
+    @Released EntryEventImpl eei = EntryEventImpl.create(
         r,
         getOperation(),
         getKey(),
@@ -693,6 +694,7 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
         eventSender,
         true/*generateCallbacks*/,
         false/*initializeId*/);
+    this.event = eei;
     try {
     if (this.versionTag != null) {
       this.versionTag.replaceNullIDs(getSender());

@@ -55,6 +55,7 @@ import com.gemstone.gemfire.internal.cache.InitialImageOperation;
 import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
+import com.gemstone.gemfire.internal.cache.VersionTagHolder;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
@@ -296,8 +297,7 @@ public final class FetchBulkEntriesMessage extends PartitionMessage
 
           while (it.hasNext()) {
             Object key = it.next();
-            EntryEventImpl clientEvent = EntryEventImpl
-                .createVersionTagHolder();
+            VersionTagHolder clientEvent = new VersionTagHolder();
             Object value = map.get(key, null, true, true, true, null,
                 clientEvent, allowTombstones, false);
 

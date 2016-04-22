@@ -34,6 +34,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * Handles distribution messaging for invalidating an entry in a region.
@@ -108,12 +109,13 @@ public class InvalidateOperation extends DistributedCacheOperation
     }
 
     @Override
+    @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException {
       if (rgn.keyRequiresRegionContext()) {
         ((KeyWithRegionContext)this.key).setRegionContext(rgn);
       }
-      EntryEventImpl ev = EntryEventImpl.create(
+      @Retained EntryEventImpl ev = EntryEventImpl.create(
          rgn, getOperation(), this.key,
          null, this.callbackArg, true, getSender());
       ev.setEventId(this.eventId);
@@ -194,6 +196,7 @@ public class InvalidateOperation extends DistributedCacheOperation
     transient ClientProxyMembershipID context;
 
     @Override
+    @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn)
       throws EntryNotFoundException  {
       EntryEventImpl event = (EntryEventImpl)super.createEvent(rgn);

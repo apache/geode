@@ -44,6 +44,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 /**
  * Internal implementation of {@link RegionMap}for regions whose DataPolicy is
@@ -279,7 +280,7 @@ final class ProxyRegionMap implements RegionMap {
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner,
                                                 !inTokenMode)) {
         // fix for bug 39526
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, op,
+        @Released EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, op,
             key, null, txId, txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
         boolean cbEventInPending = false;
         try {
@@ -310,7 +311,7 @@ final class ProxyRegionMap implements RegionMap {
                                                 this.owner.isInitialized())) {
         // fix for bug 39526
         boolean cbEventInPending = false;
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, 
+        @Released EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, 
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE,
             key, newValue, txId, txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
         try {
@@ -344,7 +345,7 @@ final class ProxyRegionMap implements RegionMap {
                                                 this.owner.isInitialized())) {
         // fix for bug 39526
         boolean cbEventInPending = false;
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, putOp, key, 
+        @Released EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, putOp, key, 
             newValue, txId, txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
         try {
         AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);

@@ -39,6 +39,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -270,8 +271,8 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase {
       assertNotNull(conn1);
       assertEquals(PORT2, conn1.getServer().getPort());
       ServerRegionProxy srp = new ServerRegionProxy(Region.SEPARATOR+REGION_NAME, pool);
-      srp.destroyOnForTestsOnly(conn1, "key1", null, Operation.DESTROY, new EntryEventImpl(new EventID(new byte[] {1},100000,1)), null);
-      srp.destroyOnForTestsOnly(conn1, "key2", null, Operation.DESTROY, new EntryEventImpl(new EventID(new byte[] {1},100000,2)), null);
+      srp.destroyOnForTestsOnly(conn1, "key1", null, Operation.DESTROY, new EventIDHolder(new EventID(new byte[] {1},100000,1)), null);
+      srp.destroyOnForTestsOnly(conn1, "key2", null, Operation.DESTROY, new EventIDHolder(new EventID(new byte[] {1},100000,2)), null);
     }
     catch (Exception ex) {
       throw new TestException("Failed while setting acquireConnectionsAndDestroyEntry  ", ex);

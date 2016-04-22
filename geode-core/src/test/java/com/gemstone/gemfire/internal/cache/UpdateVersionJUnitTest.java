@@ -51,8 +51,8 @@ public class UpdateVersionJUnitTest {
 
   private static final String regionName = "versionedregion";
 
-  private EntryEventImpl createNewEvent(LocalRegion region, VersionTag tag, Object key) {
-    EntryEventImpl updateTimeStampEvent = EntryEventImpl.createVersionTagHolder(tag);
+  private VersionTagHolder createNewEvent(LocalRegion region, VersionTag tag, Object key) {
+    VersionTagHolder updateTimeStampEvent = new VersionTagHolder(tag);
     updateTimeStampEvent.setOperation(Operation.UPDATE_VERSION_STAMP);
     updateTimeStampEvent.setRegion(region);
     if (region instanceof PartitionedRegion) {

@@ -240,6 +240,7 @@ public final class DistTXStateOnCoordinator extends DistTXState implements
   public void postPutAll(DistributedPutAllOperation putallOp,
       VersionedObjectList successfulPuts, LocalRegion region) {
     super.postPutAll(putallOp, successfulPuts, region);
+    // TODO DISTTX: event is never released
     EntryEventImpl event = EntryEventImpl.createPutAllEvent(putallOp, region,
         Operation.PUTALL_CREATE, putallOp.getBaseEvent().getKey(), putallOp
             .getBaseEvent().getValue());
@@ -252,6 +253,7 @@ public final class DistTXStateOnCoordinator extends DistTXState implements
   public void postRemoveAll(DistributedRemoveAllOperation removeAllOp,
       VersionedObjectList successfulOps, LocalRegion region) {
     super.postRemoveAll(removeAllOp, successfulOps, region);
+    // TODO DISTTX: event is never released
     EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(removeAllOp,
         region, removeAllOp.getBaseEvent().getKey());
     event.setEventId(removeAllOp.getBaseEvent().getEventId());

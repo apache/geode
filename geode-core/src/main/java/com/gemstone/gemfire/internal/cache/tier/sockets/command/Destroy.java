@@ -21,6 +21,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
@@ -152,7 +153,7 @@ public class Destroy extends BaseCommand {
             }
           }
           region.basicBridgeDestroy(key, callbackArg, servConn.getProxyID(),
-              true, new EntryEventImpl(eventId));
+              true, new EventIDHolder(eventId));
           servConn.setModificationInfo(true, regionName, key);
         }
         catch (EntryNotFoundException e) {

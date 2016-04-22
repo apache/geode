@@ -28,6 +28,8 @@ import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.TransactionEvent;
 import com.gemstone.gemfire.cache.TransactionId;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * <p>
@@ -44,6 +46,8 @@ public class TXRmtEvent implements TransactionEvent
 
   private Cache cache;
 
+  // This list of EntryEventImpls are released by calling freeOffHeapResources
+  @Released
   private List events;
   
   TXRmtEvent(TransactionId txId, Cache cache) {
@@ -204,6 +208,7 @@ public class TXRmtEvent implements TransactionEvent
     return (events == null) || events.isEmpty();
   }
 
+  @Retained
   private EntryEventImpl createEvent(LocalRegion r, Operation op,
       RegionEntry re, Object key, Object newValue,Object aCallbackArgument)
   {
@@ -214,7 +219,7 @@ public class TXRmtEvent implements TransactionEvent
     if (r.isUsedForPartitionedRegionBucket()) {
       eventRegion = r.getPartitionedRegion();
     }
-    EntryEventImpl event = EntryEventImpl.create(
+    @Retained EntryEventImpl event = EntryEventImpl.create(
         eventRegion, op, key, newValue,
         aCallbackArgument, // callbackArg
         true, // originRemote
@@ -264,7 +269,5 @@ public class TXRmtEvent implements TransactionEvent
         e.release();
       }
     }
-    // TODO Auto-generated method stub
-    
   }
 }

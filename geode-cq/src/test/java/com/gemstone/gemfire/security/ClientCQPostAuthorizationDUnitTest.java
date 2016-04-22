@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -171,9 +172,10 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
     }
 
     // Get ports for the servers
-    int port1 = getRandomAvailablePort(SOCKET);
-    int port2 = getRandomAvailablePort(SOCKET);
-    int locatorPort = getRandomAvailablePort(SOCKET);
+    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int port1 = randomAvailableTCPPorts[0];
+    int port2 = randomAvailableTCPPorts[1];
+    int locatorPort = randomAvailableTCPPorts[2];
 
     // Close down any running servers
     server1.invoke(() -> closeCache());

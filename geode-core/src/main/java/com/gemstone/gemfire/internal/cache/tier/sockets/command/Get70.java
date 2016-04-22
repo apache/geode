@@ -30,6 +30,7 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.cache.VersionTagHolder;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
@@ -303,13 +304,9 @@ public class Get70 extends BaseCommand {
 //      }
 //    } else {
       ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-      EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
-      try {
+      VersionTagHolder versionHolder = new VersionTagHolder();
         // TODO OFFHEAP: optimize
       data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, versionHolder, true, true /*allowReadFromHDFS*/);
-      }finally {
-        versionHolder.release();
-      }
 //    }
     versionTag = versionHolder.getVersionTag();
     
@@ -368,12 +365,8 @@ public class Get70 extends BaseCommand {
     @Retained Object data = null;
 
     ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-    EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
-    try {
-      data = ((LocalRegion) region).getRetained(key, callbackArg, true, true, id, versionHolder, true);
-    }finally {
-      versionHolder.release();
-    }
+    VersionTagHolder versionHolder = new VersionTagHolder();
+    data = ((LocalRegion) region).getRetained(key, callbackArg, true, true, id, versionHolder, true);
     versionTag = versionHolder.getVersionTag();
     
     // If it is Token.REMOVED, Token.DESTROYED,

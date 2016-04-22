@@ -36,6 +36,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.PutAllEntryData;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * 
@@ -46,7 +47,13 @@ public class DistTxEntryEvent extends EntryEventImpl {
   protected static final byte HAS_PUTALL_OP = 0x1;
   protected static final byte HAS_REMOVEALL_OP = 0x2;
 
-  // For Serialization
+  /**
+   * TODO DISTTX: callers of this constructor need to
+   * make sure that release is called. In general
+   * the distributed tx code needs to be reviewed to
+   * see if it correctly handles off-heap.
+   */
+  @Retained
   public DistTxEntryEvent(EntryEventImpl entry) {
     super(entry);
   }
@@ -179,7 +186,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
         }
       }
     }
-    
+    // TODO DISTTX: release this event?
     EntryEventImpl e = EntryEventImpl.create(
         this.region, Operation.PUTALL_CREATE,
         null, null, null, true, this.getDistributedMember(), true, true);
@@ -246,7 +253,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
         removeAllData[i].versionTag = versionTags.get(i);
       }
     }
-    
+    // TODO DISTTX: release this event
     EntryEventImpl e = EntryEventImpl.create(
         this.region, Operation.REMOVEALL_DESTROY,
         null, null, null, true, this.getDistributedMember(), true, true);

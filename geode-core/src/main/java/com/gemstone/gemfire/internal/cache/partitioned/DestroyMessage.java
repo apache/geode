@@ -59,6 +59,8 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * A class that specifies a destroy operation.
@@ -249,7 +251,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     if (eventSender == null) {
        eventSender = getSender();
     }
-    EntryEventImpl event = null;
+    @Released EntryEventImpl event = null;
     try {
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)this.key).setRegionContext(r);
@@ -323,7 +325,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       }
     }
     else {
-      EntryEventImpl e2 = createListenerEvent(event, r, dm.getDistributionManagerId());
+      @Released EntryEventImpl e2 = createListenerEvent(event, r, dm.getDistributionManagerId());
       try {
       r.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, e2, r.isInitialized(), true);
       } finally {
@@ -411,7 +413,10 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     return this.eventId;
   }
 
-  /** create a new EntryEvent to be used in notifying listeners, bridge servers, etc. */
+  /** create a new EntryEvent to be used in notifying listeners, bridge servers, etc.
+   * Caller must release result if it is != to sourceEvent
+   */
+  @Retained
   EntryEventImpl createListenerEvent(EntryEventImpl sourceEvent, PartitionedRegion r,
       InternalDistributedMember member) {
     final EntryEventImpl e2;

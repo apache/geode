@@ -90,6 +90,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
@@ -771,7 +772,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       else if (region.hasServerProxy()
           && ServerResponseMatrix.checkForValidStateAfterNotification(region,
               key, m.getMessageType()) && (withInterest || !withCQs)) {
-        EntryEventImpl newEvent = null;
+        @Released EntryEventImpl newEvent = null;
         try {
           // Create an event and put the entry
           newEvent = EntryEventImpl.create(

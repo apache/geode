@@ -38,6 +38,7 @@ extraArchive {
 }
 
 disableMavenPublishing()
+disableSigning()
 
 def getJarArtifact(module) {
   project(module).configurations.archives.artifacts.findAll {

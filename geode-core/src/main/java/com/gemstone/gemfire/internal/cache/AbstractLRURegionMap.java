@@ -177,6 +177,10 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     // make sure this cached deserializable is still in the entry
     // @todo what if a clear is done and this entry is no longer in the region?
     {
+      if (_getCCHelper().getEvictionAlgorithm().isLRUEntry()) {
+        // no need to worry about the value changing form with entry LRU.
+        return false;
+      }
       Object curVal = le._getValue(); // OFFHEAP: _getValue ok
       if (curVal != cd) {
         if (cd instanceof StoredObject) {

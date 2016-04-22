@@ -629,8 +629,8 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
   }
   
   
-  private EntryEventImpl createNewEvent(LocalRegion region, VersionTag tag, Object key, Object value) {
-    EntryEventImpl updateEvent = EntryEventImpl.createVersionTagHolder(tag);
+  private VersionTagHolder createNewEvent(LocalRegion region, VersionTag tag, Object key, Object value) {
+    VersionTagHolder updateEvent = new VersionTagHolder(tag);
     updateEvent.setOperation(Operation.UPDATE);
     updateEvent.setRegion(region);
     if (region instanceof PartitionedRegion) {

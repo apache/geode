@@ -214,29 +214,6 @@ public class EntryEventImpl
   }
   
   /**
-   * create a new entry event that will be used for conveying version information
-   * and anything else of use while processing another event
-   * @return the empty event object
-   */
-  @Retained
-  public static EntryEventImpl createVersionTagHolder() {
-    return createVersionTagHolder(null);
-  }
-  
-  /**
-   * create a new entry event that will be used for conveying version information
-   * and anything else of use while processing another event
-   * @return the empty event object
-   */
-  @Retained
-  public static EntryEventImpl createVersionTagHolder(VersionTag tag) {
-    EntryEventImpl result = new EntryEventImpl();
-    result.setVersionTag(tag);
-    result.disallowOffHeapValues();
-    return result;
-  }
-
-  /**
    * Reads the contents of this message from the given input.
    */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -389,18 +366,6 @@ public class EntryEventImpl
   public EntryEventImpl(Object key2) {
     this.keyInfo = new KeyInfo(key2, null, null);
   }
-  
-  /**
-   * This constructor is used to create a bridge event in server-side
-   * command classes.  Events created with this are not intended to be
-   * used in cache operations.
-   * @param id the identity of the client's event
-   */
-  @Retained
-  public EntryEventImpl(EventID id) {
-    this.eventID = id;
-    this.offHeapOk = false;
-  }
 
   /**
    * Creates and returns an EntryEventImpl.  Generates and assigns a bucket id to the
@@ -493,7 +458,7 @@ public class EntryEventImpl
       DistributedPutAllOperation putAllOp, LocalRegion region,
       Operation entryOp, Object entryKey, @Retained(ENTRY_EVENT_NEW_VALUE) Object entryNewValue)
   {
-    EntryEventImpl e;
+    @Retained EntryEventImpl e;
     if (putAllOp != null) {
       EntryEventImpl event = putAllOp.getBaseEvent();
       if (event.isBridgeEvent()) {
@@ -515,11 +480,12 @@ public class EntryEventImpl
     return e;
   }
   
+  @Retained
   protected static EntryEventImpl createRemoveAllEvent(
       DistributedRemoveAllOperation op, 
       LocalRegion region,
       Object entryKey) {
-    EntryEventImpl e;
+    @Retained EntryEventImpl e;
     final Operation entryOp = Operation.REMOVEALL_DESTROY;
     if (op != null) {
       EntryEventImpl event = op.getBaseEvent();
@@ -2995,6 +2961,7 @@ public class EntryEventImpl
   }
   
   /** returns a copy of this event with the additional fields for WAN conflict resolution */
+  @Retained
   public TimestampedEntryEvent getTimestampedEvent(
       final int newDSID, final int oldDSID,
       final long newTimestamp, final long oldTimestamp) {
