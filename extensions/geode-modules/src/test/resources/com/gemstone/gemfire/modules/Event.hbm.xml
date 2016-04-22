@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.gemstone.gemfire.modules">
+	<class name="Event" table="EVENTS">
+		<cache usage="read-write"/>
+		<id name="id" column="EVENT_ID">
+			<generator class="native"/>
+		</id>
+		<version name="version"/>
+		<property name="date" type="timestamp" column="EVENT_DATE"/>
+        <property name="title"/>
+	</class>
+</hibernate-mapping>

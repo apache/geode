@@ -1,0 +1,43 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+test  {
+  doFirst {
+    copy {
+      from 'build/resources/test/tomcat'
+      into 'build/test/tomcat/'
+    }
+  }
+}
+
+dependencies {
+  compile project(':geode-core')
+  
+  compile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  compile ('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
+    exclude module: 'annotations-api'
+    exclude module: 'coyote'
+    exclude module: 'tribes'
+  }
+  compile 'org.apache.tomcat:juli:' + project.'tomcat6.version'
+
+  testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
+  testRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
+
+  testCompile project(path: ':geode-junit')
+  testCompile files(project(':geode-core').sourceSets.test.output)
+}

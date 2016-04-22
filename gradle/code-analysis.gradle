@@ -1,0 +1,113 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+subprojects {
+  if (project.hasProperty("staticAnalysis")) {
+    apply plugin: 'checkstyle'
+  
+    //Checkstyle configuration
+    configurations.checkstyle {
+      dependencies.all { dep ->
+        dep.transitive = true
+      }
+    }
+  
+    //Findbugs configuration
+    apply plugin: 'findbugs'
+  
+    // Switch default Findbugs report to HTML for developers
+    def findbugsXmlEnabled = false
+    def findbugsHtmlEnabled = true
+  
+    // Provide ability to change report type to XML for ingesting into other ap
+    if ( project.hasProperty("findbugsXmlReport") ) {
+      findbugsXmlEnabled = true
+      findbugsHtmlEnabled = false
+    }
+  
+    configurations.findbugs {
+      dependencies.all { dep ->
+        dep.transitive = true
+      }
+      findbugs.effort = 'max'
+      findbugs.reportLevel = 'low'
+    }
+  
+    tasks.withType(FindBugs) {
+      reports {
+        xml.enabled = findbugsXmlEnabled
+        html.enabled = findbugsHtmlEnabled
+      }
+    }
+  }
+  
+  // JaCoCo configuration
+  if (project.hasProperty("codeCoverage")) {
+    apply plugin: 'jacoco'
+  
+    configurations.jacocoAnt {
+      dependencies.all { dep ->
+        dep.transitive = true
+      }
+    }
+  
+    task mergeIntegrationTestCoverage (type: JacocoMerge) {
+      description 'Merges Distributed and Integration test coverage results'
+  
+      destinationFile = file("${buildDir}/jacoco/mergedIntegrationTestCoverage.exec")
+      executionData = fileTree(dir: 'build/jacoco', include: [
+        '**/distributedTest.exec',
+        '**/integrationTest.exec'
+      ])
+  
+    }
+  
+    jacocoTestReport {
+      reports {
+        csv.enabled false
+        sourceSets project.sourceSets.main
+        html.destination "${buildDir}/jacocoTestHtml"
+      }
+    }
+  
+    task jacocoIntegrationTestReport (type: JacocoReport) {
+      reports {
+        csv.enabled false
+        sourceSets project.sourceSets.main
+        html.destination "${buildDir}/jacocoIntegrationTestHtml"
+        executionData = fileTree(dir: 'build/jacoco', include: '**/integrationTest.exec')
+      }
+    }
+  
+    task jacocoDistributedTestReport (type: JacocoReport) {
+      reports {
+        csv.enabled false
+        sourceSets project.sourceSets.main
+        html.destination "${buildDir}/jacocoDistributedTestHtml"
+        executionData = fileTree(dir: 'build/jacoco', include: '**/distributedTest.exec')
+      }
+    }
+  
+    task jacocoOverallTestReport (type: JacocoReport) {
+      reports {
+        csv.enabled false
+        sourceSets project.sourceSets.main
+        html.destination "${buildDir}/jacocoOverallTestHtml"
+        executionData = fileTree(dir: 'build/jacoco', include: '**/*.exec')
+      }
+    }
+  }
+}

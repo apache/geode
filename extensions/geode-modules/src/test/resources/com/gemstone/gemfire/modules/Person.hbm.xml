@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.gemstone.gemfire.modules">
+    <class name="Person" table="PERSON">
+        <cache usage="read-write"/>
+        <id name="id" column="PERSON_ID">
+            <generator class="native"/>
+        </id>
+        <property name="age"/>
+        <property name="firstname"/>
+        <property name="lastname"/>
+        <set name="e" table="PERSON_EVENT">
+          <cache usage="read-write"/>
+          <key column="PERSON_ID"/>
+          <many-to-many column="EVENT_ID" class="Event"/>
+        </set>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,241 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+sourceSets {
+  jca {
+    compileClasspath += configurations.compile
+    runtimeClasspath += configurations.runtime
+  }
+}
+
+configurations {
+  //declaring new configuration that will be used to associate with artifacts
+  archives
+}
+
+dependencies {
+   // Source Dependencies
+  // External 
+  provided files("${System.getProperty('java.home')}/../lib/tools.jar")
+  compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
+  compile 'org.jgroups:jgroups:3.6.8.Final'
+  compile 'antlr:antlr:' + project.'antlr.version'
+  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
+  compile 'commons-io:commons-io:' + project.'commons-io.version'
+  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  compile ('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
+    exclude module: 'commons-digester'
+    exclude module: 'commons-logging-api'
+    exclude module: 'mx4j-jmx'
+    exclude module: 'xml-apis'
+    ext.optional = true
+  }
+  compile ('io.netty:netty-all:' + project.'netty-all.version') {
+    ext.optional = true
+  }
+  compile 'it.unimi.dsi:fastutil:' + project.'fastutil.version'
+  compile ('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
+    ext.optional = true;
+  }
+  compile 'javax.resource:javax.resource-api:' + project.'javax.resource-api.version'
+  compile ('mx4j:mx4j:' + project.'mx4j.version') {
+    ext.optional = true;
+  }
+  compile ('mx4j:mx4j-remote:' + project.'mx4j.version') {
+    ext.optional = true;
+  }
+  compile ('mx4j:mx4j-tools:' + project.'mx4j.version') { 
+    ext.optional = true;
+  }
+  compile ('net.java.dev.jna:jna:' + project.'jna.version')
+  provided ('org.apache.hadoop:hadoop-common:' + project.'hadoop.version') {
+    transitive=false
+  }
+  provided ('org.apache.hadoop:hadoop-annotations:' + project.'hadoop.version') {
+    transitive=false
+  }
+  provided ('org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version') {
+    transitive=false
+  }
+  provided ('org.apache.hadoop:hadoop-mapreduce-client-core:' + project.'hadoop.version') {
+    transitive=false
+  }
+  provided ('org.apache.hbase:hbase:' + project.'hbase.version') {
+    transitive=false
+  }
+
+  compile ('com.google.guava:guava:' + project.'guava.version') {
+    ext.optional = true
+  }
+  //jsr305 is included only to prevent javadoc warnings about missing annotations in the guava jar
+  provided 'com.google.code.findbugs:jsr305:' + project.'jsr305.version'
+
+  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  runtime 'org.fusesource.jansi:jansi:' + project.'jansi.version'
+  runtime ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+    ext.optional = true
+  }
+  runtime ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+    ext.optional = true
+  }
+  runtime ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
+    ext.optional = true
+  }
+  compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
+    ext.optional = true
+  }
+  provided ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-aop'
+    ext.optional = true
+  }
+  compile ('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'asm'
+    exclude module: 'cglib'
+    exclude module: 'guava'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-context-support'
+    ext.optional = true
+  }
+  compile ('org.xerial.snappy:snappy-java:' + project.'snappy-java.version') {
+    ext.optional = true
+  }
+ 
+  compile project(':geode-common')
+  compile project(':geode-joptsimple')
+  compile project(':geode-json')
+  
+  jcaCompile sourceSets.main.output
+
+  testCompile project(':geode-junit')
+
+  // Test Dependencies
+  // External
+  testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
+  testRuntime 'org.apache.derby:derby:' + project.'derby.version'
+  testRuntime 'org.apache.hadoop:hadoop-auth:' + project.'hadoop.version'
+  testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+  testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
+  testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
+  testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
+  testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
+  testCompile 'redis.clients:jedis:' + project.'jedis.version'
+
+  testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
+}
+
+def generatedResources = "$buildDir/generated-resources/main"
+
+sourceSets {
+  main {
+    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
+  }
+}
+ 
+// Creates the version properties file and writes it to the classes dir
+task createVersionPropertiesFile {
+  def propertiesFile = file(generatedResources + "/com/gemstone/gemfire/internal/GemFireVersion.properties");
+  outputs.file propertiesFile
+  inputs.dir compileJava.destinationDir
+
+  doLast {
+
+    try {
+      def grgit = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
+      ext.branch = grgit.branch.getCurrent().name
+      ext.commitId = grgit.head().id
+      ext.sourceDate = grgit.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
+      grgit.close()
+    } catch (Exception e) {
+      logger.warn( '***** Unable to find Git workspace. Using default version information *****' )
+      ext.branch = 'UNKNOWN'
+      ext.commitId = 'UNKNOWN'
+      ext.sourceDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
+    }
+
+    ext.osArch = System.getProperty('os.arch')
+    ext.osName = System.getProperty('os.name')
+    ext.osVersion = System.getProperty('os.version')
+    ext.buildDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
+    ext.buildNumber = new Date().format('MMddyy')
+    ext.jdkVersion = System.getProperty('java.version')
+
+    def props = [
+      "Product-Name"      : "Apache Geode (incubating)",
+      "Product-Version"   : version,
+      "Build-Id"          : System.env.USER + ' ' + ext.buildNumber,
+      "Build-Date"        : ext.buildDate,
+      "Build-Platform"    : ext.osName + ' ' + ext.osVersion + ' ' + ext.osArch,
+      "Build-Java-Version": ext.jdkVersion,
+      "Source-Date"       : ext.sourceDate,
+      "Source-Revision"   : ext.commitId,
+      "Source-Repository" : ext.branch
+    ] as Properties
+
+    propertiesFile.getParentFile().mkdirs();
+    new FileOutputStream(propertiesFile).withStream { fos ->
+      props.store(fos, '')
+    }
+  }
+}
+
+jar {
+
+  from sourceSets.main.output
+  from sourceSets.jca.output
+  
+  exclude 'com/gemstone/gemfire/management/internal/web/**'
+  exclude 'com/gemstone/gemfire/internal/i18n/StringIdResourceBundle_ja.txt'
+  exclude 'com/gemstone/gemfire/admin/doc-files/ds4_0.dtd'
+}
+
+task webJar (type: Jar, dependsOn: classes) {
+  description 'Assembles the jar archive containing the gemfire management web classes.'
+  from sourceSets.main.output
+  baseName 'geode-web'
+  include 'com/gemstone/gemfire/management/internal/web/**'
+}
+
+task raJar (type: Jar, dependsOn: classes) {
+  description 'Assembles the jar archive that contains the JCA classes'
+  from sourceSets.jca.output
+  exclude 'com/gemstone/gemfire/ra/**'
+  archiveName 'ra.jar'
+}
+
+task jcaJar (type: Jar, dependsOn: raJar) {
+  description 'Assembles the jar archive that contains the JCA bundle'
+  baseName 'geode-jca'
+  extension 'rar'
+  metaInf { from 'src/jca/ra.xml' }
+  from raJar.archivePath
+}
+
+configurations {
+  classesOutput {
+    extendsFrom compile
+    description  'a dependency that exposes the compiled classes'
+  }
+}
+
+dependencies {
+  classesOutput sourceSets.main.output
+}

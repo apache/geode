@@ -1,0 +1,400 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
+
+apply plugin: 'distribution'
+
+// disable artifact generation for this project
+jar.enabled = false
+extraArchive {
+  sources = false
+  javadoc = false
+  tests = false
+}
+
+disableMavenPublishing()
+
+// Gradle doesn't automatically remove the jar artifact even though we disabled it
+// this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.
+configurations.all {
+  artifacts.removeAll artifacts.findAll { it instanceof ArchivePublishArtifact && !it.archiveTask.enabled }
+}
+
+gradle.taskGraph.whenReady( { graph ->
+  tasks.withType(Tar).each { tar ->
+    tar.compression = Compression.GZIP
+    tar.extension = 'tar.gz'
+  }
+})
+
+configurations {
+  bundled {
+    description 'A dependency that is shipped with geode, but is not required to compile'
+  }
+}
+
+dependencies {
+  provided project(':geode-core')
+
+  archives project(':geode-common')  
+  archives project(':geode-json')  
+  archives project(':geode-joptsimple')  
+  archives project(':geode-core')  
+  archives project(':geode-lucene')
+  archives project(':geode-web')
+  archives project(':geode-web-api')
+  archives project(':geode-pulse')
+  archives project(':geode-wan')
+  archives project(':geode-cq')
+
+  testCompile project(':geode-junit')
+  testCompile files(project(':geode-core').sourceSets.test.output)
+  testCompile ('org.springframework:spring-web:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-aop'
+  }
+
+  testCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
+
+  testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")
+}
+
+sourceSets {
+  // need to remove this since we use the dependencies jar out of the install dir
+  //test.runtimeClasspath -= configurations.provided
+}
+
+test {
+  // test from the actual classpath not the gradle classpath
+  dependsOn installDist
+  // @TODO: this doesn't seem to be working need to get basename first.
+  classpath += files "$buildDir/install/apache-geode/lib/geode-dependencies.jar"
+}
+
+tasks.withType(Test){
+  environment 'GEMFIRE', "$buildDir/install/${distributions.main.baseName}/lib"
+}
+
+task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
+  outputs.file file("$buildDir/gemfire.properties")
+  main 'com.gemstone.gemfire.distributed.internal.DistributionConfigImpl'
+  classpath project(':geode-core').sourceSets.main.runtimeClasspath
+  workingDir buildDir
+  
+  doFirst {
+    buildDir.mkdirs()
+  }
+}
+
+task defaultCacheConfig(type: JavaExec, dependsOn: classes) {
+  outputs.file file("$buildDir/cache.xml")
+  main 'com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator'
+  classpath project(':geode-core').sourceSets.main.runtimeClasspath
+  workingDir buildDir
+
+  doFirst {
+    buildDir.mkdirs()
+  }
+}
+
+// This closure sets the gemfire classpath.  If we add another jar to the classpath it must
+// be included in the filter logic below.
+def cp = {
+  // first add all the dependent project jars
+  def jars = configurations.archives.dependencies.collect { it.dependencyProject }
+    .findAll { !it.name.contains('web') }
+    .collect { it.jar.archiveName }
+    .join(' ')
+
+  // then add all the dependencies of the dependent jars
+  jars += ' ' + configurations.archives.dependencies.collect { 
+    it.dependencyProject.configurations.runtime.collect { it.getName() }.findAll {
+      // depedencies from geode-core
+      it.contains('antlr') ||
+      it.contains('commons-io') ||
+      it.contains('commons-lang') ||
+      it.contains('commons-logging') ||
+      it.contains('fastutil') ||
+      it.contains('jackson-annotations') ||
+      it.contains('jackson-core') ||
+      it.contains('jackson-databind') ||
+      it.contains('jansi') ||
+      it.contains('javax.resource-api') ||
+      it.contains('javax.servlet-api') ||
+      it.contains('javax.transaction-api') ||
+      it.contains('jetty-http') ||
+      it.contains('jetty-io') ||
+      it.contains('jetty-security') ||
+      it.contains('jetty-server') ||
+      it.contains('jetty-servlet') ||
+      it.contains('jetty-webapp') ||
+      it.contains('jetty-util') ||
+      it.contains('jetty-xml') ||
+      it.contains('jline') ||
+      it.contains('jna') ||
+      it.contains('log4j-api') ||
+      it.contains('log4j-core') ||
+      it.contains('log4j-jcl') ||
+      it.contains('log4j-jul') ||
+      it.contains('log4j-slf4j-impl') ||
+      it.contains('slf4j-api') ||
+      it.contains('spring-core') ||
+      it.contains('spring-shell') ||
+      it.contains('snappy-java') ||
+      it.contains('hbase') ||
+      it.contains('jgroups') ||
+      it.contains('netty') ||
+      
+      // dependencies from geode-lucene
+      it.contains('lucene-analyzers-common') ||
+      it.contains('lucene-core') ||
+      it.contains('lucene-queries') ||
+      it.contains('lucene-queryparser')
+    }
+  }.flatten().unique().join(' ')
+
+  return jars
+}
+
+// Note: this dependency doesn't work if you change a library version from
+// a dependent project.  Please fix me.
+task depsJar (type: Jar, dependsOn: ':geode-core:classes') {
+  description 'Assembles the jar archive that defines the gemfire classpath.'
+  archiveName 'geode-dependencies.jar'
+  doFirst {
+    manifest { 
+      attributes("Class-Path": cp())
+    }
+  }
+}
+
+// Note: this dependency doesn't work if you change a library version from
+// a dependent project.  Please fix me.
+task gfshDepsJar (type: Jar, dependsOn: ':geode-core:classes') {
+  description 'Assembles the jar archive that defines the gfsh classpath.'
+  def springWeb = configurations.runtime.collect { it.getName() }.find { it.contains('spring-web') }
+  archiveName 'gfsh-dependencies.jar'
+  doFirst {
+    manifest {
+      attributes("Class-Path": cp() + 
+        ' ' + project(':geode-core').webJar.archiveName +
+        ' ' + springWeb
+      )
+    }
+  }
+}
+
+
+def docsDir = file("$buildDir/javadocs")
+task docs(type: Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.encoding='UTF-8'
+    source parent.subprojects*.javadoc*.source
+    classpath = files(parent.subprojects*.javadoc*.classpath)
+    title = "Apache Geode ${project.version}"
+    include 'com/gemstone/gemfire/**/'
+    exclude 'com/gemstone/gemfire/internal/**/'
+    exclude 'com/gemstone/gemfire/**/internal/**/'
+    exclude 'com/gemstone/gemfire/**/xml/**/'
+    exclude 'com/gemstone/gemfire/distributed/**/util/**/'
+    exclude 'com/gemstone/gemfire/test/**/'
+    destinationDir = docsDir
+
+    doLast {
+      parent.subprojects.each { project ->
+        copy {
+          from project.sourceSets.main.resources.srcDirs
+          into docsDir
+          include 'javadoc-images/*'
+        }
+      }
+   }
+}
+
+gradle.taskGraph.whenReady( { graph ->
+  tasks.withType(AbstractArchiveTask).findAll {
+    it.name.toLowerCase().contains("dist")
+  }.each { archive ->
+    archive.doLast {
+      ant.checksum file:"${archive.archivePath}", algorithm:"md5"
+      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256"
+    }
+  }
+})
+
+distributions {
+  src {
+    baseName = 'apache-geode-src'
+    contents {
+      from (rootDir) {
+        exclude 'KEYS'
+        exclude 'gradlew'
+        exclude 'gradlew.bat'
+        exclude 'gradle/wrapper/gradle-wrapper.jar'
+        exclude '.gradle'
+        exclude '**/build/**'
+        exclude 'geode-spark-connector/**/target/**'
+        exclude 'geode-spark-connector/project/project'
+        exclude '**/.project'
+        exclude '**/.classpath'
+        exclude '**/.settings/**'
+        exclude '**/build-eclipse/**'
+        exclude '.idea/**'
+        exclude '**/*.iml'
+        exclude '**/*.ipr'
+        exclude '**/*.iws'
+        exclude '**/tags'
+
+        //These directories are generated on the jenkins server by gradle
+        exclude 'caches'
+        exclude 'daemon'
+        exclude 'native'
+        exclude 'wrapper'
+      }
+    }
+  }
+
+  main {
+    baseName = 'apache-geode' //TODO rootProject.name
+    contents {
+      duplicatesStrategy 'exclude'
+      exclude '*.asc'
+      
+      exclude '*.asc'
+      exclude '*-sources.jar'
+      exclude '*-javadoc.jar'
+
+      from rootProject.file( 'README.md' )
+
+      into ('config') {
+        from defaultCacheConfig
+        from defaultDistributionConfig
+        from (project(':geode-core').sourceSets.main.resources.files.find {
+          it.name == 'log4j2.xml' 
+        })
+      }
+      
+      into ('lib') {
+        from project(":geode-common").configurations.runtime
+        from project(":geode-common").configurations.archives.allArtifacts.files
+
+        from project(":geode-json").configurations.runtime
+        from project(":geode-json").configurations.archives.allArtifacts.files
+
+        from project(":geode-joptsimple").configurations.runtime
+        from project(":geode-joptsimple").configurations.archives.allArtifacts.files
+
+        from project(":geode-wan").configurations.runtime
+        from project(":geode-wan").configurations.archives.allArtifacts.files
+
+        from project(":geode-cq").configurations.runtime
+        from project(":geode-cq").configurations.archives.allArtifacts.files
+
+        from project(":geode-core").configurations.runtime
+        from project(":geode-core").configurations.archives.allArtifacts.files
+
+        from project(":geode-lucene").configurations.runtime
+        from project(":geode-lucene").configurations.archives.allArtifacts.files
+
+        from configurations.bundled
+
+        //These tasks are included as closures (wrapped in {}) because gradle may evaluate
+        //this CopySpec before it evaluates the geode-core build file.
+        from { project(":geode-core").webJar }
+        from { project(":geode-core").raJar }
+        from { project(":geode-core").jcaJar }
+
+        // include this jar        
+        from project(":geode-web-api").jar
+        
+        // dependency jars
+        from depsJar
+        from gfshDepsJar
+      }
+
+      into ('tools/Extensions') {
+        from (project(":geode-web").configurations.archives.allArtifacts.files) {
+          exclude '*.jar'
+        }
+        from (project(":geode-web-api").configurations.archives.allArtifacts.files) {
+          exclude '*.jar'
+        }
+      }
+
+      into ('javadoc') {
+        from docs
+      }
+
+      into ('tools/Pulse') {
+        from (project(":geode-pulse").configurations.archives.allArtifacts.files) {
+          exclude '*.jar'
+        }
+      }
+
+      into ('tools/Modules') {
+        from (project(':extensions/geode-modules-assembly').configurations.moduleDistOutputs.files)
+      }
+    }
+  }
+}
+
+// Create a configuration closure to configure test targets with the install directory
+def dependOnInstalledProduct = {
+  dependsOn installDist
+  def install = file("$buildDir/install/${distributions.main.baseName}")
+  environment ('GEMFIRE', install)
+}
+
+// Add the configuration closure to the test targets so they depend on the install directory
+test dependOnInstalledProduct
+distributedTest dependOnInstalledProduct
+integrationTest dependOnInstalledProduct
+
+// Make build final task to generate all test and product resources
+build.dependsOn installDist
+
+installDist.dependsOn ':extensions/geode-modules-assembly:dist'
+
+/**Print the names of all jar files in a fileTree */
+def printJars(tree) {
+  tree.matching {include("**/*.jar")}.visit{ file -> 
+    if(!file.isDirectory()) {
+      println file.name
+    }
+  };
+}
+
+task dumpInstalledJars(dependsOn: installDist) << {
+  description "Dump a list of all of the jars shipped with the binary distribution, for validation purposes"
+
+  FileTree installDir = fileTree(dir: installDist.destinationDir)
+
+  println("Jars in the binary install")
+  println("==========================")
+  printJars(installDir)
+
+  installDir.include("**/*.war").visit{ file -> 
+    if(!file.isDirectory()) {
+        FileTree warContents = zipTree(file.file)
+        println ""
+        println file.name
+        println("==========================")
+        printJars(warContents);
+    } 
+  };
+}
