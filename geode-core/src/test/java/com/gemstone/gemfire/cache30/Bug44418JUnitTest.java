@@ -22,6 +22,7 @@ package com.gemstone.gemfire.cache30;
 import static org.junit.Assert.fail;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -37,11 +38,17 @@ import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.jayway.awaitility.core.ConditionTimeoutException;
+
+import static com.jayway.awaitility.Awaitility.with;
 
 /**
  * Test for Bug 44418.
+ * 
+ * If a new expiration time is specified
+ * that is shorter than an existing one,
+ * ensure the new shorter time is honored.
  * 
  * @since 7.0
  */
@@ -52,7 +59,12 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
   DistributedSystem ds;
   Cache cache;
 
-  @Category(FlakyTest.class) // GEODE-1139: time sensitive, thread sleep, expiration
+  private static final int LONG_WAIT_MS = 1000*60*3;   // Initial expiration time for entry
+  private static final int TEST_WAIT_MS = 1000*60*1;   // How long to wait for entry to expire
+  private static final int SHORT_WAIT_MS = 1;         // New short expiration time for entry
+  private static final int POLL_INTERVAL_MS = 1;       // How often to check for expiration
+  private static final String TEST_KEY = "key";
+  
   @Test
   public void testPut() throws Exception {
 
@@ -60,47 +72,23 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
     try {
       final Region r = this.cache.createRegionFactory(RegionShortcut.LOCAL)
       .setStatisticsEnabled(true)
-      .setCustomEntryTimeToLive(new CustomExpiry() {
-        @Override
-        public void close() {
-        }
-        @Override
-        public ExpirationAttributes getExpiry(Entry entry) {
-          ExpirationAttributes result;
-          if (entry.getValue().equals("longExpire")) {
-            result = new ExpirationAttributes(5000);
-          } else {
-            result = new ExpirationAttributes(1);
-          }
-          //Bug44418JUnitTest.this.cache.getLogger().info("in getExpiry result=" + result, new RuntimeException("STACK"));
-          return result;
-        }
-      })
+      .setCustomEntryTimeToLive(new CustomExpiryTestClass())
       .create("bug44418");
-      r.put("key", "longExpire");
-      // should take 5000 ms to expire.
-      // Now update it with a short expire time
-      r.put("key", "quickExpire");
-      // now wait to see it expire. We only wait
-      // 1000 ms. If we need to wait that long
-      // for a 1 ms expire then the expiration
-      // is probably still set at 5000 ms.
-      long giveup = System.currentTimeMillis() + 10000;
-      boolean done = false;
-      do {
-        Thread.sleep(10);
-        done = r.containsValueForKey("key");
-      } while (!done && System.currentTimeMillis() < giveup);
-
-      if (r.containsValueForKey("key")) {
-        fail("1 ms expire did not happen after waiting 1000 ms");
+      
+      r.put(TEST_KEY, "longExpire");
+      // should take LONG_WAIT_MS to expire.
+      
+      // Now update it with a short time to live
+      r.put(TEST_KEY, "quickExpire");
+      
+      if (!awaitExpiration(r, TEST_KEY)) {
+        fail(SHORT_WAIT_MS + " ms expire did not happen after waiting " + TEST_WAIT_MS + " ms");
       }
     } finally {
       System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-924: expiration, time sensitive, expects action in 1 second
   @Test
   public void testGet() throws Exception {
 
@@ -108,48 +96,37 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
     try {
       final Region r = this.cache.createRegionFactory(RegionShortcut.LOCAL)
       .setStatisticsEnabled(true)
-      .setCustomEntryIdleTimeout(new CustomExpiry() {
-        private boolean secondTime;
-        @Override
-        public void close() {
-        }
-        @Override
-        public ExpirationAttributes getExpiry(Entry entry) {
-          ExpirationAttributes result;
-          if (!this.secondTime) {
-            result = new ExpirationAttributes(5000);
-            this.secondTime = true;
-          } else {
-            result = new ExpirationAttributes(1);
-          }
-          Bug44418JUnitTest.this.cache.getLogger().info("in getExpiry result=" + result, new RuntimeException("STACK"));
-          return result;
-        }
-      })
+      .setCustomEntryIdleTimeout(new CustomExpiryTestClass())
       .create("bug44418");
-      r.put("key", "longExpire");
-      // should take 5000 ms to expire.
-      r.get("key");
-      // now wait to see it expire. We only wait
-      // 1000 ms. If we need to wait that long
-      // for a 1 ms expire then the expiration
-      // is probably still set at 5000 ms.
-      long giveup = System.currentTimeMillis() + 1000;
-      boolean done = false;
-      do {
-        Thread.sleep(10);
-        // If the value is gone then we expired and are done
-        done = r.containsValueForKey("key");
-      } while (!done && System.currentTimeMillis() < giveup);
-
-      if (r.containsValueForKey("key")) {
-        fail("1 ms expire did not happen after waiting 1000 ms");
+      
+      r.put(TEST_KEY, "longExpire");
+      // should take LONG_WAIT_MS to expire.
+      
+      // Now set a short idle time
+      r.get(TEST_KEY);
+      
+      if (!awaitExpiration(r, TEST_KEY)) {
+        fail(SHORT_WAIT_MS + " ms expire did not happen after waiting " + TEST_WAIT_MS + " ms");
       }
     } finally {
       System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
     }
   }
 
+  private boolean awaitExpiration(Region r, Object key) {
+    // Return true if entry expires. We only wait
+    // TEST_WAIT_MS. If we need to wait that long for
+    // a SHORT_WAIT_MS to expire then the expiration
+    // is probably still set at LONG_WAIT_MS.
+    try {
+    with().pollInterval(POLL_INTERVAL_MS, TimeUnit.MILLISECONDS).await().atMost(TEST_WAIT_MS, TimeUnit.MILLISECONDS)
+      .until(() -> !r.containsValueForKey(key));
+    } catch (ConditionTimeoutException toe) {
+      return false;
+    }
+    return true;
+  }
+  
   @After
   public void tearDown() throws Exception {
     if (this.cache != null) {
@@ -171,4 +148,22 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
     this.cache = CacheFactory.create(this.ds);
   }
 
+  private class CustomExpiryTestClass implements CustomExpiry {
+    private boolean secondTime;
+    @Override
+    public void close() {
+    }
+    @Override
+    public ExpirationAttributes getExpiry(Entry entry) {
+      ExpirationAttributes result;
+      if (!this.secondTime) {
+        result = new ExpirationAttributes(LONG_WAIT_MS);   // Set long expiration first time entry referenced
+        this.secondTime = true;
+      } else {
+        result = new ExpirationAttributes(SHORT_WAIT_MS);  // Set short expiration second time entry referenced
+      }
+      return result;
+    }
+  }
 }
+
