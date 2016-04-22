@@ -127,7 +127,7 @@ gradle.taskGraph.whenReady { taskGraph ->
     if(taskGraph.allTasks.any {it instanceof Sign}) {
       if(!project.hasProperty('signing.keyId') || !project.hasProperty('signing.secretKeyRingFile')) {
         println "You must configure your signing.keyId and signing.secretKeyRingFile"
-        println "in ~/gradle/.properties in order to sign jars\n"
+        println "in ~/.gradle/gradle.properties in order to sign jars\n"
         println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
         throw new GradleException("Signing key/keyring is missing")
       }
@@ -141,7 +141,7 @@ gradle.taskGraph.whenReady { taskGraph ->
 
     if(taskGraph.allTasks.any {it.name == 'uploadArchives'}) {
       if(!project.hasProperty('nexusUsername')) {
-        println "You must configure your nexusUsername in ~/gradle/.properties in order to uploadArchives\n"
+        println "You must configure your nexusUsername in ~/.gradle/gradle.properties in order to uploadArchives\n"
         println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
         throw new GradleException("nexusUsername is missing")
       }
