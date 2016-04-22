@@ -1984,7 +1984,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return getSystem().getDistributionManager();
   }
 
-  public final InternalDistributedSystem getSystem() {
+  public InternalDistributedSystem getSystem() {
     return getCache().getDistributedSystem();
   }
   
