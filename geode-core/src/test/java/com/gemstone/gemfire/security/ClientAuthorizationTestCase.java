@@ -776,7 +776,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
       } else {
         int[] indices = currentOp.getIndices();
         clientVM.invoke("ClientAuthorizationTestCase.doOp",
-            () -> ClientAuthorizationTestCase.doOp( new Byte(ordinal), indices, new Integer(opFlags), new Integer(expectedResult) ));
+            () -> ClientAuthorizationTestCase.doOp( opCode, indices, new Integer(opFlags), new Integer(expectedResult) ));
       }
     }
   }
