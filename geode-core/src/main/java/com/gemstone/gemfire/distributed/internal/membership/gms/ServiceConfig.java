@@ -20,6 +20,7 @@ import java.net.InetAddress;
 
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
@@ -117,6 +118,23 @@ public class ServiceConfig {
       throw new RuntimeException(unhe);
 
     }
+  }
+
+  public boolean areLocatorsPreferredAsCoordinators() {
+    boolean locatorsAreCoordinators = false;
+
+    if (networkPartitionDetectionEnabled) {
+      locatorsAreCoordinators = true;
+    }
+    else {
+      // check if security is enabled
+      String prop = dconfig.getSecurityPeerAuthInit();
+      locatorsAreCoordinators =  (prop != null && prop.length() > 0);
+      if (!locatorsAreCoordinators) {
+        locatorsAreCoordinators = Boolean.getBoolean(InternalLocator.LOCATORS_PREFERRED_AS_COORDINATORS);
+      }
+    }
+    return locatorsAreCoordinators;
   }
   
   public DistributionConfig getDistributionConfig() {

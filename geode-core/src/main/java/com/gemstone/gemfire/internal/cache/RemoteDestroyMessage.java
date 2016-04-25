@@ -57,6 +57,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
@@ -359,7 +360,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)this.key).setRegionContext(r);
     }
-    EntryEventImpl event = null;
+    @Released EntryEventImpl event = null;
     try {
     if (this.bridgeContext != null) {
       event = EntryEventImpl.create(r, getOperation(), getKey(), null/*newValue*/,

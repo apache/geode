@@ -50,9 +50,11 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 import cacheRunner.Portfolio;
 import cacheRunner.Position;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests remote (client/server) query execution.
@@ -939,6 +941,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
    * Tests remote query execution using a BridgeClient as the CacheWriter
    * and CacheLoader.
    */
+  @Category(FlakyTest.class) // GEODE-490: random port
   public void testRemoteBridgeClientQueries() throws CacheException {
 
     final String name = this.getName();

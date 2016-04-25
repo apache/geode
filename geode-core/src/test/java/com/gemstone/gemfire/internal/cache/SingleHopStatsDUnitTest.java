@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -50,10 +52,10 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-public class SingleHopStatsDUnitTest extends CacheTestCase{
+public class SingleHopStatsDUnitTest extends CacheTestCase {
 
-  
   private static final String Region_Name = "42010";
 
   private VM member0 = null;
@@ -144,7 +146,8 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
     }
   }
 
-  public void testClientStatsPR(){
+  @Category(FlakyTest.class) // GEODE-364: random ports, time sensitive, waitForCriterions, magic numbers (113, 226)
+  public void testClientStatsPR() {
     VM server1 = member0;
     VM server2 = member1;
     VM server3 = member2;

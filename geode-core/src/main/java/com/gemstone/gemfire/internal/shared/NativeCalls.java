@@ -169,7 +169,7 @@ public abstract class NativeCalls {
       throw new UnsupportedOperationException(ex);
     }
 
-    // first try using SocketInputStream
+    // first try using FileInputStream
     if (sockStream instanceof FileInputStream) {
       try {
         fd = ((FileInputStream)sockStream).getFD();

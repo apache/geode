@@ -16,10 +16,10 @@
  */
 package com.gemstone.gemfire.test.dunit.standalone;
 
-import hydra.MethExecutorResult;
-
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+
+import hydra.MethExecutorResult;
 
 public interface RemoteDUnitVMIF extends Remote {
 

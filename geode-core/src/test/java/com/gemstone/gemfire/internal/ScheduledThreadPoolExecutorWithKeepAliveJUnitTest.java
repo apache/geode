@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -34,11 +33,9 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   
@@ -87,7 +84,8 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     
     assertEquals(2, ex.getLargestPoolSize());
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-1138: time sensitive, thread sleeps, expiration
   @Test
   public void testConcurrentExecutionAndExpiration() throws InterruptedException, ExecutionException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(
@@ -179,6 +177,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
         TimeUnit.SECONDS.toNanos(10) <= end - start + SLOP); 
   }
 
+  @Category(FlakyTest.class) // GEODE-710: time sensitive, async actions, 5 second thread sleeps
   @Test
   public void testRepeatedExecution() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(

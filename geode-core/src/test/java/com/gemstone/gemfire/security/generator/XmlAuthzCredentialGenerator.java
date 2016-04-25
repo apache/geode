@@ -16,15 +16,15 @@
  */
 package com.gemstone.gemfire.security.generator;
 
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.security.templates.UsernamePrincipal;
-import com.gemstone.gemfire.security.templates.XmlAuthorization;
-
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+
+import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import com.gemstone.gemfire.security.templates.UsernamePrincipal;
+import com.gemstone.gemfire.security.templates.XmlAuthorization;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 

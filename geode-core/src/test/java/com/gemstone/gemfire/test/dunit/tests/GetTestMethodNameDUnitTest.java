@@ -25,7 +25,6 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 @SuppressWarnings("serial")
-@Category(DistributedTest.class)
 public class GetTestMethodNameDUnitTest extends DistributedTestCase {
 
   public GetTestMethodNameDUnitTest(final String name) {

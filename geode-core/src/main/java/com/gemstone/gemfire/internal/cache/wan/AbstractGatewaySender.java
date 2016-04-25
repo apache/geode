@@ -74,6 +74,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.offheap.Releasable;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
@@ -875,8 +876,8 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       getStatistics().incEventsFiltered();
       return;
     }
-    
-    EntryEventImpl clonedEvent = new EntryEventImpl(event, false);
+    // released by this method or transfers ownership to TmpQueueEvent
+    @Released EntryEventImpl clonedEvent = new EntryEventImpl(event, false);
     boolean freeClonedEvent = true;
     try {
 

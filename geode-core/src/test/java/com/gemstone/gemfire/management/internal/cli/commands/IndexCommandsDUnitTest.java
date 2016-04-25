@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
@@ -43,11 +52,10 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
+@Category(DistributedTest.class)
 public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -56,11 +64,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   private static final String indexName = "Id1";
   private static final String parRegPersName = "ParRegPers";
   private static final String repRegPersName = "RepRegPer";
-
-  public IndexCommandsDUnitTest(String name) {
-    super(name);
-    // TODO Auto-generated constructor stub
-  }
 
   Region<?, ?> createParReg(String regionName, Cache cache, Class keyConstraint, Class valueConstraint) {
     RegionFactory regionFactory = cache.createRegionFactory();
@@ -130,6 +133,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     return regionFactory.create(regionName);
   }
 
+  @Test
   public void testCreateKeyIndexOnRegionWithPersistence() {
     setupSystemPersist();
 
@@ -159,6 +163,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(Status.OK.equals(commandResult.getStatus()));
   }
 
+  @Test
   public void testCreateAndDestroyIndex() {
     setupSystem();
     /***
@@ -200,6 +205,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(resultAsString.contains(indexName));
   }
 
+  @Test
   public void testCreateIndexMultipleIterators() {
     setupSystem();
 
@@ -224,6 +230,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(indexName));
   }
 
+  @Category(FlakyTest.class) // GEODE-1048: HeadlessGFSH, random ports
+  @Test
   public void testCreateMultipleIndexes() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
@@ -257,6 +265,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(indexName));
   }
 
+  @Category(FlakyTest.class) // GEODE-689: random ports, unused returns, HeadlessGfsh
+  @Test
   public void testClearMultipleIndexes() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
@@ -290,6 +300,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(!resultAsString.contains(indexName));
   }
 
+  @Test
   public void testCreateAndDestroyIndexOnMember() {
     setupSystem();
     /***
@@ -339,6 +350,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(resultAsString.contains(VM1Name));
   }
 
+  @Test
   public void testCreateAndDestroyIndexOnGroup() {
     setupSystem();
     /***
@@ -406,6 +418,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testCreateAndDestroyIndexWithIncorrectInput() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
@@ -524,6 +537,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
   }
 
+  @Test
   public void testDestroyIndexWithoutIndexName() {
     setupSystem();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
@@ -585,6 +599,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating and destroying indexes correctly updates the shared configuration.
    */
+  @Test
   public void testCreateDestroyUpdatesSharedConfig() {
     disconnectAllFromDS();
 

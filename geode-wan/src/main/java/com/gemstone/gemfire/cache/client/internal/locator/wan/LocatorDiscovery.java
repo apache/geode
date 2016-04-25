@@ -41,7 +41,9 @@ import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipL
 public class LocatorDiscovery{
 
   private static final Logger logger = LogService.getLogger();
-  
+
+  private WanLocatorDiscoverer discoverer;
+
   private DistributionLocatorId locatorId;
   
   private LocatorMembershipListener locatorListener;
@@ -57,8 +59,9 @@ public class LocatorDiscovery{
   public static final int WAN_LOCATOR_PING_INTERVAL = Integer.getInteger(
       "WANLocator.PING_INTERVAL", 10000).intValue();
 
-  public LocatorDiscovery(DistributionLocatorId locotor,RemoteLocatorJoinRequest request,
+  public LocatorDiscovery(WanLocatorDiscoverer discoverer, DistributionLocatorId locotor,RemoteLocatorJoinRequest request,
       LocatorMembershipListener locatorListener) {
+    this.discoverer = discoverer;
     this.locatorId = locotor;
     this.request = request; 
     this.locatorListener = locatorListener;
@@ -119,11 +122,14 @@ public class LocatorDiscovery{
       exchangeRemoteLocators();
     }
   }
-  
+
+  private WanLocatorDiscoverer getDiscoverer() {
+    return this.discoverer;
+  }
   
   private void exchangeLocalLocators() {
     int retryAttempt = 1;
-    while (true) {
+    while (!getDiscoverer().isStopped()) {
       try {
         RemoteLocatorJoinResponse response = (RemoteLocatorJoinResponse)TcpClient
             .requestToServer(locatorId.getHost(), locatorId.getPort(), request,
@@ -169,7 +175,7 @@ public class LocatorDiscovery{
   public void exchangeRemoteLocators() {
     int retryAttempt = 1;
     DistributionLocatorId remoteLocator = this.locatorId;
-    while (true) {
+    while (!getDiscoverer().isStopped()) {
       RemoteLocatorJoinResponse response;
       try {
         response = (RemoteLocatorJoinResponse)TcpClient

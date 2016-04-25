@@ -32,6 +32,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.AttributesMutator;
@@ -63,10 +65,8 @@ import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-//import com.gemstone.gemfire.internal.util.DebuggerSupport;
-
-// @todo davidw Test {@link CacheStatistics}
 /**
  * An abstract class whose test methods test the functionality of a
  * region regardless of its scope.
@@ -76,6 +76,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * This class also contains functionality that is used by subclasses.
  * See {@link #getRegionAttributes}.
  *
+ * TODO:davidw: Test {@link CacheStatistics}
  *
  * @since 3.0
  */
@@ -3506,8 +3507,8 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests that an entry in a region that remains idle for a
    * given amount of time is destroyed.
    */
-  public void testEntryIdleDestroy()
-  throws CacheException, InterruptedException {
+  @Category(FlakyTest.class) // GEODE-706: time sensitive, expiration, waitForDestroy, EXPIRY_MS_PROPERTY, short timeout
+  public void testEntryIdleDestroy() throws Exception {
 
     final String name = this.getUniqueName();
     final int timeout = 20; // ms

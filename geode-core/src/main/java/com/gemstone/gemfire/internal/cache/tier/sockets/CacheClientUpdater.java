@@ -71,7 +71,6 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.ClientServerObserver;
@@ -91,6 +90,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
@@ -328,8 +328,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
 
       // set the timeout for the handshake
       mySock.setSoTimeout(handshakeTimeout);
-      tmpOut = SocketUtils.getOutputStream(mySock);
-      tmpIn = SocketUtils.getInputStream(mySock);
+      tmpOut = mySock.getOutputStream();
+      tmpIn = mySock.getInputStream();
 
       if (isDebugEnabled) {
         logger.debug("Initialized server-to-client socket with send buffer size: {} bytes and receive buffer size: {} bytes", mySock.getSendBufferSize(), mySock.getReceiveBufferSize());
@@ -772,7 +772,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       else if (region.hasServerProxy()
           && ServerResponseMatrix.checkForValidStateAfterNotification(region,
               key, m.getMessageType()) && (withInterest || !withCQs)) {
-        EntryEventImpl newEvent = null;
+        @Released EntryEventImpl newEvent = null;
         try {
           // Create an event and put the entry
           newEvent = EntryEventImpl.create(

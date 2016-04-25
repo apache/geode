@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.Execution;
@@ -54,9 +56,9 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
-    PRClientServerTestBase {
+public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends PRClientServerTestBase {
   private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
 
   private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;
@@ -225,6 +227,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends
    * this is the case of HA then system should retry the function execution.
    * After 5th attempt function will send Boolean as last result.
    */
+  @Category(FlakyTest.class) // GEODE-600: network sensitive, random ports, configs lots of PoolFactory network attributes
   public void testserverMultiKeyExecution_FunctionInvocationTargetException() {
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecution_FunctionInvocationTargetException());

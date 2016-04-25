@@ -29,8 +29,6 @@
 
 package com.gemstone.gemfire.cache30;
 
-
-//import com.gemstone.gemfire.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -41,6 +39,7 @@ import java.util.concurrent.CountDownLatch;
 import junit.framework.AssertionFailedError;
 
 import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -89,6 +88,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class TXDistributedDUnitTest extends CacheTestCase {
   public TXDistributedDUnitTest(String name) {
@@ -530,6 +530,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
     return p;
   }
 
+  @Category(FlakyTest.class) // GEODE-635: eats and logs exceptions, retry loops
   public void testHighAvailabilityFeatures() throws Exception {
     IgnoredException.addIgnoredException("DistributedSystemDisconnectedException");
 //    final CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();

@@ -26,6 +26,7 @@ import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
 import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
@@ -39,6 +40,7 @@ import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueTestBase;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
@@ -1389,6 +1391,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
    * killed and subsequently vm6 is brought up. Buckets are now rebalanced
    * between vm4 & vm6.
    */
+  @Category(FlakyTest.class) // GEODE-688 & GEODE-713: random ports, thread sleeps, async actions
   public void testParallelAsyncEventQueueHA_Scenario2() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 

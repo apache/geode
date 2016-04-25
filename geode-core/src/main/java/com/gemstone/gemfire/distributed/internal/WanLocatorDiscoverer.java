@@ -28,4 +28,8 @@ public interface WanLocatorDiscoverer {
    */
   void discover(int port, DistributionConfigImpl config,
       LocatorMembershipListener locatorListener);
+
+  void stop();
+
+  boolean isStopped();
 }

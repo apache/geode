@@ -16,12 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-/**
- * This test is to test and validate the partitioned region creation in multiple
- * vm scenario. This will verify the functionality under distributed scenario.
- */
-
 import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -42,11 +39,14 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+/**
+ * This test is to test and validate the partitioned region creation in multiple
+ * vm scenario. This will verify the functionality under distributed scenario.
+ */
 @SuppressWarnings("serial")
-public class PartitionedRegionCreationDUnitTest extends
-    PartitionedRegionDUnitTestCase
-{
+public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTestCase {
   /**
    * constructor
    * 
@@ -419,6 +419,7 @@ public class PartitionedRegionCreationDUnitTest extends
    * 
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1104: time sensitive, async actions
   public void testPartitionRegionInitialization() throws Throwable
   {
     final String name = getUniqueName();

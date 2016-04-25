@@ -54,6 +54,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 public final class InvalidateMessage extends DestroyMessage {
   private static final Logger logger = LogService.getLogger();
@@ -179,7 +180,7 @@ public final class InvalidateMessage extends DestroyMessage {
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)key).setRegionContext(r);
     }
-    final EntryEventImpl event = EntryEventImpl.create(
+    @Released final EntryEventImpl event = EntryEventImpl.create(
         r,
         getOperation(),
         key,

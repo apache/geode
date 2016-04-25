@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import junit.framework.Assert;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
@@ -56,6 +57,7 @@ import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.TombstoneService;
 import com.gemstone.gemfire.internal.cache.UpdateOperation;
+import com.gemstone.gemfire.internal.cache.VersionTagHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.versions.VMVersionTag;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
@@ -69,16 +71,10 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- *
- */
 public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitTest {
 
-  
-  /**
-   * @param name
-   */
   public DistributedAckRegionCCEDUnitTest(String name) {
     super(name);
   }
@@ -287,11 +283,12 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     versionTestConcurrentEvents();
   }
   
-  
+  @Category(FlakyTest.class) // GEODE-720: time sensitive, async actions, thread sleeps
   public void testClearWithConcurrentEvents() throws Exception {
     z_versionTestClearWithConcurrentEvents(true);
   }
 
+  @Category(FlakyTest.class) // GEODE-599 and GEODE-1046: async actions, thread sleeps -- // GEODE-1046: this may be hitting a product bug!
   public void testClearWithConcurrentEventsAsync() throws Exception {
     versionTestClearWithConcurrentEventsAsync();
   }
@@ -476,10 +473,9 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       tag.setEntryVersion(0xFFFFFF);
       tag.setDistributedSystemId(1);
       tag.setRegionVersion(CCRegion.getVersionVector().getNextVersion());
-      EntryEventImpl holder = EntryEventImpl.createVersionTagHolder(tag);
+      VersionTagHolder holder = new VersionTagHolder(tag);
       ClientProxyMembershipID id = ClientProxyMembershipID.getNewProxyMembership(CCRegion.getDistributionManager().getSystem());
       CCRegion.basicBridgePut("cckey0", "newvalue", null, true, null, id, true, holder, false);
-      holder.release();
       vm0.invoke(new SerializableRunnable("check conflation count") {
         public void run() {
           assertEquals("expected one conflated event", 1, CCRegion.getCachePerfStats().getConflatedEventsCount());

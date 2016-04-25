@@ -28,6 +28,7 @@ import com.gemstone.gemfire.cache.operations.InvalidateOperationContext;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
@@ -153,7 +154,7 @@ public class Invalidate extends BaseCommand {
                 .invalidateAuthorize(regionName, key, callbackArg);
             callbackArg = invalidateContext.getCallbackArg();
           }
-          EntryEventImpl clientEvent = new EntryEventImpl(eventId);
+          EventIDHolder clientEvent = new EventIDHolder(eventId);
 
           // msg.isRetry might be set by v7.0 and later clients
           if (msg.isRetry()) {

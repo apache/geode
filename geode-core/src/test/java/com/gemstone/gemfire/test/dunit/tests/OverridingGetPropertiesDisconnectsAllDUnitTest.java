@@ -20,8 +20,11 @@ import static com.gemstone.gemfire.test.dunit.Invoke.*;
 
 import java.util.Properties;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Verifies that overriding {@code getDistributedSystemProperties} results

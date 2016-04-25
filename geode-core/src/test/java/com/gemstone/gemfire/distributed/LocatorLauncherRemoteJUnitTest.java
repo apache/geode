@@ -48,6 +48,7 @@ import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
 import com.gemstone.gemfire.internal.process.ProcessStreamReader;
 import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -146,6 +147,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
   }
   */
 
+  @Category(FlakyTest.class) // GEODE-473: random ports, BindException, forks JVM, uses ErrorCollector
   @Test
   public void testStartCreatesPidFile() throws Throwable {
     // build and start the locator
@@ -202,6 +204,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-530: BindException, random ports
   @Test
   public void testStartDeletesStaleControlFiles() throws Throwable {
     // create existing control files
@@ -272,7 +275,8 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
       this.errorCollector.addError(e);
     }
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-1229: BindException
   @Test
   public void testStartOverwritesStalePidFile() throws Throwable {
     // create existing pid file
@@ -328,6 +332,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-764: BindException
   @Test
   public void testStartUsingForceOverwritesExistingPidFile() throws Throwable {
     // create existing pid file
@@ -691,7 +696,8 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
       this.errorCollector.addError(e);
     }
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-569: BindException, random ports
   @Test
   public void testStatusUsingWorkingDirectory() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
@@ -890,7 +896,8 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
       this.errorCollector.addError(e);
     }
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-847: random ports, BindException, forks JVM, uses ErrorCollector
   @Test
   public void testStopUsingWorkingDirectory() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();

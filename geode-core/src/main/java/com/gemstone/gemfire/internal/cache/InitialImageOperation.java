@@ -931,7 +931,7 @@ public class InitialImageOperation  {
                           .create((byte[])tmpValue);
                     }
                     // dummy EntryEvent to pass for SQLF index maintenance
-                    final EntryEventImpl ev = EntryEventImpl.create(this.region,
+                    @Released final EntryEventImpl ev = EntryEventImpl.create(this.region,
                         Operation.CREATE, null, null, null, true, null, false, false);
                     try {
                     ev.setKeyInfo(this.region.getKeyInfo(entry.key,

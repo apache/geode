@@ -17,101 +17,23 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.io.BufferedOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheEvent;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.InterestRegistrationEvent;
-import com.gemstone.gemfire.cache.InterestRegistrationListener;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.UnsupportedVersionException;
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl.PoolTask;
 import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.cache.query.internal.cq.ServerCQ;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.MessageWithReply;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.internal.ClassLoadUtil;
-import com.gemstone.gemfire.internal.DummyStatisticsFactory;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.SocketCloser;
-import com.gemstone.gemfire.internal.SocketUtils;
-import com.gemstone.gemfire.internal.SystemTimer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.VersionedDataInputStream;
-import com.gemstone.gemfire.internal.VersionedDataOutputStream;
-import com.gemstone.gemfire.internal.cache.ClientServerObserver;
-import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.internal.cache.ClientRegionEventImpl;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.CacheClientStatus;
-import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.Conflatable;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.FilterProfile;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl.SerializedCacheValueImpl;
+import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InternalCacheEvent;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.RegionEventImpl;
-import com.gemstone.gemfire.internal.cache.ha.HAContainerMap;
-import com.gemstone.gemfire.internal.cache.ha.HAContainerRegion;
-import com.gemstone.gemfire.internal.cache.ha.HAContainerWrapper;
-import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
-import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
+import com.gemstone.gemfire.internal.cache.ha.*;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
@@ -122,6 +44,15 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.lang.reflect.Method;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.security.Principal;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Class <code>CacheClientNotifier</code> works on the server and manages
@@ -314,8 +245,8 @@ public class CacheClientNotifier {
   {
     // Since no remote ports were specified in the message, wait for them.
     long startTime = this._statistics.startTime();
-    DataInputStream dis = new DataInputStream(SocketUtils.getInputStream(socket));//socket.getInputStream());
-    DataOutputStream dos = new DataOutputStream(SocketUtils.getOutputStream(socket));//socket.getOutputStream());
+    DataInputStream dis = new DataInputStream(socket.getInputStream());
+    DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 
     // Read the client version
     short clientVersionOrdinal = Version.readOrdinal(dis);
@@ -607,7 +538,7 @@ public class CacheClientNotifier {
     // is attempted to be registered or authentication fails.
     try {
       DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(
-          SocketUtils.getOutputStream(socket)));//socket.getOutputStream()));
+          socket.getOutputStream()));
       // write the message type, message length and the error message (if any)
       writeMessage(dos, responseByte, unsuccessfulMsg, clientVersion, epType, qSize);
     }

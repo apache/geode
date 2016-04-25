@@ -23,9 +23,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class ParallelWANStatsDUnitTest extends WANTestBase{
   
@@ -48,7 +51,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createSendersWithConflation(lnPort);
 
@@ -80,7 +83,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createSenders(lnPort);
 
@@ -117,7 +120,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createSenders(lnPort);
 
@@ -155,8 +158,8 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
 
     createCacheInVMs(nyPort, vm2);
     createCacheInVMs(tkPort, vm3);
-    createReceiverInVMs(nyPort, vm2);
-    createReceiverInVMs(tkPort, vm3);
+    createReceiverInVMs(vm2);
+    createReceiverInVMs(vm3);
 
     vm4.invoke(() -> WANTestBase.createCache(lnPort ));
 
@@ -211,7 +214,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createSenders(lnPort);
     
@@ -254,13 +257,14 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
    * 
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-977: random ports, time sensitive, waitForCriterion
   public void  testParallePropagationWithRemoteRegionDestroy() throws Exception {
     addIgnoredException("RegionDestroyedException");
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createSenders(lnPort);
 
@@ -290,13 +294,14 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     assertTrue(v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5) >= 1); //batches redistributed
   }
 
+  @Category(FlakyTest.class) // GEODE-977: random ports and relies on stats
   public void testParallelPropogationWithFilter() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -345,7 +350,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
 
     createSendersWithConflation(lnPort);
 

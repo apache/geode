@@ -51,6 +51,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+
 import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
 import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
 
@@ -189,7 +191,7 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)key).setRegionContext(r);
     }
-    final EntryEventImpl event = EntryEventImpl.create(
+    @Released final EntryEventImpl event = EntryEventImpl.create(
         r,
         getOperation(),
         key,

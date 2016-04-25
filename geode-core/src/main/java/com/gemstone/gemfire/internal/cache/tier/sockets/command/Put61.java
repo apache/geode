@@ -30,6 +30,7 @@ import com.gemstone.gemfire.cache.operations.PutOperationContext;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
@@ -223,7 +224,7 @@ public class Put61 extends BaseCommand {
             // isObject
             // the true after null doesn't matter and is not used.
             result = region.basicBridgeCreate(key, null, true, callbackArg,
-                servConn.getProxyID(), true, new EntryEventImpl(eventId), false);
+                servConn.getProxyID(), true, new EventIDHolder(eventId), false);
           }
           else {
             // Put the entry
@@ -232,7 +233,7 @@ public class Put61 extends BaseCommand {
               delta = valuePart.getSerializedForm();              
             }
             result = region.basicBridgePut(key, value, delta, isObject,
-                callbackArg, servConn.getProxyID(), true, new EntryEventImpl(eventId), servConn
+                callbackArg, servConn.getProxyID(), true, new EventIDHolder(eventId), servConn
                     .isSqlFabricSystem());
           }
           if (result) {

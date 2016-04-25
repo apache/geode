@@ -500,10 +500,8 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           CqQuery cq1 = qService.newCq(cqName, queryStr, cqa);
           assertTrue("newCq() state mismatch", cq1.getState().isStopped());
         } catch (Exception ex){
-          AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
-          err.initCause(ex);
-          LogWriterUtils.getLogWriter().info("QueryService is :" + qService, err);
-          throw err;
+          LogWriterUtils.getLogWriter().info("QueryService is :" + qService, ex);
+          Assert.fail("Failed to create CQ " + cqName + " . ", ex);
         }
       }
     });   
@@ -538,10 +536,8 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           CqQuery cq1 = qService.newCq(cqName, queryStr, cqa);
           assertTrue("newCq() state mismatch", cq1.getState().isStopped());
         } catch (Exception ex){
-          AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
-          err.initCause(ex);
-          LogWriterUtils.getLogWriter().info("QueryService is :" + qService, err);
-          throw err;
+          LogWriterUtils.getLogWriter().info("QueryService is :" + qService, ex);
+          Assert.fail("Failed to create CQ " + cqName + " . ", ex);
         }
       }
     });   
@@ -679,9 +675,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
       } catch (Exception ex){
         LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
         LogWriterUtils.getLogWriter().error(ex);
-        AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
-        err.initCause(ex);
-        throw err;
+        Assert.fail("Failed to execute  CQ " + cqName, ex);
       }
       
       if (initialResults) {
@@ -723,12 +717,10 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         try {
           cq1.execute();
         } catch (Exception ex){
-          AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
-          err.initCause(ex);
           if (expectedErr == null) {
-            LogWriterUtils.getLogWriter().info("CqService is :" + cqService, err);
+            LogWriterUtils.getLogWriter().info("CqService is :" + cqService, ex);
           }
-          throw err;
+          Assert.fail("Failed to execute  CQ " + cqName, ex);
         }
         assertTrue("execute() state mismatch", cq1.getState().isRunning());
       }

@@ -359,21 +359,15 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   }
 
   protected void createOrderShipmentOnReceivers() {
-    vm2.invoke(() ->createCustomerOrderShipmentPartitionedRegion(
-            getTestMethodName(), null, 1, 8, isOffHeap() ));
-    vm3.invoke(() ->createCustomerOrderShipmentPartitionedRegion(
-            getTestMethodName(), null, 1, 8, isOffHeap() ));
+    vm2.invoke(() ->createCustomerOrderShipmentPartitionedRegion(null, 1, 8, isOffHeap() ));
+    vm3.invoke(() ->createCustomerOrderShipmentPartitionedRegion(null, 1, 8, isOffHeap() ));
   }
 
   protected void createOrderShipmentOnSenders() {
-    vm4.invoke(() ->createCustomerOrderShipmentPartitionedRegion(
-            getTestMethodName(), "ln", 0, 8, isOffHeap() ));
-    vm5.invoke(() ->createCustomerOrderShipmentPartitionedRegion(
-            getTestMethodName(), "ln", 0, 8, isOffHeap() ));
-    vm6.invoke(() ->createCustomerOrderShipmentPartitionedRegion(
-            getTestMethodName(), "ln", 0, 8, isOffHeap() ));
-    vm7.invoke(() ->createCustomerOrderShipmentPartitionedRegion(
-            getTestMethodName(), "ln", 0, 8, isOffHeap() ));
+    vm4.invoke(() ->createCustomerOrderShipmentPartitionedRegion("ln", 0, 8, isOffHeap() ));
+    vm5.invoke(() ->createCustomerOrderShipmentPartitionedRegion("ln", 0, 8, isOffHeap() ));
+    vm6.invoke(() ->createCustomerOrderShipmentPartitionedRegion("ln", 0, 8, isOffHeap() ));
+    vm7.invoke(() ->createCustomerOrderShipmentPartitionedRegion("ln", 0, 8, isOffHeap() ));
   }
   
   protected Map updateKeyValues() {
@@ -456,7 +450,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() ->createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
   }

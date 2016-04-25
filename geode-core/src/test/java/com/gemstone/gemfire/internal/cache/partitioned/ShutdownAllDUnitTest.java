@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import static com.gemstone.gemfire.internal.lang.ThrowableUtils.getRootCause;
+
 import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
@@ -556,12 +558,8 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
     try {
       a0.getResult(MAX_WAIT);
       fail("should have received a cache closed exception");
-    } catch(Exception e) {
-      if(!(e.getCause() instanceof RMIException)) {
-        throw e;
-      }
-      RMIException cause = (RMIException) e.getCause();
-      if(!(cause.getCause() instanceof CacheClosedException)) {
+    } catch(AssertionError e) {
+      if(!CacheClosedException.class.isInstance(getRootCause(e))) {
         throw e;
       }
     }

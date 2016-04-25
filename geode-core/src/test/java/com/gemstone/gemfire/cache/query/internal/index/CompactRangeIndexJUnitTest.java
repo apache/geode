@@ -62,6 +62,7 @@ public class CompactRangeIndexJUnitTest  {
     utils = new QueryTestUtils();
     Properties props = new Properties();
     props.setProperty("mcast-port", "0");
+    utils.initializeQueryMap();
     utils.createCache(props);
     utils.createReplicateRegion("exampleRegion");
   }

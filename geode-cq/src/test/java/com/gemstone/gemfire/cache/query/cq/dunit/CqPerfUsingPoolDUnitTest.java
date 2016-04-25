@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.query.CqAttributes;
 import com.gemstone.gemfire.cache.query.CqAttributesFactory;
@@ -43,15 +45,15 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
  * This includes the test with diffetent data activities.
- *
  */
 public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
 
-  protected CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("CqPerfUsingPoolDUnitTest");
+  protected CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("CqPerfUsingPoolDUnitTest"); // TODO: get rid of this!
   
   public CqPerfUsingPoolDUnitTest(String name) {
     super(name);
@@ -399,6 +401,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
    * To test the changes relating to, executing CQ only once for all similar CQs.
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-988: random ports, time sensitive, waitForCriterion, 20 second timeouts
   public void testMatchingCqs() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -406,7 +409,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     VM client = host.getVM(1);
     
     cqDUnitTest.createServer(server);
-    final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort()); // TODO: move static methods from other dunit into util class
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     //cqDUnitTest.createClient(client, port, host0);
     

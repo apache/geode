@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.experimental.categories.Category;
 import util.TestException;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -38,6 +39,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -53,15 +55,12 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests propagation of destroy entry operation across the vms
- *
- *
  */
-
-public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
-{
+public class DestroyEntryPropagationDUnitTest extends DistributedTestCase {
 
   VM vm0 = null;
 
@@ -177,8 +176,8 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
    * are situation of Interest List fail over
    *
    */
-  public void testVerifyDestroyNotReceivedBySender()
-  {
+  @Category(FlakyTest.class) // GEODE-897: random port, time sensitive, waitForCriterion, 2 minute timeouts, eats exception (1 fixed)
+  public void testVerifyDestroyNotReceivedBySender() {
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
     //First create entries on both servers via the two client
     vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createEntriesK1andK2());
@@ -272,8 +271,8 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
       assertNotNull(conn1);
       assertEquals(PORT2, conn1.getServer().getPort());
       ServerRegionProxy srp = new ServerRegionProxy(Region.SEPARATOR+REGION_NAME, pool);
-      srp.destroyOnForTestsOnly(conn1, "key1", null, Operation.DESTROY, new EntryEventImpl(new EventID(new byte[] {1},100000,1)), null);
-      srp.destroyOnForTestsOnly(conn1, "key2", null, Operation.DESTROY, new EntryEventImpl(new EventID(new byte[] {1},100000,2)), null);
+      srp.destroyOnForTestsOnly(conn1, "key1", null, Operation.DESTROY, new EventIDHolder(new EventID(new byte[] {1},100000,1)), null);
+      srp.destroyOnForTestsOnly(conn1, "key2", null, Operation.DESTROY, new EventIDHolder(new EventID(new byte[] {1},100000,2)), null);
     }
     catch (Exception ex) {
       throw new TestException("Failed while setting acquireConnectionsAndDestroyEntry  ", ex);
@@ -294,7 +293,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
       }
     }
     catch (Exception ex) {
-      fail("while killing Server  " + ex);
+      Assert.fail("while killing Server", ex);
     }
   }
 

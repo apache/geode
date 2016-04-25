@@ -80,7 +80,6 @@ import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
@@ -257,7 +256,7 @@ public class HandShake implements ClientHandShake
       try {
         soTimeout = sock.getSoTimeout();
         sock.setSoTimeout(timeout);
-        InputStream is = SocketUtils.getInputStream(sock);//sock.getInputStream();
+        InputStream is = sock.getInputStream();
         int valRead =  is.read();
         //this.code =  (byte)is.read();
         if (valRead == -1) {
@@ -269,7 +268,7 @@ public class HandShake implements ClientHandShake
         }
         try {
           DataInputStream dis = new DataInputStream(is);
-          DataOutputStream dos = new DataOutputStream(SocketUtils.getOutputStream(sock));//sock.getOutputStream());
+          DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
           this.clientReadTimeout = dis.readInt();
           if (clientVersion.compareTo(Version.CURRENT) < 0) {
             // versioned streams allow object serialization code to deal with older clients
@@ -1272,8 +1271,8 @@ public class HandShake implements ClientHandShake
     try {
       ServerQueueStatus serverQStatus = null;
       Socket sock = conn.getSocket();
-      DataOutputStream dos = new DataOutputStream(SocketUtils.getOutputStream(sock));//sock.getOutputStream());
-      final InputStream in = SocketUtils.getInputStream(sock);//sock.getInputStream();
+      DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+      final InputStream in = sock.getInputStream();
       DataInputStream dis = new DataInputStream(in);
       DistributedMember member = getDistributedMember(sock);
       // if running in a loner system, use the new port number in the ID to 
@@ -1378,8 +1377,8 @@ public class HandShake implements ClientHandShake
       AuthenticationFailedException, ServerRefusedConnectionException, ClassNotFoundException {
     ServerQueueStatus sqs = null;
     try {
-      DataOutputStream dos = new DataOutputStream(SocketUtils.getOutputStream(sock));//sock.getOutputStream());
-      final InputStream in = SocketUtils.getInputStream(sock);//sock.getInputStream());
+      DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+      final InputStream in = sock.getInputStream();
       DataInputStream dis = new DataInputStream(in);
       DistributedMember member = getDistributedMember(sock);
       if (!this.multiuserSecureMode) {

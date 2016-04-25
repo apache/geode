@@ -16,8 +16,7 @@
  */
 package com.gemstone.gemfire.test.dunit.rules;
 
-import static com.gemstone.gemfire.test.dunit.Invoke.invokeInEveryVM;
-import static com.gemstone.gemfire.test.dunit.Invoke.invokeInLocator;
+import static com.gemstone.gemfire.test.dunit.Invoke.*;
 
 import java.io.Serializable;
 

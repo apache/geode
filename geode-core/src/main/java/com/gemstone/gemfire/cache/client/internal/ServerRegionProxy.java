@@ -42,6 +42,7 @@ import com.gemstone.gemfire.internal.cache.ClientServerObserver;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.TXCommitMessage;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
@@ -192,7 +193,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
                     EventID eventId,
                     Object callbackArg)
   {
-    EntryEventImpl event = new EntryEventImpl(eventId);
+    EventIDHolder event = new EventIDHolder(eventId);
     PutOp.execute(con, this.pool, this.regionName, key, value, event, callbackArg, this.pool.getPRSingleHopEnabled());
   }
   

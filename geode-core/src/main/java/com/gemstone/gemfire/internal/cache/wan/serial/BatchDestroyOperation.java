@@ -44,6 +44,7 @@ import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * Handles distribution messaging for destroying a batch of entry in a queue region.
@@ -157,6 +158,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
     }
 
     @Override
+    @Retained
     protected final InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException {
       EntryEventImpl ev = createEntryEvent(rgn);
@@ -176,8 +178,9 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
       }
     }
 
+    @Retained
     EntryEventImpl createEntryEvent(DistributedRegion rgn) {
-      EntryEventImpl event = EntryEventImpl.create(rgn, getOperation(), this.key,
+      @Retained EntryEventImpl event = EntryEventImpl.create(rgn, getOperation(), this.key,
           null, this.callbackArg, true, getSender());
       // event.setNewEventId(); Don't set the event here...
       setOldValueInEvent(event);

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -63,13 +65,12 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This tests the querying using a RegionFunctionContext which provides a filter
  * (routing keys) to run the query on subset of buckets "locally". If query
  * includes buckets
- *
- *
  */
 public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
@@ -434,10 +435,8 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
   }
 
-  /**
-  *
-  */
- public void testQueriesWithFilterKeysOnPRWithRebalancing() {
+  @Category(FlakyTest.class) // GEODE-575: ignores lots of exceptions, non-thread-safe test hooks
+  public void testQueriesWithFilterKeysOnPRWithRebalancing() {
    IgnoredException.addIgnoredException("QueryInvocationTargetException");
    IgnoredException.addIgnoredException("java.net.SocketException");
    IgnoredException.addIgnoredException("ServerConnectivityException");

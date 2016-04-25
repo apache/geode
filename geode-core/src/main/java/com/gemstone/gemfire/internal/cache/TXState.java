@@ -62,6 +62,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
 import com.gemstone.gemfire.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /** TXState is the entity that tracks the transaction state on a per
@@ -487,7 +488,7 @@ public class TXState implements TXStateInterface {
             /*
              * The event must contain the bucket region
              */
-            EntryEventImpl ev = (EntryEventImpl)o.es.getEvent(o.r, o.key, o.es.getTXRegionState().getTXState());
+            @Released EntryEventImpl ev = (EntryEventImpl)o.es.getEvent(o.r, o.key, o.es.getTXRegionState().getTXState());
             try {
             /*
              * The routing information is derived from the PR advisor, not the bucket advisor.
@@ -1755,7 +1756,7 @@ public class TXState implements TXStateInterface {
 //	        final boolean requiresRegionContext = theRegion.keyRequiresRegionContext();
 	        InternalDistributedMember myId = theRegion.getDistributionManager().getDistributionManagerId();
 	        for (int i = 0; i < putallOp.putAllDataSize; ++i) {
-	          EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion, myId,myId, i, putallOp.putAllData, false, putallOp.getBaseEvent().getContext(), false, !putallOp.getBaseEvent().isGenerateCallbacks(), false);
+	          @Released EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion, myId,myId, i, putallOp.putAllData, false, putallOp.getBaseEvent().getContext(), false, !putallOp.getBaseEvent().isGenerateCallbacks(), false);
 	          try {
 	          ev.setPutAllOperation(putallOp);
 	          if (theRegion.basicPut(ev, false, false, null, false)) {
@@ -1786,11 +1787,13 @@ public class TXState implements TXStateInterface {
         public void run() {
           InternalDistributedMember myId = theRegion.getDistributionManager().getDistributionManagerId();
           for (int i = 0; i < op.removeAllDataSize; ++i) {
-            EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion, myId, myId, i, op.removeAllData, false, op.getBaseEvent().getContext(), false, !op.getBaseEvent().isGenerateCallbacks());
+            @Released EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion, myId, myId, i, op.removeAllData, false, op.getBaseEvent().getContext(), false, !op.getBaseEvent().isGenerateCallbacks());
             ev.setRemoveAllOperation(op);
             try {
               theRegion.basicDestroy(ev, true/* should we invoke cacheWriter? */, null);
             } catch (EntryNotFoundException ignore) {
+            } finally {
+              ev.release();
             }
             successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);
           }

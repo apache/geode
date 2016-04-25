@@ -19,6 +19,8 @@ package com.gemstone.gemfire.cache30;
 import java.util.Map;
 import java.util.Properties;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheListener;
@@ -40,9 +42,9 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-public class DistributedNoAckRegionCCEDUnitTest extends
-    DistributedNoAckRegionDUnitTest {
+public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDUnitTest {
   
   static volatile boolean ListenerBlocking;
 
@@ -361,13 +363,11 @@ public class DistributedNoAckRegionCCEDUnitTest extends
    * This tests the concurrency versioning system to ensure that event conflation
    * happens correctly and that the statistic is being updated properly
    */
+  @Category(FlakyTest.class) // GEODE-976: time sensitive, thread sleeps, relies on stat values
   public void testConcurrentEventsOnEmptyRegion() {
     versionTestConcurrentEventsOnEmptyRegion();
   }
-  
-  
-  
-  
+
   /**
    * This tests the concurrency versioning system to ensure that event conflation
    * happens correctly and that the statistic is being updated properly

@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * A subclass of EntryEventImpl used in WAN conflict resolution
@@ -30,6 +31,7 @@ public class TimestampedEntryEventImpl extends EntryEventImpl implements
   private long newTimestamp;
   private long oldTimestamp;
 
+  @Retained
   public TimestampedEntryEventImpl(EntryEventImpl event, int newDSID, int oldDSID, long newTimestamp, long oldTimestamp) {
     super(event);
     this.newDSID = newDSID;

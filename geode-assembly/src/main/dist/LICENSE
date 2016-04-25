@@ -208,6 +208,9 @@ Apache Geode includes a number of components and libraries with separate
 copyright notices and license terms. Your use of those components are
 subject to the terms and conditions of the following licenses.
 
+Apache Geode bundles the Droid fonts (http://www.droidfonts.com) under
+the Apache License v2.0.
+
 ---------------------------------------------------------------------------
 The BSD 3-Clause License (http://opensource.org/licenses/BSD-3-Clause)
 ---------------------------------------------------------------------------
@@ -666,6 +669,8 @@ Apache Geode bundles the following files under the MIT license:
     (c) 2014 Alexander Farkas (aFarkas)
   - iCheck v0.8 (http://icheck.fronteed.com/), Copyright (c) 2013 Damir
     Foy, http://damirfoy.com
+  - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/),
+    Copyright (c) 2011 Sencha Inc.
   - JOpt Simple (http://pholser.github.io/jopt-simple/), Copyright (c)
     2004-2015 Paul R. Holser, Jr.
   - jQuery JavaScript Library v.1.7.2 (https://jquery.com), Copyright (c)
@@ -734,8 +739,9 @@ DEALINGS IN THE SOFTWARE.
 The MX4J License (http://mx4j.sourceforge.net/docs/ch01s06.html)
 ---------------------------------------------------------------------------
 
-Apache Geode bundles the following file under the MIT license:
+Apache Geode bundles the following file under the MX4J license:
 
+  - MX4JModelMBean.java (http://mx4j.sourceforge.net)
   - MX4J v3.0.1 (http://mx4j.sourceforge.net), Copyright (c) MX4J
 
 Version 1.0

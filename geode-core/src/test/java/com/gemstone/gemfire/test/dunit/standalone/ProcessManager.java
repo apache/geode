@@ -54,10 +54,6 @@ public class ProcessManager {
     this.registry = registry;
   }
   
-  public void launchVMs() throws IOException, NotBoundException {
-    log4jConfig = LogService.findLog4jConfigInCurrentDir();
-  }
-
   public synchronized void launchVM(int vmNum) throws IOException {
     if(processes.containsKey(vmNum)) {
       throw new IllegalStateException("VM " + vmNum + " is already running.");
@@ -178,8 +174,7 @@ public class ProcessManager {
       "-Xmx512m",
       "-Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10",
       "-Dgemfire.disallowMcastDefaults=true",
-      "-ea",
-        "-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps",
+      "-ea", "-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps",
       agent,
       ChildVM.class.getName()
     };

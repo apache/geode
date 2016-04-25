@@ -1075,17 +1075,22 @@ public class GMSJoinLeaveJUnitTest {
       FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false, null, registrants, false, true);
       NetView view = createView();
       JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view);
-      gmsJoinLeave.setJoinResponseMessage(jrm);
       
       TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
       gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
       FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1);
       int connectTimeout = (int)services.getConfig().getMemberTimeout() * 2;
       when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12345), fcreq, connectTimeout)).thenReturn(fcr);
+      callAsnyc(()->{gmsJoinLeave.installView(view);});
       assertTrue("Should be able to join ", gmsJoinLeave.join());
     }finally{
       
     }   
+  }
+  
+  private void callAsnyc(Runnable run) {
+    Thread th = new Thread(run);
+    th.start();
   }
   
   @Test

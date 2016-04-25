@@ -18,14 +18,18 @@ package com.gemstone.gemfire.rest.internal.web.swagger.config;
 
 import javax.servlet.ServletContext;
 
+import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.mangofactory.swagger.core.SwaggerPathProvider;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.UnknownHostException;
 
 @SuppressWarnings("unused")
 public class RestApiPathProvider implements SwaggerPathProvider {
@@ -44,7 +48,28 @@ public class RestApiPathProvider implements SwaggerPathProvider {
     DistributionConfig config = InternalDistributedSystem.getAnyInstance().getConfig();
     String scheme = config.getHttpServiceSSLEnabled() ? "https" : "http";
 
-    this.docsLocation = scheme + "://" + config.getHttpServiceBindAddress() + ":" + config.getHttpServicePort();
+    this.docsLocation = scheme + "://" + getBindAddressForHttpService() + ":" + config.getHttpServicePort();
+  }
+
+  private String getBindAddressForHttpService() {
+    DistributionConfig config = InternalDistributedSystem.getAnyInstance().getConfig();
+    java.lang.String bindAddress = config.getHttpServiceBindAddress();
+    if (org.apache.commons.lang.StringUtils.isBlank(bindAddress)) {
+      if (org.apache.commons.lang.StringUtils.isBlank(config.getServerBindAddress())) {
+        if (org.apache.commons.lang.StringUtils.isBlank(config.getBindAddress())) {
+          try {
+          bindAddress = SocketCreator.getLocalHost().getHostAddress();
+          } catch (UnknownHostException e) {
+            e.printStackTrace();
+          }
+        } else {
+          bindAddress = config.getBindAddress();
+        }
+      } else {
+        bindAddress = config.getServerBindAddress();
+      }
+    }
+    return bindAddress;
   }
 
   @Override

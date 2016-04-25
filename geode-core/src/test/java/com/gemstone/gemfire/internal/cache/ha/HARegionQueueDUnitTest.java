@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.experimental.categories.Category;
 import util.TestException;
 
 import junit.framework.Assert;
@@ -49,15 +50,9 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- *
- *
- *
- *
- */
-public class HARegionQueueDUnitTest extends DistributedTestCase
-{
+public class HARegionQueueDUnitTest extends DistributedTestCase {
   VM vm0 = null;
 
   VM vm1 = null;
@@ -863,9 +858,8 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
    * This is to test the bug which is caused when HARegionQueue object hasnot
    * been fully constructed but as the HARegion has got constructed , it gets
    * visible to QRM Message Thread.
-   *
-   *
    */
+  @Category(FlakyTest.class) // GEODE-690: async queuing, time sensitive, expiration, waitForCriterion, joins
   public void testNPEDueToHARegionQueueEscapeInConstructor()
   {
     // changing EXPIRY_TIME to 5 doesn't change how long the test runs!

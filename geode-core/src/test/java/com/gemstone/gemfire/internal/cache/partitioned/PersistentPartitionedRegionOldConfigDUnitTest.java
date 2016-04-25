@@ -22,11 +22,7 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 
-/**
- *
- */
-public class PersistentPartitionedRegionOldConfigDUnitTest extends
-    PersistentPartitionedRegionDUnitTest {
+public class PersistentPartitionedRegionOldConfigDUnitTest extends PersistentPartitionedRegionDUnitTest {
 
   public PersistentPartitionedRegionOldConfigDUnitTest(String name) {
     super(name);

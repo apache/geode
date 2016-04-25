@@ -24,12 +24,13 @@ import java.security.Signature;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-import org.apache.logging.log4j.Logger;
 
 /**
  * An {@link AuthInitialize} implementation that obtains the digital signature

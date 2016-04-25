@@ -16,21 +16,25 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
-import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.SystemFailure;
 
 /**
- * <P>An <code>AsyncInvocation</code> represents the invocation of a
- * remote invocation that executes asynchronously from its caller.  An
- * instanceof <code>AsyncInvocation</code> provides information about
- * the invocation such as any exception that it may have thrown.</P>
+ * An {@code AsyncInvocation} represents the invocation of a remote invocation
+ * that executes asynchronously from its caller.  An instance of
+ * {@code AsyncInvocation} provides information about the invocation such as
+ * any exception that it may have thrown.
  *
- * <P>Because it is a <code>Thread</code>, an
- * <code>AsyncInvocation</code> can be used as follows:</P>
+ * <p>{@code AsyncInvocation} can be used as follows:
  *
- * <PRE>
+ * <pre>
  *   AsyncInvocation ai1 = vm.invokeAsync(() -> Test.method1());
  *   AsyncInvocation ai2 = vm.invokeAsync(() -> Test.method2());
  *
@@ -42,87 +46,65 @@ import com.gemstone.gemfire.SystemFailure;
  *   if (ai2.exceptionOccurred()) {
  *     throw ai2.getException();
  *   }
- * </PRE>
+ * </pre>
  *
+ * @param <V> The result type returned by this AsyncInvocation's {@code get} methods
  * @see VM#invokeAsync(Class, String)
  */
-public class AsyncInvocation<T> extends Thread {
-  //@todo davidw Add the ability to get a return value back from the
-  //async method call.  (Use a static ThreadLocal field that is
-  //accessible from the Runnable used in VM#invoke)
-  
-  private static final ThreadLocal returnValue = new ThreadLocal();
+public class AsyncInvocation<V> implements Future<V> {
+  // TODO:davidw: Add the ability to get a return value back from the
+  // async method call.  (Use a static ThreadLocal field that is
+  // accessible from the Runnable used in VM#invoke)
+  // TODO:?: reimplement using Futures
 
-  /** The singleton the thread group */
-  private static final ThreadGroup GROUP = new AsyncInvocationGroup();
+  private static final long DEFAULT_JOIN_MILLIS = 60 * 1000;
 
-  ///////////////////// Instance Fields  /////////////////////
+  private final Thread thread;
 
-  /** An exception thrown while this async invocation ran */
-  protected volatile Throwable exception;
+  private final AtomicReference<V> resultValue = new AtomicReference<>();
 
-  /** The object (or class) that is the receiver of this asyn method
-   * invocation */
-  private Object receiver;
+  /** An exception thrown while this {@code AsyncInvocation} ran */
+  private final AtomicReference<Throwable> resultThrowable = new AtomicReference<>();
+
+  /** The object (or class) that is the target of this {@code AsyncInvocation} */
+  private Object target;
 
   /** The name of the method being invoked */
   private String methodName;
+
+  /** True if this {@code AsyncInvocation} has been cancelled */
+  private boolean cancelled;
   
-  /** The returned object if any */
-  public volatile T returnedObj = null;
-
-  //////////////////////  Constructors  //////////////////////
-
   /**
-   * Creates a new <code>AsyncInvocation</code>
+   * Creates a new {@code AsyncInvocation}.
    *
-   * @param receiver
-   *        The object or {@link Class} on which the remote method was
-   *        invoked
-   * @param methodName
-   *        The name of the method being invoked
-   * @param work
-   *        The actual invocation of the method
+   * @param  target
+   *         The object or {@link Class} on which the remote method was
+   *         invoked
+   * @param  methodName
+   *         The name of the method being invoked
+   * @param  work
+   *         The actual invocation of the method
    */
-  public AsyncInvocation(Object receiver, String methodName, Runnable work) {
-    super(GROUP, work, getName(receiver, methodName));
-    this.receiver = receiver;
+  public AsyncInvocation(final Object target, final String methodName, final Callable<V> work) {
+    this.target = target;
     this.methodName = methodName;
-    this.exception = null;
+    this.thread = new Thread(new AsyncInvocationGroup(), runnable(work), getName(target, methodName));
   }
 
-  //////////////////////  Static Methods  /////////////////////
-
   /**
-   * Returns the name of a <code>AsyncInvocation</code> based on its
-   * receiver and method name.
+   * Returns the target of this async method invocation.
+   *
+   * @deprecated This method is not required for anything.
    */
-  private static String getName(Object receiver, String methodName) {
-    StringBuffer sb = new StringBuffer(methodName);
-    sb.append(" invoked on ");
-    if (receiver instanceof Class) {
-      sb.append("class ");
-      sb.append(((Class) receiver).getName());
-
-    } else {
-      sb.append("an instance of ");
-      sb.append(receiver.getClass().getName());
-    }
-
-    return sb.toString();
-  }
-
-  /////////////////////  Instance Methods  ////////////////////
-
-  /**
-   * Returns the receiver of this async method invocation
-   */
-  public Object getReceiver() {
-    return this.receiver;
+  public Object getTarget() {
+    return this.target;
   }
 
   /**
-   * Returns the name of the method being invoked remotely
+   * Returns the name of the method being invoked remotely.
+   *
+   * @deprecated This method is not required for anything.
    */
   public String getMethodName() {
     return this.methodName;
@@ -131,86 +113,383 @@ public class AsyncInvocation<T> extends Thread {
   /**
    * Returns whether or not an exception occurred during this async
    * method invocation.
+   *
+   * @throws AssertionError if this {@code AsyncInvocation} is not done.
    */
   public boolean exceptionOccurred() {
-    if (this.isAlive()) {
-      throw new InternalGemFireError("Exception status not available while thread is alive.");
-    }
-    return this.exception != null;
+    return getException() != null;
   }
 
   /**
    * Returns the exception that was thrown during this async method
    * invocation.
+   *
+   * @throws AssertionError if this {@code AsyncInvocation} is not done.
    */
   public Throwable getException() {
-    if (this.isAlive()) {
-      throw new InternalGemFireError("Exception status not available while thread is alive.");
+    try {
+      checkIsDone("Exception status not available while thread is alive.");
+    } catch (IllegalStateException illegalStateException) {
+      throw new AssertionError(illegalStateException);
     }
-    if (this.exception instanceof RMIException) {
-      return ((RMIException) this.exception).getCause();
+
+    if (this.resultThrowable.get() instanceof RMIException) { // TODO:klund: delete our RMIException
+      return this.resultThrowable.get().getCause();
 
     } else {
-      return this.exception;
+      return this.resultThrowable.get();
     }
   }
 
-  //////////////////////  Inner Classes  //////////////////////
+  /**
+   * Throws {@code AssertionError} wrapping any {@code Exception} thrown by
+   * this {@code AsyncInvocation}.
+   *
+   * @return this {@code AsyncInvocation}
+   *
+   * @throws AssertionError wrapping any {@code Exception} thrown by this
+   *         {@code AsyncInvocation}.
+   */
+  public AsyncInvocation<V> checkException() {
+    if (this.resultThrowable.get() != null) {
+      throw new AssertionError("An exception occurred during asynchronous invocation.", getException());
+    }
+    return this;
+  }
 
   /**
-   * A <code>ThreadGroup</code> that notices when an exception occurs
-   * during an <code>AsyncInvocation</code>.
-   * 
-   * TODO: reimplement using Futures
+   * Returns the result of this {@code AsyncInvocation}.
+   *
+   * @return the result of this {@code AsyncInvocation}
+   *
+   * @throws AssertionError wrapping any {@code Exception} thrown by this
+   *         {@code AsyncInvocation}.
+   *
+   * @throws AssertionError wrapping a {@code TimeoutException} if this
+   *         {@code AsyncInvocation} fails to complete within the default
+   *         timeout of 60 seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   *
+   * @deprecated Please use {@link #get()} instead.
    */
-  private static class AsyncInvocationGroup extends ThreadGroup {
-    AsyncInvocationGroup() {
+  public V getResult() throws InterruptedException {
+    join();
+    checkException();
+    checkIsDone("Return value not available while thread is alive.");
+    return this.resultValue.get();
+  }
+
+  /**
+   * Returns the result of this {@code AsyncInvocation}.
+   *
+   * @param  millis
+   *         the time to wait in milliseconds
+   *
+   * @return the result of this {@code AsyncInvocation}
+   *
+   * @throws AssertionError wrapping any {@code Exception} thrown by this
+   *         {@code AsyncInvocation}.
+   *
+   * @throws AssertionError wrapping a {@code TimeoutException} if this
+   *         {@code AsyncInvocation} fails to complete within the specified
+   *         timeout of {@code millis}.
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   *
+   * @deprecated Please use {@link #get(long, TimeUnit)} instead.
+   */
+  public V getResult(final long millis) throws InterruptedException {
+    try {
+      return get(millis, TimeUnit.MILLISECONDS);
+    } catch (ExecutionException executionException) {
+      throw new AssertionError(executionException);
+    } catch (TimeoutException timeoutException) {
+      throw new AssertionError(timeoutException);
+    }
+  }
+
+  /**
+   * Returns the result of this {@code AsyncInvocation}.
+   *
+   * @return the result of this {@code AsyncInvocation}
+   *
+   * @throws AssertionError if this {@code AsyncInvocation} is not done.
+   *
+   * @deprecated Please use {@link #get()} instead.
+   */
+  public V getReturnValue() {
+    checkIsDone("Return value not available while thread is alive.");
+    return this.resultValue.get();
+  }
+
+  /**
+   * Waits at most {@code millis} milliseconds for this
+   * {@code AsyncInvocation} to complete. A timeout of {@code 0} means to wait
+   * forever.
+   *
+   * @param  millis
+   *         the time to wait in milliseconds
+   *
+   * @return this {@code AsyncInvocation}
+   *
+   * @throws IllegalArgumentException if the value of {@code millis} is
+   *         negative.
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   */
+  public synchronized AsyncInvocation<V> join(final long millis) throws InterruptedException {
+    this.thread.join(millis);
+    return this;
+  }
+
+  /**
+   * Waits at most {@code millis} milliseconds plus {@code nanos} nanoseconds
+   * for this {@code AsyncInvocation} to complete.
+   *
+   * @param  millis
+   *         the time to wait in milliseconds
+   * @param  nanos
+   *         {@code 0-999999} additional nanoseconds to wait
+   *
+   * @return this {@code AsyncInvocation}
+   *
+   * @throws IllegalArgumentException
+   *         if the value of {@code millis} is negative, or the value
+   *         of {@code nanos} is not in the range {@code 0-999999}.
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   */
+  public synchronized AsyncInvocation<V> join(final long millis, final int nanos) throws InterruptedException {
+    this.thread.join(millis, nanos);
+    return this;
+  }
+
+  /**
+   * Waits for this thread to die up to a default of 60 seconds as defined by
+   * {@link #DEFAULT_JOIN_MILLIS}.
+   *
+   * @return this {@code AsyncInvocation}
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   */
+  public AsyncInvocation<V> join() throws InterruptedException {
+    // do NOT invoke Thread#join() without a timeout
+    join(DEFAULT_JOIN_MILLIS);
+    return this;
+  }
+
+  /**
+   * Start this {@code AsyncInvocation}.
+   *
+   * @return this {@code AsyncInvocation}
+   */
+  public synchronized AsyncInvocation<V> start() {
+    this.thread.start();
+    return this;
+  }
+
+  /**
+   * Return this {@code AsyncInvocation}'s work thread.
+   *
+   * @return this {@code AsyncInvocation}'s work thread.
+   */
+  public synchronized Thread getThread() {
+    return this.thread;
+  }
+
+  /**
+   * Tests if this {@code AsyncInvocation}'s thread is alive. A thread is alive
+   * if it has been started and has not yet died.
+   *
+   * @return {@code true} if this {@code AsyncInvocation}'s thread is alive;
+   *         {@code false} otherwise.
+   */
+  public synchronized boolean isAlive() {
+    return this.thread.isAlive();
+  }
+
+  @Override
+  public synchronized boolean isCancelled() {
+    return this.cancelled;
+  }
+
+  @Override
+  public synchronized boolean isDone() {
+    return !this.thread.isAlive(); //state != NEW;
+  }
+
+  @Override
+  public synchronized boolean cancel(final boolean mayInterruptIfRunning) {
+    if (this.thread.isAlive()) {
+      if (mayInterruptIfRunning) {
+        this.cancelled = true;
+        this.thread.interrupt();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Waits if necessary for the work to complete, and then returns the result
+   * of this {@code AsyncInvocation}.
+   *
+   * @return the result of this {@code AsyncInvocation}
+   *
+   * @throws AssertionError wrapping any {@code Exception} thrown by this
+   *         {@code AsyncInvocation}.
+   *
+   * @throws AssertionError wrapping a {@code TimeoutException} if this
+   *         {@code AsyncInvocation} fails to complete within the default
+   *         timeout of 60 seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
+   *
+   * @throws CancellationException if the computation was cancelled
+   *
+   * @throws ExecutionException if the computation threw an exception
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   */
+  @Override
+  public V get() throws ExecutionException, InterruptedException {
+    try {
+      return get(DEFAULT_JOIN_MILLIS, TimeUnit.MILLISECONDS);
+    } catch (TimeoutException timeoutException) {
+      throw new AssertionError(timeoutException);
+    }
+  }
+
+  /**
+   * Waits if necessary for at most the given time for the computation
+   * to complete, and then retrieves its result, if available.
+   *
+   * @param  timeout the maximum time to wait
+   * @param  unit the time unit of the timeout argument
+   *
+   * @return the result of this {@code AsyncInvocation}
+   *
+   * @throws AssertionError wrapping any {@code Exception} thrown by this
+   *         {@code AsyncInvocation}.
+   *
+   * @throws AssertionError wrapping a {@code TimeoutException} if this
+   *         {@code AsyncInvocation} fails to complete within the default
+   *         timeout of 60 seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
+   *
+   * @throws CancellationException if the computation was cancelled
+   *
+   * @throws ExecutionException if the computation threw an exception
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   *
+   * @throws TimeoutException if the wait timed out
+   */
+  @Override
+  public V get(final long timeout, final TimeUnit unit) throws ExecutionException, InterruptedException, TimeoutException {
+    long millis = unit.toMillis(timeout);
+    join(millis);
+    timeoutIfAlive(millis);
+    checkException();
+    return this.resultValue.get();
+  }
+
+  /**
+   * Returns the identifier of this {@code AsyncInvocation}'s thread. The
+   * thread ID is a positive <tt>long</tt> number generated when this thread
+   * was created. The thread ID is unique and remains unchanged during its
+   * lifetime. When a thread is terminated, this thread ID may be reused.
+   *
+   * @return this {@code AsyncInvocation}'s thread's ID.
+   */
+  public long getId() {
+    return this.thread.getId();
+  }
+
+  @Override
+  public String toString() {
+    return "AsyncInvocation{" + "target=" + target + ", methodName='" + methodName + '\'' + '}';
+  }
+
+  /**
+   * Throws {@code IllegalStateException} if this {@code AsyncInvocation} is
+   * not done.
+   *
+   * @param  message
+   *         The value to be used in constructing detail message
+   *
+   * @return this {@code AsyncInvocation}
+   *
+   * @throws IllegalStateException if this {@code AsyncInvocation} is not done.
+   */
+  private AsyncInvocation<V> checkIsDone(final String message) {
+    if (this.thread.isAlive()) {
+      throw new IllegalStateException(message);
+    }
+    return this;
+  }
+
+  /**
+   * Throws {@code AssertionError} wrapping a {@code TimeoutException} if this
+   * {@code AsyncInvocation} fails to complete within the default timeout of 60
+   * seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
+   *
+   * @return this {@code AsyncInvocation}
+   *
+   * @throws TimeoutException if this {@code AsyncInvocation} fails to complete
+   *         within the default timeout of 60 seconds as defined by
+   *         {@link #DEFAULT_JOIN_MILLIS}.
+   */
+  private AsyncInvocation<V> timeoutIfAlive(final long timeout) throws TimeoutException {
+    if (this.thread.isAlive()) {
+      throw new TimeoutException("Timed out waiting " + timeout + " milliseconds for AsyncInvocation to complete.");
+    }
+    return this;
+  }
+
+  private Runnable runnable(final Callable<V> work) {
+    return () -> {
+        try {
+          resultValue.set(work.call());
+        } catch (Throwable throwable) {
+          resultThrowable.set(throwable);
+        }
+    };
+  }
+
+  /**
+   * Returns the name of a {@code AsyncInvocation} based on its
+   * {@code targetObject} and {@code methodName}.
+   */
+  private static String getName(final Object target, final String methodName) {
+    StringBuilder sb = new StringBuilder(methodName);
+    sb.append(" invoked on ");
+    if (target instanceof Class) {
+      sb.append("class ");
+      sb.append(((Class) target).getName());
+
+    } else {
+      sb.append("an instance of ");
+      sb.append(target.getClass().getName());
+    }
+
+    return sb.toString();
+  }
+
+  /**
+   * A {@code ThreadGroup} that notices when an exception occurs
+   * during an {@code AsyncInvocation}.
+   */
+  private class AsyncInvocationGroup extends ThreadGroup {
+
+    private AsyncInvocationGroup() {
       super("Async Invocations");
     }
 
+    @Override
     public void uncaughtException(Thread thread, Throwable throwable) {
       if (throwable instanceof VirtualMachineError) {
         SystemFailure.setFailure((VirtualMachineError)throwable); // don't throw
       }
-      if (thread instanceof AsyncInvocation) {
-        ((AsyncInvocation) thread).exception = throwable;
-      }
+      resultThrowable.set(throwable);
     }
-  }
-  
-  public T getResult() throws Throwable {
-    join();
-    if(this.exceptionOccurred()) {
-      throw new Exception("An exception occured during async invocation", this.exception);
-    }
-    return this.returnedObj;
-  }
-  
-  public T getResult(long waitTime) throws Throwable {
-    join(waitTime);
-    if(this.isAlive()) {
-      throw new TimeoutException();
-    }
-    if(this.exceptionOccurred()) {
-      throw new Exception("An exception occured during async invocation", this.exception);
-    }
-    return this.returnedObj;
-  }
-
-  public T getReturnValue() {
-    if (this.isAlive()) {
-      throw new InternalGemFireError("Return value not available while thread is alive.");
-    }
-    return this.returnedObj;
-  }
-  
-  public void run() {
-    super.run();
-    this.returnedObj = (T) returnValue.get();
-    returnValue.set(null);
-  }
-
-  static void setReturnValue(Object v) {
-    returnValue.set(v);
   }
 }

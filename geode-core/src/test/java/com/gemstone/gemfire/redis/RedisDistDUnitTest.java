@@ -18,6 +18,7 @@ package com.gemstone.gemfire.redis;
 
 import java.util.Random;
 
+import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -31,6 +32,7 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class RedisDistDUnitTest extends DistributedTestCase {
 
@@ -105,6 +107,7 @@ public class RedisDistDUnitTest extends DistributedTestCase {
     disconnectAllFromDS();
   }
 
+  @Category(FlakyTest.class) // GEODE-1092: random ports, failure stack involves TCPTransport ConnectionHandler (are we eating BindExceptions somewhere?), uses Random, async actions
   public void testConcListOps() throws Throwable {
     final Jedis jedis1 = new Jedis(localHost, server1Port, JEDIS_TIMEOUT);
     final Jedis jedis2 = new Jedis(localHost, server2Port, JEDIS_TIMEOUT);
@@ -139,6 +142,7 @@ public class RedisDistDUnitTest extends DistributedTestCase {
     assertEquals(result1, result2);
   }
 
+  @Category(FlakyTest.class) // GEODE-717: random ports, BindException in failure stack, async actions
   public void testConcCreateDestroy() throws Throwable {
     IgnoredException.addIgnoredException("RegionDestroyedException");
     IgnoredException.addIgnoredException("IndexInvalidException");

@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
@@ -52,7 +51,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
@@ -194,7 +193,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
       getTestMethodName() + "_RR", null, isOffHeap() ));
     vm3.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -342,8 +341,8 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     //create receiver on remote site
     vm2.invoke(() -> WANTestBase.createCache( nyPort ));
     vm3.invoke(() -> WANTestBase.createCache( nyPort ));
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(() -> WANTestBase.createReceiver());
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
@@ -554,7 +553,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -597,14 +596,14 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     vm6.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     vm7.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
 
-    pauseWaitCriteria(60000);
+    Thread.sleep(60000);
     {
       AsyncInvocation inv1 = vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts0( getTestMethodName() + "_RR", 10000 ));
-      pauseWaitCriteria(1000);
+      Thread.sleep(1000);
       AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
-      pauseWaitCriteria(2000);
+      Thread.sleep(2000);
       AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts1( getTestMethodName() + "_RR", 10000 ));
-      pauseWaitCriteria(1500);
+      Thread.sleep(1500);
       AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
       try {
         inv1.join();

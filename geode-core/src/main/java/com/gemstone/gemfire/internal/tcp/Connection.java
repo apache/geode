@@ -74,7 +74,6 @@ import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.DSFIDFactory;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
 import com.gemstone.gemfire.internal.Version;
@@ -1279,7 +1278,7 @@ public class Connection implements Runnable {
         int connectTime = getP2PConnectTimeout();; 
 
         try {
-          SocketUtils.connect(channel.socket(), addr, connectTime);
+          channel.socket().connect(addr, connectTime);
         } catch (NullPointerException e) {
           // bug #45044 - jdk 1.7 sometimes throws an NPE here
           ConnectException c = new ConnectException("Encountered bug #45044 - retrying");
@@ -1330,7 +1329,7 @@ public class Connection implements Runnable {
         s.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
         setReceiveBufferSize(s, SMALL_BUFFER_SIZE);
         setSendBufferSize(s);
-        SocketUtils.connect(s, addr, 0);
+        s.connect(addr, 0);
       }
     }
     if (logger.isDebugEnabled()) {

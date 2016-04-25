@@ -16,10 +16,17 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheLoader;
@@ -40,12 +47,11 @@ import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultData;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * The GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest class is test suite of test cases testing the Gfsh
@@ -57,6 +63,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * @since 8.0
  */
 @SuppressWarnings("unused")
+@Category(DistributedTest.class)
 public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends CliCommandTestBase {
 
   private static final String GEMFIRE_MANAGER_NAME = "GemManagerNode";
@@ -80,10 +87,6 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     }
 
     return buffer.toString();
-  }
-
-  public GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest(final String testName) {
-    super(testName);
   }
 
   @Override
@@ -171,7 +174,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
           }
         };
 
-        Wait.waitForCriterion(waitOnManagerCriterion, 30000, 2000, true);
+        waitForCriterion(waitOnManagerCriterion, 30000, 2000, true);
       }
     });
   }
@@ -194,7 +197,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
 
   protected void log(final String tag, final String message) {
     //System.out.printf("%1$s (%2$s)%n", tag, message);
-    LogWriterUtils.getLogWriter().info(String.format("%1$s (%2$s)%n", tag, message));
+    getLogWriter().info(String.format("%1$s (%2$s)%n", tag, message));
   }
 
   protected CommandResult runCommand(final String command) {
@@ -218,6 +221,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     }
   }
 
+  @Test
   public void testGetOnCacheMiss() {
     doHousekeeping();
 

@@ -59,6 +59,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 /**
  * A Replicate Region removeAll message.  Meant to be sent only to
@@ -340,7 +341,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
     final DistributedRegion dr = (DistributedRegion)r;
     
     // create a base event and a op for RemoveAllMessage distributed btw redundant buckets
-    EntryEventImpl baseEvent = EntryEventImpl.create(
+    @Released EntryEventImpl baseEvent = EntryEventImpl.create(
         r, Operation.REMOVEALL_DESTROY,
         null, null, this.callbackArg, false, eventSender, true);
     try {
@@ -365,7 +366,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
       public void run() {
         InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
         for (int i = 0; i < removeAllDataCount; ++i) {
-          EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(r, myId, eventSender, i, removeAllData, false, bridgeContext, posDup, false);
+          @Released EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(r, myId, eventSender, i, removeAllData, false, bridgeContext, posDup, false);
           try {
           ev.setRemoveAllOperation(op);
           if (logger.isDebugEnabled()) {

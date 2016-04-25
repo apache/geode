@@ -31,6 +31,7 @@ import java.util.Set;
 import junit.framework.AssertionFailedError;
 
 import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.LogWriter;
@@ -70,6 +71,7 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the client connection pool in GemFire.
@@ -1186,6 +1188,7 @@ public class ConnectionPoolDUnitTest extends CacheTestCase {
    * Make sure cnx lifetime expiration working on thread local cnxs.
    * @author darrel
    */
+  @Category(FlakyTest.class) // GEODE-1197: random ports, BindException, FixMethodOrder, expiration, time sensitive, waitForCriterion, async actions
   public void test009LifetimeExpireOnTL() throws CacheException {
     basicTestLifetimeExpire(true);
   }
@@ -1410,27 +1413,6 @@ public class ConnectionPoolDUnitTest extends CacheTestCase {
         };
 
       vm2.invoke(verify1Server);
-      assertEquals(true, putAI.isAlive());
-      assertEquals(true, putAI2.isAlive());
-
-      {
-        final int restartPort = port1;
-        vm1.invoke(new SerializableRunnable("Restart CacheServer") {
-            public void run() {
-              try {
-                Region region = getRootRegion().getSubregion(name);
-                assertNotNull(region);
-                startBridgeServer(restartPort);
-              }
-              catch(Exception e) {
-                getSystem().getLogWriter().fine(new Exception(e));
-                com.gemstone.gemfire.test.dunit.Assert.fail("Failed to start CacheServer", e);
-              }
-            }
-          });
-      }
-
-      vm2.invoke(verify2Servers);
       assertEquals(true, putAI.isAlive());
       assertEquals(true, putAI2.isAlive());
     } finally {

@@ -477,6 +477,7 @@ public class TXRegionState {
         Object eKey = me.getKey();
         TXEntryState txes = (TXEntryState)me.getValue();
         if (txes.isDirty() && txes.isOpAnyEvent(r)) {
+          // OFFHEAP: these events are released when TXEvent.release is called
           events.add(txes.getEvent(r, eKey, txs));
         }
       }

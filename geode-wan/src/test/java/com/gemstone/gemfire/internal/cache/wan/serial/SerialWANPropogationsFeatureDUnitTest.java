@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.internal.cache.wan.WANTestBase.MyGatewayEventFilter;
 
 
 public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
@@ -34,7 +33,7 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -63,9 +62,9 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
         getTestMethodName() + "_RR", 120 ));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 120 ));
+        getTestMethodName() + "_RR", 120, 240000 ));
     vm3.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 120 ));
+        getTestMethodName() + "_RR", 120, 240000 ));
   }
 
   public void testSerialReplicatedWanWithPersistence() {
@@ -74,7 +73,7 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -115,7 +114,7 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -156,7 +155,7 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -196,7 +195,7 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -235,7 +234,7 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -276,7 +275,7 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm6, vm7);
-    createReceiverInVMs(nyPort, vm6, vm7);
+    createReceiverInVMs(vm6, vm7);
 
     createCacheInVMs(lnPort, vm2, vm3, vm4, vm5);
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2, false, 100, 10, false, false,

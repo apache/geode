@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.LocatorLauncher;
 import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
@@ -28,20 +37,13 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-import org.junit.Before;
-
-import java.io.File;
-import java.util.concurrent.TimeUnit;
-
+@Category(DistributedTest.class)
 public class ShellCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public ShellCommandsDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -53,6 +55,8 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
         "localhost[" + locatorPort + "]").toString());
   }
 
+  @Category(FlakyTest.class) // GEODE-989: random ports, suspect string: DiskAccessException, disk pollution, HeadlessGfsh, time sensitive
+  @Test
   public void testConnectToLocatorBecomesManager() {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
 
@@ -98,13 +102,14 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testEchoWithVariableAtEnd() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
     if (gfshInstance == null) {
       fail("In testEcho command gfshInstance is null");
     }
-    LogWriterUtils.getLogWriter().info("Gsh " + gfshInstance);
+    getLogWriter().info("Gsh " + gfshInstance);
 
     gfshInstance.setEnvProperty("TESTSYS", "SYS_VALUE");
     printAllEnvs(gfshInstance);
@@ -122,6 +127,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testEchoWithNoVariable() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
@@ -146,6 +152,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testEchoWithVariableAtStart() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
@@ -169,6 +176,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testEchoWithMultipleVariables() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
@@ -192,6 +200,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testEchoAllPropertyVariables() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
@@ -210,6 +219,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testEchoForSingleVariable() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
@@ -234,6 +244,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testEchoForSingleVariable2() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
@@ -257,6 +268,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testDebug() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
@@ -278,7 +290,8 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
 
   }
 
-  public void testHistory() {
+  @Test
+  public void testHistoryWithEntry() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
     if (gfshInstance == null) {
@@ -286,9 +299,16 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
 
     gfshInstance.setDebug(false);
+
+    // Generate a line of history
+    executeCommand("help");
+    executeCommand("connect");
+
     String command = "history";
     CommandResult cmdResult = executeCommand(command);
-    printCommandOutput(cmdResult);
+    String result = printCommandOutput(cmdResult);
+
+    assertEquals("  1  0: help\n  2  1: connect\n\n\n", result);
 
     if (cmdResult != null) {
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -297,6 +317,30 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
+  public void testEmptyHistory() {
+    Gfsh gfshInstance = Gfsh.getCurrentInstance();
+
+    if (gfshInstance == null) {
+      fail("In testHistory command gfshInstance is null");
+    }
+
+    gfshInstance.setDebug(false);
+
+    String command = "history";
+    CommandResult cmdResult = executeCommand(command);
+    printCommandOutput(cmdResult);
+    cmdResult.resetToFirstLine();
+    assertEquals("", cmdResult.nextLine());
+
+    if (cmdResult != null) {
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+    } else {
+      fail("testHistory failed");
+    }
+  }
+
+  @Test
   public void testHistoryWithFileName() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
@@ -304,8 +348,12 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
       fail("In testHistory command gfshInstance is null");
     }
 
+    // Generate a line of history
+    executeCommand("help");
+
     String historyFileName = gfshInstance.getGfshConfig().getHistoryFileName();
     File historyFile = new File(historyFileName);
+    historyFile.deleteOnExit();
     String fileName = historyFile.getParent();
     fileName = fileName + File.separator + getClass().getSimpleName() + "_" + getName() + "-exported.history";
 
@@ -318,8 +366,11 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     } else {
       fail("testHistory failed");
     }
+    assertTrue(historyFile.exists());
+    assertTrue(0L != historyFile.length());
   }
 
+  @Test
   public void testClearHistory() {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
 
@@ -328,15 +379,19 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
 
     gfshInstance.setDebug(false);
+
+    // Generate a line of history
+    executeCommand("help");
+
     String command = "history --clear";
     CommandResult cmdResult = executeCommand(command);
     printCommandOutput(cmdResult);
 
     if (cmdResult != null) {
       assertEquals(Result.Status.OK, cmdResult.getStatus());
-      LogWriterUtils.getLogWriter().info("testClearHistory cmdResult=" + commandResultToString(cmdResult));
+      getLogWriter().info("testClearHistory cmdResult=" + commandResultToString(cmdResult));
       String resultString = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testClearHistory resultString=" + resultString);
+      getLogWriter().info("testClearHistory resultString=" + resultString);
       assertTrue(resultString.contains(CliStrings.HISTORY__MSG__CLEARED_HISTORY));
       assertTrue(gfshInstance.getGfshHistory().size()<= 1);
     } else {
@@ -344,20 +399,21 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  private static void printCommandOutput(CommandResult cmdResult) {
+  private static String printCommandOutput(CommandResult cmdResult) {
     assertNotNull(cmdResult);
-    LogWriterUtils.getLogWriter().info("Command Output : ");
+    getLogWriter().info("Command Output : ");
     StringBuilder sb = new StringBuilder();
     cmdResult.resetToFirstLine();
     while (cmdResult.hasNextLine()) {
       sb.append(cmdResult.nextLine()).append(DataCommandRequest.NEW_LINE);
     }
-    LogWriterUtils.getLogWriter().info(sb.toString());
-    LogWriterUtils.getLogWriter().info("");
+    getLogWriter().info(sb.toString());
+    getLogWriter().info("");
+    return sb.toString();
   }
 
   private void printAllEnvs(Gfsh gfsh) {
-    LogWriterUtils.getLogWriter().info("printAllEnvs : " + StringUtils.objectToString(gfsh.getEnv(), false, 0));
+    getLogWriter().info("printAllEnvs : " + StringUtils.objectToString(gfsh.getEnv(), false, 0));
     /*
     getLogWriter().info("Gfsh printAllEnvs : " + HydraUtil.ObjectToString(getDefaultShell().getEnv()));    
     getLogWriter().info("gfsh " + gfsh + " default shell " + getDefaultShell());*/

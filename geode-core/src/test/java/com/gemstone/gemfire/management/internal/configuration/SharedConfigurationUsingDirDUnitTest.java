@@ -26,6 +26,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 import com.jayway.awaitility.Awaitility;
 import org.junit.After;
@@ -111,6 +112,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1165: random ports, BindException, time sensitive, awaitility
   @Test
   public void updateClusterConfigDirWithTwoLocatorsNoRollingServerRestart() throws Exception {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);

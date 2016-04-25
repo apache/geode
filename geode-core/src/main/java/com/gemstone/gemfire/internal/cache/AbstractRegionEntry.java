@@ -2070,7 +2070,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
           newValue[0] = v;
         }
       };
-      TimestampedEntryEventImpl timestampedEvent =
+      @Released TimestampedEntryEventImpl timestampedEvent =
         (TimestampedEntryEventImpl)event.getTimestampedEvent(tagDsid, stampDsid, tagTime, stampTime);
 
       // gateway conflict resolvers will usually want to see the old value

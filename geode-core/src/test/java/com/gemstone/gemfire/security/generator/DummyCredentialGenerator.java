@@ -16,11 +16,11 @@
  */
 package com.gemstone.gemfire.security.generator;
 
-import com.gemstone.gemfire.security.templates.DummyAuthenticator;
-import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-
 import java.security.Principal;
 import java.util.Properties;
+
+import com.gemstone.gemfire.security.templates.DummyAuthenticator;
+import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 
 public class DummyCredentialGenerator extends CredentialGenerator {
 

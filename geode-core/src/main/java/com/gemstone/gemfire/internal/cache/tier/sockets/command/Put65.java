@@ -37,6 +37,7 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
@@ -220,7 +221,7 @@ public class Put65 extends BaseCommand {
         long sequenceId = EventID
             .readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
 
-        EntryEventImpl clientEvent = new EntryEventImpl(
+        EventIDHolder clientEvent = new EventIDHolder(
             new EventID(servConn.getEventMemberIDByteArray(),
               threadId, sequenceId));
         

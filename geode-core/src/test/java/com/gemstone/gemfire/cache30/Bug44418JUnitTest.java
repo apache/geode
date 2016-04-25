@@ -37,8 +37,8 @@ import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
 
 /**
  * Test for Bug 44418.
@@ -46,12 +46,13 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * @since 7.0
  */
 @Category(IntegrationTest.class)
-public class Bug44418JUnitTest {
+@SuppressWarnings({ "unchecked", "rawtypes" })
+public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descriptive name
 
   DistributedSystem ds;
   Cache cache;
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @Category(FlakyTest.class) // GEODE-1139: time sensitive, thread sleep, expiration
   @Test
   public void testPut() throws Exception {
 
@@ -98,7 +99,8 @@ public class Bug44418JUnitTest {
       System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
     }
   }
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+
+  @Category(FlakyTest.class) // GEODE-924: expiration, time sensitive, expects action in 1 second
   @Test
   public void testGet() throws Exception {
 

@@ -24,6 +24,7 @@ import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.OpType;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
@@ -201,7 +202,7 @@ public class Destroy65 extends BaseCommand {
             .readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
         EventID eventId = new EventID(servConn.getEventMemberIDByteArray(),
             threadId, sequenceId);
-        EntryEventImpl clientEvent = new EntryEventImpl(eventId);
+        EventIDHolder clientEvent = new EventIDHolder(eventId);
         
         Breadcrumbs.setEventId(eventId);
 

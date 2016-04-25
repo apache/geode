@@ -74,6 +74,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 
@@ -1104,7 +1105,6 @@ public abstract class DistributedCacheOperation {
     protected void basicProcess(DistributionManager dm, LocalRegion lclRgn) {
       Throwable thr = null;
       boolean sendReply = true;
-      InternalCacheEvent event = null;
 
       if (logger.isTraceEnabled()) {
         logger.trace("DistributedCacheOperation.basicProcess: {}", this);
@@ -1140,7 +1140,7 @@ public abstract class DistributedCacheOperation {
           return;
         }
 
-        event = createEvent(rgn);
+        @Released InternalCacheEvent event = createEvent(rgn);
         try {
         boolean isEntry = event.getOperation().isEntry();
 

@@ -16,14 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import hydra.Log;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
@@ -32,15 +36,13 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   
   private static final long serialVersionUID = 1L;
   
-  public WanCommandCreateGatewaySenderDUnitTest(String name) {
-    super(name);
-  }
-
   private CommandResult executeCommandWithIgnoredExceptions(String command) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
@@ -55,6 +57,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   /**
    * GatewaySender with all default attributes
    */
+  @Test
   public void testCreateGatewaySenderWithDefault() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -77,7 +80,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -103,6 +106,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   /**
    * GatewaySender with given attribute values
    */
+  @Test
   public void testCreateGatewaySender() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -139,7 +143,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -174,6 +178,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
    * Error scenario where dispatcher threads is set to more than 1 and 
    * no order policy provided.
    */
+  @Test
   public void testCreateGatewaySender_Error() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -209,7 +214,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -226,10 +231,10 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
 
   }
 
-  
   /**
    * GatewaySender with given attribute values and event filters.
    */
+  @Test
   public void testCreateGatewaySenderWithGatewayEventFilters() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -268,7 +273,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -304,6 +309,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   /**
    * GatewaySender with given attribute values and transport filters.
    */
+  @Test
   public void testCreateGatewaySenderWithGatewayTransportFilters() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -341,7 +347,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -376,6 +382,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   /**
    * GatewaySender with given attribute values on given member.
    */
+  @Test
   public void testCreateGatewaySender_OnMember() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -415,7 +422,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -440,6 +447,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   /**
    * GatewaySender with given attribute values on given group
    */
+  @Test
   public void testCreateGatewaySender_Group() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -477,7 +485,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -504,6 +512,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
    * GatewaySender with given attribute values on given group.
    * Only 2 of 3 members are part of the group.
    */
+  @Test
   public void testCreateGatewaySender_Group_Scenario2() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -541,7 +550,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -565,6 +574,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   /**
    * Parallel GatewaySender with given attribute values
    */
+  @Test
   public void testCreateParallelGatewaySender() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -599,7 +609,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -633,6 +643,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
    * Parallel GatewaySender with given attribute values.
    * Provide dispatcherThreads as 2 which is not valid for Parallel sender.
    */
+  @Test
   public void testCreateParallelGatewaySender_Error() {
 
     Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
@@ -673,7 +684,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
       CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
       if (cmdResult != null) {
         String strCmdResult = commandResultToString(cmdResult);
-        Log.getLogWriter().info(
+        getLogWriter().info(
             "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
         assertEquals(Result.Status.OK, cmdResult.getStatus());
 

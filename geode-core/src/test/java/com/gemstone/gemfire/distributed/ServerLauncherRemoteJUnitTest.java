@@ -59,6 +59,7 @@ import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
 import com.gemstone.gemfire.internal.process.ProcessStreamReader;
 import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.process.ProcessWrapper;
 
@@ -336,7 +337,8 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
       this.errorCollector.addError(e);
     }
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-721: random ports (setup overriding default port), TemporaryFolder
   @Test
   public void testStartOverwritesStalePidFile() throws Throwable {
     // create existing pid file
@@ -519,6 +521,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
     this.errorCollector.checkThat(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET), is(equalTo(false)));
   }
 
+  @Category(FlakyTest.class) // GEODE-764: random ports, BindException, forks JVM, uses ErrorCollector
   @Test
   public void testStartUsingForceOverwritesExistingPidFile() throws Throwable {
     // create existing pid file
@@ -826,6 +829,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1135: random ports, BindException, fork JVM
   @Test
   public void testStartWithDefaultPortInUseFails() throws Throwable {
     String expectedString = "java.net.BindException";
@@ -990,11 +994,12 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
     }
   } // testStartWithExistingPidFileFails
   */
-  
+
+  @Category(FlakyTest.class) // GEODE-957: random ports, BindException, fork JVM
   @Test
   public void testStatusUsingPid() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {

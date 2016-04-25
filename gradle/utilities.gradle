@@ -33,6 +33,11 @@ allprojects {
       afterEvaluate {
         install.enabled = false
         uploadArchives.enabled = false
+      }
+    }
+    disableSigning = {
+      // Use this closure when a project should not publish anything to maven.
+      afterEvaluate {
         signArchives.enabled = false
       }
     }

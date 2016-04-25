@@ -14,7 +14,6 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package com.gemstone.gemfire.modules.session.internal.filter;
 
 import java.io.File;
@@ -37,6 +36,7 @@ import javax.servlet.http.HttpSession;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.modules.session.junit.PerTestClassLoaderRunner;
 import com.gemstone.gemfire.modules.session.filter.SessionCachingFilter;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.apache.jasper.servlet.JspServlet;
 import org.junit.After;
@@ -74,7 +74,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
   static {
     // Create a per-user scratch directory
-    tmpdir = new File(System.getProperty("java.io.tmpdir"),
+    tmpdir = new File(System.getProperty("java.io.tmpdir"), // TODO: use junit rule TemporaryFolder
         "gemfire_modules-" + System.getProperty("user.name"));
     tmpdir.mkdirs();
     tmpdir.deleteOnExit();
@@ -355,7 +355,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
   /**
    * Test setting an attribute to null deletes it
-   */
+  */
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
   @Test
   public void testSetAttributeNullDeletesIt() throws Exception {
     Callback c_1 = new Callback() {
@@ -485,6 +486,7 @@ public class SessionReplicationIntegrationJUnitTest {
    * Test that invalidating a session destroys it as well as the backend
    * object.
    */
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
   @Test
   public void testInvalidateSession1() throws Exception {
     Callback c_1 = new Callback() {
@@ -575,6 +577,7 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test that invalidating a session throws an exception on subsequent access.
    */
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
   @Test
   public void testInvalidateSession3() throws Exception {
     Callback c_1 = new Callback() {
@@ -1206,6 +1209,7 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test that request forward dispatching works
    */
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
   @Test
   public void testDispatchingForward1() throws Exception {
     Callback c_1 = new Callback() {

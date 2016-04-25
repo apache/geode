@@ -16,6 +16,23 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -46,25 +63,13 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.concurrent.CopyOnWriteArrayList;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * The DiskStoreCommandsDUnitTest class is a distributed test suite of test cases for testing the disk store commands
@@ -75,16 +80,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @see org.junit.Test
  * @since 7.0
  */
+@Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
-  private static final long serialVersionUID = 1L;
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
 
-  public DiskStoreCommandsDUnitTest(final String testName) {
-    super(testName);
-  }
-
-  @SuppressWarnings("serial")
   @Test
   public void testMissingDiskStore() {
     final String regionName = "testShowMissingDiskStoreRegion";
@@ -198,7 +199,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
             return "Waiting for another persistent member to come online";
           }
         };
-        Wait.waitForCriterion(waitCriterion, 70000, 100, true);
+        waitForCriterion(waitCriterion, 70000, 100, true);
       }
     });
 
@@ -240,6 +241,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testDescribeOfflineDiskStore() {
     createDefaultSetup(null);
 
@@ -292,6 +294,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(stringContainsLine(stringResult, ".*/" + region2 + ": .*"));
   }
 
+  @Test
   public void testOfflineDiskStorePdxCommands() {
     final Properties props = new Properties();
     props.setProperty("mcast-port", "0");
@@ -336,7 +339,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         stringContainsLine(stringResult, ".*com\\.gemstone\\.gemfire\\.cache\\.query\\.data\\.PortfolioPdx\\$Day.*"));
   }
 
-
+  @Test
   public void testValidateDiskStore() {
     createDefaultSetup(null);
 
@@ -369,20 +372,21 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
       }
     });
     String command = "validate offline-disk-store --name=" + diskStoreName1 + " --disk-dirs=" + diskStoreDir.getAbsolutePath();
-    LogWriterUtils.getLogWriter().info("testValidateDiskStore command: " + command);
+    getLogWriter().info("testValidateDiskStore command: " + command);
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String stringResult = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testValidateDiskStore cmdResult is stringResult " + stringResult);
+      getLogWriter().info("testValidateDiskStore cmdResult is stringResult " + stringResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       assertTrue(stringResult.contains("Total number of region entries in this disk store is"));
 
     } else {
-      LogWriterUtils.getLogWriter().info("testValidateDiskStore cmdResult is null");
+      getLogWriter().info("testValidateDiskStore cmdResult is null");
       fail("Did not get CommandResult in testValidateDiskStore");
     }
   }
 
+  @Test
   public void testExportOfflineDiskStore() throws Exception {
     createDefaultSetup(null);
 
@@ -423,7 +427,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
       }
     });
     String command = "export offline-disk-store --name=" + diskStoreName1 + " --disk-dirs=" + diskStoreDir.getAbsolutePath() + " --dir=" + exportDir;
-    LogWriterUtils.getLogWriter().info("testExportDiskStore command" + command);
+    getLogWriter().info("testExportDiskStore command" + command);
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -432,7 +436,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
       SnapshotTestUtil.checkSnapshotEntries(exportDir, entries, diskStoreName1, region2);
 
     } else {
-      LogWriterUtils.getLogWriter().info("testExportOfflineDiskStore cmdResult is null");
+      getLogWriter().info("testExportOfflineDiskStore cmdResult is null");
       fail("Did not get CommandResult in testExportOfflineDiskStore");
     }
   }
@@ -440,6 +444,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating and destroying disk stores correctly updates the shared configuration.
    */
+  @Test
   public void testCreateDestroyUpdatesSharedConfig() {
     disconnectAllFromDS();
 
@@ -473,7 +478,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          Wait.waitForCriterion(wc, 5000, 500, true);
+          waitForCriterion(wc, 5000, 500, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
@@ -522,7 +527,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
           xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
           assertTrue(xmlFromConfig.contains(diskStoreName));
         } catch (Exception e) {
-          Assert.fail("Error occurred in cluster configuration service", e);
+          fail("Error occurred in cluster configuration service", e);
         }
       }
     });
@@ -573,7 +578,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
           xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
           assertFalse(xmlFromConfig.contains(diskStoreName));
         } catch (Exception e) {
-          Assert.fail("Error occurred in cluster configuration service", e);
+          fail("Error occurred in cluster configuration service", e);
         }
       }
     });
@@ -603,13 +608,14 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
   }
 
 
-  /****
+  /**
    * 1) Create a disk-store in a member, get the disk-dirs. 2) Close the member. 3) Execute the command. 4) Restart the
    * member. 5) Check if the disk-store is altered.
    *
    * @throws IOException
    * @throws ClassNotFoundException
    */
+  @Test
   public void testAlterDiskStore() throws ClassNotFoundException, IOException {
     final String regionName = "region1";
     final String diskStoreName = "disk-store1";
@@ -664,7 +670,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     CommandResult cmdResult = executeCommand(commandString);
     String resultString = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("#SB command output : \n" + resultString);
+    getLogWriter().info("#SB command output : \n" + resultString);
     assertEquals(true, Result.Status.OK.equals(cmdResult.getStatus()));
     assertEquals(true, resultString.contains("concurrencyLevel=5"));
     assertEquals(true, resultString.contains("lruAction=local-destroy"));
@@ -695,7 +701,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     cmdResult = executeCommand(commandString);
     resultString = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("command output : \n" + resultString);
+    getLogWriter().info("command output : \n" + resultString);
     assertEquals(true, Result.Status.OK.equals(cmdResult.getStatus()));
 
     Object postDestroyValue = vm1.invoke(new SerializableCallable() {
@@ -722,13 +728,13 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     cmdResult = executeCommand(commandString);
     resultString = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("Alter DiskStore with wrong remove option  : \n" + resultString);
+    getLogWriter().info("Alter DiskStore with wrong remove option  : \n" + resultString);
     assertEquals(true, Result.Status.ERROR.equals(cmdResult.getStatus()));
 
     filesToBeDeleted.add(diskDirName);
   }
 
-
+  @Test
   public void testBackupDiskStoreBackup() throws IOException {
     final String regionName = "region1";
     final String fullBackUpName = "fullBackUp";
@@ -789,7 +795,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     CommandResult cmdResult = executeCommand(commandString);
     String resultAsString = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("Result from full backup : \n" + resultAsString);
+    getLogWriter().info("Result from full backup : \n" + resultAsString);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     assertEquals(true, resultAsString.contains("Manager"));
     assertEquals(true, resultAsString.contains(vm1Name));
@@ -819,13 +825,15 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     cmdResult = executeCommand(csb.toString());
     resultAsString = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("Result from incremental backup : \n" + resultAsString);
+    getLogWriter().info("Result from incremental backup : \n" + resultAsString);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     assertEquals(true, resultAsString.contains("Manager"));
     assertEquals(true, resultAsString.contains(vm1Name));
   }
 
+  @Category(FlakyTest.class) // GEODE-1206: random ports, BindException
+  @Test
   public void testCreateDiskStore() {
     final String diskStore1Name = "testCreateDiskStore1";
     final String diskStore2Name = "testCreateDiskStore2";
@@ -942,6 +950,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(stringContainsLine(stringResult, vm2Name + ".*" + diskStore2Name + " .*"));
   }
 
+  @Test
   public void testDestroyDiskStore() {
     final String diskStore1Name = "testDestroyDiskStore1";
     final String diskStore2Name = "testDestroyDiskStore2";
@@ -1151,7 +1160,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
       try {
         deleteFiles();
       } catch (IOException e) {
-        LogWriterUtils.getLogWriter().error("Unable to delete file", e);
+        getLogWriter().error("Unable to delete file", e);
       }
     }
     this.filesToBeDeleted.clear();

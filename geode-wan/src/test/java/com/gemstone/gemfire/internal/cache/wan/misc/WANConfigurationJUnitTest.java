@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -223,8 +224,9 @@ public class WANConfigurationJUnitTest {
   @Test
   public void test_ValidateGatewayReceiverAttributes() {
     cache = new CacheFactory().set("mcast-port", "0").create();
-    int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int port1 = randomAvailableTCPPorts[0];
+    int port2 = randomAvailableTCPPorts[1];
     
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     if(port1 < port2){
@@ -264,8 +266,9 @@ public class WANConfigurationJUnitTest {
   @Test
   public void test_ValidateGatewayReceiverStatus() {
     cache = new CacheFactory().set("mcast-port", "0").create();
-    int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int port1 = randomAvailableTCPPorts[0];
+    int port2 = randomAvailableTCPPorts[1];
     
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     if(port1 < port2){

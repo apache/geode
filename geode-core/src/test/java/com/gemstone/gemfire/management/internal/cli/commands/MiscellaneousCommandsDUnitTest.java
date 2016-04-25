@@ -16,6 +16,20 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
+import static com.gemstone.gemfire.test.dunit.Invoke.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -32,41 +46,29 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.SectionResultData;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.ResultData;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-
-import org.junit.Ignore;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Dunit class for testing gemfire function commands : GC, Shutdown
- *
  */
+@Category(DistributedTest.class)
 public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
   private static String cachedLogLevel;
 
-  public MiscellaneousCommandsDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   protected final void preTearDownCliCommandTestBase() throws Exception {
-    Invoke.invokeInEveryVM(new SerializableRunnable("reset log level") {
+    invokeInEveryVM(new SerializableRunnable("reset log level") {
       public void run() {
         if (cachedLogLevel != null) {
           System.setProperty("gemfire.log-level", cachedLogLevel);
@@ -76,6 +78,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
+  @Category(FlakyTest.class) // GEODE-1034: random ports, GC sensitive, memory sensitive, HeadlessGFSH
+  @Test
   public void testGCForGroup() {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
@@ -86,7 +90,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     cmdResult.resetToFirstLine();
     if (cmdResult != null) {
       String cmdResultStr = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testGCForGroup cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
+      getLogWriter().info("testGCForGroup cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
         TabularResultData table = (TabularResultData) cmdResult.getResultData();
@@ -101,10 +105,11 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   }
 
   public static String getMemberId() {
-    Cache cache = new GemfireDataCommandsDUnitTest("test").getCache();
+    Cache cache = new GemfireDataCommandsDUnitTest().getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
+  @Test
   public void testGCForMemberID() {
     createDefaultSetup(null);
     final VM vm1 = Host.getHost(0).getVM(1);
@@ -114,7 +119,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     cmdResult.resetToFirstLine();
     if (cmdResult != null) {
       String cmdResultStr = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testGCForMemberID cmdResultStr=" + cmdResultStr);
+      getLogWriter().info("testGCForMemberID cmdResultStr=" + cmdResultStr);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
         TabularResultData table = (TabularResultData) cmdResult.getResultData();
@@ -128,6 +133,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testShowLogDefault() throws IOException {
     Properties props = new Properties();
     try {
@@ -140,7 +146,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       if (cmdResult != null) {
         String log = commandResultToString(cmdResult);
         assertNotNull(log);
-        LogWriterUtils.getLogWriter().info("Show Log is" + log);
+        getLogWriter().info("Show Log is" + log);
         assertEquals(Result.Status.OK, cmdResult.getStatus());
       } else {
         fail("testShowLog failed as did not get CommandResult");
@@ -150,6 +156,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testShowLogNumLines() {
     Properties props = new Properties();
     props.setProperty("log-file", "testShowLogNumLines.log");
@@ -162,7 +169,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       if (cmdResult != null) {
         String log = commandResultToString(cmdResult);
         assertNotNull(log);
-        LogWriterUtils.getLogWriter().info("Show Log is" + log);
+        getLogWriter().info("Show Log is" + log);
         assertEquals(Result.Status.OK, cmdResult.getStatus());
       } else {
         fail("testShowLog failed as did not get CommandResult");
@@ -172,6 +179,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
   public void testGCForEntireCluster() {
     setupForGC();
     String command = "gc";
@@ -179,7 +187,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     cmdResult.resetToFirstLine();
     if (cmdResult != null) {
       String cmdResultStr = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testGCForEntireCluster cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
+      getLogWriter().info("testGCForEntireCluster cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
         TabularResultData table = (TabularResultData) cmdResult.getResultData();
@@ -224,9 +232,10 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
+  @Test
   public void testShutDownWithoutTimeout() {
 
-    IgnoredException.addIgnoredException("EntryDestroyedException");
+    addIgnoredException("EntryDestroyedException");
 
     setupForShutDown();
     ThreadUtils.sleep(2500);
@@ -236,7 +245,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
     if (cmdResult != null) {
       String cmdResultStr = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testShutDownWithoutTimeout cmdResultStr=" + cmdResultStr);
+      getLogWriter().info("testShutDownWithoutTimeout cmdResultStr=" + cmdResultStr);
     }
 
     verifyShutDown();
@@ -245,7 +254,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
     // Need for the Gfsh HTTP enablement during shutdown to properly assess the
     // state of the connection.
-    Wait.waitForCriterion(new WaitCriterion() {
+    waitForCriterion(new WaitCriterion() {
       public boolean done() {
         return !defaultShell.isConnectedAndReady();
       }
@@ -259,18 +268,19 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Ignore("Disabled for 52350")
-  public void DISABLED_testShutDownWithTimeout() {
+  @Test
+  public void testShutDownWithTimeout() {
     setupForShutDown();
     ThreadUtils.sleep(2500);
 
-    IgnoredException.addIgnoredException("EntryDestroyedException");
+    addIgnoredException("EntryDestroyedException");
 
     String command = "shutdown --time-out=15";
     CommandResult cmdResult = executeCommand(command);
 
     if (cmdResult != null) {
       String cmdResultStr = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testShutDownWithTIMEOUT cmdResultStr=" + cmdResultStr);
+      getLogWriter().info("testShutDownWithTIMEOUT cmdResultStr=" + cmdResultStr);
     }
 
     verifyShutDown();
@@ -278,7 +288,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     final HeadlessGfsh defaultShell = getDefaultShell();
 
     // Need for the Gfsh HTTP enablement during shutdown to properly assess the state of the connection.
-    Wait.waitForCriterion(new WaitCriterion() {
+    waitForCriterion(new WaitCriterion() {
       public boolean done() {
         return !defaultShell.isConnectedAndReady();
       }
@@ -291,6 +301,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(defaultShell.isConnectedAndReady());
   }
 
+  @Test
   public void testShutDownForTIMEOUT() {
     setupForShutDown();
     ThreadUtils.sleep(2500);
@@ -307,7 +318,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
     if (cmdResult != null) {
       String cmdResultStr = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testShutDownForTIMEOUT cmdResultStr = " + cmdResultStr);
+      getLogWriter().info("testShutDownForTIMEOUT cmdResultStr = " + cmdResultStr);
       CommandResult result = (CommandResult) ResultBuilder.createInfoResult(CliStrings.SHUTDOWN_TIMEDOUT);
       String expectedResult = commandResultToString(result);
       assertEquals(expectedResult, cmdResultStr);
@@ -387,12 +398,13 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
         return "Wait for gfsh to get disconnected from Manager.";
       }
     };
-    Wait.waitForCriterion(waitCriterion, 5000, 200, true);
+    waitForCriterion(waitCriterion, 5000, 200, true);
 
     assertTrue(Boolean.FALSE.equals(vm1.invoke(connectedChecker)));
     assertTrue(Boolean.FALSE.equals(vm0.invoke(connectedChecker)));
   }
 
+  @Test
   public void testChangeLogLevelForMembers() {
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
@@ -418,7 +430,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     String commandString = CliStrings.CHANGE_LOGLEVEL + " --" + CliStrings.CHANGE_LOGLEVEL__LOGLEVEL + "=finer" + " --" + CliStrings.CHANGE_LOGLEVEL__MEMBER + "=" + serverName1 + "," + serverName2;
 
     CommandResult commandResult = executeCommand(commandString);
-    LogWriterUtils.getLogWriter().info("testChangeLogLevel commandResult=" + commandResult);
+    getLogWriter().info("testChangeLogLevel commandResult=" + commandResult);
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     CompositeResultData resultData = (CompositeResultData) commandResult.getResultData();
     SectionResultData section = resultData.retrieveSection("section");
@@ -437,6 +449,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(status.contains("true"));
   }
 
+  @Test
   public void testChangeLogLevelForGrps() {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
@@ -474,7 +487,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     String commandString = CliStrings.CHANGE_LOGLEVEL + " --" + CliStrings.CHANGE_LOGLEVEL__LOGLEVEL + "=finer" + " --" + CliStrings.CHANGE_LOGLEVEL__GROUPS + "=" + grp1 + "," + grp2;
 
     CommandResult commandResult = executeCommand(commandString);
-    LogWriterUtils.getLogWriter().info("testChangeLogLevelForGrps commandResult=" + commandResult);
+    getLogWriter().info("testChangeLogLevelForGrps commandResult=" + commandResult);
 
     assertTrue(Status.OK.equals(commandResult.getStatus()));
 

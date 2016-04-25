@@ -222,8 +222,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     if (scope == Scope.LOCAL && (region.getPartitionAttributes() == null)) {
       return false;
     }
-    @Released
-    CacheEvent listenerEvent = getEventForListener(event);
+    @Released CacheEvent listenerEvent = getEventForListener(event);
     try {
     if (action == BEFOREUPDATE && listenerEvent.getOperation().isCreate()) {
       action = BEFORECREATE;
@@ -870,8 +869,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         return false;
       }
     }
-    @Released
-    CacheEvent event = getEventForListener(pevent);
+    @Released CacheEvent event = getEventForListener(pevent);
     
     int action = paction;
     if (event.getOperation().isCreate() && action == BEFOREUPDATE) {

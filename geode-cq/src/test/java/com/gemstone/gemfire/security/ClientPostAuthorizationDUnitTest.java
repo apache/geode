@@ -26,15 +26,19 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.test.junit.Retry;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.rules.RetryRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Tests for authorization from client to server. This tests for authorization
@@ -43,14 +47,11 @@ import org.junit.experimental.categories.Category;
  * 
  * @since 5.5
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
-  @Rule
-  public RetryRule retryRule = new RetryRule();
-
+  @Category(FlakyTest.class) // GEODE-693: getRandomAvailablePort
   @Test
-  @Retry(2)
   public void testAllPostOps() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllPostOps();
 
@@ -73,8 +74,9 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
       Properties serverProps = buildProperties(authenticator, accessor, true, extraAuthProps, extraAuthzProps);
 
       // Get ports for the servers
-      int port1 = getRandomAvailablePort(SOCKET);
-      int port2 = getRandomAvailablePort(SOCKET);
+      int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+      int port1 = randomAvailableTCPPorts[0];
+      int port2 = randomAvailableTCPPorts[1];
 
       // Close down any running servers
       server1.invoke(() -> closeCache());
@@ -111,6 +113,7 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1009: random ports, uses Random, time sensitive, waitForCondition (waitForCriterion)
   @Test
   public void testAllOpsNotifications() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllOpsNotifications();
@@ -136,8 +139,9 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
     Properties serverProps = buildProperties(authenticator, accessor, true, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    int port1 = getRandomAvailablePort(SOCKET);
-    int port2 = getRandomAvailablePort(SOCKET);
+    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int port1 = randomAvailableTCPPorts[0];
+    int port2 = randomAvailableTCPPorts[1];
 
     // Perform all the ops on the clients
     List opBlock = new ArrayList();

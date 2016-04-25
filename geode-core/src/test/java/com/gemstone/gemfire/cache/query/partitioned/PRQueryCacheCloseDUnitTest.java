@@ -14,21 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.cache.query.partitioned;
-
-/**
- * This test tests the PR query behaviour with respect to cache closure
- * happening on one of the data stores. PR is configured with redundantCopies =
- * 1, and cache close is done randomly on one of the data stores and then
- * recreated, thus avoiding any data loss.
- * 
- */
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
@@ -40,18 +33,17 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
-{
-
-  /**
-   * constructor *
-   * 
-   * @param name
-   */
+/**
+ * This test tests the PR query behaviour with respect to cache closure
+ * happening on one of the data stores. PR is configured with redundantCopies =
+ * 1, and cache close is done randomly on one of the data stores and then
+ * recreated, thus avoiding any data loss.
+ */
+public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase {
 
   public PRQueryCacheCloseDUnitTest(String name) {
-
     super(name);
   }
 
@@ -216,6 +208,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * 6. then recreates the PR on the same VM <br>
    * 7. Verfies the size , type , contents of both the resultSets Obtained <br>
    */
+  @Category(FlakyTest.class) // GEODE-1239: uses PRQueryDUnitHelper, uses Random, async actions, time sensitive, complex retry loop, thread unsafe test hook
   public void testPRWithCacheCloseInOneDatastoreWithoutDelay() throws Exception
   {
     LogWriterUtils.getLogWriter()

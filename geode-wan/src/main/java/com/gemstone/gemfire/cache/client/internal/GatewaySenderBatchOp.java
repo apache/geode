@@ -254,12 +254,17 @@ public class GatewaySenderBatchOp {
         switch (msg.getMessageType()) {
         case MessageType.REPLY:
           // Read the chunk
-          int batchId = msg.getPart(0).getInt();
+          Part part0 = msg.getPart(0);
+          if (part0.isBytes() && part0.getLength() == 1 && part0.getSerializedForm()[0] == 0) {
+            // REPLY_OKAY from a CloseConnection
+            break;
+          }
+          int batchId = part0.getInt();
           int numEvents = msg.getPart(1).getInt();
           ack = new GatewayAck(batchId, numEvents);
           break;
         case MessageType.EXCEPTION:
-          Part part0 = msg.getPart(0);
+          part0 = msg.getPart(0);
 
           Object obj = part0.getObject();
           if (obj instanceof List) {

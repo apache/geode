@@ -50,7 +50,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   
   private int udpPort=0;
   private boolean preferredForCoordinator;
-  private boolean splitBrainEnabled;
+  private boolean networkPartitionDetectionEnabled;
   private byte memberWeight;
   private InetAddress inetAddr;
   private int processId;
@@ -112,19 +112,19 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
    * 
    * @param i the hostname, must be for the current host
    * @param p the membership listening port
-   * @param splitBrainEnabled whether the member has network partition detection enabled
+   * @param networkPartitionDetectionEnabled whether the member has network partition detection enabled
    * @param preferredForCoordinator whether the member can be group coordinator
    * @param version the member's version ordinal
    * @param msbs - most significant bytes of UUID
    * @param lsbs - least significant bytes of UUID
    */
-  public GMSMember(MemberAttributes attr, InetAddress i, int p, boolean splitBrainEnabled, boolean preferredForCoordinator,
-      short version,
-      long msbs, long lsbs) {
+  public GMSMember(MemberAttributes attr, InetAddress i, int p, boolean networkPartitionDetectionEnabled, boolean preferredForCoordinator,
+                   short version,
+                   long msbs, long lsbs) {
     setAttributes(attr);
     this.inetAddr = i;
     this.udpPort=p;
-    this.splitBrainEnabled = splitBrainEnabled;
+    this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.preferredForCoordinator = preferredForCoordinator;
     this.versionOrdinal = version;
     this.uuidMSBs = msbs;
@@ -137,10 +137,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   public boolean isMulticastAddress() {
     return false;  //ipAddr.isMulticastAddress();
-  }
-  
-  public boolean splitBrainEnabled() {
-    return this.splitBrainEnabled;
   }
   
   public boolean preferredForCoordinator() {
@@ -284,8 +280,8 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     return udpPort;
   }
 
-  public boolean isSplitBrainEnabled() {
-    return splitBrainEnabled;
+  public boolean isNetworkPartitionDetectionEnabled() {
+    return networkPartitionDetectionEnabled;
   }
 
   public byte getMemberWeight() {
@@ -328,8 +324,8 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.udpPort = udpPort;
   }
 
-  public void setSplitBrainEnabled(boolean splitBrainEnabled) {
-    this.splitBrainEnabled = splitBrainEnabled;
+  public void setNetworkPartitionDetectionEnabled(boolean networkPartitionDetectionEnabled) {
+    this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
   }
 
   public void setMemberWeight(byte memberWeight) {
@@ -395,16 +391,16 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     return GMSMEMBER;
   }
 
-  static final int SB_ENABLED = 0x01;
-  static final int PREFERRED_FOR_COORD = 0x02;
+  static final int NPD_ENABLED_BIT = 0x01;
+  static final int PREFERRED_FOR_COORD_BIT = 0x02;
   
   @Override
   public void toData(DataOutput out) throws IOException {
     Version.writeOrdinal(out, this.versionOrdinal, true);
     
     int flags = 0;
-    if (splitBrainEnabled) flags |= SB_ENABLED;
-    if (preferredForCoordinator) flags |= PREFERRED_FOR_COORD;
+    if (networkPartitionDetectionEnabled) flags |= NPD_ENABLED_BIT;
+    if (preferredForCoordinator) flags |= PREFERRED_FOR_COORD_BIT;
     out.writeShort(flags);
 
     DataSerializer.writeInetAddress(inetAddr, out);
@@ -425,8 +421,8 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.versionOrdinal = Version.readOrdinal(in);
     
     int flags = in.readShort();
-    this.splitBrainEnabled = (flags & SB_ENABLED) != 0;
-    this.preferredForCoordinator = (flags & PREFERRED_FOR_COORD) != 0;
+    this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;
+    this.preferredForCoordinator = (flags & PREFERRED_FOR_COORD_BIT) != 0;
     
     this.inetAddr = DataSerializer.readInetAddress(in);
     this.udpPort = in.readInt();

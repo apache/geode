@@ -69,6 +69,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
 import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.cache.VersionTagHolder;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
@@ -1141,7 +1142,7 @@ public abstract class BaseCommand implements Command {
 
     if (region != null) {
       if (region.containsKey(entryKey) || region.containsTombstone(entryKey)) {
-        EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
+        VersionTagHolder versionHolder = new VersionTagHolder();
         ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
         // From Get70.getValueAndIsObject()
         Object data = region.get(entryKey, null, true, true, true, id, versionHolder, true, false);
@@ -1237,7 +1238,7 @@ public abstract class BaseCommand implements Command {
       }
 
       for (Object key : region.keySet(true)) {
-        EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
+        VersionTagHolder versionHolder = new VersionTagHolder();
         if (keyPattern != null) {
           if (!(key instanceof String)) {
             // key is not a String, cannot apply regex to this entry
@@ -1338,11 +1339,11 @@ public abstract class BaseCommand implements Command {
       VersionedObjectList values, Object riKeys, Set keySet, ServerConnection servConn)
       throws IOException {
     Object key = null;
-    EntryEventImpl versionHolder = null;
+    VersionTagHolder versionHolder = null;
     ClientProxyMembershipID requestingClient = servConn == null ? null : servConn.getProxyID();
     for (Iterator it = keySet.iterator(); it.hasNext();) {
       key = it.next();
-      versionHolder = EntryEventImpl.createVersionTagHolder();
+      versionHolder = new VersionTagHolder();
 
       Object value = region.get(key, null, true, true, true, requestingClient, versionHolder, true, false);
       
@@ -1545,8 +1546,7 @@ public abstract class BaseCommand implements Command {
       for (Iterator it = keyList.iterator(); it.hasNext();) {
         Object key = it.next();
         if (region.containsKey(key) || region.containsTombstone(key)) {
-          EntryEventImpl versionHolder = EntryEventImpl
-              .createVersionTagHolder();
+          VersionTagHolder versionHolder = new VersionTagHolder();
 
           ClientProxyMembershipID id = servConn == null ? null : servConn
               .getProxyID();

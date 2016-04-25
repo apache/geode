@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
@@ -42,16 +44,12 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- *
- */
 public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
   
   private static final Set<Thread> stuckThreads = Collections.synchronizedSet(new HashSet<Thread>());
-  
-  
-  
+
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
@@ -97,7 +95,7 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
   
   private static final Lock lock = new ReentrantLock();
   
-  
+  @Category(FlakyTest.class) // GEODE-516 & GEODE-576: async actions, thread sleeps, time sensitive
   public void testDistributedDeadlockWithFunction() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

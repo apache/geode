@@ -231,8 +231,8 @@ gradle.taskGraph.whenReady( { graph ->
     it.name.toLowerCase().contains("dist")
   }.each { archive ->
     archive.doLast {
-      ant.checksum file:"${archive.archivePath}", algorithm:"md5"
-      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256"
+      ant.checksum file:"${archive.archivePath}", algorithm:"md5", format: 'MD5SUM'
+      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
     }
   }
 })

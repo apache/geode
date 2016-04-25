@@ -29,15 +29,6 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.operations.ExecuteFunctionOperationContext;
-import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.cache.operations.QueryOperationContext;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.NotAuthorizedException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -47,6 +38,16 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.operations.ExecuteFunctionOperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import com.gemstone.gemfire.cache.operations.QueryOperationContext;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.security.AccessControl;
+import com.gemstone.gemfire.security.NotAuthorizedException;
 
 /**
  * An implementation of the {@link AccessControl} interface that allows

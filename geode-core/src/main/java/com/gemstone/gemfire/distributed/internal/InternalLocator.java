@@ -170,6 +170,8 @@ public class InternalLocator extends Locator implements ConnectListener {
   private DistributionConfigImpl config;
   
   private LocatorMembershipListener locatorListener;
+
+  private WanLocatorDiscoverer locatorDiscoverer;
   
   /** whether the locator was stopped during forced-disconnect processing but a reconnect will occur */
   private volatile boolean stoppedForReconnect;
@@ -386,7 +388,8 @@ public class InternalLocator extends Locator implements ConnectListener {
       
     slocator = createLocator(port, logFile, stateFile, logger, securityLogger, bindAddress, hostnameForClients, dsProperties, startDistributedSystem);
     
-    
+    // TODO:GEODE-1243: this.server is now a TcpServer and it should store or return its non-zero port in a variable to use here
+
     if (enableServerLocator) {
       slocator.handler.willHaveServerLocator = true;
     }
@@ -397,7 +400,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     
     if (startDistributedSystem) {
       try {
-        slocator.startDistributedSystem();
+        slocator.startDistributedSystem(); // TODO:GEODE-1243: throws Exception if TcpServer still has zero for its locator port
       } catch (RuntimeException e) {
         slocator.stop();
         throw e;
@@ -660,11 +663,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         locatorsAreCoordinators = Boolean.getBoolean(LOCATORS_PREFERRED_AS_COORDINATORS);
       }
     }
-    if (locatorsAreCoordinators) {
-      // LOG: changed from config to info
-      logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_FORCING_GROUP_COORDINATION_INTO_LOCATORS));
-    }
-    
+
     this.locatorImpl = MemberFactory.newLocatorHandler(this.bindAddress, this.stateFile,
         locatorsProp, locatorsAreCoordinators, networkPartitionDetectionEnabled, stats);
     this.handler.addHandler(PeerLocatorRequest.class, this.locatorImpl);
@@ -843,9 +842,9 @@ public class InternalLocator extends Locator implements ConnectListener {
       InternalDistributedSystem.addConnectListener(this);
     }
     
-    WanLocatorDiscoverer s = WANServiceProvider.createLocatorDiscoverer();
-    if(s != null) {
-      s.discover(this.port, config, locatorListener);
+    this.locatorDiscoverer = WANServiceProvider.createLocatorDiscoverer();
+    if(this.locatorDiscoverer != null) {
+      this.locatorDiscoverer.discover(this.port, config, locatorListener);
     }
   }
   
@@ -948,6 +947,11 @@ public class InternalLocator extends Locator implements ConnectListener {
         }
       }
       return;
+    }
+
+    if (this.locatorDiscoverer != null) {
+      this.locatorDiscoverer.stop();
+      this.locatorDiscoverer = null;
     }
 
     if (this.server.isAlive()) {

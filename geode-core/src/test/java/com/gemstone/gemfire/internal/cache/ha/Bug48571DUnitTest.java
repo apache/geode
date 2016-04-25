@@ -18,6 +18,8 @@ package com.gemstone.gemfire.internal.cache.ha;
 
 import java.util.Properties;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.EntryEvent;
@@ -45,6 +47,7 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 public class Bug48571DUnitTest extends DistributedTestCase {
 
@@ -87,6 +90,7 @@ public class Bug48571DUnitTest extends DistributedTestCase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-510: random ports, async actions, AsyncInvocation orphan
   public void testStatsMatchWithSize() throws Exception {
     IgnoredException.addIgnoredException("Unexpected IOException||Connection reset");
     // start a server
@@ -98,7 +102,7 @@ public class Bug48571DUnitTest extends DistributedTestCase {
     // close durable client
     client.invoke(() -> Bug48571DUnitTest.closeClientCache());
     // resume puts on server, add another 100.
-    server.invokeAsync(() -> Bug48571DUnitTest.resumePuts());
+    server.invokeAsync(() -> Bug48571DUnitTest.resumePuts()); // TODO: join or await result
     // start durable client
     client.invoke(() -> Bug48571DUnitTest.createClientCache(client.getHost(), port));
     // wait for full queue dispatch

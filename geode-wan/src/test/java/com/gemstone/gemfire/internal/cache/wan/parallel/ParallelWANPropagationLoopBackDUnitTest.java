@@ -16,11 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Wait;
 
@@ -43,9 +38,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     //create receiver on site1 and site2
     createCacheInVMs(lnPort, vm2, vm4, vm5);
-    vm2.invoke(() -> WANTestBase.createReceiver( lnPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
     createCacheInVMs(nyPort, vm3, vm6, vm7);
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver());
 
     //create senders on site1
     vm2.invoke(() -> WANTestBase.createSender( "ln", 2,
@@ -157,11 +152,11 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     
     //create cache and receivers on all the 3 sites
     createCacheInVMs(lnPort, vm3, vm6);
-    createReceiverInVMs(lnPort, vm3, vm6);
+    createReceiverInVMs(vm3, vm6);
     createCacheInVMs(nyPort, vm4, vm7);
-    createReceiverInVMs(nyPort, vm4, vm7);
+    createReceiverInVMs(vm4, vm7);
     createCacheInVMs(tkPort, vm5);
-    createReceiverInVMs(tkPort, vm5);
+    createReceiverInVMs(vm5);
 
 
     //create senders on all the 3 sites
@@ -262,9 +257,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     createCacheInVMs(lnPort, vm3, vm6);
     createCacheInVMs(nyPort, vm4, vm7);
     createCacheInVMs(tkPort, vm5);
-    vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm4.invoke(() -> WANTestBase.createReceiver());
+    vm5.invoke(() -> WANTestBase.createReceiver());
 
     //site1
     vm3.invoke(() -> WANTestBase.createSender( "ln1", 2,

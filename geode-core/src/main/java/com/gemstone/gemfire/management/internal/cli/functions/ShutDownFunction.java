@@ -16,16 +16,18 @@
  */
 package com.gemstone.gemfire.management.internal.cli.functions;
 
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
+import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * 
@@ -43,21 +45,39 @@ public class ShutDownFunction implements Function, InternalEntity {
   @Override
   public void execute(FunctionContext context) {
     try {
-      Cache cache = CacheFactory.getAnyInstance();
-      String memberName = cache.getDistributedSystem().getDistributedMember().getId();
-      cache.getLogger().info("Received GFSH shutdown. Shutting down member " + memberName);
-      final InternalDistributedSystem system = ((InternalDistributedSystem) cache.getDistributedSystem());
-
-      if (system.isConnected()) {
-        ConnectionTable.threadWantsSharedResources();
-        if (system.isConnected()) {
-          system.disconnect();
-        }
+      final InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
+      if (system == null) {
+        return;
       }
-      
+      String memberName = system.getDistributedMember().getId();
+      logger.info("Received GFSH shutdown. Shutting down member " + memberName);
+
+      disconnectInNonDaemonThread(system);
+
       context.getResultSender().lastResult("SUCCESS: succeeded in shutting down " + memberName);
     } catch (Exception ex) {
-      context.getResultSender().lastResult("FAILURE: failed in shutting down " +ex.getMessage());
+      logger.warn("Error during shutdown", ex);
+      context.getResultSender().lastResult("FAILURE: failed in shutting down " + ex.getMessage());
+    }
+  }
+
+  /*
+   * The shutdown is performed in a separate, non-daemon thread so that the JVM does not shut down
+   * prematurely before the full process has completed.
+   */
+  private void disconnectInNonDaemonThread(final InternalDistributedSystem ids)
+      throws InterruptedException, ExecutionException {
+    ExecutorService exec = Executors.newSingleThreadExecutor();
+    Future future = exec.submit(() -> {
+      ConnectionTable.threadWantsSharedResources();
+      if (ids.isConnected()) {
+        ids.disconnect();
+      }
+    });
+    try {
+      future.get();
+    } finally {
+      exec.shutdown();
     }
   }
 

@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.execute.Execution;
@@ -44,9 +46,10 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-public class PRFunctionExecutionTimeOutDUnitTest extends
-    PartitionedRegionDUnitTestCase {
+public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitTestCase {
+
   private static final String TEST_FUNCTION_TIMEOUT = TestFunction.TEST_FUNCTION_TIMEOUT;
   private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
   
@@ -666,6 +669,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends
    * Then test it using timeout and multiple getResult.
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1020: suspect string: BucketMovedException, missing fail in expected exception, eats exceptions
   public void testLocalMultiKeyExecution_byName() throws Exception {
     IgnoredException.addIgnoredException("BucketMovedException");
     final String rName = getUniqueName();
@@ -693,11 +697,12 @@ public class PRFunctionExecutionTimeOutDUnitTest extends
         testKeysSet.add(testKey);
         try {
           dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          // TODO: expected exception pattern requires fail here
         }
         catch (Exception expected) {
           // No data should cause exec to throw
           assertTrue(expected.getMessage().contains(
-              "No target node found for KEY = " + testKey));
+              "No target node found for KEY = " + testKey)); // TODO: eats exception with new AssertionError if it doesn't match
         }
 
         final HashSet testKeys = new HashSet();
@@ -755,7 +760,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends
         }
         catch (FunctionException fe) {
           assertTrue(fe.getMessage(), fe.getMessage().contains(
-          LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString()));
+          LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString())); // TODO: eats exception with new AssertionError if fails
         }
         
         ResultCollector rct2 = dataSet.withFilter(testKeys).withArgs(testKeys)
@@ -767,7 +772,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends
         }
         catch (FunctionException fe) {
           assertTrue(fe.getMessage(), fe.getMessage().contains(
-          LocalizedStrings.ExecuteFunction_RESULTS_NOT_COLLECTED_IN_TIME_PROVIDED.toLocalizedString()));
+          LocalizedStrings.ExecuteFunction_RESULTS_NOT_COLLECTED_IN_TIME_PROVIDED.toLocalizedString())); // TODO: eats exception with new AssertionError if fails
         }
         
         try {
@@ -776,7 +781,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends
         }
         catch (FunctionException fe) {
           assertTrue(fe.getMessage(), fe.getMessage().contains(
-              LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString()));
+              LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString())); // TODO: eats exception with new AssertionError if fails
         }
         
         return Boolean.TRUE;
