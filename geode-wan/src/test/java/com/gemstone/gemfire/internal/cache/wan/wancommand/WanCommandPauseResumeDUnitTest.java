@@ -23,9 +23,6 @@ import static com.gemstone.gemfire.test.dunit.Wait.*;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result;
@@ -33,6 +30,9 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
@@ -144,6 +144,8 @@ public class WanCommandPauseResumeDUnitTest extends WANCommandTestBase {
             2, false, 100, 400, false, false, null, true ));
 
     vm3.invoke(() -> startSender( "ln" ));
+    vm4.invoke(() -> startSender( "ln" ));
+    vm5.invoke(() -> startSender( "ln" ));
 
     vm3.invoke(() -> verifySenderState(
             "ln", true, false ));

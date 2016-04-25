@@ -536,14 +536,11 @@ public abstract class AbstractDistributionConfig
 
     Method setter = setters.get(attName);
     if (setter == null) {
-      // if we cann't find the defined setter, look for two more special cases
-      if (attName.startsWith(SECURITY_PREFIX_NAME)) {
-        this.setSecurity(attName,(String)attValue);
-        getAttSourceMap().put(attName, source);
-        return;
-      }
-      if (attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
-        this.setSSLProperty(attName, (String) attValue);
+      // if we cann't find the defined setter, but the attributeName starts with these special characters
+      // since we already set it in the respecitive properties above, we need to set the source then return
+      if (attName.startsWith(SECURITY_PREFIX_NAME) ||
+        attName.startsWith(SSL_SYSTEM_PROPS_NAME) ||
+        attName.startsWith(SYS_PROP_NAME)) {
         getAttSourceMap().put(attName, source);
         return;
       }
