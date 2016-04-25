@@ -1412,7 +1412,6 @@ public class LocatorDUnitTest extends DistributedTestCase {
       }
     };
   }
-
   /**
    * Tests starting multiple locators at the same time and ensuring that the locators
    * end up only have 1 master.
@@ -1516,9 +1515,11 @@ public class LocatorDUnitTest extends DistributedTestCase {
             host0 + "[" + port3 + "]";
         dsProps.setProperty("locators", newLocators);
 
-        assertTrue(vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+        assertTrue(vm3.invoke("Checking ViewCreator thread on Lead Server", () -> GMSJoinLeaveTestHelper.isViewCreator()));
         //Given the start up order of servers, this server is the elder server
-        assertTrue(vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+        assertTrue(vm3.invoke("Checking ViewCreator thread on Lead Server", () -> GMSJoinLeaveTestHelper.isViewCreator()));
+        
+        final InternalDistributedMember currentCoordinator = GMSJoinLeaveTestHelper.getCurrentCoordinator();
 
         startLocatorAsync(vm1, new Object[] { port2, dsProps });
         startLocatorAsync(vm2, new Object[] { port3, dsProps });
@@ -1526,6 +1527,11 @@ public class LocatorDUnitTest extends DistributedTestCase {
         waitCriterion = new WaitCriterion() {
           public boolean done() {
             try {
+              InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
+              if (c.equals(currentCoordinator)) {
+                //now locator should be new coordinator
+                return false;
+              }
               return system.getDM().getAllHostedLocators().size() == 2;
             } catch (Exception e) {
               e.printStackTrace();
@@ -1540,17 +1546,17 @@ public class LocatorDUnitTest extends DistributedTestCase {
         };
         Wait.waitForCriterion(waitCriterion, 15 * 1000, 200, true);
 
-        int netviewId = vm1.invoke(() -> GMSJoinLeaveTestHelper.getViewId());
-        assertEquals(netviewId, (int) vm2.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
-        assertEquals(netviewId, (int) vm3.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
-        assertEquals(netviewId, (int) vm4.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
-        assertFalse(vm4.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+        int netviewId = vm1.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.getViewId());
+        assertEquals(netviewId, (int) vm2.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
+        assertEquals(netviewId, (int) vm3.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
+        assertEquals(netviewId, (int) vm4.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
+        assertFalse(vm4.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
         //Given the start up order of servers, this server is the elder server
-        assertFalse(vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+        assertFalse(vm3.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
         if (vm1.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator())) {
-          assertFalse(vm2.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+          assertFalse(vm2.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
         } else {
-          assertTrue(vm2.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+          assertTrue(vm2.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
         }
 
       } finally {
@@ -1565,7 +1571,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
   }
 
   private void startLocatorSync(VM vm, Object[] args) {
-    vm.invoke(new SerializableRunnable("Starting process on " + args[0], args) {
+    vm.invoke(new SerializableRunnable("Starting locator process on " + args[0], args) {
       public void run() {
         File logFile = new File("");
         try {
@@ -1578,7 +1584,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
   }
 
   private void startLocatorAsync(VM vm, Object[] args) {
-    vm.invokeAsync(new SerializableRunnable("Starting process on " + args[0], args) {
+    vm.invokeAsync(new SerializableRunnable("Starting Locator process async on " + args[0], args) {
       public void run() {
         File logFile = new File("");
         try {

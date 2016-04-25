@@ -1415,27 +1415,6 @@ public class ConnectionPoolDUnitTest extends CacheTestCase {
       vm2.invoke(verify1Server);
       assertEquals(true, putAI.isAlive());
       assertEquals(true, putAI2.isAlive());
-
-      {
-        final int restartPort = port1;
-        vm1.invoke(new SerializableRunnable("Restart CacheServer") {
-            public void run() {
-              try {
-                Region region = getRootRegion().getSubregion(name);
-                assertNotNull(region);
-                startBridgeServer(restartPort);
-              }
-              catch(Exception e) {
-                getSystem().getLogWriter().fine(new Exception(e));
-                com.gemstone.gemfire.test.dunit.Assert.fail("Failed to start CacheServer", e);
-              }
-            }
-          });
-      }
-
-      vm2.invoke(verify2Servers);
-      assertEquals(true, putAI.isAlive());
-      assertEquals(true, putAI2.isAlive());
     } finally {
       vm2.invoke(new SerializableRunnable("Stop Putters") {
           public void run() {
