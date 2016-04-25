@@ -477,8 +477,11 @@ public class JGroupsMessenger implements Messenger {
 
     // add the JGroups logical address to the GMSMember
     UUID uuid = this.jgAddress;
-    ((GMSMember)localAddress.getNetMember()).setUUID(uuid);
-    ((GMSMember)localAddress.getNetMember()).setMemberWeight((byte)(services.getConfig().getMemberWeight() & 0xff));
+    GMSMember gmsMember = (GMSMember)localAddress.getNetMember();
+    gmsMember.setUUID(uuid);
+    gmsMember.setMemberWeight((byte)(services.getConfig().getMemberWeight() & 0xff));
+    gmsMember.setNetworkPartitionDetectionEnabled(services.getConfig().getDistributionConfig().getEnableNetworkPartitionDetection());
+
   }
   
   @Override

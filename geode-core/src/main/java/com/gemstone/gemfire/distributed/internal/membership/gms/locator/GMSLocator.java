@@ -218,7 +218,7 @@ public class GMSLocator implements Locator, NetLocator {
             for (InternalDistributedMember mbr: registrants) {
               if (mbr != coord  &&  (coord==null  ||  mbr.compareTo(coord) < 0)) {
                 if (!rejections.contains(mbr)
-                    && (mbr.getNetMember().preferredForCoordinator() || !mbr.getNetMember().splitBrainEnabled())) {
+                    && (mbr.getNetMember().preferredForCoordinator() || !mbr.getNetMember().isNetworkPartitionDetectionEnabled())) {
                   coord = mbr;
                 }
               }

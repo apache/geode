@@ -121,17 +121,17 @@ public class InternalDistributedMember
    */
   private String uniqueTag = null;
 
-  /** serialization bit mask */
-  private static final int SB_ENABLED_MASK = 0x1;
+  /** serialization bit flag */
+  private static final int NPD_ENABLED_BIT = 0x1;
 
-  /** serialization bit mask */
-  private static final int COORD_ENABLED_MASK = 0x2;
+  /** serialization bit flag */
+  private static final int COORD_ENABLED_BIT = 0x2;
 
-  /** partial ID bit mask */
-  private static final int PARTIAL_ID_MASK = 0x4;
+  /** partial ID bit flag */
+  private static final int PARTIAL_ID_BIT = 0x4;
 
-  /** product version bit mask */
-  private static final int VERSION_MASK = 0x8;
+  /** product version bit flag */
+  private static final int VERSION_BIT = 0x8;
 
   /**
    * Representing the host name of this member.
@@ -832,7 +832,7 @@ public class InternalDistributedMember
   }
 
   private void readVersion(int flags, DataInput in) throws IOException {
-    if ((flags & VERSION_MASK) != 0) {
+    if ((flags & VERSION_BIT) != 0) {
       this.version = Version.readOrdinal(in);
       this.versionObj = Version.fromOrdinalNoThrow(this.version, false);
     } else {
@@ -863,12 +863,12 @@ public class InternalDistributedMember
     DataSerializer.writeString(this.hostName, out);
     
     int flags = 0;
-    if (netMbr.splitBrainEnabled()) flags |= SB_ENABLED_MASK;
-    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
-    if (this.isPartial) flags |= PARTIAL_ID_MASK;
+    if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= NPD_ENABLED_BIT;
+    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_BIT;
+    if (this.isPartial) flags |= PARTIAL_ID_BIT;
     // always write product version but enable reading from older versions
     // that do not have it
-    flags |= VERSION_MASK;
+    flags |= VERSION_BIT;
     out.writeByte((byte)(flags & 0xff));
 
     out.writeInt(dcPort);
@@ -901,9 +901,9 @@ public class InternalDistributedMember
      this.hostName = DataSerializer.readString(in);
 
      int flags = in.readUnsignedByte();
-     boolean sbEnabled = (flags & SB_ENABLED_MASK) != 0;
-     boolean elCoord = (flags & COORD_ENABLED_MASK) != 0;
-     this.isPartial = (flags & PARTIAL_ID_MASK) != 0;
+     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
+     boolean elCoord = (flags & COORD_ENABLED_BIT) != 0;
+     this.isPartial = (flags & PARTIAL_ID_BIT) != 0;
      
      this.dcPort = in.readInt();
      this.vmPid = in.readInt();
@@ -955,12 +955,12 @@ public class InternalDistributedMember
     DataSerializer.writeString(this.hostName, out);
 
     int flags = 0;
-    if (netMbr.splitBrainEnabled()) flags |= SB_ENABLED_MASK;
-    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
-    if (this.isPartial) flags |= PARTIAL_ID_MASK;
+    if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= NPD_ENABLED_BIT;
+    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_BIT;
+    if (this.isPartial) flags |= PARTIAL_ID_BIT;
     // always write product version but enable reading from older versions
     // that do not have it
-    flags |= VERSION_MASK;
+    flags |= VERSION_BIT;
     out.writeByte((byte)(flags & 0xff));
     
     out.writeInt(dcPort);
@@ -997,9 +997,9 @@ public class InternalDistributedMember
     DataSerializer.writeString(this.hostName, out);
 
     int flags = 0;
-    if (netMbr.splitBrainEnabled()) flags |= SB_ENABLED_MASK;
-    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
-    if (this.isPartial) flags |= PARTIAL_ID_MASK;
+    if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= NPD_ENABLED_BIT;
+    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_BIT;
+    if (this.isPartial) flags |= PARTIAL_ID_BIT;
     out.writeByte((byte)(flags & 0xff));
     
     out.writeInt(dcPort);
@@ -1041,9 +1041,9 @@ public class InternalDistributedMember
     this.hostName = SocketCreator.resolve_dns? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
 
     int flags = in.readUnsignedByte();
-    boolean sbEnabled = (flags & SB_ENABLED_MASK) != 0;
-    boolean elCoord = (flags & COORD_ENABLED_MASK) != 0;
-    this.isPartial = (flags & PARTIAL_ID_MASK) != 0;
+    boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
+    boolean elCoord = (flags & COORD_ENABLED_BIT) != 0;
+    this.isPartial = (flags & PARTIAL_ID_BIT) != 0;
 
     this.dcPort = in.readInt();
     this.vmPid = in.readInt();
@@ -1084,9 +1084,9 @@ public class InternalDistributedMember
     this.hostName = SocketCreator.resolve_dns? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
 
     int flags = in.readUnsignedByte();
-    boolean sbEnabled = (flags & SB_ENABLED_MASK) != 0;
-    boolean elCoord = (flags & COORD_ENABLED_MASK) != 0;
-    this.isPartial = (flags & PARTIAL_ID_MASK) != 0;
+    boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
+    boolean elCoord = (flags & COORD_ENABLED_BIT) != 0;
+    this.isPartial = (flags & PARTIAL_ID_BIT) != 0;
 
     this.dcPort = in.readInt();
     this.vmPid = in.readInt();
@@ -1134,8 +1134,8 @@ public class InternalDistributedMember
      this.hostName = SocketCreator.resolve_dns? SocketCreator.getHostName(inetAddr) : inetAddr.getHostAddress();
 
      int flags = in.readUnsignedByte();
-     boolean sbEnabled = (flags & SB_ENABLED_MASK) != 0;
-     boolean elCoord = (flags & COORD_ENABLED_MASK) != 0;
+     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
+     boolean elCoord = (flags & COORD_ENABLED_BIT) != 0;
 
      this.vmKind = in.readUnsignedByte();
      
@@ -1170,9 +1170,9 @@ public class InternalDistributedMember
      out.writeInt(getPort());
 
      int flags = 0;
-     if (netMbr.splitBrainEnabled()) flags |= SB_ENABLED_MASK;
-     if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
-     flags |= PARTIAL_ID_MASK;
+     if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= NPD_ENABLED_BIT;
+     if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_BIT;
+     flags |= PARTIAL_ID_BIT;
      out.writeByte((byte)(flags & 0xff));
      
 //     out.writeInt(dcPort);

@@ -704,7 +704,7 @@ class ParentLocalizedStrings {
   public static final StringId InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0 = new StringId(1697, "Could not load instantiator class: {0}");
   public static final StringId InternalLocator_0__IS_STOPPED = new StringId(1698, "{0}  is stopped");
   public static final StringId InternalLocator_COULD_NOT_STOP__0__IN_60_SECONDS = new StringId(1699, "Could not stop  {0}  in 60 seconds");
-  public static final StringId InternalLocator_FORCING_GROUP_COORDINATION_INTO_LOCATORS = new StringId(1700, "Forcing group coordination into Locators.");
+  // ok to reuse 1700
   public static final StringId InternalLocator_INTERRUPTED_WHILE_STOPPING__0 = new StringId(1701, "Interrupted while stopping  {0}");
   public static final StringId InternalLocator_LOCATOR_STARTED_ON__0 = new StringId(1702, "Locator started on  {0}");
   public static final StringId StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_MCAST_PORT_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_2_IT_IS_ATTEMPTING_TO_JOIN = new StringId(1703, "Rejected new system node {0} because its mcast-port {1} does not match the mcast-port {2} of the distributed system it is attempting to join. To fix this make sure the \"mcast-port\" gemfire property is set the same on all members of the same distributed system.");

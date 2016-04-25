@@ -663,11 +663,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         locatorsAreCoordinators = Boolean.getBoolean(LOCATORS_PREFERRED_AS_COORDINATORS);
       }
     }
-    if (locatorsAreCoordinators) {
-      // LOG: changed from config to info
-      logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_FORCING_GROUP_COORDINATION_INTO_LOCATORS));
-    }
-    
+
     this.locatorImpl = MemberFactory.newLocatorHandler(this.bindAddress, this.stateFile,
         locatorsProp, locatorsAreCoordinators, networkPartitionDetectionEnabled, stats);
     this.handler.addHandler(PeerLocatorRequest.class, this.locatorImpl);

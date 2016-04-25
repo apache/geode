@@ -80,7 +80,7 @@ public class GMSJoinLeaveTestHelper {
     return getGmsJoinLeave().getView().getViewId();
   }
 
-  private static InternalDistributedSystem getInternalDistributedSystem() {
+  public static InternalDistributedSystem getInternalDistributedSystem() {
     waitCriterion();
     return getIDS();
   }
