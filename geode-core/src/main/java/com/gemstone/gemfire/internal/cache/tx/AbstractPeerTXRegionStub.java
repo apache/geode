@@ -47,8 +47,7 @@ public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
       throw new TransactionDataNotColocatedException(LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
               .toLocalizedString(e.getRegionFullPath()), e);
     } catch(CacheClosedException e) {
-      throw new TransactionDataNodeHasDepartedException(LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_REMOTE_CACHECLOSEDEXCEPTION
-              .toLocalizedString());
+      throw new TransactionDataNodeHasDepartedException("Cache was closed while fetching keys");
     } catch (Exception e) {
       throw new TransactionException(e);
     }

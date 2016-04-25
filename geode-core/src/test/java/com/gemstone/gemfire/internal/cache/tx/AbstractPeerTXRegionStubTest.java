@@ -125,7 +125,6 @@ public class AbstractPeerTXRegionStubTest {
 
     //  Mocking to cause getSystem() to throw exceptions for testing
     //  getSystem is called when creating FetchKeysResponse in RemoteFetchKeysResponse.send, which is called from getRegionKeysForIteration
-    doReturn(null).when(state).getTarget();
     when((region).getSystem()).thenThrow(CacheClosedException.class);
 
     txrStub.getRegionKeysForIteration(region);
@@ -138,7 +137,6 @@ public class AbstractPeerTXRegionStubTest {
 
     //  Mocking to cause getSystem() to throw exceptions for testing
     //  getSystem is called when creating FetchKeysResponse in RemoteFetchKeysResponse.send, which is called from getRegionKeysForIteration
-    doReturn(null).when(state).getTarget();
     when((region).getSystem()).thenThrow(RegionDestroyedException.class);
 
     txrStub.getRegionKeysForIteration(region);
