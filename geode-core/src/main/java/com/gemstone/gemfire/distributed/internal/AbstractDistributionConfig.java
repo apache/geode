@@ -519,6 +519,13 @@ public abstract class AbstractDistributionConfig
       return;
     }
 
+    // special case: log-level and security-log-level attributes are String type, but the setter accepts int
+    if(attName.equalsIgnoreCase(LOG_LEVEL_NAME) || attName.equalsIgnoreCase(SECURITY_LOG_LEVEL_NAME)){
+      if(attValue instanceof String) {
+        attValue = LogWriterImpl.levelNameToCode((String) attValue);
+      }
+    }
+
     if (attName.startsWith(SECURITY_PREFIX_NAME)) {
       this.setSecurity(attName,attValue.toString());
     }
@@ -527,13 +534,19 @@ public abstract class AbstractDistributionConfig
       this.setSSLProperty(attName, attValue.toString());
     }
 
-    // special case: log-level and security-log-level attributes are String type, but the setter accepts int
-    if(attName.equalsIgnoreCase(LOG_LEVEL_NAME) || attName.equalsIgnoreCase(SECURITY_LOG_LEVEL_NAME)){
-      attValue = LogWriterImpl.levelNameToCode((String)attValue);
-    }
-
     Method setter = setters.get(attName);
     if (setter == null) {
+      // if we cann't find the defined setter, look for two more special cases
+      if (attName.startsWith(SECURITY_PREFIX_NAME)) {
+        this.setSecurity(attName,(String)attValue);
+        getAttSourceMap().put(attName, source);
+        return;
+      }
+      if (attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
+        this.setSSLProperty(attName, (String) attValue);
+        getAttSourceMap().put(attName, source);
+        return;
+      }
       throw new InternalGemFireException(LocalizedStrings.AbstractDistributionConfig_UNHANDLED_ATTRIBUTE_NAME_0.toLocalizedString(attName));
     }
 

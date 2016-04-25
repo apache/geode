@@ -330,6 +330,20 @@ public class DistributionConfigJUnitTest {
     assertEquals(config.getSecurityProps().size(), 3);
   }
 
+  @Test
+  public void testSecurityPropsWithNoSetter(){
+    Properties props = new Properties();
+    props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
+    props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+    props.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "config");
+    // add another non-security property to verify it won't get put in the security properties
+    props.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, 2);
+    props.put("security-username", "testName");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertEquals(config.getSecurityProps().size(), 4);
+  }
+
   public final static Map<Class<?>, Class<?>> classMap = new HashMap<Class<?>, Class<?>>();
 
   static {
