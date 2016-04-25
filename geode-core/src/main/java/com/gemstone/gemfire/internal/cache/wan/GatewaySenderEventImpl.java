@@ -590,7 +590,6 @@ public class GatewaySenderEventImpl implements
           throw new IllegalStateException("Value is no longer available. getDeserializedValue must be called before processEvents returns.");
         }
         if (so instanceof StoredObject) {
-          // TODO OFFHEAP: returns off-heap PdxInstance
           return ((StoredObject)so).getValueAsDeserializedHeapObject();
         } else {
           throw new IllegalStateException("expected valueObj field to be an instance of StoredObject but it was " + so);
@@ -604,7 +603,6 @@ public class GatewaySenderEventImpl implements
         if (vo instanceof StoredObject) {
           @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
           StoredObject so = (StoredObject)vo;
-          // TODO OFFHEAP: returns off-heap PdxInstance
           return so.getValueAsDeserializedHeapObject();
         } else {
           return vo; // it is already deserialized
@@ -955,9 +953,6 @@ public class GatewaySenderEventImpl implements
       ReferenceCountHelper.setReferenceCountOwner(this);
       so = event.getOffHeapNewValue();
       ReferenceCountHelper.setReferenceCountOwner(null);      
-        // TODO OFFHEAP MERGE: check for a cached serialized value first
-        // so we can use it instead of reading offheap
-        // If we do read offheap then add the serialize new value to the event cache
     }
     
     if (so != null) {

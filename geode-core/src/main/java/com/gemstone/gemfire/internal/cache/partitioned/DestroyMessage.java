@@ -97,7 +97,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   InternalDistributedMember originalSender;
   
   /** expectedOldValue used for PartitionedRegion#remove(key, value) */
-  private Object expectedOldValue; // TODO OFFHEAP make it a cd
+  private Object expectedOldValue;
   
   /** client routing information for notificationOnly=true messages */
   protected FilterRoutingInfo filterInfo;

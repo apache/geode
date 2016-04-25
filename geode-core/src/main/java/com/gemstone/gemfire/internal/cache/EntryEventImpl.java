@@ -799,7 +799,6 @@ public class EntryEventImpl
       }
       boolean doCopyOnRead = getRegion().isCopyOnRead();
       if (ov != null) {
-        // TODO OFFHEAP: returns off-heap PdxInstance
         if (ov instanceof CachedDeserializable) {
           CachedDeserializable cd = (CachedDeserializable)ov;
           if (doCopyOnRead) {
@@ -827,7 +826,7 @@ public class EntryEventImpl
   /**
    * Like getRawNewValue except that if the result is an off-heap reference then copy it to the heap.
    * ALERT: If there is a Delta, returns that, not the (applied) new value.
-   * TODO OFFHEAP: to prevent the heap copy use getRawNewValue instead
+   * Note: to prevent the heap copy use getRawNewValue instead
    */
   public final Object getRawNewValueAsHeapObject() {
     if (this.delta != null) {
@@ -1071,8 +1070,6 @@ public class EntryEventImpl
         // I'm not sure this can even happen
         return AbstractRegion.handleNotAvailable(nv);
       }
-      // TODO OFFHEAP currently we copy offheap new value to the heap here. Check callers of this method to see if they can be optimized to use offheap values.
-      // TODO OFFHEAP: returns off-heap PdxInstance
       if (nv instanceof CachedDeserializable) {
         CachedDeserializable cd = (CachedDeserializable)nv;
         Object v = null;
@@ -1247,7 +1244,6 @@ public class EntryEventImpl
     if (tmp instanceof CachedDeserializable) {
       CachedDeserializable cd = (CachedDeserializable) tmp;
       if (!cd.isSerialized()) {
-        // TODO OFFHEAP can we handle offheap byte[] better?
         return null;
       }
       byte[] bytes = this.newValueBytes;
@@ -1329,7 +1325,6 @@ public class EntryEventImpl
               setCachedSerializedNewValue(bytes);
             }
           } else {
-            // TODO OFFHEAP: returns off-heap PdxInstance which is not ok since isUnretainedNewReferenceOk returned false
             importer.importNewObject(so.getValueAsDeserializedHeapObject(), true);
           }
         }
@@ -1411,7 +1406,6 @@ public class EntryEventImpl
           if (!isSerialized || prefersSerialized) {
             importer.importOldBytes(so.getValueAsHeapByteArray(), isSerialized);
           } else {
-            // TODO OFFHEAP: returns off-heap PdxInstance which is not ok since isUnretainedNewReferenceOk returned false
            importer.importOldObject(so.getValueAsDeserializedHeapObject(), true);
           }
         }
@@ -2019,7 +2013,7 @@ public class EntryEventImpl
     if (this.op != Operation.LOCAL_INVALIDATE
         && this.op != Operation.LOCAL_DESTROY) {
       // fix for bug 34387
-      tx.setPendingValue(OffHeapHelper.copyIfNeeded(v)); // TODO OFFHEAP optimize
+      tx.setPendingValue(OffHeapHelper.copyIfNeeded(v));
     }
     tx.setCallbackArgument(getCallbackArgument());
   }
@@ -2462,7 +2456,6 @@ public class EntryEventImpl
     if (tmp instanceof CachedDeserializable) {
       CachedDeserializable cd = (CachedDeserializable) tmp;
       if (!cd.isSerialized()) {
-        // TODO OFFHEAP can we handle offheap byte[] better?
         return null;
       }
       return new SerializedCacheValueImpl(this, this.region, this.re, cd, this.oldValueBytes);
@@ -2851,16 +2844,13 @@ public class EntryEventImpl
       return getDeserializedValue(this.r, this.re);
     }
     public Object getDeserializedForReading() {
-      // TODO OFFHEAP: returns off-heap PdxInstance
       return OffHeapHelper.getHeapForm(getCd().getDeserializedForReading());
     }
     public Object getDeserializedWritableCopy(Region rgn, RegionEntry entry) {
-      // TODO OFFHEAP: returns off-heap PdxInstance
       return OffHeapHelper.getHeapForm(getCd().getDeserializedWritableCopy(rgn, entry));
     }
 
     public Object getDeserializedValue(Region rgn, RegionEntry reentry) {
-      // TODO OFFHEAP: returns off-heap PdxInstance
       return OffHeapHelper.getHeapForm(getCd().getDeserializedValue(rgn, reentry));
     }
     public Object getValue() {
@@ -2998,16 +2988,6 @@ public class EntryEventImpl
     // Note that this method does not set the old/new values to null but
     // leaves them set to the off-heap value so that future calls to getOld/NewValue
     // will fail with an exception.
-//    LocalRegion lr = getLocalRegion();
-//    if (lr != null) {
-//      if (lr.isCacheClosing()) {
-//        // to fix races during closing and recreating cache (see bug 47883) don't bother
-//        // trying to decrement reference counts if we are closing the cache.
-//        // TODO OFFHEAP: this will cause problems once offheap lives longer than a cache.
-//        this.offHeapOk = false;
-//        return;
-//      }
-//    }
     Object ov = basicGetOldValue();
     Object nv = basicGetNewValue();
     this.offHeapOk = false;

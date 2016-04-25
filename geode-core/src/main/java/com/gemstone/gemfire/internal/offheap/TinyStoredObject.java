@@ -160,7 +160,6 @@ public class TinyStoredObject extends AbstractStoredObject {
 
   @Override
   public byte readDataByte(int offset) {
-    // TODO OFFHEAP: what if the data is compressed?
     return getRawBytes()[offset];
   }
 
@@ -181,7 +180,6 @@ public class TinyStoredObject extends AbstractStoredObject {
 
   @Override
   public void readDataBytes(int offset, byte[] bytes, int bytesOffset, int size) {
-    // TODO OFFHEAP: what if the data is compressed?
     byte[] src = getRawBytes();
     int dstIdx = bytesOffset;
     for (int i = offset; i < offset+size; i++) {
@@ -206,13 +204,11 @@ public class TinyStoredObject extends AbstractStoredObject {
 
   @Override
   public boolean checkDataEquals(StoredObject so) {
-    // TODO OFFHEAP: what if the data is compressed?
     return equals(so);
   }
 
   @Override
   public boolean checkDataEquals(byte[] serializedObj) {
-    // TODO OFFHEAP: what if the data is compressed?
     byte[] myBytes = getSerializedValue();
     return Arrays.equals(myBytes, serializedObj);
   }

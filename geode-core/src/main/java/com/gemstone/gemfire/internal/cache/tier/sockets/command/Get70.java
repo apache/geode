@@ -305,7 +305,6 @@ public class Get70 extends BaseCommand {
 //    } else {
       ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
       VersionTagHolder versionHolder = new VersionTagHolder();
-        // TODO OFFHEAP: optimize
       data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, versionHolder, true, true /*allowReadFromHDFS*/);
 //    }
     versionTag = versionHolder.getVersionTag();

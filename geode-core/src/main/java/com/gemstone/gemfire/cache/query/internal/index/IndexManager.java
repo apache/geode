@@ -930,14 +930,6 @@ public class IndexManager  {
         // Fault in the value once before index update so that every index
         // update does not have
         // to read the value from disk every time.
-        // TODO OFFHEAP: this optimization (calling getValue to make sure it is faulted in to disk) has a performance problem.
-        // It also decompresses and deserializes the value and then throws that away. In the case of a heap region the deserialized
-        // value would be cached in a VMCachedDeserializable. But for compression and/or off-heap the decompression and/or deserialization
-        // this call does is lost and has to be done again. We could just add a method to RegionEntry that faults the value in without returning it.
-        // Even better (but more work): could we create a wrapper around RegionEntry that we create here to wrap "entry" and pass the wrapper to addIndexMapping?
-        // Any indexes that store a reference to the RegionEntry would need to ask the wrapper for the real one but any of them
-        // that want the value could get it from the wrapper. The first time the wrapper is asked for the value it could get it from
-        // the real RegionEntry it wraps and cache a reference to that value. I think that gives us the best of both worlds.
         entry.getValue((LocalRegion)this.region);
         Iterator<Index> indexSetIterator = indexSet.iterator();
         while(indexSetIterator.hasNext()) {

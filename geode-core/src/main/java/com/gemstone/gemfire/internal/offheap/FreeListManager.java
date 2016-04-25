@@ -304,13 +304,6 @@ public class FreeListManager {
   /**
    * Defragments memory and returns true if enough memory to allocate chunkSize
    * is freed. Otherwise returns false;
-   * TODO OFFHEAP: what should be done about contiguous chunks that end up being bigger than 2G?
-   * Currently if we are given slabs bigger than 2G or that just happen to be contiguous and add
-   * up to 2G then the FreeListManager may unify them together into a single Chunk and our 32-bit chunkSize
-   * field will overflow. This code needs to detect this and just create a chunk of 2G and then start
-   * a new one.
-   * Or to prevent it from happening we could just check the incoming slabs and throw away a few bytes
-   * to keep them from being contiguous.
    */
   boolean defragment(int chunkSize) {
     final long startDefragmentationTime = this.ma.getStats().startDefragmentation();

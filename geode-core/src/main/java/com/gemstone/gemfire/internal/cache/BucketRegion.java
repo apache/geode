@@ -1470,7 +1470,7 @@ implements Bucket
     Object v = null;
     
     try {
-      v =re.getValue(this);  // TODO OFFHEAP: todo v ends up in a RawValue. For now this can be a copy of the offheap onto the heap. But it might be easy to track lifetime of RawValue
+      v =re.getValue(this);
       if(doNotLockEntry) {
         if(v == Token.NOT_AVAILABLE || v == null) {
           return REQUIRES_ENTRY_LOCK;
@@ -1531,7 +1531,6 @@ implements Bucket
           if(doNotLockEntry) {
             return REQUIRES_ENTRY_LOCK;
           }
-          // TODO OFFHEAP: optimze
           Object value = nonTxnFindObject(keyInfo, isCreate,
               generateCallbacks, result.getRawValue(), true, true, requestingClient, clientEvent, false, allowReadFromHDFS);
           if (value != null) {

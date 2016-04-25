@@ -565,7 +565,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     if (v == null) { // should only be possible if disk entry
       v = Token.NOT_AVAILABLE;
     }
-    @Retained Object result = OffHeapHelper.copyAndReleaseIfNeeded(v); // TODO OFFHEAP keep it offheap?
+    @Retained Object result = OffHeapHelper.copyAndReleaseIfNeeded(v);
     ReferenceCountHelper.setReferenceCountOwner(null);
     return result;
   }
@@ -1290,7 +1290,6 @@ public abstract class AbstractRegionEntry implements RegionEntry,
           }
         }
         // else it is DataAsAddress. This code just returns it as prepared.
-        // TODO OFFHEAP: Review the callers to see if they will handle DataAsAddress correctly.
       } else {
         byte[] data;
         boolean isSerialized = !(val instanceof byte[]);
@@ -1299,17 +1298,14 @@ public abstract class AbstractRegionEntry implements RegionEntry,
             data = event.getCachedSerializedNewValue();
           } else if (val instanceof CachedDeserializable) {
             data = ((CachedDeserializable)val).getSerializedValue();
-            // TODO OFFHEAP: cache data in event?
           } else if (val instanceof PdxInstance) {
             try {
               data = ((ConvertableToBytes)val).toBytes();
-              // TODO OFFHEAP: cache data in event?
             } catch (IOException e) {
               throw new PdxSerializationException("Could not convert " + val + " to bytes", e);
             }
           } else {
             data = EntryEventImpl.serialize(val);
-            // TODO OFFHEAP: cache data in event?
           }
         } else {
           data = (byte[]) val;

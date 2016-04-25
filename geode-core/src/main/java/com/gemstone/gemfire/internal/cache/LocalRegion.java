@@ -1121,14 +1121,16 @@ public class LocalRegion extends AbstractRegion
       throws TimeoutException, EntryExistsException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
     @Released EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
-    validatedCreate(event, startPut);
-    // TODO OFFHEAP: validatedCreate calls release
+    try {
+      validatedCreate(event, startPut);
+    } finally {
+      event.release();
+    }
   }
 
-  public final void validatedCreate(@Released EntryEventImpl event, long startPut)
+  public final void validatedCreate(EntryEventImpl event, long startPut)
       throws TimeoutException, EntryExistsException, CacheWriterException {
 
-    try {
       if (event.getEventId() == null && generateEventID()) {
         event.setNewEventId(cache.getDistributedSystem());
       }
@@ -1152,9 +1154,6 @@ public class LocalRegion extends AbstractRegion
           getCachePerfStats().endPut(startPut, false);
         }
       }
-    } finally {
-      event.release();
-    }
   }
 
   // split into a separate newCreateEntryEvent since SQLFabric may need to
@@ -1192,18 +1191,20 @@ public class LocalRegion extends AbstractRegion
   public final Object destroy(Object key, Object aCallbackArgument)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
     @Released EntryEventImpl event = newDestroyEntryEvent(key, aCallbackArgument);
-    return validatedDestroy(key, event);
-    // TODO OFFHEAP: validatedDestroy calls release
+    try {
+      return validatedDestroy(key, event);
+    } finally {
+      event.release();
+    }
   }
 
   /**
    * Destroys entry without performing validations. Call this after validating
    * key, callback arg, and runtime state.
    */
-  public Object validatedDestroy(Object key, @Released EntryEventImpl event)
+  public Object validatedDestroy(Object key, EntryEventImpl event)
       throws TimeoutException, EntryNotFoundException, CacheWriterException
  {
-    try {
       if (event.getEventId() == null && generateEventID()) {
         event.setNewEventId(cache.getDistributedSystem());
       }
@@ -1214,9 +1215,6 @@ public class LocalRegion extends AbstractRegion
       } else {
         return handleNotAvailable(event.getOldValue());
       }
-    } finally {
-      event.release();
-    }
   }
 
   // split into a separate newDestroyEntryEvent since SQLFabric may need to
@@ -1420,8 +1418,7 @@ public class LocalRegion extends AbstractRegion
   public Object getRetained(Object key, Object aCallbackArgument,
       boolean generateCallbacks, boolean disableCopyOnRead,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean opScopeIsLocal) throws TimeoutException, CacheLoaderException {
-    // TODO OFFHEAP: the last parameter "retainResult" should be true for getRetained. Need to look into what it is being set to false.
-    return get(key, aCallbackArgument, generateCallbacks, disableCopyOnRead, true, requestingClient, clientEvent, returnTombstones, opScopeIsLocal, true, false);
+    return get(key, aCallbackArgument, generateCallbacks, disableCopyOnRead, true, requestingClient, clientEvent, returnTombstones, opScopeIsLocal, true, false/* see GEODE-1291*/);
   }
   /**
    * @param opScopeIsLocal if true then just check local storage for a value; if false then try to find the value if it is not local
@@ -1460,7 +1457,6 @@ public class LocalRegion extends AbstractRegion
                 || hasServerProxy()
                 || basicGetLoader() != null)) { 
           // serialize search/load threads if not in txn
-          // TODO OFFHEAP OPTIMIZE: findObject can be enhanced to use the retainResult flag
           value = getDataView().findObject(keyInfo,
               this, isCreate, generateCallbacks, value, disableCopyOnRead,
               preferCD, requestingClient, clientEvent, returnTombstones, false/*allowReadFromHDFS*/);
@@ -1733,17 +1729,16 @@ public class LocalRegion extends AbstractRegion
       throws TimeoutException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
     @Released EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
-     //Since Sqlfire directly calls validatedPut, the freeing is done in
-    // validatedPut
-     return validatedPut(event, startPut);
-     // TODO OFFHEAP: validatedPut calls release
-    
+    try {
+      return validatedPut(event, startPut);
+    } finally {
+      event.release();
+    }
   }
 
-  public final Object validatedPut(@Released EntryEventImpl event, long startPut)
+  public final Object validatedPut(EntryEventImpl event, long startPut)
       throws TimeoutException, CacheWriterException {
 
-    try {
       if (event.getEventId() == null && generateEventID()) {
         event.setNewEventId(cache.getDistributedSystem());
       }
@@ -1770,9 +1765,6 @@ public class LocalRegion extends AbstractRegion
         }
       }
       return handleNotAvailable(oldValue);
-    } finally {
-      event.release();
-    }
   }
 
   // split into a separate newUpdateEntryEvent since SQLFabric may need to
@@ -3284,7 +3276,6 @@ public class LocalRegion extends AbstractRegion
         Object key = event.getKey();
         Object value = event.getRawNewValue();
         // serverPut is called by cacheWriteBeforePut so the new value will not yet be off-heap
-        // TODO OFFHEAP: verify that the above assertion is true
         Object callbackArg = event.getRawCallbackArgument();
         boolean isCreate = event.isCreate(); 
         Object result = mySRP.put(key, value, event.getDeltaBytes(), event,
@@ -7785,10 +7776,7 @@ public class LocalRegion extends AbstractRegion
    */
   void cleanupFailedInitialization()
   {
-    // mark as destroyed
-    // TODO OFFHEAP MERGE: to fix 49905 asif commented out isDestroyed being set.
-    // But in xd it was set after closeEntries was called.
-    // Here it is set before and it fixed 49555.
+    // mark as destroyed fixes 49555.
     this.isDestroyed = true;
     // after isDestroyed is set to true call removeResourceListener to fix bug 49555
     this.cache.getResourceManager(false).removeResourceListener(this);

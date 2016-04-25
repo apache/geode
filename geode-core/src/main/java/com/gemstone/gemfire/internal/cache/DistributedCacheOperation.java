@@ -128,8 +128,6 @@ public abstract class DistributedCacheOperation {
         assert !so.isSerialized();
         so.sendAsByteArray(out);
       } else { // LAZY
-        // TODO OFFHEAP MERGE: cache the oldValue that is serialized here
-        // into the event
         DataSerializer.writeObjectAsByteArray(vObj, out);
       }
     } else {
@@ -529,7 +527,7 @@ public abstract class DistributedCacheOperation {
 
         // distribute to members needing the old value now
         if (needsOldValueInCacheOp.size() > 0) {
-          msg.appendOldValueToMessage((EntryEventImpl)this.event); // TODO OFFHEAP optimize
+          msg.appendOldValueToMessage((EntryEventImpl)this.event);
           msg.resetRecipients();
           msg.setRecipients(needsOldValueInCacheOp);
           Set newFailures = mgr.putOutgoing(msg);

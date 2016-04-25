@@ -64,12 +64,6 @@ public class MsgStreamer extends OutputStream implements
    * Any exceptions that happen during sends
    */
   private ConnectExceptions ce;
-  // TODO OFFHEAP: instead of MsgStreamer extending OutputStream
-  // we could have it extends HeapDataOutputStream.
-  // HDOS can now be given a direct ByteBuffer and told
-  // to not copy large byte sequences it is given.
-  // Also be it being a HDOS we can take advantage of code
-  // that is already optimized to pass Chunk direct ByteBuffers.
   /**
    * The byte buffer we used for preparing a chunk of the message.
    * Currently this buffer is obtained from the connection.
@@ -408,10 +402,6 @@ public class MsgStreamer extends OutputStream implements
       return;
     }
     int len = bb.remaining();
-    // TODO OFFHEAP: if len > remainingSpace and isOverflowMode() then
-    // (and the overflow HDOS has doNotCopy set?) it is probably better to not copy part of
-    // bb to this.buffer and then add the remainder of it to the HDOS. Instead
-    // we can just add the whole bb to the HDOS.
     while (len > 0) {
       int remainingSpace = this.buffer.capacity() - this.buffer.position();
       if (remainingSpace == 0) {
@@ -938,7 +928,6 @@ public class MsgStreamer extends OutputStream implements
    * will all fit into our current buffer.
    */
   public final void writeAsSerializedByteArray(Object v) throws IOException {
-    // TODO OFFHEAP: update this class to take into account the "noCopy" mode added to HDOS and that we might be adding direct ByteBuffers to this.
     if (v instanceof HeapDataOutputStream) {
       HeapDataOutputStream other = (HeapDataOutputStream)v;
       InternalDataSerializer.writeArrayLength(other.size(), this);

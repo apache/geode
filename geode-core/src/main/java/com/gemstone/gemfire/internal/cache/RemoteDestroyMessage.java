@@ -113,7 +113,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
   private boolean oldValueIsSerialized = false;
   
   /** expectedOldValue used for PartitionedRegion#remove(key, value) */
-  private Object expectedOldValue; // TODO OFFHEAP make it a cd
+  private Object expectedOldValue;
   
   private byte[] oldValBytes;
   

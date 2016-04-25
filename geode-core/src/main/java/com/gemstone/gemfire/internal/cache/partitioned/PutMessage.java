@@ -152,7 +152,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
    * expectedOldValue.
    * @see PartitionedRegion#replace(Object, Object, Object)
    */
-  private Object expectedOldValue; // TODO OFFHEAP make it a cd
+  private Object expectedOldValue;
 
   private transient InternalDistributedSystem internalDs;
 
@@ -729,7 +729,6 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
       region.getCachePerfStats().incDeltasSent();
     }
     else {
-      // TODO OFFHEAP MERGE: cache serialized blob in event
       DistributedCacheOperation.writeValue(this.deserializationPolicy, this.valObj, getValBytes(), out);
       if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
         DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);

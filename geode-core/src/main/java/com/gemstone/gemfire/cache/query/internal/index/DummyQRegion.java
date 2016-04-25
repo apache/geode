@@ -136,7 +136,6 @@ public class DummyQRegion extends QRegion {
     if (val instanceof StoredObject) {
       @Retained @Released StoredObject ohval = (StoredObject) val;
       try {
-        // TODO OFFHEAP: val may be off-heap PdxInstance
         val = ohval.getDeserializedValue(getRegion(), this.entry);
       } finally {
         ohval.release();
@@ -157,7 +156,6 @@ public class DummyQRegion extends QRegion {
     if (val instanceof StoredObject) {      
       @Retained @Released StoredObject ohval = (StoredObject) val;
       try {
-        // TODO OFFHEAP: val may be off-heap PdxInstance
         val = ohval.getDeserializedValue(getRegion(), this.entry);
       } finally {
         ohval.release();
@@ -180,7 +178,6 @@ public class DummyQRegion extends QRegion {
     if (val instanceof StoredObject) {
       @Retained @Released StoredObject ohval = (StoredObject) val;
       try {
-        // TODO OFFHEAP: val may be off-heap PdxInstance
         val = ohval.getDeserializedValue(getRegion(), this.entry);
       } finally {
         ohval.release();

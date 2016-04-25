@@ -826,7 +826,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                   // this.bucketToTempQueueMap.put(bucketId, tempQueue);
                   // }
                   tempQueue.add(value);
-                  // TODO OFFHEAP is value refCount ok here?
                   // For debugging purpose.
                   if (isDebugEnabled) {
                     logger.debug("The value {} is enqueued to the tempQueue for the BucketRegionQueue.", value);

@@ -1389,9 +1389,6 @@ public abstract class BaseCommand implements Command {
           try {
             updateValues(values, key, value, vt);
           } finally {
-            // TODO OFFHEAP: in the future we might want to delay this release
-            // until the "values" VersionedObjectList is released.
-            // But for now "updateValues" copies the off-heap value to the heap.
             OffHeapHelper.release(value);
           }
         }

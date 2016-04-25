@@ -170,7 +170,7 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
    * expectedOldValue.
    * @see PartitionedRegion#replace(Object, Object, Object)
    */
-  private Object expectedOldValue; // TODO OFFHEAP make it a cd
+  private Object expectedOldValue;
   
   private VersionTag versionTag;
 

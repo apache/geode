@@ -848,7 +848,6 @@ public interface DiskEntry extends RegionEntry {
           return createValueWrapper(rawValue, event);
         }
       }
-      // TODO OFFHEAP: No need to retain since we hold the sync on entry but we need a flavor of _getValue that will decompress
       @Retained Object value = entry._getValueRetain(region, true);
       try {
         return createValueWrapper(value, event);

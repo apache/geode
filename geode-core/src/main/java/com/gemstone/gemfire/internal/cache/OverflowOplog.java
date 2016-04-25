@@ -1465,7 +1465,6 @@ class OverflowOplog implements CompactableOplog, Flushable {
     long oplogOffset = did.getOffsetInOplog();
     boolean foundData = false;
     if (entry.isValueNull()) {
-      // TODO OFFHEAP: optimize BytesAndBitsForCompactor to be able to have off-heap value reference instead of copying
       // Asif: If the mode is synch it is guaranteed to be present in the disk
       foundData = basicGetForCompactor(oplogOffset, false,
                                        did.getValueLength(),

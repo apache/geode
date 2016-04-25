@@ -287,5 +287,4 @@ public class GetOperationContextImplJUnitTest {
       }
     }
   }
-  // @TODO OFFHEAP: add coverage of "release" and the gettors methods with StoreObject and off-heap Chunk values
 }

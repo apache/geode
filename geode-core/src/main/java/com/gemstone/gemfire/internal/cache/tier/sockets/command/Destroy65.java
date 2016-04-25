@@ -135,7 +135,7 @@ public class Destroy65 extends BaseCommand {
         		|| ((operation instanceof Byte) && (Byte)operation == OpType.DESTROY ))
         		
         {        	
-          expectedOldValue = expectedOldValuePart.getObject(); // TODO OFFHEAP create a cachedDeserializable here       
+          expectedOldValue = expectedOldValuePart.getObject();
         }
     } catch (Exception e) {
       writeException(msg, e, false, servConn);
