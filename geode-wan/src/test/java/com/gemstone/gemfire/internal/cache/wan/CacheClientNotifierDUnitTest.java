@@ -18,25 +18,40 @@ package com.gemstone.gemfire.internal.cache.wan;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes;
 import com.gemstone.gemfire.internal.cache.ha.HAContainerRegion;
 import com.gemstone.gemfire.internal.cache.ha.HAContainerWrapper;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
@@ -121,24 +136,17 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     vm.invoke(checkCacheServer);
   }
 
-  private void closeCacheServer(VM vm, final int serverPort) {
-    SerializableRunnable stopCacheServer = new SerializableRunnable() {
-
-      @Override
-      public void run() throws Exception {
-        List<CacheServer> cacheServers = cache.getCacheServers();
-        CacheServerImpl server = null;
-        for (CacheServer cs:cacheServers) {
-          if (cs.getPort() == serverPort) {
-            server = (CacheServerImpl)cs;
-            break;
-          }
-        }
-        assertNotNull(server);
-        server.stop();
+  public static void closeACacheServer(final int serverPort) {
+    List<CacheServer> cacheServers = cache.getCacheServers();
+    CacheServerImpl server = null;
+    for (CacheServer cs:cacheServers) {
+      if (cs.getPort() == serverPort) {
+        server = (CacheServerImpl)cs;
+        break;
       }
-    };
-    vm.invoke(stopCacheServer);
+    }
+    assertNotNull(server);
+    server.stop();
   }
 
   private void verifyRegionSize(VM vm, final int expect) {
@@ -165,8 +173,12 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
    * The test will start several cache servers, including gateway receivers.
    * Shutdown them and verify the CacheClientNofifier for each server is correct
    */
-  @Category(FlakyTest.class) // GEODE-1183: random ports, failure to start threads, eats exceptions, time sensitive
-  public void testMultipleCacheServer() throws Exception {
+  // GEODE-1183: random ports, failure to start threads, eats exceptions, time sensitive
+  public void testNormalClient2MultipleCacheServer() throws Exception {
+    doMultipleCacheServer(false);
+  }
+
+  public void doMultipleCacheServer(boolean durable) throws Exception {
     /* test senario: */
     /* create 1 GatewaySender on vm0 */
     /* create 1 GatewayReceiver on vm1 */
@@ -199,8 +211,8 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     checkCacheServer(vm1, serverPort2, true, 3);
     LogService.getLogger().info("receiverPort="+receiverPort+",serverPort="+serverPort+",serverPort2="+serverPort2);
     
-    vm2.invoke(() -> WANTestBase.createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR" ));
-    vm3.invoke(() -> WANTestBase.createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR" ));
+    vm2.invoke(() -> createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR", "123", durable));
+    vm3.invoke(() -> createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR", "124", durable));
 
     vm0.invoke(() -> WANTestBase.createCache( lnPort ));
     vm0.invoke(() -> WANTestBase.createSender( "ln", 2, false, 100, 400, false, false, null, true ));
@@ -211,19 +223,63 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     /* verify */
     verifyRegionSize(vm0, NUM_KEYS);
     verifyRegionSize(vm1, NUM_KEYS);
-    verifyRegionSize(vm2, NUM_KEYS);
     verifyRegionSize(vm3, NUM_KEYS);
+    verifyRegionSize(vm2, NUM_KEYS);
 
     // close a cache server, then re-test
-    closeCacheServer(vm1, serverPort2);
+    vm1.invoke(() -> closeACacheServer(serverPort2));
 
     vm0.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", NUM_KEYS*2 ));
 
     /* verify */
     verifyRegionSize(vm0, NUM_KEYS*2);
     verifyRegionSize(vm1, NUM_KEYS*2);
-    verifyRegionSize(vm2, NUM_KEYS*2);
     verifyRegionSize(vm3, NUM_KEYS*2);
+    verifyRegionSize(vm2, NUM_KEYS*2);
+    
+    disconnectAllFromDS();
   }
 
-}
+  public static void createClientWithLocator(int port0,String host,
+      String regionName, String clientId, boolean isDurable) {
+    WANTestBase test = new WANTestBase(getTestMethodName());
+    Properties props = test.getDistributedSystemProperties();
+    props.setProperty("mcast-port", "0");
+    props.setProperty("locators", "");
+    if (isDurable) {
+      props.setProperty("durable-client-id", clientId);
+      props.setProperty("durable-client-timeout", "" + 200);
+    }
+
+    InternalDistributedSystem ds = test.getSystem(props);
+    cache = CacheFactory.create(ds);
+
+    assertNotNull(cache);
+    CacheServerTestUtil.disableShufflingOfEndpoints();
+    Pool p;
+    try {
+      p = PoolManager.createFactory().addLocator(host, port0)
+          .setPingInterval(250).setSubscriptionEnabled(true)
+          .setSubscriptionRedundancy(-1).setReadTimeout(2000)
+          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
+          .setRetryAttempts(3).create(regionName);
+    } finally {
+      CacheServerTestUtil.enableShufflingOfEndpoints();
+    }
+
+    AttributesFactory factory = new AttributesFactory();
+    factory.setPoolName(p.getName());
+    factory.setDataPolicy(DataPolicy.NORMAL);
+    RegionAttributes attrs = factory.create();
+    region = cache.createRegion(regionName, attrs);
+    region.registerInterest("ALL_KEYS");
+    assertNotNull(region);
+    if (isDurable) {
+      cache.readyForEvents();
+    }
+    LogWriterUtils.getLogWriter().info(
+        "Distributed Region " + regionName + " created Successfully :"
+            + region.toString() + " in a "+(isDurable?"durable":"")+" client");
+  }
+
+ }
