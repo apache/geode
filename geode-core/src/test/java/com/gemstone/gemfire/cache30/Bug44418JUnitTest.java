@@ -61,8 +61,8 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
 
   private static final int LONG_WAIT_MS = 1000*60*3;   // Initial expiration time for entry
   private static final int TEST_WAIT_MS = 1000*60*1;   // How long to wait for entry to expire
-  private static final int SHORT_WAIT_MS = 10;         // New short expiration time for entry
-  private static final int POLL_INTERVAL_MS = 5;       // How often to check for expiration
+  private static final int SHORT_WAIT_MS = 1;         // New short expiration time for entry
+  private static final int POLL_INTERVAL_MS = 1;       // How often to check for expiration
   private static final String TEST_KEY = "key";
   
   @Test
