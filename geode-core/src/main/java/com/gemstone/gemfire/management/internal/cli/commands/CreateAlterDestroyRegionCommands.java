@@ -79,7 +79,7 @@ import com.gemstone.gemfire.management.internal.cli.util.RegionPath;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.security.ShiroUtil;
+
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -437,7 +437,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   
   @CliCommand (value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result alterRegion(
       @CliOption (key = CliStrings.ALTER_REGION__REGION,
                   mandatory = true,
@@ -528,9 +528,6 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
                   specifiedDefaultValue = "0",
                   help = CliStrings.ALTER_REGION__EVICTIONMAX__HELP)
       Integer evictionMax) {
-
-    ShiroUtil.authorize("DATA", "MANAGE", regionPath);
-
     Result result = null;
     XmlEntity xmlEntity = null;
 
@@ -999,16 +996,13 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = { CliStrings.DESTROY_REGION }, help = CliStrings.DESTROY_REGION__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result destroyRegion(
       @CliOption(key = CliStrings.DESTROY_REGION__REGION,
           optionContext = ConverterHint.REGIONPATH,
           mandatory = true,
           help = CliStrings.DESTROY_REGION__REGION__HELP)
       String regionPath) {
-
-    ShiroUtil.authorize("DATA", "MANAGE", regionPath);
-
     if (regionPath == null) {
       return ResultBuilder.createInfoResult(CliStrings.DESTROY_REGION__MSG__SPECIFY_REGIONPATH_TO_DESTROY);
     }

@@ -69,15 +69,15 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "data-user", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.flush()).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.forceCompaction()).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.forceRoll()).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.getCompactionThreshold()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getDiskDirectories()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getDiskReadsRate()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.isAutoCompact()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.isForceCompactionAllowed()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.setDiskUsageCriticalPercentage(0.5f)).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.setDiskUsageWarningPercentage(0.5f)).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.flush()).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.forceCompaction()).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.forceRoll()).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.getCompactionThreshold()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getDiskDirectories()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getDiskReadsRate()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.isAutoCompact()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.isForceCompactionAllowed()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.setDiskUsageCriticalPercentage(0.5f)).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.setDiskUsageWarningPercentage(0.5f)).hasMessageContaining(TestCommand.dataManage.toString());
   }
 }

@@ -16,8 +16,12 @@
  */
 package com.vmware.gemfire.tools.pulse.internal.security;
 
+import java.util.Collection;
+import javax.management.remote.JMXConnector;
+
 import com.vmware.gemfire.tools.pulse.internal.data.Repository;
 import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,14 +30,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 
-import javax.management.remote.JMXConnector;
-import java.util.Collection;
-
 /**
  * Spring security AuthenticationProvider for GemFire. It connects to gemfire manager using given credentials.
  * Successful connect is treated as successful authentication and web user is authenticated
- *
- * @author Tushar Khairnar
  * @since version 9.0
  */
 public class GemFireAuthenticationProvider implements AuthenticationProvider {

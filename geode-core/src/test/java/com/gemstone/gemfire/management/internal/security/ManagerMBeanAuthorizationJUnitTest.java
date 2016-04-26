@@ -71,8 +71,8 @@ public class ManagerMBeanAuthorizationJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testSomeAccess() throws Exception {
-    assertThatThrownBy(() -> managerMXBean.start()).hasMessageContaining("CLUSTER:MANAGE");
-    assertThatThrownBy(() -> managerMXBean.getPulseURL()).hasMessageContaining("CLUSTER:WRITE");
+    assertThatThrownBy(() -> managerMXBean.start()).hasMessageContaining(TestCommand.clusterManage.toString());
+    assertThatThrownBy(() -> managerMXBean.getPulseURL()).hasMessageContaining(TestCommand.clusterWrite.toString());
     managerMXBean.isRunning();
   }
 }

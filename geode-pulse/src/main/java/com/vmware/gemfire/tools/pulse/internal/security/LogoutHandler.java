@@ -16,20 +16,20 @@
  */
 package com.vmware.gemfire.tools.pulse.internal.security;
 
+import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.vmware.gemfire.tools.pulse.internal.data.Repository;
 import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
 /**
  * Handler is used to close jmx connection maintained at user-level
- * @author tushark
  *
  */
 public class LogoutHandler extends SimpleUrlLogoutSuccessHandler implements LogoutSuccessHandler {

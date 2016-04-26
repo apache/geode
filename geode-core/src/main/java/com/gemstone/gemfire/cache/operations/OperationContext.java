@@ -33,6 +33,7 @@ import org.apache.shiro.authz.permission.WildcardPermission;
 public abstract class OperationContext extends WildcardPermission{
 
   public enum Resource {
+    NULL,
     CLUSTER,
     DATA
   };
@@ -76,6 +77,7 @@ public abstract class OperationContext extends WildcardPermission{
     EXECUTE_FUNCTION,
     @Deprecated
     GET_DURABLE_CQS,
+    NULL,
     MANAGE,
     WRITE,
     READ;
@@ -298,11 +300,15 @@ public abstract class OperationContext extends WildcardPermission{
   public abstract OperationCode getOperationCode();
 
   public Resource getResource(){
-    return Resource.DATA;
+    return Resource.NULL;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getRegionName(){
-    return null;
+    return "NULL";
   }
 
   /**
@@ -356,7 +362,4 @@ public abstract class OperationContext extends WildcardPermission{
         || opCode.isRegionDestroy() || opCode.isRegionClear());
   }
 
-  public String toString(){
-    return getResource() + ":"+ getOperationCode();
-  }
 }

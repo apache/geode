@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.vmware.gemfire.tools.pulse.internal.security;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.management.MBeanServerConnection;
@@ -33,87 +33,59 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /**
  * Spring security authentication object for GemFire
- * 
+ * <p>
  * To use GemFire Integrated Security Model set Spring Application Profile to pulse.authentication.gemfire
- * 
- * 1. Authentication : 
- *    1.a GemFire profile creates JMX connection with given credentials at the login time. 
- *    1.b Successful connect is considered as Successful Authentication for Pulse WebApp
- *    
- *    
+ * <p>
+ * 1. Authentication :
+ * 1.a GemFire profile creates JMX connection with given credentials at the login time.
+ * 1.b Successful connect is considered as Successful Authentication for Pulse WebApp
+ * <p>
+ * <p>
  * 2. Authorization :
- *    2.a Using newly created authenticated connection AccessControlMXBean is called to get authentication
- *      levels. See @See {@link #populateAuthorities(JMXConnector)}. This sets Spring Security Authorities
- *    2.b DataBrowser end-points are required to be authorized against Spring Granted Authority
- *      @See spring-security.xml
- *    2.c When executing Data-Browser query, user-level jmx connection is used so at to put access-control
- *      over the resources query is accessing. 
- *      @See #com.vmware.gemfire.tools.pulse.internal.data.JMXDataUpdater#executeQuery
- *         
- * 3. Connection Management - Spring Security LogoutHandler closes session level connection
- *
- * TODO : Better model would be to maintain background connection map for Databrowser instead
- * of each web session creating rmi connection and map user to correct entry in the connection map
- *
+ * 2.a Using newly created authenticated connection AccessControlMXBean is called to get authentication
+ * levels. See @See {@link #populateAuthorities(JMXConnector)}. This sets Spring Security Authorities
+ * 2.b DataBrowser end-points are required to be authorized against Spring Granted Authority
  * @since version 9.0
  */
-public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {	
+public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
 
   private final static PulseLogWriter logger = PulseLogWriter.getLogger();
-  
-	private JMXConnector jmxc=null;	
-	
-	public GemFireAuthentication(Object principal, Object credentials, Collection<GrantedAuthority> list, JMXConnector jmxc) {
-		super(principal, credentials, list);
-		this.jmxc = jmxc;
-	}
 
-	private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
-		
-	
-	public void closeJMXConnection(){
-		try {
-			jmxc.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public MBeanServerConnection getRemoteMBeanServer() {
-		try {
-			return jmxc.getMBeanServerConnection();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+  private JMXConnector jmxc = null;
 
-	public static ArrayList<GrantedAuthority> populateAuthorities(JMXConnector jmxc) {
-		ObjectName name;
-		ArrayList<GrantedAuthority> authorities = new ArrayList<>();
-		try {
-			name = new ObjectName(PulseConstants.OBJECT_NAME_ACCESSCONTROL_MBEAN);
-			MBeanServerConnection mbeanServer = jmxc.getMBeanServerConnection();
+  public GemFireAuthentication(Object principal, Object credentials, Collection<GrantedAuthority> list, JMXConnector jmxc) {
+    super(principal, credentials, list);
+    this.jmxc = jmxc;
+  }
 
-			for(String role : PulseConstants.PULSE_ROLES){
-				Object[] params = role.split(":");
-				String[] signature = new String[] {String.class.getCanonicalName(), String.class.getCanonicalName()};
-				boolean result = (Boolean)mbeanServer.invoke(name, "authorize", params, signature);
-				if(result){
-					authorities.add(new SimpleGrantedAuthority(role));
-				}
-			}
-		}catch (Exception e){
-			throw new RuntimeException(e.getMessage(), e);
-		}
+  private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
 
-		return authorities;
+  public static ArrayList<GrantedAuthority> populateAuthorities(JMXConnector jmxc) {
+    ObjectName name;
+    ArrayList<GrantedAuthority> authorities = new ArrayList<>();
+    try {
+      name = new ObjectName(PulseConstants.OBJECT_NAME_ACCESSCONTROL_MBEAN);
+      MBeanServerConnection mbeanServer = jmxc.getMBeanServerConnection();
 
-	}
+      for (String role : PulseConstants.PULSE_ROLES) {
+        Object[] params = role.split(":");
+        String[] signature = new String[] { String.class.getCanonicalName(), String.class.getCanonicalName() };
+        boolean result = (Boolean) mbeanServer.invoke(name, "authorize", params, signature);
+        if (result) {
+          authorities.add(new SimpleGrantedAuthority(role));
+        }
+      }
+    }
+    catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
 
-	public JMXConnector getJmxc() {
-		return jmxc;
-	}
-	
-	
+    return authorities;
+
+  }
+
+  public JMXConnector getJmxc() {
+    return jmxc;
+  }
 
 }

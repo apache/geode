@@ -47,10 +47,11 @@ import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor;
+import com.gemstone.gemfire.management.internal.web.controllers.support.LoginHandlerInterceptor;
 import com.gemstone.gemfire.management.internal.web.controllers.support.MemberMXBeanAdapter;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
-import com.gemstone.gemfire.security.ShiroUtil;
+import com.gemstone.gemfire.security.GeodeSecurityUtil;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.http.HttpStatus;
@@ -488,12 +489,12 @@ public abstract class AbstractCommandsController {
    * Gets the environment setup during this HTTP/command request for the current command process execution.
    * 
    * @return a mapping of environment variables to values.
-   * @see com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor#getEnvironment()
+   * @see LoginHandlerInterceptor#getEnvironment()
    */
   protected Map<String, String> getEnvironment() {
     final Map<String, String> environment = new HashMap<String, String>();
 
-    environment.putAll(EnvironmentVariablesHandlerInterceptor.getEnvironment());
+    environment.putAll(LoginHandlerInterceptor.getEnvironment());
     environment.put(Gfsh.ENV_APP_NAME, Gfsh.GFSH_APP_NAME);
 
     return environment;
@@ -541,7 +542,7 @@ public abstract class AbstractCommandsController {
    * @param command a String value containing a valid command String as would be entered by the user in Gfsh.
    * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
-   * @see com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor#getEnvironment()
+   * @see LoginHandlerInterceptor#getEnvironment()
    * @see #getEnvironment()
    * @see #processCommand(String, java.util.Map, byte[][])
    */
@@ -558,7 +559,7 @@ public abstract class AbstractCommandsController {
         return new ResponseEntity<String>(processCommand(command, fileData), HttpStatus.OK);
       }
     };
-    return ShiroUtil.associateWith(callable);
+    return GeodeSecurityUtil.associateWith(callable);
   }
 
 
@@ -571,7 +572,7 @@ public abstract class AbstractCommandsController {
    * the Manager, usually for the 'deploy' Gfsh command.
    * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
-   * @see com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor#getEnvironment()
+   * @see LoginHandlerInterceptor#getEnvironment()
    * @see #getEnvironment()
    * @see #processCommand(String, java.util.Map, byte[][])
    */
@@ -590,7 +591,7 @@ public abstract class AbstractCommandsController {
    * between Gfsh and the Manager, and thus need to specify this key/value pair mapping.
    * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
-   * @see com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor#getEnvironment()
+   * @see LoginHandlerInterceptor#getEnvironment()
    * @see #processCommand(String, java.util.Map, byte[][])
    */
   protected String processCommand(final String command, final Map<String, String> environment) {

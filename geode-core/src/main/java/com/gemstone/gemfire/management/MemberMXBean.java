@@ -16,13 +16,12 @@
  */
 package com.gemstone.gemfire.management;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import static com.gemstone.gemfire.cache.operations.OperationContext.*;
 
 import java.util.Map;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -199,6 +198,7 @@ public interface MemberMXBean {
    * 
    * @return Result of the execution in JSON format.
    */
+  @ResourceOperation()
   String processCommand(String commandString);
   
   /**
@@ -210,6 +210,7 @@ public interface MemberMXBean {
    *          Environmental properties to use during command execution.
    * @return Result of the execution in JSON format.
    */
+  @ResourceOperation()
   String processCommand(String commandString, Map<String, String> env);
   
   /**
@@ -223,6 +224,7 @@ public interface MemberMXBean {
    *          Binary data specific to the command being executed.
    * @return Result of the execution in JSON format.
    */
+  @ResourceOperation()
   String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData);
 
   /**

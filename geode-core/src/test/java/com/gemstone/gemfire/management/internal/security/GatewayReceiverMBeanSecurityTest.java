@@ -16,10 +16,16 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import javax.management.ObjectName;
+
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.GatewayReceiverMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -27,11 +33,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import javax.management.ObjectName;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
 @Category(IntegrationTest.class)
 public class GatewayReceiverMBeanSecurityTest {
@@ -81,9 +82,9 @@ public class GatewayReceiverMBeanSecurityTest {
   @Test
   @JMXConnectionConfiguration(user = "data-user", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.getTotalConnectionsTimedOut()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.start()).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.stop()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.getTotalConnectionsTimedOut()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.start()).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.stop()).hasMessageContaining(TestCommand.dataManage.toString());
   }
 
 }

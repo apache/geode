@@ -76,16 +76,18 @@
     {
       "name": "region1-use",
       "operationsAllowed": [
-        "DATA"
+        "DATA:READ",
+        "DATA:WRITE"
       ],
-      "region": "region1"
+      "regions": "null,region1"
     },
     {
       "name": "secure-use",
       "operationsAllowed": [
-        "DATA"
+        "DATA:READ",
+        "DATA:WRITE"
       ],
-      "regions": ["region1", "secureRegion"]
+      "regions": "null,region1,secureRegion"
     }
   ],
   "users": [

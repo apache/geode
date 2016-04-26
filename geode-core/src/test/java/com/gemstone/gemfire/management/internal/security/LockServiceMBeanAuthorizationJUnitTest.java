@@ -81,10 +81,10 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "data-user", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> lockServiceMBean.getMemberCount()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> lockServiceMBean.isDistributed()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> lockServiceMBean.getMemberCount()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> lockServiceMBean.isDistributed()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock()).hasMessageContaining(TestCommand.clusterRead.toString());
   }
 }

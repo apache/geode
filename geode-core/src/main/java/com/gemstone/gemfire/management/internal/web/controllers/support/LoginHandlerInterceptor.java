@@ -27,7 +27,8 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.security.Authenticator;
-import com.gemstone.gemfire.security.ShiroUtil;
+import com.gemstone.gemfire.security.GeodeSecurityUtil;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -41,7 +42,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @since 8.0
  */
 @SuppressWarnings("unused")
-public class EnvironmentVariablesHandlerInterceptor extends HandlerInterceptorAdapter {
+public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -93,7 +94,7 @@ public class EnvironmentVariablesHandlerInterceptor extends HandlerInterceptorAd
 
     String username = requestParameterValues.get(ResourceConstants.USER_NAME);
     String password = requestParameterValues.get(ResourceConstants.PASSWORD);
-    ShiroUtil.login(username, password);
+    GeodeSecurityUtil.login(username, password);
 
     ENV.set(requestParameterValues);
 
@@ -109,7 +110,7 @@ public class EnvironmentVariablesHandlerInterceptor extends HandlerInterceptorAd
     throws Exception
   {
     afterConcurrentHandlingStarted(request, response, handler);
-    ShiroUtil.logout();
+    GeodeSecurityUtil.logout();
   }
 
   @Override

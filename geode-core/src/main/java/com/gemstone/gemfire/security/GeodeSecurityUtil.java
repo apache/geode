@@ -19,10 +19,14 @@ package com.gemstone.gemfire.security;
 
 import java.util.concurrent.Callable;
 
+import com.gemstone.gemfire.cache.operations.OperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.management.internal.security.ResourceOperationContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
@@ -31,7 +35,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 
-public class ShiroUtil {
+public class GeodeSecurityUtil {
 
   private static Logger logger = LogService.getLogger();
 
@@ -75,29 +79,73 @@ public class ShiroUtil {
     return currentUser.associateWith(callable);
   }
 
-  public static void authorize(ResourceOperationContext context) {
-    authorize(context.getResource().name(), context.getOperationCode().name(), context.getRegionName());
+  public static void authorize(ResourceOperation resourceOperation) {
+    if(resourceOperation==null)
+      return;
+
+    authorize(resourceOperation.resource().name(),
+      resourceOperation.operation().name(),
+      null);
   }
 
-  public static void authorize(ResourceOperation resourceOperation) {
-    authorize(resourceOperation.resource().name(), resourceOperation.operation().name());
+  public static void authorizeClusterManage(){
+    authorize("CLUSTER", "MANAGE");
+  }
+
+  public static void authorizeClusterWrite(){
+    authorize("CLUSTER", "WRITE");
+  }
+
+  public static void authorizeClusterRead(){
+    authorize("CLUSTER", "READ");
+  }
+
+  public static void authorizeDataManage(){
+    authorize("DATA", "MANAGE");
+  }
+
+  public static void authorizeDataWrite(){
+    authorize("DATA", "WRITE");
+  }
+
+  public static void authorizeDataRead(){
+    authorize("DATA", "READ");
+  }
+
+  public static void authorizeRegionWrite(String regionName){
+    authorize("DATA", "WRITE", regionName);
+  }
+
+  public static void authorizeRegionRead(String regionName){
+    authorize("DATA", "READ", regionName);
   }
 
   public static void authorize(String resource, String operation){
     authorize(resource, operation, null);
   }
 
-  public static void authorize(String resource, String operation, String regionName){
+  private static void authorize(String resource, String operation, String regionName){
+    regionName = StringUtils.stripStart(regionName, "/");
+    authorize(new ResourceOperationContext(resource, operation, regionName));
+  }
+
+  public static void authorize(OperationContext context) {
+    if(context==null)
+      return;
+
+    if(context.getResource()== Resource.NULL && context.getOperationCode()== OperationCode.NULL)
+      return;
+
     if(!isShiroConfigured())
       return;
 
-    ResourceOperationContext permission = new ResourceOperationContext(resource, operation, regionName);
+
     Subject currentUser = SecurityUtils.getSubject();
     try {
-      currentUser.checkPermission(permission);
+      currentUser.checkPermission(context);
     }
     catch(ShiroException e){
-      logger.info(currentUser.getPrincipal() + " not authorized for "+resource+":"+operation+":"+regionName);
+      logger.info(currentUser.getPrincipal() + " not authorized for " + context);
       throw new GemFireSecurityException(e.getMessage(), e);
     }
   }
@@ -111,6 +159,5 @@ public class ShiroUtil {
     }
     return true;
   }
-
 
 }

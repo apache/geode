@@ -11,7 +11,7 @@
       "operationsAllowed": [
         "REGION:GET"
       ],
-      "region": "secureRegion"
+      "regions": "secureRegion"
     }
   ],
   "users": [

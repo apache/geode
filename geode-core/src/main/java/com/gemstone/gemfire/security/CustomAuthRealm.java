@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.management.internal.security.ResourceOperationContext;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.authc.AuthenticationException;
@@ -66,7 +66,6 @@ public class CustomAuthRealm extends AuthorizingRealm{
     this.authenticatorFactoryName = securityProps.getProperty(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
     this.cachedAuthZCallback = new ConcurrentHashMap<>();
     this.cachedPostAuthZCallback = new ConcurrentHashMap<>();
-    logger.info("Started Management interceptor on JMX connector");
   }
 
   @Override
@@ -93,13 +92,13 @@ public class CustomAuthRealm extends AuthorizingRealm{
 
   @Override
   public boolean isPermitted(PrincipalCollection principals, Permission permission) {
-    ResourceOperationContext context =(ResourceOperationContext)permission;
+    OperationContext context =(OperationContext)permission;
     Principal principal = (Principal)principals.getPrimaryPrincipal();
     // if no access control is specified, then we allow all
     if(StringUtils.isBlank(authzFactoryName))
       return true;
     AccessControl accessControl = getAccessControl(principal, false);
-    return accessControl.authorizeOperation(null, context);
+    return accessControl.authorizeOperation(context.getRegionName(), context);
   }
 
   public AccessControl getAccessControl(Principal principal, boolean isPost) {

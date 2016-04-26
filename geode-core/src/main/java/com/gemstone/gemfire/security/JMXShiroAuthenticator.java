@@ -49,7 +49,7 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       throw new SecurityException(WRONGE_CREDENTIALS_MESSAGE);
     }
 
-    ShiroUtil.login(username, password);
+    GeodeSecurityUtil.login(username, password);
 
     return new Subject(true, Collections.singleton(new JMXPrincipal(username)), Collections.EMPTY_SET,
       Collections.EMPTY_SET);
@@ -61,7 +61,7 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       JMXConnectionNotification cxNotification = (JMXConnectionNotification) notification;
       String type = cxNotification.getType();
       if (JMXConnectionNotification.CLOSED.equals(type)) {
-        ShiroUtil.logout();
+        GeodeSecurityUtil.logout();
       }
     }
   }

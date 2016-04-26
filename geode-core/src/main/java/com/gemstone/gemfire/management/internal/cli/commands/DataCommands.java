@@ -73,7 +73,8 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.security.ShiroUtil;
+import com.gemstone.gemfire.security.GeodeSecurityUtil;
+
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -834,13 +835,12 @@ public class DataCommands implements CommandMarker {
   @CliCommand(value = CliStrings.EXPORT_DATA, help = CliStrings.EXPORT_DATA__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
       CliStrings.TOPIC_GEMFIRE_REGION })
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public Result exportData(
       @CliOption(key = CliStrings.EXPORT_DATA__REGION, mandatory = true, optionContext = ConverterHint.REGIONPATH, help = CliStrings.EXPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.EXPORT_DATA__FILE, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, mandatory = true, help = CliStrings.EXPORT_DATA__FILE__HELP) String filePath,
       @CliOption(key = CliStrings.EXPORT_DATA__MEMBER, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, optionContext = ConverterHint.MEMBERIDNAME, mandatory = true, help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId) {
 
-    ShiroUtil.authorize("DATA", "READ", regionName);
+    GeodeSecurityUtil.authorizeRegionRead(regionName);
     final Cache cache = CacheFactory.getAnyInstance();
     final DistributedMember targetMember = CliUtil
         .getDistributedMemberByNameOrId(memberNameOrId);
@@ -891,13 +891,12 @@ public class DataCommands implements CommandMarker {
   @CliCommand(value = CliStrings.IMPORT_DATA, help = CliStrings.IMPORT_DATA__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
       CliStrings.TOPIC_GEMFIRE_REGION })
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.WRITE)
   public Result importData(
       @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGIONPATH, mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.IMPORT_DATA__FILE, mandatory = true, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
       @CliOption(key = CliStrings.IMPORT_DATA__MEMBER, mandatory = true, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, optionContext = ConverterHint.MEMBERIDNAME, help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId) {
 
-    ShiroUtil.authorize("DATA", "WRITE", regionName);
+    GeodeSecurityUtil.authorizeRegionWrite(regionName);
 
     Result result = null;
 
@@ -949,7 +948,6 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.PUT }, help = CliStrings.PUT__HELP)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.WRITE)
   public Result put(
       @CliOption(key = { CliStrings.PUT__KEY }, mandatory = true, help = CliStrings.PUT__KEY__HELP) String key,
       @CliOption(key = { CliStrings.PUT__VALUE }, mandatory = true, help = CliStrings.PUT__VALUE__HELP) String value,
@@ -958,7 +956,7 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = { CliStrings.PUT__VALUEKLASS }, help = CliStrings.PUT__VALUEKLASS__HELP) String valueClass,
       @CliOption(key = { CliStrings.PUT__PUTIFABSENT }, help = CliStrings.PUT__PUTIFABSENT__HELP, unspecifiedDefaultValue = "false") boolean putIfAbsent) {
 
-    ShiroUtil.authorize("DATA", "WRITE", regionPath);
+    GeodeSecurityUtil.authorizeRegionWrite(regionPath);
     Cache cache = CacheFactory.getAnyInstance();
     DataCommandResult dataResult = null;
     if (regionPath == null || regionPath.isEmpty()) {
@@ -1018,7 +1016,6 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.GET }, help = CliStrings.GET__HELP)
-  @ResourceOperation(resource = Resource.DATA, operation= OperationCode.READ)
   public Result get(
       @CliOption(key = { CliStrings.GET__KEY }, mandatory = true, help = CliStrings.GET__KEY__HELP) String key,
       @CliOption(key = { CliStrings.GET__REGIONNAME }, mandatory = true, help = CliStrings.GET__REGIONNAME__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,
@@ -1026,7 +1023,7 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = { CliStrings.GET__VALUEKLASS }, help = CliStrings.GET__VALUEKLASS__HELP) String valueClass,
       @CliOption(key = CliStrings.GET__LOAD, unspecifiedDefaultValue = "true", specifiedDefaultValue = "true", help = CliStrings.GET__LOAD__HELP) Boolean loadOnCacheMiss)
   {
-    ShiroUtil.authorize("DATA", "READ", regionPath);
+    GeodeSecurityUtil.authorizeRegionRead(regionPath);
 
     Cache cache = CacheFactory.getAnyInstance();
     DataCommandResult dataResult = null;
@@ -1074,14 +1071,14 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.LOCATE_ENTRY }, help = CliStrings.LOCATE_ENTRY__HELP)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public Result locateEntry(
       @CliOption(key = { CliStrings.LOCATE_ENTRY__KEY }, mandatory = true, help = CliStrings.LOCATE_ENTRY__KEY__HELP) String key,
       @CliOption(key = { CliStrings.LOCATE_ENTRY__REGIONNAME }, mandatory = true, help = CliStrings.LOCATE_ENTRY__REGIONNAME__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,
       @CliOption(key = { CliStrings.LOCATE_ENTRY__KEYCLASS }, help = CliStrings.LOCATE_ENTRY__KEYCLASS__HELP) String keyClass,
       @CliOption(key = { CliStrings.LOCATE_ENTRY__VALUEKLASS }, help = CliStrings.LOCATE_ENTRY__VALUEKLASS__HELP) String valueClass,
       @CliOption(key = { CliStrings.LOCATE_ENTRY__RECURSIVE }, help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP, unspecifiedDefaultValue = "false") boolean recursive) {
-    ShiroUtil.authorize("DATA", "READ", regionPath);
+
+    GeodeSecurityUtil.authorizeRegionRead(regionPath);
     // Cache cache = CacheFactory.getAnyInstance();
     DataCommandResult dataResult = null;
 
@@ -1122,13 +1119,12 @@ public class DataCommands implements CommandMarker {
   @CliMetaData(shellOnly = false, relatedTopic = {
       CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
   @CliCommand(value = { CliStrings.REMOVE }, help = CliStrings.REMOVE__HELP)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result remove(
       @CliOption(key = { CliStrings.REMOVE__KEY }, help = CliStrings.REMOVE__KEY__HELP) String key,
       @CliOption(key = { CliStrings.REMOVE__REGION }, mandatory = true, help = CliStrings.REMOVE__REGION__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,
       @CliOption(key = CliStrings.REMOVE__ALL, help = CliStrings.REMOVE__ALL__HELP, specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean removeAllKeys,
       @CliOption(key = { CliStrings.REMOVE__KEYCLASS }, help = CliStrings.REMOVE__KEYCLASS__HELP) String keyClass) {
-
     Cache cache = CacheFactory.getAnyInstance();
     DataCommandResult dataResult = null;
 

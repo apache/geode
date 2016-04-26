@@ -52,7 +52,7 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.security.ShiroUtil;
+
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -163,7 +163,6 @@ public class RegionCommands implements CommandMarker {
       mandatory = true)
       String regionName) {
 
-    ShiroUtil.authorize("CLUSTER", "READ", regionName);
     Result result = null;
     try {
       

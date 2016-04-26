@@ -18,6 +18,8 @@ package com.gemstone.gemfire.management.internal.security;
 
 import com.gemstone.gemfire.cache.operations.OperationContext;
 
+import org.apache.shiro.authz.Permission;
+
 /**
  * This is base class for OperationContext for resource (JMX and CLI) operations
  */
@@ -25,32 +27,25 @@ public class ResourceOperationContext extends OperationContext {
 
   private boolean isPostOperation = false;
   private Object opResult = null;
-  private Resource resource = null;
-  private OperationCode operation = null;
-  private String regionName = null;
+  private Resource resource = Resource.NULL;
+  private OperationCode operation = OperationCode.NULL;
+
+  private String regionName = "NULL";
 
   public ResourceOperationContext() {
+    this(null, null, null);
   }
 
-  public ResourceOperationContext(Resource resource, OperationCode operation) {
-    setParts(resource.name()+":"+operation.name(), false);
-    this.resource = resource;
-    this.operation = operation;
+  public ResourceOperationContext(String resource, String operation) {
+    this(resource, operation, null);
   }
 
   public ResourceOperationContext(String resource, String operation, String regionName) {
-    setParts(resource+":"+operation+":"+regionName, false);
     if (resource != null) this.resource = Resource.valueOf(resource);
     if (operation != null) this.operation = OperationCode.valueOf(operation);
-    this.regionName = regionName;
-  }
+    if (regionName !=null ) this.regionName = regionName;
 
-  public void setResourceOperation(ResourceOperation op) {
-    if (op != null) {
-      resource = op.resource();
-      operation = op.operation();
-      setParts(resource.name()+":"+operation.name(), false);
-    }
+    setParts(this.resource.name()+":"+this.operation.name()+":"+regionName);
   }
 
   @Override
@@ -87,20 +82,8 @@ public class ResourceOperationContext extends OperationContext {
     return this.opResult;
   }
 
-  public String toString(){
-    if(this.regionName==null)
-      return getResource() + ":"+ getOperationCode();
-    else
-      return getResource() + ":"+ getOperationCode()+ ":" +this.regionName;
+  @Override
+  public boolean implies(Permission p){
+    return super.implies(p);
   }
-
-  public boolean equals(Object o){
-    if(! (o instanceof ResourceOperationContext))
-      return false;
-
-    ResourceOperationContext other = (ResourceOperationContext)o;
-    return (this.resource==other.getResource() && this.operation==other.getOperationCode());
-  }
-
-
 }

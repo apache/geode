@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * this class extends the capability of JUnit's ExternalResource in that
- * it provides a Description object in the before and after methods, so that
- * the implementation would have access to the annotation of the test methods
- */
 package com.gemstone.gemfire.test.junit.rules;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+/**
+ * this class extends the capability of JUnit's ExternalResource in that
+ * it provides a Description object in the before and after methods, so that
+ * the implementation would have access to the annotation of the test methods
+ */
 public class DescribedExternalResource implements TestRule {
   public Statement apply(Statement base, Description description) {
     return statement(base, description);

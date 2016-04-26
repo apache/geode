@@ -88,18 +88,18 @@ public class GatewaySenderMBeanSecurityTest {
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.getAlertThreshold()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getAverageDistributionTimePerBatch()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getBatchSize()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getMaximumQueueMemory()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getOrderPolicy()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.isBatchConflationEnabled()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.isManualStart()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.pause()).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.rebalance()).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.resume()).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.start()).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.stop()).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.getAlertThreshold()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getAverageDistributionTimePerBatch()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getBatchSize()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getMaximumQueueMemory()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getOrderPolicy()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.isBatchConflationEnabled()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.isManualStart()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.pause()).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.rebalance()).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.resume()).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.start()).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.stop()).hasMessageContaining(TestCommand.dataManage.toString());
   }
 
 }

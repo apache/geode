@@ -49,7 +49,7 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testDataAdmin() throws Exception {
     bean.removeIndex("foo");
-    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining("DATA:READ");
+    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining(TestCommand.dataRead.toString());
     bean.fetchLoadProbe();
     bean.getActiveCQCount();
     bean.stopContinuousQuery("bar");
@@ -61,8 +61,8 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testClusterAdmin() throws Exception {
-    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining("DATA:READ");
+    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining(TestCommand.dataRead.toString());
     bean.fetchLoadProbe();
   }
 
@@ -70,21 +70,21 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "data-user", password = "1234567")
   public void testDataUser() throws Exception {
-    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
     bean.executeContinuousQuery("bar");
-    assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining(TestCommand.clusterRead.toString());
   }
 
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining("DATA:READ");
-    assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getActiveCQCount()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.stopContinuousQuery("bar")).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar")).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.isRunning()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.showClientQueueDetails("bar")).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining(TestCommand.dataRead.toString());
+    assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getActiveCQCount()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.stopContinuousQuery("bar")).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar")).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.isRunning()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.showClientQueueDetails("bar")).hasMessageContaining(TestCommand.clusterRead.toString());
   }
 }

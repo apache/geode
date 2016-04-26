@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.util.CollectionUtils;
 import com.gemstone.gemfire.management.internal.cli.CommandRequest;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.web.domain.Link;
 import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
 import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
@@ -229,9 +228,6 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    */
   protected ClientHttpRequest createHttpRequest(final CommandRequest command) {
     ClientHttpRequest request = createHttpRequest(findLink(command));
-
-    //request.getParameters().setAll(new HashMap<String, Object>(CollectionUtils.removeKeys(
-    //  new HashMap<String, String>(command.getParameters()), ExcludeNoValueFilter.INSTANCE)));
 
     Map<String, String> commandParameters = command.getParameters();
 

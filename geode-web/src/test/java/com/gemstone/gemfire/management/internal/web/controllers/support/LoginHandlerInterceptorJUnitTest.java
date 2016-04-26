@@ -16,9 +16,19 @@
  */
 package com.gemstone.gemfire.management.internal.web.controllers.support;
 
+import static org.junit.Assert.*;
+
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
+
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -28,17 +38,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import static org.junit.Assert.*;
-
 /**
- * The EnvironmentVariablesHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract
- * and functionality of the Spring HandlerInterceptor, EnvironmentVariablesHandlerInterceptor class.
+ * The LoginHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract
+ * and functionality of the Spring HandlerInterceptor, LoginHandlerInterceptor class.
  * 
  * @see org.jmock.Mockery
  * @see org.junit.Assert
@@ -46,7 +48,7 @@ import static org.junit.Assert.*;
  * @since 8.0
  */
 @Category(UnitTest.class)
-public class EnvironmentVariablesHandlerInterceptorJUnitTest {
+public class LoginHandlerInterceptorJUnitTest {
 
   private Mockery mockContext;
 
@@ -64,7 +66,7 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
   }
 
   protected String createEnvironmentVariable(final String name) {
-    return (EnvironmentVariablesHandlerInterceptor.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + name);
+    return (LoginHandlerInterceptor.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + name);
   }
 
   protected <T> Enumeration<T> enumeration(final Iterator<T> iterator) {
@@ -97,15 +99,15 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
       will(returnValue(requestParameters.get(createEnvironmentVariable("variable"))));
     }});
 
-    EnvironmentVariablesHandlerInterceptor handlerInterceptor = new EnvironmentVariablesHandlerInterceptor();
+    LoginHandlerInterceptor handlerInterceptor = new LoginHandlerInterceptor();
 
-    Map<String, String> envBefore = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+    Map<String, String> envBefore = LoginHandlerInterceptor.getEnvironment();
 
     assertNotNull(envBefore);
     assertTrue(envBefore.isEmpty());
     assertTrue(handlerInterceptor.preHandle(mockHttpRequest, null, null));
 
-    Map<String, String> envSet = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+    Map<String, String> envSet = LoginHandlerInterceptor.getEnvironment();
 
     assertNotNull(envSet);
     assertNotSame(envBefore, envSet);
@@ -115,7 +117,7 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
 
     handlerInterceptor.afterCompletion(mockHttpRequest, null, null, null);
 
-    Map<String, String> envAfter = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+    Map<String, String> envAfter = LoginHandlerInterceptor.getEnvironment();
 
     assertNotNull(envAfter);
     assertTrue(envAfter.isEmpty());
@@ -128,7 +130,7 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
 
   protected final class HandlerInterceptorThreadSafetyMultiThreadedTestCase extends MultithreadedTestCase {
 
-    private EnvironmentVariablesHandlerInterceptor handlerInterceptor;
+    private LoginHandlerInterceptor handlerInterceptor;
 
     private HttpServletRequest mockHttpRequestOne;
     private HttpServletRequest mockHttpRequestTwo;
@@ -176,20 +178,20 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
         will(returnValue(requestParametersTwo.get(createEnvironmentVariable("GEMFIRE"))));
       }});
 
-      handlerInterceptor =  new EnvironmentVariablesHandlerInterceptor();
+      handlerInterceptor =  new LoginHandlerInterceptor();
     }
 
     public void thread1() throws Exception {
       assertTick(0);
       Thread.currentThread().setName("HTTP Request Processing Thread 1");
 
-      Map<String, String> env = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+      Map<String, String> env = LoginHandlerInterceptor.getEnvironment();
 
       assertNotNull(env);
       assertTrue(env.isEmpty());
       assertTrue(handlerInterceptor.preHandle(mockHttpRequestOne, null, null));
 
-      env = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+      env = LoginHandlerInterceptor.getEnvironment();
 
       assertNotNull(env);
       assertEquals(2, env.size());
@@ -201,7 +203,7 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
 
       waitForTick(2);
 
-      env = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+      env = LoginHandlerInterceptor.getEnvironment();
 
       assertNotNull(env);
       assertEquals(2, env.size());
@@ -213,7 +215,7 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
 
       waitForTick(4);
 
-      env = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+      env = LoginHandlerInterceptor.getEnvironment();
 
       assertNotNull(env);
       assertEquals(2, env.size());
@@ -225,7 +227,7 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
 
       handlerInterceptor.afterCompletion(mockHttpRequestOne, null, null, null);
 
-      env = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+      env = LoginHandlerInterceptor.getEnvironment();
 
       assertNotNull(env);
       assertTrue(env.isEmpty());
@@ -236,13 +238,13 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
       Thread.currentThread().setName("HTTP Request Processing Thread 2");
       waitForTick(1);
 
-      Map<String, String> env = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+      Map<String, String> env = LoginHandlerInterceptor.getEnvironment();
 
       assertNotNull(env);
       assertTrue(env.isEmpty());
       assertTrue(handlerInterceptor.preHandle(mockHttpRequestTwo, null, null));
 
-      env = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+      env = LoginHandlerInterceptor.getEnvironment();
 
       assertNotNull(env);
       assertEquals(2, env.size());
@@ -256,7 +258,7 @@ public class EnvironmentVariablesHandlerInterceptorJUnitTest {
 
       handlerInterceptor.afterCompletion(mockHttpRequestTwo, null, null, null);
 
-      env = EnvironmentVariablesHandlerInterceptor.getEnvironment();
+      env = LoginHandlerInterceptor.getEnvironment();
 
       assertNotNull(env);
       assertTrue(env.isEmpty());

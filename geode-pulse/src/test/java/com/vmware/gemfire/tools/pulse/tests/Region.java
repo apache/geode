@@ -38,7 +38,7 @@ public class Region extends JMXBaseBean implements RegionMBean {
     "enableOffHeapMemory", "scope", "diskStoreName",
     "diskSynchronous" };
   private static OpenType[] regAttItemTypes = { SimpleType.STRING,
-    SimpleType.BOOLEAN, SimpleType.BOOLEAN, SimpleType.STRING, 
+    SimpleType.BOOLEAN, SimpleType.STRING,
     SimpleType.STRING, SimpleType.BOOLEAN };
   private static CompositeType listRegionAttributesCompData = null;
 

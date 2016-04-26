@@ -31,6 +31,8 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
+import org.apache.shiro.authz.permission.WildcardPermission;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -122,7 +124,7 @@ public class GfshCommandsSecurityTest {
 
 
   private void runCommandsWithAndWithout(String permission) throws Exception{
-    List<TestCommand> permitted = TestCommand.getCommandsOfPermission(permission);
+    List<TestCommand> permitted = TestCommand.getPermittedCommands(new WildcardPermission(permission));
     for(TestCommand clusterRead:permitted) {
       LogService.getLogger().info("Processing authorized command: "+clusterRead.getCommand());gfsh.executeCommand(clusterRead.getCommand());
       CommandResult result = (CommandResult) gfsh.getResult();
@@ -155,7 +157,7 @@ public class GfshCommandsSecurityTest {
       }
 
       assertEquals(ResultBuilder.ERRORCODE_UNAUTHORIZED, ((ErrorResultData) result.getResultData()).getErrorCode());
-      assertTrue(result.getContent().toString().contains(other.getPermission()));
+      assertTrue(result.getContent().toString().contains(other.getPermission().toString()));
     }
   }
 

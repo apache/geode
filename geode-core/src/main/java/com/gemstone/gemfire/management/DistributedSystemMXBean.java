@@ -72,14 +72,16 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
  * @since 7.0
  *
  */
-//@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface DistributedSystemMXBean {
 
   /**
    * Returns the ID of thie DistributedSystem.
+   * allow anyone to access this method
    *
    * @return The DistributedSystem ID or -1 if not set.
    */
+  @ResourceOperation()
   public int getDistributedSystemId();
 
   /**
@@ -351,7 +353,9 @@ public interface DistributedSystemMXBean {
   /**
    * Returns the object name for a {@link MemberMXBean} used to access
    * this distributed member.
+   * allow anyone to access this method
    */
+  @ResourceOperation()
   public ObjectName getMemberObjectName();
 
   /**

@@ -24,21 +24,17 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.MemberMXBean;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runners.MethodSorters;
 
 /**
- * tests will be run alphabetically, in this test class, we run non-admin test first,
- * since we don't want to have the server stopped for the rest of the tests.
  */
 
 @Category(IntegrationTest.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CliCommandsSecurityTest {
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
@@ -60,11 +56,8 @@ public class CliCommandsSecurityTest {
 
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
-  // the tests are run in alphabetical order, so the naming of the tests do matter
-  public void a_testNoAccess(){
-//    List<TestCommand> clusterReads = new ArrayList<>();
-//    clusterReads.add(new TestCommand("deploy --jar=group1_functions.jar --group=Group1", "CLUSTER:MANAGE"));
-    for (TestCommand command:commands) {
+  public void testNoAccess(){
+   for (TestCommand command:commands) {
       LogService.getLogger().info("processing: "+command.getCommand());
       // for those commands that don't require any permission, any user can execute them
       if(command.getPermission()==null){
@@ -72,14 +65,14 @@ public class CliCommandsSecurityTest {
       }
       else {
         assertThatThrownBy(() -> bean.processCommand(command.getCommand()))
-            .hasMessageContaining(command.getPermission());
+            .hasMessageContaining(command.getPermission().toString());
       }
     }
   }
 
   @Test
   @JMXConnectionConfiguration(user = "super-user", password = "1234567")
-  public void b_testAdminUser() throws Exception {
+  public void testAdminUser() throws Exception {
     for (TestCommand command:commands) {
       LogService.getLogger().info("processing: "+command.getCommand());
       bean.processCommand(command.getCommand());

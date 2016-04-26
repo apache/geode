@@ -46,7 +46,7 @@ import javax.management.remote.MBeanServerForwarder;
 
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.ShiroUtil;
+import com.gemstone.gemfire.security.GeodeSecurityUtil;
 
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to
@@ -58,14 +58,6 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   private MBeanServer mbs;
   
   public MBeanServerWrapper(){
-  }
-
-  private void doAuthorization(ResourceOperationContext context){
-    // allow operations which requires no permissions
-    if(context == null)
-      return;
-
-    ShiroUtil.authorize(context);
   }
 
   private void doAuthorizationPost(ResourceOperationContext context){
@@ -161,7 +153,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   public Object getAttribute(ObjectName name, String attribute) throws MBeanException, InstanceNotFoundException,
       ReflectionException {
     ResourceOperationContext ctx = getOperationContext(name, attribute, false);
-    doAuthorization(ctx);
+    GeodeSecurityUtil.authorize(ctx);
     Object result;
     try {
       result = mbs.getAttribute(name, attribute);
@@ -195,7 +187,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException,
       AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException {
     ResourceOperationContext ctx = getOperationContext(name, attribute.getName(), false);
-    doAuthorization(ctx);
+    GeodeSecurityUtil.authorize(ctx);
     mbs.setAttribute(name, attribute);
   }
 
@@ -216,12 +208,9 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
       throws InstanceNotFoundException, MBeanException, ReflectionException {
-    // skip authorization check if operation is "processCommand" since we will check authorization in the command itself
-    ResourceOperationContext ctx = null;
-    if(!"processCommand".equals(operationName)) {
-      ctx = getOperationContext(name, operationName, true);
-      doAuthorization(ctx);
-    }
+
+    ResourceOperationContext ctx = getOperationContext(name, operationName, true);
+    GeodeSecurityUtil.authorize(ctx);
 
     Object result = mbs.invoke(name, operationName, params, signature);
     if(ctx!=null)

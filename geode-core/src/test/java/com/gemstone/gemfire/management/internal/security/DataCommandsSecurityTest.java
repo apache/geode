@@ -68,15 +68,16 @@ public class DataCommandsSecurityTest {
   @Test
   public void testRegionAcess(){
     assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region2")).isInstanceOf(GemFireSecurityException.class)
-        .hasMessageContaining("DATA:MANAGE");
+        .hasMessageContaining(TestCommand.dataManage.toString());
 
     assertThatThrownBy(() -> bean.processCommand("export data --region=region2 --file=foo.txt --member=value")).isInstanceOf(GemFireSecurityException.class);
     assertThatThrownBy(() -> bean.processCommand("import data --region=region2 --file=foo.txt --member=value")).isInstanceOf(GemFireSecurityException.class);
 
     assertThatThrownBy(() -> bean.processCommand("put --key=key1 --value=value1 --region=region2")).isInstanceOf(GemFireSecurityException.class)
-        .hasMessageContaining("DATA:WRITE");
+        .hasMessageContaining("[data]:[write]:[region2]");
 
-    assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region2")).isInstanceOf(GemFireSecurityException.class);
+    assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region2")).isInstanceOf(GemFireSecurityException.class)
+        .hasMessageContaining("[data]:[read]:[region2]");
     }
 
 }

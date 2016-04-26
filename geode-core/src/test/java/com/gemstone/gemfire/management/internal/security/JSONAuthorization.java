@@ -32,8 +32,6 @@ import javax.management.remote.JMXPrincipal;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.AccessControl;
@@ -41,41 +39,16 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 import com.gemstone.gemfire.util.test.TestUtil;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JSONAuthorization implements AccessControl, Authenticator {
 
-  static class Permission {
-
-    private final Resource resource;
-    private final OperationCode operationCode;
-
-    Permission(Resource resource, OperationCode operationCode) {
-      this.resource = resource;
-      this.operationCode = operationCode;
-    }
-
-    public Resource getResource() {
-      return resource;
-    }
-
-    public OperationCode getOperationCode() {
-      return operationCode;
-    }
-
-    @Override
-    public String toString() {
-      String result = resource.toString() + ":" + operationCode.toString();
-      return result;
-    }
-  }
-
   public static class Role {
-    List<Permission> permissions = new ArrayList<>();
+    List<OperationContext> permissions = new ArrayList<>();
     String name;
-    List<String> regionNames = null; // when checking, if regionNames is null, that means all regions are allowed.
     String serverGroup;
   }
 
@@ -139,29 +112,18 @@ public class JSONAuthorization implements AccessControl, Authenticator {
       JSONObject obj = array.getJSONObject(i);
       Role role = new Role();
       role.name = obj.getString("name");
+      String regionNames = null;
+      if(obj.has("regions")) {
+        regionNames = obj.getString("regions");
+      }
       JSONArray ops = obj.getJSONArray("operationsAllowed");
       for (int j = 0; j < ops.length(); j++) {
         String[] parts = ops.getString(j).split(":");
-        Resource r = Resource.valueOf(parts[0]);
-        OperationCode op = parts.length > 1 ? OperationCode.valueOf(parts[1]) : OperationCode.READ;
-        role.permissions.add(new Permission(r, op));
-      }
-
-      if(obj.has("region")) {
-        if (role.regionNames == null) {
-          role.regionNames = new ArrayList<>();
+        if(regionNames!=null) {
+          role.permissions.add(new ResourceOperationContext(parts[0], parts[1], regionNames));
         }
-        role.regionNames.add(obj.getString("region"));
-      }
-
-      if(obj.has("regions")) {
-        JSONArray regions = obj.getJSONArray("regions");
-        if (role.regionNames == null) {
-          role.regionNames = new ArrayList<>();
-        }
-        for (int j = 0; j < regions.length(); j++) {
-          role.regionNames.add(regions.getString(j));
-        }
+        else
+          role.permissions.add(new ResourceOperationContext(parts[0], parts[1], "*"));
       }
 
       roleMap.put(role.name, role);
@@ -194,28 +156,15 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     if(user == null)
       return false; // this user is not authorized to do anything
 
-    LogService.getLogger().info("Checking for permission " + context.getResource() + ":" + context.getOperationCode());
-
     // check if the user has this permission defined in the context
     for(Role role:acl.get(user.name).roles) {
-      for (Permission perm : role.permissions) {
-        if (context.getResource() == perm.getResource() && context.getOperationCode() == perm.getOperationCode()) {
-          LogService.getLogger().info("Found permission " + perm);
-
-          //no need to further check the rgionName
-          if(context.getRegionName()==null){
-            return true;
-          }
-
-          if(role.regionNames == null || role.regionNames.contains(context.getRegionName())){
-            // if regionName is null, i.e. all regions are allowed
-            return true;
-          }
+      for (OperationContext permitted : role.permissions) {
+        if (permitted.implies(context)) {
+          return true;
         }
       }
     }
 
-    LogService.getLogger().info("Did not find code " + context);
     return false;
   }
 

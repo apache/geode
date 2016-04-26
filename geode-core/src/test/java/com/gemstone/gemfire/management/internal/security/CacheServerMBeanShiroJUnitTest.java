@@ -61,13 +61,33 @@ public class CacheServerMBeanShiroJUnitTest {
   @Test
   @JMXConnectionConfiguration(user = "guest", password = "guest")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining("DATA:READ");
-    assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.getActiveCQCount()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.stopContinuousQuery("bar")).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar")).hasMessageContaining("DATA:MANAGE");
-    assertThatThrownBy(() -> bean.isRunning()).hasMessageContaining("CLUSTER:READ");
-    assertThatThrownBy(() -> bean.showClientQueueDetails("bar")).hasMessageContaining("CLUSTER:READ");
+    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining(TestCommand.dataRead.toString());
+    assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getActiveCQCount()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.stopContinuousQuery("bar")).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar")).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.isRunning()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.showClientQueueDetails("bar")).hasMessageContaining(TestCommand.clusterRead.toString());
+  }
+
+  @Test
+  @JMXConnectionConfiguration(user = "regionAReader", password = "password")
+  public void testRegionAccess() throws Exception{
+    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getActiveCQCount()).hasMessageContaining(TestCommand.clusterRead.toString());
+
+    assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining(TestCommand.dataRead.toString());
+  }
+
+  @Test
+  @JMXConnectionConfiguration(user = "dataReader", password = "12345")
+  public void testDataRead() throws Exception{
+    assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
+    assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining(TestCommand.clusterRead.toString());
+    assertThatThrownBy(() -> bean.getActiveCQCount()).hasMessageContaining(TestCommand.clusterRead.toString());
+
+    bean.executeContinuousQuery("bar");
   }
 }
