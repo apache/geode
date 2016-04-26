@@ -436,11 +436,7 @@ public class PartitionedRegionStatsJUnitTest
     
     pr.getDiskStore().flush();
     
-    //Workaround for GEODE-92. We are leaving more than 1 entry in memory. To
-    //validate that stats, let's confirm the stats match what is actually in
-    //memory
-    //int entriesInMem = 1;
-    int entriesInMem = countEntriesInMem(pr);
+    int entriesInMem = 1;
     
     assertEquals(singleEntryMemSize * entriesInMem, stats.getLong("dataStoreBytesInUse"));
     assertEquals(numEntries , stats.getInt("dataStoreEntryCount"));
@@ -475,13 +471,7 @@ public class PartitionedRegionStatsJUnitTest
     System.out.println("----Done with random operations");
 
     numEntries = pr.entryCount();
-    
-    //Workaround for GEODE-92. We are leaving more than 1 entry in memory. To
-    //validate that stats, let's confirm the stats match what is actually in
-    //memory
-    //entriesInMem = 1;
-    entriesInMem = countEntriesInMem(pr);
-    
+        
     assertEquals(singleEntryMemSize * entriesInMem, stats.getLong("dataStoreBytesInUse"));
     assertEquals(numEntries , stats.getInt("dataStoreEntryCount"));
     assertEquals((numEntries - entriesInMem) * entryOverflowSize, diskStats.getNumOverflowBytesOnDisk());

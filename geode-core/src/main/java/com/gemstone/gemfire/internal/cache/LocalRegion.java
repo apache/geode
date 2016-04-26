@@ -1298,6 +1298,7 @@ public class LocalRegion extends AbstractRegion
   @Retained
   protected final Object getDeserialized(RegionEntry re, boolean updateStats, boolean disableCopyOnRead, boolean preferCD, boolean retainResult) {
     assert !retainResult || preferCD;
+    boolean disabledLRUCallback = this.entries.disableLruUpdateCallback();
     try {
       @Retained Object v = null;
       try {
@@ -1340,6 +1341,11 @@ public class LocalRegion extends AbstractRegion
       IllegalArgumentException iae = new IllegalArgumentException(LocalizedStrings.DONT_RELEASE.toLocalizedString("Error while deserializing value for key="+re.getKey()));
       iae.initCause(i);
       throw iae;
+    } finally {
+      if(disabledLRUCallback) {
+        this.entries.enableLruUpdateCallback();
+        this.entries.lruUpdateCallback();
+      }
     }
   }
   

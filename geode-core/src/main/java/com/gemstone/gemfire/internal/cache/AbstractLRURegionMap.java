@@ -197,17 +197,14 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     int delta = le.updateEntrySize(_getCCHelper(), new CDValueWrapper(v));
     if (delta != 0) {
       result = true;
-      boolean needToDisableCallbacks = !getCallbackDisabled();
-      if (needToDisableCallbacks) {
-        setCallbackDisabled(true);
-      }
+      boolean disabledLURCallbacks = disableLruUpdateCallback();
       // by making sure that callbacks are disabled when we call
       // setDelta; it ensures that the setDelta will just inc the delta
       // value and not call lruUpdateCallback which we call in
       // finishChangeValueForm
       setDelta(delta);
-      if (needToDisableCallbacks) {
-        setCallbackDisabled(false);
+      if (disabledLURCallbacks) {
+        enableLruUpdateCallback();
       }
     }
     // fix for bug 42090
