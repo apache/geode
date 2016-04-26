@@ -800,7 +800,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
 
     if (recips.isEmpty()) {
-      logger.info("no recipients for new view aside from myself");
+      if (!preparing) {
+        logger.info("no recipients for new view aside from myself");
+      }
       return true;
     }
 
@@ -958,7 +960,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     int connectTimeout = (int) services.getConfig().getMemberTimeout() * 2;
     boolean anyResponses = false;
-    boolean flagsSet = false;
 
     logger.debug("sending {} to {}", request, locators);
 
@@ -995,10 +996,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               }
               
               possibleCoordinators.add(response.getCoordinator());
-              if (!flagsSet) {
-                flagsSet = true;
-                inheritSettingsFromLocator(addr, response);
-              }
             }
           }
         } catch (IOException | ClassNotFoundException problem) {
@@ -1124,36 +1121,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   }
 
   /**
-   * Some settings are gleaned from locator responses and set into the local
-   * configuration
-   */
-  private void inheritSettingsFromLocator(InetSocketAddress addr, FindCoordinatorResponse response) {
-    boolean enabled = response.isNetworkPartitionDetectionEnabled();
-    if (!enabled && services.getConfig().isNetworkPartitionDetectionEnabled()) {
-      throw new GemFireConfigException("locator at " + addr
-          + " does not have network-partition-detection enabled but my configuration has it enabled");
-    }
-
-    GMSMember mbr = (GMSMember) this.localAddress.getNetMember();
-    mbr.setSplitBrainEnabled(enabled);
-    services.getConfig().setNetworkPartitionDetectionEnabled(enabled);
-    services.getConfig().getDistributionConfig().setEnableNetworkPartitionDetection(enabled);
-
-    if (response.isUsePreferredCoordinators()) {
-      this.quorumRequired = enabled;
-      logger.debug("The locator indicates that all locators should be preferred as coordinators");
-      if (services.getLocator() != null
-          || Locator.hasLocator()
-          || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty()
-          || localAddress.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
-        ((GMSMember) localAddress.getNetMember()).setPreferredForCoordinator(true);
-      }
-    } else {
-      ((GMSMember) localAddress.getNetMember()).setPreferredForCoordinator(true);
-    }
-  }
-
-  /**
    * receives a JoinResponse holding a membership view or rejection message
    *
    * @param rsp
@@ -1238,7 +1205,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             this.localAddress.setVmViewId(this.birthViewId);
             GMSMember me = (GMSMember) this.localAddress.getNetMember();
             me.setBirthViewId(birthViewId);
-            me.setSplitBrainEnabled(mbr.getNetMember().splitBrainEnabled());
             break;
           }
         }
@@ -1422,6 +1388,21 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   @Override
   public void started() {
     this.localAddress = services.getMessenger().getMemberID();
+    GMSMember mbr = (GMSMember)this.localAddress.getNetMember();
+
+    if (services.getConfig().areLocatorsPreferredAsCoordinators()) {
+      boolean preferred = false;
+      if (services.getLocator() != null
+              || Locator.hasLocator()
+              || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty()
+              || localAddress.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+        logger.info("This member is hosting a locator will be preferred as a membership coordinator");
+        preferred = true;
+      }
+      mbr.setPreferredForCoordinator(preferred);
+    } else {
+      mbr.setPreferredForCoordinator(true);
+    }
   }
 
   @Override
@@ -2144,7 +2125,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
       for (InternalDistributedMember mbr : joinReqs) {
         mbr.setVmViewId(newView.getViewId());
-        mbr.getNetMember().setSplitBrainEnabled(services.getConfig().isNetworkPartitionDetectionEnabled());
       }
 
       if (isShutdown()) {
