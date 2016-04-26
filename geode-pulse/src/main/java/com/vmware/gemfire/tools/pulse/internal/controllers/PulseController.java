@@ -19,6 +19,13 @@
 
 package com.vmware.gemfire.tools.pulse.internal.controllers;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -32,18 +39,12 @@ import com.vmware.gemfire.tools.pulse.internal.service.PulseService;
 import com.vmware.gemfire.tools.pulse.internal.service.PulseServiceFactory;
 import com.vmware.gemfire.tools.pulse.internal.service.SystemAlertsService;
 import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Class PulseController
@@ -145,26 +146,6 @@ public class PulseController {
   protected boolean isUserLoggedIn(HttpServletRequest request) {
     return null != request.getUserPrincipal();
   }
-
-  /* Not used replaced by SpringSecurity Logout tag with LogoutHandler
-  @RequestMapping(value = "/clusterLogout", method = RequestMethod.GET)
-  public void clusterLogout(HttpServletRequest request,
-      HttpServletResponse response) throws IOException {
-    PulseLogWriter LOGGER = PulseLogWriter.getLogger();   
-    LOGGER.info("Inside #clusterLogout...");    
-    if(Repository.get().isUseGemFireCredentials()) {      
-      GemFireAuthentication authentication = (GemFireAuthentication) SecurityContextHolder.getContext()
-          .getAuthentication();
-      authentication.getJmxc().close();
-      LOGGER.info("Closing GemFireAuthentication JMX Connection...");
-    }
-    HttpSession session = request.getSession(false);
-    if (session != null) {
-      // End session and redirect
-      session.invalidate();
-    }
-    response.sendRedirect("../Login.html");
-  }*/
 
   @RequestMapping(value = "/pulseVersion", method = RequestMethod.GET)
   public void pulseVersion(HttpServletRequest request,
