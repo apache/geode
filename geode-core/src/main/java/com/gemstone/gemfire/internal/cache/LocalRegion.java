@@ -10906,16 +10906,12 @@ public class LocalRegion extends AbstractRegion
       successfulKeys.add(key);
     }
     for (Iterator it=putallOp.eventIterator(); it.hasNext(); ) {
-      @Released EntryEventImpl event = (EntryEventImpl)it.next();
-      try {
+      @Unretained EntryEventImpl event = (EntryEventImpl)it.next();
       if (successfulKeys.contains(event.getKey())) {
         EnumListenerEvent op = event.getOperation().isCreate() ? EnumListenerEvent.AFTER_CREATE
             : EnumListenerEvent.AFTER_UPDATE; 
         invokePutCallbacks(op, event, !event.callbacksInvoked() && !event.isPossibleDuplicate(),
             false /* We must notify gateways inside RegionEntry lock, NOT here, to preserve the order of events sent by gateways for same key*/);
-      }
-      } finally {
-        event.release();
       }
     }
   }
@@ -10933,14 +10929,10 @@ public class LocalRegion extends AbstractRegion
       successfulKeys.add(key);
     }
     for (Iterator it=op.eventIterator(); it.hasNext(); ) {
-      @Released EntryEventImpl event = (EntryEventImpl)it.next();
-      try {
+      @Unretained EntryEventImpl event = (EntryEventImpl)it.next();
       if (successfulKeys.contains(event.getKey())) {
         invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, !event.callbacksInvoked() && !event.isPossibleDuplicate(),
             false /* We must notify gateways inside RegionEntry lock, NOT here, to preserve the order of events sent by gateways for same key*/);
-      }
-      } finally {
-        event.release();
       }
     }
   }

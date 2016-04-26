@@ -63,6 +63,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
  * Handles distribution of a Region.putall operation.
@@ -195,9 +196,9 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
       public boolean hasNext() {
         return DistributedPutAllOperation.this.putAllDataSize > position;
       };
-      @Retained
+      @Unretained
       public Object next() {
-        @Retained EntryEventImpl ev = getEventForPosition(position);
+        @Unretained EntryEventImpl ev = getEventForPosition(position);
         position++;
         return ev;
       };
@@ -217,7 +218,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     }
   }
   
-  @Retained
+  @Unretained
   public EntryEventImpl getEventForPosition(int position) {
     PutAllEntryData entry = this.putAllData[position];
     if (entry == null) {
@@ -816,17 +817,13 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
     }
     FilterRoutingInfo consolidated = new FilterRoutingInfo();
     for (int i=0; i<this.putAllData.length; i++) {
-      @Released EntryEventImpl ev = getEventForPosition(i);
+      @Unretained EntryEventImpl ev = getEventForPosition(i);
       if (ev != null) {
-        try {
         FilterRoutingInfo eventRouting = advisor.adviseFilterRouting(ev, cacheOpRecipients);
         if (eventRouting != null) {
           consolidated.addFilterInfo(eventRouting);
         }
         putAllData[i].filterRouting = eventRouting;
-        } finally {
-          ev.release();
-        }
       }
     }
     // we need to create routing information for each PUT event
