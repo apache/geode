@@ -28,7 +28,6 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CustomEvictionAttributes;
 import com.gemstone.gemfire.cache.CustomExpiry;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
@@ -123,8 +122,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   * @since prPersistPrint2 
   * */
   private String diskStoreName;
-  private String hdfsStoreName;
-  private boolean hdfsWriteOnly = false;
   private boolean isDiskSynchronous = AttributesFactory.DEFAULT_DISK_SYNCHRONOUS;
   
   private boolean cloningEnabled = false;
@@ -271,8 +268,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     this.poolName = attrs.getPoolName();
     this.multicastEnabled = attrs.getMulticastEnabled();
     this.cloningEnabled = attrs.getCloningEnabled();
-	this.hdfsStoreName = attrs.getHDFSStoreName();
-    
+
     this.compressor = attrs.getCompressor();
     this.offHeap = attrs.getOffHeap();
     if (attrs instanceof UserSpecifiedRegionAttributes) {
@@ -499,10 +495,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     }
     if(this.cloningEnabled != other.getCloningEnabled()){
       throw new RuntimeException(LocalizedStrings.RegionAttributesCreation__CLONING_ENABLE_IS_NOT_THE_SAME_THIS_0_OTHER_1.toLocalizedString(new Object[] {Boolean.valueOf(this.cloningEnabled), Boolean.valueOf(other.getCloningEnabled())}));
-    }
- 	if (! equal(this.hdfsStoreName, other.getHDFSStoreName())) {
-      //TODO:HDFS write a new exception string
-      throw new RuntimeException(" HDFS Store name does not match");
     }
     if(! equal(this.compressor, other.getCompressor())) {
       throw new RuntimeException("Compressors are not the same.");
@@ -1448,25 +1440,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         setDiskSynchronous(parent.isDiskSynchronous());
       }
     }
-    if (!hasHDFSStoreName()) {
-      if (parentIsUserSpecified) {
-        if (parentWithHas.hasHDFSStoreName()) {
-          setHDFSStoreName(parent.getHDFSStoreName());
-        }
-      } else {
-        setHDFSStoreName(parent.getHDFSStoreName());
-      }
-    }
-    if (!hasHDFSWriteOnly()) {
-      if (parentIsUserSpecified) {
-        if (parentWithHas.hasHDFSWriteOnly()) {
-          setHDFSWriteOnly(parent.getHDFSWriteOnly());
-        }
-      } else {
-        setHDFSWriteOnly(parent.getHDFSWriteOnly());
-      }
-    }
-    
+
     if(!hasCompressor()) {
       if (parentIsUserSpecified) {
         if (parentWithHas.hasCompressor()) {
@@ -1552,15 +1526,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   public EvictionAttributes getEvictionAttributes()
   {
     return this.evictionAttributes;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public CustomEvictionAttributes getCustomEvictionAttributes() {
-    // TODO: HDFS: no support for configuring this from XML yet
-    return null;
   }
 
   public void setPoolName(String poolName) {
@@ -1654,21 +1619,5 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   
   public Set<String> getGatewaySenderIds() {
     return this.gatewaySenderIds;
-  }
-  public String getHDFSStoreName() {
-    return this.hdfsStoreName;
-  }
-  public void setHDFSStoreName(String hdfsStoreName) {
-    //TODO:HDFS : throw an exception if a disk store is already configured
-    // and vice versa
-    this.hdfsStoreName = hdfsStoreName;
-    setHasHDFSStoreName(true);
-  }
-  public void setHDFSWriteOnly(boolean writeOnly) {
-    this.hdfsWriteOnly= writeOnly;
-    setHasHDFSWriteOnly(true);
-  }
-  public boolean getHDFSWriteOnly() {
-    return hdfsWriteOnly;
   }
 }

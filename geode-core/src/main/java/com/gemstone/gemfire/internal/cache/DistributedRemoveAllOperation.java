@@ -57,6 +57,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
  * Handles distribution of a Region.removeAll operation.
@@ -67,7 +68,10 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
   {
   private static final Logger logger = LogService.getLogger();
 
-  protected final RemoveAllEntryData[] removeAllData;
+  /**
+   * Release is called by freeOffHeapResources.
+   */
+  @Retained protected final RemoveAllEntryData[] removeAllData;
 
   public int removeAllDataSize;
   
@@ -177,9 +181,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       public boolean hasNext() {
         return DistributedRemoveAllOperation.this.removeAllDataSize > position;
       };
-      @Retained
+      @Unretained
       public Object next() {
-        @Retained EntryEventImpl ev = getEventForPosition(position);
+        @Unretained EntryEventImpl ev = getEventForPosition(position);
         position++;
         return ev;
       };
@@ -199,7 +203,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
   }
 
-  @Retained
+  @Unretained
   public EntryEventImpl getEventForPosition(int position) {
     RemoveAllEntryData entry = this.removeAllData[position];
     if (entry == null) {
@@ -209,6 +213,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       return entry.event;
     }
     LocalRegion region = (LocalRegion)this.event.getRegion();
+    // owned by this.removeAllData once entry.event = ev is done
     @Retained EntryEventImpl ev = EntryEventImpl.create(
         region,
         entry.getOp(),
@@ -572,17 +577,13 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
     FilterRoutingInfo consolidated = new FilterRoutingInfo();
     for (int i=0; i<this.removeAllData.length; i++) {
-      @Released EntryEventImpl ev = getEventForPosition(i);
+      @Unretained EntryEventImpl ev = getEventForPosition(i);
       if (ev != null) {
-        try {
         FilterRoutingInfo eventRouting = advisor.adviseFilterRouting(ev, cacheOpRecipients);
         if (eventRouting != null) {
           consolidated.addFilterInfo(eventRouting);
         }
         removeAllData[i].filterRouting = eventRouting;
-        } finally {
-          ev.release();
-        }
       }
     }
     // we need to create routing information for each PUT event

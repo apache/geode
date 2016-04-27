@@ -111,8 +111,6 @@ public class RegionClusterStatsMonitor {
 
   private static final String PERSISTENT_ENABLED = "PersistentEnabled";
   
-  private static final String ESTIMATED_SIZE_FOR_HDFS_REGION = "EstimatedSizeForHDFSRegion";
-
   private volatile long lastAccessedTime = 0;
 
   private volatile long lastModifiedTime = 0;
@@ -192,7 +190,6 @@ public class RegionClusterStatsMonitor {
     typeMap.put(AVERAGE_READS, Float.TYPE);
     typeMap.put(AVERAGE_WRITES, Float.TYPE);
     typeMap.put(ENTRY_SIZE, Long.TYPE);
-    typeMap.put(ESTIMATED_SIZE_FOR_HDFS_REGION, Long.TYPE);
 
   }
 
@@ -335,10 +332,6 @@ public class RegionClusterStatsMonitor {
 
   public long getTotalEntriesOnlyOnDisk() {
     return aggregator.getLongValue(TOTAL_ENTRIES_ONLY_ON_DISK);
-  }
-  
-  public long getEstimatedSizeForHDFSRegion() {
-    return aggregator.getLongValue(ESTIMATED_SIZE_FOR_HDFS_REGION);
   }
 
   public int getAvgBucketSize() {

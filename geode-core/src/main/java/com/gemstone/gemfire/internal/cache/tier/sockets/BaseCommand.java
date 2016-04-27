@@ -1145,7 +1145,7 @@ public abstract class BaseCommand implements Command {
         VersionTagHolder versionHolder = new VersionTagHolder();
         ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
         // From Get70.getValueAndIsObject()
-        Object data = region.get(entryKey, null, true, true, true, id, versionHolder, true, false);
+        Object data = region.get(entryKey, null, true, true, true, id, versionHolder, true);
         VersionTag vt = versionHolder.getVersionTag();
 
         updateValues(values, entryKey, data, vt);
@@ -1252,7 +1252,7 @@ public abstract class BaseCommand implements Command {
         }
 
         ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-        data = region.get(key, null, true, true, true, id, versionHolder, true, false);
+        data = region.get(key, null, true, true, true, id, versionHolder, true);
         versionTag = versionHolder.getVersionTag();
         updateValues(values, key, data, versionTag);
 
@@ -1345,7 +1345,7 @@ public abstract class BaseCommand implements Command {
       key = it.next();
       versionHolder = new VersionTagHolder();
 
-      Object value = region.get(key, null, true, true, true, requestingClient, versionHolder, true, false);
+      Object value = region.get(key, null, true, true, true, requestingClient, versionHolder, true);
       
       updateValues(values, key, value, versionHolder.getVersionTag());
 
@@ -1389,9 +1389,6 @@ public abstract class BaseCommand implements Command {
           try {
             updateValues(values, key, value, vt);
           } finally {
-            // TODO OFFHEAP: in the future we might want to delay this release
-            // until the "values" VersionedObjectList is released.
-            // But for now "updateValues" copies the off-heap value to the heap.
             OffHeapHelper.release(value);
           }
         }
@@ -1551,7 +1548,7 @@ public abstract class BaseCommand implements Command {
           ClientProxyMembershipID id = servConn == null ? null : servConn
               .getProxyID();
           data = region.get(key, null, true, true, true, id, versionHolder,
-              true, false);
+              true);
           versionTag = versionHolder.getVersionTag();
           updateValues(values, key, data, versionTag);
 

@@ -103,7 +103,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short JOIN_RESPONSE = -143;
   public static final short JOIN_REQUEST = -142;
 
-  public static final short HDFS_GATEWAY_EVENT_IMPL = -141;
   public static final short SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE = -140;
   
   public static final short GATEWAY_EVENT_IMPL = -136;

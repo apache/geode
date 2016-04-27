@@ -46,9 +46,7 @@ public class RegionAttributesNames {
 	public static final String POOL_NAME =  "pool-name";
 	public static final String COMPRESSOR = "compressor";
     public static final String OFF_HEAP = "off-heap";
-    public static final String HDFSSTORE = "hdfs-store";
-    public static final String HDFS_WRITEONLY = "hdfs-write-only";
-	
+
 	//Partition attributes
 	public static final String LOCAL_MAX_MEMORY =  "local-max-memory";
 	public static final String REDUNDANT_COPIES =  "redundant-copies";

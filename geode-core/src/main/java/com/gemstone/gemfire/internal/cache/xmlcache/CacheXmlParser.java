@@ -87,7 +87,6 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreCreation;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
@@ -1020,161 +1019,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
     stack.push(attrs);
   }
-  /**
-   * When a <code>hdfs-store</code> element is first encountered, we
-   * create a {@link HDFSStoreCreation}, populate it accordingly, and
-   * push it on the stack.
-   * <pre>
-   * {@code
-   * <hdfs-store name="" gemfire-home-dir="" namenode-url="" hdfs-client-config-file="">
-   * ...
-   * </hdfs-store>
-   * }
-   * 
-   */
-  private void startHDFSStore(Attributes atts) {
-    // this is the only place to create DSAC objects
-    HDFSStoreCreation attrs = new HDFSStoreCreation();
-    String name = atts.getValue(NAME);
-    if (name == null) {
-      throw new InternalGemFireException(
-          LocalizedStrings.CacheXmlParser_NULL_DiskStoreName.toLocalizedString());
-    } else {
-      attrs.setName(name);
-    }
 
-    String namenode = atts.getValue(HDFS_NAMENODE_URL);
-    if (namenode == null) {
-      throw new InternalGemFireException(
-          LocalizedStrings.CacheXmlParser_NULL_DiskStoreName.toLocalizedString());
-    } else {
-      attrs.setNameNodeURL(namenode);
-    }
-
-    String clientConfig = atts.getValue(HDFS_CLIENT_CONFIG_FILE);
-    if (clientConfig != null) {
-      attrs.setHDFSClientConfigFile(clientConfig);
-    }
-    
-    String folderPath = atts.getValue(HDFS_HOME_DIR);
-    if (folderPath != null) {
-      attrs.setHomeDir(folderPath);
-    }
-   
-    String readCacheSize = atts.getValue(HDFS_READ_CACHE_SIZE);
-    if (readCacheSize != null) {
-      try {
-        attrs.setBlockCacheSize(Float.valueOf(readCacheSize));
-      } catch (NumberFormatException e) {
-        throw new CacheXmlException(
-            LocalizedStrings.DistributedSystemConfigImpl_0_IS_NOT_A_VALID_INTEGER_1
-            .toLocalizedString(new Object[] { readCacheSize, HDFS_READ_CACHE_SIZE }),
-            e);
-      }
-    }
-    
-    Integer maxMemory = getIntValue(atts, HDFS_MAX_MEMORY);
-    if (maxMemory != null) {
-      attrs.setMaxMemory(maxMemory);
-    }
-    
-    Integer batchSize = getIntValue(atts, HDFS_BATCH_SIZE);
-    if (batchSize != null) {
-      attrs.setBatchSize(batchSize);
-    }
-    
-    Integer batchInterval = getIntValue(atts, HDFS_BATCH_INTERVAL);
-    if (batchInterval != null) {
-      attrs.setBatchInterval(batchInterval);
-    }
-    
-    Integer dispatcherThreads = getIntValue(atts, HDFS_DISPATCHER_THREADS);
-    if (dispatcherThreads != null) {
-      attrs.setDispatcherThreads(dispatcherThreads);
-    }
-    
-    Boolean bufferPersistent = getBoolean(atts, HDFS_BUFFER_PERSISTENT);
-    if (bufferPersistent != null) {
-      attrs.setBufferPersistent(bufferPersistent);
-    }
-    
-    Boolean synchronousDiskWrite = getBoolean(atts, HDFS_SYNCHRONOUS_DISK_WRITE);
-    if (synchronousDiskWrite != null) {
-      attrs.setSynchronousDiskWrite(synchronousDiskWrite);
-    }
-    
-    String diskstoreName = atts.getValue(HDFS_DISK_STORE);
-    if (diskstoreName != null) {
-      attrs.setDiskStoreName(diskstoreName);
-    }
-    
-    Integer purgeInterval = getInteger(atts, HDFS_PURGE_INTERVAL);
-    if (purgeInterval != null) {
-      attrs.setPurgeInterval(purgeInterval);
-    }
-    Boolean majorCompaction = getBoolean(atts, HDFS_MAJOR_COMPACTION);
-    if (majorCompaction != null) {
-      attrs.setMajorCompaction(Boolean.valueOf(majorCompaction));
-    }
-    
-    // configure major compaction interval
-    Integer majorCompactionInterval = getIntValue(atts, HDFS_MAJOR_COMPACTION_INTERVAL);
-    if (majorCompactionInterval != null) {
-      attrs.setMajorCompactionInterval(majorCompactionInterval);
-    }
-    
-    // configure compaction concurrency
-    Integer value = getIntValue(atts, HDFS_MAJOR_COMPACTION_THREADS);
-    if (value != null)
-      attrs.setMajorCompactionThreads(value);
-    
-    Boolean minorCompaction = getBoolean(atts, HDFS_MINOR_COMPACTION);
-    if (minorCompaction != null) {
-      attrs.setMinorCompaction(Boolean.valueOf(minorCompaction));
-    }
-    
-    // configure compaction concurrency
-    value = getIntValue(atts, HDFS_MINOR_COMPACTION_THREADS);
-    if (value != null)
-      attrs.setMinorCompactionThreads(value);
-    
-    String maxFileSize = atts.getValue(HDFS_MAX_WRITE_ONLY_FILE_SIZE);
-    if (maxFileSize != null) {
-      attrs.setWriteOnlyFileRolloverSize(parseInt(maxFileSize));
-    }
-    
-    String fileRolloverInterval = atts.getValue(HDFS_WRITE_ONLY_FILE_ROLLOVER_INTERVAL);
-    if (fileRolloverInterval != null) {
-      attrs.setWriteOnlyFileRolloverInterval(parseInt(fileRolloverInterval));
-    }
-    stack.push(name);
-    stack.push(attrs);
-  }
-  
-  /**
-   * After popping the current <code>HDFSStoreCreation</code> off the
-   * stack, we add it to the <code>HDFSStoreCreation</code> that should be on the
-   * top of the stack.
-   */
-  private void endHDFSStore() {
-    HDFSStoreCreation hsc = (HDFSStoreCreation) stack.pop();
-    String name = (String) stack.pop();
-    CacheCreation cache;
-    Object top = stack.peek();
-    if (top instanceof CacheCreation) {
-      cache = (CacheCreation) top;
-    }
-    else {
-      String s = "Did not expect a " + top.getClass().getName()
-          + " on top of the stack.";
-      Assert.assertTrue(false, s);
-      cache = null; // Dead code
-    }
-    if (name != null) {
-      cache.addHDFSStore(name, hsc);
-    }
-  }
-	
   private Integer getIntValue(Attributes atts, String param) {
     String maxInputFileSizeMB = atts.getValue(param);
     if (maxInputFileSizeMB != null) {
@@ -1389,16 +1234,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     if(offHeapStr != null) {
       attrs.setOffHeap(Boolean.valueOf(offHeapStr).booleanValue());
     }
-    String hdfsStoreName = atts.getValue(HDFS_STORE_NAME);
-    if (hdfsStoreName != null) {
-      attrs.setHDFSStoreName(hdfsStoreName);
-    }
-    String hdfsWriteOnly= atts.getValue(HDFS_WRITE_ONLY);
-    if (hdfsWriteOnly != null) {
-      attrs.setHDFSWriteOnly(Boolean.valueOf(hdfsWriteOnly).booleanValue());
-    }
 
-    
     stack.push(attrs);
   }
   
@@ -3000,9 +2836,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else if(qName.equals(PDX_SERIALIZER)) {
       //do nothing
     }
-	else if (qName.equals(HDFS_STORE)) {
-        startHDFSStore(atts);
-    }
     else if (qName.equals(COMPRESSOR)) {
     }
     else {
@@ -3410,9 +3243,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
       else if (qName.equals(PDX_SERIALIZER)) {
         endPdxSerializer();
-      }
-      else if (qName.equals(HDFS_STORE)) {
-          endHDFSStore();
       }
       else if (qName.equals(COMPRESSOR)) {
         endCompressor();

@@ -275,15 +275,15 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   
   public Object findObject(KeyInfo keyInfo, boolean isCreate,
-      boolean generateCallbacks, Object value, boolean peferCD,
-      ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent, boolean allowReadFromHDFS) {
+                           boolean generateCallbacks, Object value, boolean peferCD,
+                           ClientProxyMembershipID requestingClient,
+                           EntryEventImpl clientEvent) {
     Object retVal = null;
     final Object key = keyInfo.getKey();
     final Object callbackArgument = keyInfo.getCallbackArg();
     PartitionedRegion pr = (PartitionedRegion)region;
     try {
-      retVal = pr.getRemotely((InternalDistributedMember)state.getTarget(), keyInfo.getBucketId(), key, callbackArgument, peferCD, requestingClient, clientEvent, false, allowReadFromHDFS);
+      retVal = pr.getRemotely((InternalDistributedMember)state.getTarget(), keyInfo.getBucketId(), key, callbackArgument, peferCD, requestingClient, clientEvent, false);
     } catch (TransactionException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
       re.initCause(e.getCause());

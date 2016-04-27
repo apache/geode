@@ -341,9 +341,16 @@ public class TXStateProxyImpl implements TXStateProxy {
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getDeserializedValue(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion, boolean)
    */
-  public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion,
-      boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS, boolean retainResult) {
-    Object val = getRealDeal(keyInfo, localRegion).getDeserializedValue(keyInfo, localRegion, updateStats, disableCopyOnRead, preferCD, null, false, allowReadFromHDFS, retainResult);
+  public Object getDeserializedValue(KeyInfo keyInfo,
+                                     LocalRegion localRegion,
+                                     boolean updateStats,
+                                     boolean disableCopyOnRead,
+                                     boolean preferCD,
+                                     EntryEventImpl clientEvent,
+                                     boolean returnTombstones,
+                                     boolean retainResult) {
+    Object val = getRealDeal(keyInfo, localRegion).getDeserializedValue(keyInfo, localRegion, updateStats, disableCopyOnRead, preferCD, null, false,
+      retainResult);
     if (val != null) {
       // fixes bug 51057: TXStateStub  on client always returns null, so do not increment
       // the operation count it will be incremented in findObject()
@@ -599,13 +606,13 @@ public class TXStateProxyImpl implements TXStateProxy {
    * @see com.gemstone.gemfire.internal.cache.InternalDataView#findObject(com.gemstone.gemfire.internal.cache.LocalRegion, java.lang.Object, java.lang.Object, boolean, boolean, java.lang.Object)
    */
   public Object findObject(KeyInfo key, LocalRegion r, boolean isCreate,
-      boolean generateCallbacks, Object value, boolean disableCopyOnRead,
-      boolean preferCD, ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) {
+                           boolean generateCallbacks, Object value, boolean disableCopyOnRead,
+                           boolean preferCD, ClientProxyMembershipID requestingClient,
+                           EntryEventImpl clientEvent, boolean returnTombstones) {
     try {
       this.operationCount++;
       Object retVal = getRealDeal(key, r).findObject(key, r, isCreate, generateCallbacks,
-          value, disableCopyOnRead, preferCD, requestingClient, clientEvent, false, allowReadFromHDFS);
+          value, disableCopyOnRead, preferCD, requestingClient, clientEvent, false);
       trackBucketForTx(key);
       return retVal;
     } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
@@ -720,9 +727,14 @@ public class TXStateProxyImpl implements TXStateProxy {
    * (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.InternalDataView#getSerializedValue(com.gemstone.gemfire.internal.cache.LocalRegion, java.lang.Object, java.lang.Object)
    */
-  public Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws DataLocationException {
+  public Object getSerializedValue(LocalRegion localRegion,
+                                   KeyInfo key,
+                                   boolean doNotLockEntry,
+                                   ClientProxyMembershipID requestingClient,
+                                   EntryEventImpl clientEvent,
+                                   boolean returnTombstones) throws DataLocationException {
     this.operationCount++;
-    return getRealDeal(key, localRegion).getSerializedValue(localRegion, key, doNotLockEntry, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
+    return getRealDeal(key, localRegion).getSerializedValue(localRegion, key, doNotLockEntry, requestingClient, clientEvent, returnTombstones);
   }
 
   /* (non-Javadoc)

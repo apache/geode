@@ -321,9 +321,4 @@ public class DistributedRegionMBean implements DistributedRegionMXBean {
     return bridge.getEntrySize();
   }
 
-  @Override
-  public long getEstimatedSizeForHDFSRegion() {
-    return bridge.getEstimatedSizeForHDFSRegion();
-  }
-
 }

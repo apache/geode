@@ -441,7 +441,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
-  protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event, int sizeOfHDFSEvent) {
+  protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event) {
     if (didPut) {
       if (this.initialized) {
         this.eventSeqNumQueue.add(key);
@@ -479,7 +479,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   public Object take() throws InterruptedException, ForceReattemptException {
     throw new UnsupportedOperationException();
     // Currently has no callers.
-    // To support this callers need to call freeOffHeapResources on the returned GatewaySenderEventImpl.
+    // To support this callers need to call release on the returned GatewaySenderEventImpl.
 //     Object key = this.eventSeqNumQueue.remove();
 //     Object object = null;
 //     if (key != null) {
@@ -492,7 +492,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 //        */
 //       destroyKey(key);
 //     }
-//     return object; // TODO OFFHEAP: see what callers do with the returned GatewaySenderEventImpl. We need to inc its refcount before we do the destroyKey.
+//     return object;
   }
   
   /**

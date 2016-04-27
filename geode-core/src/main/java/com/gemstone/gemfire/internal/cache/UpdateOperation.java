@@ -465,9 +465,6 @@ public class UpdateOperation extends AbstractUpdateOperation
         DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
         this.event.getRegion().getCachePerfStats().incDeltasSent();
       } else {
-          // TODO OFFHEAP MERGE: add a writeValue that will cache in the event like so:
-          //byte[] newValueBytes = BlobHelper.serializeToBlob(this.newValueObj);
-          //this.event.setCachedSerializedNewValue(newValueBytes);
         DistributedCacheOperation.writeValue(this.deserializationPolicy, this.newValueObj, this.newValue, out);
         if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
           DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);

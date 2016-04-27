@@ -128,8 +128,6 @@ public abstract class DistributedCacheOperation {
         assert !so.isSerialized();
         so.sendAsByteArray(out);
       } else { // LAZY
-        // TODO OFFHEAP MERGE: cache the oldValue that is serialized here
-        // into the event
         DataSerializer.writeObjectAsByteArray(vObj, out);
       }
     } else {
@@ -529,7 +527,7 @@ public abstract class DistributedCacheOperation {
 
         // distribute to members needing the old value now
         if (needsOldValueInCacheOp.size() > 0) {
-          msg.appendOldValueToMessage((EntryEventImpl)this.event); // TODO OFFHEAP optimize
+          msg.appendOldValueToMessage((EntryEventImpl)this.event);
           msg.resetRecipients();
           msg.setRecipients(needsOldValueInCacheOp);
           Set newFailures = mgr.putOutgoing(msg);
@@ -865,8 +863,6 @@ public abstract class DistributedCacheOperation {
 
     private final static int INHIBIT_NOTIFICATIONS_MASK = 0x400;
 
-	protected final static short FETCH_FROM_HDFS = 0x200;
-    
     protected final static short IS_PUT_DML = 0x100;
 
     public boolean needsRouting;
@@ -1369,7 +1365,6 @@ public abstract class DistributedCacheOperation {
       if ((extBits & INHIBIT_NOTIFICATIONS_MASK) != 0) {
         this.inhibitAllNotifications = true;
 	  if (this instanceof PutAllMessage) {
-        ((PutAllMessage) this).setFetchFromHDFS((extBits & FETCH_FROM_HDFS) != 0);
         ((PutAllMessage) this).setPutDML((extBits & IS_PUT_DML) != 0);
       }
       }

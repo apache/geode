@@ -55,7 +55,7 @@ public abstract class VMStatsRegionEntryOffHeap extends VMStatsRegionEntry imple
 
     public final Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
-      // TODO OFFHEAP: This estimate will not take into account the memory saved by inlining the keys.
+      // This estimate will not take into account the memory saved by inlining the keys.
       return VMStatsRegionEntryOffHeapObjectKey.class;
     }
     public RegionEntryFactory makeVersioned() {

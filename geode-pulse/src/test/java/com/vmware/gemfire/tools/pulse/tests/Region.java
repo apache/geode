@@ -32,10 +32,10 @@ public class Region extends JMXBaseBean implements RegionMBean {
   private String name = null;
 
   private static String[] regAttItemNames = { "compressionCodec",
-    "enableOffHeapMemory", "hdfsWriteOnly", "scope", "diskStoreName", 
+    "enableOffHeapMemory", "scope", "diskStoreName",
     "diskSynchronous" };
   private static String[] regAttItemDescriptions = { "compressionCodec",
-    "enableOffHeapMemory", "hdfsWriteOnly", "scope", "diskStoreName", 
+    "enableOffHeapMemory", "scope", "diskStoreName",
     "diskSynchronous" };
   private static OpenType[] regAttItemTypes = { SimpleType.STRING,
     SimpleType.BOOLEAN, SimpleType.BOOLEAN, SimpleType.STRING, 
@@ -156,11 +156,6 @@ public class Region extends JMXBaseBean implements RegionMBean {
     // enableOffHeapMemory
     if (null != itemValues[1]) {
       itemValuesHM.put(regAttItemNames[1], Boolean.parseBoolean(itemValues[1]));
-    }
-
-    // hdfsWriteOnly
-    if (null != itemValues[2]) {
-      itemValuesHM.put(regAttItemNames[2], Boolean.parseBoolean(itemValues[2]));
     }
 
     // scope

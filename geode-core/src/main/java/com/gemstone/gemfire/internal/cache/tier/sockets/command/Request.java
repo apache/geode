@@ -242,15 +242,13 @@ public class Request extends BaseCommand {
 
     boolean isObject = true;
     ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-    // TODO OFFHEAP: optimize
-    Object data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, null, false, true/*allowReadFromHDFS*/);
+    Object data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, null, false);
     
     // If the value in the VM is a CachedDeserializable,
     // get its value. If it is Token.REMOVED, Token.DESTROYED,
     // Token.INVALID, or Token.LOCAL_INVALID
     // set it to null. If it is NOT_AVAILABLE, get the value from
     // disk. If it is already a byte[], set isObject to false.
-    // TODO OFFHEAP: optimize
     if (data instanceof CachedDeserializable) {
       CachedDeserializable cd = (CachedDeserializable) data;
       if (!cd.isSerialized()) {

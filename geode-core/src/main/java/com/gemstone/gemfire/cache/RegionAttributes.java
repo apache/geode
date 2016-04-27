@@ -20,7 +20,6 @@ import java.io.File;
 import java.util.Set;
 
 import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.compression.Compressor;
 
 /** Defines attributes for configuring a region.
@@ -147,11 +146,6 @@ public interface RegionAttributes<K,V> {
    * @return the region's EvictionAttributes
    */
   public EvictionAttributes getEvictionAttributes();
-
-  /**
-   * Return the {@link CustomEvictionAttributes}, if any, set for the region.
-   */
-  public CustomEvictionAttributes getCustomEvictionAttributes();
 
   /** Returns the cache listener for the region.
    * @throws IllegalStateException if more than one cache listener exists on this attributes
@@ -451,23 +445,6 @@ public interface RegionAttributes<K,V> {
    * @return true if concurrent update checks are turned on
    */
   public boolean getConcurrencyChecksEnabled();
-  
-  /**
-   * Returns the name of the {@link HDFSStore} that this region belongs
-   * to, if any.
-   * @return the name of the {@link HDFSStore} of this region; 
-   * <code>null</code> is returned if this region has no
-   * {@link HDFSStore}.
-   * @since 9.0
-   */
-  public String getHDFSStoreName();
-  
-  /**
-   * Returns true if this region is configured to
-   * be write-only to HDFS. 
-   * @since 9.0
-   */
-  public boolean getHDFSWriteOnly();
   
   /**
    * Returns the compressor used by this region's entry values.

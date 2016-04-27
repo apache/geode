@@ -326,22 +326,6 @@ public class Message  {
     }
     // create the HDOS with a flag telling it that it can keep any byte[] or ByteBuffers/ByteSources passed to it.
     hdos = new HeapDataOutputStream(chunkSize, v, true);
-    // TODO OFFHEAP: Change Part to look for an HDOS and just pass a reference to its DirectByteBuffer.
-    // Then change HDOS sendTo(SocketChannel...) to use the GatheringByteChannel to write a bunch of bbs.
-    // TODO OFFHEAP This code optimizes one part which works pretty good for getAll since all the values are
-    // returned in one part. But the following seems even better...
-    // BETTER: change Message to consolidate all the part hdos bb lists into a single bb array and have it do the GatheringByteChannel write.
-    // Message can use slice for the small parts (msg header and part header) that are not in the parts data (its a byte array, Chunk, or HDOS).
-    // EVEN BETTER: the message can have a single HDOS which owns a direct comm buffer. It can reserve space if it does not yet know the value to write (for example the size of the message or part).
-    // If we write something to the HDOS that is direct then it does not need to be copied.
-    // But large heap byte arrays will need to be copied to the hdos (the socket write does this anyway).
-    // If the direct buffer is full then we can allocate another one. If a part is already in a heap byte array
-    // then we could defer copying it by slicing the current direct bb and then adding the heap byte array
-    // as bb using ByteBuffer.wrap. Once we have all the data in the HDOS we can finally generate the header
-    // and then start working on sending the ByteBuffers to the channel. If we have room in a direct bb then
-    // we can copy a heap bb to it. Otherwise we can write the bb ahead of it which would free up room to copy
-    // the heap bb to the existing direct bb without needing to allocate extra direct bbs.
-    // Delaying the flush uses more direct memory but reduces the number of system calls.
     try {
       BlobHelper.serializeTo(o, hdos);
     } catch (IOException ex) {

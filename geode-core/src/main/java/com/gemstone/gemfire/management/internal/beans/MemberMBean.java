@@ -455,11 +455,6 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   }
 
   @Override
-  public String[] getHDFSStores() {
-    return bridge.getHDFSStores();
-  }
-  
-  @Override
   public long getGetsAvgLatency() {
     return bridge.getGetsAvgLatency();
   }

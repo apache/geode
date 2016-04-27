@@ -25,11 +25,4 @@ dependencies {
   }
   compile ('org.springframework:spring-context:' + project.'springframework.version')
   testCompile project(':geode-junit')
-
-  // the following test dependencies are needed for mocking cache instance
-  testRuntime 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
-  testRuntime 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
-  testRuntime ('org.apache.hbase:hbase:' + project.'hbase.version') {
-    transitive = false
-  }
 }

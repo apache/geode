@@ -1997,32 +1997,6 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId SnappyCompressor_UNABLE_TO_LOAD_NATIVE_SNAPPY_LIBRARY = new StringId(5502, "Unable to load native Snappy library.");
   public static final StringId SnappyCompressor_UNABLE_TO_LOAD_NATIVE_SNAPPY_LIBRARY_MISSING_LIBRARY = new StringId(5503, "Unable to load native Snappy library from: {0}");
   
-  /** HOPLOG STRINGS, 5505 - 5600 **/
-  public static final StringId HOPLOG_REGION_CLOSE_FAILED = new StringId(5505, "IO error while trying to close region and release hdfs connection: {0}");
-  public static final StringId HOPLOG_HDFS_CLIENT_CONFIG_FILE_ABSENT = new StringId(5506, "HDFS client config file does not exist: {0}");
-  public static final StringId HOPLOG_IO_ERROR = new StringId(5507, "IO Exception while executing HDFS operation: {0}");
-  public static final StringId HOPLOG_UNABLE_TO_DELETE_FILE = new StringId(5508, "Unable to delete file: {0}");
-  public static final StringId HOPLOG_UNABLE_TO_DELETE_HDFS_DATA = new StringId(5509, "Unable to delete HDFS data while destroying region");
-  public static final StringId HOPLOG_CLOSE_FAILED = new StringId(5510, "IO error while trying to close hoplog.");
-  public static final StringId HOPLOG_FLUSH_FOR_BATCH_FAILED = new StringId(5511, "A batch of data could not be persisted on HDFS. It will be retried.");
-  public static final StringId HOPLOG_HDFS_STORE_NOT_FOUND = new StringId(5512, "HDFS store ''{0}'' does not exist.");
-  public static final StringId HOPLOG_TRYING_TO_CREATE_STANDALONE_SYSTEM = new StringId(5513, "The namenode url {0} is not valid. Please use the format hdfs://HOST:PORT");
-  public static final StringId HOPLOG_DOES_NOT_USE_HDFSSTORE = new StringId(5514, "{0} does not use HDFSSTORE");
-  public static final StringId HOPLOG_CONFIGURED_AS_WRITEONLY = new StringId(5515, "{0} is defined as WRITEONLY");
-  public static final StringId HOPLOG_MISSING_IN_BUCKET_FORCED_CLOSED = new StringId(5516, "A hoplog file, {0}, was not found in bucket lists. Closing it now, it may impact active reads.");
-  public static final StringId HOPLOG_MIN_IS_MORE_THAN_MAX = new StringId(5517, "Value of {0} is {1}. It should not be more than {2} value {3}");
-  public static final StringId HOPLOG_NOT_STARTED_YET = new StringId(5518, "HDFS store is not started yet. Gemfire is running without HDFS.");
-  public static final StringId HOPLOG_0_COLOCATE_WITH_REGION_1_NOT_INITIALIZED_YET = new StringId(5519, "Current region: {0} colocated with region {1} is yet initialized.");
-  public static final StringId HOPLOG_SUSPEND_OF_0_FAILED_IN_1 = new StringId(5520, "Failed to suspend active {0} in {1}");
-  public static final StringId HOPLOG_CLEANED_UP_BY_JANITOR = new StringId(5521, "Hoplog is cleaned up by janitor task.");
-  public static final StringId HOPLOG_HDFS_UNREACHABLE = new StringId(5522, "HDFS at {0} is unreachable.");
-  public static final StringId HOPLOG_MAJOR_COMPACTION_SCHEDULED_FOR_BETTER_ESTIMATE = new StringId(5523, "A major compaction has been automatically scheduled for better accuracy of count_estimate() function");
-  public static final StringId HOPLOG_FAILED_TO_READ_HDFS_FILE = new StringId(5524, "Exception while reading file on HDFS: {0}");
-  public static final StringId HOPLOG_HDFS_COMPACTION_ERROR = new StringId(5525, "Error while compacting files of bucket {0}");
-  public static final StringId HOPLOG_HDFS_COMPACTION_OVERLOADED = new StringId(5526, "Too many pending tasks for {0}. Skipping compaction request for {1}");
-  public static final StringId HOPLOG_FLUSH_OPERATION_FAILED = new StringId(5527, "IO error while trying to flush buffer and create hoplog.");
-  public static final StringId HOPLOG_HOPLOG_REMOVE_FAILED = new StringId(5528, "IO error while trying to remove hoplog.");
-  /** HOPLOG STRINGS, 5505 - 5600 **/
 
   public static final StringId PartitionAttributesImpl_CANNOT_DETERMINE_LOCAL_MAX_MEMORY_FOR_PARTITION_ATTRIBUTE_SINCE_NO_CACHE_IS_AVAILABLE_FROM_WHICH_TO_FETCH_THE_OFF_HEAP_MEMORY_ALLOCATOR = new StringId(5600, "Cannot determine local max memory for partition attribute since no cache is available from which to fetch the off-heap memory allocator");
 
@@ -2096,10 +2070,6 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId ParallelAsyncEventQueue_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1 = new StringId(5716,"Parallel Async Event Queue {0} can not be used with replicated region {1}");
   public static final StringId ParallelGatewaySender_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1 = new StringId(5717,"Parallel gateway sender {0} can not be used with replicated region {1}");
 
-  public static final StringId HDFSSTORE_IS_USED_IN_NONHDFS_REGION = new StringId(5808, "Only regions with HDFS_PARTITION or HDFS_PERSISTENT_PARTITION data policies can specify a HDFS Store");
-  public static final StringId EVICTORSERVICE_CAUGHT_EXCEPTION_0 = new StringId(5809, "Evictor Service caught following exception : {0}");
-  public static final StringId HDFSSTORE_IS_USED_IN_REPLICATED_TABLE = new StringId(5810, "HDFS Store cannot be used for REPLICATED TABLE");
-  public static final StringId HDFS_USER_IS_SAME_AS_GF_USER = new StringId(5811, "Gemfire user is the same as HDFS user, may cause security risks: {0}");
   public static final StringId GF_KERBEROS_KEYTAB_FILE_ABSENT = new StringId(5812, "Gemfire kerberos keytab file is missing: {0}");
   public static final StringId GF_KERBEROS_NAMENODE_PRINCIPAL_UNDEF = new StringId(5813, "Namenode principal must be configured when using kerberos authentication");
   public static final StringId GF_KERBEROS_KEYTAB_UNDEF = new StringId(5814, "Gemfire kerberos keytab file is not configured");

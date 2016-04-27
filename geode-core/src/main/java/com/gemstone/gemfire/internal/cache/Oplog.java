@@ -4308,7 +4308,6 @@ public final class Oplog implements CompactableOplog, Flushable {
     byte userBits = 0;
     long oplogOffset = did.getOffsetInOplog();
     ReferenceCountHelper.skipRefCountTracking();
-    // TODO OFFHEAP: no need to retain. We just use it while we have the RegionEntry synced.
     @Retained @Released Object value = entry._getValueRetain(dr, true);
     ReferenceCountHelper.unskipRefCountTracking();
     // TODO:KIRK:OK Object value = entry.getValueWithContext(dr);
@@ -7382,19 +7381,6 @@ public final class Oplog implements CompactableOplog, Flushable {
 
     @Override
     public void setUpdateInProgress(boolean underUpdate) {
-      // TODO Auto-generated method stub
-    }
-    @Override
-    public boolean isMarkedForEviction() {
-      // TODO Auto-generated method stub
-      return false;
-    }
-    @Override
-    public void setMarkedForEviction() {
-      // TODO Auto-generated method stub
-    }
-    @Override
-    public void clearMarkedForEviction() {
       // TODO Auto-generated method stub
     }
     @Override

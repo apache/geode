@@ -253,16 +253,6 @@ public class InternalResourceManager implements ResourceManager {
   }
   
   void deliverLocalEvent(ResourceEvent event) {
-    // TODO OFFHEAP MERGE: the fix for 49555 did the following:
-//       if (listener instanceof LocalRegion) {
-//         LocalRegion lr = (LocalRegion)listener;
-//         if (lr.isDestroyed()) {
-//           // do not added destroyed region to fix bug 49555
-//           return;
-//         }
-//       }
-// need to figure out where this code should now be    
-
     // Wait for an event to be handled by all listeners before starting to send another event
     synchronized (this.listeners) {
       this.resourceMonitors.get(event.getType()).notifyListeners(this.listeners.get(event.getType()), event);

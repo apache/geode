@@ -122,7 +122,7 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
           ((KeyWithRegionContext)this.key).setRegionContext(r);
         }
         KeyInfo keyInfo = r.getKeyInfo(key, cbArg);
-        val = r.getDataView().getSerializedValue(r, keyInfo, false, this.context, null, false, false/*for replicate regions*/);
+        val = r.getDataView().getSerializedValue(r, keyInfo, false, this.context, null, false /*for replicate regions*/);
         valueBytes = val instanceof RawValue ? (RawValue)val : new RawValue(val);
 
         if (logger.isTraceEnabled(LogMarker.DM)) {

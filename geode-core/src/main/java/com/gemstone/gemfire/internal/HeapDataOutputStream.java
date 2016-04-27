@@ -501,9 +501,6 @@ public class HeapDataOutputStream extends OutputStream implements
     if (size() == 0) {
       return;
     }
-    // TODO OFFHEAP: this code end up calling chan.write at least once for each DirectByteBuffer in this HDOS.
-    // It will combine consecutive heap ByteBuffers into a write call.
-    // It would be better to do one chan.write call with an array of ByteBuffers like sendTo(SocketChannel) does.
     out.clear();
     if (this.chunks != null) {
       for (ByteBuffer bb: this.chunks) {

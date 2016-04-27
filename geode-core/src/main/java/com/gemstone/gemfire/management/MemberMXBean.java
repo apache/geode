@@ -234,13 +234,6 @@ public interface MemberMXBean {
   public String[] listDiskStores(boolean includeRegionOwned);
 
   /**
-   * 
-   * @return  list of HDFSStore's present in the Cache
-   */
-  
-  public String[] getHDFSStores();
-
-  /**
    * Returns the GemFire specific properties for this member.
    */
   public GemFireProperties listGemFireProperties();

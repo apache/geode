@@ -114,10 +114,6 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
    */
   private boolean hasCloningEnabled = false;
   
-  private boolean hasHDFSStoreName = false;
-  
-  private boolean hasHDFSWriteOnly = false;
-  
 /**
    * Whether this region has entry value compression.
    * 
@@ -526,7 +522,7 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   {
     this.hasDiskSynchronous = val;
   }
-  private static final int HAS_COUNT = 43;
+  private static final int HAS_COUNT = 41;
   
   public void initHasFields(UserSpecifiedRegionAttributes<K,V> other)
   {
@@ -601,23 +597,5 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   }
   public List getIndexes() {
     return this.indexes;
-  }
-
-  public boolean hasHDFSStoreName()
-  {
-    return this.hasHDFSStoreName;
-  }
-  public void setHasHDFSStoreName(boolean val)
-  {
-    this.hasHDFSStoreName = val;
-  }
-  
-  public void setHasHDFSWriteOnly(boolean val)
-  {
-    this.hasHDFSWriteOnly = val;
-  }
-  public boolean hasHDFSWriteOnly()
-  {
-    return this.hasHDFSWriteOnly;
   }
 }

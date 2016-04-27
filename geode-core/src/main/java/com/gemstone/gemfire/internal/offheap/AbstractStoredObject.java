@@ -116,7 +116,6 @@ public abstract class AbstractStoredObject implements StoredObject {
     if (!isSerialized()) {
       return false;
     }
-    // TODO OFFHEAP: what if the data is compressed?
     byte dsCode = this.readDataByte(0);
     return dsCode == DSCODE.PDX || dsCode == DSCODE.PDX_ENUM || dsCode == DSCODE.PDX_INLINE_ENUM;
   }

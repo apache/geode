@@ -1122,20 +1122,6 @@ public class TXEntryState implements Releasable
     }
   }
   
-
-  /* TODO OFFHEAP MERGE: is this code needed?
-  @Retained
-  protected final Object getRetainedValueInTXOrRegion() {
-    @Unretained Object val = this.getValueInTXOrRegion();
-    if (val instanceof Chunk) {
-      if (!((Chunk) val).retain()) {
-        throw new IllegalStateException("Could not retain OffHeap value=" + val);
-      }
-    }
-    return val;
-  }
-  */
-
   /**
    * Perform operation algebra
    * 

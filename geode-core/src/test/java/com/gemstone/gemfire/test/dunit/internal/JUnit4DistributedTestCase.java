@@ -35,7 +35,6 @@ import org.junit.Rule;
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogConfig;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
@@ -415,7 +414,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     assertNotNull("defaultDiskStoreName must not be null", defaultDiskStoreName);
     setTestMethodName(methodName);
     GemFireCacheImpl.setDefaultDiskStoreName(defaultDiskStoreName);
-    System.setProperty(HoplogConfig.ALLOW_LOCAL_HDFS_PROP, "true");
     setUpCreationStackGenerator();
   }
 
@@ -568,7 +566,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
     // clear system properties -- keep alphabetized
     System.clearProperty("gemfire.log-level");
-    System.clearProperty(HoplogConfig.ALLOW_LOCAL_HDFS_PROP);
     System.clearProperty("jgroups.resolve_dns");
 
     if (InternalDistributedSystem.systemAttemptingReconnect != null) {

@@ -1398,7 +1398,7 @@ public final class CqServiceImpl implements CqService  {
       
       // Get new value. If its not retrieved.
       if (cqUnfilteredEventsSet_newValue.isEmpty() && (event.getOperation().isCreate() ||  event.getOperation().isUpdate())) {
-        Object newValue = entryEvent.getNewValue(); // TODO OFFHEAP: optimize by not copying the value on to the heap
+        Object newValue = entryEvent.getNewValue();
         if (newValue != null) {
           //We have a new value to run the query on
           cqUnfilteredEventsSet_newValue.add(newValue);
